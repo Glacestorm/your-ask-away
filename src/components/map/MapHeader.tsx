@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { MapPin, Menu, LogOut, Settings, BarChart3 } from 'lucide-react';
+import { MapPin, Menu, LogOut, Settings, BarChart3, UserCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
@@ -94,6 +94,11 @@ export function MapHeader({ onToggleSidebar, sidebarOpen }: MapHeaderProps) {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            
+            <DropdownMenuItem onClick={() => navigate('/profile')}>
+              <UserCircle className="mr-2 h-4 w-4" />
+              Mi Perfil
+            </DropdownMenuItem>
             
             {isAdmin && (
               <>
