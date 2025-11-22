@@ -224,26 +224,35 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          cargo: string | null
           created_at: string | null
           email: string
           full_name: string | null
+          gestor_number: string | null
           id: string
+          oficina: string | null
           updated_at: string | null
         }
         Insert: {
           avatar_url?: string | null
+          cargo?: string | null
           created_at?: string | null
           email: string
           full_name?: string | null
+          gestor_number?: string | null
           id: string
+          oficina?: string | null
           updated_at?: string | null
         }
         Update: {
           avatar_url?: string | null
+          cargo?: string | null
           created_at?: string | null
           email?: string
           full_name?: string | null
+          gestor_number?: string | null
           id?: string
+          oficina?: string | null
           updated_at?: string | null
         }
         Relationships: []
