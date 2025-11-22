@@ -405,13 +405,13 @@ const Dashboard = () => {
               </div>
 
               {/* Custom Date Range Picker */}
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
                       className={cn(
-                        'justify-start text-left font-normal',
+                        'w-full sm:w-auto justify-start text-left font-normal',
                         !dateRange && 'text-muted-foreground'
                       )}
                     >
@@ -430,7 +430,11 @@ const Dashboard = () => {
                       )}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
+                  <PopoverContent 
+                    className="w-auto p-0 z-50 bg-popover" 
+                    align="start"
+                    sideOffset={8}
+                  >
                     <Calendar
                       initialFocus
                       mode="range"
@@ -448,8 +452,7 @@ const Dashboard = () => {
                 
                 {dateRange?.from && dateRange?.to && (
                   <div className="text-sm text-muted-foreground">
-                    Mostrando datos desde {format(dateRange.from, 'dd/MM/yyyy')} hasta{' '}
-                    {format(dateRange.to, 'dd/MM/yyyy')}
+                    Datos: {format(dateRange.from, 'dd/MM/yyyy')} - {format(dateRange.to, 'dd/MM/yyyy')}
                   </div>
                 )}
               </div>
