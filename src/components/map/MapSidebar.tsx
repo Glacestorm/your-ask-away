@@ -174,12 +174,11 @@ export function MapSidebar({
     filters.dateRange !== null ||
     filters.searchTerm !== '';
 
+  if (!open) return null;
+
   return (
     <aside
-      className={cn(
-        'absolute left-0 top-0 z-10 h-full w-96 transform border-r bg-card shadow-lg transition-transform duration-300 lg:relative lg:translate-x-0',
-        open ? 'translate-x-0' : '-translate-x-full'
-      )}
+      className="absolute left-0 top-0 z-10 h-full w-96 border-r bg-card shadow-lg lg:relative"
     >
       <div className="flex h-full flex-col">
         <Tabs defaultValue="companies" className="flex-1 flex flex-col">
