@@ -12,7 +12,7 @@ import * as XLSX from 'xlsx';
 import { ReportGenerator } from '@/components/reports/ReportGenerator';
 
 const Dashboard = () => {
-  const { user, isAdmin, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -26,17 +26,17 @@ const Dashboard = () => {
   const [monthlyVisits, setMonthlyVisits] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!authLoading && (!user || !isAdmin)) {
-      navigate('/map');
-      toast.error('No tienes permisos para acceder a esta página');
+    if (!authLoading && !user) {
+      navigate('/auth');
+      toast.error('Debes iniciar sesión para acceder');
     }
-  }, [user, isAdmin, authLoading, navigate]);
+  }, [user, authLoading, navigate]);
 
   useEffect(() => {
-    if (user && isAdmin) {
+    if (user) {
       fetchDashboardData();
     }
-  }, [user, isAdmin]);
+  }, [user]);
 
   const fetchDashboardData = async () => {
     try {
