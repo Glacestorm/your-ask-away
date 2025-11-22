@@ -6,11 +6,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, Area, AreaChart } from 'recharts';
-import { ArrowLeft, Download, TrendingUp, Users, Building2, Package, FileText, Calendar, Target, Award } from 'lucide-react';
+import { ArrowLeft, Download, TrendingUp, Users, Building2, Package, FileText, Calendar as CalendarIcon, Target, Award, Filter, CalendarDays } from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 import { ReportGenerator } from '@/components/reports/ReportGenerator';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format, subMonths, subDays, startOfYear, endOfYear } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { DateRange } from 'react-day-picker';
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -33,6 +38,13 @@ const Dashboard = () => {
   const [topGestores, setTopGestores] = useState<any[]>([]);
   const [visitTrend, setVisitTrend] = useState<any[]>([]);
   const [productDistribution, setProductDistribution] = useState<any[]>([]);
+  
+  // Date filter state
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: subMonths(new Date(), 1),
+    to: new Date(),
+  });
+  const [selectedPeriod, setSelectedPeriod] = useState<string>('lastMonth');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -45,11 +57,49 @@ const Dashboard = () => {
     if (user) {
       fetchDashboardData();
     }
-  }, [user]);
+  }, [user, dateRange]);
+
+  const setPredefinedPeriod = (period: string) => {
+    setSelectedPeriod(period);
+    const today = new Date();
+    let from: Date;
+    let to: Date = today;
+
+    switch (period) {
+      case 'last7days':
+        from = subDays(today, 7);
+        break;
+      case 'lastMonth':
+        from = subMonths(today, 1);
+        break;
+      case 'last3months':
+        from = subMonths(today, 3);
+        break;
+      case 'last6months':
+        from = subMonths(today, 6);
+        break;
+      case 'thisYear':
+        from = startOfYear(today);
+        to = endOfYear(today);
+        break;
+      case 'lastYear':
+        const lastYear = new Date(today.getFullYear() - 1, 0, 1);
+        from = startOfYear(lastYear);
+        to = endOfYear(lastYear);
+        break;
+      default:
+        from = subMonths(today, 1);
+    }
+
+    setDateRange({ from, to });
+  };
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
+
+      const startDate = dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : null;
+      const endDate = dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : null;
 
       // Estadísticas generales
       const [companiesRes, productsRes, visitsRes, usersRes, activeProductsRes, companyProductsRes] = await Promise.all([
@@ -61,13 +111,15 @@ const Dashboard = () => {
         supabase.from('company_products').select('company_id', { count: 'exact' }),
       ]);
 
-      // Visitas del último mes
-      const lastMonth = new Date();
-      lastMonth.setMonth(lastMonth.getMonth() - 1);
-      const { count: visitsLastMonth } = await supabase
+      // Visitas en el rango seleccionado
+      let visitsQuery = supabase
         .from('visits')
-        .select('id', { count: 'exact', head: true })
-        .gte('visit_date', lastMonth.toISOString().split('T')[0]);
+        .select('id', { count: 'exact', head: true });
+      
+      if (startDate) visitsQuery = visitsQuery.gte('visit_date', startDate);
+      if (endDate) visitsQuery = visitsQuery.lte('visit_date', endDate);
+      
+      const { count: visitsInPeriod } = await visitsQuery;
 
       // Empresas únicas con productos
       const uniqueCompanies = new Set(companyProductsRes.data?.map((cp: any) => cp.company_id));
@@ -82,7 +134,7 @@ const Dashboard = () => {
         totalUsers: usersRes.count || 0,
         activeProducts: activeProductsRes.count || 0,
         companiesWithProducts: uniqueCompanies.size,
-        visitasUltimoMes: visitsLastMonth || 0,
+        visitasUltimoMes: visitsInPeriod || 0,
         avgVisitsPorEmpresa: parseFloat(avgVisits.toFixed(1)),
       });
 
@@ -119,15 +171,16 @@ const Dashboard = () => {
 
       setParroquiaData(Object.values(parroquiaMap));
 
-      // Visitas mensuales (últimos 6 meses)
-      const sixMonthsAgo = new Date();
-      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
-      const { data: visitsData } = await supabase
+      // Visitas mensuales en el rango seleccionado
+      let visitsMonthlyQuery = supabase
         .from('visits')
         .select('visit_date')
-        .gte('visit_date', sixMonthsAgo.toISOString().split('T')[0])
         .order('visit_date');
+      
+      if (startDate) visitsMonthlyQuery = visitsMonthlyQuery.gte('visit_date', startDate);
+      if (endDate) visitsMonthlyQuery = visitsMonthlyQuery.lte('visit_date', endDate);
+
+      const { data: visitsData } = await visitsMonthlyQuery;
 
       const monthlyMap: any = {};
       visitsData?.forEach((visit: any) => {
@@ -161,10 +214,15 @@ const Dashboard = () => {
         .slice(0, 5);
       setTopProducts(sortedProducts);
 
-      // Top gestores por número de visitas
-      const { data: gestoresData } = await supabase
+      // Top gestores por número de visitas en el rango
+      let gestoresQuery = supabase
         .from('visits')
         .select('gestor_id, profiles(full_name, email)');
+      
+      if (startDate) gestoresQuery = gestoresQuery.gte('visit_date', startDate);
+      if (endDate) gestoresQuery = gestoresQuery.lte('visit_date', endDate);
+
+      const { data: gestoresData } = await gestoresQuery;
 
       const gestorMap: any = {};
       gestoresData?.forEach((visit: any) => {
@@ -180,15 +238,16 @@ const Dashboard = () => {
         .slice(0, 5);
       setTopGestores(sortedGestores);
 
-      // Tendencia de visitas (últimos 12 meses)
-      const twelveMonthsAgo = new Date();
-      twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
-
-      const { data: visitsTrendData } = await supabase
+      // Tendencia de visitas en el rango seleccionado
+      let visitsTrendQuery = supabase
         .from('visits')
         .select('visit_date')
-        .gte('visit_date', twelveMonthsAgo.toISOString().split('T')[0])
         .order('visit_date');
+      
+      if (startDate) visitsTrendQuery = visitsTrendQuery.gte('visit_date', startDate);
+      if (endDate) visitsTrendQuery = visitsTrendQuery.lte('visit_date', endDate);
+
+      const { data: visitsTrendData } = await visitsTrendQuery;
 
       const trendMap: any = {};
       visitsTrendData?.forEach((visit: any) => {
@@ -270,7 +329,7 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background p-4">
       <div className="mx-auto max-w-7xl space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => navigate('/map')}>
               <ArrowLeft className="h-5 w-5" />
@@ -285,6 +344,118 @@ const Dashboard = () => {
             Exportar Datos
           </Button>
         </div>
+
+        {/* Date Filters */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              Filtros de Fecha
+            </CardTitle>
+            <CardDescription>
+              Selecciona un periodo para ver las estadísticas
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-4">
+              {/* Quick Filters */}
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant={selectedPeriod === 'last7days' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setPredefinedPeriod('last7days')}
+                >
+                  Últimos 7 días
+                </Button>
+                <Button
+                  variant={selectedPeriod === 'lastMonth' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setPredefinedPeriod('lastMonth')}
+                >
+                  Último mes
+                </Button>
+                <Button
+                  variant={selectedPeriod === 'last3months' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setPredefinedPeriod('last3months')}
+                >
+                  Últimos 3 meses
+                </Button>
+                <Button
+                  variant={selectedPeriod === 'last6months' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setPredefinedPeriod('last6months')}
+                >
+                  Últimos 6 meses
+                </Button>
+                <Button
+                  variant={selectedPeriod === 'thisYear' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setPredefinedPeriod('thisYear')}
+                >
+                  Este año
+                </Button>
+                <Button
+                  variant={selectedPeriod === 'lastYear' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setPredefinedPeriod('lastYear')}
+                >
+                  Año pasado
+                </Button>
+              </div>
+
+              {/* Custom Date Range Picker */}
+              <div className="flex items-center gap-2">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        'justify-start text-left font-normal',
+                        !dateRange && 'text-muted-foreground'
+                      )}
+                    >
+                      <CalendarDays className="mr-2 h-4 w-4" />
+                      {dateRange?.from ? (
+                        dateRange.to ? (
+                          <>
+                            {format(dateRange.from, 'dd/MM/yyyy')} -{' '}
+                            {format(dateRange.to, 'dd/MM/yyyy')}
+                          </>
+                        ) : (
+                          format(dateRange.from, 'dd/MM/yyyy')
+                        )
+                      ) : (
+                        <span>Seleccionar rango personalizado</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      initialFocus
+                      mode="range"
+                      defaultMonth={dateRange?.from}
+                      selected={dateRange}
+                      onSelect={(range) => {
+                        setDateRange(range);
+                        setSelectedPeriod('custom');
+                      }}
+                      numberOfMonths={2}
+                      className={cn('p-3 pointer-events-auto')}
+                    />
+                  </PopoverContent>
+                </Popover>
+                
+                {dateRange?.from && dateRange?.to && (
+                  <div className="text-sm text-muted-foreground">
+                    Mostrando datos desde {format(dateRange.from, 'dd/MM/yyyy')} hasta{' '}
+                    {format(dateRange.to, 'dd/MM/yyyy')}
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Stats Cards */}
         {loading ? (
@@ -371,7 +542,7 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.visitasUltimoMes}</div>
-                <p className="text-xs text-muted-foreground">Visitas realizadas</p>
+                <p className="text-xs text-muted-foreground">En el periodo seleccionado</p>
               </CardContent>
             </Card>
 
