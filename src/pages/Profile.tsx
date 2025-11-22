@@ -15,6 +15,9 @@ import { z } from 'zod';
 const profileSchema = z.object({
   full_name: z.string().trim().min(1, 'El nombre es requerido').max(100, 'El nombre es muy largo'),
   avatar_url: z.string().trim().url('URL inválida').optional().or(z.literal('')),
+  gestor_number: z.string().trim().max(50, 'El número es muy largo').optional().or(z.literal('')),
+  oficina: z.string().trim().max(100, 'El nombre de la oficina es muy largo').optional().or(z.literal('')),
+  cargo: z.string().trim().max(100, 'El nombre del cargo es muy largo').optional().or(z.literal('')),
 });
 
 const passwordSchema = z.object({
@@ -35,6 +38,9 @@ const Profile = () => {
   // Profile form state
   const [fullName, setFullName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
+  const [gestorNumber, setGestorNumber] = useState('');
+  const [oficina, setOficina] = useState('');
+  const [cargo, setCargo] = useState('');
   
   // Password form state
   const [currentPassword, setCurrentPassword] = useState('');
@@ -57,7 +63,7 @@ const Profile = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('full_name, avatar_url')
+        .select('full_name, avatar_url, gestor_number, oficina, cargo')
         .eq('id', user?.id)
         .maybeSingle();
 
@@ -66,6 +72,9 @@ const Profile = () => {
       if (data) {
         setFullName(data.full_name || '');
         setAvatarUrl(data.avatar_url || '');
+        setGestorNumber(data.gestor_number || '');
+        setOficina(data.oficina || '');
+        setCargo(data.cargo || '');
       }
     } catch (error: any) {
       console.error('Error fetching profile:', error);
@@ -81,6 +90,9 @@ const Profile = () => {
       const validatedData = profileSchema.parse({
         full_name: fullName,
         avatar_url: avatarUrl,
+        gestor_number: gestorNumber,
+        oficina: oficina,
+        cargo: cargo,
       });
 
       setLoading(true);
@@ -90,6 +102,9 @@ const Profile = () => {
         .update({
           full_name: validatedData.full_name,
           avatar_url: validatedData.avatar_url || null,
+          gestor_number: validatedData.gestor_number || null,
+          oficina: validatedData.oficina || null,
+          cargo: validatedData.cargo || null,
           updated_at: new Date().toISOString(),
         })
         .eq('id', user?.id);
@@ -232,6 +247,42 @@ const Profile = () => {
                 <p className="text-xs text-muted-foreground">
                   URL de tu foto de perfil (opcional)
                 </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="gestorNumber">Número de Gestor</Label>
+                <Input
+                  id="gestorNumber"
+                  type="text"
+                  value={gestorNumber}
+                  onChange={(e) => setGestorNumber(e.target.value)}
+                  placeholder="Ej: G-001"
+                  maxLength={50}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="oficina">Oficina Asignada</Label>
+                <Input
+                  id="oficina"
+                  type="text"
+                  value={oficina}
+                  onChange={(e) => setOficina(e.target.value)}
+                  placeholder="Ej: Oficina Central"
+                  maxLength={100}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cargo">Cargo Actual</Label>
+                <Input
+                  id="cargo"
+                  type="text"
+                  value={cargo}
+                  onChange={(e) => setCargo(e.target.value)}
+                  placeholder="Ej: Gestor Comercial"
+                  maxLength={100}
+                />
               </div>
 
               <Button type="submit" disabled={loading}>
