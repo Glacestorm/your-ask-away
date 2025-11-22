@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Database } from 'lucide-react';
 import { toast } from 'sonner';
 import { CompaniesManager } from '@/components/admin/CompaniesManager';
 import { ProductsManager } from '@/components/admin/ProductsManager';
 import { UsersManager } from '@/components/admin/UsersManager';
 import { StatusColorsManager } from '@/components/admin/StatusColorsManager';
 import { ConceptsManager } from '@/components/admin/ConceptsManager';
+import { AuditLogsViewer } from '@/components/admin/AuditLogsViewer';
 
 const Admin = () => {
   const { user, isAdmin, loading: authLoading } = useAuth();
@@ -46,12 +47,16 @@ const Admin = () => {
 
         {/* Admin Tabs */}
         <Tabs defaultValue="companies" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="companies">Empresas</TabsTrigger>
             <TabsTrigger value="products">Productos</TabsTrigger>
             <TabsTrigger value="users">Usuarios</TabsTrigger>
             <TabsTrigger value="colors">Colores</TabsTrigger>
             <TabsTrigger value="concepts">Conceptos</TabsTrigger>
+            <TabsTrigger value="audit">
+              <Database className="mr-2 h-4 w-4" />
+              Auditoría
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="companies">
@@ -72,6 +77,10 @@ const Admin = () => {
 
           <TabsContent value="concepts">
             <ConceptsManager />
+          </TabsContent>
+
+          <TabsContent value="audit">
+            <AuditLogsViewer />
           </TabsContent>
         </Tabs>
       </div>

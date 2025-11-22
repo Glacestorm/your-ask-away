@@ -6,9 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { ArrowLeft, Download, TrendingUp, Users, Building2, Package } from 'lucide-react';
+import { ArrowLeft, Download, TrendingUp, Users, Building2, Package, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
+import { ReportGenerator } from '@/components/reports/ReportGenerator';
 
 const Dashboard = () => {
   const { user, isAdmin, loading: authLoading } = useAuth();
@@ -225,15 +226,19 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Charts */}
-        <Tabs defaultValue="status" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="status">Distribución por Estado</TabsTrigger>
-            <TabsTrigger value="parroquia">Por Parroquia</TabsTrigger>
-            <TabsTrigger value="visits">Visitas Mensuales</TabsTrigger>
-          </TabsList>
+      {/* Main Content */}
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="overview">Vista General</TabsTrigger>
+          <TabsTrigger value="companies">Empresas</TabsTrigger>
+          <TabsTrigger value="visits">Visitas</TabsTrigger>
+          <TabsTrigger value="reports">
+            <FileText className="mr-2 h-4 w-4" />
+            Informes
+          </TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="status" className="space-y-4">
+          <TabsContent value="overview" className="space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle>Empresas por Estado</CardTitle>
@@ -264,7 +269,7 @@ const Dashboard = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="parroquia" className="space-y-4">
+          <TabsContent value="companies" className="space-y-4">
             <Card>
               <CardHeader>
                 <CardTitle>Empresas por Parroquia</CardTitle>
@@ -304,6 +309,34 @@ const Dashboard = () => {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="reports" className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <ReportGenerator />
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-5 w-5" />
+                    Exportaciones Rápidas
+                  </CardTitle>
+                  <CardDescription>
+                    Exporta datos en diferentes formatos
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Button
+                    onClick={exportToExcel}
+                    variant="outline"
+                    className="w-full justify-start"
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Exportar Empresas a Excel
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
