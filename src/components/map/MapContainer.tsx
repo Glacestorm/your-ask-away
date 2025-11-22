@@ -20,6 +20,8 @@ interface MapContainerProps {
   statusColors: StatusColor[];
   filters: MapFilters;
   onSelectCompany: (company: CompanyWithDetails) => void;
+  mapStyle?: 'default' | 'satellite';
+  view3D?: boolean;
 }
 
 export function MapContainer({
@@ -27,6 +29,8 @@ export function MapContainer({
   statusColors,
   filters,
   onSelectCompany,
+  mapStyle = 'default',
+  view3D = false,
 }: MapContainerProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
@@ -41,10 +45,34 @@ export function MapContainer({
     // Andorra coordinates
     const andorraCenter: [number, number] = [1.5218, 42.5063];
 
-    map.current = new maplibregl.Map({
-      container: mapContainer.current,
-      style: {
-        version: 8,
+    const getMapStyle = (): any => {
+      if (mapStyle === 'satellite') {
+        return {
+          version: 8 as const,
+          sources: {
+            'satellite': {
+              type: 'raster',
+              tiles: [
+                'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+              ],
+              tileSize: 256,
+              attribution: '© Google',
+            },
+          },
+          layers: [
+            {
+              id: 'satellite',
+              type: 'raster',
+              source: 'satellite',
+              minzoom: 0,
+              maxzoom: 22,
+            },
+          ],
+        };
+      }
+      
+      return {
+        version: 8 as const,
         sources: {
           'osm': {
             type: 'raster',
@@ -66,10 +94,15 @@ export function MapContainer({
             maxzoom: 19,
           },
         ],
-      },
+      };
+    };
+
+    map.current = new maplibregl.Map({
+      container: mapContainer.current,
+      style: getMapStyle(),
       center: andorraCenter,
       zoom: 12,
-      pitch: 0,
+      pitch: view3D ? 60 : 0,
       bearing: 0,
     });
 
@@ -90,6 +123,69 @@ export function MapContainer({
       map.current = null;
     };
   }, []);
+
+  // Update map style and 3D view when props change
+  useEffect(() => {
+    if (!map.current || !mapLoaded) return;
+
+    const getMapStyle = (): any => {
+      if (mapStyle === 'satellite') {
+        return {
+          version: 8 as const,
+          sources: {
+            'satellite': {
+              type: 'raster',
+              tiles: [
+                'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+              ],
+              tileSize: 256,
+              attribution: '© Google',
+            },
+          },
+          layers: [
+            {
+              id: 'satellite',
+              type: 'raster',
+              source: 'satellite',
+              minzoom: 0,
+              maxzoom: 22,
+            },
+          ],
+        };
+      }
+      
+      return {
+        version: 8 as const,
+        sources: {
+          'osm': {
+            type: 'raster',
+            tiles: [
+              'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+              'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+              'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            ],
+            tileSize: 256,
+            attribution: '© OpenStreetMap contributors',
+          },
+        },
+        layers: [
+          {
+            id: 'osm',
+            type: 'raster',
+            source: 'osm',
+            minzoom: 0,
+            maxzoom: 19,
+          },
+        ],
+      };
+    };
+
+    map.current.setStyle(getMapStyle());
+    map.current.easeTo({
+      pitch: view3D ? 60 : 0,
+      duration: 1000,
+    });
+  }, [mapStyle, view3D, mapLoaded]);
 
   // Update markers when companies or filters change
   useEffect(() => {

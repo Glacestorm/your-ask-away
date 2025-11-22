@@ -5,6 +5,7 @@ import { MapContainer } from '@/components/map/MapContainer';
 import { MapControls } from '@/components/map/MapControls';
 import { MapSidebar } from '@/components/map/MapSidebar';
 import { MapHeader } from '@/components/map/MapHeader';
+import { MapStyleToggle } from '@/components/map/MapStyleToggle';
 import { CompanyWithDetails, MapFilters, StatusColor, Product } from '@/types/database';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
@@ -29,6 +30,8 @@ const MapView = () => {
   });
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<CompanyWithDetails | null>(null);
+  const [mapStyle, setMapStyle] = useState<'default' | 'satellite'>('default');
+  const [view3D, setView3D] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -138,6 +141,15 @@ const MapView = () => {
             statusColors={statusColors}
             filters={filters}
             onSelectCompany={setSelectedCompany}
+            mapStyle={mapStyle}
+            view3D={view3D}
+          />
+          
+          <MapStyleToggle
+            mapStyle={mapStyle}
+            view3D={view3D}
+            onMapStyleChange={setMapStyle}
+            onView3DChange={setView3D}
           />
           
           <MapControls
