@@ -7,15 +7,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, User, Lock, Loader2 } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ArrowLeft, User, Lock, Loader2, Upload, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
 // Validation schemas
 const profileSchema = z.object({
   full_name: z.string().trim().min(1, 'El nombre es requerido').max(100, 'El nombre es muy largo'),
-  avatar_url: z.string().trim().url('URL inválida').optional().or(z.literal('')),
-  gestor_number: z.string().trim().max(50, 'El número es muy largo').optional().or(z.literal('')),
+  gestor_number: z.string().trim().regex(/^\d{4}$/, 'El número de gestor debe tener exactamente 4 dígitos').optional().or(z.literal('')),
   oficina: z.string().trim().max(100, 'El nombre de la oficina es muy largo').optional().or(z.literal('')),
   cargo: z.string().trim().max(100, 'El nombre del cargo es muy largo').optional().or(z.literal('')),
 });
@@ -30,10 +30,11 @@ const passwordSchema = z.object({
 });
 
 const Profile = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, userRole, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [passwordLoading, setPasswordLoading] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   
   // Profile form state
   const [fullName, setFullName] = useState('');
@@ -89,7 +90,6 @@ const Profile = () => {
       // Validate input
       const validatedData = profileSchema.parse({
         full_name: fullName,
-        avatar_url: avatarUrl,
         gestor_number: gestorNumber,
         oficina: oficina,
         cargo: cargo,
@@ -101,7 +101,6 @@ const Profile = () => {
         .from('profiles')
         .update({
           full_name: validatedData.full_name,
-          avatar_url: validatedData.avatar_url || null,
           gestor_number: validatedData.gestor_number || null,
           oficina: validatedData.oficina || null,
           cargo: validatedData.cargo || null,
@@ -121,6 +120,72 @@ const Profile = () => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Por favor selecciona una imagen válida');
+      return;
+    }
+
+    // Validate file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('La imagen debe ser menor a 2MB');
+      return;
+    }
+
+    try {
+      setUploadingAvatar(true);
+
+      // Delete old avatar if exists
+      if (avatarUrl) {
+        const oldPath = avatarUrl.split('/').pop();
+        if (oldPath) {
+          await supabase.storage
+            .from('avatars')
+            .remove([`${user?.id}/${oldPath}`]);
+        }
+      }
+
+      // Upload new avatar
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `${user?.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      // Update profile with new avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ 
+          avatar_url: publicUrl,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', user?.id);
+
+      if (updateError) throw updateError;
+
+      setAvatarUrl(publicUrl);
+      toast.success('Avatar actualizado correctamente');
+    } catch (error: any) {
+      console.error('Error uploading avatar:', error);
+      toast.error('Error al subir el avatar');
+    } finally {
+      setUploadingAvatar(false);
     }
   };
 
@@ -203,11 +268,42 @@ const Profile = () => {
               Información Personal
             </CardTitle>
             <CardDescription>
-              Actualiza tu nombre y foto de perfil
+              Actualiza tu nombre, avatar y datos profesionales
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleUpdateProfile} className="space-y-4">
+            <form onSubmit={handleUpdateProfile} className="space-y-6">
+              {/* Avatar Section */}
+              <div className="flex items-center gap-4">
+                <Avatar className="h-24 w-24">
+                  <AvatarImage src={avatarUrl} alt={fullName} />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
+                    {fullName.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <Label htmlFor="avatar" className="cursor-pointer">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                      <Upload className="h-4 w-4" />
+                      Cambiar foto de perfil
+                    </div>
+                  </Label>
+                  <Input
+                    id="avatar"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarUpload}
+                    disabled={uploadingAvatar}
+                    className="max-w-xs"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    JPG, PNG o WEBP. Máximo 2MB.
+                  </p>
+                </div>
+              </div>
+
+              <Separator />
+
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -223,7 +319,24 @@ const Profile = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="fullName">Nombre Completo</Label>
+                <Label htmlFor="userRole" className="flex items-center gap-2">
+                  <Shield className="h-4 w-4" />
+                  Rol
+                </Label>
+                <Input
+                  id="userRole"
+                  type="text"
+                  value={userRole || 'usuario'}
+                  disabled
+                  className="bg-muted capitalize"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Asignado por el administrador
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Nombre Completo *</Label>
                 <Input
                   id="fullName"
                   type="text"
@@ -236,29 +349,23 @@ const Profile = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="avatarUrl">URL del Avatar</Label>
-                <Input
-                  id="avatarUrl"
-                  type="url"
-                  value={avatarUrl}
-                  onChange={(e) => setAvatarUrl(e.target.value)}
-                  placeholder="https://ejemplo.com/avatar.jpg"
-                />
-                <p className="text-xs text-muted-foreground">
-                  URL de tu foto de perfil (opcional)
-                </p>
-              </div>
-
-              <div className="space-y-2">
                 <Label htmlFor="gestorNumber">Número de Gestor</Label>
                 <Input
                   id="gestorNumber"
                   type="text"
                   value={gestorNumber}
-                  onChange={(e) => setGestorNumber(e.target.value)}
-                  placeholder="Ej: G-001"
-                  maxLength={50}
+                  onChange={(e) => {
+                    // Only allow 4 digits
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 4);
+                    setGestorNumber(value);
+                  }}
+                  placeholder="0000"
+                  maxLength={4}
+                  pattern="\d{4}"
                 />
+                <p className="text-xs text-muted-foreground">
+                  Formato: 4 dígitos (Ej: 0001)
+                </p>
               </div>
 
               <div className="space-y-2">
