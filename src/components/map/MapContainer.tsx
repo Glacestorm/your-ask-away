@@ -141,12 +141,13 @@ export function MapContainer({
               tileSize: 256,
               attribution: '© Google',
             },
-            'openmaptiles': {
+            'protomaps': {
               type: 'vector',
               tiles: [
-                'https://api.maptiler.com/tiles/v3/{z}/{x}/{y}.pbf?key=get_your_own_OpIi9ZULNHzrESv6T2vL',
+                'https://tiles.protomaps.com/v3/{z}/{x}/{y}.mvt',
               ],
-              maxzoom: 14,
+              maxzoom: 15,
+              attribution: '© Protomaps © OpenStreetMap',
             },
           },
           layers: [
@@ -174,12 +175,13 @@ export function MapContainer({
             tileSize: 256,
             attribution: '© OpenStreetMap contributors',
           },
-          'openmaptiles': {
+          'protomaps': {
             type: 'vector',
             tiles: [
-              'https://api.maptiler.com/tiles/v3/{z}/{x}/{y}.pbf?key=get_your_own_OpIi9ZULNHzrESv6T2vL',
+              'https://tiles.protomaps.com/v3/{z}/{x}/{y}.mvt',
             ],
-            maxzoom: 14,
+            maxzoom: 15,
+            attribution: '© Protomaps © OpenStreetMap',
           },
         },
         layers: [
@@ -207,35 +209,28 @@ export function MapContainer({
 
       // Add 3D buildings when view3D is enabled
       if (view3D) {
-        map.current.addLayer({
-          id: '3d-buildings',
-          source: 'openmaptiles',
-          'source-layer': 'building',
-          type: 'fill-extrusion',
-          minzoom: 14,
-          paint: {
-            'fill-extrusion-color': mapStyle === 'satellite' ? '#aaa' : '#ddd',
-            'fill-extrusion-height': [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              14,
-              0,
-              14.5,
-              ['get', 'render_height'],
-            ],
-            'fill-extrusion-base': [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              14,
-              0,
-              14.5,
-              ['get', 'render_min_height'],
-            ],
-            'fill-extrusion-opacity': 0.8,
-          },
-        } as any);
+        // Check if source has buildings layer
+        const source = map.current.getSource('protomaps');
+        if (source) {
+          map.current.addLayer({
+            id: '3d-buildings',
+            source: 'protomaps',
+            'source-layer': 'buildings',
+            type: 'fill-extrusion',
+            minzoom: 14,
+            paint: {
+              'fill-extrusion-color': mapStyle === 'satellite' ? '#888' : '#ccc',
+              'fill-extrusion-height': [
+                'case',
+                ['has', 'height'],
+                ['get', 'height'],
+                ['*', ['get', 'building:levels', 3], 3.5]
+              ],
+              'fill-extrusion-base': 0,
+              'fill-extrusion-opacity': 0.7,
+            },
+          } as any);
+        }
       }
     });
 
