@@ -57,6 +57,10 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        map: {
+          control: "hsl(var(--map-control-bg))",
+          border: "hsl(var(--map-border))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
