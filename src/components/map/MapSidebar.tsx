@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { CompanyWithDetails, MapFilters, StatusColor, Product, Profile } from '@/types/database';
-import { Search, X, Filter, Calendar } from 'lucide-react';
+import { Search, X, Filter, Calendar, History } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
@@ -14,6 +14,8 @@ import { es } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { VisitsPanel } from './VisitsPanel';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface MapSidebarProps {
   open: boolean;
@@ -175,13 +177,26 @@ export function MapSidebar({
   return (
     <aside
       className={cn(
-        'absolute left-0 top-0 z-10 h-full w-80 transform border-r bg-card shadow-lg transition-transform duration-300 lg:relative lg:translate-x-0',
+        'absolute left-0 top-0 z-10 h-full w-96 transform border-r bg-card shadow-lg transition-transform duration-300 lg:relative lg:translate-x-0',
         open ? 'translate-x-0' : '-translate-x-full'
       )}
     >
       <div className="flex h-full flex-col">
-        {/* Search */}
-        <div className="border-b p-4">
+        <Tabs defaultValue="companies" className="flex-1 flex flex-col">
+          <TabsList className="mx-4 mt-4">
+            <TabsTrigger value="companies" className="flex-1">
+              <Search className="mr-2 h-4 w-4" />
+              Empresas
+            </TabsTrigger>
+            <TabsTrigger value="visits" className="flex-1">
+              <History className="mr-2 h-4 w-4" />
+              Visitas
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="companies" className="flex-1 flex flex-col mt-0">
+            {/* Search */}
+            <div className="border-b p-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -397,51 +412,57 @@ export function MapSidebar({
           )}
         </div>
 
-        {/* Companies List */}
-        <ScrollArea className="flex-1">
-          <div className="p-4">
-            <div className="mb-2 flex items-center justify-between">
-              <h3 className="text-sm font-medium">
-                Empresas ({filteredCompanies.length})
-              </h3>
-            </div>
-            
-            <div className="space-y-2">
-              {filteredCompanies.map((company) => (
-                <button
-                  key={company.id}
-                  onClick={() => onSelectCompany(company)}
-                  className={cn(
-                    'w-full rounded-lg border p-3 text-left transition-colors hover:bg-accent',
-                    selectedCompany?.id === company.id && 'border-primary bg-primary/5'
-                  )}
-                >
-                  <div className="flex items-start gap-2">
-                    <div
-                      className="mt-1 h-3 w-3 flex-shrink-0 rounded-full"
-                      style={{ backgroundColor: company.status?.color_hex || '#gray' }}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="truncate font-medium text-sm">{company.name}</p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {company.address}
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {company.parroquia}
-                      </p>
-                    </div>
-                  </div>
-                </button>
-              ))}
-
-              {filteredCompanies.length === 0 && (
-                <div className="py-8 text-center text-sm text-muted-foreground">
-                  No se encontraron empresas
+            {/* Companies List */}
+            <ScrollArea className="flex-1">
+              <div className="p-4">
+                <div className="mb-2 flex items-center justify-between">
+                  <h3 className="text-sm font-medium">
+                    Empresas ({filteredCompanies.length})
+                  </h3>
                 </div>
-              )}
-            </div>
-          </div>
-        </ScrollArea>
+                
+                <div className="space-y-2">
+                  {filteredCompanies.map((company) => (
+                    <button
+                      key={company.id}
+                      onClick={() => onSelectCompany(company)}
+                      className={cn(
+                        'w-full rounded-lg border p-3 text-left transition-colors hover:bg-accent',
+                        selectedCompany?.id === company.id && 'border-primary bg-primary/5'
+                      )}
+                    >
+                      <div className="flex items-start gap-2">
+                        <div
+                          className="mt-1 h-3 w-3 flex-shrink-0 rounded-full"
+                          style={{ backgroundColor: company.status?.color_hex || '#gray' }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="truncate font-medium text-sm">{company.name}</p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {company.address}
+                          </p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {company.parroquia}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+
+                  {filteredCompanies.length === 0 && (
+                    <div className="py-8 text-center text-sm text-muted-foreground">
+                      No se encontraron empresas
+                    </div>
+                  )}
+                </div>
+              </div>
+            </ScrollArea>
+          </TabsContent>
+
+          <TabsContent value="visits" className="flex-1 p-4">
+            <VisitsPanel company={selectedCompany} />
+          </TabsContent>
+        </Tabs>
       </div>
     </aside>
   );

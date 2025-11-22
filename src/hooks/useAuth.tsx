@@ -32,10 +32,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq('user_id', userId)
         .order('role', { ascending: false }) // superadmin > admin > user
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-      setUserRole(data.role as AppRole);
+      setUserRole((data?.role as AppRole) || 'user');
     } catch (error) {
       console.error('Error fetching user role:', error);
       setUserRole('user'); // Default fallback
