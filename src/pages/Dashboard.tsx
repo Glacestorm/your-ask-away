@@ -346,7 +346,7 @@ const Dashboard = () => {
         </div>
 
         {/* Date Filters */}
-        <Card>
+        <Card className="relative z-10">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Filter className="h-5 w-5" />
@@ -405,8 +405,8 @@ const Dashboard = () => {
               </div>
 
               {/* Custom Date Range Picker */}
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                <Popover>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <Popover modal={true}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
@@ -426,14 +426,17 @@ const Dashboard = () => {
                           format(dateRange.from, 'dd/MM/yyyy')
                         )
                       ) : (
-                        <span>Seleccionar rango personalizado</span>
+                        <span>Rango personalizado</span>
                       )}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent 
-                    className="w-auto p-0 z-50 bg-popover" 
+                    className="w-auto p-0 z-[100] bg-background border shadow-lg" 
                     align="start"
-                    sideOffset={8}
+                    side="bottom"
+                    sideOffset={10}
+                    avoidCollisions={true}
+                    collisionPadding={20}
                   >
                     <Calendar
                       initialFocus
@@ -445,16 +448,16 @@ const Dashboard = () => {
                         setSelectedPeriod('custom');
                       }}
                       numberOfMonths={2}
-                      className={cn('p-3 pointer-events-auto')}
+                      className={cn('p-3 pointer-events-auto bg-background')}
                     />
                   </PopoverContent>
                 </Popover>
                 
                 {dateRange?.from && dateRange?.to && (
                   <div className="text-sm text-muted-foreground">
-                    Datos: {format(dateRange.from, 'dd/MM/yyyy')} - {format(dateRange.to, 'dd/MM/yyyy')}
+                    📊 Datos: {format(dateRange.from, 'dd/MM/yyyy')} - {format(dateRange.to, 'dd/MM/yyyy')}
                   </div>
-                )}
+                 )}
               </div>
             </div>
           </CardContent>
@@ -582,17 +585,18 @@ const Dashboard = () => {
         )}
 
         {/* Main Content */}
-        <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview">Vista General</TabsTrigger>
-            <TabsTrigger value="companies">Empresas</TabsTrigger>
-            <TabsTrigger value="visits">Visitas</TabsTrigger>
-            <TabsTrigger value="products">Productos</TabsTrigger>
-            <TabsTrigger value="reports">
-              <FileText className="mr-2 h-4 w-4" />
-              Informes
-            </TabsTrigger>
-          </TabsList>
+        <div className="relative z-0">
+          <Tabs defaultValue="overview" className="space-y-4">
+            <TabsList className="grid w-full grid-cols-5">
+              <TabsTrigger value="overview">Vista General</TabsTrigger>
+              <TabsTrigger value="companies">Empresas</TabsTrigger>
+              <TabsTrigger value="visits">Visitas</TabsTrigger>
+              <TabsTrigger value="products">Productos</TabsTrigger>
+              <TabsTrigger value="reports">
+                <FileText className="mr-2 h-4 w-4" />
+                Informes
+              </TabsTrigger>
+            </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
@@ -883,7 +887,8 @@ const Dashboard = () => {
         </Tabs>
       </div>
     </div>
-  );
+  </div>
+);
 };
 
 export default Dashboard;
