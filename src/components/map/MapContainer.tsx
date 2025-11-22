@@ -141,6 +141,13 @@ export function MapContainer({
               tileSize: 256,
               attribution: '© Google',
             },
+            'openmaptiles': {
+              type: 'vector',
+              tiles: [
+                'https://api.maptiler.com/tiles/v3/{z}/{x}/{y}.pbf?key=get_your_own_OpIi9ZULNHzrESv6T2vL',
+              ],
+              maxzoom: 14,
+            },
           },
           layers: [
             {
@@ -167,6 +174,13 @@ export function MapContainer({
             tileSize: 256,
             attribution: '© OpenStreetMap contributors',
           },
+          'openmaptiles': {
+            type: 'vector',
+            tiles: [
+              'https://api.maptiler.com/tiles/v3/{z}/{x}/{y}.pbf?key=get_your_own_OpIi9ZULNHzrESv6T2vL',
+            ],
+            maxzoom: 14,
+          },
         },
         layers: [
           {
@@ -181,6 +195,50 @@ export function MapContainer({
     };
 
     map.current.setStyle(getMapStyle());
+    
+    // Wait for style to load before adding 3D buildings
+    map.current.once('styledata', () => {
+      if (!map.current) return;
+
+      // Remove existing 3D building layer if it exists
+      if (map.current.getLayer('3d-buildings')) {
+        map.current.removeLayer('3d-buildings');
+      }
+
+      // Add 3D buildings when view3D is enabled
+      if (view3D) {
+        map.current.addLayer({
+          id: '3d-buildings',
+          source: 'openmaptiles',
+          'source-layer': 'building',
+          type: 'fill-extrusion',
+          minzoom: 14,
+          paint: {
+            'fill-extrusion-color': mapStyle === 'satellite' ? '#aaa' : '#ddd',
+            'fill-extrusion-height': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              14,
+              0,
+              14.5,
+              ['get', 'render_height'],
+            ],
+            'fill-extrusion-base': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              14,
+              0,
+              14.5,
+              ['get', 'render_min_height'],
+            ],
+            'fill-extrusion-opacity': 0.8,
+          },
+        } as any);
+      }
+    });
+
     map.current.easeTo({
       pitch: view3D ? 60 : 0,
       duration: 1000,
