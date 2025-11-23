@@ -23,6 +23,7 @@ import { VinculacionMetrics } from '@/components/admin/VinculacionMetrics';
 import { SystemHealthMonitor } from '@/components/admin/SystemHealthMonitor';
 import { TPVManager } from '@/components/admin/TPVManager';
 import { TPVGoalsManager } from '@/components/admin/TPVGoalsManager';
+import { CommercialDirectorDashboard } from '@/components/admin/CommercialDirectorDashboard';
 const Admin = () => {
   const { user, isAdmin, loading: authLoading } = useAuth();
   const { t } = useLanguage();
@@ -47,25 +48,7 @@ const Admin = () => {
   const renderContent = () => {
     switch (activeSection) {
       case 'director':
-        return (
-          <div className="rounded-lg border bg-card p-6">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold">Panel Director Comercial</h2>
-              <p className="text-sm text-muted-foreground">
-                Temporalmente desactivado - En revisión técnica
-              </p>
-            </div>
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Activity className="h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-sm text-muted-foreground text-center max-w-md">
-                  Este panel está siendo revisado para solucionar problemas técnicos.
-                  Estará disponible próximamente.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        );
+        return <CommercialDirectorDashboard />;
       case 'health':
         return <SystemHealthMonitor />;
       case 'visits':
