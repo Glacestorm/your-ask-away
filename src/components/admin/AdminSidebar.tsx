@@ -71,7 +71,7 @@ export function AdminSidebar({
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl">
                       <TrendingUp className="h-5 w-5 text-primary-foreground" />
                     </div>
-                    <span className={`text-base transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
+                    <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
                       {t('adminSidebar.commercialDirector')}
                     </span>
                   </SidebarMenuButton>
@@ -88,7 +88,7 @@ export function AdminSidebar({
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl">
                     <Building2 className="h-5 w-5 text-primary-foreground" />
                   </div>
-                  <span className={`text-base transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
+                  <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
                     {t('adminSidebar.officeDirector')}
                   </span>
                 </SidebarMenuButton>
@@ -105,7 +105,7 @@ export function AdminSidebar({
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl">
                     <Briefcase className="h-5 w-5 text-primary-foreground" />
                   </div>
-                  <span className={`text-base transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
+                  <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
                     {t('adminSidebar.commercialManager')}
                   </span>
                 </SidebarMenuButton>
