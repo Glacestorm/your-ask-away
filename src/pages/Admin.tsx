@@ -13,6 +13,7 @@ import { StatusColorsManager } from '@/components/admin/StatusColorsManager';
 import { ConceptsManager } from '@/components/admin/ConceptsManager';
 import { AuditLogsViewer } from '@/components/admin/AuditLogsViewer';
 import { EmailTemplatesManager } from '@/components/admin/EmailTemplatesManager';
+import { MapTooltipConfig } from '@/components/admin/MapTooltipConfig';
 import { VisitsMetrics } from '@/components/admin/VisitsMetrics';
 import { ProductsMetrics } from '@/components/admin/ProductsMetrics';
 import { GestoresMetrics } from '@/components/admin/GestoresMetrics';
@@ -54,7 +55,7 @@ const Admin = () => {
 
         {/* Admin Tabs */}
         <Tabs defaultValue="visits" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-11">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-12">
             {/* Métricas */}
             <TabsTrigger value="visits" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
@@ -99,6 +100,10 @@ const Admin = () => {
             <TabsTrigger value="concepts" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
               <span className="hidden sm:inline">Conceptos</span>
+            </TabsTrigger>
+            <TabsTrigger value="map-config" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              <span className="hidden sm:inline">Mapa</span>
             </TabsTrigger>
             <TabsTrigger value="audit" className="flex items-center gap-2">
               <Database className="h-4 w-4" />
@@ -179,6 +184,10 @@ const Admin = () => {
 
           <TabsContent value="concepts">
             <ConceptsManager />
+          </TabsContent>
+
+          <TabsContent value="map-config">
+            <MapTooltipConfig />
           </TabsContent>
 
           <TabsContent value="audit">

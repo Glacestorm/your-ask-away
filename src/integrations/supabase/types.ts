@@ -475,6 +475,36 @@ export type Database = {
           },
         ]
       }
+      map_tooltip_config: {
+        Row: {
+          created_at: string
+          display_order: number
+          enabled: boolean
+          field_label: string
+          field_name: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          enabled?: boolean
+          field_label: string
+          field_name: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          enabled?: boolean
+          field_label?: string
+          field_name?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notification_preferences: {
         Row: {
           alert_type: string

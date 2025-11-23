@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { CompanyWithDetails, MapFilters, StatusColor } from '@/types/database';
+import { supabase } from '@/integrations/supabase/client';
 import Supercluster from 'supercluster';
 import { getSectorIcon, iconToSVGString } from './markerIcons';
 import { formatCnaeWithDescription } from '@/lib/cnaeDescriptions';
@@ -118,6 +119,13 @@ interface MapContainerProps {
   onSearchLocationClear?: () => void;
 }
 
+interface TooltipConfig {
+  field_name: string;
+  field_label: string;
+  enabled: boolean;
+  display_order: number;
+}
+
 export function MapContainer({
   companies,
   statusColors,
@@ -141,6 +149,64 @@ export function MapContainer({
   const [mapLoaded, setMapLoaded] = useState(false);
   const superclusterRef = useRef<Supercluster<CompanyWithDetails> | null>(null);
   const searchMarkerRef = useRef<maplibregl.Marker | null>(null);
+  const [tooltipConfig, setTooltipConfig] = useState<TooltipConfig[]>([]);
+  const [vinculacionData, setVinculacionData] = useState<Record<string, number>>({});
+
+  // Fetch tooltip configuration
+  useEffect(() => {
+    const fetchTooltipConfig = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('map_tooltip_config')
+          .select('*')
+          .eq('enabled', true)
+          .order('display_order');
+
+        if (error) throw error;
+        setTooltipConfig(data || []);
+      } catch (error) {
+        console.error('Error fetching tooltip config:', error);
+      }
+    };
+
+    fetchTooltipConfig();
+  }, []);
+
+  // Calculate average vinculación for each company
+  useEffect(() => {
+    const calculateVinculacion = async () => {
+      try {
+        const { data: visits, error } = await supabase
+          .from('visits')
+          .select('company_id, porcentaje_vinculacion');
+
+        if (error) throw error;
+
+        const vinculacionMap: Record<string, { total: number; count: number }> = {};
+        
+        visits?.forEach(visit => {
+          if (visit.porcentaje_vinculacion !== null) {
+            if (!vinculacionMap[visit.company_id]) {
+              vinculacionMap[visit.company_id] = { total: 0, count: 0 };
+            }
+            vinculacionMap[visit.company_id].total += visit.porcentaje_vinculacion;
+            vinculacionMap[visit.company_id].count += 1;
+          }
+        });
+
+        const avgVinculacion: Record<string, number> = {};
+        Object.entries(vinculacionMap).forEach(([companyId, data]) => {
+          avgVinculacion[companyId] = Math.round(data.total / data.count);
+        });
+
+        setVinculacionData(avgVinculacion);
+      } catch (error) {
+        console.error('Error calculating vinculación:', error);
+      }
+    };
+
+    calculateVinculacion();
+  }, [companies]);
 
   // Initialize map
   useEffect(() => {
@@ -512,17 +578,19 @@ export function MapContainer({
           const el = document.createElement('div');
           el.className = 'custom-marker';
           el.style.width = '40px';
-          el.style.height = '40px';
+          el.style.height = '50px';
           el.style.cursor = 'pointer';
 
           const color = company.status?.color_hex || '#3B82F6';
+          const vinculacionPct = vinculacionData[company.id];
+          const showVinculacion = vinculacionPct !== undefined && zoom >= 15;
           
           // Get icon based on sector
           const Icon = getSectorIcon(company.sector);
           const iconPath = getIconPathForMarker(Icon);
 
           el.innerHTML = `
-            <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+            <svg width="40" height="50" viewBox="0 0 40 50" xmlns="http://www.w3.org/2000/svg">
               <!-- Pin background -->
               <path
                 d="M20 2C14.48 2 10 6.48 10 12c0 7.5 10 23 10 23s10-15.5 10-23c0-5.52-4.48-10-10-10z"
@@ -539,6 +607,13 @@ export function MapContainer({
                   ${iconPath}
                 </svg>
               </g>
+              ${showVinculacion ? `
+                <!-- Vinculación badge -->
+                <rect x="8" y="24" width="24" height="14" rx="7" fill="${color}" stroke="white" stroke-width="1.5"/>
+                <text x="20" y="33" text-anchor="middle" fill="white" font-size="8" font-weight="bold">
+                  ${vinculacionPct}%
+                </text>
+              ` : ''}
             </svg>
           `;
 
@@ -546,7 +621,59 @@ export function MapContainer({
             .setLngLat([longitude, latitude])
             .addTo(map.current!);
 
-          const popup = new maplibregl.Popup({
+          // Create hover tooltip with configurable fields
+          const hoverPopup = new maplibregl.Popup({
+            offset: 25,
+            closeButton: false,
+            closeOnClick: false,
+            className: 'hover-tooltip',
+          });
+
+          const getFieldValue = (fieldName: string) => {
+            switch (fieldName) {
+              case 'name': return company.name;
+              case 'address': return company.address;
+              case 'phone': return company.phone || 'N/A';
+              case 'email': return company.email || 'N/A';
+              case 'employees': return company.employees?.toString() || 'N/A';
+              case 'turnover': return company.turnover ? `€${company.turnover.toLocaleString()}` : 'N/A';
+              case 'sector': return company.sector || 'N/A';
+              case 'status_name': return company.status?.status_name || 'N/A';
+              default: return 'N/A';
+            }
+          };
+
+          el.addEventListener('mouseenter', () => {
+            const tooltipHTML = `
+              <div class="p-3 min-w-[200px]">
+                <h3 class="font-semibold text-sm mb-3 border-b pb-2">${company.name}</h3>
+                ${vinculacionPct !== undefined ? `
+                  <div class="mb-2 flex items-center gap-2">
+                    <span class="text-xs font-medium">% Vinculación:</span>
+                    <span class="px-2 py-0.5 rounded-full text-xs font-bold" style="background: ${color}20; color: ${color}">
+                      ${vinculacionPct}%
+                    </span>
+                  </div>
+                ` : ''}
+                <div class="space-y-1 text-xs">
+                  ${tooltipConfig
+                    .map(config => `
+                      <p><strong>${config.field_label}:</strong> ${getFieldValue(config.field_name)}</p>
+                    `)
+                    .join('')}
+                </div>
+              </div>
+            `;
+            
+            hoverPopup.setLngLat([longitude, latitude]).setHTML(tooltipHTML).addTo(map.current!);
+          });
+
+          el.addEventListener('mouseleave', () => {
+            hoverPopup.remove();
+          });
+
+          // Click popup (existing functionality)
+          const clickPopup = new maplibregl.Popup({
             offset: 25,
             closeButton: true,
             closeOnClick: false,
@@ -558,14 +685,15 @@ export function MapContainer({
                 <p><strong>Dirección:</strong> ${company.address}</p>
                 <p><strong>Parroquia:</strong> ${company.parroquia}</p>
                 ${company.cnae ? `<p><strong>CNAE:</strong> ${formatCnaeWithDescription(company.cnae)}</p>` : ''}
-                ${company.gestor ? `<p><strong>Gestor:</strong> ${company.gestor.full_name || company.gestor.email}</p>` : ''}
+                ${company.gestor ? `<strong>Gestor:</strong> ${company.gestor.full_name || company.gestor.email}</p>` : ''}
                 ${company.products && company.products.length > 0 ? `<p><strong>Productos:</strong> ${company.products.length}</p>` : ''}
               </div>
             </div>
           `);
 
           el.addEventListener('click', () => {
-            marker.setPopup(popup);
+            hoverPopup.remove(); // Remove hover tooltip on click
+            marker.setPopup(clickPopup);
             marker.togglePopup();
             onSelectCompany(company);
           });
@@ -584,7 +712,7 @@ export function MapContainer({
       map.current?.off('moveend', updateMarkers);
       map.current?.off('zoomend', updateMarkers);
     };
-  }, [companies, filters, mapLoaded, statusColors, onSelectCompany, baseLayers.markers]);
+  }, [companies, filters, mapLoaded, statusColors, onSelectCompany, baseLayers.markers, tooltipConfig, vinculacionData]);
 
   // Update building opacity and height multiplier
   useEffect(() => {
