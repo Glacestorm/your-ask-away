@@ -87,6 +87,14 @@ export const companySchema = z.object({
     .max(2000, { message: "Las observaciones deben tener menos de 2000 caracteres" })
     .optional()
     .nullable(),
+  bp: z.string()
+    .trim()
+    .max(34, { message: "El número de cuenta debe tener menos de 34 caracteres" })
+    .optional()
+    .nullable(),
+  client_type: z.enum(['cliente', 'potencial_cliente'], {
+    errorMap: () => ({ message: "Debe seleccionar cliente o potencial cliente" })
+  }).optional().nullable(),
 });
 
 // Company contact validation schema

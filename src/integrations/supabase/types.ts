@@ -228,6 +228,8 @@ export type Database = {
         Row: {
           address: string
           beneficios: number | null
+          bp: string | null
+          client_type: string | null
           cnae: string | null
           created_at: string | null
           email: string | null
@@ -258,6 +260,8 @@ export type Database = {
         Insert: {
           address: string
           beneficios?: number | null
+          bp?: string | null
+          client_type?: string | null
           cnae?: string | null
           created_at?: string | null
           email?: string | null
@@ -288,6 +292,8 @@ export type Database = {
         Update: {
           address?: string
           beneficios?: number | null
+          bp?: string | null
+          client_type?: string | null
           cnae?: string | null
           created_at?: string | null
           email?: string | null

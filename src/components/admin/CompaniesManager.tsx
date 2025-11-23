@@ -107,6 +107,8 @@ export function CompaniesManager() {
     vinculacion_entidad_1: '',
     vinculacion_entidad_2: '',
     vinculacion_entidad_3: '',
+    bp: '',
+    client_type: '',
   });
 
   useEffect(() => {
@@ -167,6 +169,8 @@ export function CompaniesManager() {
         vinculacion_entidad_1: formData.vinculacion_entidad_1 ? Number(formData.vinculacion_entidad_1) : null,
         vinculacion_entidad_2: formData.vinculacion_entidad_2 ? Number(formData.vinculacion_entidad_2) : null,
         vinculacion_entidad_3: formData.vinculacion_entidad_3 ? Number(formData.vinculacion_entidad_3) : null,
+        bp: formData.bp || null,
+        client_type: formData.client_type || null,
       };
 
       if (editingCompany) {
@@ -242,6 +246,8 @@ export function CompaniesManager() {
       vinculacion_entidad_1: (company as any).vinculacion_entidad_1?.toString() || '',
       vinculacion_entidad_2: (company as any).vinculacion_entidad_2?.toString() || '',
       vinculacion_entidad_3: (company as any).vinculacion_entidad_3?.toString() || '',
+      bp: (company as any).bp || '',
+      client_type: (company as any).client_type || '',
     });
     
     // Load activity history
@@ -356,6 +362,8 @@ export function CompaniesManager() {
       vinculacion_entidad_1: '',
       vinculacion_entidad_2: '',
       vinculacion_entidad_3: '',
+      bp: '',
+      client_type: '',
     });
   };
 
@@ -499,11 +507,35 @@ export function CompaniesManager() {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="client_type">Tipo de Cliente</Label>
+                  <Select value={formData.client_type} onValueChange={(v) => setFormData({ ...formData, client_type: v })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar tipo..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cliente">Cliente</SelectItem>
+                      <SelectItem value="potencial_cliente">Potencial Cliente</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
                   <Label htmlFor="sector">{t('companyForm.sector')}</Label>
                   <Input
                     id="sector"
                     value={formData.sector}
                     onChange={(e) => setFormData({ ...formData, sector: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="bp">BP (Número de Cuenta)</Label>
+                  <Input
+                    id="bp"
+                    value={formData.bp}
+                    onChange={(e) => setFormData({ ...formData, bp: e.target.value })}
+                    placeholder="ESXX XXXX XXXX XXXX XXXX XXXX"
                   />
                 </div>
               </div>
