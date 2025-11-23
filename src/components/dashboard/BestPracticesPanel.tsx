@@ -12,9 +12,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
-import { Heart, Eye, Trophy, TrendingUp, Plus, Tag } from "lucide-react";
+import { Heart, Eye, Trophy, TrendingUp, Plus, Tag, MessageSquare } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { BestPracticeComments } from "./BestPracticeComments";
 
 interface BestPractice {
   id: string;
@@ -31,6 +32,8 @@ interface BestPractice {
     gestor_number: string;
   };
   isLiked?: boolean;
+  comments_count?: number;
+  showComments?: boolean;
 }
 
 const categories = [
@@ -89,9 +92,25 @@ export const BestPracticesPanel = () => {
 
       const likedIds = new Set(likesData?.map((l) => l.practice_id) || []);
 
+      // Get comments count for each practice
+      const commentsCountPromises = practiceIds.map(async (practiceId) => {
+        const { count } = await supabase
+          .from("best_practice_comments")
+          .select("*", { count: "exact", head: true })
+          .eq("practice_id", practiceId);
+        return { practiceId, count: count || 0 };
+      });
+
+      const commentsCounts = await Promise.all(commentsCountPromises);
+      const commentsMap = new Map(
+        commentsCounts.map((c) => [c.practiceId, c.count])
+      );
+
       const practicesWithLikes = data?.map((practice) => ({
         ...practice,
         isLiked: likedIds.has(practice.id),
+        comments_count: commentsMap.get(practice.id) || 0,
+        showComments: false,
       })) || [];
 
       setPractices(practicesWithLikes);
@@ -101,6 +120,14 @@ export const BestPracticesPanel = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const toggleComments = (practiceId: string) => {
+    setPractices((prev) =>
+      prev.map((p) =>
+        p.id === practiceId ? { ...p, showComments: !p.showComments } : p
+      )
+    );
   };
 
   const handleLike = async (practiceId: string, isCurrentlyLiked: boolean) => {
@@ -337,11 +364,24 @@ export const BestPracticesPanel = () => {
                           />
                           <span>{practice.likes_count}</span>
                         </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleComments(practice.id)}
+                          className="gap-2"
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                          <span>{practice.comments_count || 0}</span>
+                        </Button>
                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
                           <Eye className="h-4 w-4" />
                           <span>{practice.views_count || 0}</span>
                         </div>
                       </div>
+
+                      {practice.showComments && (
+                        <BestPracticeComments practiceId={practice.id} />
+                      )}
                     </CardContent>
                   </Card>
                 ))}
