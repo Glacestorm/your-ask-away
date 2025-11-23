@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { MapContainer } from '@/components/map/MapContainer';
-import { MapControls } from '@/components/map/MapControls';
+import { MapLayersControl } from '@/components/map/MapLayersControl';
 import { MapSidebar } from '@/components/map/MapSidebar';
 import { MapHeader } from '@/components/map/MapHeader';
 import { MapStyleToggle } from '@/components/map/MapStyleToggle';
@@ -116,6 +116,15 @@ const MapView = () => {
     );
   }
 
+  // Get unique parroquias and CNAEs from companies
+  const availableParroquias = Array.from(
+    new Set(companies.map((c) => c.parroquia).filter(Boolean))
+  ).sort();
+  
+  const availableCnaes = Array.from(
+    new Set(companies.map((c) => c.cnae).filter(Boolean))
+  ).sort();
+
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">
       <MapHeader
@@ -145,17 +154,20 @@ const MapView = () => {
             view3D={view3D}
           />
           
+          <MapLayersControl
+            statusColors={statusColors}
+            products={products}
+            filters={filters}
+            onFiltersChange={setFilters}
+            availableParroquias={availableParroquias}
+            availableCnaes={availableCnaes}
+          />
+          
           <MapStyleToggle
             mapStyle={mapStyle}
             view3D={view3D}
             onMapStyleChange={setMapStyle}
             onView3DChange={setView3D}
-          />
-          
-          <MapControls
-            statusColors={statusColors}
-            filters={filters}
-            onFiltersChange={setFilters}
           />
         </div>
       </div>
