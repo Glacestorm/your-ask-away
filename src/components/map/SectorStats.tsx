@@ -3,11 +3,13 @@ import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
+import { Label } from '@/components/ui/label';
 import { getSectorIcon } from './markerIcons';
 import { cn } from '@/lib/utils';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { useState } from 'react';
-import { CheckSquare, Square, XCircle, Shuffle, TrendingUp, Users, Package } from 'lucide-react';
+import { CheckSquare, Square, XCircle, Shuffle, TrendingUp, Users, Package, Filter } from 'lucide-react';
 
 interface SectorStatsProps {
   companies: CompanyWithDetails[];
@@ -16,6 +18,10 @@ interface SectorStatsProps {
   onSelectAll: () => void;
   onClearSelection: () => void;
   onInvertSelection: () => void;
+  turnoverRange: [number, number];
+  employeeRange: [number, number];
+  onTurnoverRangeChange: (range: [number, number]) => void;
+  onEmployeeRangeChange: (range: [number, number]) => void;
 }
 
 // Color palette for the chart
@@ -40,12 +46,36 @@ export function SectorStats({
   selectedSectors,
   onSelectAll,
   onClearSelection,
-  onInvertSelection 
+  onInvertSelection,
+  turnoverRange,
+  employeeRange,
+  onTurnoverRangeChange,
+  onEmployeeRangeChange
 }: SectorStatsProps) {
   const [hoveredSector, setHoveredSector] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
 
-  // Group companies by sector and count
-  const sectorStats = companies.reduce((acc, company) => {
+  // Calculate max values for sliders
+  const maxTurnover = Math.max(...companies.map(c => c.turnover || 0));
+  const maxEmployees = Math.max(...companies.map(c => c.employees || 0));
+
+  // Apply range filters to companies
+  const filteredCompanies = companies.filter(company => {
+    const turnoverMatch = !company.turnover || 
+      (company.turnover >= turnoverRange[0] && company.turnover <= turnoverRange[1]);
+    const employeeMatch = !company.employees || 
+      (company.employees >= employeeRange[0] && company.employees <= employeeRange[1]);
+    return turnoverMatch && employeeMatch;
+  });
+
+  const hasActiveRangeFilters = 
+    turnoverRange[0] > 0 || 
+    turnoverRange[1] < maxTurnover ||
+    employeeRange[0] > 0 || 
+    employeeRange[1] < maxEmployees;
+
+  // Group filtered companies by sector and count
+  const sectorStats = filteredCompanies.reduce((acc, company) => {
     const sector = company.sector || 'Sin sector';
     if (!acc[sector]) {
       acc[sector] = {
@@ -64,7 +94,7 @@ export function SectorStats({
   );
 
   // Calculate total and percentages
-  const totalCompanies = companies.length;
+  const totalCompanies = filteredCompanies.length;
 
   // Prepare data for chart
   const chartData = sortedSectors.map(([sector, data], index) => ({
@@ -126,7 +156,14 @@ export function SectorStats({
               Selección múltiple disponible
             </p>
           </div>
-          <Badge variant="secondary">{totalCompanies} total</Badge>
+          <div className="flex items-center gap-2">
+            {hasActiveRangeFilters && (
+              <Badge variant="default" className="text-xs">
+                Filtrado
+              </Badge>
+            )}
+            <Badge variant="secondary">{totalCompanies} total</Badge>
+          </div>
         </div>
 
         {/* Multi-selection controls */}
@@ -159,12 +196,76 @@ export function SectorStats({
             <Shuffle className="h-3.5 w-3.5" />
             Invertir
           </Button>
+          <Button
+            variant={hasActiveRangeFilters ? "default" : "outline"}
+            size="sm"
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center gap-1.5 h-8 text-xs"
+          >
+            <Filter className="h-3.5 w-3.5" />
+            Filtros
+          </Button>
           {selectedSectors.length > 0 && (
             <Badge variant="default" className="ml-auto">
               {selectedSectors.length} seleccionado{selectedSectors.length > 1 ? 's' : ''}
             </Badge>
           )}
         </div>
+
+        {/* Range Filters */}
+        {showFilters && (
+          <Card className="p-4 bg-muted/30 space-y-4">
+            <div className="space-y-3">
+              <div>
+                <Label className="text-xs font-medium mb-2 flex items-center justify-between">
+                  <span>Rango de Facturación</span>
+                  <span className="text-muted-foreground font-normal">
+                    €{(turnoverRange[0] / 1000).toFixed(0)}K - €{(turnoverRange[1] / 1000).toFixed(0)}K
+                  </span>
+                </Label>
+                <Slider
+                  min={0}
+                  max={maxTurnover}
+                  step={10000}
+                  value={turnoverRange}
+                  onValueChange={(value) => onTurnoverRangeChange(value as [number, number])}
+                  className="mt-2"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs font-medium mb-2 flex items-center justify-between">
+                  <span>Rango de Empleados</span>
+                  <span className="text-muted-foreground font-normal">
+                    {employeeRange[0]} - {employeeRange[1]}
+                  </span>
+                </Label>
+                <Slider
+                  min={0}
+                  max={maxEmployees}
+                  step={1}
+                  value={employeeRange}
+                  onValueChange={(value) => onEmployeeRangeChange(value as [number, number])}
+                  className="mt-2"
+                />
+              </div>
+
+              {hasActiveRangeFilters && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    onTurnoverRangeChange([0, maxTurnover]);
+                    onEmployeeRangeChange([0, maxEmployees]);
+                  }}
+                  className="w-full text-xs"
+                >
+                  Restablecer filtros
+                </Button>
+              )}
+            </div>
+          </Card>
+        )}
       </div>
 
       {/* Donut Chart */}
