@@ -99,12 +99,13 @@ All colors MUST be HSL.
     --chart-2: 142 76% 45%;
     --chart-3: 38 92% 60%;
     --chart-4: 280 87% 70%;
-    --chart-5: 0 84% 65%;
-    
+    --chart-5: 0 72% 60%;
+
+    /* Colores específicos del mapa */
     --map-control-bg: 217 33% 17%;
     --map-control-shadow: 0 0% 0% / 0.3;
     --map-border: 217 33% 25%;
-    
+
     --sidebar-background: 222 47% 11%;
     --sidebar-foreground: 0 0% 95%;
     --sidebar-primary: 211 100% 55%;
@@ -113,6 +114,21 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 211 100% 55%;
     --sidebar-border: 217 33% 17%;
     --sidebar-ring: 211 100% 55%;
+  }
+}
+
+/* Map marker animations */
+.search-location-marker {
+  cursor: pointer;
+  animation: markerBounce 1s ease-in-out;
+}
+
+@keyframes markerBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
   }
 }
 
