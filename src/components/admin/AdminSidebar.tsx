@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TrendingUp, Activity, BarChart3, Package, Users, Target, CreditCard, Building2, Settings, Database, Mail, Palette, BookOpen, Map, ChevronRight, FileText } from 'lucide-react';
+import { TrendingUp, Activity, BarChart3, Package, Users, Target, CreditCard, Building2, Settings, Database, Mail, Palette, BookOpen, Map, ChevronRight, FileText, Briefcase } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -92,7 +92,7 @@ export function AdminSidebar({
                   tooltip={!open ? t('adminSidebar.commercialManager') : undefined}
                 >
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-hover">
-                    <TrendingUp className="h-5 w-5 text-primary-foreground" />
+                    <Briefcase className="h-5 w-5 text-primary-foreground" />
                   </div>
                   <span className="text-base">{t('adminSidebar.commercialManager')}</span>
                 </SidebarMenuButton>
