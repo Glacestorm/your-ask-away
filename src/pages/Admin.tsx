@@ -193,8 +193,8 @@ const Admin = () => {
           isSuperAdmin={isSuperAdmin}
         />
         
-        <main className="flex-1 overflow-auto">
-          <div className="p-6 space-y-6">
+        <main className="flex-1 overflow-auto bg-background">
+          <div className="p-6 space-y-6 w-full">
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
