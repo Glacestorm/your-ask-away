@@ -44,6 +44,19 @@ export function MapSidebar({
   const [parroquias, setParroquias] = useState<string[]>([]);
   const [cnaes, setCnaes] = useState<string[]>([]);
 
+  // Calculate max values for range filters
+  const maxTurnover = Math.max(...companies.map(c => c.turnover || 0));
+  const maxEmployees = Math.max(...companies.map(c => c.employees || 0));
+
+  const [turnoverRange, setTurnoverRange] = useState<[number, number]>([0, maxTurnover]);
+  const [employeeRange, setEmployeeRange] = useState<[number, number]>([0, maxEmployees]);
+
+  // Update ranges when companies change
+  useEffect(() => {
+    setTurnoverRange([0, maxTurnover]);
+    setEmployeeRange([0, maxEmployees]);
+  }, [maxTurnover, maxEmployees]);
+
   useEffect(() => {
     fetchFilterOptions();
   }, [companies]);
@@ -509,6 +522,10 @@ export function MapSidebar({
               onSelectAll={handleSelectAllSectors}
               onClearSelection={handleClearSectorSelection}
               onInvertSelection={handleInvertSectorSelection}
+              turnoverRange={turnoverRange}
+              employeeRange={employeeRange}
+              onTurnoverRangeChange={setTurnoverRange}
+              onEmployeeRangeChange={setEmployeeRange}
             />
           </TabsContent>
 
