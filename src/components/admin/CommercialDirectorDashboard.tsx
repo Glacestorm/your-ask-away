@@ -202,8 +202,9 @@ export function CommercialDirectorDashboard() {
       </Card>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
+        <TabsList className="grid w-full max-w-2xl grid-cols-3">
           <TabsTrigger value="overview">Vista General</TabsTrigger>
+          <TabsTrigger value="commercial">Responsable Comercial</TabsTrigger>
           <TabsTrigger value="explorer">Explorador de Métricas</TabsTrigger>
         </TabsList>
 
@@ -294,6 +295,133 @@ export function CommercialDirectorDashboard() {
           </Card>
 
           {/* Tabla de Gestores */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Detalle de Gestores</CardTitle>
+              <CardDescription>Información completa de todos los gestores</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Gestor</TableHead>
+                    <TableHead>Oficina</TableHead>
+                    <TableHead className="text-right">Visitas</TableHead>
+                    <TableHead className="text-right">Tasa Éxito</TableHead>
+                    <TableHead className="text-right">Empresas</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {gestorDetails.length > 0 ? (
+                    gestorDetails.map((gestor, index) => (
+                      <TableRow key={index}>
+                        <TableCell className="font-medium">{gestor.name}</TableCell>
+                        <TableCell>{gestor.oficina}</TableCell>
+                        <TableCell className="text-right">{gestor.totalVisits}</TableCell>
+                        <TableCell className="text-right">{gestor.successRate}%</TableCell>
+                        <TableCell className="text-right">{gestor.companies}</TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-muted-foreground">
+                        No hay datos disponibles
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="commercial" className="space-y-6">
+          {/* Filtro de período para Responsable Comercial */}
+          <DateRangeFilter 
+            dateRange={dateRange} 
+            onDateRangeChange={setDateRange}
+          />
+
+          {/* KPIs del Responsable Comercial */}
+          <div className="grid gap-4 md:grid-cols-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Visitas</CardTitle>
+                <Activity className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.totalVisits}</div>
+                <p className="text-xs text-muted-foreground">
+                  Todas las visitas registradas
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Tasa de Éxito</CardTitle>
+                <Target className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.avgSuccessRate}%</div>
+                <p className="text-xs text-muted-foreground">Promedio general</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Empresas</CardTitle>
+                <Building2 className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.totalCompanies}</div>
+                <p className="text-xs text-muted-foreground">Total en cartera</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Gestores</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.activeGestores}</div>
+                <p className="text-xs text-muted-foreground">Registrados</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Gráfico de Ranking del Responsable Comercial */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Ranking de Gestores</CardTitle>
+              <CardDescription>Top 10 por número de visitas</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {gestorRanking.length > 0 ? (
+                <ResponsiveContainer width="100%" height={350}>
+                  <BarChart data={gestorRanking} layout="horizontal">
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" />
+                    <YAxis 
+                      dataKey="name" 
+                      type="category" 
+                      width={100}
+                      tick={{ fontSize: 12 }}
+                    />
+                    <Tooltip />
+                    <Bar dataKey="visits" fill="hsl(var(--chart-2))" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex h-[350px] items-center justify-center text-muted-foreground">
+                  No hay datos disponibles
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Tabla de Gestores del Responsable Comercial */}
           <Card>
             <CardHeader>
               <CardTitle>Detalle de Gestores</CardTitle>
