@@ -27,7 +27,7 @@ import { CommercialDirectorDashboard } from '@/components/admin/CommercialDirect
 import { OfficeDirectorDashboard } from '@/components/admin/OfficeDirectorDashboard';
 import { CommercialManagerDashboard } from '@/components/admin/CommercialManagerDashboard';
 const Admin = () => {
-  const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, loading: authLoading } = useAuth();
+  const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, loading: authLoading } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('director');
@@ -72,6 +72,15 @@ const Admin = () => {
         }
         return <OfficeDirectorDashboard />;
       case 'commercial-manager':
+        if (!isCommercialManager && !isSuperAdmin) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">No tienes permisos para acceder a esta sección.</p>
+              </CardContent>
+            </Card>
+          );
+        }
         return <CommercialManagerDashboard />;
       case 'health':
         return <SystemHealthMonitor />;
@@ -166,6 +175,7 @@ const Admin = () => {
           onSectionChange={setActiveSection}
           isCommercialDirector={isCommercialDirector}
           isOfficeDirector={isOfficeDirector}
+          isCommercialManager={isCommercialManager}
           isSuperAdmin={isSuperAdmin}
         />
         

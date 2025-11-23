@@ -19,15 +19,17 @@ interface AdminSidebarProps {
   onSectionChange: (section: string) => void;
   isCommercialDirector: boolean;
   isOfficeDirector: boolean;
+  isCommercialManager: boolean;
   isSuperAdmin: boolean;
 }
 
 export function AdminSidebar({ 
   activeSection, 
-  onSectionChange, 
-  isCommercialDirector, 
-  isOfficeDirector, 
-  isSuperAdmin 
+  onSectionChange,
+  isCommercialDirector,
+  isOfficeDirector,
+  isCommercialManager,
+  isSuperAdmin
 }: AdminSidebarProps) {
   const { open } = useSidebar();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
@@ -75,17 +77,19 @@ export function AdminSidebar({
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )}
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                onClick={() => onSectionChange('commercial-manager')}
-                isActive={isActive('commercial-manager')}
-                className="font-semibold"
-                tooltip={!open ? "Responsable Comercial" : undefined}
-              >
-                <TrendingUp className="h-5 w-5" />
-                <span>Responsable Comercial</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            {(isCommercialManager || isSuperAdmin) && (
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => onSectionChange('commercial-manager')}
+                  isActive={isActive('commercial-manager')}
+                  className="font-semibold"
+                  tooltip={!open ? "Responsable Comercial" : undefined}
+                >
+                  <TrendingUp className="h-5 w-5" />
+                  <span>Responsable Comercial</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
           </SidebarMenu>
         </SidebarGroup>
 
