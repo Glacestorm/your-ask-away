@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { CompanyWithDetails, StatusColor, Profile } from '@/types/database';
 import { ExcelImporter } from './ExcelImporter';
 import { CompanyPhotosManager } from '@/components/company/CompanyPhotosManager';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface CompanyContact {
   id: string;
@@ -59,6 +60,7 @@ interface AuditLog {
 }
 
 export function CompaniesManager() {
+  const { t } = useLanguage();
   const [companies, setCompanies] = useState<CompanyWithDetails[]>([]);
   const [statusColors, setStatusColors] = useState<StatusColor[]>([]);
   const [gestores, setGestores] = useState<Profile[]>([]);
@@ -124,7 +126,7 @@ export function CompaniesManager() {
       if (productsRes.data) setProducts(productsRes.data);
     } catch (error: any) {
       console.error('Error fetching data:', error);
-      toast.error('Error al cargar los datos');
+      toast.error(t('form.errorLoading'));
     }
   };
 
@@ -133,7 +135,7 @@ export function CompaniesManager() {
       setLoading(true);
 
       if (!formData.name || !formData.address || !formData.parroquia) {
-        toast.error('Por favor completa los campos obligatorios');
+        toast.error(t('form.required'));
         return;
       }
 
@@ -167,14 +169,14 @@ export function CompaniesManager() {
           .eq('id', editingCompany.id);
 
         if (error) throw error;
-        toast.success('Empresa actualizada correctamente');
+        toast.success(t('companyForm.companyUpdated'));
       } else {
         const { error } = await supabase
           .from('companies')
           .insert(dataToSave);
 
         if (error) throw error;
-        toast.success('Empresa creada correctamente');
+        toast.success(t('companyForm.companyCreated'));
       }
 
       setDialogOpen(false);
@@ -183,14 +185,14 @@ export function CompaniesManager() {
       fetchData();
     } catch (error: any) {
       console.error('Error saving company:', error);
-      toast.error('Error al guardar la empresa');
+      toast.error(t('form.errorSaving'));
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Estás seguro de eliminar esta empresa?')) return;
+    if (!confirm(t('form.confirmDelete'))) return;
 
     try {
       const { error } = await supabase
@@ -199,11 +201,11 @@ export function CompaniesManager() {
         .eq('id', id);
 
       if (error) throw error;
-      toast.success('Empresa eliminada correctamente');
+      toast.success(t('companyForm.companyDeleted'));
       fetchData();
     } catch (error: any) {
       console.error('Error deleting company:', error);
-      toast.error('Error al eliminar la empresa');
+      toast.error(t('form.errorDeleting'));
     }
   };
 
@@ -273,7 +275,7 @@ export function CompaniesManager() {
       setLoading(true);
 
       if (!visitFormData.visit_date || !visitFormData.gestor_id) {
-        toast.error('Por favor completa los campos obligatorios (Fecha y Gestor)');
+        toast.error(t('form.required'));
         return;
       }
 
@@ -290,7 +292,7 @@ export function CompaniesManager() {
 
       if (error) throw error;
 
-      toast.success('Visita registrada correctamente');
+      toast.success(t('visitForm.visitCreated'));
       setShowVisitForm(false);
       setVisitFormData({
         visit_date: new Date().toISOString().split('T')[0],
@@ -304,7 +306,7 @@ export function CompaniesManager() {
       await fetchActivityHistory(editingCompany.id);
     } catch (error: any) {
       console.error('Error saving visit:', error);
-      toast.error('Error al guardar la visita');
+      toast.error(t('form.errorSaving'));
     } finally {
       setLoading(false);
     }
@@ -350,17 +352,17 @@ export function CompaniesManager() {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Gestión de Empresas</CardTitle>
-            <CardDescription>Administración completa del fichero de empresas</CardDescription>
+            <CardTitle>{t('admin.companies')}</CardTitle>
+            <CardDescription>{t('companyForm.title')}</CardDescription>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setImporterOpen(true)}>
               <Upload className="mr-2 h-4 w-4" />
-              Importar Excel
+              {t('companyForm.importExcel')}
             </Button>
             <Button onClick={() => { resetForm(); setDialogOpen(true); }}>
               <Plus className="mr-2 h-4 w-4" />
-              Nueva Empresa
+              {t('companyForm.addCompany')}
             </Button>
           </div>
         </div>
@@ -370,14 +372,14 @@ export function CompaniesManager() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nombre</TableHead>
-                <TableHead>Dirección</TableHead>
-                <TableHead>Parroquia</TableHead>
-                <TableHead>Teléfono</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead>Gestor</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
+                <TableHead>{t('common.name')}</TableHead>
+                <TableHead>{t('companyForm.address')}</TableHead>
+                <TableHead>{t('companyForm.parish')}</TableHead>
+                <TableHead>{t('company.phone')}</TableHead>
+                <TableHead>{t('company.email')}</TableHead>
+                <TableHead>{t('common.status')}</TableHead>
+                <TableHead>{t('companyForm.manager')}</TableHead>
+                <TableHead className="text-right">{t('common.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -417,9 +419,9 @@ export function CompaniesManager() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingCompany ? 'Editar Empresa' : 'Nueva Empresa'}</DialogTitle>
+            <DialogTitle>{editingCompany ? t('companyForm.editCompany') : t('companyForm.addCompany')}</DialogTitle>
             <DialogDescription>
-              Gestiona toda la información de la empresa por secciones
+              {t('companyForm.title')}
             </DialogDescription>
           </DialogHeader>
 
@@ -427,15 +429,15 @@ export function CompaniesManager() {
             <TabsList className="grid w-full grid-cols-7">
               <TabsTrigger value="basic">
                 <Building2 className="h-4 w-4 mr-2" />
-                Datos Básicos
+                {t('companyForm.basicInfo')}
               </TabsTrigger>
               <TabsTrigger value="contact">
                 <Phone className="h-4 w-4 mr-2" />
-                Contacto
+                {t('companyForm.contactInfo')}
               </TabsTrigger>
               <TabsTrigger value="business">
                 <Users className="h-4 w-4 mr-2" />
-                Empresarial
+                {t('companyForm.financialInfo')}
               </TabsTrigger>
               <TabsTrigger value="legal">
                 <FileText className="h-4 w-4 mr-2" />
@@ -443,15 +445,15 @@ export function CompaniesManager() {
               </TabsTrigger>
               <TabsTrigger value="management">
                 <Globe className="h-4 w-4 mr-2" />
-                Gestión
+                {t('company.manager')}
               </TabsTrigger>
               <TabsTrigger value="photos" disabled={!editingCompany}>
                 <Camera className="h-4 w-4 mr-2" />
-                Fotos
+                {t('company.photos')}
               </TabsTrigger>
               <TabsTrigger value="history" disabled={!editingCompany}>
                 <History className="h-4 w-4 mr-2" />
-                Histórico
+                {t('visitForm.visitHistory')}
               </TabsTrigger>
             </TabsList>
 
@@ -459,7 +461,7 @@ export function CompaniesManager() {
             <TabsContent value="basic" className="space-y-4 mt-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Nombre *</Label>
+                  <Label htmlFor="name">{t('companyForm.companyName')} *</Label>
                   <Input
                     id="name"
                     value={formData.name}
@@ -467,7 +469,7 @@ export function CompaniesManager() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="sector">Sector</Label>
+                  <Label htmlFor="sector">{t('companyForm.sector')}</Label>
                   <Input
                     id="sector"
                     value={formData.sector}
@@ -477,7 +479,7 @@ export function CompaniesManager() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="address">Dirección *</Label>
+                <Label htmlFor="address">{t('companyForm.address')} *</Label>
                 <Input
                   id="address"
                   value={formData.address}
@@ -487,10 +489,10 @@ export function CompaniesManager() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="parroquia">Parroquia *</Label>
+                  <Label htmlFor="parroquia">{t('companyForm.parish')} *</Label>
                   <Select value={formData.parroquia} onValueChange={(v) => setFormData({ ...formData, parroquia: v })}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar" />
+                      <SelectValue placeholder={t('form.selectOption')} />
                     </SelectTrigger>
                     <SelectContent>
                       {parroquias.map((p) => (
@@ -500,7 +502,7 @@ export function CompaniesManager() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="oficina">Oficina</Label>
+                  <Label htmlFor="oficina">{t('companyForm.office')}</Label>
                   <Input
                     id="oficina"
                     value={formData.oficina}
@@ -511,7 +513,7 @@ export function CompaniesManager() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="longitude">Longitud *</Label>
+                  <Label htmlFor="longitude">{t('companyForm.longitude')} *</Label>
                   <Input
                     id="longitude"
                     type="number"
@@ -521,7 +523,7 @@ export function CompaniesManager() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="latitude">Latitud *</Label>
+                  <Label htmlFor="latitude">{t('companyForm.latitude')} *</Label>
                   <Input
                     id="latitude"
                     type="number"
@@ -537,7 +539,7 @@ export function CompaniesManager() {
             <TabsContent value="contact" className="space-y-4 mt-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Teléfono</Label>
+                  <Label htmlFor="phone">{t('company.phone')}</Label>
                   <Input
                     id="phone"
                     value={formData.phone}
@@ -546,7 +548,7 @@ export function CompaniesManager() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t('company.email')}</Label>
                   <Input
                     id="email"
                     type="email"
@@ -558,7 +560,7 @@ export function CompaniesManager() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="website">Sitio Web</Label>
+                <Label htmlFor="website">{t('company.website')}</Label>
                 <Input
                   id="website"
                   value={formData.website}
@@ -568,13 +570,12 @@ export function CompaniesManager() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="observaciones">Observaciones de Contacto</Label>
+                <Label htmlFor="observaciones">{t('companyForm.observations')}</Label>
                 <Textarea
                   id="observaciones"
                   value={formData.observaciones}
                   onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
                   rows={4}
-                  placeholder="Notas sobre contactos, horarios, preferencias..."
                 />
               </div>
             </TabsContent>
@@ -583,7 +584,7 @@ export function CompaniesManager() {
             <TabsContent value="business" className="space-y-4 mt-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="employees">Número de Empleados</Label>
+                  <Label htmlFor="employees">{t('companyForm.employees')}</Label>
                   <Input
                     id="employees"
                     type="number"
@@ -592,7 +593,7 @@ export function CompaniesManager() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="turnover">Facturación Anual (€)</Label>
+                  <Label htmlFor="turnover">{t('companyForm.turnover')} (€)</Label>
                   <Input
                     id="turnover"
                     type="number"
@@ -604,7 +605,7 @@ export function CompaniesManager() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="cnae">CNAE</Label>
+                <Label htmlFor="cnae">{t('companyForm.cnae')}</Label>
                 <Input
                   id="cnae"
                   value={formData.cnae}
@@ -625,7 +626,7 @@ export function CompaniesManager() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="registration_number">Número de Registro</Label>
+                  <Label htmlFor="registration_number">{t('company.registrationNumber')}</Label>
                   <Input
                     id="registration_number"
                     value={formData.registration_number}
@@ -635,7 +636,7 @@ export function CompaniesManager() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="legal_form">Forma Jurídica</Label>
+                <Label htmlFor="legal_form">{t('company.legalForm')}</Label>
                 <Input
                   id="legal_form"
                   value={formData.legal_form}
@@ -649,10 +650,10 @@ export function CompaniesManager() {
             <TabsContent value="management" className="space-y-4 mt-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="status">Estado</Label>
+                  <Label htmlFor="status">{t('common.status')}</Label>
                   <Select value={formData.status_id} onValueChange={(v) => setFormData({ ...formData, status_id: v })}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar" />
+                      <SelectValue placeholder={t('form.selectOption')} />
                     </SelectTrigger>
                     <SelectContent>
                       {statusColors.map((s) => (
@@ -668,10 +669,10 @@ export function CompaniesManager() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="gestor">Gestor Asignado</Label>
+                  <Label htmlFor="gestor">{t('companyForm.manager')}</Label>
                   <Select value={formData.gestor_id} onValueChange={(v) => setFormData({ ...formData, gestor_id: v })}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar" />
+                      <SelectValue placeholder={t('form.selectOption')} />
                     </SelectTrigger>
                     <SelectContent>
                       {gestores.map((g) => (
@@ -685,7 +686,7 @@ export function CompaniesManager() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="fecha">Fecha Última Visita</Label>
+                <Label htmlFor="fecha">{t('companyForm.lastVisit')}</Label>
                 <Input
                   id="fecha"
                   type="date"
@@ -714,14 +715,14 @@ export function CompaniesManager() {
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="text-lg font-semibold flex items-center gap-2">
                         <Clock className="h-5 w-5" />
-                        Registrar Nueva Visita
+                        {t('visitForm.addVisit')}
                       </h3>
                       <Button 
                         variant={showVisitForm ? "outline" : "default"}
                         size="sm"
                         onClick={() => setShowVisitForm(!showVisitForm)}
                       >
-                        {showVisitForm ? 'Cancelar' : 'Nueva Visita'}
+                        {showVisitForm ? t('common.cancel') : t('visitForm.addVisit')}
                       </Button>
                     </div>
 
@@ -730,7 +731,7 @@ export function CompaniesManager() {
                         <div className="space-y-4">
                           <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                              <Label htmlFor="visit_date">Fecha de Visita *</Label>
+                              <Label htmlFor="visit_date">{t('visitForm.visitDate')} *</Label>
                               <Input
                                 id="visit_date"
                                 type="date"
@@ -739,13 +740,13 @@ export function CompaniesManager() {
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="visit_gestor">Gestor *</Label>
+                              <Label htmlFor="visit_gestor">{t('companyForm.manager')} *</Label>
                               <Select 
                                 value={visitFormData.gestor_id} 
                                 onValueChange={(v) => setVisitFormData({ ...visitFormData, gestor_id: v })}
                               >
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Seleccionar gestor" />
+                                  <SelectValue placeholder={t('form.selectOption')} />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {gestores.map((g) => (
@@ -759,16 +760,16 @@ export function CompaniesManager() {
                           </div>
 
                           <div className="space-y-2">
-                            <Label>Productos Ofrecidos</Label>
+                            <Label>{t('visitForm.products')}</Label>
                             <ScrollArea className="h-[200px] border rounded-md p-3">
                               <div className="space-y-4">
                                 {['activo', 'pasivo', 'servicio'].map((category) => (
                                   <div key={category}>
                                     <h4 className="font-medium text-sm mb-2 capitalize flex items-center gap-2">
                                       <Package className="h-4 w-4" />
-                                      {category === 'activo' ? 'Productos de Activo (Préstamos)' :
-                                       category === 'pasivo' ? 'Productos de Pasivo (Ahorro)' :
-                                       'Servicios'}
+                                      {category === 'activo' ? t('product.activeCategory') :
+                                       category === 'pasivo' ? t('product.passiveCategory') :
+                                       t('product.serviceCategory')}
                                     </h4>
                                     <div className="space-y-2 ml-6">
                                       {products
@@ -803,7 +804,7 @@ export function CompaniesManager() {
                           <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                               <Label htmlFor="porcentaje_vinculacion">
-                                Porcentaje de Vinculación (%)
+                                {t('visitForm.linkage')} (%)
                               </Label>
                               <Input
                                 id="porcentaje_vinculacion"
@@ -817,43 +818,41 @@ export function CompaniesManager() {
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="result">Resultado</Label>
+                              <Label htmlFor="result">{t('visitForm.result')}</Label>
                               <Select 
                                 value={visitFormData.result} 
                                 onValueChange={(v) => setVisitFormData({ ...visitFormData, result: v })}
                               >
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Seleccionar resultado" />
+                                  <SelectValue placeholder={t('form.selectOption')} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="Exitosa">Exitosa</SelectItem>
-                                  <SelectItem value="Pendiente seguimiento">Pendiente seguimiento</SelectItem>
-                                  <SelectItem value="Sin interés">Sin interés</SelectItem>
-                                  <SelectItem value="Aplazada">Aplazada</SelectItem>
+                                  <SelectItem value="Exitosa">{t('visit.success')}</SelectItem>
+                                  <SelectItem value="Pendiente seguimiento">{t('visit.pending')}</SelectItem>
+                                  <SelectItem value="Sin interés">{t('visit.noInterest')}</SelectItem>
+                                  <SelectItem value="Aplazada">{t('visit.postponed')}</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
                           </div>
 
                           <div className="space-y-2">
-                            <Label htmlFor="pactos_realizados">Pactos Realizados</Label>
+                            <Label htmlFor="pactos_realizados">{t('visitForm.agreements')}</Label>
                             <Textarea
                               id="pactos_realizados"
                               value={visitFormData.pactos_realizados}
                               onChange={(e) => setVisitFormData({ ...visitFormData, pactos_realizados: e.target.value })}
                               rows={3}
-                              placeholder="Detalles de los acuerdos alcanzados con el cliente..."
                             />
                           </div>
 
                           <div className="space-y-2">
-                            <Label htmlFor="visit_notes">Notas de la Visita</Label>
+                            <Label htmlFor="visit_notes">{t('company.notes')}</Label>
                             <Textarea
                               id="visit_notes"
                               value={visitFormData.notes}
                               onChange={(e) => setVisitFormData({ ...visitFormData, notes: e.target.value })}
                               rows={3}
-                              placeholder="Observaciones adicionales sobre la visita..."
                             />
                           </div>
 
@@ -862,10 +861,10 @@ export function CompaniesManager() {
                               variant="outline" 
                               onClick={() => setShowVisitForm(false)}
                             >
-                              Cancelar
+                              {t('common.cancel')}
                             </Button>
                             <Button onClick={handleSaveVisit} disabled={loading}>
-                              {loading ? 'Guardando...' : 'Guardar Visita'}
+                              {loading ? t('common.loading') : t('common.save')}
                             </Button>
                           </div>
                         </div>
@@ -877,7 +876,7 @@ export function CompaniesManager() {
                   <div>
                     <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                       <Clock className="h-5 w-5" />
-                      Visitas Realizadas ({visits.length})
+                      {t('visitForm.visitHistory')} ({visits.length})
                     </h3>
                     <ScrollArea className="h-[300px] border rounded-md p-4">
                       {visits.length > 0 ? (
@@ -895,7 +894,7 @@ export function CompaniesManager() {
                                       })}
                                     </p>
                                     <p className="text-sm text-muted-foreground">
-                                      Gestor: {visit.gestor?.full_name || visit.gestor?.email || 'N/A'}
+                                      {t('companyForm.manager')}: {visit.gestor?.full_name || visit.gestor?.email || 'N/A'}
                                     </p>
                                   </div>
                                   {visit.result && (
@@ -911,7 +910,7 @@ export function CompaniesManager() {
 
                                 {visit.productos_ofrecidos && visit.productos_ofrecidos.length > 0 && (
                                   <div>
-                                    <p className="text-xs font-medium mb-1">Productos Ofrecidos:</p>
+                                    <p className="text-xs font-medium mb-1">{t('visitForm.products')}:</p>
                                     <div className="flex flex-wrap gap-1">
                                       {visit.productos_ofrecidos.map((prod, idx) => (
                                         <span 
@@ -929,21 +928,21 @@ export function CompaniesManager() {
                                   <div className="flex items-center gap-2">
                                     <TrendingUp className="h-4 w-4 text-muted-foreground" />
                                     <span className="text-sm">
-                                      <span className="font-medium">Vinculación:</span> {visit.porcentaje_vinculacion}%
+                                      <span className="font-medium">{t('visitForm.linkage')}:</span> {visit.porcentaje_vinculacion}%
                                     </span>
                                   </div>
                                 )}
 
                                 {visit.pactos_realizados && (
                                   <div>
-                                    <p className="text-xs font-medium mb-1">Pactos Realizados:</p>
+                                    <p className="text-xs font-medium mb-1">{t('visitForm.agreements')}:</p>
                                     <p className="text-sm text-muted-foreground">{visit.pactos_realizados}</p>
                                   </div>
                                 )}
 
                                 {visit.notes && (
                                   <div>
-                                    <p className="text-xs font-medium mb-1">Notas:</p>
+                                    <p className="text-xs font-medium mb-1">{t('company.notes')}:</p>
                                     <p className="text-sm text-muted-foreground">{visit.notes}</p>
                                   </div>
                                 )}
@@ -953,7 +952,7 @@ export function CompaniesManager() {
                         </div>
                       ) : (
                         <p className="text-sm text-muted-foreground text-center py-8">
-                          No hay visitas registradas
+                          {t('visitForm.noVisits')}
                         </p>
                       )}
                     </ScrollArea>
@@ -963,7 +962,7 @@ export function CompaniesManager() {
                   <div>
                     <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                       <FileText className="h-5 w-5" />
-                      Cambios y Actualizaciones
+                      {t('audit.changesHistory')}
                     </h3>
                     <ScrollArea className="h-[200px] border rounded-md p-4">
                       {auditLogs.length > 0 ? (
@@ -977,11 +976,11 @@ export function CompaniesManager() {
                                     log.action === 'UPDATE' ? 'bg-blue-100 text-blue-800' :
                                     'bg-red-100 text-red-800'
                                   }`}>
-                                    {log.action === 'INSERT' ? 'Creación' :
-                                     log.action === 'UPDATE' ? 'Actualización' : 'Eliminación'}
+                                    {log.action === 'INSERT' ? t('audit.created') :
+                                     log.action === 'UPDATE' ? t('audit.updated') : t('audit.deleted')}
                                   </span>
                                   <span className="text-xs text-muted-foreground">
-                                    {new Date(log.created_at).toLocaleString('es-ES')}
+                                    {new Date(log.created_at).toLocaleString()}
                                   </span>
                                 </div>
                                 
@@ -997,11 +996,11 @@ export function CompaniesManager() {
                                               {key.replace('_', ' ')}:
                                             </span>
                                             <span className="text-muted-foreground line-through ml-1">
-                                              {log.old_data[key] || 'vacío'}
+                                              {log.old_data[key] || t('audit.empty')}
                                             </span>
                                             <span className="mx-1">→</span>
                                             <span className="text-foreground font-medium">
-                                              {log.new_data[key] || 'vacío'}
+                                              {log.new_data[key] || t('audit.empty')}
                                             </span>
                                           </div>
                                         );
@@ -1013,7 +1012,7 @@ export function CompaniesManager() {
 
                                 {log.action === 'INSERT' && (
                                   <p className="text-sm text-muted-foreground">
-                                    Empresa creada en el sistema
+                                    {t('audit.companyCreated')}
                                   </p>
                                 )}
                               </div>
@@ -1022,7 +1021,7 @@ export function CompaniesManager() {
                         </div>
                       ) : (
                         <p className="text-sm text-muted-foreground text-center py-8">
-                          No hay cambios registrados
+                          {t('audit.noChanges')}
                         </p>
                       )}
                     </ScrollArea>
@@ -1034,10 +1033,10 @@ export function CompaniesManager() {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              Cancelar
+              {t('common.cancel')}
             </Button>
             <Button onClick={handleSave} disabled={loading}>
-              {loading ? 'Guardando...' : 'Guardar'}
+              {loading ? t('common.loading') : t('common.save')}
             </Button>
           </DialogFooter>
         </DialogContent>
