@@ -47,17 +47,7 @@ const Admin = () => {
   const renderContent = () => {
     switch (activeSection) {
       case 'director':
-        return (
-          <div className="rounded-lg border bg-card p-6">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold">Panel Director Comercial</h2>
-              <p className="text-sm text-muted-foreground">
-                Temporalmente desactivado para diagnóstico
-              </p>
-            </div>
-            {/* <CommercialDirectorDashboard /> */}
-          </div>
-        );
+        return <CommercialDirectorDashboard />;
       case 'health':
         return <SystemHealthMonitor />;
       case 'visits':
