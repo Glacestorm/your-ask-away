@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Database, BarChart3, Package, Users as UsersIcon, TrendingUp, Target, Building2, Settings } from 'lucide-react';
+import { ArrowLeft, Database, BarChart3, Package, Users as UsersIcon, TrendingUp, Target, Building2, Settings, Activity } from 'lucide-react';
 import { toast } from 'sonner';
 import { CompaniesManager } from '@/components/admin/CompaniesManager';
 import { ProductsManager } from '@/components/admin/ProductsManager';
@@ -18,6 +18,7 @@ import { VisitsMetrics } from '@/components/admin/VisitsMetrics';
 import { ProductsMetrics } from '@/components/admin/ProductsMetrics';
 import { GestoresMetrics } from '@/components/admin/GestoresMetrics';
 import { VinculacionMetrics } from '@/components/admin/VinculacionMetrics';
+import { SystemHealthMonitor } from '@/components/admin/SystemHealthMonitor';
 
 const Admin = () => {
   const { user, isAdmin, loading: authLoading } = useAuth();
@@ -54,8 +55,14 @@ const Admin = () => {
         </div>
 
         {/* Admin Tabs */}
-        <Tabs defaultValue="visits" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-12">
+        <Tabs defaultValue="health" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-13">
+            {/* Monitor de Salud */}
+            <TabsTrigger value="health" className="flex items-center gap-2">
+              <Activity className="h-4 w-4" />
+              <span className="hidden sm:inline">Sistema</span>
+            </TabsTrigger>
+            
             {/* Métricas */}
             <TabsTrigger value="visits" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
@@ -110,6 +117,11 @@ const Admin = () => {
               <span className="hidden sm:inline">Auditoría</span>
             </TabsTrigger>
           </TabsList>
+
+          {/* MONITOR DE SALUD DEL SISTEMA */}
+          <TabsContent value="health" className="space-y-4">
+            <SystemHealthMonitor />
+          </TabsContent>
 
           {/* MÉTRICAS Y ANÁLISIS */}
           <TabsContent value="visits" className="space-y-4">
