@@ -231,26 +231,45 @@
     @apply text-muted-foreground hover:text-foreground;
   }
 
-  /* Hover tooltip styling */
+  /* Hover tooltip styling with smooth animations */
   .hover-tooltip .maplibregl-popup-content {
     @apply rounded-lg shadow-2xl p-0 border;
     background: hsl(var(--card));
     border-color: hsl(var(--border));
-    animation: fadeIn 0.2s ease-in-out;
+    animation: tooltipFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 0 0 1px hsl(var(--border));
+  }
+
+  .hover-tooltip.tooltip-hiding .maplibregl-popup-content {
+    animation: tooltipFadeOut 0.2s cubic-bezier(0.4, 0, 1, 1) forwards;
   }
 
   .hover-tooltip .maplibregl-popup-tip {
     border-top-color: hsl(var(--card));
   }
 
-  @keyframes fadeIn {
-    from {
+  @keyframes tooltipFadeIn {
+    0% {
       opacity: 0;
-      transform: translateY(-5px);
+      transform: translateY(-8px) scale(0.95);
+      filter: blur(4px);
     }
-    to {
+    100% {
       opacity: 1;
-      transform: translateY(0);
+      transform: translateY(0) scale(1);
+      filter: blur(0);
+    }
+  }
+
+  @keyframes tooltipFadeOut {
+    0% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-6px) scale(0.96);
     }
   }
 }

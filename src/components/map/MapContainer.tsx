@@ -867,7 +867,17 @@ export function MapContainer({
 
           const hideTooltip = () => {
             hideTimeout = setTimeout(() => {
-              hoverPopup.remove();
+              // Add hiding class for exit animation
+              const popupElement = hoverPopup.getElement();
+              if (popupElement) {
+                popupElement.classList.add('tooltip-hiding');
+                // Wait for animation to complete before removing
+                setTimeout(() => {
+                  hoverPopup.remove();
+                }, 200);
+              } else {
+                hoverPopup.remove();
+              }
               hideTimeout = null;
             }, 100);
           };
