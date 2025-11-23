@@ -17,6 +17,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Visit {
   id: string;
@@ -38,6 +39,7 @@ interface VisitsPanelProps {
 
 export function VisitsPanel({ company }: VisitsPanelProps) {
   const { user, isAdmin } = useAuth();
+  const { t } = useLanguage();
   const [visits, setVisits] = useState<Visit[]>([]);
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -72,7 +74,7 @@ export function VisitsPanel({ company }: VisitsPanelProps) {
       setVisits(data || []);
     } catch (error: any) {
       console.error('Error fetching visits:', error);
-      toast.error('Error al cargar las visitas');
+      toast.error(t('form.errorLoading'));
     } finally {
       setLoading(false);
     }
@@ -103,7 +105,7 @@ export function VisitsPanel({ company }: VisitsPanelProps) {
         .update({ fecha_ultima_visita: format(formData.visit_date, 'yyyy-MM-dd') })
         .eq('id', company.id);
 
-      toast.success('Visita registrada correctamente');
+      toast.success(t('visitForm.visitCreated'));
       setDialogOpen(false);
       setFormData({
         visit_date: new Date(),
@@ -113,7 +115,7 @@ export function VisitsPanel({ company }: VisitsPanelProps) {
       fetchVisits();
     } catch (error: any) {
       console.error('Error creating visit:', error);
-      toast.error('Error al registrar la visita');
+      toast.error(t('form.errorSaving'));
     } finally {
       setLoading(false);
     }
@@ -124,7 +126,7 @@ export function VisitsPanel({ company }: VisitsPanelProps) {
       <Card>
         <CardContent className="flex items-center justify-center py-8">
           <p className="text-sm text-muted-foreground">
-            Selecciona una empresa para ver sus visitas
+            {t('visitForm.noVisits')}
           </p>
         </CardContent>
       </Card>

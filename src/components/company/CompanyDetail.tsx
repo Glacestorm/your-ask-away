@@ -9,6 +9,7 @@ import { VisitsPanel } from '../map/VisitsPanel';
 import { Badge } from '@/components/ui/badge';
 import { formatCnaeWithDescription } from '@/lib/cnaeDescriptions';
 import { CompanyPhotosManager } from './CompanyPhotosManager';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface CompanyDetailProps {
   company: CompanyWithDetails;
@@ -16,6 +17,8 @@ interface CompanyDetailProps {
 }
 
 export const CompanyDetail = ({ company, onClose }: CompanyDetailProps) => {
+  const { t } = useLanguage();
+  
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
@@ -60,23 +63,23 @@ export const CompanyDetail = ({ company, onClose }: CompanyDetailProps) => {
         <TabsList className="mx-4 mt-2 grid grid-cols-5">
           <TabsTrigger value="info" className="text-xs">
             <Building2 className="h-4 w-4 mr-1" />
-            Info
+            {t('company.details')}
           </TabsTrigger>
           <TabsTrigger value="contacts" className="text-xs">
             <User className="h-4 w-4 mr-1" />
-            Contactos
+            {t('company.contacts')}
           </TabsTrigger>
           <TabsTrigger value="photos" className="text-xs">
             <Camera className="h-4 w-4 mr-1" />
-            Fotos
+            {t('company.photos')}
           </TabsTrigger>
           <TabsTrigger value="documents" className="text-xs">
             <FileText className="h-4 w-4 mr-1" />
-            Docs
+            {t('company.documents')}
           </TabsTrigger>
           <TabsTrigger value="visits" className="text-xs">
             <History className="h-4 w-4 mr-1" />
-            Visitas
+            {t('company.visits')}
           </TabsTrigger>
         </TabsList>
 
