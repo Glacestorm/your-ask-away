@@ -493,6 +493,21 @@ export function MapContainer({
         if (filters.dateRange.to && visitDate > filters.dateRange.to) return false;
       }
 
+      // Filter by vinculación percentage range
+      if (filters.vinculacionRange) {
+        const companyVinculacion = vinculacionData[company.id];
+        if (companyVinculacion !== undefined) {
+          if (companyVinculacion < filters.vinculacionRange.min || companyVinculacion > filters.vinculacionRange.max) {
+            return false;
+          }
+        } else {
+          // If no vinculación data, only show if min is 0
+          if (filters.vinculacionRange.min > 0) {
+            return false;
+          }
+        }
+      }
+
       // Filter by search term
       if (filters.searchTerm) {
         const searchLower = filters.searchTerm.toLowerCase();

@@ -133,7 +133,8 @@ export function MapHeader({
     (filters?.productIds?.length || 0) + 
     (filters?.parroquias?.length || 0) + 
     (filters?.cnaes?.length || 0) +
-    (filters?.sectors?.length || 0);
+    (filters?.sectors?.length || 0) +
+    ((filters?.vinculacionRange?.min !== 0 || filters?.vinculacionRange?.max !== 100) ? 1 : 0);
 
   const getUserInitials = () => {
     if (!user?.email) return 'U';
@@ -513,6 +514,39 @@ export function MapHeader({
                         </CollapsibleContent>
                       </Collapsible>
                     )}
+
+                    {/* Porcentaje de Vinculación */}
+                    <div className="space-y-3 px-2 py-3">
+                      <Separator />
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-sm font-medium">
+                            % Vinculación
+                          </Label>
+                          <span className="text-xs text-muted-foreground">
+                            {filters?.vinculacionRange?.min || 0}% - {filters?.vinculacionRange?.max || 100}%
+                          </span>
+                        </div>
+                        <Slider
+                          min={0}
+                          max={100}
+                          step={5}
+                          value={[filters?.vinculacionRange?.min || 0, filters?.vinculacionRange?.max || 100]}
+                          onValueChange={(value) =>
+                            onFiltersChange({
+                              ...filters,
+                              vinculacionRange: { min: value[0], max: value[1] },
+                            })
+                          }
+                          className="w-full"
+                        />
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span>0%</span>
+                          <span>50%</span>
+                          <span>100%</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </ScrollArea>
@@ -530,6 +564,10 @@ export function MapHeader({
                         parroquias: [],
                         cnaes: [],
                         sectors: [],
+                        vinculacionRange: {
+                          min: 0,
+                          max: 100,
+                        },
                       })
                     }
                     className="w-full"

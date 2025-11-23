@@ -28,6 +28,10 @@ const MapView = () => {
     productIds: [],
     dateRange: null,
     searchTerm: '',
+    vinculacionRange: {
+      min: 0,
+      max: 100,
+    },
   });
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<CompanyWithDetails | null>(null);
