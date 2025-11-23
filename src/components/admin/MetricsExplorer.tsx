@@ -1202,6 +1202,93 @@ export function MetricsExplorer() {
                       </ResponsiveContainer>
                     </CardContent>
                   </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Evolución de Tasa de Conversión</CardTitle>
+                      <CardDescription>Porcentaje de éxito mes a mes (Exitosas / Total × 100)</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={400}>
+                        <LineChart 
+                          data={temporalComparisonData.map(monthData => {
+                            const result: any = { 
+                              monthLabel: monthData.monthLabel,
+                              month: monthData.month 
+                            };
+                            
+                            if (compareType === 'gestores') {
+                              selectedGestoresForCompare.forEach(gestorId => {
+                                const gestor = gestores.find(g => g.id === gestorId);
+                                if (gestor) {
+                                  const visitas = monthData[`${gestor.name}_visitas`] || 0;
+                                  const exitosas = monthData[`${gestor.name}_exitosas`] || 0;
+                                  result[`${gestor.name}_conversion`] = visitas > 0 
+                                    ? Math.round((exitosas / visitas) * 100) 
+                                    : 0;
+                                }
+                              });
+                            } else {
+                              selectedOficinasForCompare.forEach(oficina => {
+                                const visitas = monthData[`${oficina}_visitas`] || 0;
+                                const exitosas = monthData[`${oficina}_exitosas`] || 0;
+                                result[`${oficina}_conversion`] = visitas > 0 
+                                  ? Math.round((exitosas / visitas) * 100) 
+                                  : 0;
+                              });
+                            }
+                            
+                            return result;
+                          })}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="monthLabel" />
+                          <YAxis 
+                            label={{ value: 'Tasa (%)', angle: -90, position: 'insideLeft' }}
+                            domain={[0, 100]}
+                          />
+                          <Tooltip 
+                            formatter={(value: any) => `${value}%`}
+                          />
+                          <Legend />
+                          {compareType === 'gestores' 
+                            ? selectedGestoresForCompare.map((gestorId, index) => {
+                                const gestor = gestores.find(g => g.id === gestorId);
+                                if (!gestor) return null;
+                                const colors = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+                                return (
+                                  <Line
+                                    key={gestorId}
+                                    type="monotone"
+                                    dataKey={`${gestor.name}_conversion`}
+                                    stroke={colors[index % colors.length]}
+                                    strokeWidth={3}
+                                    name={`${gestor.name} - Tasa %`}
+                                    connectNulls
+                                    dot={{ r: 4 }}
+                                  />
+                                );
+                              })
+                            : selectedOficinasForCompare.map((oficina, index) => {
+                                const colors = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+                                return (
+                                  <Line
+                                    key={oficina}
+                                    type="monotone"
+                                    dataKey={`${oficina}_conversion`}
+                                    stroke={colors[index % colors.length]}
+                                    strokeWidth={3}
+                                    name={`${oficina} - Tasa %`}
+                                    connectNulls
+                                    dot={{ r: 4 }}
+                                  />
+                                );
+                              })
+                          }
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
                 </>
               )}
             </>
