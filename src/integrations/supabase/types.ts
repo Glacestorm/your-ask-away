@@ -52,49 +52,76 @@ export type Database = {
           address: string
           cnae: string | null
           created_at: string | null
+          email: string | null
+          employees: number | null
           fecha_ultima_visita: string | null
           gestor_id: string | null
           id: string
           latitude: number
+          legal_form: string | null
           longitude: number
           name: string
           observaciones: string | null
           oficina: string | null
           parroquia: string
+          phone: string | null
+          registration_number: string | null
+          sector: string | null
           status_id: string | null
+          tax_id: string | null
+          turnover: number | null
           updated_at: string | null
+          website: string | null
         }
         Insert: {
           address: string
           cnae?: string | null
           created_at?: string | null
+          email?: string | null
+          employees?: number | null
           fecha_ultima_visita?: string | null
           gestor_id?: string | null
           id?: string
           latitude: number
+          legal_form?: string | null
           longitude: number
           name: string
           observaciones?: string | null
           oficina?: string | null
           parroquia: string
+          phone?: string | null
+          registration_number?: string | null
+          sector?: string | null
           status_id?: string | null
+          tax_id?: string | null
+          turnover?: number | null
           updated_at?: string | null
+          website?: string | null
         }
         Update: {
           address?: string
           cnae?: string | null
           created_at?: string | null
+          email?: string | null
+          employees?: number | null
           fecha_ultima_visita?: string | null
           gestor_id?: string | null
           id?: string
           latitude?: number
+          legal_form?: string | null
           longitude?: number
           name?: string
           observaciones?: string | null
           oficina?: string | null
           parroquia?: string
+          phone?: string | null
+          registration_number?: string | null
+          sector?: string | null
           status_id?: string | null
+          tax_id?: string | null
+          turnover?: number | null
           updated_at?: string | null
+          website?: string | null
         }
         Relationships: [
           {
@@ -109,6 +136,100 @@ export type Database = {
             columns: ["status_id"]
             isOneToOne: false
             referencedRelation: "status_colors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_contacts: {
+        Row: {
+          company_id: string
+          contact_name: string
+          created_at: string | null
+          email: string | null
+          id: string
+          is_primary: boolean | null
+          notes: string | null
+          phone: string | null
+          position: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          contact_name: string
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          is_primary?: boolean | null
+          notes?: string | null
+          phone?: string | null
+          position?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          contact_name?: string
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          is_primary?: boolean | null
+          notes?: string | null
+          phone?: string | null
+          position?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_contacts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_documents: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          document_name: string
+          document_type: string | null
+          document_url: string | null
+          file_size: number | null
+          id: string
+          notes: string | null
+          updated_at: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          document_name: string
+          document_type?: string | null
+          document_url?: string | null
+          file_size?: number | null
+          id?: string
+          notes?: string | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          document_name?: string
+          document_type?: string | null
+          document_url?: string | null
+          file_size?: number | null
+          id?: string
+          notes?: string | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_documents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]

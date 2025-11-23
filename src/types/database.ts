@@ -50,6 +50,15 @@ export interface Company {
   gestor_id: string | null;
   fecha_ultima_visita: string | null;
   observaciones: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  employees: number | null;
+  turnover: number | null;
+  sector: string | null;
+  tax_id: string | null;
+  registration_number: string | null;
+  legal_form: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -99,6 +108,32 @@ export interface AuditLog {
   old_data: any | null;
   new_data: any | null;
   created_at: string;
+}
+
+export interface CompanyContact {
+  id: string;
+  company_id: string;
+  contact_name: string;
+  position: string | null;
+  phone: string | null;
+  email: string | null;
+  notes: string | null;
+  is_primary: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CompanyDocument {
+  id: string;
+  company_id: string;
+  document_name: string;
+  document_type: string | null;
+  document_url: string | null;
+  file_size: number | null;
+  uploaded_by: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface MapFilters {
