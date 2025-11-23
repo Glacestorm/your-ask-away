@@ -3,9 +3,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, Target, TrendingUp, CreditCard, Percent } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
+import { TPVGoalsComparison } from './TPVGoalsComparison';
 
 interface TPVGoal {
   id: string;
@@ -196,9 +198,15 @@ export function TPVGoalsDashboard() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Overview Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
+    <Tabs defaultValue="goals" className="space-y-6">
+      <TabsList>
+        <TabsTrigger value="goals">Mis Objetivos</TabsTrigger>
+        <TabsTrigger value="comparison">Comparación</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="goals" className="space-y-6">
+        {/* Overview Cards */}
+        <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Facturación Total TPV</CardDescription>
@@ -291,6 +299,11 @@ export function TPVGoalsDashboard() {
           )}
         </CardContent>
       </Card>
-    </div>
+      </TabsContent>
+
+      <TabsContent value="comparison">
+        <TPVGoalsComparison />
+      </TabsContent>
+    </Tabs>
   );
 }
