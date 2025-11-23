@@ -51,6 +51,7 @@ export function VisitsMetrics() {
       });
 
       const sortedMonthly: any[] = Object.values(monthlyMap)
+        .filter((m: any) => !isNaN(m.visitas) && isFinite(m.visitas))
         .sort((a: any, b: any) => a.sortKey.localeCompare(b.sortKey));
 
       setMonthlyVisits(sortedMonthly);
@@ -142,7 +143,11 @@ export function VisitsMetrics() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={monthlyVisits}>
+              <BarChart 
+                data={monthlyVisits.filter(m => 
+                  !isNaN(m.visitas) && isFinite(m.visitas)
+                )}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="mes" 
@@ -151,7 +156,7 @@ export function VisitsMetrics() {
                   textAnchor="end"
                   height={80}
                 />
-                <YAxis />
+                <YAxis allowDecimals={false} />
                 <Tooltip />
                 <Legend />
                 <Bar dataKey="visitas" fill="hsl(var(--primary))" name="Visitas" />
@@ -168,7 +173,11 @@ export function VisitsMetrics() {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={visitTrend}>
+              <LineChart 
+                data={visitTrend.filter(t => 
+                  !isNaN(t.visitas) && isFinite(t.visitas)
+                )}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="mes" 
@@ -177,7 +186,7 @@ export function VisitsMetrics() {
                   textAnchor="end"
                   height={80}
                 />
-                <YAxis />
+                <YAxis allowDecimals={false} />
                 <Tooltip />
                 <Legend />
                 <Line 

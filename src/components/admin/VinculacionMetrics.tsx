@@ -34,13 +34,20 @@ export function VinculacionMetrics() {
       }
 
       // Promedio global de vinculación
-      const totalVinculacion: number = visits.reduce((sum, v) => sum + (v.porcentaje_vinculacion || 0), 0);
-      const avg = visits.length > 0 ? totalVinculacion / visits.length : 0;
+      const validVisits = visits.filter(v => 
+        v.porcentaje_vinculacion !== null && 
+        v.porcentaje_vinculacion !== undefined &&
+        !isNaN(v.porcentaje_vinculacion) &&
+        isFinite(v.porcentaje_vinculacion)
+      );
+      
+      const totalVinculacion: number = validVisits.reduce((sum, v) => sum + (v.porcentaje_vinculacion || 0), 0);
+      const avg = validVisits.length > 0 ? totalVinculacion / validVisits.length : 0;
       setAvgVinculacion(Math.round(avg * 10) / 10);
 
       // Evolución de vinculación por mes
       const monthlyMap: any = {};
-      visits.forEach((visit: any) => {
+      validVisits.forEach((visit: any) => {
         const date = new Date(visit.visit_date);
         const monthKey = `${date.toLocaleDateString('es-ES', { month: 'short', year: '2-digit' })}`;
         const monthNumKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
@@ -54,16 +61,24 @@ export function VinculacionMetrics() {
             promedio: 0
           };
         }
-        monthlyMap[monthNumKey].suma += visit.porcentaje_vinculacion || 0;
-        monthlyMap[monthNumKey].count++;
+        const vinc = visit.porcentaje_vinculacion || 0;
+        if (!isNaN(vinc) && isFinite(vinc)) {
+          monthlyMap[monthNumKey].suma += vinc;
+          monthlyMap[monthNumKey].count++;
+        }
       });
 
       // Calcular promedios mensuales
       Object.values(monthlyMap).forEach((m: any) => {
         m.promedio = m.count > 0 ? Math.round((m.suma / m.count) * 10) / 10 : 0;
+        // Asegurar que el promedio es válido
+        if (!isFinite(m.promedio) || isNaN(m.promedio)) {
+          m.promedio = 0;
+        }
       });
 
       const sortedTrend = Object.values(monthlyMap)
+        .filter((m: any) => !isNaN(m.promedio) && isFinite(m.promedio))
         .sort((a: any, b: any) => a.sortKey.localeCompare(b.sortKey));
       setVinculacionTrend(sortedTrend);
 
@@ -92,6 +107,9 @@ export function VinculacionMetrics() {
 
       Object.values(gestorMap).forEach((g: any) => {
         g.promedio = g.count > 0 ? Math.round((g.suma / g.count) * 10) / 10 : 0;
+        if (!isFinite(g.promedio) || isNaN(g.promedio)) {
+          g.promedio = 0;
+        }
       });
 
       const sortedGestores = Object.values(gestorMap)
@@ -109,13 +127,15 @@ export function VinculacionMetrics() {
         { rango: '81-100%', min: 81, max: 100, count: 0 },
       ];
 
-      visits.forEach((visit: any) => {
+      validVisits.forEach((visit: any) => {
         const vinc = visit.porcentaje_vinculacion || 0;
-        ranges.forEach((range) => {
-          if (vinc >= range.min && vinc <= range.max) {
-            range.count++;
-          }
-        });
+        if (!isNaN(vinc) && isFinite(vinc)) {
+          ranges.forEach((range) => {
+            if (vinc >= range.min && vinc <= range.max) {
+              range.count++;
+            }
+          });
+        }
       });
 
       setVinculacionDistribution(ranges);
@@ -220,8 +240,24 @@ export function VinculacionMetrics() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={vinculacionTrend}>
-...
+                <AreaChart 
+                  data={vinculacionTrend.filter(t => 
+                    !isNaN(t.promedio) && isFinite(t.promedio)
+                  )}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="mes" />
+                  <YAxis domain={[0, 100]} allowDecimals={false} />
+                  <Tooltip formatter={(value) => `${value}%`} />
+                  <Legend />
+                  <Area 
+                    type="monotone" 
+                    dataKey="promedio" 
+                    stroke="hsl(var(--primary))" 
+                    fill="hsl(var(--primary))" 
+                    fillOpacity={0.3}
+                    name="% Vinculación" 
+                  />
                 </AreaChart>
               </ResponsiveContainer>
             </CardContent>
@@ -237,10 +273,14 @@ export function VinculacionMetrics() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={vinculacionDistribution}>
+                <BarChart 
+                  data={vinculacionDistribution.filter(r => 
+                    !isNaN(r.count) && isFinite(r.count) && r.count > 0
+                  )}
+                >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="rango" />
-                  <YAxis />
+                  <YAxis allowDecimals={false} />
                   <Tooltip />
                   <Legend />
                   <Bar dataKey="count" fill="hsl(var(--chart-1))" name="Visitas" />
@@ -259,7 +299,11 @@ export function VinculacionMetrics() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={topGestoresVinculacion}>
+                <BarChart 
+                  data={topGestoresVinculacion.filter(g => 
+                    !isNaN(g.promedio) && isFinite(g.promedio)
+                  )}
+                >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis 
                     dataKey="gestor" 
@@ -268,7 +312,7 @@ export function VinculacionMetrics() {
                     textAnchor="end"
                     height={100}
                   />
-                  <YAxis domain={[0, 100]} />
+                  <YAxis domain={[0, 100]} allowDecimals={false} />
                   <Tooltip 
                     formatter={(value: any, name: string) => {
                       if (name === 'promedio') return [`${value}%`, '% Vinculación'];

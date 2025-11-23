@@ -62,6 +62,9 @@ export function GestoresMetrics() {
       // Calcular tasas de éxito
       Object.values(successMap).forEach((g: any) => {
         g.tasa = g.total > 0 ? Math.round((g.exitosas / g.total) * 100) : 0;
+        if (!isFinite(g.tasa) || isNaN(g.tasa)) {
+          g.tasa = 0;
+        }
       });
 
       const sortedGestores = Object.values(gestorMap)
@@ -196,9 +199,14 @@ export function GestoresMetrics() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={350}>
-                <BarChart data={topGestores} layout="horizontal">
+                <BarChart 
+                  data={topGestores.filter(g => 
+                    !isNaN(g.visitas) && isFinite(g.visitas)
+                  )} 
+                  layout="horizontal"
+                >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
+                  <XAxis type="number" allowDecimals={false} />
                   <YAxis 
                     dataKey="gestor" 
                     type="category" 
@@ -223,9 +231,14 @@ export function GestoresMetrics() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={350}>
-                <BarChart data={successRate} layout="horizontal">
+                <BarChart 
+                  data={successRate.filter(g => 
+                    !isNaN(g.tasa) && isFinite(g.tasa)
+                  )} 
+                  layout="horizontal"
+                >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" domain={[0, 100]} />
+                  <XAxis type="number" domain={[0, 100]} allowDecimals={false} />
                   <YAxis 
                     dataKey="gestor" 
                     type="category" 
@@ -250,7 +263,11 @@ export function GestoresMetrics() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={companiesPerGestor}>
+                <BarChart 
+                  data={companiesPerGestor.filter(c => 
+                    !isNaN(c.empresas) && isFinite(c.empresas)
+                  )}
+                >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis 
                     dataKey="gestor" 
@@ -259,7 +276,7 @@ export function GestoresMetrics() {
                     textAnchor="end"
                     height={100}
                   />
-                  <YAxis />
+                  <YAxis allowDecimals={false} />
                   <Tooltip />
                   <Legend />
                   <Bar dataKey="empresas" fill="hsl(var(--chart-3))" name="Empresas" />
