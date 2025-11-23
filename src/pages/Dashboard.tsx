@@ -45,6 +45,7 @@ import { NotificationService } from '@/components/dashboard/NotificationService'
 import { UpcomingVisitsWidget } from '@/components/dashboard/UpcomingVisitsWidget';
 import { QuickActionsPanel } from '@/components/dashboard/QuickActionsPanel';
 import { PersonalKPIsDashboard } from '@/components/dashboard/PersonalKPIsDashboard';
+import { GestoresLeaderboard } from '@/components/dashboard/GestoresLeaderboard';
 import * as XLSX from 'xlsx';
 
 const Dashboard = () => {
@@ -270,11 +271,13 @@ const Dashboard = () => {
 
           {/* Rendimiento de Gestores */}
           <TabsContent value="gestores" className="space-y-6">
+            <GestoresLeaderboard />
+            
             <div className="rounded-lg border bg-card p-6">
               <div className="mb-6">
-                <h2 className="text-2xl font-bold">Rendimiento de Gestores</h2>
+                <h2 className="text-2xl font-bold">Métricas Detalladas</h2>
                 <p className="text-muted-foreground">
-                  Evaluación de desempeño y tasa de éxito por gestor
+                  Análisis profundo de rendimiento por gestor
                 </p>
               </div>
               <GestoresMetrics />
