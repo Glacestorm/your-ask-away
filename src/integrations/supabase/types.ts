@@ -309,6 +309,53 @@ export type Database = {
         }
         Relationships: []
       }
+      goals: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          metric_type: string
+          period_end: string
+          period_start: string
+          period_type: string
+          target_value: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          metric_type: string
+          period_end: string
+          period_start: string
+          period_type: string
+          target_value: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          metric_type?: string
+          period_end?: string
+          period_start?: string
+          period_type?: string
+          target_value?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goals_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           active: boolean | null
