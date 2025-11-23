@@ -17,7 +17,7 @@ type CompanyPoint = {
   };
 };
 
-// Helper function to add 3D buildings layer
+// Helper function to add 3D buildings layer with dynamic colors
 function add3DBuildingsLayer(map: maplibregl.Map) {
   // Wait for style to be fully loaded
   if (!map.isStyleLoaded()) {
@@ -35,7 +35,7 @@ function add3DBuildingsLayer(map: maplibregl.Map) {
     });
   }
 
-  // Add 3D buildings layer
+  // Add 3D buildings layer with dynamic coloring by building type
   if (!map.getLayer('3d-buildings')) {
     map.addLayer({
       id: '3d-buildings',
@@ -46,6 +46,35 @@ function add3DBuildingsLayer(map: maplibregl.Map) {
       paint: {
         'fill-extrusion-color': [
           'case',
+          // Commercial (shops, offices) - Blue
+          ['in', ['get', 'building'], ['literal', ['commercial', 'retail', 'office']]],
+          'hsl(210, 70%, 60%)',
+          ['in', ['get', 'shop'], ['literal', ['yes', 'supermarket', 'mall', 'convenience']]],
+          'hsl(210, 70%, 60%)',
+          ['==', ['get', 'amenity'], 'bank'],
+          'hsl(210, 70%, 60%)',
+          
+          // Residential (houses, apartments) - Green
+          ['in', ['get', 'building'], ['literal', ['residential', 'apartments', 'house', 'detached', 'terrace']]],
+          'hsl(120, 50%, 55%)',
+          
+          // Industrial (factories, warehouses) - Orange
+          ['in', ['get', 'building'], ['literal', ['industrial', 'warehouse', 'manufacture']]],
+          'hsl(25, 80%, 60%)',
+          
+          // Public buildings (schools, hospitals) - Purple
+          ['in', ['get', 'amenity'], ['literal', ['school', 'hospital', 'clinic', 'university', 'college']]],
+          'hsl(270, 50%, 60%)',
+          ['==', ['get', 'building'], 'public'],
+          'hsl(270, 50%, 60%)',
+          
+          // Religious buildings (churches, temples) - Yellow
+          ['in', ['get', 'building'], ['literal', ['church', 'cathedral', 'chapel', 'mosque', 'temple', 'synagogue']]],
+          'hsl(45, 80%, 65%)',
+          ['==', ['get', 'amenity'], 'place_of_worship'],
+          'hsl(45, 80%, 65%)',
+          
+          // Default color for unknown buildings
           ['has', 'building:colour'],
           ['get', 'building:colour'],
           'hsl(30, 15%, 75%)',
@@ -79,6 +108,8 @@ interface MapContainerProps {
     labels: boolean;
     markers: boolean;
   };
+  buildingOpacity?: number;
+  buildingHeightMultiplier?: number;
   searchLocation?: {
     lat: number;
     lon: number;
@@ -99,6 +130,8 @@ export function MapContainer({
     labels: true,
     markers: true,
   },
+  buildingOpacity = 0.85,
+  buildingHeightMultiplier = 1,
   searchLocation,
   onSearchLocationClear,
 }: MapContainerProps) {
@@ -552,6 +585,130 @@ export function MapContainer({
       map.current?.off('zoomend', updateMarkers);
     };
   }, [companies, filters, mapLoaded, statusColors, onSelectCompany, baseLayers.markers]);
+
+  // Update building opacity and height multiplier
+  useEffect(() => {
+    if (!map.current || !mapLoaded || !view3D) return;
+
+    const layer = map.current.getLayer('3d-buildings');
+    if (!layer) return;
+
+    try {
+      // Update opacity
+      map.current.setPaintProperty(
+        '3d-buildings',
+        'fill-extrusion-opacity',
+        buildingOpacity
+      );
+
+      // Update height with multiplier
+      map.current.setPaintProperty(
+        '3d-buildings',
+        'fill-extrusion-height',
+        [
+          '*',
+          buildingHeightMultiplier,
+          [
+            'case',
+            ['has', 'height'],
+            ['get', 'height'],
+            ['case',
+              ['has', 'building:levels'],
+              ['*', ['to-number', ['get', 'building:levels']], 3],
+              12,
+            ],
+          ],
+        ]
+      );
+    } catch (error) {
+      console.error('Error updating building properties:', error);
+    }
+  }, [buildingOpacity, buildingHeightMultiplier, mapLoaded, view3D]);
+
+  // Add building hover tooltip
+  useEffect(() => {
+    if (!map.current || !mapLoaded || !view3D) return;
+
+    const popup = new maplibregl.Popup({
+      closeButton: false,
+      closeOnClick: false,
+      className: 'building-popup',
+    });
+
+    const onMouseMove = (e: maplibregl.MapMouseEvent) => {
+      const features = map.current!.queryRenderedFeatures(e.point, {
+        layers: ['3d-buildings'],
+      });
+
+      if (features.length > 0) {
+        map.current!.getCanvas().style.cursor = 'pointer';
+        const feature = features[0];
+        const props = feature.properties;
+
+        // Determine building type
+        let buildingType = 'Edificio';
+        if (props.building) {
+          const bType = props.building;
+          if (['commercial', 'retail', 'office'].includes(bType)) buildingType = 'Comercial';
+          else if (['residential', 'apartments', 'house'].includes(bType)) buildingType = 'Residencial';
+          else if (['industrial', 'warehouse'].includes(bType)) buildingType = 'Industrial';
+          else if (bType === 'public') buildingType = 'Público';
+          else if (['church', 'cathedral', 'mosque', 'temple'].includes(bType)) buildingType = 'Religioso';
+        }
+        if (props.amenity) {
+          if (['school', 'hospital', 'university'].includes(props.amenity)) buildingType = 'Público';
+          else if (props.amenity === 'place_of_worship') buildingType = 'Religioso';
+          else if (props.amenity === 'bank') buildingType = 'Comercial';
+        }
+        if (props.shop) buildingType = 'Comercial';
+
+        // Calculate estimated height
+        let height = 12;
+        if (props.height) {
+          height = parseFloat(props.height);
+        } else if (props['building:levels']) {
+          height = parseFloat(props['building:levels']) * 3;
+        }
+        height = Math.round(height * buildingHeightMultiplier);
+
+        const name = props.name || props['addr:street'] || 'Sin nombre';
+        const address = props['addr:street'] 
+          ? `${props['addr:street']} ${props['addr:housenumber'] || ''}`.trim()
+          : 'Dirección no disponible';
+
+        popup
+          .setLngLat(e.lngLat)
+          .setHTML(`
+            <div class="p-2">
+              <h4 class="font-semibold text-xs mb-1">${name}</h4>
+              <div class="text-xs space-y-0.5">
+                <p><strong>Tipo:</strong> ${buildingType}</p>
+                <p><strong>Altura estimada:</strong> ${height}m</p>
+                ${address !== 'Dirección no disponible' ? `<p><strong>Dirección:</strong> ${address}</p>` : ''}
+              </div>
+            </div>
+          `)
+          .addTo(map.current!);
+      } else {
+        map.current!.getCanvas().style.cursor = '';
+        popup.remove();
+      }
+    };
+
+    const onMouseLeave = () => {
+      map.current!.getCanvas().style.cursor = '';
+      popup.remove();
+    };
+
+    map.current.on('mousemove', onMouseMove);
+    map.current.on('mouseleave', '3d-buildings', onMouseLeave);
+
+    return () => {
+      map.current?.off('mousemove', onMouseMove);
+      map.current?.off('mouseleave', onMouseLeave);
+      popup.remove();
+    };
+  }, [mapLoaded, view3D, buildingHeightMultiplier]);
 
   // Handle search location
   useEffect(() => {
