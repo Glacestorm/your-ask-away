@@ -1022,6 +1022,107 @@ export function MetricsExplorer() {
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
+                        <TrendingUp className="h-5 w-5" />
+                        Estadísticas Comparativas
+                      </CardTitle>
+                      <CardDescription>
+                        Análisis de rendimiento: promedio, mejor y peor mes
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="min-w-[150px]">
+                                {compareType === 'gestores' ? 'Gestor' : 'Oficina'}
+                              </TableHead>
+                              <TableHead className="text-right">Promedio Conversión</TableHead>
+                              <TableHead className="min-w-[120px]">Mejor Mes</TableHead>
+                              <TableHead className="text-right">Tasa Mejor</TableHead>
+                              <TableHead className="min-w-[120px]">Peor Mes</TableHead>
+                              <TableHead className="text-right">Tasa Peor</TableHead>
+                              <TableHead className="text-right">Variación</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {(compareType === 'gestores' 
+                              ? selectedGestoresForCompare.map(gestorId => {
+                                  const gestor = gestores.find(g => g.id === gestorId);
+                                  return gestor ? { id: gestorId, name: gestor.name } : null;
+                                }).filter(Boolean)
+                              : selectedOficinasForCompare.map(oficina => ({ id: oficina, name: oficina }))
+                            ).map((entity: any) => {
+                              // Calculate monthly conversion rates
+                              const monthlyRates = temporalComparisonData.map(monthData => {
+                                const visitas = monthData[`${entity.name}_visitas`] || 0;
+                                const exitosas = monthData[`${entity.name}_exitosas`] || 0;
+                                const rate = visitas > 0 ? (exitosas / visitas) * 100 : 0;
+                                return {
+                                  month: monthData.monthLabel,
+                                  rate,
+                                  visitas,
+                                  exitosas
+                                };
+                              }).filter(m => m.visitas > 0); // Only months with visits
+
+                              if (monthlyRates.length === 0) {
+                                return (
+                                  <TableRow key={entity.id}>
+                                    <TableCell className="font-medium">{entity.name}</TableCell>
+                                    <TableCell className="text-right text-muted-foreground" colSpan={6}>
+                                      Sin datos suficientes
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              }
+
+                              // Calculate statistics
+                              const avgRate = monthlyRates.reduce((sum, m) => sum + m.rate, 0) / monthlyRates.length;
+                              const bestMonth = monthlyRates.reduce((best, current) => 
+                                current.rate > best.rate ? current : best
+                              );
+                              const worstMonth = monthlyRates.reduce((worst, current) => 
+                                current.rate < worst.rate ? current : worst
+                              );
+                              const variation = bestMonth.rate - worstMonth.rate;
+
+                              return (
+                                <TableRow key={entity.id}>
+                                  <TableCell className="font-medium">{entity.name}</TableCell>
+                                  <TableCell className="text-right font-semibold">
+                                    {Math.round(avgRate)}%
+                                  </TableCell>
+                                  <TableCell className="text-green-600 dark:text-green-400">
+                                    {bestMonth.month}
+                                  </TableCell>
+                                  <TableCell className="text-right text-green-600 dark:text-green-400 font-semibold">
+                                    {Math.round(bestMonth.rate)}%
+                                  </TableCell>
+                                  <TableCell className="text-red-600 dark:text-red-400">
+                                    {worstMonth.month}
+                                  </TableCell>
+                                  <TableCell className="text-right text-red-600 dark:text-red-400 font-semibold">
+                                    {Math.round(worstMonth.rate)}%
+                                  </TableCell>
+                                  <TableCell className="text-right">
+                                    {Math.round(variation)}pp
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          pp = puntos porcentuales de diferencia entre mejor y peor mes
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
                         <TableIcon className="h-5 w-5" />
                         Tabla de Evolución Temporal
                       </CardTitle>
