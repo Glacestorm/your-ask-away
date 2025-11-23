@@ -58,6 +58,8 @@ interface MapHeaderProps {
   onColorModeChange: (mode: MapColorMode) => void;
   markerStyle: MarkerStyle;
   onMarkerStyleChange: (style: MarkerStyle) => void;
+  minZoomVinculacion: number;
+  onMinZoomVinculacionChange: (zoom: number) => void;
 }
 
 export function MapHeader({ 
@@ -84,6 +86,8 @@ export function MapHeader({
   onColorModeChange,
   markerStyle,
   onMarkerStyleChange,
+  minZoomVinculacion,
+  onMinZoomVinculacionChange,
 }: MapHeaderProps) {
   const { user, signOut, userRole, isAdmin } = useAuth();
   const { t } = useLanguage();
@@ -372,6 +376,32 @@ export function MapHeader({
                         </div>
                       ))}
                     </div>
+                  </div>
+                  
+                  <Separator />
+
+                  {/* Zoom control for showing % vinculación */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="min-zoom-vinculacion" className="text-sm font-normal">
+                        Zoom mínimo para mostrar %
+                      </Label>
+                      <span className="text-xs text-muted-foreground">
+                        Nivel {minZoomVinculacion}
+                      </span>
+                    </div>
+                    <Slider
+                      id="min-zoom-vinculacion"
+                      min={6}
+                      max={14}
+                      step={0.5}
+                      value={[minZoomVinculacion]}
+                      onValueChange={(value) => onMinZoomVinculacionChange(value[0])}
+                      className="w-full"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Cuanto menor sea el valor, antes aparecerá el % en las chinchetas
+                    </p>
                   </div>
                   
                   <Separator />

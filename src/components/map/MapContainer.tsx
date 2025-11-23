@@ -120,6 +120,8 @@ interface MapContainerProps {
   onSearchLocationClear?: () => void;
   colorMode: MapColorMode;
   markerStyle?: MarkerStyle;
+  minZoomVinculacion?: number;
+  onMinZoomVinculacionChange?: (zoom: number) => void;
 }
 
 interface TooltipConfig {
@@ -147,6 +149,8 @@ export function MapContainer({
   onSearchLocationClear,
   colorMode,
   markerStyle = 'classic',
+  minZoomVinculacion: minZoomVinculacionProp,
+  onMinZoomVinculacionChange,
 }: MapContainerProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
@@ -156,9 +160,23 @@ export function MapContainer({
   const searchMarkerRef = useRef<maplibregl.Marker | null>(null);
   const [tooltipConfig, setTooltipConfig] = useState<TooltipConfig[]>([]);
   const [vinculacionData, setVinculacionData] = useState<Record<string, number>>({});
-  const [minZoomVinculacion, setMinZoomVinculacion] = useState<number>(11);
+  const [minZoomVinculacion, setMinZoomVinculacion] = useState<number>(minZoomVinculacionProp || 8);
   const [visitCounts, setVisitCounts] = useState<Record<string, number>>({});
   const persistentPopupRef = useRef<{ popup: maplibregl.Popup; companyId: string } | null>(null);
+
+  // Effect to propagate prop changes to state
+  useEffect(() => {
+    if (minZoomVinculacionProp !== undefined) {
+      setMinZoomVinculacion(minZoomVinculacionProp);
+    }
+  }, [minZoomVinculacionProp]);
+
+  // Effect to call parent callback when internal state changes
+  useEffect(() => {
+    if (onMinZoomVinculacionChange) {
+      onMinZoomVinculacionChange(minZoomVinculacion);
+    }
+  }, [minZoomVinculacion, onMinZoomVinculacionChange]);
 
   // Fetch tooltip configuration
   useEffect(() => {
@@ -189,7 +207,10 @@ export function MapContainer({
         }
         if (mapConfigData) {
           const configValue = mapConfigData.config_value as { value: number };
-          setMinZoomVinculacion(configValue.value);
+          const dbZoom = configValue.value;
+          setMinZoomVinculacion(minZoomVinculacionProp !== undefined ? minZoomVinculacionProp : dbZoom);
+        } else if (minZoomVinculacionProp !== undefined) {
+          setMinZoomVinculacion(minZoomVinculacionProp);
         }
       } catch (error: any) {
         console.error('Error general en configuración del mapa:', error);

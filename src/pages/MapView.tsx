@@ -68,6 +68,10 @@ const MapView = () => {
     const saved = localStorage.getItem('markerStyle');
     return (saved as MarkerStyle) || 'classic';
   });
+  const [minZoomVinculacion, setMinZoomVinculacion] = useState<number>(() => {
+    const saved = localStorage.getItem('minZoomVinculacion');
+    return saved ? parseFloat(saved) : 8;
+  });
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -242,6 +246,11 @@ const MapView = () => {
           setMarkerStyle(style);
           localStorage.setItem('markerStyle', style);
         }}
+        minZoomVinculacion={minZoomVinculacion}
+        onMinZoomVinculacionChange={(zoom) => {
+          setMinZoomVinculacion(zoom);
+          localStorage.setItem('minZoomVinculacion', zoom.toString());
+        }}
       />
       
       <div className="relative flex flex-1 overflow-hidden">
@@ -290,6 +299,11 @@ const MapView = () => {
             onSearchLocationClear={() => setSearchLocation(null)}
             colorMode={colorMode}
             markerStyle={markerStyle}
+            minZoomVinculacion={minZoomVinculacion}
+            onMinZoomVinculacionChange={(zoom) => {
+              setMinZoomVinculacion(zoom);
+              localStorage.setItem('minZoomVinculacion', zoom.toString());
+            }}
           />
           
         </div>
