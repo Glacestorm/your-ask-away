@@ -577,31 +577,36 @@ export function MapContainer({
           const company = properties as CompanyWithDetails;
           const el = document.createElement('div');
           el.className = 'custom-marker';
-          el.style.width = '40px';
-          el.style.height = '50px';
-          el.style.cursor = 'pointer';
-
+          
           const color = company.status?.color_hex || '#3B82F6';
           const vinculacionPct = vinculacionData[company.id];
           const showVinculacion = vinculacionPct !== undefined && zoom >= 15;
+          
+          // Aumentar tamaño si se muestra vinculación
+          const markerWidth = showVinculacion ? 50 : 40;
+          const markerHeight = showVinculacion ? 65 : 50;
+          
+          el.style.width = `${markerWidth}px`;
+          el.style.height = `${markerHeight}px`;
+          el.style.cursor = 'pointer';
           
           // Get icon based on sector
           const Icon = getSectorIcon(company.sector);
           const iconPath = getIconPathForMarker(Icon);
 
           el.innerHTML = `
-            <svg width="40" height="50" viewBox="0 0 40 50" xmlns="http://www.w3.org/2000/svg">
+            <svg width="${markerWidth}" height="${markerHeight}" viewBox="0 0 ${markerWidth} ${markerHeight}" xmlns="http://www.w3.org/2000/svg">
               <!-- Pin background -->
               <path
-                d="M20 2C14.48 2 10 6.48 10 12c0 7.5 10 23 10 23s10-15.5 10-23c0-5.52-4.48-10-10-10z"
+                d="M${markerWidth/2} 2C${markerWidth/2-5.52} 2 ${markerWidth/2-10} 6.48 ${markerWidth/2-10} 12c0 7.5 10 23 10 23s10-15.5 10-23c0-5.52-4.48-10-10-10z"
                 fill="${color}"
                 stroke="white"
                 stroke-width="2.5"
               />
               <!-- Icon circle background -->
-              <circle cx="20" cy="12" r="5.5" fill="white" />
+              <circle cx="${markerWidth/2}" cy="12" r="5.5" fill="white" />
               <!-- Icon -->
-              <g transform="translate(14, 6)">
+              <g transform="translate(${markerWidth/2-6}, 6)">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="${color}" 
                      stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   ${iconPath}
@@ -609,8 +614,8 @@ export function MapContainer({
               </g>
               ${showVinculacion ? `
                 <!-- Vinculación badge -->
-                <rect x="8" y="24" width="24" height="14" rx="7" fill="${color}" stroke="white" stroke-width="1.5"/>
-                <text x="20" y="33" text-anchor="middle" fill="white" font-size="8" font-weight="bold">
+                <rect x="${markerWidth/2-18}" y="30" width="36" height="20" rx="10" fill="${color}" stroke="white" stroke-width="2"/>
+                <text x="${markerWidth/2}" y="43" text-anchor="middle" fill="white" font-size="12" font-weight="bold">
                   ${vinculacionPct}%
                 </text>
               ` : ''}
