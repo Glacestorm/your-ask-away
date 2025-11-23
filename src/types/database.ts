@@ -113,6 +113,17 @@ export interface AuditLog {
   created_at: string;
 }
 
+export interface AuditLog {
+  id: string;
+  table_name: string;
+  action: string;
+  record_id: string | null;
+  user_id: string | null;
+  old_data: any;
+  new_data: any;
+  created_at: string | null;
+}
+
 export interface CompanyContact {
   id: string;
   company_id: string;

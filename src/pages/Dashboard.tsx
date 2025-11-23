@@ -19,7 +19,8 @@ import {
   Award,
   UserCheck,
   Bell,
-  Filter
+  Filter,
+  Activity
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { subMonths } from 'date-fns';
@@ -47,6 +48,7 @@ import { UpcomingVisitsWidget } from '@/components/dashboard/UpcomingVisitsWidge
 import { QuickActionsPanel } from '@/components/dashboard/QuickActionsPanel';
 import { PersonalKPIsDashboard } from '@/components/dashboard/PersonalKPIsDashboard';
 import { GestoresLeaderboard } from '@/components/dashboard/GestoresLeaderboard';
+import { PersonalActivityHistory } from '@/components/dashboard/PersonalActivityHistory';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import * as XLSX from 'xlsx';
 
@@ -153,7 +155,7 @@ const Dashboard = () => {
 
         {/* Dashboard Tabs */}
         <Tabs defaultValue="resumen" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-13 h-auto">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-14 h-auto">
             <TabsTrigger value="resumen" className="flex items-center gap-2 py-3">
               <TrendingUp className="h-4 w-4" />
               <span className="hidden sm:inline">{t('tabs.resumen')}</span>
@@ -201,6 +203,10 @@ const Dashboard = () => {
             <TabsTrigger value="alertas" className="flex items-center gap-2 py-3">
               <Bell className="h-4 w-4" />
               <span className="hidden sm:inline">{t('tabs.alertas')}</span>
+            </TabsTrigger>
+            <TabsTrigger value="actividad" className="flex items-center gap-2 py-3">
+              <Activity className="h-4 w-4" />
+              <span className="hidden sm:inline">Mi Actividad</span>
             </TabsTrigger>
             <TabsTrigger value="reportes" className="flex items-center gap-2 py-3">
               <FileText className="h-4 w-4" />
@@ -355,6 +361,11 @@ const Dashboard = () => {
             </div>
 
             <VisitReminders />
+          </TabsContent>
+
+          {/* Mi Actividad Personal */}
+          <TabsContent value="actividad" className="space-y-6">
+            <PersonalActivityHistory />
           </TabsContent>
 
           {/* Generación de Reportes */}
