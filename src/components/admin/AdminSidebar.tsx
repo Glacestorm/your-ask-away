@@ -51,6 +51,17 @@ export function AdminSidebar({ activeSection, onSectionChange }: AdminSidebarPro
                 <span>Panel Director</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => onSectionChange('office-director')}
+                isActive={isActive('office-director')}
+                className="font-semibold"
+                tooltip={!open ? "Director Oficina" : undefined}
+              >
+                <Building2 className="h-5 w-5" />
+                <span>Director Oficina</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
 
