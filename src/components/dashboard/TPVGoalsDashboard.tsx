@@ -8,6 +8,7 @@ import { Loader2, Target, TrendingUp, CreditCard, Percent } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { TPVGoalsComparison } from './TPVGoalsComparison';
+import { TPVGoalsHistory } from './TPVGoalsHistory';
 
 interface TPVGoal {
   id: string;
@@ -202,6 +203,7 @@ export function TPVGoalsDashboard() {
       <TabsList>
         <TabsTrigger value="goals">Mis Objetivos</TabsTrigger>
         <TabsTrigger value="comparison">Comparación</TabsTrigger>
+        <TabsTrigger value="history">Histórico</TabsTrigger>
       </TabsList>
 
       <TabsContent value="goals" className="space-y-6">
@@ -303,6 +305,10 @@ export function TPVGoalsDashboard() {
 
       <TabsContent value="comparison">
         <TPVGoalsComparison />
+      </TabsContent>
+
+      <TabsContent value="history">
+        <TPVGoalsHistory />
       </TabsContent>
     </Tabs>
   );
