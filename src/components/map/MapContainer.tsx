@@ -153,7 +153,7 @@ export function MapContainer({
   const searchMarkerRef = useRef<maplibregl.Marker | null>(null);
   const [tooltipConfig, setTooltipConfig] = useState<TooltipConfig[]>([]);
   const [vinculacionData, setVinculacionData] = useState<Record<string, number>>({});
-  const [minZoomVinculacion, setMinZoomVinculacion] = useState<number>(15);
+  const [minZoomVinculacion, setMinZoomVinculacion] = useState<number>(13);
   const [visitCounts, setVisitCounts] = useState<Record<string, number>>({});
 
   // Fetch tooltip configuration
@@ -733,23 +733,12 @@ export function MapContainer({
           
           const color = getMarkerColor();
           const vinculacionPct = vinculacionData[company.id];
-          const showVinculacion = vinculacionPct !== undefined && zoom >= minZoomVinculacion;
+          const showVinculacion = zoom >= minZoomVinculacion;
           
-          // Log para debug - solo para primeras empresas
-          if (Math.random() < 0.05) {
-            console.log('Marker debug:', {
-              companyId: company.id,
-              companyName: company.name,
-              vinculacionPct,
-              zoom,
-              minZoomVinculacion,
-              showVinculacion
-            });
-          }
-          
-          // Aumentar tamaño si se muestra vinculación
-          const markerWidth = showVinculacion ? 50 : 40;
-          const markerHeight = showVinculacion ? 65 : 50;
+          // Escalar tamaño del marcador según zoom (a partir de zoom 12)
+          const baseSize = Math.max(30, Math.min(60, (zoom - 10) * 5));
+          const markerWidth = showVinculacion ? baseSize * 1.2 : baseSize;
+          const markerHeight = showVinculacion ? baseSize * 1.6 : baseSize * 1.25;
           
           el.style.width = `${markerWidth}px`;
           el.style.height = `${markerHeight}px`;
@@ -759,29 +748,38 @@ export function MapContainer({
           const Icon = getSectorIcon(company.sector);
           const iconPath = getIconPathForMarker(Icon);
 
+          // Calcular tamaños proporcionales
+          const pinHeight = markerHeight * 0.6;
+          const pinWidth = markerWidth * 0.5;
+          const iconSize = baseSize * 0.3;
+          const badgeWidth = markerWidth * 0.8;
+          const badgeHeight = baseSize * 0.35;
+          const badgeY = pinHeight + 2;
+          const fontSize = Math.max(10, baseSize * 0.22);
+          
           el.innerHTML = `
             <svg width="${markerWidth}" height="${markerHeight}" viewBox="0 0 ${markerWidth} ${markerHeight}" xmlns="http://www.w3.org/2000/svg">
               <!-- Pin background -->
               <path
-                d="M${markerWidth/2} 2C${markerWidth/2-5.52} 2 ${markerWidth/2-10} 6.48 ${markerWidth/2-10} 12c0 7.5 10 23 10 23s10-15.5 10-23c0-5.52-4.48-10-10-10z"
+                d="M${markerWidth/2} 2C${markerWidth/2-pinWidth/2} 2 ${markerWidth/2-pinWidth/2} 6 ${markerWidth/2-pinWidth/2} ${pinHeight/2}c0 ${pinHeight/3} ${pinWidth/2} ${pinHeight/2} ${pinWidth/2} ${pinHeight/2}s${pinWidth/2}-${pinHeight/6} ${pinWidth/2}-${pinHeight/2}c0-${pinHeight/2-6}-${pinWidth/2}-${pinHeight/2}-${pinWidth/2}-${pinHeight/2}z"
                 fill="${color}"
                 stroke="white"
-                stroke-width="2.5"
+                stroke-width="${Math.max(2, baseSize * 0.05)}"
               />
               <!-- Icon circle background -->
-              <circle cx="${markerWidth/2}" cy="12" r="5.5" fill="white" />
+              <circle cx="${markerWidth/2}" cy="${pinHeight/2}" r="${iconSize}" fill="white" />
               <!-- Icon -->
-              <g transform="translate(${markerWidth/2-6}, 6)">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="${color}" 
+              <g transform="translate(${markerWidth/2-iconSize*0.85}, ${pinHeight/2-iconSize*0.85})">
+                <svg width="${iconSize*1.7}" height="${iconSize*1.7}" viewBox="0 0 24 24" fill="none" stroke="${color}" 
                      stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   ${iconPath}
                 </svg>
               </g>
               ${showVinculacion ? `
                 <!-- Vinculación badge -->
-                <rect x="${markerWidth/2-18}" y="32" width="36" height="18" rx="9" fill="${color}" stroke="white" stroke-width="2"/>
-                <text x="${markerWidth/2}" y="44" text-anchor="middle" fill="white" font-size="11" font-weight="bold" font-family="system-ui, -apple-system, sans-serif">
-                  ${vinculacionPct}%
+                <rect x="${markerWidth/2-badgeWidth/2}" y="${badgeY}" width="${badgeWidth}" height="${badgeHeight}" rx="${badgeHeight/2}" fill="${color}" stroke="white" stroke-width="${Math.max(1.5, baseSize * 0.04)}"/>
+                <text x="${markerWidth/2}" y="${badgeY + badgeHeight * 0.65}" text-anchor="middle" fill="white" font-size="${fontSize}" font-weight="bold" font-family="system-ui, -apple-system, sans-serif">
+                  ${vinculacionPct !== undefined ? vinculacionPct + '%' : 'N/A'}
                 </text>
               ` : ''}
             </svg>
