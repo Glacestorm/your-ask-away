@@ -59,17 +59,17 @@ export const VisitReminders = () => {
       
       // Check if preference exists
       const { data, error } = await supabase
-        .from('visit_reminder_preferences')
+        .from('visit_reminder_preferences' as any)
         .select('*')
         .eq('user_id', user.id)
-        .maybeSingle() as any;
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
         throw error;
       }
 
       if (data) {
-        setPreference(data);
+        setPreference(data as unknown as ReminderPreference);
       } else {
         // Create default preference
         const defaultPref: ReminderPreference = {
@@ -111,7 +111,7 @@ export const VisitReminders = () => {
           .update({
             enabled,
             updated_at: new Date().toISOString(),
-          })
+          } as any)
           .eq('id', preference.id);
 
         if (error) throw error;
@@ -119,12 +119,12 @@ export const VisitReminders = () => {
         // Insert new
         const { data, error } = await supabase
           .from('visit_reminder_preferences' as any)
-          .insert(updatedPref)
+          .insert(updatedPref as any)
           .select()
-          .single() as any;
+          .single();
 
         if (error) throw error;
-        updatedPref.id = data.id;
+        updatedPref.id = (data as any).id;
       }
 
       setPreference(updatedPref);
@@ -160,19 +160,19 @@ export const VisitReminders = () => {
           .update({
             minutes_before: minutesBefore,
             updated_at: new Date().toISOString(),
-          })
+          } as any)
           .eq('id', preference.id);
 
         if (error) throw error;
       } else {
         const { data, error } = await supabase
           .from('visit_reminder_preferences' as any)
-          .insert(updatedPref)
+          .insert(updatedPref as any)
           .select()
-          .single() as any;
+          .single();
 
         if (error) throw error;
-        updatedPref.id = data.id;
+        updatedPref.id = (data as any).id;
       }
 
       setPreference(updatedPref);

@@ -84,7 +84,7 @@ export const useNotifications = () => {
         tag,
         requireInteraction,
         data,
-      });
+      } as NotificationOptions);
 
       notification.onclick = (event) => {
         event.preventDefault();
