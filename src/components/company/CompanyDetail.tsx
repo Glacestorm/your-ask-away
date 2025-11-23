@@ -1,7 +1,7 @@
 import { CompanyWithDetails } from '@/types/database';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Building2, User, FileText, History, X, Camera } from 'lucide-react';
+import { Building2, User, FileText, History, X, Camera, CreditCard, Landmark } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ContactsManager } from './ContactsManager';
 import { DocumentsManager } from './DocumentsManager';
@@ -9,6 +9,8 @@ import { VisitsPanel } from '../map/VisitsPanel';
 import { Badge } from '@/components/ui/badge';
 import { formatCnaeWithDescription } from '@/lib/cnaeDescriptions';
 import { CompanyPhotosManager } from './CompanyPhotosManager';
+import { BankAffiliationsManager } from './BankAffiliationsManager';
+import { TPVTerminalsManager } from './TPVTerminalsManager';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface CompanyDetailProps {
@@ -60,10 +62,18 @@ export const CompanyDetail = ({ company, onClose }: CompanyDetailProps) => {
 
       {/* Tabs */}
       <Tabs defaultValue="info" className="flex-1 flex flex-col">
-        <TabsList className="mx-4 mt-2 grid grid-cols-5">
+        <TabsList className="mx-4 mt-2 grid grid-cols-7">
           <TabsTrigger value="info" className="text-xs">
             <Building2 className="h-4 w-4 mr-1" />
             {t('company.details')}
+          </TabsTrigger>
+          <TabsTrigger value="banking" className="text-xs">
+            <Landmark className="h-4 w-4 mr-1" />
+            Bancos
+          </TabsTrigger>
+          <TabsTrigger value="tpv" className="text-xs">
+            <CreditCard className="h-4 w-4 mr-1" />
+            TPV
           </TabsTrigger>
           <TabsTrigger value="contacts" className="text-xs">
             <User className="h-4 w-4 mr-1" />
@@ -261,6 +271,14 @@ export const CompanyDetail = ({ company, onClose }: CompanyDetailProps) => {
                 Coordenadas: {company.latitude.toFixed(6)}, {company.longitude.toFixed(6)}
               </p>
             </div>
+          </TabsContent>
+
+          <TabsContent value="banking" className="p-4 mt-0">
+            <BankAffiliationsManager companyId={company.id} />
+          </TabsContent>
+
+          <TabsContent value="tpv" className="p-4 mt-0">
+            <TPVTerminalsManager companyId={company.id} />
           </TabsContent>
 
           <TabsContent value="contacts" className="p-4 mt-0">

@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Database, BarChart3, Package, Users as UsersIcon, TrendingUp, Target, Building2, Settings, Activity } from 'lucide-react';
+import { ArrowLeft, Database, BarChart3, Package, Users as UsersIcon, TrendingUp, Target, Building2, Settings, Activity, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 import { CompaniesManager } from '@/components/admin/CompaniesManager';
 import { ProductsManager } from '@/components/admin/ProductsManager';
@@ -19,6 +19,7 @@ import { ProductsMetrics } from '@/components/admin/ProductsMetrics';
 import { GestoresMetrics } from '@/components/admin/GestoresMetrics';
 import { VinculacionMetrics } from '@/components/admin/VinculacionMetrics';
 import { SystemHealthMonitor } from '@/components/admin/SystemHealthMonitor';
+import { TPVManager } from '@/components/admin/TPVManager';
 
 const Admin = () => {
   const { user, isAdmin, loading: authLoading } = useAuth();
@@ -56,7 +57,7 @@ const Admin = () => {
 
         {/* Admin Tabs */}
         <Tabs defaultValue="health" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-13">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-14">
             {/* Monitor de Salud */}
             <TabsTrigger value="health" className="flex items-center gap-2">
               <Activity className="h-4 w-4" />
@@ -79,6 +80,10 @@ const Admin = () => {
             <TabsTrigger value="vinculacion" className="flex items-center gap-2">
               <Target className="h-4 w-4" />
               <span className="hidden sm:inline">Vinculación</span>
+            </TabsTrigger>
+            <TabsTrigger value="tpv" className="flex items-center gap-2">
+              <CreditCard className="h-4 w-4" />
+              <span className="hidden sm:inline">TPV</span>
             </TabsTrigger>
             
             {/* Gestión */}
@@ -170,6 +175,10 @@ const Admin = () => {
               </div>
               <VinculacionMetrics />
             </div>
+          </TabsContent>
+
+          <TabsContent value="tpv" className="space-y-4">
+            <TPVManager />
           </TabsContent>
 
           {/* GESTIÓN DE DATOS */}
