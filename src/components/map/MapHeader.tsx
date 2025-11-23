@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { MapPin, Menu, LogOut, Settings, BarChart3, UserCircle } from 'lucide-react';
+import { MapPin, Menu, LogOut, Settings, BarChart3, UserCircle, Mountain } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
@@ -15,9 +15,20 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 interface MapHeaderProps {
   onToggleSidebar: () => void;
   sidebarOpen: boolean;
+  mapStyle: 'default' | 'satellite';
+  view3D: boolean;
+  onMapStyleChange: (style: 'default' | 'satellite') => void;
+  onView3DChange: (enabled: boolean) => void;
 }
 
-export function MapHeader({ onToggleSidebar, sidebarOpen }: MapHeaderProps) {
+export function MapHeader({ 
+  onToggleSidebar, 
+  sidebarOpen,
+  mapStyle,
+  view3D,
+  onMapStyleChange,
+  onView3DChange 
+}: MapHeaderProps) {
   const { user, signOut, userRole, isAdmin } = useAuth();
   const navigate = useNavigate();
 
@@ -46,6 +57,37 @@ export function MapHeader({ onToggleSidebar, sidebarOpen }: MapHeaderProps) {
             <h1 className="text-lg font-semibold">Mapa Empresarial</h1>
             <p className="text-xs text-muted-foreground">Andorra</p>
           </div>
+        </div>
+        
+        <div className="hidden lg:flex items-center gap-2 border-l pl-4 ml-2">
+          <div className="flex gap-1 rounded-md border bg-background p-1">
+            <Button
+              variant={mapStyle === 'default' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => onMapStyleChange('default')}
+              className="h-7 px-3 text-xs"
+            >
+              Mapa
+            </Button>
+            <Button
+              variant={mapStyle === 'satellite' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => onMapStyleChange('satellite')}
+              className="h-7 px-3 text-xs"
+            >
+              Satélite
+            </Button>
+          </div>
+          
+          <Button
+            variant={view3D ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => onView3DChange(!view3D)}
+            className="h-7 text-xs"
+          >
+            <Mountain className="mr-1 h-3 w-3" />
+            Vista 3D
+          </Button>
         </div>
       </div>
 

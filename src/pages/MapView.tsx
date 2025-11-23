@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { MapContainer } from '@/components/map/MapContainer';
 import { MapLayersControl } from '@/components/map/MapLayersControl';
+import { MapBaseLayersControl, MapBaseLayers } from '@/components/map/MapBaseLayersControl';
 import { MapSidebar } from '@/components/map/MapSidebar';
 import { MapHeader } from '@/components/map/MapHeader';
-import { MapStyleToggle } from '@/components/map/MapStyleToggle';
 import { CompanyWithDetails, MapFilters, StatusColor, Product } from '@/types/database';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
@@ -32,6 +32,13 @@ const MapView = () => {
   const [selectedCompany, setSelectedCompany] = useState<CompanyWithDetails | null>(null);
   const [mapStyle, setMapStyle] = useState<'default' | 'satellite'>('default');
   const [view3D, setView3D] = useState(false);
+  const [baseLayers, setBaseLayers] = useState<MapBaseLayers>({
+    roads: true,
+    water: true,
+    terrain: true,
+    buildings: true,
+    labels: true,
+  });
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -130,6 +137,10 @@ const MapView = () => {
       <MapHeader
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         sidebarOpen={sidebarOpen}
+        mapStyle={mapStyle}
+        view3D={view3D}
+        onMapStyleChange={setMapStyle}
+        onView3DChange={setView3D}
       />
       
       <div className="relative flex flex-1 overflow-hidden">
@@ -152,6 +163,7 @@ const MapView = () => {
             onSelectCompany={setSelectedCompany}
             mapStyle={mapStyle}
             view3D={view3D}
+            baseLayers={baseLayers}
           />
           
           <MapLayersControl
@@ -163,11 +175,9 @@ const MapView = () => {
             availableCnaes={availableCnaes}
           />
           
-          <MapStyleToggle
-            mapStyle={mapStyle}
-            view3D={view3D}
-            onMapStyleChange={setMapStyle}
-            onView3DChange={setView3D}
+          <MapBaseLayersControl
+            layers={baseLayers}
+            onLayersChange={setBaseLayers}
           />
         </div>
       </div>
