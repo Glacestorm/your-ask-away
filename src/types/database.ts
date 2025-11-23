@@ -139,6 +139,16 @@ export interface CompanyDocument {
   updated_at: string;
 }
 
+export interface CompanyPhoto {
+  id: string;
+  company_id: string;
+  photo_url: string;
+  uploaded_by: string | null;
+  uploaded_at: string;
+  notes: string | null;
+  created_at: string;
+}
+
 export interface MapFilters {
   statusIds: string[];
   gestorIds: string[];

@@ -11,10 +11,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Pencil, Trash2, Upload, Phone, Mail, Globe, Users, Building2, FileText, History, Clock, TrendingUp, Package } from 'lucide-react';
+import { Plus, Pencil, Trash2, Upload, Phone, Mail, Globe, Users, Building2, FileText, History, Clock, TrendingUp, Package, Camera } from 'lucide-react';
 import { toast } from 'sonner';
 import { CompanyWithDetails, StatusColor, Profile } from '@/types/database';
 import { ExcelImporter } from './ExcelImporter';
+import { CompanyPhotosManager } from '@/components/company/CompanyPhotosManager';
 
 interface CompanyContact {
   id: string;
@@ -423,7 +424,7 @@ export function CompaniesManager() {
           </DialogHeader>
 
           <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="grid w-full grid-cols-7">
               <TabsTrigger value="basic">
                 <Building2 className="h-4 w-4 mr-2" />
                 Datos Básicos
@@ -443,6 +444,10 @@ export function CompaniesManager() {
               <TabsTrigger value="management">
                 <Globe className="h-4 w-4 mr-2" />
                 Gestión
+              </TabsTrigger>
+              <TabsTrigger value="photos" disabled={!editingCompany}>
+                <Camera className="h-4 w-4 mr-2" />
+                Fotos
               </TabsTrigger>
               <TabsTrigger value="history" disabled={!editingCompany}>
                 <History className="h-4 w-4 mr-2" />
@@ -688,6 +693,16 @@ export function CompaniesManager() {
                   onChange={(e) => setFormData({ ...formData, fecha_ultima_visita: e.target.value })}
                 />
               </div>
+            </TabsContent>
+
+            {/* Fotos */}
+            <TabsContent value="photos" className="space-y-4 mt-4">
+              {editingCompany && (
+                <CompanyPhotosManager 
+                  companyId={editingCompany.id} 
+                  companyName={editingCompany.name}
+                />
+              )}
             </TabsContent>
 
             {/* Histórico de Actividades */}
