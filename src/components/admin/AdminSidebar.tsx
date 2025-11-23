@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TrendingUp, Activity, BarChart3, Package, Users, Target, CreditCard, Building2, Settings, Database, Mail, Palette, BookOpen, Map, ChevronRight } from 'lucide-react';
+import { TrendingUp, Activity, BarChart3, Package, Users, Target, CreditCard, Building2, Settings, Database, Mail, Palette, BookOpen, Map, ChevronRight, FileText } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -325,6 +325,14 @@ export function AdminSidebar({
                         <span>Auditoría</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
+                    {(isCommercialManager || isSuperAdmin) && (
+                      <SidebarMenuItem>
+                        <SidebarMenuButton onClick={() => onSectionChange('commercial-manager-audit')} isActive={isActive('commercial-manager-audit')}>
+                          <FileText className="h-4 w-4" />
+                          <span>Auditoría Responsables</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    )}
                   </SidebarMenu>
                 </SidebarGroupContent>
               </CollapsibleContent>
@@ -358,6 +366,13 @@ export function AdminSidebar({
                   <Database className="h-5 w-5" />
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              {(isCommercialManager || isSuperAdmin) && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton onClick={() => onSectionChange('commercial-manager-audit')} isActive={isActive('commercial-manager-audit')} tooltip="Auditoría Responsables">
+                    <FileText className="h-5 w-5" />
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroup>
         )}

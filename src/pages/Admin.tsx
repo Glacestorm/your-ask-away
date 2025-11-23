@@ -26,6 +26,7 @@ import { TPVGoalsManager } from '@/components/admin/TPVGoalsManager';
 import { CommercialDirectorDashboard } from '@/components/admin/CommercialDirectorDashboard';
 import { OfficeDirectorDashboard } from '@/components/admin/OfficeDirectorDashboard';
 import { CommercialManagerDashboard } from '@/components/admin/CommercialManagerDashboard';
+import { CommercialManagerAudit } from '@/components/admin/CommercialManagerAudit';
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, loading: authLoading } = useAuth();
   const { t } = useLanguage();
@@ -82,6 +83,17 @@ const Admin = () => {
           );
         }
         return <CommercialManagerDashboard />;
+      case 'commercial-manager-audit':
+        if (!isCommercialManager && !isSuperAdmin) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">No tienes permisos para acceder a esta sección.</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <CommercialManagerAudit />;
       case 'health':
         return <SystemHealthMonitor />;
       case 'visits':
