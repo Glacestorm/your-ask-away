@@ -4,6 +4,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { CompanyWithDetails, MapFilters, StatusColor } from '@/types/database';
 import Supercluster from 'supercluster';
 import { getSectorIcon, iconToSVGString } from './markerIcons';
+import { formatCnaeWithDescription } from '@/lib/cnaeDescriptions';
 
 type CompanyPoint = {
   type: 'Feature';
@@ -15,6 +16,56 @@ type CompanyPoint = {
     coordinates: [number, number];
   };
 };
+
+// Helper function to add 3D buildings layer
+function add3DBuildingsLayer(map: maplibregl.Map) {
+  // Wait for style to be fully loaded
+  if (!map.isStyleLoaded()) {
+    map.once('styledata', () => add3DBuildingsLayer(map));
+    return;
+  }
+
+  // Add OSM Buildings source for 3D buildings
+  if (!map.getSource('osm-buildings')) {
+    map.addSource('osm-buildings', {
+      type: 'vector',
+      tiles: ['https://tiles.openstreetmap.fr/openriverboatmap/{z}/{x}/{y}.pbf'],
+      minzoom: 13,
+      maxzoom: 14,
+    });
+  }
+
+  // Add 3D buildings layer
+  if (!map.getLayer('3d-buildings')) {
+    map.addLayer({
+      id: '3d-buildings',
+      type: 'fill-extrusion',
+      source: 'osm-buildings',
+      'source-layer': 'building',
+      minzoom: 14,
+      paint: {
+        'fill-extrusion-color': [
+          'case',
+          ['has', 'building:colour'],
+          ['get', 'building:colour'],
+          'hsl(30, 15%, 75%)',
+        ],
+        'fill-extrusion-height': [
+          'case',
+          ['has', 'height'],
+          ['get', 'height'],
+          ['case',
+            ['has', 'building:levels'],
+            ['*', ['to-number', ['get', 'building:levels']], 3],
+            12,
+          ],
+        ],
+        'fill-extrusion-base': 0,
+        'fill-extrusion-opacity': 0.85,
+      },
+    });
+  }
+}
 
 interface MapContainerProps {
   companies: CompanyWithDetails[];
@@ -147,6 +198,11 @@ export function MapContainer({
 
     map.current.on('load', () => {
       setMapLoaded(true);
+      
+      // Add 3D buildings layer
+      if (map.current) {
+        add3DBuildingsLayer(map.current);
+      }
     });
 
     return () => {
@@ -288,12 +344,24 @@ export function MapContainer({
         center: currentCenter,
         zoom: currentZoom,
       });
+      
+      // Re-add 3D buildings layer after style change
+      add3DBuildingsLayer(map.current);
     });
 
     map.current.easeTo({
       pitch: view3D ? 60 : 0,
       duration: 1000,
     });
+    
+    // Show/hide 3D buildings based on view3D state
+    if (map.current.getLayer('3d-buildings')) {
+      map.current.setLayoutProperty(
+        '3d-buildings',
+        'visibility',
+        view3D ? 'visible' : 'none'
+      );
+    }
   }, [mapStyle, view3D, mapLoaded, baseLayers]);
 
   // Update markers when companies or filters change
@@ -494,7 +562,7 @@ export function MapContainer({
                 <p><strong>Estado:</strong> ${company.status?.status_name || 'N/A'}</p>
                 <p><strong>Dirección:</strong> ${company.address}</p>
                 <p><strong>Parroquia:</strong> ${company.parroquia}</p>
-                ${company.cnae ? `<p><strong>CNAE:</strong> ${company.cnae}</p>` : ''}
+                ${company.cnae ? `<p><strong>CNAE:</strong> ${formatCnaeWithDescription(company.cnae)}</p>` : ''}
                 ${company.gestor ? `<p><strong>Gestor:</strong> ${company.gestor.full_name || company.gestor.email}</p>` : ''}
                 ${company.products && company.products.length > 0 ? `<p><strong>Productos:</strong> ${company.products.length}</p>` : ''}
               </div>

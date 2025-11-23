@@ -10,6 +10,7 @@ import { MapFilters, StatusColor, Product } from '@/types/database';
 import { Layers, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getSectorIcon } from './markerIcons';
+import { formatCnaeWithDescription } from '@/lib/cnaeDescriptions';
 
 interface MapLayersControlProps {
   statusColors: StatusColor[];
@@ -288,7 +289,7 @@ export function MapLayersControl({
                           htmlFor={`cnae-${cnae}`}
                           className="flex-1 cursor-pointer text-sm font-normal"
                         >
-                          {cnae}
+                          {formatCnaeWithDescription(cnae)}
                         </Label>
                       </div>
                     ))}

@@ -17,6 +17,7 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { VisitsPanel } from './VisitsPanel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SectorStats } from './SectorStats';
+import { formatCnaeWithDescription } from '@/lib/cnaeDescriptions';
 
 interface MapSidebarProps {
   open: boolean;
@@ -389,7 +390,7 @@ export function MapSidebar({
                           htmlFor={`cnae-${cnae}`}
                           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                         >
-                          {cnae}
+                          {formatCnaeWithDescription(cnae)}
                         </label>
                       </div>
                     ))}
