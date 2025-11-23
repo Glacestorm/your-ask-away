@@ -57,18 +57,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log('🔄 Auth state changed:', event, 'User:', session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Fetch role synchronously to prevent loading being set to false prematurely
+        // Fetch role but don't block the auth state change
         if (session?.user) {
           console.log('👤 User logged in, fetching role...');
-          await fetchUserRole(session.user.id);
+          // Don't use async/await in the callback
+          fetchUserRole(session.user.id);
         } else {
           console.log('👋 User logged out, clearing role');
           setUserRole(null);
+          setRoleLoading(false);
         }
         
         setLoading(false);
@@ -76,13 +78,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       console.log('🔐 Initial session check:', session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        await fetchUserRole(session.user.id);
+        fetchUserRole(session.user.id);
+      } else {
+        setRoleLoading(false);
       }
       setLoading(false);
     });
