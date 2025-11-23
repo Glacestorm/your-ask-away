@@ -14,6 +14,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { Slider } from '@/components/ui/slider';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -40,6 +41,10 @@ interface MapHeaderProps {
   onView3DChange: (enabled: boolean) => void;
   baseLayers: MapBaseLayers;
   onBaseLayersChange: (layers: MapBaseLayers) => void;
+  buildingOpacity: number;
+  onBuildingOpacityChange: (opacity: number) => void;
+  buildingHeightMultiplier: number;
+  onBuildingHeightMultiplierChange: (multiplier: number) => void;
   statusColors: StatusColor[];
   products: Product[];
   filters: MapFilters;
@@ -58,6 +63,10 @@ export function MapHeader({
   onView3DChange,
   baseLayers,
   onBaseLayersChange,
+  buildingOpacity,
+  onBuildingOpacityChange,
+  buildingHeightMultiplier,
+  onBuildingHeightMultiplierChange,
   statusColors,
   products,
   filters,
@@ -265,6 +274,58 @@ export function MapHeader({
                       </Label>
                     </div>
                   </div>
+                  
+                  {/* 3D Buildings controls */}
+                  {view3D && (
+                    <>
+                      <Separator />
+                      <div className="space-y-3">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                          Controles 3D
+                        </p>
+                        
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="building-opacity" className="text-sm font-normal">
+                              Opacidad edificios
+                            </Label>
+                            <span className="text-xs text-muted-foreground">
+                              {Math.round(buildingOpacity * 100)}%
+                            </span>
+                          </div>
+                          <Slider
+                            id="building-opacity"
+                            min={0}
+                            max={1}
+                            step={0.05}
+                            value={[buildingOpacity]}
+                            onValueChange={(value) => onBuildingOpacityChange(value[0])}
+                            className="w-full"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label htmlFor="building-height" className="text-sm font-normal">
+                              Multiplicador altura
+                            </Label>
+                            <span className="text-xs text-muted-foreground">
+                              {buildingHeightMultiplier.toFixed(1)}x
+                            </span>
+                          </div>
+                          <Slider
+                            id="building-height"
+                            min={0.5}
+                            max={3}
+                            step={0.1}
+                            value={[buildingHeightMultiplier]}
+                            onValueChange={(value) => onBuildingHeightMultiplierChange(value[0])}
+                            className="w-full"
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
                   
                   <Separator />
 

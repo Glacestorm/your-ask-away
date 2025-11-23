@@ -38,6 +38,8 @@ const MapView = () => {
     labels: true,
     markers: true,
   });
+  const [buildingOpacity, setBuildingOpacity] = useState(0.85);
+  const [buildingHeightMultiplier, setBuildingHeightMultiplier] = useState(1);
   const [showSearch, setShowSearch] = useState(false);
   const [searchLocation, setSearchLocation] = useState<{
     lat: number;
@@ -175,6 +177,10 @@ const MapView = () => {
         onView3DChange={setView3D}
         baseLayers={baseLayers}
         onBaseLayersChange={setBaseLayers}
+        buildingOpacity={buildingOpacity}
+        onBuildingOpacityChange={setBuildingOpacity}
+        buildingHeightMultiplier={buildingHeightMultiplier}
+        onBuildingHeightMultiplierChange={setBuildingHeightMultiplier}
         statusColors={statusColors}
         products={products}
         filters={filters}
@@ -224,6 +230,8 @@ const MapView = () => {
             mapStyle={mapStyle}
             view3D={view3D}
             baseLayers={baseLayers}
+            buildingOpacity={buildingOpacity}
+            buildingHeightMultiplier={buildingHeightMultiplier}
             searchLocation={searchLocation}
             onSearchLocationClear={() => setSearchLocation(null)}
           />
