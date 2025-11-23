@@ -14,7 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Plus, Pencil, Trash2, Upload, Phone, Mail, Globe, Users, Building2, FileText, History, Clock, TrendingUp, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { CompanyWithDetails, StatusColor, Profile } from '@/types/database';
-import * as XLSX from 'xlsx';
+import { ExcelImporter } from './ExcelImporter';
 
 interface CompanyContact {
   id: string;
@@ -65,6 +65,7 @@ export function CompaniesManager() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState<CompanyWithDetails | null>(null);
   const [loading, setLoading] = useState(false);
+  const [importerOpen, setImporterOpen] = useState(false);
   const [visits, setVisits] = useState<Visit[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [products, setProducts] = useState<any[]>([]);
@@ -342,40 +343,6 @@ export function CompaniesManager() {
     });
   };
 
-  const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      const data = await file.arrayBuffer();
-      const workbook = XLSX.read(data);
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet);
-
-      for (const row of jsonData) {
-        await supabase.from('companies').insert({
-          name: row.Nombre || row.name,
-          address: row.Dirección || row.Direccion || row.address,
-          longitude: Number(row.Longitud || row.longitude || 1.5218),
-          latitude: Number(row.Latitud || row.latitude || 42.5063),
-          cnae: row.CNAE || row.cnae || null,
-          parroquia: row.Parroquia || row.parroquia || 'Andorra la Vella',
-          oficina: row.Oficina || row.oficina || null,
-          observaciones: row.Observaciones || row.observaciones || null,
-          phone: row.Telefono || row.Teléfono || row.phone || null,
-          email: row.Email || row.email || null,
-          website: row.Web || row.website || null,
-          sector: row.Sector || row.sector || null,
-        });
-      }
-
-      toast.success(`Se importaron ${jsonData.length} empresas correctamente`);
-      fetchData();
-    } catch (error: any) {
-      console.error('Error importing Excel:', error);
-      toast.error('Error al importar el archivo Excel');
-    }
-  };
 
   return (
     <Card>
@@ -386,17 +353,10 @@ export function CompaniesManager() {
             <CardDescription>Administración completa del fichero de empresas</CardDescription>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => document.getElementById('excel-input')?.click()}>
+            <Button variant="outline" onClick={() => setImporterOpen(true)}>
               <Upload className="mr-2 h-4 w-4" />
               Importar Excel
             </Button>
-            <input
-              id="excel-input"
-              type="file"
-              accept=".xlsx,.xls"
-              className="hidden"
-              onChange={handleImportExcel}
-            />
             <Button onClick={() => { resetForm(); setDialogOpen(true); }}>
               <Plus className="mr-2 h-4 w-4" />
               Nueva Empresa
@@ -1067,6 +1027,14 @@ export function CompaniesManager() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Excel Importer */}
+      <ExcelImporter
+        open={importerOpen}
+        onOpenChange={setImporterOpen}
+        onImportComplete={fetchData}
+        parroquias={parroquias}
+      />
     </Card>
   );
 }
