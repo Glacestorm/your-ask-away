@@ -76,40 +76,40 @@
 }
 
 /* ========================================
-   TEMA CREAND (Corporativo)
+   TEMA CREAND (Corporativo - Based on creand.ad)
    ======================================== */
 .theme-creand {
   --background: 0 0% 100%;
-  --foreground: 220 39% 11%;
+  --foreground: 0 0% 13%;
   --card: 0 0% 100%;
-  --card-foreground: 220 39% 11%;
+  --card-foreground: 0 0% 13%;
   --popover: 0 0% 100%;
-  --popover-foreground: 220 39% 11%;
-  --primary: 211 100% 43%;
+  --popover-foreground: 0 0% 13%;
+  --primary: 145 55% 42%;
   --primary-foreground: 0 0% 100%;
-  --primary-glow: 211 100% 53%;
-  --secondary: 210 17% 95%;
-  --secondary-foreground: 220 39% 11%;
-  --muted: 210 17% 95%;
-  --muted-foreground: 220 14% 46%;
-  --accent: 211 100% 96%;
-  --accent-foreground: 211 100% 43%;
+  --primary-glow: 145 55% 52%;
+  --secondary: 145 25% 90%;
+  --secondary-foreground: 145 55% 25%;
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 45%;
+  --accent: 145 55% 95%;
+  --accent-foreground: 145 55% 30%;
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 0 0% 100%;
-  --border: 210 17% 90%;
-  --input: 210 17% 90%;
-  --ring: 211 100% 43%;
+  --border: 0 0% 90%;
+  --input: 0 0% 90%;
+  --ring: 145 55% 42%;
   --radius: 0.5rem;
-  --chart-1: 211 100% 43%;
-  --chart-2: 220 39% 11%;
-  --chart-3: 210 17% 60%;
-  --chart-4: 200 80% 50%;
-  --chart-5: 190 70% 45%;
+  --chart-1: 145 55% 42%;
+  --chart-2: 145 45% 35%;
+  --chart-3: 145 35% 55%;
+  --chart-4: 35 75% 50%;
+  --chart-5: 200 55% 45%;
   
-  --gradient-primary: linear-gradient(135deg, hsl(211 100% 43%), hsl(211 100% 53%));
-  --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(210 17% 98%));
-  --shadow-elegant: 0 10px 30px -10px hsl(211 100% 43% / 0.25);
-  --shadow-glow: 0 0 40px hsl(211 100% 53% / 0.35);
+  --gradient-primary: linear-gradient(135deg, hsl(145 55% 42%), hsl(145 55% 52%));
+  --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(145 25% 98%));
+  --shadow-elegant: 0 10px 30px -10px hsl(145 55% 42% / 0.25);
+  --shadow-glow: 0 0 40px hsl(145 55% 52% / 0.35);
 }
 
 /* ========================================
@@ -180,6 +180,17 @@
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     letter-spacing: -0.011em;
     transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  .theme-creand body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  
+  .theme-creand h1, 
+  .theme-creand h2, 
+  .theme-creand h3 {
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-weight: 600;
   }
   
   * {
