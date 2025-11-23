@@ -144,6 +144,7 @@ export interface MapFilters {
   gestorIds: string[];
   parroquias: string[];
   cnaes: string[];
+  sectors: string[];
   productIds: string[];
   dateRange: {
     from: Date | null;

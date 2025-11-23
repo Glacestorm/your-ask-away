@@ -9,6 +9,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { MapFilters, StatusColor, Product } from '@/types/database';
 import { Layers, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getSectorIcon } from './markerIcons';
 
 interface MapLayersControlProps {
   statusColors: StatusColor[];
@@ -17,6 +18,7 @@ interface MapLayersControlProps {
   onFiltersChange: (filters: MapFilters) => void;
   availableParroquias: string[];
   availableCnaes: string[];
+  availableSectors: string[];
 }
 
 export function MapLayersControl({
@@ -26,6 +28,7 @@ export function MapLayersControl({
   onFiltersChange,
   availableParroquias,
   availableCnaes,
+  availableSectors,
 }: MapLayersControlProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [openSections, setOpenSections] = useState<string[]>(['status', 'products']);
@@ -66,11 +69,19 @@ export function MapLayersControl({
     onFiltersChange({ ...filters, cnaes: newCnaes });
   };
 
+  const handleSectorToggle = (sector: string) => {
+    const newSectors = filters.sectors.includes(sector)
+      ? filters.sectors.filter((s) => s !== sector)
+      : [...filters.sectors, sector];
+    onFiltersChange({ ...filters, sectors: newSectors });
+  };
+
   const activeFiltersCount = 
     filters.statusIds.length + 
     filters.productIds.length + 
     filters.parroquias.length + 
-    filters.cnaes.length;
+    filters.cnaes.length +
+    filters.sectors.length;
 
   return (
     <div className="absolute left-4 top-4 z-10">
@@ -211,6 +222,46 @@ export function MapLayersControl({
                 </Collapsible>
               )}
 
+              {/* Sectores */}
+              {availableSectors.length > 0 && (
+                <Collapsible
+                  open={openSections.includes('sectors')}
+                  onOpenChange={() => toggleSection('sectors')}
+                >
+                  <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md px-2 py-2 hover:bg-accent">
+                    <span className="text-sm font-medium">Sectores</span>
+                    {openSections.includes('sectors') ? (
+                      <ChevronUp className="h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4" />
+                    )}
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-2 pt-2">
+                    {availableSectors.map((sector) => {
+                      const Icon = getSectorIcon(sector);
+                      return (
+                        <div key={sector} className="flex items-center space-x-2 px-2">
+                          <Checkbox
+                            id={`sector-${sector}`}
+                            checked={filters.sectors.includes(sector)}
+                            onCheckedChange={() => handleSectorToggle(sector)}
+                          />
+                          <div className="flex flex-1 items-center gap-2">
+                            <Icon className="h-4 w-4 text-muted-foreground" />
+                            <Label
+                              htmlFor={`sector-${sector}`}
+                              className="flex-1 cursor-pointer text-sm font-normal"
+                            >
+                              {sector}
+                            </Label>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
+
               {/* CNAEs */}
               {availableCnaes.length > 0 && (
                 <Collapsible
@@ -218,7 +269,7 @@ export function MapLayersControl({
                   onOpenChange={() => toggleSection('cnaes')}
                 >
                   <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md px-2 py-2 hover:bg-accent">
-                    <span className="text-sm font-medium">Sectores (CNAE)</span>
+                    <span className="text-sm font-medium">CNAE</span>
                     {openSections.includes('cnaes') ? (
                       <ChevronUp className="h-4 w-4" />
                     ) : (
@@ -259,6 +310,7 @@ export function MapLayersControl({
                     productIds: [],
                     parroquias: [],
                     cnaes: [],
+                    sectors: [],
                   })
                 }
                 className="w-full"
