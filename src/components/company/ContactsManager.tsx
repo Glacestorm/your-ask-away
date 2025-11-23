@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { supabase } from '@/integrations/supabase/client';
 import { CompanyContact } from '@/types/database';
 import { companyContactSchema, CompanyContactFormData } from '@/lib/validations';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,6 +35,7 @@ interface ContactsManagerProps {
 }
 
 export const ContactsManager = ({ companyId }: ContactsManagerProps) => {
+  const { t } = useLanguage();
   const [contacts, setContacts] = useState<CompanyContact[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -73,7 +75,7 @@ export const ContactsManager = ({ companyId }: ContactsManagerProps) => {
       if (error) throw error;
       setContacts(data || []);
     } catch (error: any) {
-      toast.error('Error al cargar contactos: ' + error.message);
+      toast.error(t('contactForm.errorLoading') + ': ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -96,7 +98,7 @@ export const ContactsManager = ({ companyId }: ContactsManagerProps) => {
           .eq('id', editingContact.id);
 
         if (error) throw error;
-        toast.success('Contacto actualizado correctamente');
+        toast.success(t('contactForm.contactUpdated'));
       } else {
         const { error } = await supabase
           .from('company_contacts')
@@ -111,7 +113,7 @@ export const ContactsManager = ({ companyId }: ContactsManagerProps) => {
           }]);
 
         if (error) throw error;
-        toast.success('Contacto creado correctamente');
+        toast.success(t('contactForm.contactCreated'));
       }
 
       fetchContacts();
@@ -142,10 +144,10 @@ export const ContactsManager = ({ companyId }: ContactsManagerProps) => {
         .eq('id', deleteContactId);
 
       if (error) throw error;
-      toast.success('Contacto eliminado correctamente');
+      toast.success(t('contactForm.contactDeleted'));
       fetchContacts();
     } catch (error: any) {
-      toast.error('Error al eliminar: ' + error.message);
+      toast.error(t('contactForm.errorDeleting') + ': ' + error.message);
     } finally {
       setDeleteContactId(null);
     }
@@ -165,7 +167,7 @@ export const ContactsManager = ({ companyId }: ContactsManagerProps) => {
   };
 
   if (loading) {
-    return <div className="text-sm text-muted-foreground">Cargando contactos...</div>;
+    return <div className="text-sm text-muted-foreground">{t('contactForm.loadingContacts')}</div>;
   }
 
   return (
@@ -173,28 +175,28 @@ export const ContactsManager = ({ companyId }: ContactsManagerProps) => {
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold flex items-center gap-2">
           <User className="h-5 w-5" />
-          Contactos ({contacts.length})
+          {t('contactForm.title')} ({contacts.length})
         </h3>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button size="sm" onClick={() => setEditingContact(null)}>
               <Plus className="h-4 w-4 mr-2" />
-              Nuevo Contacto
+              {t('contactForm.newContact')}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
-                {editingContact ? 'Editar Contacto' : 'Nuevo Contacto'}
+                {editingContact ? t('contactForm.editContact') : t('contactForm.newContact')}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
-                <Label htmlFor="contact_name">Nombre *</Label>
+                <Label htmlFor="contact_name">{t('contactForm.contactName')} *</Label>
                 <Input
                   id="contact_name"
                   {...register('contact_name')}
-                  placeholder="Juan Pérez"
+                  placeholder={t('contactForm.contactNamePlaceholder')}
                 />
                 {errors.contact_name && (
                   <p className="text-sm text-destructive mt-1">{errors.contact_name.message}</p>
@@ -202,11 +204,11 @@ export const ContactsManager = ({ companyId }: ContactsManagerProps) => {
               </div>
 
               <div>
-                <Label htmlFor="position">Cargo</Label>
+                <Label htmlFor="position">{t('contactForm.position')}</Label>
                 <Input
                   id="position"
                   {...register('position')}
-                  placeholder="Director General"
+                  placeholder={t('contactForm.positionPlaceholder')}
                 />
                 {errors.position && (
                   <p className="text-sm text-destructive mt-1">{errors.position.message}</p>
@@ -215,11 +217,11 @@ export const ContactsManager = ({ companyId }: ContactsManagerProps) => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="phone">Teléfono</Label>
+                  <Label htmlFor="phone">{t('contactForm.phone')}</Label>
                   <Input
                     id="phone"
                     {...register('phone')}
-                    placeholder="+34 600 000 000"
+                    placeholder={t('contactForm.phonePlaceholder')}
                   />
                   {errors.phone && (
                     <p className="text-sm text-destructive mt-1">{errors.phone.message}</p>
@@ -227,12 +229,12 @@ export const ContactsManager = ({ companyId }: ContactsManagerProps) => {
                 </div>
 
                 <div>
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t('contactForm.email')}</Label>
                   <Input
                     id="email"
                     type="email"
                     {...register('email')}
-                    placeholder="contacto@empresa.com"
+                    placeholder={t('contactForm.emailPlaceholder')}
                   />
                   {errors.email && (
                     <p className="text-sm text-destructive mt-1">{errors.email.message}</p>
@@ -241,11 +243,11 @@ export const ContactsManager = ({ companyId }: ContactsManagerProps) => {
               </div>
 
               <div>
-                <Label htmlFor="notes">Notas</Label>
+                <Label htmlFor="notes">{t('contactForm.notes')}</Label>
                 <Textarea
                   id="notes"
                   {...register('notes')}
-                  placeholder="Información adicional..."
+                  placeholder={t('contactForm.notesPlaceholder')}
                   rows={3}
                 />
                 {errors.notes && (
@@ -260,16 +262,16 @@ export const ContactsManager = ({ companyId }: ContactsManagerProps) => {
                   onCheckedChange={(checked) => setValue('is_primary', checked as boolean)}
                 />
                 <Label htmlFor="is_primary" className="cursor-pointer">
-                  Contacto principal
+                  {t('contactForm.primary')}
                 </Label>
               </div>
 
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={handleCloseDialog}>
-                  Cancelar
+                  {t('common.cancel')}
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? 'Guardando...' : 'Guardar'}
+                  {isSubmitting ? t('contactForm.saving') : t('common.save')}
                 </Button>
               </div>
             </form>
@@ -280,8 +282,8 @@ export const ContactsManager = ({ companyId }: ContactsManagerProps) => {
       {contacts.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
           <User className="h-12 w-12 mx-auto mb-2 opacity-50" />
-          <p>No hay contactos registrados</p>
-          <p className="text-sm">Añade el primer contacto de esta empresa</p>
+          <p>{t('contactForm.noContacts')}</p>
+          <p className="text-sm">{t('contactForm.addFirstContact')}</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -345,14 +347,14 @@ export const ContactsManager = ({ companyId }: ContactsManagerProps) => {
       <AlertDialog open={!!deleteContactId} onOpenChange={() => setDeleteContactId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar contacto?</AlertDialogTitle>
+            <AlertDialogTitle>{t('contactForm.deleteTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. El contacto será eliminado permanentemente.
+              {t('contactForm.deleteDescription')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Eliminar</AlertDialogAction>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>{t('common.delete')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

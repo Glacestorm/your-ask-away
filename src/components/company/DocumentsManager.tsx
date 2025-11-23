@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { CompanyDocument } from '@/types/database';
 import { documentUploadSchema, DocumentUploadFormData } from '@/lib/validations';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -38,6 +39,7 @@ interface DocumentsManagerProps {
 
 export const DocumentsManager = ({ companyId, companyName }: DocumentsManagerProps) => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [documents, setDocuments] = useState<CompanyDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -72,7 +74,7 @@ export const DocumentsManager = ({ companyId, companyName }: DocumentsManagerPro
       if (error) throw error;
       setDocuments(data || []);
     } catch (error: any) {
-      toast.error('Error al cargar documentos: ' + error.message);
+      toast.error(t('documentForm.errorLoading') + ': ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -129,11 +131,11 @@ export const DocumentsManager = ({ companyId, companyName }: DocumentsManagerPro
 
       if (insertError) throw insertError;
 
-      toast.success('Documento subido correctamente');
+      toast.success(t('documentForm.documentUploaded'));
       fetchDocuments();
       handleCloseDialog();
     } catch (error: any) {
-      toast.error('Error al subir documento: ' + error.message);
+      toast.error(t('documentForm.errorUploading') + ': ' + error.message);
     } finally {
       setUploading(false);
     }
@@ -153,9 +155,9 @@ export const DocumentsManager = ({ companyId, companyName }: DocumentsManagerPro
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      toast.success('Documento descargado');
+      toast.success(t('documentForm.documentDownloaded'));
     } catch (error: any) {
-      toast.error('Error al descargar: ' + error.message);
+      toast.error(t('documentForm.errorDownloading') + ': ' + error.message);
     }
   };
 
@@ -184,10 +186,10 @@ export const DocumentsManager = ({ companyId, companyName }: DocumentsManagerPro
 
       if (error) throw error;
 
-      toast.success('Documento eliminado correctamente');
+      toast.success(t('documentForm.documentDeleted'));
       fetchDocuments();
     } catch (error: any) {
-      toast.error('Error al eliminar: ' + error.message);
+      toast.error(t('documentForm.errorDeleting') + ': ' + error.message);
     } finally {
       setDeleteDocumentId(null);
     }
@@ -223,7 +225,7 @@ export const DocumentsManager = ({ companyId, companyName }: DocumentsManagerPro
   };
 
   if (loading) {
-    return <div className="text-sm text-muted-foreground">Cargando documentos...</div>;
+    return <div className="text-sm text-muted-foreground">{t('documentForm.loadingDocuments')}</div>;
   }
 
   return (
@@ -231,22 +233,22 @@ export const DocumentsManager = ({ companyId, companyName }: DocumentsManagerPro
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold flex items-center gap-2">
           <FileText className="h-5 w-5" />
-          Documentos ({documents.length})
+          {t('documentForm.title')} ({documents.length})
         </h3>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button size="sm">
               <Plus className="h-4 w-4 mr-2" />
-              Subir Documento
+              {t('documentForm.uploadDocument')}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Subir Documento</DialogTitle>
+              <DialogTitle>{t('documentForm.uploadDocument')}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
-                <Label htmlFor="file">Archivo *</Label>
+                <Label htmlFor="file">{t('documentForm.file')} *</Label>
                 <div className="mt-2">
                   <input
                     ref={fileInputRef}
@@ -263,7 +265,7 @@ export const DocumentsManager = ({ companyId, companyName }: DocumentsManagerPro
                     className="w-full"
                   >
                     <Upload className="h-4 w-4 mr-2" />
-                    Seleccionar Archivo
+                    {t('documentForm.selectFile')}
                   </Button>
                   {selectedFile && (
                     <div className="mt-2 p-3 bg-muted rounded-lg flex items-center justify-between">
@@ -294,11 +296,11 @@ export const DocumentsManager = ({ companyId, companyName }: DocumentsManagerPro
               </div>
 
               <div>
-                <Label htmlFor="document_name">Nombre del Documento *</Label>
+                <Label htmlFor="document_name">{t('documentForm.documentName')} *</Label>
                 <Input
                   id="document_name"
                   {...register('document_name')}
-                  placeholder="Contrato 2024"
+                  placeholder={t('documentForm.documentNamePlaceholder')}
                 />
                 {errors.document_name && (
                   <p className="text-sm text-destructive mt-1">{errors.document_name.message}</p>
@@ -306,11 +308,11 @@ export const DocumentsManager = ({ companyId, companyName }: DocumentsManagerPro
               </div>
 
               <div>
-                <Label htmlFor="document_type">Tipo de Documento</Label>
+                <Label htmlFor="document_type">{t('documentForm.documentType')}</Label>
                 <Input
                   id="document_type"
                   {...register('document_type')}
-                  placeholder="Contrato, Factura, etc."
+                  placeholder={t('documentForm.documentTypePlaceholder')}
                 />
                 {errors.document_type && (
                   <p className="text-sm text-destructive mt-1">{errors.document_type.message}</p>
@@ -318,11 +320,11 @@ export const DocumentsManager = ({ companyId, companyName }: DocumentsManagerPro
               </div>
 
               <div>
-                <Label htmlFor="notes">Notas</Label>
+                <Label htmlFor="notes">{t('documentForm.notes')}</Label>
                 <Textarea
                   id="notes"
                   {...register('notes')}
-                  placeholder="Información adicional sobre este documento..."
+                  placeholder={t('documentForm.notesPlaceholder')}
                   rows={3}
                 />
                 {errors.notes && (
@@ -332,10 +334,10 @@ export const DocumentsManager = ({ companyId, companyName }: DocumentsManagerPro
 
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={handleCloseDialog}>
-                  Cancelar
+                  {t('common.cancel')}
                 </Button>
                 <Button type="submit" disabled={uploading || !selectedFile}>
-                  {uploading ? 'Subiendo...' : 'Subir'}
+                  {uploading ? t('documentForm.uploading') : t('documentForm.upload')}
                 </Button>
               </div>
             </form>
@@ -346,8 +348,8 @@ export const DocumentsManager = ({ companyId, companyName }: DocumentsManagerPro
       {documents.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
           <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
-          <p>No hay documentos</p>
-          <p className="text-sm">Sube el primer documento de esta empresa</p>
+          <p>{t('documentForm.noDocuments')}</p>
+          <p className="text-sm">{t('documentForm.addFirstDocument')}</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -364,12 +366,12 @@ export const DocumentsManager = ({ companyId, companyName }: DocumentsManagerPro
                   </div>
                   {doc.document_type && (
                     <p className="text-sm text-muted-foreground mb-1">
-                      Tipo: {doc.document_type}
+                      {t('documentForm.type')}: {doc.document_type}
                     </p>
                   )}
                   <p className="text-xs text-muted-foreground">
-                    Tamaño: {formatFileSize(doc.file_size)} • 
-                    Subido {formatDistanceToNow(new Date(doc.created_at), { addSuffix: true, locale: es })}
+                    {t('documentForm.size')}: {formatFileSize(doc.file_size)} • 
+                    {t('documentForm.uploaded')} {formatDistanceToNow(new Date(doc.created_at), { addSuffix: true, locale: es })}
                   </p>
                   {doc.notes && (
                     <p className="text-sm text-muted-foreground mt-2">{doc.notes}</p>
@@ -400,14 +402,14 @@ export const DocumentsManager = ({ companyId, companyName }: DocumentsManagerPro
       <AlertDialog open={!!deleteDocumentId} onOpenChange={() => setDeleteDocumentId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar documento?</AlertDialogTitle>
+            <AlertDialogTitle>{t('documentForm.deleteTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. El documento será eliminado permanentemente del almacenamiento.
+              {t('documentForm.deleteDescription')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Eliminar</AlertDialogAction>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>{t('common.delete')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
