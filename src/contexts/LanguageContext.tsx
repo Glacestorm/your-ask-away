@@ -1,4 +1,8 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode } from 'react';
+import caTranslations from '@/locales/ca';
+import esTranslations from '@/locales/es';
+import frTranslations from '@/locales/fr';
+import enTranslations from '@/locales/en';
 
 export type Language = 'ca' | 'es' | 'fr' | 'en';
 
@@ -43,17 +47,13 @@ export const useLanguage = () => {
   return context;
 };
 
+const translations: Record<Language, Record<string, string>> = {
+  ca: caTranslations,
+  es: esTranslations,
+  fr: frTranslations,
+  en: enTranslations,
+};
+
 const getTranslations = (lang: Language): Record<string, string> => {
-  switch (lang) {
-    case 'ca':
-      return require('@/locales/ca').default;
-    case 'es':
-      return require('@/locales/es').default;
-    case 'fr':
-      return require('@/locales/fr').default;
-    case 'en':
-      return require('@/locales/en').default;
-    default:
-      return require('@/locales/ca').default;
-  }
+  return translations[lang] || translations.ca;
 };
