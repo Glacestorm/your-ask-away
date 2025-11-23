@@ -72,7 +72,7 @@ interface MapContainerProps {
   statusColors: StatusColor[];
   filters: MapFilters;
   onSelectCompany: (company: CompanyWithDetails) => void;
-  mapStyle?: 'default' | 'satellite' | 'terrain';
+  mapStyle?: 'default' | 'satellite';
   view3D?: boolean;
   baseLayers?: {
     roads: boolean;
@@ -135,30 +135,6 @@ export function MapContainer({
               source: 'satellite',
               minzoom: 0,
               maxzoom: 19,
-            }],
-          };
-        
-        case 'terrain':
-          return {
-            version: 8 as const,
-            sources: {
-              'terrain': {
-                type: 'raster',
-                tiles: [
-                  'https://a.tile.opentopomap.org/{z}/{x}/{y}.png',
-                  'https://b.tile.opentopomap.org/{z}/{x}/{y}.png',
-                  'https://c.tile.opentopomap.org/{z}/{x}/{y}.png',
-                ],
-                tileSize: 256,
-                attribution: '© OpenTopoMap',
-              },
-            },
-            layers: [{
-              id: 'terrain',
-              type: 'raster',
-              source: 'terrain',
-              minzoom: 0,
-              maxzoom: 17,
             }],
           };
         
@@ -252,31 +228,6 @@ export function MapContainer({
           };
           break;
           
-        case 'terrain':
-          baseStyle = {
-            version: 8 as const,
-            sources: {
-              'base': {
-                type: 'raster',
-                tiles: [
-                  'https://a.tile.opentopomap.org/{z}/{x}/{y}.png',
-                  'https://b.tile.opentopomap.org/{z}/{x}/{y}.png',
-                  'https://c.tile.opentopomap.org/{z}/{x}/{y}.png',
-                ],
-                tileSize: 256,
-                attribution: '© OpenTopoMap',
-              },
-            },
-            layers: [{
-              id: 'base',
-              type: 'raster',
-              source: 'base',
-              minzoom: 0,
-              maxzoom: 17,
-            }],
-          };
-          break;
-          
         default: // 'default'
           baseStyle = {
             version: 8 as const,
@@ -303,10 +254,9 @@ export function MapContainer({
       }
 
       // Add overlay layers only for non-satellite views
-      // Satellite imagery should be shown without OSM overlays for clarity
       const overlayLayers: any[] = [];
       
-      // Only add overlays for default map style (not satellite or terrain)
+      // Only add overlays for default map style (not satellite)
       if (mapStyle === 'default') {
         if (baseLayers.roads) {
           baseStyle.sources['osm-overlay'] = {

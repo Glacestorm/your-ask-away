@@ -32,9 +32,9 @@ export interface MapBaseLayers {
 interface MapHeaderProps {
   onToggleSidebar: () => void;
   sidebarOpen: boolean;
-  mapStyle: 'default' | 'satellite' | 'terrain';
+  mapStyle: 'default' | 'satellite';
   view3D: boolean;
-  onMapStyleChange: (style: 'default' | 'satellite' | 'terrain') => void;
+  onMapStyleChange: (style: 'default' | 'satellite') => void;
   onView3DChange: (enabled: boolean) => void;
   baseLayers: MapBaseLayers;
   onBaseLayersChange: (layers: MapBaseLayers) => void;
@@ -160,7 +160,6 @@ export function MapHeader({
               >
                 {mapStyle === 'default' && 'Mapa'}
                 {mapStyle === 'satellite' && 'Satélite'}
-                {mapStyle === 'terrain' && 'Terreno'}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-40 z-50 bg-card">
@@ -180,14 +179,6 @@ export function MapHeader({
                   className="w-full justify-start h-8 text-xs"
                 >
                   Satélite
-                </Button>
-                <Button
-                  variant={mapStyle === 'terrain' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => onMapStyleChange('terrain')}
-                  className="w-full justify-start h-8 text-xs"
-                >
-                  Terreno
                 </Button>
               </div>
             </DropdownMenuContent>
