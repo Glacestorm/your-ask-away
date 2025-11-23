@@ -154,83 +154,89 @@ export function ProductsMetrics() {
       {/* Gráficos */}
       <div className="grid gap-4 md:grid-cols-2">
         {/* Top 10 Productos Contratados */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Top 10 Productos Contratados</CardTitle>
-            <CardDescription>Productos con más contratos activos</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={topProducts} layout="horizontal">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" />
-                <YAxis 
-                  dataKey="producto" 
-                  type="category" 
-                  width={150}
-                  tick={{ fontSize: 11 }}
-                />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="contratos" fill="hsl(var(--primary))" name="Contratos" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        {topProducts.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Top 10 Productos Contratados</CardTitle>
+              <CardDescription>Productos con más contratos activos</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={350}>
+                <BarChart data={topProducts} layout="horizontal">
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" />
+                  <YAxis 
+                    dataKey="producto" 
+                    type="category" 
+                    width={150}
+                    tick={{ fontSize: 11 }}
+                  />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="contratos" fill="hsl(var(--primary))" name="Contratos" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Top 10 Productos Ofrecidos */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Top 10 Productos Ofrecidos</CardTitle>
-            <CardDescription>Productos más ofrecidos en visitas</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={productsOffered} layout="horizontal">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" />
-                <YAxis 
-                  dataKey="producto" 
-                  type="category" 
-                  width={150}
-                  tick={{ fontSize: 11 }}
-                />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="ofertas" fill="hsl(var(--chart-2))" name="Ofertas" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        {productsOffered.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Top 10 Productos Ofrecidos</CardTitle>
+              <CardDescription>Productos más ofrecidos en visitas</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={350}>
+                <BarChart data={productsOffered} layout="horizontal">
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" />
+                  <YAxis 
+                    dataKey="producto" 
+                    type="category" 
+                    width={150}
+                    tick={{ fontSize: 11 }}
+                  />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="ofertas" fill="hsl(var(--chart-2))" name="Ofertas" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Distribución por Categoría */}
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>Distribución por Categoría</CardTitle>
-            <CardDescription>Productos activos por tipo</CardDescription>
-          </CardHeader>
-          <CardContent className="flex justify-center">
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={productsByCategory}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={true}
-                  label={(entry) => `${entry.name}: ${entry.value}`}
-                  outerRadius={100}
-                  fill="hsl(var(--primary))"
-                  dataKey="value"
-                >
-                  {productsByCategory.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        {productsByCategory.length > 0 && (
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <CardTitle>Distribución por Categoría</CardTitle>
+              <CardDescription>Productos activos por tipo</CardDescription>
+            </CardHeader>
+            <CardContent className="flex justify-center">
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={productsByCategory}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={true}
+                    label={(entry) => `${entry.name}: ${entry.value}`}
+                    outerRadius={100}
+                    fill="hsl(var(--primary))"
+                    dataKey="value"
+                  >
+                    {productsByCategory.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
