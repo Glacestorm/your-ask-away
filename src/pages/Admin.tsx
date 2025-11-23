@@ -20,6 +20,7 @@ import { GestoresMetrics } from '@/components/admin/GestoresMetrics';
 import { VinculacionMetrics } from '@/components/admin/VinculacionMetrics';
 import { SystemHealthMonitor } from '@/components/admin/SystemHealthMonitor';
 import { TPVManager } from '@/components/admin/TPVManager';
+import { TPVGoalsManager } from '@/components/admin/TPVGoalsManager';
 
 const Admin = () => {
   const { user, isAdmin, loading: authLoading } = useAuth();
@@ -57,7 +58,7 @@ const Admin = () => {
 
         {/* Admin Tabs */}
         <Tabs defaultValue="health" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-14">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-15">
             {/* Monitor de Salud */}
             <TabsTrigger value="health" className="flex items-center gap-2">
               <Activity className="h-4 w-4" />
@@ -84,6 +85,10 @@ const Admin = () => {
             <TabsTrigger value="tpv" className="flex items-center gap-2">
               <CreditCard className="h-4 w-4" />
               <span className="hidden sm:inline">TPV</span>
+            </TabsTrigger>
+            <TabsTrigger value="tpv-goals" className="flex items-center gap-2">
+              <Target className="h-4 w-4" />
+              <span className="hidden sm:inline">Objetivos TPV</span>
             </TabsTrigger>
             
             {/* Gestión */}
@@ -179,6 +184,18 @@ const Admin = () => {
 
           <TabsContent value="tpv" className="space-y-4">
             <TPVManager />
+          </TabsContent>
+
+          <TabsContent value="tpv-goals" className="space-y-4">
+            <div className="rounded-lg border bg-card p-6">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold">Gestión de Objetivos TPV</h2>
+                <p className="text-sm text-muted-foreground">
+                  Crear, editar y eliminar metas de facturación, vinculación y comisiones
+                </p>
+              </div>
+              <TPVGoalsManager />
+            </div>
           </TabsContent>
 
           {/* GESTIÓN DE DATOS */}
