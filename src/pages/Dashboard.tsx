@@ -16,7 +16,8 @@ import {
   GitCompare,
   LineChart,
   Award,
-  UserCheck
+  UserCheck,
+  Bell
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { subMonths } from 'date-fns';
@@ -33,6 +34,8 @@ import { GestoresMetrics } from '@/components/admin/GestoresMetrics';
 import { VinculacionMetrics } from '@/components/admin/VinculacionMetrics';
 import { ReportGenerator } from '@/components/reports/ReportGenerator';
 import { AnalisisCohortes } from '@/components/dashboard/AnalisisCohortes';
+import { AlertsManager } from '@/components/dashboard/AlertsManager';
+import { NotificationsPanel } from '@/components/dashboard/NotificationsPanel';
 import { supabase } from '@/integrations/supabase/client';
 import * as XLSX from 'xlsx';
 
@@ -117,10 +120,13 @@ const Dashboard = () => {
               <p className="text-muted-foreground">Análisis integral de gestión y rendimiento</p>
             </div>
           </div>
-          <Button onClick={exportToExcel} className="w-full md:w-auto">
-            <Download className="mr-2 h-4 w-4" />
-            Exportar Datos
-          </Button>
+          <div className="flex items-center gap-2">
+            <NotificationsPanel />
+            <Button onClick={exportToExcel} className="w-full md:w-auto">
+              <Download className="mr-2 h-4 w-4" />
+              Exportar Datos
+            </Button>
+          </div>
         </div>
 
         {/* Date Range Filter */}
@@ -131,7 +137,7 @@ const Dashboard = () => {
 
         {/* Dashboard Tabs */}
         <Tabs defaultValue="resumen" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-11 h-auto">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-12 h-auto">
             <TabsTrigger value="resumen" className="flex items-center gap-2 py-3">
               <TrendingUp className="h-4 w-4" />
               <span className="hidden sm:inline">Resumen</span>
@@ -171,6 +177,10 @@ const Dashboard = () => {
             <TabsTrigger value="cohortes" className="flex items-center gap-2 py-3">
               <UserCheck className="h-4 w-4" />
               <span className="hidden sm:inline">Cohortes</span>
+            </TabsTrigger>
+            <TabsTrigger value="alertas" className="flex items-center gap-2 py-3">
+              <Bell className="h-4 w-4" />
+              <span className="hidden sm:inline">Alertas</span>
             </TabsTrigger>
             <TabsTrigger value="reportes" className="flex items-center gap-2 py-3">
               <FileText className="h-4 w-4" />
@@ -281,6 +291,19 @@ const Dashboard = () => {
                 </p>
               </div>
               <AnalisisCohortes />
+            </div>
+          </TabsContent>
+
+          {/* Sistema de Alertas */}
+          <TabsContent value="alertas" className="space-y-6">
+            <div className="rounded-lg border bg-card p-6">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold">Sistema de Alertas Automáticas</h2>
+                <p className="text-muted-foreground">
+                  Configura alertas para recibir notificaciones cuando las métricas requieran atención
+                </p>
+              </div>
+              <AlertsManager />
             </div>
           </TabsContent>
 

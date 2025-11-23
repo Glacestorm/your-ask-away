@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      alerts: {
+        Row: {
+          active: boolean | null
+          alert_name: string
+          condition_type: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          last_checked: string | null
+          metric_type: string
+          period_type: string
+          threshold_value: number
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          alert_name: string
+          condition_type: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          last_checked?: string | null
+          metric_type: string
+          period_type: string
+          threshold_value: number
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          alert_name?: string
+          condition_type?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          last_checked?: string | null
+          metric_type?: string
+          period_type?: string
+          threshold_value?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -352,6 +394,53 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          alert_id: string | null
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          metric_value: number | null
+          severity: string
+          threshold_value: number | null
+          title: string
+          user_id: string | null
+        }
+        Insert: {
+          alert_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          metric_value?: number | null
+          severity: string
+          threshold_value?: number | null
+          title: string
+          user_id?: string | null
+        }
+        Update: {
+          alert_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          metric_value?: number | null
+          severity?: string
+          threshold_value?: number | null
+          title?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "alerts"
             referencedColumns: ["id"]
           },
         ]
