@@ -266,6 +266,8 @@ export function UsersManager() {
         return 'bg-red-500 text-white';
       case 'admin':
         return 'bg-blue-500 text-white';
+      case 'auditor':
+        return 'bg-purple-500 text-white';
       default:
         return 'bg-gray-500 text-white';
     }
@@ -277,6 +279,8 @@ export function UsersManager() {
         return 'Superadministrador';
       case 'admin':
         return 'Administrador';
+      case 'auditor':
+        return 'Auditor';
       default:
         return 'Usuario';
     }
@@ -476,6 +480,12 @@ export function UsersManager() {
                     <div className="flex items-center gap-2">
                       <Shield className="h-4 w-4" />
                       Usuario
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="auditor">
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-purple-500" />
+                      Auditor
                     </div>
                   </SelectItem>
                   <SelectItem value="admin">
