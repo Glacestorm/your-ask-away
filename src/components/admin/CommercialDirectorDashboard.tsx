@@ -68,11 +68,17 @@ export function CommercialDirectorDashboard() {
       }
 
       // Obtener gestores y sus datos
-      const { data: profiles } = await supabase
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, full_name, email, oficina');
 
-      if (!profiles) return;
+      if (profilesError || !profiles || profiles.length === 0) {
+        console.error('Error fetching profiles:', profilesError);
+        setGestoresData([]);
+        setOficinas([]);
+        setLoading(false);
+        return;
+      }
 
       // Obtener oficinas únicas
       const uniqueOficinas = Array.from(new Set(profiles.map(p => p.oficina).filter(Boolean))) as string[];
@@ -98,17 +104,22 @@ export function CommercialDirectorDashboard() {
           .select('id')
           .eq('gestor_id', gestor.id);
 
+        // Usar valores por defecto si no hay datos
+        const safeVisits = visits || [];
+        const safeCompanies = companies || [];
+
         // Calcular métricas con validación estricta
-        const totalVisits = visits?.length || 0;
-        const successfulVisits = visits?.filter(v => v.result === 'Exitosa').length || 0;
+        const totalVisits = safeVisits.length;
+        const successfulVisits = safeVisits.filter(v => v.result === 'Exitosa').length;
         const successRate = totalVisits > 0 ? Math.round((successfulVisits / totalVisits) * 100) : 0;
         
         // Filtrar solo visitas con porcentaje_vinculacion válido
-        const validVinculaciones = visits?.filter(v => 
+        const validVinculaciones = safeVisits.filter(v => 
           v.porcentaje_vinculacion !== null && 
           v.porcentaje_vinculacion !== undefined && 
-          !isNaN(v.porcentaje_vinculacion)
-        ) || [];
+          !isNaN(v.porcentaje_vinculacion) &&
+          isFinite(v.porcentaje_vinculacion)
+        );
         
         const avgVinculacion = validVinculaciones.length > 0
           ? Math.round(validVinculaciones.reduce((sum, v) => sum + v.porcentaje_vinculacion!, 0) / validVinculaciones.length)
@@ -116,7 +127,7 @@ export function CommercialDirectorDashboard() {
 
         // Tendencia mensual
         const monthlyMap: Record<string, { visits: number; success: number }> = {};
-        visits?.forEach(visit => {
+        safeVisits.forEach(visit => {
           const month = new Date(visit.visit_date).toLocaleDateString('es-ES', { month: 'short', year: 'numeric' });
           if (!monthlyMap[month]) {
             monthlyMap[month] = { visits: 0, success: 0 };
@@ -138,10 +149,12 @@ export function CommercialDirectorDashboard() {
 
         // Productos ofrecidos
         const productsMap: Record<string, number> = {};
-        visits?.forEach(visit => {
-          visit.productos_ofrecidos?.forEach((prod: string) => {
-            productsMap[prod] = (productsMap[prod] || 0) + 1;
-          });
+        safeVisits.forEach(visit => {
+          if (visit.productos_ofrecidos && Array.isArray(visit.productos_ofrecidos)) {
+            visit.productos_ofrecidos.forEach((prod: string) => {
+              productsMap[prod] = (productsMap[prod] || 0) + 1;
+            });
+          }
         });
 
         const products = Object.entries(productsMap)
@@ -156,7 +169,7 @@ export function CommercialDirectorDashboard() {
           totalVisits,
           successRate,
           avgVinculacion,
-          companies: companies?.length || 0,
+          companies: safeCompanies.length,
           monthlyTrend,
           products
         };
@@ -181,6 +194,7 @@ export function CommercialDirectorDashboard() {
     } catch (error: any) {
       console.error('Error fetching commercial data:', error);
       toast.error('Error al cargar datos del panel comercial');
+      setGestoresData([]);
     } finally {
       setLoading(false);
     }
@@ -292,7 +306,7 @@ export function CommercialDirectorDashboard() {
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{globalStats.totalVisits}</div>
+            <div className="text-2xl font-bold">{globalStats.totalVisits || 0}</div>
             <p className="text-xs text-muted-foreground">
               {gestoresData.length} gestores activos
             </p>
@@ -305,7 +319,7 @@ export function CommercialDirectorDashboard() {
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{globalStats.avgSuccessRate}%</div>
+            <div className="text-2xl font-bold">{globalStats.avgSuccessRate || 0}%</div>
             <p className="text-xs text-muted-foreground">Promedio general</p>
           </CardContent>
         </Card>
@@ -316,7 +330,7 @@ export function CommercialDirectorDashboard() {
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{globalStats.totalCompanies}</div>
+            <div className="text-2xl font-bold">{globalStats.totalCompanies || 0}</div>
             <p className="text-xs text-muted-foreground">Total asignadas</p>
           </CardContent>
         </Card>
@@ -327,14 +341,28 @@ export function CommercialDirectorDashboard() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{globalStats.avgVinculacion}%</div>
+            <div className="text-2xl font-bold">{globalStats.avgVinculacion || 0}%</div>
             <p className="text-xs text-muted-foreground">Promedio conseguido</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Tabs de Análisis */}
-      <Tabs defaultValue="gestores" className="space-y-4">
+      {gestoresData.length === 0 && !loading && (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Activity className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No hay datos disponibles</h3>
+            <p className="text-sm text-muted-foreground text-center max-w-md">
+              No se encontraron visitas registradas en el período seleccionado. 
+              Las métricas se mostrarán una vez que se registren visitas en el sistema.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Tabs de Análisis - Solo mostrar si hay datos */}
+      {gestoresData.length > 0 && (
+        <Tabs defaultValue="gestores" className="space-y-4">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="gestores">Gestores</TabsTrigger>
           <TabsTrigger value="oficinas">Oficinas</TabsTrigger>
@@ -597,6 +625,7 @@ export function CommercialDirectorDashboard() {
           )}
         </TabsContent>
       </Tabs>
+      )}
     </div>
   );
 }
