@@ -844,6 +844,17 @@ export function MapContainer({
                     `)
                     .join('')}
                 </div>
+                <div class="mt-3 pt-2 border-t">
+                  <button 
+                    class="view-photos-btn w-full text-xs font-medium px-2 py-1 rounded transition-colors"
+                    style="background: ${color}15; color: ${color}; border: 1px solid ${color}30;"
+                    onmouseover="this.style.background='${color}25'"
+                    onmouseout="this.style.background='${color}15'"
+                    data-company-id="${company.id}"
+                  >
+                    📸 Ver fotos de la empresa
+                  </button>
+                </div>
               </div>
             `;
             
@@ -862,6 +873,16 @@ export function MapContainer({
               popupElement.addEventListener('mouseleave', () => {
                 hideTooltip();
               });
+
+              // Add click handler for photo view button
+              const photoBtn = popupElement.querySelector('.view-photos-btn');
+              if (photoBtn) {
+                photoBtn.addEventListener('click', (e) => {
+                  e.stopPropagation();
+                  hoverPopup.remove();
+                  onSelectCompany(company);
+                });
+              }
             }
           };
 
