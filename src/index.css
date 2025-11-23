@@ -40,6 +40,13 @@ All colors MUST be HSL.
 
     --radius: 0.5rem;
 
+    /* Colores para gráficos */
+    --chart-1: 211 100% 50%;
+    --chart-2: 142 76% 36%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 280 87% 65%;
+    --chart-5: 0 84% 60%;
+
     /* Colores específicos del mapa */
     --map-control-bg: 0 0% 100%;
     --map-control-shadow: 0 0% 0% / 0.1;
@@ -86,6 +93,13 @@ All colors MUST be HSL.
     --border: 217 33% 17%;
     --input: 217 33% 17%;
     --ring: 211 100% 55%;
+    
+    /* Colores para gráficos */
+    --chart-1: 211 100% 55%;
+    --chart-2: 142 76% 45%;
+    --chart-3: 38 92% 60%;
+    --chart-4: 280 87% 70%;
+    --chart-5: 0 84% 65%;
     
     --map-control-bg: 217 33% 17%;
     --map-control-shadow: 0 0% 0% / 0.3;
