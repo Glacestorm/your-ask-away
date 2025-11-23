@@ -212,94 +212,76 @@ export function VinculacionMetrics() {
       {/* Gráficos */}
       <div className="grid gap-4 md:grid-cols-2">
         {/* Evolución Temporal */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Evolución de Vinculación</CardTitle>
-            <CardDescription>Promedio mensual de vinculación conseguida</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={vinculacionTrend}>
-                <defs>
-                  <linearGradient id="colorVinculacion" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="mes" 
-                  tick={{ fontSize: 12 }}
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
-                />
-                <YAxis domain={[0, 100]} />
-                <Tooltip formatter={(value) => `${value}%`} />
-                <Legend />
-                <Area
-                  type="monotone"
-                  dataKey="promedio"
-                  stroke="hsl(var(--primary))"
-                  fillOpacity={1}
-                  fill="url(#colorVinculacion)"
-                  name="% Vinculación"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        {vinculacionTrend.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Evolución de Vinculación</CardTitle>
+              <CardDescription>Promedio mensual de vinculación conseguida</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={vinculacionTrend}>
+...
+                </AreaChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Distribución por Rangos */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Distribución por Rangos</CardTitle>
-            <CardDescription>Número de visitas por rango de vinculación</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={vinculacionDistribution}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="rango" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="count" fill="hsl(var(--chart-1))" name="Visitas" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        {vinculacionDistribution.some(r => r.count > 0) && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Distribución por Rangos</CardTitle>
+              <CardDescription>Número de visitas por rango de vinculación</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={vinculacionDistribution}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="rango" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="count" fill="hsl(var(--chart-1))" name="Visitas" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Top Gestores por Vinculación */}
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>Promedio de Vinculación por Gestor</CardTitle>
-            <CardDescription>Gestores con mayor porcentaje promedio (últimos 6 meses, mín. 3 visitas)</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={topGestoresVinculacion}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="gestor" 
-                  tick={{ fontSize: 11 }}
-                  angle={-45}
-                  textAnchor="end"
-                  height={100}
-                />
-                <YAxis domain={[0, 100]} />
-                <Tooltip 
-                  formatter={(value: any, name: string) => {
-                    if (name === 'promedio') return [`${value}%`, '% Vinculación'];
-                    return [value, name];
-                  }} 
-                />
-                <Legend />
-                <Bar dataKey="promedio" fill="hsl(var(--chart-2))" name="% Vinculación" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        {topGestoresVinculacion.length > 0 && (
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <CardTitle>Promedio de Vinculación por Gestor</CardTitle>
+              <CardDescription>Gestores con mayor porcentaje promedio (últimos 6 meses, mín. 3 visitas)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={topGestoresVinculacion}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="gestor" 
+                    tick={{ fontSize: 11 }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={100}
+                  />
+                  <YAxis domain={[0, 100]} />
+                  <Tooltip 
+                    formatter={(value: any, name: string) => {
+                      if (name === 'promedio') return [`${value}%`, '% Vinculación'];
+                      return [value, name];
+                    }} 
+                  />
+                  <Legend />
+                  <Bar dataKey="promedio" fill="hsl(var(--chart-2))" name="% Vinculación" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

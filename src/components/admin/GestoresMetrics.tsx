@@ -188,80 +188,86 @@ export function GestoresMetrics() {
       {/* Gráficos */}
       <div className="grid gap-4 md:grid-cols-2">
         {/* Top Gestores por Visitas */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Top Gestores por Visitas</CardTitle>
-            <CardDescription>Gestores con más visitas (últimos 6 meses)</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={topGestores} layout="horizontal">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" />
-                <YAxis 
-                  dataKey="gestor" 
-                  type="category" 
-                  width={120}
-                  tick={{ fontSize: 11 }}
-                />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="visitas" fill="hsl(var(--primary))" name="Visitas" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        {topGestores.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Top Gestores por Visitas</CardTitle>
+              <CardDescription>Gestores con más visitas (últimos 6 meses)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={350}>
+                <BarChart data={topGestores} layout="horizontal">
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" />
+                  <YAxis 
+                    dataKey="gestor" 
+                    type="category" 
+                    width={120}
+                    tick={{ fontSize: 11 }}
+                  />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="visitas" fill="hsl(var(--primary))" name="Visitas" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Tasa de Éxito por Gestor */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Tasa de Éxito por Gestor</CardTitle>
-            <CardDescription>Porcentaje de visitas exitosas (mín. 5 visitas)</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={successRate} layout="horizontal">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" domain={[0, 100]} />
-                <YAxis 
-                  dataKey="gestor" 
-                  type="category" 
-                  width={120}
-                  tick={{ fontSize: 11 }}
-                />
-                <Tooltip formatter={(value) => `${value}%`} />
-                <Legend />
-                <Bar dataKey="tasa" fill="hsl(var(--chart-2))" name="% Éxito" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        {successRate.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Tasa de Éxito por Gestor</CardTitle>
+              <CardDescription>Porcentaje de visitas exitosas (mín. 5 visitas)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={350}>
+                <BarChart data={successRate} layout="horizontal">
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" domain={[0, 100]} />
+                  <YAxis 
+                    dataKey="gestor" 
+                    type="category" 
+                    width={120}
+                    tick={{ fontSize: 11 }}
+                  />
+                  <Tooltip formatter={(value) => `${value}%`} />
+                  <Legend />
+                  <Bar dataKey="tasa" fill="hsl(var(--chart-2))" name="% Éxito" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Empresas Asignadas */}
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>Empresas Asignadas por Gestor</CardTitle>
-            <CardDescription>Distribución de empresas en cartera</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={companiesPerGestor}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="gestor" 
-                  tick={{ fontSize: 11 }}
-                  angle={-45}
-                  textAnchor="end"
-                  height={100}
-                />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="empresas" fill="hsl(var(--chart-3))" name="Empresas" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        {companiesPerGestor.length > 0 && (
+          <Card className="md:col-span-2">
+            <CardHeader>
+              <CardTitle>Empresas Asignadas por Gestor</CardTitle>
+              <CardDescription>Distribución de empresas en cartera</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={companiesPerGestor}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="gestor" 
+                    tick={{ fontSize: 11 }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={100}
+                  />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="empresas" fill="hsl(var(--chart-3))" name="Empresas" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
