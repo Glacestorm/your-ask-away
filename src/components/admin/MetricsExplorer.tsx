@@ -14,6 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface GestorMetrics {
   id: string;
@@ -57,6 +58,7 @@ interface MetricsExplorerProps {
 }
 
 export function MetricsExplorer({ restrictToOficina }: MetricsExplorerProps = {}) {
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
     const today = new Date();
@@ -753,26 +755,26 @@ export function MetricsExplorer({ restrictToOficina }: MetricsExplorerProps = {}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Visitas Totales</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('metrics.totalVisits')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.totalVisits}</div>
             <p className="text-xs text-muted-foreground">
-              {metrics.successfulVisits} exitosas
+              {metrics.successfulVisits} {t('stats.successful')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tasa de Éxito</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('metrics.successRate')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.successRate}%</div>
             <p className="text-xs text-muted-foreground">
-              Del total de visitas
+              {t('metrics.totalVisitsLabel').toLowerCase()}
             </p>
           </CardContent>
         </Card>
@@ -780,8 +782,8 @@ export function MetricsExplorer({ restrictToOficina }: MetricsExplorerProps = {}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              {type === 'gestor' ? 'Empresas Gestionadas' : 
-               type === 'oficina' || type === 'responsable' ? 'Gestores/Empresas' : 'Oficinas/Gestores'}
+              {type === 'gestor' ? t('metrics.companiesManaged') : 
+               type === 'oficina' || type === 'responsable' ? t('metrics.managersCompanies') : t('metrics.officesManagers')}
             </CardTitle>
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -792,9 +794,9 @@ export function MetricsExplorer({ restrictToOficina }: MetricsExplorerProps = {}
                `${metrics.oficinasCount}/${metrics.gestoresCount}`}
             </div>
             <p className="text-xs text-muted-foreground">
-              {type === 'gestor' ? 'En cartera' :
-               type === 'oficina' || type === 'responsable' ? 'Gestores y empresas' : 
-               'Cobertura total'}
+              {type === 'gestor' ? t('metrics.inPortfolio') :
+               type === 'oficina' || type === 'responsable' ? `${t('stats.managers')} ${t('common.and')} ${t('stats.companies')}` : 
+               t('metrics.totalCoverage')}
             </p>
           </CardContent>
         </Card>
@@ -806,9 +808,9 @@ export function MetricsExplorer({ restrictToOficina }: MetricsExplorerProps = {}
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Explorador de Métricas</CardTitle>
+          <CardTitle>{t('metrics.title')}</CardTitle>
           <CardDescription>
-            Consulta métricas por gestor, oficina o banco agregado
+            {t('metrics.subtitle')}
           </CardDescription>
         </CardHeader>
       </Card>
@@ -819,37 +821,37 @@ export function MetricsExplorer({ restrictToOficina }: MetricsExplorerProps = {}
         <TabsList className={`grid w-full ${restrictToOficina ? 'grid-cols-4' : 'grid-cols-5'}`}>
           <TabsTrigger value="gestor">
             <Users className="mr-2 h-4 w-4" />
-            Por Gestor
+            {t('metrics.byManager')}
           </TabsTrigger>
           <TabsTrigger value="responsable">
             <Users className="mr-2 h-4 w-4" />
-            Por Resp. Comercial
+            {t('metrics.byCommercial')}
           </TabsTrigger>
           <TabsTrigger value="oficina">
             <Building2 className="mr-2 h-4 w-4" />
-            Por Oficina
+            {t('metrics.byOffice')}
           </TabsTrigger>
           {!restrictToOficina && (
             <TabsTrigger value="banco">
               <TrendingUp className="mr-2 h-4 w-4" />
-              Total Banco
+              {t('metrics.totalBank')}
             </TabsTrigger>
           )}
           <TabsTrigger value="compare">
             <GitCompare className="mr-2 h-4 w-4" />
-            Comparar
+            {t('metrics.compare')}
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="gestor" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Seleccionar Gestor</CardTitle>
+              <CardTitle className="text-base">{t('metrics.selectManager')}</CardTitle>
             </CardHeader>
             <CardContent>
               <Select value={selectedGestor} onValueChange={setSelectedGestor}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecciona un gestor..." />
+                  <SelectValue placeholder={t('metrics.selectPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {gestores.map(gestor => (
@@ -868,16 +870,16 @@ export function MetricsExplorer({ restrictToOficina }: MetricsExplorerProps = {}
               <MetricsCards metrics={gestorMetrics} type="gestor" />
               <Card>
                 <CardHeader>
-                  <CardTitle>Información del Gestor</CardTitle>
+                  <CardTitle>{t('metrics.managerInfo')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <dl className="space-y-2">
                     <div className="flex justify-between">
-                      <dt className="text-muted-foreground">Nombre:</dt>
+                      <dt className="text-muted-foreground">{t('company.name')}:</dt>
                       <dd className="font-medium">{gestorMetrics.name}</dd>
                     </div>
                     <div className="flex justify-between">
-                      <dt className="text-muted-foreground">Oficina:</dt>
+                      <dt className="text-muted-foreground">{t('company.office')}:</dt>
                       <dd className="font-medium">{gestorMetrics.oficina}</dd>
                     </div>
                   </dl>
@@ -890,12 +892,12 @@ export function MetricsExplorer({ restrictToOficina }: MetricsExplorerProps = {}
         <TabsContent value="responsable" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Seleccionar Responsable Comercial</CardTitle>
+              <CardTitle className="text-base">{t('metrics.selectCommercial')}</CardTitle>
             </CardHeader>
             <CardContent>
               <Select value={selectedResponsable} onValueChange={setSelectedResponsable}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecciona un responsable comercial..." />
+                  <SelectValue placeholder={t('metrics.selectPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {responsables.map(responsable => (
@@ -917,12 +919,12 @@ export function MetricsExplorer({ restrictToOficina }: MetricsExplorerProps = {}
         <TabsContent value="oficina" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Seleccionar Oficina</CardTitle>
+              <CardTitle className="text-base">{t('metrics.selectOffice')}</CardTitle>
             </CardHeader>
             <CardContent>
               <Select value={selectedOficina} onValueChange={setSelectedOficina}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecciona una oficina..." />
+                  <SelectValue placeholder={t('metrics.selectPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {oficinas.map(oficina => (
