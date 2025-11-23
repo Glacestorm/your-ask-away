@@ -7,11 +7,15 @@ import { getSectorIcon } from './markerIcons';
 import { cn } from '@/lib/utils';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { useState } from 'react';
+import { CheckSquare, Square, XCircle, Shuffle } from 'lucide-react';
 
 interface SectorStatsProps {
   companies: CompanyWithDetails[];
   onSectorClick: (sector: string) => void;
   selectedSectors: string[];
+  onSelectAll: () => void;
+  onClearSelection: () => void;
+  onInvertSelection: () => void;
 }
 
 // Color palette for the chart
@@ -30,7 +34,14 @@ const COLORS = [
   '#84cc16',
 ];
 
-export function SectorStats({ companies, onSectorClick, selectedSectors }: SectorStatsProps) {
+export function SectorStats({ 
+  companies, 
+  onSectorClick, 
+  selectedSectors,
+  onSelectAll,
+  onClearSelection,
+  onInvertSelection 
+}: SectorStatsProps) {
   const [hoveredSector, setHoveredSector] = useState<string | null>(null);
 
   // Group companies by sector and count
@@ -63,6 +74,14 @@ export function SectorStats({ companies, onSectorClick, selectedSectors }: Secto
     color: COLORS[index % COLORS.length],
   }));
 
+  // Calculate filtered count for selected sectors
+  const filteredCount = selectedSectors.length > 0
+    ? selectedSectors.reduce((sum, sector) => {
+        const sectorData = sectorStats[sector];
+        return sum + (sectorData?.count || 0);
+      }, 0)
+    : totalCompanies;
+
   // Custom label for the chart
   const renderCustomLabel = (entry: any) => {
     const percentage = parseFloat(entry.percentage);
@@ -73,9 +92,54 @@ export function SectorStats({ companies, onSectorClick, selectedSectors }: Secto
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold">Empresas por Sector</h3>
-        <Badge variant="secondary">{totalCompanies} total</Badge>
+      {/* Header with controls */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-semibold">Empresas por Sector</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Selección múltiple disponible
+            </p>
+          </div>
+          <Badge variant="secondary">{totalCompanies} total</Badge>
+        </div>
+
+        {/* Multi-selection controls */}
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onSelectAll}
+            className="flex items-center gap-1.5 h-8 text-xs"
+          >
+            <CheckSquare className="h-3.5 w-3.5" />
+            Todos
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onClearSelection}
+            disabled={selectedSectors.length === 0}
+            className="flex items-center gap-1.5 h-8 text-xs"
+          >
+            <XCircle className="h-3.5 w-3.5" />
+            Limpiar
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onInvertSelection}
+            className="flex items-center gap-1.5 h-8 text-xs"
+          >
+            <Shuffle className="h-3.5 w-3.5" />
+            Invertir
+          </Button>
+          {selectedSectors.length > 0 && (
+            <Badge variant="default" className="ml-auto">
+              {selectedSectors.length} seleccionado{selectedSectors.length > 1 ? 's' : ''}
+            </Badge>
+          )}
+        </div>
       </div>
 
       {/* Donut Chart */}
@@ -158,9 +222,16 @@ export function SectorStats({ companies, onSectorClick, selectedSectors }: Secto
 
       {/* Sector List */}
       <div>
-        <h4 className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">
-          Detalle por Sector
-        </h4>
+        <div className="flex items-center justify-between mb-2">
+          <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            Detalle por Sector
+          </h4>
+          {selectedSectors.length > 0 && (
+            <span className="text-xs text-primary font-medium">
+              Mostrando {filteredCount} empresas
+            </span>
+          )}
+        </div>
         <ScrollArea className="h-[280px] pr-3">
           <div className="space-y-2">
             {sortedSectors.map(([sector, data], index) => {
@@ -176,13 +247,23 @@ export function SectorStats({ companies, onSectorClick, selectedSectors }: Secto
                   className={cn(
                     'w-full justify-start h-auto py-2.5 px-3 hover:bg-accent transition-all',
                     isSelected && 'bg-primary text-primary-foreground hover:bg-primary/90',
-                    hoveredSector === sector && 'ring-2 ring-primary/50'
+                    hoveredSector === sector && 'ring-2 ring-primary/50',
+                    'relative'
                   )}
                   onClick={() => onSectorClick(sector)}
                   onMouseEnter={() => setHoveredSector(sector)}
                   onMouseLeave={() => setHoveredSector(null)}
                 >
-                  <div className="flex items-center gap-3 w-full">
+                  {/* Selection indicator */}
+                  {isSelected && (
+                    <div className="absolute left-1 top-1/2 -translate-y-1/2">
+                      <CheckSquare className="h-4 w-4 text-primary-foreground" />
+                    </div>
+                  )}
+                  <div className={cn(
+                    "flex items-center gap-3 w-full",
+                    isSelected && "ml-3"
+                  )}>
                     <div
                       className="h-3 w-3 rounded-full flex-shrink-0"
                       style={{ backgroundColor: color }}
@@ -219,12 +300,21 @@ export function SectorStats({ companies, onSectorClick, selectedSectors }: Secto
         </ScrollArea>
       </div>
 
+      {/* Summary footer */}
       {selectedSectors.length > 0 && (
-        <div className="pt-2 border-t">
-          <p className="text-xs text-muted-foreground text-center">
-            {selectedSectors.length} sector{selectedSectors.length > 1 ? 'es' : ''} seleccionado{selectedSectors.length > 1 ? 's' : ''}
-          </p>
-        </div>
+        <Card className="p-3 bg-primary/5 border-primary/20">
+          <div className="flex items-center justify-between text-sm">
+            <div>
+              <p className="font-medium text-primary">Análisis Combinado</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {selectedSectors.length} sector{selectedSectors.length > 1 ? 'es' : ''} • {filteredCount} empresa{filteredCount !== 1 ? 's' : ''}
+              </p>
+            </div>
+            <Badge variant="default" className="text-xs">
+              {((filteredCount / totalCompanies) * 100).toFixed(1)}%
+            </Badge>
+          </div>
+        </Card>
       )}
     </div>
   );
