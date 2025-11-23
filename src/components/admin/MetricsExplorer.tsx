@@ -43,6 +43,15 @@ interface BancoMetrics {
   companiesCount: number;
 }
 
+interface ResponsableMetrics {
+  responsable: string;
+  totalVisits: number;
+  successfulVisits: number;
+  successRate: number;
+  gestoresCount: number;
+  companiesCount: number;
+}
+
 interface MetricsExplorerProps {
   restrictToOficina?: string | null;
 }
@@ -67,6 +76,11 @@ export function MetricsExplorer({ restrictToOficina }: MetricsExplorerProps = {}
   // Banco level
   const [bancoMetrics, setBancoMetrics] = useState<BancoMetrics | null>(null);
 
+  // Responsable Comercial level
+  const [responsables, setResponsables] = useState<string[]>([]);
+  const [selectedResponsable, setSelectedResponsable] = useState<string>('');
+  const [responsableMetrics, setResponsableMetrics] = useState<ResponsableMetrics | null>(null);
+
   // Comparison
   const [selectedGestoresForCompare, setSelectedGestoresForCompare] = useState<string[]>([]);
   const [selectedOficinasForCompare, setSelectedOficinasForCompare] = useState<string[]>([]);
@@ -83,6 +97,7 @@ export function MetricsExplorer({ restrictToOficina }: MetricsExplorerProps = {}
   useEffect(() => {
     loadGestoresAndOficinas();
     loadSectors();
+    loadResponsables();
     // Si hay restricción de oficina, pre-seleccionarla
     if (restrictToOficina) {
       setSelectedOficina(restrictToOficina);
@@ -106,6 +121,12 @@ export function MetricsExplorer({ restrictToOficina }: MetricsExplorerProps = {}
       loadBancoMetrics();
     }
   }, [dateRange]);
+
+  useEffect(() => {
+    if (dateRange?.from && dateRange?.to) {
+      if (selectedResponsable) loadResponsableMetrics();
+    }
+  }, [dateRange, selectedResponsable]);
 
   useEffect(() => {
     if (dateRange?.from && dateRange?.to) {
@@ -161,6 +182,24 @@ export function MetricsExplorer({ restrictToOficina }: MetricsExplorerProps = {}
       }
     } catch (error) {
       console.error('Error loading sectors:', error);
+    }
+  };
+
+  const loadResponsables = async () => {
+    try {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('full_name, email')
+        .eq('cargo', 'Responsable Comercial')
+        .order('full_name');
+
+      if (profiles) {
+        const responsablesList = profiles.map(p => p.full_name || p.email.split('@')[0]);
+        setResponsables([...new Set(responsablesList)].sort());
+      }
+    } catch (error) {
+      console.error('Error loading responsables:', error);
+      toast.error('Error al cargar responsables comerciales');
     }
   };
 
@@ -328,6 +367,79 @@ export function MetricsExplorer({ restrictToOficina }: MetricsExplorerProps = {}
     } catch (error) {
       console.error('Error loading banco metrics:', error);
       toast.error('Error al cargar métricas del banco');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadResponsableMetrics = async () => {
+    if (!selectedResponsable || !dateRange?.from || !dateRange?.to) return;
+    
+    setLoading(true);
+    try {
+      const fromDate = format(dateRange.from, 'yyyy-MM-dd');
+      const toDate = format(dateRange.to, 'yyyy-MM-dd');
+
+      // Get all gestores with this cargo
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .eq('cargo', 'Responsable Comercial');
+
+      const gestoresResponsables = profiles?.filter(p => 
+        (p.full_name || p.email.split('@')[0]) === selectedResponsable
+      ).map(p => p.id) || [];
+
+      if (gestoresResponsables.length === 0) {
+        setResponsableMetrics({
+          responsable: selectedResponsable,
+          totalVisits: 0,
+          successfulVisits: 0,
+          successRate: 0,
+          gestoresCount: 0,
+          companiesCount: 0
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Count visits from all gestores with this cargo
+      const { count: totalVisits } = await supabase
+        .from('visits')
+        .select('*', { count: 'exact', head: true })
+        .in('gestor_id', gestoresResponsables)
+        .gte('visit_date', fromDate)
+        .lte('visit_date', toDate);
+
+      // Count successful visits
+      const { count: successfulVisits } = await supabase
+        .from('visits')
+        .select('*', { count: 'exact', head: true })
+        .in('gestor_id', gestoresResponsables)
+        .eq('result', 'Exitosa')
+        .gte('visit_date', fromDate)
+        .lte('visit_date', toDate);
+
+      // Count companies managed by these gestores
+      const { count: companiesCount } = await supabase
+        .from('companies')
+        .select('*', { count: 'exact', head: true })
+        .in('gestor_id', gestoresResponsables);
+
+      const visits = totalVisits || 0;
+      const successful = successfulVisits || 0;
+
+      setResponsableMetrics({
+        responsable: selectedResponsable,
+        totalVisits: visits,
+        successfulVisits: successful,
+        successRate: visits > 0 ? Math.round((successful / visits) * 100) : 0,
+        gestoresCount: gestoresResponsables.length,
+        companiesCount: companiesCount || 0
+      });
+    } catch (error) {
+      console.error('Error loading responsable metrics:', error);
+      toast.error('Error al cargar métricas del responsable comercial');
     } finally {
       setLoading(false);
     }
@@ -634,7 +746,7 @@ export function MetricsExplorer({ restrictToOficina }: MetricsExplorerProps = {}
     );
   };
 
-  const MetricsCards = ({ metrics, type }: { metrics: any; type: 'gestor' | 'oficina' | 'banco' }) => {
+  const MetricsCards = ({ metrics, type }: { metrics: any; type: 'gestor' | 'oficina' | 'banco' | 'responsable' }) => {
     if (!metrics) return null;
 
     return (
@@ -669,19 +781,19 @@ export function MetricsExplorer({ restrictToOficina }: MetricsExplorerProps = {}
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               {type === 'gestor' ? 'Empresas Gestionadas' : 
-               type === 'oficina' ? 'Gestores/Empresas' : 'Oficinas/Gestores'}
+               type === 'oficina' || type === 'responsable' ? 'Gestores/Empresas' : 'Oficinas/Gestores'}
             </CardTitle>
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {type === 'gestor' ? metrics.companiesManaged :
-               type === 'oficina' ? `${metrics.gestoresCount}/${metrics.companiesCount}` :
+               type === 'oficina' || type === 'responsable' ? `${metrics.gestoresCount}/${metrics.companiesCount}` :
                `${metrics.oficinasCount}/${metrics.gestoresCount}`}
             </div>
             <p className="text-xs text-muted-foreground">
               {type === 'gestor' ? 'En cartera' :
-               type === 'oficina' ? 'Gestores y empresas' : 
+               type === 'oficina' || type === 'responsable' ? 'Gestores y empresas' : 
                'Cobertura total'}
             </p>
           </CardContent>
@@ -704,10 +816,14 @@ export function MetricsExplorer({ restrictToOficina }: MetricsExplorerProps = {}
       <DateRangeFilter dateRange={dateRange} onDateRangeChange={setDateRange} />
 
       <Tabs defaultValue="gestor" className="space-y-4">
-        <TabsList className={`grid w-full ${restrictToOficina ? 'grid-cols-3' : 'grid-cols-4'}`}>
+        <TabsList className={`grid w-full ${restrictToOficina ? 'grid-cols-4' : 'grid-cols-5'}`}>
           <TabsTrigger value="gestor">
             <Users className="mr-2 h-4 w-4" />
             Por Gestor
+          </TabsTrigger>
+          <TabsTrigger value="responsable">
+            <Users className="mr-2 h-4 w-4" />
+            Por Resp. Comercial
           </TabsTrigger>
           <TabsTrigger value="oficina">
             <Building2 className="mr-2 h-4 w-4" />
@@ -768,6 +884,33 @@ export function MetricsExplorer({ restrictToOficina }: MetricsExplorerProps = {}
                 </CardContent>
               </Card>
             </>
+          )}
+        </TabsContent>
+
+        <TabsContent value="responsable" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Seleccionar Responsable Comercial</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Select value={selectedResponsable} onValueChange={setSelectedResponsable}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona un responsable comercial..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {responsables.map(responsable => (
+                    <SelectItem key={responsable} value={responsable}>
+                      {responsable}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </CardContent>
+          </Card>
+
+          {loading && <Skeleton className="h-32 w-full" />}
+          {!loading && responsableMetrics && (
+            <MetricsCards metrics={responsableMetrics} type="responsable" />
           )}
         </TabsContent>
 
