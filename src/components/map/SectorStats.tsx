@@ -445,24 +445,46 @@ export function SectorStats({
                 <TrendingUp className="h-4 w-4 text-primary" />
                 <h5 className="text-sm font-semibold">Facturación Promedio</h5>
               </div>
-              <div className="space-y-2">
-                {selectedMetrics.map((metric) => (
-                  <div key={`turnover-${metric.sector}`} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <div
-                        className="h-2 w-2 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: metric.color }}
-                      />
-                      <span className="text-xs truncate">{metric.sector}</span>
-                    </div>
-                    <span className="text-xs font-medium text-primary ml-2">
-                      {metric.avgTurnover > 0 
-                        ? `€${(metric.avgTurnover / 1000).toFixed(0)}K`
-                        : 'N/A'}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <ResponsiveContainer width="100%" height={120}>
+                <BarChart data={selectedMetrics} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis 
+                    type="number" 
+                    tickFormatter={(value) => `€${(value / 1000).toFixed(0)}K`}
+                    className="text-xs"
+                  />
+                  <YAxis 
+                    type="category" 
+                    dataKey="sector" 
+                    width={80}
+                    className="text-xs"
+                    tick={{ fontSize: 11 }}
+                  />
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <Card className="p-2 shadow-lg">
+                            <p className="text-xs font-medium">{payload[0].payload.sector}</p>
+                            <p className="text-xs text-primary">
+                              €{((payload[0].value as number) / 1000).toFixed(0)}K
+                            </p>
+                          </Card>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Bar 
+                    dataKey="avgTurnover" 
+                    radius={[0, 4, 4, 0]}
+                  >
+                    {selectedMetrics.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             </Card>
 
             {/* Employees Comparison */}
@@ -471,24 +493,45 @@ export function SectorStats({
                 <Users className="h-4 w-4 text-primary" />
                 <h5 className="text-sm font-semibold">Empleados Promedio</h5>
               </div>
-              <div className="space-y-2">
-                {selectedMetrics.map((metric) => (
-                  <div key={`employees-${metric.sector}`} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <div
-                        className="h-2 w-2 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: metric.color }}
-                      />
-                      <span className="text-xs truncate">{metric.sector}</span>
-                    </div>
-                    <span className="text-xs font-medium text-primary ml-2">
-                      {metric.avgEmployees > 0 
-                        ? metric.avgEmployees.toFixed(1)
-                        : 'N/A'}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <ResponsiveContainer width="100%" height={120}>
+                <BarChart data={selectedMetrics} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis 
+                    type="number" 
+                    className="text-xs"
+                  />
+                  <YAxis 
+                    type="category" 
+                    dataKey="sector" 
+                    width={80}
+                    className="text-xs"
+                    tick={{ fontSize: 11 }}
+                  />
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <Card className="p-2 shadow-lg">
+                            <p className="text-xs font-medium">{payload[0].payload.sector}</p>
+                            <p className="text-xs text-primary">
+                              {(payload[0].value as number).toFixed(1)} empleados
+                            </p>
+                          </Card>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Bar 
+                    dataKey="avgEmployees" 
+                    radius={[0, 4, 4, 0]}
+                  >
+                    {selectedMetrics.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             </Card>
 
             {/* Products Comparison */}
@@ -497,22 +540,45 @@ export function SectorStats({
                 <Package className="h-4 w-4 text-primary" />
                 <h5 className="text-sm font-semibold">Productos Promedio</h5>
               </div>
-              <div className="space-y-2">
-                {selectedMetrics.map((metric) => (
-                  <div key={`products-${metric.sector}`} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <div
-                        className="h-2 w-2 rounded-full flex-shrink-0"
-                        style={{ backgroundColor: metric.color }}
-                      />
-                      <span className="text-xs truncate">{metric.sector}</span>
-                    </div>
-                    <span className="text-xs font-medium text-primary ml-2">
-                      {metric.avgProducts.toFixed(1)}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <ResponsiveContainer width="100%" height={120}>
+                <BarChart data={selectedMetrics} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis 
+                    type="number" 
+                    className="text-xs"
+                  />
+                  <YAxis 
+                    type="category" 
+                    dataKey="sector" 
+                    width={80}
+                    className="text-xs"
+                    tick={{ fontSize: 11 }}
+                  />
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <Card className="p-2 shadow-lg">
+                            <p className="text-xs font-medium">{payload[0].payload.sector}</p>
+                            <p className="text-xs text-primary">
+                              {(payload[0].value as number).toFixed(1)} productos
+                            </p>
+                          </Card>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Bar 
+                    dataKey="avgProducts" 
+                    radius={[0, 4, 4, 0]}
+                  >
+                    {selectedMetrics.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             </Card>
           </div>
 
