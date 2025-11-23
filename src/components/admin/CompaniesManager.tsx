@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Plus, Pencil, Trash2, Upload, Phone, Mail, Globe, Users, Building2, FileText } from 'lucide-react';
+import { Plus, Pencil, Trash2, Upload, Phone, Mail, Globe, Users, Building2, FileText, History, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { CompanyWithDetails, StatusColor, Profile } from '@/types/database';
 import * as XLSX from 'xlsx';
@@ -37,6 +37,22 @@ interface CompanyDocument {
   created_at: string;
 }
 
+interface Visit {
+  id: string;
+  visit_date: string;
+  notes: string | null;
+  result: string | null;
+  gestor: { full_name: string | null; email: string } | null;
+}
+
+interface AuditLog {
+  id: string;
+  action: string;
+  created_at: string;
+  old_data: any;
+  new_data: any;
+}
+
 export function CompaniesManager() {
   const [companies, setCompanies] = useState<CompanyWithDetails[]>([]);
   const [statusColors, setStatusColors] = useState<StatusColor[]>([]);
@@ -45,6 +61,8 @@ export function CompaniesManager() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState<CompanyWithDetails | null>(null);
   const [loading, setLoading] = useState(false);
+  const [visits, setVisits] = useState<Visit[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     address: '',
@@ -170,7 +188,7 @@ export function CompaniesManager() {
     }
   };
 
-  const handleEdit = (company: CompanyWithDetails) => {
+  const handleEdit = async (company: CompanyWithDetails) => {
     setEditingCompany(company);
     setFormData({
       name: company.name,
@@ -194,7 +212,39 @@ export function CompaniesManager() {
       registration_number: (company as any).registration_number || '',
       legal_form: (company as any).legal_form || '',
     });
+    
+    // Load activity history
+    await fetchActivityHistory(company.id);
+    
     setDialogOpen(true);
+  };
+
+  const fetchActivityHistory = async (companyId: string) => {
+    try {
+      // Fetch visits
+      const { data: visitsData, error: visitsError } = await supabase
+        .from('visits')
+        .select('id, visit_date, notes, result, gestor:profiles(full_name, email)')
+        .eq('company_id', companyId)
+        .order('visit_date', { ascending: false });
+
+      if (visitsError) throw visitsError;
+      setVisits(visitsData || []);
+
+      // Fetch audit logs
+      const { data: auditData, error: auditError } = await supabase
+        .from('audit_logs')
+        .select('id, action, created_at, old_data, new_data')
+        .eq('table_name', 'companies')
+        .eq('record_id', companyId)
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (auditError) throw auditError;
+      setAuditLogs(auditData || []);
+    } catch (error: any) {
+      console.error('Error fetching activity history:', error);
+    }
   };
 
   const resetForm = () => {
@@ -343,7 +393,7 @@ export function CompaniesManager() {
           </DialogHeader>
 
           <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="basic">
                 <Building2 className="h-4 w-4 mr-2" />
                 Datos Básicos
@@ -363,6 +413,10 @@ export function CompaniesManager() {
               <TabsTrigger value="management">
                 <Globe className="h-4 w-4 mr-2" />
                 Gestión
+              </TabsTrigger>
+              <TabsTrigger value="history" disabled={!editingCompany}>
+                <History className="h-4 w-4 mr-2" />
+                Histórico
               </TabsTrigger>
             </TabsList>
 
@@ -604,6 +658,126 @@ export function CompaniesManager() {
                   onChange={(e) => setFormData({ ...formData, fecha_ultima_visita: e.target.value })}
                 />
               </div>
+            </TabsContent>
+
+            {/* Histórico de Actividades */}
+            <TabsContent value="history" className="space-y-4 mt-4">
+              {editingCompany && (
+                <div className="space-y-6">
+                  {/* Visitas */}
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                      <Clock className="h-5 w-5" />
+                      Visitas Realizadas
+                    </h3>
+                    <ScrollArea className="h-[200px] border rounded-md p-4">
+                      {visits.length > 0 ? (
+                        <div className="space-y-3">
+                          {visits.map((visit) => (
+                            <Card key={visit.id} className="p-3">
+                              <div className="flex items-start justify-between">
+                                <div className="space-y-1">
+                                  <p className="text-sm font-medium">
+                                    {new Date(visit.visit_date).toLocaleDateString('es-ES', {
+                                      year: 'numeric',
+                                      month: 'long',
+                                      day: 'numeric'
+                                    })}
+                                  </p>
+                                  <p className="text-sm text-muted-foreground">
+                                    Gestor: {visit.gestor?.full_name || visit.gestor?.email || 'N/A'}
+                                  </p>
+                                  {visit.result && (
+                                    <p className="text-sm">
+                                      <span className="font-medium">Resultado:</span> {visit.result}
+                                    </p>
+                                  )}
+                                  {visit.notes && (
+                                    <p className="text-sm text-muted-foreground mt-2">{visit.notes}</p>
+                                  )}
+                                </div>
+                              </div>
+                            </Card>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground text-center py-8">
+                          No hay visitas registradas
+                        </p>
+                      )}
+                    </ScrollArea>
+                  </div>
+
+                  {/* Cambios y Actualizaciones */}
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                      <FileText className="h-5 w-5" />
+                      Cambios y Actualizaciones
+                    </h3>
+                    <ScrollArea className="h-[200px] border rounded-md p-4">
+                      {auditLogs.length > 0 ? (
+                        <div className="space-y-3">
+                          {auditLogs.map((log) => (
+                            <Card key={log.id} className="p-3">
+                              <div className="space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <span className={`text-xs font-semibold px-2 py-1 rounded ${
+                                    log.action === 'INSERT' ? 'bg-green-100 text-green-800' :
+                                    log.action === 'UPDATE' ? 'bg-blue-100 text-blue-800' :
+                                    'bg-red-100 text-red-800'
+                                  }`}>
+                                    {log.action === 'INSERT' ? 'Creación' :
+                                     log.action === 'UPDATE' ? 'Actualización' : 'Eliminación'}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {new Date(log.created_at).toLocaleString('es-ES')}
+                                  </span>
+                                </div>
+                                
+                                {log.action === 'UPDATE' && log.old_data && log.new_data && (
+                                  <div className="text-sm space-y-1 mt-2">
+                                    {Object.keys(log.new_data).map((key) => {
+                                      if (log.old_data[key] !== log.new_data[key] && 
+                                          key !== 'updated_at' && 
+                                          key !== 'created_at') {
+                                        return (
+                                          <div key={key} className="text-xs">
+                                            <span className="font-medium capitalize">
+                                              {key.replace('_', ' ')}:
+                                            </span>
+                                            <span className="text-muted-foreground line-through ml-1">
+                                              {log.old_data[key] || 'vacío'}
+                                            </span>
+                                            <span className="mx-1">→</span>
+                                            <span className="text-foreground font-medium">
+                                              {log.new_data[key] || 'vacío'}
+                                            </span>
+                                          </div>
+                                        );
+                                      }
+                                      return null;
+                                    })}
+                                  </div>
+                                )}
+
+                                {log.action === 'INSERT' && (
+                                  <p className="text-sm text-muted-foreground">
+                                    Empresa creada en el sistema
+                                  </p>
+                                )}
+                              </div>
+                            </Card>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground text-center py-8">
+                          No hay cambios registrados
+                        </p>
+                      )}
+                    </ScrollArea>
+                  </div>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
 
