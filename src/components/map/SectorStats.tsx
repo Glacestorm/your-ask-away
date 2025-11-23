@@ -7,9 +7,10 @@ import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { getSectorIcon } from './markerIcons';
 import { cn } from '@/lib/utils';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line } from 'recharts';
 import { useState } from 'react';
-import { CheckSquare, Square, XCircle, Shuffle, TrendingUp, Users, Package, Filter } from 'lucide-react';
+import { CheckSquare, Square, XCircle, Shuffle, TrendingUp, Users, Package, Filter, BarChart3, BarChartHorizontal, LineChartIcon } from 'lucide-react';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 interface SectorStatsProps {
   companies: CompanyWithDetails[];
@@ -40,6 +41,8 @@ const COLORS = [
   '#84cc16',
 ];
 
+type ChartType = 'horizontal' | 'vertical' | 'line';
+
 export function SectorStats({ 
   companies, 
   onSectorClick, 
@@ -54,6 +57,7 @@ export function SectorStats({
 }: SectorStatsProps) {
   const [hoveredSector, setHoveredSector] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [chartType, setChartType] = useState<ChartType>('horizontal');
 
   // Calculate max values for sliders
   const maxTurnover = Math.max(...companies.map(c => c.turnover || 0));
@@ -429,13 +433,33 @@ export function SectorStats({
       {/* Comparative Metrics */}
       {selectedSectors.length > 0 && (
         <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Comparativa de Métricas
-            </h4>
-            <Badge variant="outline" className="text-xs">
-              {selectedSectors.length} sector{selectedSectors.length > 1 ? 'es' : ''}
-            </Badge>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Comparativa de Métricas
+              </h4>
+              <Badge variant="outline" className="text-xs">
+                {selectedSectors.length} sector{selectedSectors.length > 1 ? 'es' : ''}
+              </Badge>
+            </div>
+            
+            {/* Chart Type Toggle */}
+            <ToggleGroup 
+              type="single" 
+              value={chartType} 
+              onValueChange={(value) => value && setChartType(value as ChartType)}
+              className="gap-1"
+            >
+              <ToggleGroupItem value="horizontal" size="sm" className="h-7 w-7 p-0">
+                <BarChartHorizontal className="h-3.5 w-3.5" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="vertical" size="sm" className="h-7 w-7 p-0">
+                <BarChart3 className="h-3.5 w-3.5" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="line" size="sm" className="h-7 w-7 p-0">
+                <LineChartIcon className="h-3.5 w-3.5" />
+              </ToggleGroupItem>
+            </ToggleGroup>
           </div>
 
           <div className="grid gap-3">
@@ -446,44 +470,111 @@ export function SectorStats({
                 <h5 className="text-sm font-semibold">Facturación Promedio</h5>
               </div>
               <ResponsiveContainer width="100%" height={120}>
-                <BarChart data={selectedMetrics} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    type="number" 
-                    tickFormatter={(value) => `€${(value / 1000).toFixed(0)}K`}
-                    className="text-xs"
-                  />
-                  <YAxis 
-                    type="category" 
-                    dataKey="sector" 
-                    width={80}
-                    className="text-xs"
-                    tick={{ fontSize: 11 }}
-                  />
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length) {
-                        return (
-                          <Card className="p-2 shadow-lg">
-                            <p className="text-xs font-medium">{payload[0].payload.sector}</p>
-                            <p className="text-xs text-primary">
-                              €{((payload[0].value as number) / 1000).toFixed(0)}K
-                            </p>
-                          </Card>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
-                  <Bar 
-                    dataKey="avgTurnover" 
-                    radius={[0, 4, 4, 0]}
-                  >
-                    {selectedMetrics.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Bar>
-                </BarChart>
+                {chartType === 'horizontal' ? (
+                  <BarChart data={selectedMetrics} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                      type="number" 
+                      tickFormatter={(value) => `€${(value / 1000).toFixed(0)}K`}
+                      className="text-xs"
+                    />
+                    <YAxis 
+                      type="category" 
+                      dataKey="sector" 
+                      width={80}
+                      className="text-xs"
+                      tick={{ fontSize: 11 }}
+                    />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <Card className="p-2 shadow-lg">
+                              <p className="text-xs font-medium">{payload[0].payload.sector}</p>
+                              <p className="text-xs text-primary">
+                                €{((payload[0].value as number) / 1000).toFixed(0)}K
+                              </p>
+                            </Card>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Bar dataKey="avgTurnover" radius={[0, 4, 4, 0]}>
+                      {selectedMetrics.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                ) : chartType === 'vertical' ? (
+                  <BarChart data={selectedMetrics}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                      dataKey="sector" 
+                      className="text-xs"
+                      tick={{ fontSize: 11 }}
+                    />
+                    <YAxis 
+                      tickFormatter={(value) => `€${(value / 1000).toFixed(0)}K`}
+                      className="text-xs"
+                    />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <Card className="p-2 shadow-lg">
+                              <p className="text-xs font-medium">{payload[0].payload.sector}</p>
+                              <p className="text-xs text-primary">
+                                €{((payload[0].value as number) / 1000).toFixed(0)}K
+                              </p>
+                            </Card>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Bar dataKey="avgTurnover" radius={[4, 4, 0, 0]}>
+                      {selectedMetrics.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                ) : (
+                  <LineChart data={selectedMetrics}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                      dataKey="sector" 
+                      className="text-xs"
+                      tick={{ fontSize: 11 }}
+                    />
+                    <YAxis 
+                      tickFormatter={(value) => `€${(value / 1000).toFixed(0)}K`}
+                      className="text-xs"
+                    />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <Card className="p-2 shadow-lg">
+                              <p className="text-xs font-medium">{payload[0].payload.sector}</p>
+                              <p className="text-xs text-primary">
+                                €{((payload[0].value as number) / 1000).toFixed(0)}K
+                              </p>
+                            </Card>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="avgTurnover" 
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={2}
+                      dot={{ fill: "hsl(var(--primary))", r: 4 }}
+                    />
+                  </LineChart>
+                )}
               </ResponsiveContainer>
             </Card>
 
@@ -494,43 +585,93 @@ export function SectorStats({
                 <h5 className="text-sm font-semibold">Empleados Promedio</h5>
               </div>
               <ResponsiveContainer width="100%" height={120}>
-                <BarChart data={selectedMetrics} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    type="number" 
-                    className="text-xs"
-                  />
-                  <YAxis 
-                    type="category" 
-                    dataKey="sector" 
-                    width={80}
-                    className="text-xs"
-                    tick={{ fontSize: 11 }}
-                  />
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length) {
-                        return (
-                          <Card className="p-2 shadow-lg">
-                            <p className="text-xs font-medium">{payload[0].payload.sector}</p>
-                            <p className="text-xs text-primary">
-                              {(payload[0].value as number).toFixed(1)} empleados
-                            </p>
-                          </Card>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
-                  <Bar 
-                    dataKey="avgEmployees" 
-                    radius={[0, 4, 4, 0]}
-                  >
-                    {selectedMetrics.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Bar>
-                </BarChart>
+                {chartType === 'horizontal' ? (
+                  <BarChart data={selectedMetrics} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis type="number" className="text-xs" />
+                    <YAxis 
+                      type="category" 
+                      dataKey="sector" 
+                      width={80}
+                      className="text-xs"
+                      tick={{ fontSize: 11 }}
+                    />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <Card className="p-2 shadow-lg">
+                              <p className="text-xs font-medium">{payload[0].payload.sector}</p>
+                              <p className="text-xs text-primary">
+                                {(payload[0].value as number).toFixed(1)} empleados
+                              </p>
+                            </Card>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Bar dataKey="avgEmployees" radius={[0, 4, 4, 0]}>
+                      {selectedMetrics.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                ) : chartType === 'vertical' ? (
+                  <BarChart data={selectedMetrics}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis dataKey="sector" className="text-xs" tick={{ fontSize: 11 }} />
+                    <YAxis className="text-xs" />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <Card className="p-2 shadow-lg">
+                              <p className="text-xs font-medium">{payload[0].payload.sector}</p>
+                              <p className="text-xs text-primary">
+                                {(payload[0].value as number).toFixed(1)} empleados
+                              </p>
+                            </Card>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Bar dataKey="avgEmployees" radius={[4, 4, 0, 0]}>
+                      {selectedMetrics.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                ) : (
+                  <LineChart data={selectedMetrics}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis dataKey="sector" className="text-xs" tick={{ fontSize: 11 }} />
+                    <YAxis className="text-xs" />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <Card className="p-2 shadow-lg">
+                              <p className="text-xs font-medium">{payload[0].payload.sector}</p>
+                              <p className="text-xs text-primary">
+                                {(payload[0].value as number).toFixed(1)} empleados
+                              </p>
+                            </Card>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="avgEmployees" 
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={2}
+                      dot={{ fill: "hsl(var(--primary))", r: 4 }}
+                    />
+                  </LineChart>
+                )}
               </ResponsiveContainer>
             </Card>
 
@@ -541,43 +682,93 @@ export function SectorStats({
                 <h5 className="text-sm font-semibold">Productos Promedio</h5>
               </div>
               <ResponsiveContainer width="100%" height={120}>
-                <BarChart data={selectedMetrics} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                  <XAxis 
-                    type="number" 
-                    className="text-xs"
-                  />
-                  <YAxis 
-                    type="category" 
-                    dataKey="sector" 
-                    width={80}
-                    className="text-xs"
-                    tick={{ fontSize: 11 }}
-                  />
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length) {
-                        return (
-                          <Card className="p-2 shadow-lg">
-                            <p className="text-xs font-medium">{payload[0].payload.sector}</p>
-                            <p className="text-xs text-primary">
-                              {(payload[0].value as number).toFixed(1)} productos
-                            </p>
-                          </Card>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
-                  <Bar 
-                    dataKey="avgProducts" 
-                    radius={[0, 4, 4, 0]}
-                  >
-                    {selectedMetrics.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Bar>
-                </BarChart>
+                {chartType === 'horizontal' ? (
+                  <BarChart data={selectedMetrics} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis type="number" className="text-xs" />
+                    <YAxis 
+                      type="category" 
+                      dataKey="sector" 
+                      width={80}
+                      className="text-xs"
+                      tick={{ fontSize: 11 }}
+                    />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <Card className="p-2 shadow-lg">
+                              <p className="text-xs font-medium">{payload[0].payload.sector}</p>
+                              <p className="text-xs text-primary">
+                                {(payload[0].value as number).toFixed(1)} productos
+                              </p>
+                            </Card>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Bar dataKey="avgProducts" radius={[0, 4, 4, 0]}>
+                      {selectedMetrics.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                ) : chartType === 'vertical' ? (
+                  <BarChart data={selectedMetrics}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis dataKey="sector" className="text-xs" tick={{ fontSize: 11 }} />
+                    <YAxis className="text-xs" />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <Card className="p-2 shadow-lg">
+                              <p className="text-xs font-medium">{payload[0].payload.sector}</p>
+                              <p className="text-xs text-primary">
+                                {(payload[0].value as number).toFixed(1)} productos
+                              </p>
+                            </Card>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Bar dataKey="avgProducts" radius={[4, 4, 0, 0]}>
+                      {selectedMetrics.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                ) : (
+                  <LineChart data={selectedMetrics}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis dataKey="sector" className="text-xs" tick={{ fontSize: 11 }} />
+                    <YAxis className="text-xs" />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <Card className="p-2 shadow-lg">
+                              <p className="text-xs font-medium">{payload[0].payload.sector}</p>
+                              <p className="text-xs text-primary">
+                                {(payload[0].value as number).toFixed(1)} productos
+                              </p>
+                            </Card>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="avgProducts" 
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={2}
+                      dot={{ fill: "hsl(var(--primary))", r: 4 }}
+                    />
+                  </LineChart>
+                )}
               </ResponsiveContainer>
             </Card>
           </div>
