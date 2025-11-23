@@ -181,6 +181,18 @@ export interface MapFilters {
     min: number;
     max: number;
   };
+  vinculacionEntidad1Range?: {
+    min: number;
+    max: number;
+  };
+  vinculacionEntidad2Range?: {
+    min: number;
+    max: number;
+  };
+  vinculacionEntidad3Range?: {
+    min: number;
+    max: number;
+  };
   facturacionRange: {
     min: number;
     max: number;

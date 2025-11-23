@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Separator } from '@/components/ui/separator';
 import { Plus, Pencil, Trash2, Upload, Phone, Mail, Globe, Users, Building2, FileText, History, Clock, TrendingUp, Package, Camera } from 'lucide-react';
 import { toast } from 'sonner';
 import { CompanyWithDetails, StatusColor, Profile } from '@/types/database';
@@ -103,6 +104,9 @@ export function CompaniesManager() {
     tax_id: '',
     registration_number: '',
     legal_form: '',
+    vinculacion_entidad_1: '',
+    vinculacion_entidad_2: '',
+    vinculacion_entidad_3: '',
   });
 
   useEffect(() => {
@@ -160,6 +164,9 @@ export function CompaniesManager() {
         tax_id: formData.tax_id || null,
         registration_number: formData.registration_number || null,
         legal_form: formData.legal_form || null,
+        vinculacion_entidad_1: formData.vinculacion_entidad_1 ? Number(formData.vinculacion_entidad_1) : null,
+        vinculacion_entidad_2: formData.vinculacion_entidad_2 ? Number(formData.vinculacion_entidad_2) : null,
+        vinculacion_entidad_3: formData.vinculacion_entidad_3 ? Number(formData.vinculacion_entidad_3) : null,
       };
 
       if (editingCompany) {
@@ -232,6 +239,9 @@ export function CompaniesManager() {
       tax_id: (company as any).tax_id || '',
       registration_number: (company as any).registration_number || '',
       legal_form: (company as any).legal_form || '',
+      vinculacion_entidad_1: (company as any).vinculacion_entidad_1?.toString() || '',
+      vinculacion_entidad_2: (company as any).vinculacion_entidad_2?.toString() || '',
+      vinculacion_entidad_3: (company as any).vinculacion_entidad_3?.toString() || '',
     });
     
     // Load activity history
@@ -343,6 +353,9 @@ export function CompaniesManager() {
       tax_id: '',
       registration_number: '',
       legal_form: '',
+      vinculacion_entidad_1: '',
+      vinculacion_entidad_2: '',
+      vinculacion_entidad_3: '',
     });
   };
 
@@ -611,6 +624,55 @@ export function CompaniesManager() {
                   value={formData.cnae}
                   onChange={(e) => setFormData({ ...formData, cnae: e.target.value })}
                 />
+              </div>
+
+              <Separator className="my-4" />
+              
+              <div className="space-y-2">
+                <Label className="text-base font-semibold">Vinculación Bancaria (%)</Label>
+                <p className="text-sm text-muted-foreground">Porcentaje de vinculación con cada entidad bancaria</p>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="vinculacion_entidad_1">Entidad 1 (%)</Label>
+                  <Input
+                    id="vinculacion_entidad_1"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    value={formData.vinculacion_entidad_1}
+                    onChange={(e) => setFormData({ ...formData, vinculacion_entidad_1: e.target.value })}
+                    placeholder="0-100"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="vinculacion_entidad_2">Entidad 2 (%)</Label>
+                  <Input
+                    id="vinculacion_entidad_2"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    value={formData.vinculacion_entidad_2}
+                    onChange={(e) => setFormData({ ...formData, vinculacion_entidad_2: e.target.value })}
+                    placeholder="0-100"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="vinculacion_entidad_3">Entidad 3 (%)</Label>
+                  <Input
+                    id="vinculacion_entidad_3"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    value={formData.vinculacion_entidad_3}
+                    onChange={(e) => setFormData({ ...formData, vinculacion_entidad_3: e.target.value })}
+                    placeholder="0-100"
+                  />
+                </div>
               </div>
             </TabsContent>
 

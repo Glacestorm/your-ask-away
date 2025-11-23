@@ -517,7 +517,7 @@ export function MapContainer({
         if (filters.dateRange.to && visitDate > filters.dateRange.to) return false;
       }
 
-      // Filter by vinculación percentage range
+      // Filter by vinculación percentage range (from visits)
       if (filters.vinculacionRange) {
         const companyVinculacion = vinculacionData[company.id];
         if (companyVinculacion !== undefined) {
@@ -527,6 +527,36 @@ export function MapContainer({
         } else {
           // If no vinculación data, only show if min is 0
           if (filters.vinculacionRange.min > 0) {
+            return false;
+          }
+        }
+      }
+
+      // Filter by vinculacion entidad 1
+      if (filters.vinculacionEntidad1Range) {
+        const vinc1 = company.vinculacion_entidad_1;
+        if (vinc1 !== null && vinc1 !== undefined) {
+          if (vinc1 < filters.vinculacionEntidad1Range.min || vinc1 > filters.vinculacionEntidad1Range.max) {
+            return false;
+          }
+        }
+      }
+
+      // Filter by vinculacion entidad 2
+      if (filters.vinculacionEntidad2Range) {
+        const vinc2 = company.vinculacion_entidad_2;
+        if (vinc2 !== null && vinc2 !== undefined) {
+          if (vinc2 < filters.vinculacionEntidad2Range.min || vinc2 > filters.vinculacionEntidad2Range.max) {
+            return false;
+          }
+        }
+      }
+
+      // Filter by vinculacion entidad 3
+      if (filters.vinculacionEntidad3Range) {
+        const vinc3 = company.vinculacion_entidad_3;
+        if (vinc3 !== null && vinc3 !== undefined) {
+          if (vinc3 < filters.vinculacionEntidad3Range.min || vinc3 > filters.vinculacionEntidad3Range.max) {
             return false;
           }
         }
