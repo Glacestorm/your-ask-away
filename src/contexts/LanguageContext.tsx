@@ -12,24 +12,48 @@ interface LanguageContextType {
   t: (key: string) => string;
 }
 
+const translations: Record<Language, Record<string, string>> = {
+  ca: caTranslations,
+  es: esTranslations,
+  fr: frTranslations,
+  en: enTranslations,
+};
+
+const getTranslations = (lang: Language): Record<string, string> => {
+  return translations[lang] || translations.ca;
+};
+
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'app-language';
 
-export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [language, setLanguageState] = useState<Language>(() => {
+const getInitialLanguage = (): Language => {
+  try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return (stored as Language) || 'ca';
-  });
+    if (stored && ['ca', 'es', 'fr', 'en'].includes(stored)) {
+      return stored as Language;
+    }
+  } catch (e) {
+    console.error('Error reading language from localStorage:', e);
+  }
+  return 'ca';
+};
+
+export const LanguageProvider = ({ children }: { children: ReactNode }) => {
+  const [language, setLanguageState] = useState<Language>(getInitialLanguage());
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem(STORAGE_KEY, lang);
+    try {
+      localStorage.setItem(STORAGE_KEY, lang);
+    } catch (e) {
+      console.error('Error saving language to localStorage:', e);
+    }
   };
 
   const t = (key: string): string => {
-    const translations = getTranslations(language);
-    return translations[key] || key;
+    const currentTranslations = getTranslations(language);
+    return currentTranslations[key] || key;
   };
 
   return (
@@ -41,19 +65,8 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
 export const useLanguage = () => {
   const context = useContext(LanguageContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useLanguage must be used within LanguageProvider');
   }
   return context;
-};
-
-const translations: Record<Language, Record<string, string>> = {
-  ca: caTranslations,
-  es: esTranslations,
-  fr: frTranslations,
-  en: enTranslations,
-};
-
-const getTranslations = (lang: Language): Record<string, string> => {
-  return translations[lang] || translations.ca;
 };
