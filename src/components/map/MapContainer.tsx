@@ -166,7 +166,10 @@ export function MapContainer({
           .eq('enabled', true)
           .order('display_order');
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching tooltip config:', error);
+          throw error;
+        }
         setTooltipConfig(data || []);
 
         // Fetch min zoom configuration
@@ -174,15 +177,18 @@ export function MapContainer({
           .from('map_config')
           .select('*')
           .eq('config_key', 'min_zoom_vinculacion')
-          .single();
+          .maybeSingle();
 
-        if (mapConfigError) throw mapConfigError;
+        if (mapConfigError) {
+          console.error('Error fetching map config:', mapConfigError);
+          throw mapConfigError;
+        }
         if (mapConfigData) {
           const configValue = mapConfigData.config_value as { value: number };
           setMinZoomVinculacion(configValue.value);
         }
-      } catch (error) {
-        console.error('Error fetching tooltip config:', error);
+      } catch (error: any) {
+        console.error('Error general en configuración del mapa:', error);
       }
     };
 
@@ -197,7 +203,10 @@ export function MapContainer({
           .from('visits')
           .select('company_id, porcentaje_vinculacion');
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching visits:', error);
+          throw error;
+        }
 
         const vinculacionMap: Record<string, { total: number; count: number }> = {};
         const visitCountMap: Record<string, number> = {};
@@ -226,12 +235,14 @@ export function MapContainer({
 
         setVinculacionData(avgVinculacion);
         setVisitCounts(visitCountMap);
-      } catch (error) {
-        console.error('Error calculating metrics:', error);
+      } catch (error: any) {
+        console.error('Error general calculando métricas:', error);
       }
     };
 
-    calculateMetrics();
+    if (companies.length > 0) {
+      calculateMetrics();
+    }
   }, [companies]);
 
   // Initialize map

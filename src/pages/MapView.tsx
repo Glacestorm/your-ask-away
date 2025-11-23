@@ -89,21 +89,40 @@ const MapView = () => {
           gestor:profiles(*)
         `);
 
-      if (companiesError) throw companiesError;
+      if (companiesError) {
+        console.error('Error fetching companies:', companiesError);
+        throw companiesError;
+      }
 
       // Fetch products for each company
       const companiesWithProducts = await Promise.all(
         (companiesData || []).map(async (company) => {
-          const { data: productsData } = await supabase
-            .from('company_products')
-            .select('product_id, products(*)')
-            .eq('company_id', company.id)
-            .eq('active', true);
+          try {
+            const { data: productsData, error: productsError } = await supabase
+              .from('company_products')
+              .select('product_id, products(*)')
+              .eq('company_id', company.id)
+              .eq('active', true);
 
-          return {
-            ...company,
-            products: productsData?.map((cp: any) => cp.products).filter(Boolean) || [],
-          };
+            if (productsError) {
+              console.error(`Error fetching products for company ${company.id}:`, productsError);
+              return {
+                ...company,
+                products: [],
+              };
+            }
+
+            return {
+              ...company,
+              products: productsData?.map((cp: any) => cp.products).filter(Boolean) || [],
+            };
+          } catch (err) {
+            console.error(`Error processing company ${company.id}:`, err);
+            return {
+              ...company,
+              products: [],
+            };
+          }
         })
       );
 
@@ -115,7 +134,10 @@ const MapView = () => {
         .select('*')
         .order('display_order');
 
-      if (statusError) throw statusError;
+      if (statusError) {
+        console.error('Error fetching status colors:', statusError);
+        throw statusError;
+      }
       setStatusColors(statusData || []);
 
       // Fetch products
@@ -125,12 +147,15 @@ const MapView = () => {
         .eq('active', true)
         .order('name');
 
-      if (productsError) throw productsError;
+      if (productsError) {
+        console.error('Error fetching products:', productsError);
+        throw productsError;
+      }
       setProducts(productsData || []);
 
     } catch (error: any) {
-      console.error('Error fetching data:', error);
-      toast.error('Error al cargar los datos');
+      console.error('Error general al cargar datos:', error);
+      toast.error(`Error al cargar los datos: ${error.message || 'Error desconocido'}`);
     } finally {
       setLoading(false);
     }
