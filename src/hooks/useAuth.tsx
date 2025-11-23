@@ -26,6 +26,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUserRole = async (userId: string) => {
     try {
+      console.log('🔍 Fetching role for user:', userId);
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
@@ -34,27 +35,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .limit(1)
         .maybeSingle();
 
+      console.log('📦 Role query result:', { data, error });
+      
       if (error) throw error;
-      setUserRole((data?.role as AppRole) || 'user');
+      
+      const role = (data?.role as AppRole) || 'user';
+      console.log('✅ Setting user role to:', role);
+      setUserRole(role);
     } catch (error) {
-      console.error('Error fetching user role:', error);
+      console.error('❌ Error fetching user role:', error);
       setUserRole('user'); // Default fallback
     }
   };
 
   useEffect(() => {
+    console.log('🚀 Auth hook initializing...');
+    
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('🔄 Auth state changed:', event, 'User:', session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         
         // Defer role fetching with setTimeout to prevent deadlock
         if (session?.user) {
+          console.log('👤 User logged in, fetching role...');
           setTimeout(() => {
             fetchUserRole(session.user.id);
           }, 0);
         } else {
+          console.log('👋 User logged out, clearing role');
           setUserRole(null);
         }
         
@@ -64,6 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('🔐 Initial session check:', session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -141,6 +153,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isAdmin = userRole === 'admin' || userRole === 'superadmin';
   const isSuperAdmin = userRole === 'superadmin';
+  
+  console.log('🔑 Current auth state:', { 
+    userEmail: user?.email, 
+    userRole, 
+    isAdmin, 
+    isSuperAdmin,
+    loading 
+  });
 
   return (
     <AuthContext.Provider value={{
