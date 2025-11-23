@@ -105,10 +105,32 @@ export default {
             height: "0",
           },
         },
+        "slide-in": {
+          from: {
+            opacity: "0",
+            transform: "translateY(-8px)",
+          },
+          to: {
+            opacity: "1",
+            transform: "translateY(0)",
+          },
+        },
+        "slide-out": {
+          from: {
+            opacity: "1",
+            transform: "translateY(0)",
+          },
+          to: {
+            opacity: "0",
+            transform: "translateY(-8px)",
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "slide-in": "slide-in 0.3s ease-out",
+        "slide-out": "slide-out 0.3s ease-out",
       },
     },
   },
