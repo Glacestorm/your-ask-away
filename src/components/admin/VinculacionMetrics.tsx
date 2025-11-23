@@ -95,8 +95,8 @@ export function VinculacionMetrics() {
       });
 
       const sortedGestores = Object.values(gestorMap)
-        .filter((g: any) => g.count >= 3) // Mínimo 3 visitas con vinculación
-        .sort((a: any, b: any) => b.promedio - a.promedio)
+        .filter((g: any) => g.count >= 3 && g.gestor && !isNaN(g.promedio)) // Mínimo 3 visitas con vinculación
+        .sort((a: any, b: any) => (b.promedio || 0) - (a.promedio || 0))
         .slice(0, 10);
       setTopGestoresVinculacion(sortedGestores);
 

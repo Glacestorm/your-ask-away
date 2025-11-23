@@ -38,8 +38,9 @@ export function ProductsMetrics() {
       });
 
       const sorted = Object.values(productMap)
-        .sort((a: any, b: any) => b.contratos - a.contratos)
-        .slice(0, 10);
+        .sort((a: any, b: any) => (b.contratos || 0) - (a.contratos || 0))
+        .slice(0, 10)
+        .filter((p: any) => p.producto && !isNaN(p.contratos));
       setTopProducts(sorted);
 
       // Productos más ofrecidos en visitas
@@ -59,8 +60,9 @@ export function ProductsMetrics() {
       });
 
       const sortedOffered = Object.values(offeredMap)
-        .sort((a: any, b: any) => b.ofertas - a.ofertas)
-        .slice(0, 10);
+        .sort((a: any, b: any) => (b.ofertas || 0) - (a.ofertas || 0))
+        .slice(0, 10)
+        .filter((p: any) => p.producto && !isNaN(p.ofertas));
       setProductsOffered(sortedOffered);
 
       // Distribución por categoría

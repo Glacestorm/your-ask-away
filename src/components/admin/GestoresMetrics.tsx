@@ -65,13 +65,14 @@ export function GestoresMetrics() {
       });
 
       const sortedGestores = Object.values(gestorMap)
-        .sort((a: any, b: any) => b.visitas - a.visitas)
-        .slice(0, 10);
+        .sort((a: any, b: any) => (b.visitas || 0) - (a.visitas || 0))
+        .slice(0, 10)
+        .filter((g: any) => g.gestor && !isNaN(g.visitas));
       setTopGestores(sortedGestores);
 
       const sortedSuccess = Object.values(successMap)
-        .filter((g: any) => g.total >= 5) // Solo gestores con al menos 5 visitas
-        .sort((a: any, b: any) => b.tasa - a.tasa)
+        .filter((g: any) => g.total >= 5 && g.gestor && !isNaN(g.tasa)) // Solo gestores con al menos 5 visitas
+        .sort((a: any, b: any) => (b.tasa || 0) - (a.tasa || 0))
         .slice(0, 10);
       setSuccessRate(sortedSuccess);
 
@@ -90,8 +91,9 @@ export function GestoresMetrics() {
       });
 
       const sortedCompanies = Object.values(companyMap)
-        .sort((a: any, b: any) => b.empresas - a.empresas)
-        .slice(0, 10);
+        .sort((a: any, b: any) => (b.empresas || 0) - (a.empresas || 0))
+        .slice(0, 10)
+        .filter((c: any) => c.gestor && !isNaN(c.empresas));
       setCompaniesPerGestor(sortedCompanies);
 
     } catch (error: any) {
@@ -114,6 +116,22 @@ export function GestoresMetrics() {
           </CardContent>
         </Card>
       </div>
+    );
+  }
+
+  if (topGestores.length === 0 && successRate.length === 0 && companiesPerGestor.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Métricas de Gestores</CardTitle>
+          <CardDescription>No hay datos disponibles</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            Registra visitas y asigna gestores a empresas para ver las estadísticas.
+          </p>
+        </CardContent>
+      </Card>
     );
   }
 
