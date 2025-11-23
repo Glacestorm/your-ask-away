@@ -43,7 +43,7 @@ function add3DBuildingsLayer(map: maplibregl.Map) {
       type: 'fill-extrusion',
       source: 'osm-buildings',
       'source-layer': 'building',
-      minzoom: 14,
+      minzoom: 15,
       paint: {
         'fill-extrusion-color': [
           'case',
@@ -87,11 +87,11 @@ function add3DBuildingsLayer(map: maplibregl.Map) {
           ['case',
             ['has', 'building:levels'],
             ['*', ['to-number', ['get', 'building:levels']], 3],
-            12,
+            8,
           ],
         ],
         'fill-extrusion-base': 0,
-        'fill-extrusion-opacity': 0.85,
+        'fill-extrusion-opacity': 0.6,
       },
     });
   }
@@ -153,7 +153,7 @@ export function MapContainer({
   const searchMarkerRef = useRef<maplibregl.Marker | null>(null);
   const [tooltipConfig, setTooltipConfig] = useState<TooltipConfig[]>([]);
   const [vinculacionData, setVinculacionData] = useState<Record<string, number>>({});
-  const [minZoomVinculacion, setMinZoomVinculacion] = useState<number>(13);
+  const [minZoomVinculacion, setMinZoomVinculacion] = useState<number>(11);
   const [visitCounts, setVisitCounts] = useState<Record<string, number>>({});
 
   // Fetch tooltip configuration
@@ -760,15 +760,17 @@ export function MapContainer({
 
           const el = document.createElement('div');
           el.className = 'custom-marker';
+          el.style.position = 'relative';
+          el.style.zIndex = '1000';
           
           const color = getMarkerColor();
           const vinculacionPct = vinculacionData[company.id];
           const showVinculacion = zoom >= minZoomVinculacion;
           
-          // Escalar tamaño del marcador según zoom (a partir de zoom 12)
-          const baseSize = Math.max(30, Math.min(60, (zoom - 10) * 5));
+          // Tamaño base más grande y escalado más pronunciado
+          const baseSize = Math.max(40, Math.min(80, (zoom - 8) * 8));
           const markerWidth = showVinculacion ? baseSize * 1.2 : baseSize;
-          const markerHeight = showVinculacion ? baseSize * 1.6 : baseSize * 1.25;
+          const markerHeight = showVinculacion ? baseSize * 1.8 : baseSize * 1.4;
           
           el.style.width = `${markerWidth}px`;
           el.style.height = `${markerHeight}px`;
@@ -815,7 +817,11 @@ export function MapContainer({
             </svg>
           `;
 
-          const marker = new maplibregl.Marker({ element: el })
+          const marker = new maplibregl.Marker({ 
+            element: el,
+            anchor: 'bottom',
+            offset: [0, 0]
+          })
             .setLngLat([longitude, latitude])
             .addTo(map.current!);
 
