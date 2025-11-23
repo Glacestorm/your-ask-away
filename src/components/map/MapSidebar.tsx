@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { CompanyWithDetails, MapFilters, StatusColor, Product, Profile } from '@/types/database';
-import { Search, X, Filter, Calendar, History } from 'lucide-react';
+import { Search, X, Filter, Calendar, History, TrendingUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
@@ -16,6 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { VisitsPanel } from './VisitsPanel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SectorStats } from './SectorStats';
 
 interface MapSidebarProps {
   open: boolean;
@@ -80,9 +81,14 @@ export function MapSidebar({
       return false;
     }
 
-    // Filter by CNAE
-    if (filters.cnaes.length > 0 && !filters.cnaes.includes(company.cnae || '')) {
-      return false;
+    // Filter by sector
+    if (filters.sectors.length > 0) {
+      // Handle "Sin sector" special case
+      if (filters.sectors.includes('Sin sector')) {
+        if (!company.sector) return true;
+        return filters.sectors.some(s => s === company.sector);
+      }
+      return filters.sectors.includes(company.sector || '');
     }
 
     // Filter by products
@@ -166,11 +172,24 @@ export function MapSidebar({
     });
   };
 
+  const handleSectorClick = (sector: string) => {
+    // If clicking on "Sin sector", filter for companies without sector
+    const sectorValue = sector === 'Sin sector' ? null : sector;
+    
+    // Toggle sector selection
+    const newSectors = filters.sectors.includes(sector)
+      ? filters.sectors.filter((s) => s !== sector)
+      : [...filters.sectors, sector];
+    
+    onFiltersChange({ ...filters, sectors: newSectors });
+  };
+
   const hasActiveFilters = 
     filters.statusIds.length > 0 ||
     filters.gestorIds.length > 0 ||
     filters.parroquias.length > 0 ||
     filters.cnaes.length > 0 ||
+    filters.sectors.length > 0 ||
     filters.productIds.length > 0 ||
     filters.dateRange !== null ||
     filters.searchTerm !== '';
@@ -183,14 +202,18 @@ export function MapSidebar({
     >
       <div className="flex h-full flex-col">
         <Tabs defaultValue="companies" className="flex-1 flex flex-col">
-          <TabsList className="mx-4 mt-4">
-            <TabsTrigger value="companies" className="flex-1">
-              <Search className="mr-2 h-4 w-4" />
-              Empresas
+          <TabsList className="mx-4 mt-4 grid grid-cols-3">
+            <TabsTrigger value="companies" className="flex items-center gap-2">
+              <Search className="h-4 w-4" />
+              <span className="hidden sm:inline">Empresas</span>
             </TabsTrigger>
-            <TabsTrigger value="visits" className="flex-1">
-              <History className="mr-2 h-4 w-4" />
-              Visitas
+            <TabsTrigger value="sectors" className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              <span className="hidden sm:inline">Sectores</span>
+            </TabsTrigger>
+            <TabsTrigger value="visits" className="flex items-center gap-2">
+              <History className="h-4 w-4" />
+              <span className="hidden sm:inline">Visitas</span>
             </TabsTrigger>
           </TabsList>
 
@@ -457,6 +480,14 @@ export function MapSidebar({
                 </div>
               </div>
             </ScrollArea>
+          </TabsContent>
+
+          <TabsContent value="sectors" className="flex-1 p-4">
+            <SectorStats
+              companies={filteredCompanies}
+              onSectorClick={handleSectorClick}
+              selectedSectors={filters.sectors}
+            />
           </TabsContent>
 
           <TabsContent value="visits" className="flex-1 p-4">
