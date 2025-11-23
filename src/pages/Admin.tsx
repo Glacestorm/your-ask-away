@@ -25,6 +25,7 @@ import { TPVManager } from '@/components/admin/TPVManager';
 import { TPVGoalsManager } from '@/components/admin/TPVGoalsManager';
 import { CommercialDirectorDashboard } from '@/components/admin/CommercialDirectorDashboard';
 import { OfficeDirectorDashboard } from '@/components/admin/OfficeDirectorDashboard';
+import { CommercialManagerDashboard } from '@/components/admin/CommercialManagerDashboard';
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, loading: authLoading } = useAuth();
   const { t } = useLanguage();
@@ -70,6 +71,8 @@ const Admin = () => {
           );
         }
         return <OfficeDirectorDashboard />;
+      case 'commercial-manager':
+        return <CommercialManagerDashboard />;
       case 'health':
         return <SystemHealthMonitor />;
       case 'visits':

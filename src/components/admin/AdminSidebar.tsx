@@ -75,6 +75,17 @@ export function AdminSidebar({
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )}
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => onSectionChange('commercial-manager')}
+                isActive={isActive('commercial-manager')}
+                className="font-semibold"
+                tooltip={!open ? "Responsable Comercial" : undefined}
+              >
+                <TrendingUp className="h-5 w-5" />
+                <span>Responsable Comercial</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
 
