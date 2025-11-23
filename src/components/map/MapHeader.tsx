@@ -1,6 +1,14 @@
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { MapPin, Menu, LogOut, Settings, BarChart3, UserCircle, Mountain } from 'lucide-react';
+import { MapPin, Menu, LogOut, Settings, BarChart3, UserCircle, Mountain, Layers } from 'lucide-react';
+import {
+  DropdownMenu as BaseDropdownMenu,
+  DropdownMenuContent as BaseDropdownMenuContent,
+  DropdownMenuTrigger as BaseDropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import { useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
@@ -12,6 +20,17 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
+export interface MapBaseLayers {
+  roads: boolean;
+  labels: boolean;
+  water: boolean;
+  terrain: boolean;
+  buildings: boolean;
+  transit: boolean;
+  poi: boolean;
+  markers: boolean;
+}
+
 interface MapHeaderProps {
   onToggleSidebar: () => void;
   sidebarOpen: boolean;
@@ -19,6 +38,8 @@ interface MapHeaderProps {
   view3D: boolean;
   onMapStyleChange: (style: 'default' | 'satellite') => void;
   onView3DChange: (enabled: boolean) => void;
+  baseLayers: MapBaseLayers;
+  onBaseLayersChange: (layers: MapBaseLayers) => void;
 }
 
 export function MapHeader({ 
@@ -27,7 +48,9 @@ export function MapHeader({
   mapStyle,
   view3D,
   onMapStyleChange,
-  onView3DChange 
+  onView3DChange,
+  baseLayers,
+  onBaseLayersChange
 }: MapHeaderProps) {
   const { user, signOut, userRole, isAdmin } = useAuth();
   const navigate = useNavigate();
@@ -88,6 +111,128 @@ export function MapHeader({
             <Mountain className="mr-1 h-3 w-3" />
             Vista 3D
           </Button>
+          
+          <BaseDropdownMenu>
+            <BaseDropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs"
+              >
+                <Layers className="mr-1 h-3 w-3" />
+                Capas base
+              </Button>
+            </BaseDropdownMenuTrigger>
+            <BaseDropdownMenuContent align="end" className="w-56">
+              <div className="p-2 space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="markers"
+                    checked={baseLayers.markers}
+                    onCheckedChange={(checked) =>
+                      onBaseLayersChange({ ...baseLayers, markers: !!checked })
+                    }
+                  />
+                  <Label htmlFor="markers" className="text-sm font-normal cursor-pointer">
+                    Chinchetas (empresas)
+                  </Label>
+                </div>
+                
+                <Separator />
+                
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="roads"
+                    checked={baseLayers.roads}
+                    onCheckedChange={(checked) =>
+                      onBaseLayersChange({ ...baseLayers, roads: !!checked })
+                    }
+                  />
+                  <Label htmlFor="roads" className="text-sm font-normal cursor-pointer">
+                    Carreteras y calles
+                  </Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="labels"
+                    checked={baseLayers.labels}
+                    onCheckedChange={(checked) =>
+                      onBaseLayersChange({ ...baseLayers, labels: !!checked })
+                    }
+                  />
+                  <Label htmlFor="labels" className="text-sm font-normal cursor-pointer">
+                    Etiquetas de lugares
+                  </Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="water"
+                    checked={baseLayers.water}
+                    onCheckedChange={(checked) =>
+                      onBaseLayersChange({ ...baseLayers, water: !!checked })
+                    }
+                  />
+                  <Label htmlFor="water" className="text-sm font-normal cursor-pointer">
+                    Ríos y lagos
+                  </Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="terrain"
+                    checked={baseLayers.terrain}
+                    onCheckedChange={(checked) =>
+                      onBaseLayersChange({ ...baseLayers, terrain: !!checked })
+                    }
+                  />
+                  <Label htmlFor="terrain" className="text-sm font-normal cursor-pointer">
+                    Terreno y relieve
+                  </Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="buildings"
+                    checked={baseLayers.buildings}
+                    onCheckedChange={(checked) =>
+                      onBaseLayersChange({ ...baseLayers, buildings: !!checked })
+                    }
+                  />
+                  <Label htmlFor="buildings" className="text-sm font-normal cursor-pointer">
+                    Edificios
+                  </Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="transit"
+                    checked={baseLayers.transit}
+                    onCheckedChange={(checked) =>
+                      onBaseLayersChange({ ...baseLayers, transit: !!checked })
+                    }
+                  />
+                  <Label htmlFor="transit" className="text-sm font-normal cursor-pointer">
+                    Transporte público
+                  </Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="poi"
+                    checked={baseLayers.poi}
+                    onCheckedChange={(checked) =>
+                      onBaseLayersChange({ ...baseLayers, poi: !!checked })
+                    }
+                  />
+                  <Label htmlFor="poi" className="text-sm font-normal cursor-pointer">
+                    Puntos de interés
+                  </Label>
+                </div>
+              </div>
+            </BaseDropdownMenuContent>
+          </BaseDropdownMenu>
         </div>
       </div>
 

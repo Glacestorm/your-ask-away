@@ -24,10 +24,13 @@ interface MapContainerProps {
   view3D?: boolean;
   baseLayers?: {
     roads: boolean;
+    labels: boolean;
     water: boolean;
     terrain: boolean;
     buildings: boolean;
-    labels: boolean;
+    transit: boolean;
+    poi: boolean;
+    markers: boolean;
   };
 }
 
@@ -40,10 +43,13 @@ export function MapContainer({
   view3D = false,
   baseLayers = {
     roads: true,
+    labels: true,
     water: true,
     terrain: true,
     buildings: true,
-    labels: true,
+    transit: true,
+    poi: true,
+    markers: true,
   },
 }: MapContainerProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -143,93 +149,36 @@ export function MapContainer({
     if (!map.current || !mapLoaded) return;
 
     const getMapStyle = (): any => {
-      if (mapStyle === 'satellite') {
-        return {
-          version: 8 as const,
-          sources: {
-            'satellite': {
-              type: 'raster',
-              tiles: [
-                'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
-              ],
-              tileSize: 256,
-              attribution: '© Google',
-            },
-            'protomaps': {
-              type: 'vector',
-              tiles: [
-                'https://tiles.protomaps.com/v3/{z}/{x}/{y}.mvt',
-              ],
-              maxzoom: 15,
-              attribution: '© Protomaps © OpenStreetMap',
-            },
+      const baseStyle = mapStyle === 'satellite' ? {
+        version: 8 as const,
+        sources: {
+          'satellite': {
+            type: 'raster',
+            tiles: [
+              'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+            ],
+            tileSize: 256,
+            attribution: '© Google',
           },
-          layers: [
-            {
-              id: 'satellite',
-              type: 'raster',
-              source: 'satellite',
-              minzoom: 0,
-              maxzoom: 22,
-            },
-            ...(baseLayers.water ? [{
-              id: 'water',
-              type: 'fill',
-              source: 'protomaps',
-              'source-layer': 'water',
-              paint: {
-                'fill-color': '#a0c8f0',
-                'fill-opacity': 0.6,
-              },
-            }] : []),
-            ...(baseLayers.roads ? [
-              {
-                id: 'roads',
-                type: 'line',
-                source: 'protomaps',
-                'source-layer': 'roads',
-                paint: {
-                  'line-color': '#fff',
-                  'line-width': 2,
-                },
-              },
-              {
-                id: 'roads-labels',
-                type: 'symbol',
-                source: 'protomaps',
-                'source-layer': 'roads',
-                layout: {
-                  'text-field': ['get', 'name'],
-                  'text-size': 10,
-                  'symbol-placement': 'line',
-                },
-                paint: {
-                  'text-color': '#fff',
-                  'text-halo-color': '#000',
-                  'text-halo-width': 1,
-                },
-              }
-            ] : []),
-            ...(baseLayers.labels ? [{
-              id: 'places-labels',
-              type: 'symbol',
-              source: 'protomaps',
-              'source-layer': 'places',
-              layout: {
-                'text-field': ['get', 'name'],
-                'text-size': 12,
-              },
-              paint: {
-                'text-color': '#fff',
-                'text-halo-color': '#000',
-                'text-halo-width': 2,
-              },
-            }] : []),
-          ],
-        };
-      }
-      
-      return {
+          'protomaps': {
+            type: 'vector',
+            tiles: [
+              'https://tiles.protomaps.com/v3/{z}/{x}/{y}.mvt',
+            ],
+            maxzoom: 15,
+            attribution: '© Protomaps © OpenStreetMap',
+          },
+        },
+        layers: [
+          {
+            id: 'satellite',
+            type: 'raster',
+            source: 'satellite',
+            minzoom: 0,
+            maxzoom: 22,
+          },
+        ],
+      } : {
         version: 8 as const,
         sources: {
           'osm': {
@@ -259,33 +208,114 @@ export function MapContainer({
             minzoom: 0,
             maxzoom: 19,
           },
-          ...(baseLayers.water ? [{
-            id: 'water',
-            type: 'fill',
-            source: 'protomaps',
-            'source-layer': 'water',
-            paint: {
-              'fill-color': '#a0c8f0',
-              'fill-opacity': 0.5,
-            },
-          }] : []),
-          ...(baseLayers.labels ? [{
-            id: 'places-labels',
-            type: 'symbol',
-            source: 'protomaps',
-            'source-layer': 'places',
-            layout: {
-              'text-field': ['get', 'name'],
-              'text-size': 12,
-            },
-            paint: {
-              'text-color': '#333',
-              'text-halo-color': '#fff',
-              'text-halo-width': 2,
-            },
-          }] : []),
         ],
       };
+
+      // Add overlay layers based on baseLayers settings
+      const overlayLayers: any[] = [];
+
+      if (baseLayers.water) {
+        overlayLayers.push({
+          id: 'water-overlay',
+          type: 'fill',
+          source: 'protomaps',
+          'source-layer': 'water',
+          paint: {
+            'fill-color': mapStyle === 'satellite' ? '#4a90e2' : '#a0c8f0',
+            'fill-opacity': 0.4,
+          },
+        });
+      }
+
+      if (baseLayers.buildings) {
+        overlayLayers.push({
+          id: 'buildings-overlay',
+          type: 'fill',
+          source: 'protomaps',
+          'source-layer': 'buildings',
+          paint: {
+            'fill-color': mapStyle === 'satellite' ? '#666' : '#e0e0e0',
+            'fill-opacity': 0.5,
+            'fill-outline-color': mapStyle === 'satellite' ? '#444' : '#bbb',
+          },
+        });
+      }
+
+      if (baseLayers.roads) {
+        overlayLayers.push({
+          id: 'roads-overlay',
+          type: 'line',
+          source: 'protomaps',
+          'source-layer': 'roads',
+          paint: {
+            'line-color': mapStyle === 'satellite' ? '#ffd700' : '#666',
+            'line-width': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              8, 0.5,
+              16, 3
+            ],
+          },
+        });
+      }
+
+      if (baseLayers.transit) {
+        overlayLayers.push({
+          id: 'transit-overlay',
+          type: 'line',
+          source: 'protomaps',
+          'source-layer': 'transit',
+          paint: {
+            'line-color': '#ff6b6b',
+            'line-width': 2,
+            'line-dasharray': [2, 2],
+          },
+        });
+      }
+
+      if (baseLayers.poi) {
+        overlayLayers.push({
+          id: 'poi-overlay',
+          type: 'circle',
+          source: 'protomaps',
+          'source-layer': 'pois',
+          paint: {
+            'circle-radius': 4,
+            'circle-color': '#9b59b6',
+            'circle-stroke-color': '#fff',
+            'circle-stroke-width': 1,
+          },
+        });
+      }
+
+      if (baseLayers.labels) {
+        overlayLayers.push({
+          id: 'places-labels-overlay',
+          type: 'symbol',
+          source: 'protomaps',
+          'source-layer': 'places',
+          layout: {
+            'text-field': ['get', 'name'],
+            'text-size': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              8, 10,
+              16, 16
+            ],
+            'text-font': ['Open Sans Regular'],
+          },
+          paint: {
+            'text-color': mapStyle === 'satellite' ? '#fff' : '#333',
+            'text-halo-color': mapStyle === 'satellite' ? '#000' : '#fff',
+            'text-halo-width': 2,
+          },
+        });
+      }
+
+      baseStyle.layers.push(...overlayLayers);
+      return baseStyle;
     };
 
     map.current.setStyle(getMapStyle());
@@ -299,8 +329,8 @@ export function MapContainer({
         map.current.removeLayer('3d-buildings');
       }
 
-      // Add 3D buildings when view3D is enabled
-      if (view3D) {
+      // Add 3D buildings when view3D is enabled AND buildings layer is enabled
+      if (view3D && baseLayers.buildings) {
         // Check if source has buildings layer
         const source = map.current.getSource('protomaps');
         if (source) {
@@ -339,6 +369,11 @@ export function MapContainer({
     // Clear existing markers
     markers.current.forEach((marker) => marker.remove());
     markers.current = [];
+    
+    // If markers are disabled, return early
+    if (!baseLayers.markers) {
+      return;
+    }
 
     // Filter companies
     const filteredCompanies = companies.filter((company) => {
@@ -534,7 +569,7 @@ export function MapContainer({
       map.current?.off('moveend', updateMarkers);
       map.current?.off('zoomend', updateMarkers);
     };
-  }, [companies, filters, mapLoaded, statusColors, onSelectCompany]);
+  }, [companies, filters, mapLoaded, statusColors, onSelectCompany, baseLayers.markers]);
 
   return (
     <div ref={mapContainer} className="h-full w-full" />
