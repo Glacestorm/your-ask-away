@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import { SidebarProvider } from '@/components/ui/sidebar';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { CompaniesManager } from '@/components/admin/CompaniesManager';
 import { ProductsManager } from '@/components/admin/ProductsManager';
@@ -152,6 +152,7 @@ const Admin = () => {
           <div className="p-6 space-y-6">
             {/* Header */}
             <div className="flex items-center gap-4">
+              <SidebarTrigger />
               <Button variant="ghost" size="icon" onClick={() => navigate('/map')}>
                 <ArrowLeft className="h-5 w-5" />
               </Button>

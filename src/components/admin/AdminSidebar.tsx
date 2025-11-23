@@ -36,8 +36,6 @@ export function AdminSidebar({ activeSection, onSectionChange }: AdminSidebarPro
 
   return (
     <Sidebar className="border-r">
-      <SidebarTrigger className="m-2" />
-      
       <SidebarContent>
         {/* Dashboard Principal */}
         <SidebarGroup>
