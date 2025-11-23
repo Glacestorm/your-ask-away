@@ -167,18 +167,44 @@ serve(async (req) => {
           severity = 'info';
         }
 
-        // Create notification for all users
+        // Get user preferences for this alert type
+        const { data: userPreferences, error: prefsError } = await supabaseClient
+          .from('notification_preferences')
+          .select('user_id, email_enabled, in_app_enabled, min_severity')
+          .eq('alert_type', alert.metric_type);
+
+        if (prefsError) {
+          console.error('Error fetching preferences:', prefsError);
+        }
+
+        const severityLevel: Record<string, number> = { info: 0, warning: 1, critical: 2 };
+        const prefsMap = new Map(
+          userPreferences?.map(p => [
+            p.user_id, 
+            {
+              email: p.email_enabled && severityLevel[severity] >= (severityLevel[p.min_severity] || 0),
+              inApp: p.in_app_enabled && severityLevel[severity] >= (severityLevel[p.min_severity] || 0)
+            }
+          ]) || []
+        );
+
+        // Create notifications based on user preferences
         for (const profile of profiles || []) {
-          notificationsToCreate.push({
-            alert_id: alert.id,
-            user_id: profile.id,
-            title: alert.alert_name,
-            message: `La métrica ${alert.metric_type} está ${alert.condition_type === 'below' ? 'por debajo' : 'por encima'} del umbral establecido (${alert.threshold_value}). Valor actual: ${metricValue.toFixed(2)}`,
-            severity,
-            metric_value: metricValue,
-            threshold_value: alert.threshold_value,
-            is_read: false,
-          });
+          const userPrefs = prefsMap.get(profile.id);
+          const shouldNotify = !userPrefs || userPrefs.inApp;
+
+          if (shouldNotify) {
+            notificationsToCreate.push({
+              alert_id: alert.id,
+              user_id: profile.id,
+              title: alert.alert_name,
+              message: `La métrica ${alert.metric_type} está ${alert.condition_type === 'below' ? 'por debajo' : 'por encima'} del umbral establecido (${alert.threshold_value}). Valor actual: ${metricValue.toFixed(2)}`,
+              severity,
+              metric_value: metricValue,
+              threshold_value: alert.threshold_value,
+              is_read: false,
+            });
+          }
         }
 
         // Update last_checked timestamp
@@ -205,44 +231,64 @@ serve(async (req) => {
       if (criticalNotifications.length > 0 && adminEmails.length > 0) {
         console.log(`Sending ${criticalNotifications.length} critical alert emails to ${adminEmails.length} admins`);
         
-        // Group notifications by alert to avoid sending duplicate emails
-        const uniqueAlerts = new Map<string, typeof notificationsToCreate[0]>();
-        criticalNotifications.forEach(notif => {
-          if (!uniqueAlerts.has(notif.alert_id)) {
-            uniqueAlerts.set(notif.alert_id, notif);
-          }
-        });
+        // Get email preferences for admin users
+        const { data: adminPrefs } = await supabaseClient
+          .from('notification_preferences')
+          .select('user_id, email_enabled, min_severity')
+          .in('user_id', adminUsers?.map(u => u.user_id) || []);
 
-        // Send one email per unique critical alert
-        for (const notification of uniqueAlerts.values()) {
-          try {
-            const emailResponse = await fetch(
-              `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-alert-email`,
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
-                },
-                body: JSON.stringify({
-                  to: adminEmails,
-                  alertName: notification.title,
-                  metricType: 'Métrica',
-                  metricValue: notification.metric_value,
-                  thresholdValue: notification.threshold_value,
-                  severity: notification.severity,
-                  message: notification.message,
-                }),
-              }
-            );
+        const emailEnabledAdmins = new Set(
+          adminPrefs?.filter(p => p.email_enabled && p.min_severity !== 'critical')
+            .map(p => p.user_id) || adminUsers?.map(u => u.user_id) || []
+        );
 
-            if (!emailResponse.ok) {
-              console.error('Failed to send email:', await emailResponse.text());
-            } else {
-              console.log('Email sent successfully for alert:', notification.title);
+        const filteredAdminEmails = adminUsers
+          ?.filter(u => emailEnabledAdmins.has(u.user_id))
+          .map(u => u.profiles?.email)
+          .filter((email): email is string => email != null) || [];
+
+        if (filteredAdminEmails.length === 0) {
+          console.log('No admins have email notifications enabled for critical alerts');
+        } else {
+          // Group notifications by alert to avoid sending duplicate emails
+          const uniqueAlerts = new Map<string, typeof notificationsToCreate[0]>();
+          criticalNotifications.forEach(notif => {
+            if (!uniqueAlerts.has(notif.alert_id)) {
+              uniqueAlerts.set(notif.alert_id, notif);
             }
-          } catch (emailError) {
-            console.error('Error sending email:', emailError);
+          });
+
+          // Send one email per unique critical alert
+          for (const notification of uniqueAlerts.values()) {
+            try {
+              const emailResponse = await fetch(
+                `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-alert-email`,
+                {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+                  },
+                  body: JSON.stringify({
+                    to: filteredAdminEmails,
+                    alertName: notification.title,
+                    metricType: 'Métrica',
+                    metricValue: notification.metric_value,
+                    thresholdValue: notification.threshold_value,
+                    severity: notification.severity,
+                    message: notification.message,
+                  }),
+                }
+              );
+
+              if (!emailResponse.ok) {
+                console.error('Failed to send email:', await emailResponse.text());
+              } else {
+                console.log('Email sent successfully for alert:', notification.title);
+              }
+            } catch (emailError) {
+              console.error('Error sending email:', emailError);
+            }
           }
         }
       }

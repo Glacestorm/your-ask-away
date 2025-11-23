@@ -37,6 +37,7 @@ import { ReportGenerator } from '@/components/reports/ReportGenerator';
 import { AnalisisCohortes } from '@/components/dashboard/AnalisisCohortes';
 import { AlertsManager } from '@/components/dashboard/AlertsManager';
 import { NotificationsPanel } from '@/components/dashboard/NotificationsPanel';
+import { NotificationPreferences } from '@/components/dashboard/NotificationPreferences';
 import { AnalisisEmbudo } from '@/components/dashboard/AnalisisEmbudo';
 import { supabase } from '@/integrations/supabase/client';
 import * as XLSX from 'xlsx';
@@ -323,6 +324,16 @@ const Dashboard = () => {
                 </p>
               </div>
               <AlertsManager />
+            </div>
+
+            <div className="rounded-lg border bg-card p-6">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold">Preferencias de Notificaciones</h2>
+                <p className="text-muted-foreground">
+                  Personaliza cómo y cuándo quieres recibir notificaciones
+                </p>
+              </div>
+              <NotificationPreferences />
             </div>
           </TabsContent>
 
