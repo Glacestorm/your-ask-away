@@ -19,20 +19,15 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 export interface MapBaseLayers {
   roads: boolean;
   labels: boolean;
-  water: boolean;
-  terrain: boolean;
-  buildings: boolean;
-  transit: boolean;
-  poi: boolean;
   markers: boolean;
 }
 
 interface MapHeaderProps {
   onToggleSidebar: () => void;
   sidebarOpen: boolean;
-  mapStyle: 'default' | 'satellite' | 'dark' | 'traffic' | 'topographic';
+  mapStyle: 'default' | 'satellite' | 'terrain';
   view3D: boolean;
-  onMapStyleChange: (style: 'default' | 'satellite' | 'dark' | 'traffic' | 'topographic') => void;
+  onMapStyleChange: (style: 'default' | 'satellite' | 'terrain') => void;
   onView3DChange: (enabled: boolean) => void;
   baseLayers: MapBaseLayers;
   onBaseLayersChange: (layers: MapBaseLayers) => void;
@@ -88,12 +83,10 @@ export function MapHeader({
               >
                 {mapStyle === 'default' && 'Mapa'}
                 {mapStyle === 'satellite' && 'Satélite'}
-                {mapStyle === 'dark' && 'Oscuro'}
-                {mapStyle === 'traffic' && 'Tráfico'}
-                {mapStyle === 'topographic' && 'Topográfico'}
+                {mapStyle === 'terrain' && 'Terreno'}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-40">
+            <DropdownMenuContent align="start" className="w-40 z-50 bg-card">
               <div className="p-1">
                 <Button
                   variant={mapStyle === 'default' ? 'default' : 'ghost'}
@@ -112,28 +105,12 @@ export function MapHeader({
                   Satélite
                 </Button>
                 <Button
-                  variant={mapStyle === 'dark' ? 'default' : 'ghost'}
+                  variant={mapStyle === 'terrain' ? 'default' : 'ghost'}
                   size="sm"
-                  onClick={() => onMapStyleChange('dark')}
+                  onClick={() => onMapStyleChange('terrain')}
                   className="w-full justify-start h-8 text-xs"
                 >
-                  Oscuro
-                </Button>
-                <Button
-                  variant={mapStyle === 'traffic' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => onMapStyleChange('traffic')}
-                  className="w-full justify-start h-8 text-xs"
-                >
-                  Tráfico
-                </Button>
-                <Button
-                  variant={mapStyle === 'topographic' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => onMapStyleChange('topographic')}
-                  className="w-full justify-start h-8 text-xs"
-                >
-                  Topográfico
+                  Terreno
                 </Button>
               </div>
             </DropdownMenuContent>
@@ -157,30 +134,11 @@ export function MapHeader({
                 className="h-7 text-xs"
               >
                 <Layers className="mr-1 h-3 w-3" />
-                Capas base
+                Capas
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-64">
-              <div className="p-2 space-y-3">
-                <div className="flex items-start gap-2 pb-2">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Info className="h-4 w-4 text-muted-foreground mt-0.5" />
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-xs">
-                        <p className="text-xs">
-                          Nota: Los mapas base (Mapa, Satélite, Oscuro, Topográfico) incluyen sus propias 
-                          capas integradas. Las opciones aquí añaden capas adicionales sobre el mapa base.
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <p className="text-xs text-muted-foreground">
-                    Controla la visibilidad de las capas
-                  </p>
-                </div>
-                
+            <DropdownMenuContent align="end" className="w-56 z-50 bg-card">
+              <div className="p-3 space-y-3">
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="markers"
@@ -190,15 +148,30 @@ export function MapHeader({
                     }
                   />
                   <Label htmlFor="markers" className="text-sm font-medium cursor-pointer">
-                    📍 Chinchetas (empresas)
+                    📍 Marcadores de empresas
                   </Label>
                 </div>
                 
                 <Separator />
                 
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold text-muted-foreground">Capas adicionales</p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Opciones de visualización
+                  </p>
                   
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="labels"
+                      checked={baseLayers.labels}
+                      onCheckedChange={(checked) =>
+                        onBaseLayersChange({ ...baseLayers, labels: !!checked })
+                      }
+                    />
+                    <Label htmlFor="labels" className="text-sm font-normal cursor-pointer">
+                      Etiquetas de lugares
+                    </Label>
+                  </div>
+
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="roads"
@@ -209,84 +182,6 @@ export function MapHeader({
                     />
                     <Label htmlFor="roads" className="text-sm font-normal cursor-pointer">
                       Carreteras destacadas
-                    </Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="labels"
-                      checked={baseLayers.labels}
-                      onCheckedChange={(checked) =>
-                        onBaseLayersChange({ ...baseLayers, labels: !!checked })
-                      }
-                    />
-                    <Label htmlFor="labels" className="text-sm font-normal cursor-pointer">
-                      Etiquetas adicionales
-                    </Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="water"
-                      checked={baseLayers.water}
-                      onCheckedChange={(checked) =>
-                        onBaseLayersChange({ ...baseLayers, water: !!checked })
-                      }
-                    />
-                    <Label htmlFor="water" className="text-sm font-normal cursor-pointer">
-                      Ríos y lagos overlay
-                    </Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="terrain"
-                      checked={baseLayers.terrain}
-                      onCheckedChange={(checked) =>
-                        onBaseLayersChange({ ...baseLayers, terrain: !!checked })
-                      }
-                    />
-                    <Label htmlFor="terrain" className="text-sm font-normal cursor-pointer">
-                      Relieve del terreno
-                    </Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="buildings"
-                      checked={baseLayers.buildings}
-                      onCheckedChange={(checked) =>
-                        onBaseLayersChange({ ...baseLayers, buildings: !!checked })
-                      }
-                    />
-                    <Label htmlFor="buildings" className="text-sm font-normal cursor-pointer">
-                      Edificios overlay
-                    </Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="transit"
-                      checked={baseLayers.transit}
-                      onCheckedChange={(checked) =>
-                        onBaseLayersChange({ ...baseLayers, transit: !!checked })
-                      }
-                    />
-                    <Label htmlFor="transit" className="text-sm font-normal cursor-pointer">
-                      Transporte público
-                    </Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="poi"
-                      checked={baseLayers.poi}
-                      onCheckedChange={(checked) =>
-                        onBaseLayersChange({ ...baseLayers, poi: !!checked })
-                      }
-                    />
-                    <Label htmlFor="poi" className="text-sm font-normal cursor-pointer">
-                      Puntos de interés
                     </Label>
                   </div>
                 </div>

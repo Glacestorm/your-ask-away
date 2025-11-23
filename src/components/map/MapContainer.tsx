@@ -21,16 +21,11 @@ interface MapContainerProps {
   statusColors: StatusColor[];
   filters: MapFilters;
   onSelectCompany: (company: CompanyWithDetails) => void;
-  mapStyle?: 'default' | 'satellite' | 'dark' | 'traffic' | 'topographic';
+  mapStyle?: 'default' | 'satellite' | 'terrain';
   view3D?: boolean;
   baseLayers?: {
     roads: boolean;
     labels: boolean;
-    water: boolean;
-    terrain: boolean;
-    buildings: boolean;
-    transit: boolean;
-    poi: boolean;
     markers: boolean;
   };
 }
@@ -45,11 +40,6 @@ export function MapContainer({
   baseLayers = {
     roads: true,
     labels: true,
-    water: true,
-    terrain: true,
-    buildings: true,
-    transit: true,
-    poi: true,
     markers: true,
   },
 }: MapContainerProps) {
@@ -67,55 +57,75 @@ export function MapContainer({
     const andorraCenter: [number, number] = [1.5218, 42.5063];
 
     const getMapStyle = (): any => {
-      if (mapStyle === 'satellite') {
-        return {
-          version: 8 as const,
-          sources: {
-            'satellite': {
-              type: 'raster',
-              tiles: [
-                'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
-              ],
-              tileSize: 256,
-              attribution: '© Google',
+      switch (mapStyle) {
+        case 'satellite':
+          return {
+            version: 8 as const,
+            sources: {
+              'satellite': {
+                type: 'raster',
+                tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+                tileSize: 256,
+                attribution: '© Esri',
+              },
             },
-          },
-          layers: [
-            {
+            layers: [{
               id: 'satellite',
               type: 'raster',
               source: 'satellite',
               minzoom: 0,
-              maxzoom: 22,
+              maxzoom: 19,
+            }],
+          };
+        
+        case 'terrain':
+          return {
+            version: 8 as const,
+            sources: {
+              'terrain': {
+                type: 'raster',
+                tiles: [
+                  'https://a.tile.opentopomap.org/{z}/{x}/{y}.png',
+                  'https://b.tile.opentopomap.org/{z}/{x}/{y}.png',
+                  'https://c.tile.opentopomap.org/{z}/{x}/{y}.png',
+                ],
+                tileSize: 256,
+                attribution: '© OpenTopoMap',
+              },
             },
-          ],
-        };
+            layers: [{
+              id: 'terrain',
+              type: 'raster',
+              source: 'terrain',
+              minzoom: 0,
+              maxzoom: 17,
+            }],
+          };
+        
+        default: // 'default'
+          return {
+            version: 8 as const,
+            sources: {
+              'osm': {
+                type: 'raster',
+                tiles: [
+                  'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                ],
+                tileSize: 256,
+                attribution: '© OpenStreetMap',
+              },
+            },
+            layers: [{
+              id: 'osm',
+              type: 'raster',
+              source: 'osm',
+              minzoom: 0,
+              maxzoom: 19,
+            }],
+          };
       }
-      
-      return {
-        version: 8 as const,
-        sources: {
-          'osm': {
-            type: 'raster',
-            tiles: [
-              'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-              'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-              'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            ],
-            tileSize: 256,
-            attribution: '© OpenStreetMap contributors',
-          },
-        },
-        layers: [
-          {
-            id: 'osm',
-            type: 'raster',
-            source: 'osm',
-            minzoom: 0,
-            maxzoom: 19,
-          },
-        ],
-      };
     };
 
     map.current = new maplibregl.Map({
@@ -149,10 +159,12 @@ export function MapContainer({
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
 
+    const currentCenter = map.current.getCenter();
+    const currentZoom = map.current.getZoom();
+
     const getMapStyle = (): any => {
       let baseStyle: any;
       
-      // Define base map style
       switch (mapStyle) {
         case 'satellite':
           baseStyle = {
@@ -160,9 +172,9 @@ export function MapContainer({
             sources: {
               'base': {
                 type: 'raster',
-                tiles: ['https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'],
+                tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
                 tileSize: 256,
-                attribution: '© Google',
+                attribution: '© Esri',
               },
             },
             layers: [{
@@ -170,72 +182,12 @@ export function MapContainer({
               type: 'raster',
               source: 'base',
               minzoom: 0,
-              maxzoom: 22,
+              maxzoom: 19,
             }],
           };
           break;
           
-        case 'dark':
-          baseStyle = {
-            version: 8 as const,
-            sources: {
-              'base': {
-                type: 'raster',
-                tiles: ['https://{a-c}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'],
-                tileSize: 256,
-                attribution: '© CARTO © OpenStreetMap',
-              },
-            },
-            layers: [{
-              id: 'base',
-              type: 'raster',
-              source: 'base',
-              minzoom: 0,
-              maxzoom: 20,
-            }],
-          };
-          break;
-          
-        case 'traffic':
-          baseStyle = {
-            version: 8 as const,
-            sources: {
-              'base': {
-                type: 'raster',
-                tiles: ['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'],
-                tileSize: 256,
-                attribution: '© OpenStreetMap',
-              },
-              'traffic': {
-                type: 'raster',
-                tiles: ['https://mt1.google.com/vt/lyrs=h&x={x}&y={y}&z={z}'],
-                tileSize: 256,
-                attribution: '© Google',
-              },
-            },
-            layers: [
-              {
-                id: 'base',
-                type: 'raster',
-                source: 'base',
-                minzoom: 0,
-                maxzoom: 19,
-              },
-              {
-                id: 'traffic-overlay',
-                type: 'raster',
-                source: 'traffic',
-                minzoom: 0,
-                maxzoom: 22,
-                paint: {
-                  'raster-opacity': 0.6,
-                },
-              },
-            ],
-          };
-          break;
-          
-        case 'topographic':
+        case 'terrain':
           baseStyle = {
             version: 8 as const,
             sources: {
@@ -247,7 +199,7 @@ export function MapContainer({
                   'https://c.tile.opentopomap.org/{z}/{x}/{y}.png',
                 ],
                 tileSize: 256,
-                attribution: '© OpenTopoMap © OpenStreetMap',
+                attribution: '© OpenTopoMap',
               },
             },
             layers: [{
@@ -272,7 +224,7 @@ export function MapContainer({
                   'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
                 ],
                 tileSize: 256,
-                attribution: '© OpenStreetMap contributors',
+                attribution: '© OpenStreetMap',
               },
             },
             layers: [{
@@ -285,119 +237,40 @@ export function MapContainer({
           };
       }
 
-      // Add protomaps source for vector overlays only if needed
-      if (baseLayers.water || baseLayers.buildings || baseLayers.roads || 
-          baseLayers.transit || baseLayers.poi || baseLayers.labels) {
-        baseStyle.sources['protomaps'] = {
-          type: 'vector',
-          tiles: ['https://tiles.protomaps.com/v3/{z}/{x}/{y}.mvt'],
-          maxzoom: 15,
-          attribution: '© Protomaps © OpenStreetMap',
-        };
-      }
-
-      // Add overlay layers based on baseLayers settings
+      // Add overlay layers
       const overlayLayers: any[] = [];
-      const isDark = mapStyle === 'dark';
       const isSatellite = mapStyle === 'satellite';
 
-      if (baseLayers.water) {
-        overlayLayers.push({
-          id: 'water-overlay',
-          type: 'fill',
-          source: 'protomaps',
-          'source-layer': 'water',
-          paint: {
-            'fill-color': isSatellite || isDark ? '#4a90e2' : '#a0c8f0',
-            'fill-opacity': 0.3,
-          },
-        });
-      }
-
-      if (baseLayers.buildings) {
-        overlayLayers.push({
-          id: 'buildings-overlay',
-          type: 'fill',
-          source: 'protomaps',
-          'source-layer': 'buildings',
-          paint: {
-            'fill-color': isSatellite || isDark ? '#666' : '#e0e0e0',
-            'fill-opacity': 0.4,
-            'fill-outline-color': isSatellite || isDark ? '#444' : '#bbb',
-          },
-        });
-      }
-
       if (baseLayers.roads) {
+        baseStyle.sources['osm-overlay'] = {
+          type: 'raster',
+          tiles: ['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'],
+          tileSize: 256,
+        };
         overlayLayers.push({
           id: 'roads-overlay',
-          type: 'line',
-          source: 'protomaps',
-          'source-layer': 'roads',
+          type: 'raster',
+          source: 'osm-overlay',
           paint: {
-            'line-color': isSatellite ? '#ffd700' : isDark ? '#999' : '#666',
-            'line-width': ['interpolate', ['linear'], ['zoom'], 8, 0.5, 16, 3],
-          },
-        });
-      }
-
-      if (baseLayers.transit) {
-        overlayLayers.push({
-          id: 'transit-overlay',
-          type: 'line',
-          source: 'protomaps',
-          'source-layer': 'transit',
-          paint: {
-            'line-color': '#ff6b6b',
-            'line-width': 2,
-            'line-dasharray': [2, 2],
-          },
-        });
-      }
-
-      if (baseLayers.poi) {
-        overlayLayers.push({
-          id: 'poi-overlay',
-          type: 'circle',
-          source: 'protomaps',
-          'source-layer': 'pois',
-          paint: {
-            'circle-radius': 4,
-            'circle-color': '#9b59b6',
-            'circle-stroke-color': '#fff',
-            'circle-stroke-width': 1,
+            'raster-opacity': isSatellite ? 0.3 : 0.5,
           },
         });
       }
 
       if (baseLayers.labels) {
+        if (!baseStyle.sources['osm-overlay']) {
+          baseStyle.sources['osm-overlay'] = {
+            type: 'raster',
+            tiles: ['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            tileSize: 256,
+          };
+        }
         overlayLayers.push({
-          id: 'places-labels-overlay',
-          type: 'symbol',
-          source: 'protomaps',
-          'source-layer': 'places',
-          layout: {
-            'text-field': ['get', 'name'],
-            'text-size': ['interpolate', ['linear'], ['zoom'], 8, 10, 16, 16],
-            'text-font': ['Open Sans Regular'],
-          },
+          id: 'labels-overlay',
+          type: 'raster',
+          source: 'osm-overlay',
           paint: {
-            'text-color': isSatellite || isDark ? '#fff' : '#333',
-            'text-halo-color': isSatellite || isDark ? '#000' : '#fff',
-            'text-halo-width': 2,
-          },
-        });
-      }
-
-      if (baseLayers.terrain && (mapStyle === 'default' || mapStyle === 'topographic')) {
-        overlayLayers.push({
-          id: 'terrain-overlay',
-          type: 'hillshade',
-          source: 'protomaps',
-          'source-layer': 'landcover',
-          paint: {
-            'hillshade-exaggeration': 0.3,
-            'hillshade-shadow-color': '#000',
+            'raster-opacity': isSatellite ? 0.6 : 0.3,
           },
         });
       }
@@ -408,40 +281,13 @@ export function MapContainer({
 
     map.current.setStyle(getMapStyle());
     
-    // Wait for style to load before adding 3D buildings
+    // Restore center and zoom after style change
     map.current.once('styledata', () => {
       if (!map.current) return;
-
-      // Remove existing 3D building layer if it exists
-      if (map.current.getLayer('3d-buildings')) {
-        map.current.removeLayer('3d-buildings');
-      }
-
-      // Add 3D buildings when view3D is enabled AND buildings layer is enabled
-      if (view3D && baseLayers.buildings) {
-        // Check if source has buildings layer
-        const source = map.current.getSource('protomaps');
-        if (source) {
-          map.current.addLayer({
-            id: '3d-buildings',
-            source: 'protomaps',
-            'source-layer': 'buildings',
-            type: 'fill-extrusion',
-            minzoom: 14,
-            paint: {
-              'fill-extrusion-color': ['satellite', 'dark'].includes(mapStyle) ? '#888' : '#ccc',
-              'fill-extrusion-height': [
-                'case',
-                ['has', 'height'],
-                ['get', 'height'],
-                ['*', ['get', 'building:levels', 3], 3.5]
-              ],
-              'fill-extrusion-base': 0,
-              'fill-extrusion-opacity': 0.7,
-            },
-          } as any);
-        }
-      }
+      map.current.jumpTo({
+        center: currentCenter,
+        zoom: currentZoom,
+      });
     });
 
     map.current.easeTo({
