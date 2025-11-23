@@ -194,7 +194,7 @@ export function CommercialDirectorDashboard() {
       {/* Encabezado */}
       <Card>
         <CardHeader>
-          <CardTitle>Panel del Director Comercial</CardTitle>
+          <CardTitle>Director de Negocio</CardTitle>
           <CardDescription>
             Vista general y explorador de métricas por gestor, oficina y banco
           </CardDescription>
