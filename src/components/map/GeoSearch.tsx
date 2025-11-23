@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card } from '@/components/ui/card';
 import { CompanyWithDetails } from '@/types/database';
 import { Badge } from '@/components/ui/badge';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface NominatimResult {
   place_id: number;
@@ -35,6 +36,7 @@ interface GeoSearchProps {
 }
 
 export function GeoSearch({ companies, onSelectResult, onClose }: GeoSearchProps) {
+  const { t } = useLanguage();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -180,7 +182,7 @@ export function GeoSearch({ companies, onSelectResult, onClose }: GeoSearchProps
             <Input
               ref={inputRef}
               type="text"
-              placeholder="Buscar dirección, empresa, calle..."
+              placeholder={t('map.searchPlaceholder')}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -213,7 +215,7 @@ export function GeoSearch({ companies, onSelectResult, onClose }: GeoSearchProps
         
         {isSearching && (
           <div className="mt-2 text-xs text-muted-foreground">
-            Buscando...
+            {t('map.searching')}
           </div>
         )}
       </div>
@@ -244,7 +246,7 @@ export function GeoSearch({ companies, onSelectResult, onClose }: GeoSearchProps
                       </p>
                       {result.type === 'company' && (
                         <Badge variant="secondary" className="text-xs shrink-0">
-                          Empresa
+                          {t('map.company')}
                         </Badge>
                       )}
                       {result.placeType && (
@@ -279,7 +281,7 @@ export function GeoSearch({ companies, onSelectResult, onClose }: GeoSearchProps
 
       {query.trim().length >= 2 && results.length === 0 && !isSearching && (
         <div className="p-6 text-center text-sm text-muted-foreground">
-          No se encontraron resultados
+          {t('map.noResultsFound')}
         </div>
       )}
 
@@ -287,7 +289,7 @@ export function GeoSearch({ companies, onSelectResult, onClose }: GeoSearchProps
         <div className="p-6 text-center">
           <Search className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
           <p className="text-sm text-muted-foreground">
-            Busca empresas, direcciones o lugares en Andorra
+            {t('map.searchPrompt')}
           </p>
         </div>
       )}

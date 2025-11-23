@@ -46,6 +46,11 @@ export default {
   'map.search': 'Rechercher une entreprise...',
   'map.noResults': 'Aucun résultat trouvé',
   'map.showingCompanies': 'Affichage de {count} entreprises',
+  'map.searchPlaceholder': 'Rechercher adresse, entreprise, rue...',
+  'map.searching': 'Recherche en cours...',
+  'map.company': 'Entreprise',
+  'map.noResultsFound': 'Aucun résultat trouvé',
+  'map.searchPrompt': 'Recherchez des entreprises, des adresses ou des lieux en Andorre',
   
   // Sidebar
   'sidebar.filters': 'Filtres',

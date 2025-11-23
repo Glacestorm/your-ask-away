@@ -46,6 +46,11 @@ export default {
   'map.search': 'Search company...',
   'map.noResults': 'No results found',
   'map.showingCompanies': 'Showing {count} companies',
+  'map.searchPlaceholder': 'Search address, company, street...',
+  'map.searching': 'Searching...',
+  'map.company': 'Company',
+  'map.noResultsFound': 'No results found',
+  'map.searchPrompt': 'Search companies, addresses or places in Andorra',
   
   // Sidebar
   'sidebar.filters': 'Filters',
