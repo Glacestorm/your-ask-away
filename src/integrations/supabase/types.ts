@@ -89,6 +89,89 @@ export type Database = {
         }
         Relationships: []
       }
+      best_practice_likes: {
+        Row: {
+          created_at: string | null
+          id: string
+          practice_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          practice_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          practice_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "best_practice_likes_practice_id_fkey"
+            columns: ["practice_id"]
+            isOneToOne: false
+            referencedRelation: "best_practices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "best_practice_likes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      best_practices: {
+        Row: {
+          category: string
+          content: string
+          created_at: string | null
+          gestor_id: string
+          id: string
+          likes_count: number | null
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+          views_count: number | null
+        }
+        Insert: {
+          category: string
+          content: string
+          created_at?: string | null
+          gestor_id: string
+          id?: string
+          likes_count?: number | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+          views_count?: number | null
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string | null
+          gestor_id?: string
+          id?: string
+          likes_count?: number | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "best_practices_gestor_id_fkey"
+            columns: ["gestor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           address: string
