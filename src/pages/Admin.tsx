@@ -144,7 +144,15 @@ const Admin = () => {
 
           {/* PANEL DIRECTOR COMERCIAL */}
           <TabsContent value="director" className="space-y-4">
-            <CommercialDirectorDashboard />
+            <div className="rounded-lg border bg-card p-6">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold">Panel Director Comercial</h2>
+                <p className="text-sm text-muted-foreground">
+                  Temporalmente desactivado para diagnóstico
+                </p>
+              </div>
+              {/* <CommercialDirectorDashboard /> */}
+            </div>
           </TabsContent>
 
           {/* MONITOR DE SALUD DEL SISTEMA */}
