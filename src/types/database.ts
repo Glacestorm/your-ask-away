@@ -61,6 +61,9 @@ export interface Company {
   legal_form: string | null;
   pl_banco: number | null;
   beneficios: number | null;
+  vinculacion_entidad_1: number | null;
+  vinculacion_entidad_2: number | null;
+  vinculacion_entidad_3: number | null;
   created_at: string;
   updated_at: string;
 }
