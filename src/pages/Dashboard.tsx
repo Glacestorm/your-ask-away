@@ -17,7 +17,8 @@ import {
   LineChart,
   Award,
   UserCheck,
-  Bell
+  Bell,
+  Filter
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { subMonths } from 'date-fns';
@@ -36,6 +37,7 @@ import { ReportGenerator } from '@/components/reports/ReportGenerator';
 import { AnalisisCohortes } from '@/components/dashboard/AnalisisCohortes';
 import { AlertsManager } from '@/components/dashboard/AlertsManager';
 import { NotificationsPanel } from '@/components/dashboard/NotificationsPanel';
+import { AnalisisEmbudo } from '@/components/dashboard/AnalisisEmbudo';
 import { supabase } from '@/integrations/supabase/client';
 import * as XLSX from 'xlsx';
 
@@ -137,7 +139,7 @@ const Dashboard = () => {
 
         {/* Dashboard Tabs */}
         <Tabs defaultValue="resumen" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-12 h-auto">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-13 h-auto">
             <TabsTrigger value="resumen" className="flex items-center gap-2 py-3">
               <TrendingUp className="h-4 w-4" />
               <span className="hidden sm:inline">Resumen</span>
@@ -177,6 +179,10 @@ const Dashboard = () => {
             <TabsTrigger value="cohortes" className="flex items-center gap-2 py-3">
               <UserCheck className="h-4 w-4" />
               <span className="hidden sm:inline">Cohortes</span>
+            </TabsTrigger>
+            <TabsTrigger value="embudo" className="flex items-center gap-2 py-3">
+              <Filter className="h-4 w-4" />
+              <span className="hidden sm:inline">Embudo</span>
             </TabsTrigger>
             <TabsTrigger value="alertas" className="flex items-center gap-2 py-3">
               <Bell className="h-4 w-4" />
@@ -291,6 +297,19 @@ const Dashboard = () => {
                 </p>
               </div>
               <AnalisisCohortes />
+            </div>
+          </TabsContent>
+
+          {/* Análisis de Embudo */}
+          <TabsContent value="embudo" className="space-y-6">
+            <div className="rounded-lg border bg-card p-6">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold">Análisis de Embudo de Conversión</h2>
+                <p className="text-muted-foreground">
+                  Seguimiento del recorrido del cliente desde primer contacto hasta alta vinculación
+                </p>
+              </div>
+              <AnalisisEmbudo />
             </div>
           </TabsContent>
 
