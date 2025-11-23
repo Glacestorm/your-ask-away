@@ -25,12 +25,17 @@ export function UsersManager() {
   const { t } = useLanguage();
   const [profiles, setProfiles] = useState<ProfileWithRole[]>([]);
   const [loading, setLoading] = useState(false);
-  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [userDialogOpen, setUserDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [inviteForm, setInviteForm] = useState({
+  const [editingUser, setEditingUser] = useState<ProfileWithRole | null>(null);
+  const [userForm, setUserForm] = useState({
     email: '',
+    password: '',
     full_name: '',
+    cargo: '',
+    oficina: '',
+    gestor_number: '',
     role: 'user' as AppRole,
   });
 
@@ -101,43 +106,110 @@ export function UsersManager() {
     }
   };
 
-  const handleInviteUser = async () => {
+  const resetForm = () => {
+    setUserForm({
+      email: '',
+      password: '',
+      full_name: '',
+      cargo: '',
+      oficina: '',
+      gestor_number: '',
+      role: 'user',
+    });
+    setEditingUser(null);
+  };
+
+  const handleOpenCreateDialog = () => {
+    resetForm();
+    setUserDialogOpen(true);
+  };
+
+  const handleOpenEditDialog = (profile: ProfileWithRole) => {
+    setEditingUser(profile);
+    setUserForm({
+      email: profile.email,
+      password: '',
+      full_name: profile.full_name || '',
+      cargo: profile.cargo || '',
+      oficina: profile.oficina || '',
+      gestor_number: profile.gestor_number || '',
+      role: profile.roles?.[0] || 'user',
+    });
+    setUserDialogOpen(true);
+  };
+
+  const handleSaveUser = async () => {
     if (!isSuperAdmin) {
-      toast.error('Solo los superadministradores pueden invitar usuarios');
+      toast.error('Solo los superadministradores pueden gestionar usuarios');
       return;
     }
 
-    if (!inviteForm.email || !inviteForm.full_name) {
+    if (!userForm.email || !userForm.full_name) {
       toast.error('Email y nombre son requeridos');
+      return;
+    }
+
+    if (!editingUser && !userForm.password) {
+      toast.error('La contraseña es requerida para nuevos usuarios');
       return;
     }
 
     try {
       setLoading(true);
 
-      // Create user via Supabase Admin API (requires service role)
-      // For now, we'll create an invitation that the user needs to complete
-      const { data, error } = await supabase.auth.admin.inviteUserByEmail(inviteForm.email, {
-        data: {
-          full_name: inviteForm.full_name,
-          initial_role: inviteForm.role,
-        },
-        redirectTo: `${window.location.origin}/auth`,
-      });
-
-      if (error) {
-        // If admin invite fails (requires service role), create a standard signup
-        toast.error('No se pudo enviar la invitación. El usuario debe registrarse manualmente.');
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        toast.error('Sesión no válida');
         return;
       }
 
-      toast.success('Invitación enviada correctamente');
-      setInviteDialogOpen(false);
-      setInviteForm({ email: '', full_name: '', role: 'user' });
+      const action = editingUser ? 'update' : 'create';
+      const userData = editingUser
+        ? {
+            id: editingUser.id,
+            email: userForm.email !== editingUser.email ? userForm.email : undefined,
+            password: userForm.password || undefined,
+            full_name: userForm.full_name,
+            cargo: userForm.cargo,
+            oficina: userForm.oficina,
+            gestor_number: userForm.gestor_number,
+            role: userForm.role,
+          }
+        : {
+            email: userForm.email,
+            password: userForm.password,
+            full_name: userForm.full_name,
+            cargo: userForm.cargo,
+            oficina: userForm.oficina,
+            gestor_number: userForm.gestor_number,
+            role: userForm.role,
+          };
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-user`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${sessionData.session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ action, userData }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Error al guardar usuario');
+      }
+
+      toast.success(editingUser ? 'Usuario actualizado correctamente' : 'Usuario creado correctamente');
+      setUserDialogOpen(false);
+      resetForm();
       fetchProfiles();
     } catch (error: any) {
-      console.error('Error inviting user:', error);
-      toast.error('Error al invitar usuario');
+      console.error('Error saving user:', error);
+      toast.error(error.message || 'Error al guardar usuario');
     } finally {
       setLoading(false);
     }
@@ -149,29 +221,40 @@ export function UsersManager() {
     try {
       setLoading(true);
 
-      // Delete user roles first
-      await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', selectedUserId);
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData.session) {
+        toast.error('Sesión no válida');
+        return;
+      }
 
-      // Delete profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', selectedUserId);
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-user`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${sessionData.session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'delete',
+            userData: { id: selectedUserId },
+          }),
+        }
+      );
 
-      if (profileError) throw profileError;
+      const result = await response.json();
 
-      // Note: Deleting from auth.users requires service role
-      // For now, we only delete the profile and roles
-      toast.success('Usuario dado de baja correctamente');
+      if (!response.ok) {
+        throw new Error(result.error || 'Error al eliminar usuario');
+      }
+
+      toast.success('Usuario eliminado correctamente');
       setDeleteDialogOpen(false);
       setSelectedUserId(null);
       fetchProfiles();
     } catch (error: any) {
       console.error('Error deleting user:', error);
-      toast.error('Error al dar de baja usuario');
+      toast.error(error.message || 'Error al eliminar usuario');
     } finally {
       setLoading(false);
     }
@@ -213,9 +296,9 @@ export function UsersManager() {
               </CardDescription>
             </div>
             {isSuperAdmin && (
-              <Button onClick={() => setInviteDialogOpen(true)}>
+              <Button onClick={handleOpenCreateDialog}>
                 <UserPlus className="mr-2 h-4 w-4" />
-                Invitar Usuario
+                Crear Usuario
               </Button>
             )}
           </div>
@@ -229,8 +312,8 @@ export function UsersManager() {
                 <TableHead>Nombre</TableHead>
                 <TableHead>Cargo</TableHead>
                 <TableHead>Oficina</TableHead>
+                <TableHead>Nº Gestor</TableHead>
                 <TableHead>Rol</TableHead>
-                {isSuperAdmin && <TableHead>Cambiar Rol</TableHead>}
                 <TableHead>Fecha Registro</TableHead>
                 {isSuperAdmin && <TableHead className="text-right">Acciones</TableHead>}
               </TableRow>
@@ -242,6 +325,7 @@ export function UsersManager() {
                   <TableCell>{profile.full_name || 'N/A'}</TableCell>
                   <TableCell>{profile.cargo || '-'}</TableCell>
                   <TableCell>{profile.oficina || '-'}</TableCell>
+                  <TableCell>{profile.gestor_number || '-'}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">
                       {profile.roles && profile.roles.length > 0 ? (
@@ -255,55 +339,34 @@ export function UsersManager() {
                       )}
                     </div>
                   </TableCell>
-                  {isSuperAdmin && (
-                    <TableCell>
-                      <Select
-                        value={profile.roles?.[0] || 'user'}
-                        onValueChange={(value) => handleRoleChange(profile.id, value as AppRole)}
-                        disabled={loading}
-                      >
-                        <SelectTrigger className="w-[180px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="user">
-                            <div className="flex items-center gap-2">
-                              <Shield className="h-4 w-4" />
-                              Usuario
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="admin">
-                            <div className="flex items-center gap-2">
-                              <Shield className="h-4 w-4 text-blue-500" />
-                              Administrador
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="superadmin">
-                            <div className="flex items-center gap-2">
-                              <Shield className="h-4 w-4 text-red-500" />
-                              Superadministrador
-                            </div>
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                  )}
                   <TableCell>
                     {new Date(profile.created_at).toLocaleDateString('es-ES')}
                   </TableCell>
                   {isSuperAdmin && (
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          setSelectedUserId(profile.id);
-                          setDeleteDialogOpen(true);
-                        }}
-                        disabled={loading}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                      <div className="flex gap-1 justify-end">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleOpenEditDialog(profile)}
+                          disabled={loading}
+                          title="Editar usuario"
+                        >
+                          <Shield className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setSelectedUserId(profile.id);
+                            setDeleteDialogOpen(true);
+                          }}
+                          disabled={loading}
+                          title="Eliminar usuario"
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </TableCell>
                   )}
                 </TableRow>
@@ -314,58 +377,137 @@ export function UsersManager() {
       </CardContent>
     </Card>
 
-    {/* Invite User Dialog */}
-    <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
-      <DialogContent>
+    {/* Create/Edit User Dialog */}
+    <Dialog open={userDialogOpen} onOpenChange={setUserDialogOpen}>
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Invitar Nuevo Usuario</DialogTitle>
+          <DialogTitle>{editingUser ? 'Editar Usuario' : 'Crear Nuevo Usuario'}</DialogTitle>
           <DialogDescription>
-            Introduce los datos del nuevo usuario. Se le enviará un correo de invitación.
+            {editingUser 
+              ? 'Modifica los datos del usuario. Deja la contraseña vacía si no quieres cambiarla.'
+              : 'Introduce los datos del nuevo usuario del sistema.'}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email *</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="usuario@ejemplo.com"
-              value={inviteForm.email}
-              onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })}
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email *</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="usuario@ejemplo.com"
+                value={userForm.email}
+                onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
+                disabled={loading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">
+                Contraseña {!editingUser && '*'}
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder={editingUser ? 'Dejar vacío para no cambiar' : 'Contraseña segura'}
+                value={userForm.password}
+                onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
+                disabled={loading}
+              />
+            </div>
           </div>
+          
           <div className="space-y-2">
             <Label htmlFor="full_name">Nombre Completo *</Label>
             <Input
               id="full_name"
-              placeholder="Nombre del usuario"
-              value={inviteForm.full_name}
-              onChange={(e) => setInviteForm({ ...inviteForm, full_name: e.target.value })}
+              placeholder="Nombre completo del usuario"
+              value={userForm.full_name}
+              onChange={(e) => setUserForm({ ...userForm, full_name: e.target.value })}
+              disabled={loading}
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="role">Rol Inicial</Label>
-            <Select
-              value={inviteForm.role}
-              onValueChange={(value) => setInviteForm({ ...inviteForm, role: value as AppRole })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="user">Usuario</SelectItem>
-                <SelectItem value="admin">Administrador</SelectItem>
-                <SelectItem value="superadmin">Superadministrador</SelectItem>
-              </SelectContent>
-            </Select>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="cargo">Cargo</Label>
+              <Input
+                id="cargo"
+                placeholder="Ej: Director, Gestor..."
+                value={userForm.cargo}
+                onChange={(e) => setUserForm({ ...userForm, cargo: e.target.value })}
+                disabled={loading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="oficina">Oficina</Label>
+              <Input
+                id="oficina"
+                placeholder="Ej: Oficina Central"
+                value={userForm.oficina}
+                onChange={(e) => setUserForm({ ...userForm, oficina: e.target.value })}
+                disabled={loading}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="gestor_number">Número de Gestor</Label>
+              <Input
+                id="gestor_number"
+                placeholder="Ej: G001"
+                value={userForm.gestor_number}
+                onChange={(e) => setUserForm({ ...userForm, gestor_number: e.target.value })}
+                disabled={loading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="role">Rol *</Label>
+              <Select
+                value={userForm.role}
+                onValueChange={(value) => setUserForm({ ...userForm, role: value as AppRole })}
+                disabled={loading}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-4 w-4" />
+                      Usuario
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="admin">
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-blue-500" />
+                      Administrador
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="superadmin">
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-red-500" />
+                      Superadministrador
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              setUserDialogOpen(false);
+              resetForm();
+            }}
+            disabled={loading}
+          >
             Cancelar
           </Button>
-          <Button onClick={handleInviteUser} disabled={loading}>
-            Enviar Invitación
+          <Button onClick={handleSaveUser} disabled={loading}>
+            {loading ? 'Guardando...' : (editingUser ? 'Actualizar' : 'Crear Usuario')}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -375,19 +517,20 @@ export function UsersManager() {
     <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>¿Dar de baja usuario?</AlertDialogTitle>
+          <AlertDialogTitle>¿Eliminar usuario permanentemente?</AlertDialogTitle>
           <AlertDialogDescription>
-            Esta acción eliminará el perfil y los roles del usuario. 
-            Esta acción no se puede deshacer.
+            Esta acción eliminará completamente el usuario del sistema, incluyendo su cuenta de autenticación, perfil y roles. 
+            <strong className="block mt-2 text-destructive">Esta acción no se puede deshacer.</strong>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel disabled={loading}>Cancelar</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDeleteUser}
+            disabled={loading}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            Dar de Baja
+            {loading ? 'Eliminando...' : 'Eliminar Usuario'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
