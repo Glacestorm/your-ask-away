@@ -21,6 +21,44 @@ interface GestorPerformance {
   badge: string;
 }
 
+// Helper functions for email generation
+const getBadgeEmoji = (rank: number) => {
+  if (rank === 1) return "🏆";
+  if (rank === 2) return "🥈";
+  if (rank === 3) return "🥉";
+  if (rank <= 5) return "⭐";
+  return "📊";
+};
+
+const getPerformanceColor = (value: number, average: number) => {
+  if (value >= average * 1.2) return "#10b981";
+  if (value >= average * 0.8) return "#f59e0b";
+  return "#ef4444";
+};
+
+const generateAchievements = (gestor: GestorPerformance) => {
+  const achievements = [];
+  if (gestor.rank === 1) achievements.push('<div style="padding: 10px 15px; background: #fef3c7; border-radius: 20px; font-size: 14px;">🏆 Campeón del Mes</div>');
+  if (gestor.rank <= 3) achievements.push('<div style="padding: 10px 15px; background: #dbeafe; border-radius: 20px; font-size: 14px;">🥇 Top 3 Performer</div>');
+  if (gestor.rank <= 5) achievements.push('<div style="padding: 10px 15px; background: #e0e7ff; border-radius: 20px; font-size: 14px;">⭐ Top 5 del Equipo</div>');
+  if (gestor.total_visits >= 20) achievements.push('<div style="padding: 10px 15px; background: #dcfce7; border-radius: 20px; font-size: 14px;">🚀 Alta Actividad</div>');
+  if (gestor.conversion_rate >= 60) achievements.push('<div style="padding: 10px 15px; background: #fce7f3; border-radius: 20px; font-size: 14px;">🎯 Alto Rendimiento</div>');
+  if (gestor.avg_vinculacion >= 70) achievements.push('<div style="padding: 10px 15px; background: #fef3c7; border-radius: 20px; font-size: 14px;">💎 Excelente Vinculación</div>');
+  return achievements.join('');
+};
+
+const getMotivationTitle = (rank: number) => {
+  if (rank === 1) return '🎉 ¡Sigue así, eres el número 1!';
+  if (rank <= 3) return '💪 ¡Excelente trabajo! Estás entre los mejores';
+  if (rank <= 5) return '⭐ ¡Buen desempeño! Sigue mejorando';
+  return '🚀 ¡Vamos! El próximo mes puede ser tu mejor mes';
+};
+
+const getMotivationMessage = (rank: number) => {
+  if (rank === 1) return 'Mantén el liderazgo y sigue inspirando al equipo';
+  return 'Cada visita cuenta. ¡Sigue adelante!';
+};
+
 const generateEmailHTML = (
   gestor: GestorPerformance,
   teamAvg: { visits: number; conversion: number; vinculacion: number },
@@ -28,19 +66,6 @@ const generateEmailHTML = (
   totalGestores: number,
   month: string
 ): string => {
-  const getBadgeEmoji = (rank: number) => {
-    if (rank === 1) return "🏆";
-    if (rank === 2) return "🥈";
-    if (rank === 3) return "🥉";
-    if (rank <= 5) return "⭐";
-    return "📊";
-  };
-
-  const getPerformanceColor = (value: number, average: number) => {
-    if (value >= average * 1.2) return "#10b981"; // green
-    if (value >= average * 0.8) return "#f59e0b"; // yellow
-    return "#ef4444"; // red
-  };
 
   return `
 <!DOCTYPE html>
@@ -166,6 +191,18 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     console.log("Starting monthly report generation...");
 
+    // Fetch the active email template
+    const { data: templateData, error: templateError } = await supabase
+      .from('email_templates')
+      .select('*')
+      .eq('template_type', 'monthly_report')
+      .eq('is_active', true)
+      .single();
+
+    if (templateError || !templateData) {
+      console.error("No active email template found, using default");
+    }
+
     // Get date range for last month
     const now = new Date();
     const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
@@ -283,12 +320,52 @@ const handler = async (req: Request): Promise<Response> => {
     // Send email to each gestor
     const emailPromises = gestoresArray.map(async (gestor) => {
       try {
-        const html = generateEmailHTML(gestor, teamAvg, topPerformer, totalGestores, monthName);
+        // Use template from database or fallback to default
+        let html: string;
+        let subject: string;
+
+        if (templateData) {
+          // Replace template variables with actual data
+          html = templateData.html_content;
+          subject = templateData.subject;
+
+          const variables: Record<string, string> = {
+            gestor_name: gestor.gestor_name,
+            month: monthName,
+            rank: gestor.rank.toString(),
+            total_gestores: totalGestores.toString(),
+            badge_emoji: getBadgeEmoji(gestor.rank),
+            total_visits: gestor.total_visits.toString(),
+            conversion_rate: gestor.conversion_rate.toFixed(1),
+            avg_vinculacion: gestor.avg_vinculacion.toFixed(1),
+            avg_visits: teamAvg.visits.toFixed(0),
+            avg_conversion: teamAvg.conversion.toFixed(1),
+            avg_team_vinculacion: teamAvg.vinculacion.toFixed(1),
+            visits_color: getPerformanceColor(gestor.total_visits, teamAvg.visits),
+            conversion_color: getPerformanceColor(gestor.conversion_rate, teamAvg.conversion),
+            vinculacion_color: getPerformanceColor(gestor.avg_vinculacion, teamAvg.vinculacion),
+            achievements: generateAchievements(gestor),
+            top_3_badge: gestor.rank <= 3 ? '<div style="margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.2); border-radius: 5px; font-size: 14px;">🎉 ¡Felicitaciones! Estás en el Top 3</div>' : '',
+            top_performer_section: gestor.rank !== 1 ? `<div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea; margin-bottom: 30px;"><div style="font-size: 14px; color: #666; margin-bottom: 5px;">🏆 Top Performer del Mes</div><div style="font-size: 18px; font-weight: bold; color: #333;">${topPerformer}</div><div style="font-size: 13px; color: #666; margin-top: 5px;">¡Sigue trabajando para alcanzar el primer lugar!</div></div>` : '',
+            motivation_title: getMotivationTitle(gestor.rank),
+            motivation_message: getMotivationMessage(gestor.rank)
+          };
+
+          // Replace all variables in template
+          Object.entries(variables).forEach(([key, value]) => {
+            html = html.replace(new RegExp(`{{${key}}}`, 'g'), value);
+            subject = subject.replace(new RegExp(`{{${key}}}`, 'g'), value);
+          });
+        } else {
+          // Fallback to default template
+          html = generateEmailHTML(gestor, teamAvg, topPerformer, totalGestores, monthName);
+          subject = `📊 Tu Reporte de Rendimiento - ${monthName}`;
+        }
 
         const { error } = await resend.emails.send({
           from: 'Sistema de Gestión <onboarding@resend.dev>',
           to: [gestor.gestor_email],
-          subject: `📊 Tu Reporte de Rendimiento - ${monthName}`,
+          subject,
           html,
         });
 

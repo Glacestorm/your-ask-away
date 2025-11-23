@@ -11,6 +11,7 @@ import { UsersManager } from '@/components/admin/UsersManager';
 import { StatusColorsManager } from '@/components/admin/StatusColorsManager';
 import { ConceptsManager } from '@/components/admin/ConceptsManager';
 import { AuditLogsViewer } from '@/components/admin/AuditLogsViewer';
+import { EmailTemplatesManager } from '@/components/admin/EmailTemplatesManager';
 import { VisitsMetrics } from '@/components/admin/VisitsMetrics';
 import { ProductsMetrics } from '@/components/admin/ProductsMetrics';
 import { GestoresMetrics } from '@/components/admin/GestoresMetrics';
@@ -51,7 +52,7 @@ const Admin = () => {
 
         {/* Admin Tabs */}
         <Tabs defaultValue="visits" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-10">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-11">
             {/* Métricas */}
             <TabsTrigger value="visits" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
@@ -85,6 +86,10 @@ const Admin = () => {
             </TabsTrigger>
             
             {/* Configuración */}
+            <TabsTrigger value="templates" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              <span className="hidden sm:inline">Emails</span>
+            </TabsTrigger>
             <TabsTrigger value="colors" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
               <span className="hidden sm:inline">Estados</span>
@@ -162,6 +167,10 @@ const Admin = () => {
           </TabsContent>
 
           {/* CONFIGURACIÓN */}
+          <TabsContent value="templates">
+            <EmailTemplatesManager />
+          </TabsContent>
+          
           <TabsContent value="colors">
             <StatusColorsManager />
           </TabsContent>
