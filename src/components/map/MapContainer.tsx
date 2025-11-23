@@ -151,6 +151,7 @@ export function MapContainer({
   const searchMarkerRef = useRef<maplibregl.Marker | null>(null);
   const [tooltipConfig, setTooltipConfig] = useState<TooltipConfig[]>([]);
   const [vinculacionData, setVinculacionData] = useState<Record<string, number>>({});
+  const [minZoomVinculacion, setMinZoomVinculacion] = useState<number>(15);
 
   // Fetch tooltip configuration
   useEffect(() => {
@@ -164,6 +165,19 @@ export function MapContainer({
 
         if (error) throw error;
         setTooltipConfig(data || []);
+
+        // Fetch min zoom configuration
+        const { data: mapConfigData, error: mapConfigError } = await supabase
+          .from('map_config')
+          .select('*')
+          .eq('config_key', 'min_zoom_vinculacion')
+          .single();
+
+        if (mapConfigError) throw mapConfigError;
+        if (mapConfigData) {
+          const configValue = mapConfigData.config_value as { value: number };
+          setMinZoomVinculacion(configValue.value);
+        }
       } catch (error) {
         console.error('Error fetching tooltip config:', error);
       }
@@ -580,7 +594,7 @@ export function MapContainer({
           
           const color = company.status?.color_hex || '#3B82F6';
           const vinculacionPct = vinculacionData[company.id];
-          const showVinculacion = vinculacionPct !== undefined && zoom >= 15;
+          const showVinculacion = vinculacionPct !== undefined && zoom >= minZoomVinculacion;
           
           // Aumentar tamaño si se muestra vinculación
           const markerWidth = showVinculacion ? 50 : 40;

@@ -475,6 +475,33 @@ export type Database = {
           },
         ]
       }
+      map_config: {
+        Row: {
+          config_key: string
+          config_value: Json
+          created_at: string | null
+          description: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          config_key: string
+          config_value: Json
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          config_key?: string
+          config_value?: Json
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       map_tooltip_config: {
         Row: {
           created_at: string
