@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { MapContainer } from '@/components/map/MapContainer';
-import { MapLayersControl } from '@/components/map/MapLayersControl';
 import { MapSidebar } from '@/components/map/MapSidebar';
 import { MapHeader, MapBaseLayers } from '@/components/map/MapHeader';
 import { CompanyWithDetails, MapFilters, StatusColor, Product } from '@/types/database';

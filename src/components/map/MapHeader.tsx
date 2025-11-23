@@ -77,6 +77,7 @@ export function MapHeader({
   };
 
   const handleStatusToggle = (statusId: string) => {
+    if (!filters) return;
     const newStatusIds = filters.statusIds.includes(statusId)
       ? filters.statusIds.filter((id) => id !== statusId)
       : [...filters.statusIds, statusId];
@@ -84,6 +85,7 @@ export function MapHeader({
   };
 
   const handleProductToggle = (productId: string) => {
+    if (!filters) return;
     const newProductIds = filters.productIds.includes(productId)
       ? filters.productIds.filter((id) => id !== productId)
       : [...filters.productIds, productId];
@@ -91,6 +93,7 @@ export function MapHeader({
   };
 
   const handleParroquiaToggle = (parroquia: string) => {
+    if (!filters) return;
     const newParroquias = filters.parroquias.includes(parroquia)
       ? filters.parroquias.filter((p) => p !== parroquia)
       : [...filters.parroquias, parroquia];
@@ -98,6 +101,7 @@ export function MapHeader({
   };
 
   const handleCnaeToggle = (cnae: string) => {
+    if (!filters) return;
     const newCnaes = filters.cnaes.includes(cnae)
       ? filters.cnaes.filter((c) => c !== cnae)
       : [...filters.cnaes, cnae];
@@ -105,6 +109,7 @@ export function MapHeader({
   };
 
   const handleSectorToggle = (sector: string) => {
+    if (!filters) return;
     const newSectors = filters.sectors.includes(sector)
       ? filters.sectors.filter((s) => s !== sector)
       : [...filters.sectors, sector];
@@ -112,11 +117,11 @@ export function MapHeader({
   };
 
   const activeFiltersCount = 
-    filters.statusIds.length + 
-    filters.productIds.length + 
-    filters.parroquias.length + 
-    filters.cnaes.length +
-    filters.sectors.length;
+    (filters?.statusIds?.length || 0) + 
+    (filters?.productIds?.length || 0) + 
+    (filters?.parroquias?.length || 0) + 
+    (filters?.cnaes?.length || 0) +
+    (filters?.sectors?.length || 0);
 
   const getUserInitials = () => {
     if (!user?.email) return 'U';
@@ -294,7 +299,7 @@ export function MapHeader({
                           <div key={status.id} className="flex items-center space-x-2 px-2">
                             <Checkbox
                               id={`status-${status.id}`}
-                              checked={filters.statusIds.includes(status.id)}
+                              checked={filters?.statusIds?.includes(status.id) || false}
                               onCheckedChange={() => handleStatusToggle(status.id)}
                             />
                             <div className="flex flex-1 items-center gap-2">
@@ -332,7 +337,7 @@ export function MapHeader({
                           <div key={product.id} className="flex items-center space-x-2 px-2">
                             <Checkbox
                               id={`product-${product.id}`}
-                              checked={filters.productIds.includes(product.id)}
+                              checked={filters?.productIds?.includes(product.id) || false}
                               onCheckedChange={() => handleProductToggle(product.id)}
                             />
                             <Label
@@ -365,7 +370,7 @@ export function MapHeader({
                             <div key={parroquia} className="flex items-center space-x-2 px-2">
                               <Checkbox
                                 id={`parroquia-${parroquia}`}
-                                checked={filters.parroquias.includes(parroquia)}
+                                checked={filters?.parroquias?.includes(parroquia) || false}
                                 onCheckedChange={() => handleParroquiaToggle(parroquia)}
                               />
                               <Label
@@ -401,7 +406,7 @@ export function MapHeader({
                               <div key={sector} className="flex items-center space-x-2 px-2">
                                 <Checkbox
                                   id={`sector-${sector}`}
-                                  checked={filters.sectors.includes(sector)}
+                                  checked={filters?.sectors?.includes(sector) || false}
                                   onCheckedChange={() => handleSectorToggle(sector)}
                                 />
                                 <div className="flex flex-1 items-center gap-2">
@@ -439,7 +444,7 @@ export function MapHeader({
                             <div key={cnae} className="flex items-center space-x-2 px-2">
                               <Checkbox
                                 id={`cnae-${cnae}`}
-                                checked={filters.cnaes.includes(cnae)}
+                                checked={filters?.cnaes?.includes(cnae) || false}
                                 onCheckedChange={() => handleCnaeToggle(cnae)}
                               />
                               <Label
