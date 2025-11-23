@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { TPVGoalsComparison } from './TPVGoalsComparison';
 import { TPVGoalsHistory } from './TPVGoalsHistory';
+import { TPVGestorRanking } from './TPVGestorRanking';
 
 interface TPVGoal {
   id: string;
@@ -204,6 +205,7 @@ export function TPVGoalsDashboard() {
         <TabsTrigger value="goals">Mis Objetivos</TabsTrigger>
         <TabsTrigger value="comparison">Comparación</TabsTrigger>
         <TabsTrigger value="history">Histórico</TabsTrigger>
+        <TabsTrigger value="ranking">Ranking</TabsTrigger>
       </TabsList>
 
       <TabsContent value="goals" className="space-y-6">
@@ -309,6 +311,10 @@ export function TPVGoalsDashboard() {
 
       <TabsContent value="history">
         <TPVGoalsHistory />
+      </TabsContent>
+
+      <TabsContent value="ranking">
+        <TPVGestorRanking />
       </TabsContent>
     </Tabs>
   );
