@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DateRangeFilter } from '@/components/dashboard/DateRangeFilter';
 import { DateRange } from 'react-day-picker';
 import { subMonths, format } from 'date-fns';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { Building2, Users, TrendingUp, GitCompare } from 'lucide-react';
@@ -66,6 +66,7 @@ export function MetricsExplorer() {
   const [selectedGestoresForCompare, setSelectedGestoresForCompare] = useState<string[]>([]);
   const [selectedOficinasForCompare, setSelectedOficinasForCompare] = useState<string[]>([]);
   const [comparisonData, setComparisonData] = useState<any[]>([]);
+  const [temporalComparisonData, setTemporalComparisonData] = useState<any[]>([]);
   const [comparisonLoading, setComparisonLoading] = useState(false);
   const [compareType, setCompareType] = useState<'gestores' | 'oficinas'>('gestores');
 
@@ -303,6 +304,7 @@ export function MetricsExplorer() {
       const toDate = format(dateRange.to, 'yyyy-MM-dd');
 
       if (compareType === 'gestores' && selectedGestoresForCompare.length > 0) {
+        // Load total metrics
         const metricsPromises = selectedGestoresForCompare.map(async (gestorId) => {
           const gestor = gestores.find(g => g.id === gestorId);
           if (!gestor) return null;
@@ -335,7 +337,63 @@ export function MetricsExplorer() {
 
         const results = await Promise.all(metricsPromises);
         setComparisonData(results.filter(r => r !== null));
+
+        // Load temporal evolution (month by month)
+        const temporalPromises = selectedGestoresForCompare.map(async (gestorId) => {
+          const gestor = gestores.find(g => g.id === gestorId);
+          if (!gestor) return null;
+
+          const { data: visits } = await supabase
+            .from('visits')
+            .select('visit_date, result')
+            .eq('gestor_id', gestorId)
+            .gte('visit_date', fromDate)
+            .lte('visit_date', toDate)
+            .order('visit_date');
+
+          return { gestorId, gestorName: gestor.name, visits: visits || [] };
+        });
+
+        const temporalResults = await Promise.all(temporalPromises);
+        const validResults = temporalResults.filter(r => r !== null);
+
+        // Group by month
+        const monthsMap = new Map<string, any>();
+        
+        validResults.forEach((result) => {
+          result.visits.forEach((visit: any) => {
+            const monthKey = format(new Date(visit.visit_date), 'yyyy-MM');
+            
+            if (!monthsMap.has(monthKey)) {
+              monthsMap.set(monthKey, { month: monthKey });
+            }
+            
+            const monthData = monthsMap.get(monthKey);
+            if (!monthData[`${result.gestorName}_visitas`]) {
+              monthData[`${result.gestorName}_visitas`] = 0;
+            }
+            if (!monthData[`${result.gestorName}_exitosas`]) {
+              monthData[`${result.gestorName}_exitosas`] = 0;
+            }
+            
+            monthData[`${result.gestorName}_visitas`]++;
+            if (visit.result === 'Exitosa') {
+              monthData[`${result.gestorName}_exitosas`]++;
+            }
+          });
+        });
+
+        const temporalData = Array.from(monthsMap.values())
+          .sort((a, b) => a.month.localeCompare(b.month))
+          .map(item => ({
+            ...item,
+            monthLabel: format(new Date(item.month + '-01'), 'MMM yyyy')
+          }));
+
+        setTemporalComparisonData(temporalData);
+
       } else if (compareType === 'oficinas' && selectedOficinasForCompare.length > 0) {
+        // Load total metrics
         const metricsPromises = selectedOficinasForCompare.map(async (oficina) => {
           const gestoresInOficina = gestores.filter(g => g.oficina === oficina);
           const gestorIds = gestoresInOficina.map(g => g.id);
@@ -377,6 +435,62 @@ export function MetricsExplorer() {
 
         const results = await Promise.all(metricsPromises);
         setComparisonData(results);
+
+        // Load temporal evolution (month by month)
+        const temporalPromises = selectedOficinasForCompare.map(async (oficina) => {
+          const gestoresInOficina = gestores.filter(g => g.oficina === oficina);
+          const gestorIds = gestoresInOficina.map(g => g.id);
+
+          if (gestorIds.length === 0) return null;
+
+          const { data: visits } = await supabase
+            .from('visits')
+            .select('visit_date, result')
+            .in('gestor_id', gestorIds)
+            .gte('visit_date', fromDate)
+            .lte('visit_date', toDate)
+            .order('visit_date');
+
+          return { oficina, visits: visits || [] };
+        });
+
+        const temporalResults = await Promise.all(temporalPromises);
+        const validResults = temporalResults.filter(r => r !== null);
+
+        // Group by month
+        const monthsMap = new Map<string, any>();
+        
+        validResults.forEach((result) => {
+          result.visits.forEach((visit: any) => {
+            const monthKey = format(new Date(visit.visit_date), 'yyyy-MM');
+            
+            if (!monthsMap.has(monthKey)) {
+              monthsMap.set(monthKey, { month: monthKey });
+            }
+            
+            const monthData = monthsMap.get(monthKey);
+            if (!monthData[`${result.oficina}_visitas`]) {
+              monthData[`${result.oficina}_visitas`] = 0;
+            }
+            if (!monthData[`${result.oficina}_exitosas`]) {
+              monthData[`${result.oficina}_exitosas`] = 0;
+            }
+            
+            monthData[`${result.oficina}_visitas`]++;
+            if (visit.result === 'Exitosa') {
+              monthData[`${result.oficina}_exitosas`]++;
+            }
+          });
+        });
+
+        const temporalData = Array.from(monthsMap.values())
+          .sort((a, b) => a.month.localeCompare(b.month))
+          .map(item => ({
+            ...item,
+            monthLabel: format(new Date(item.month + '-01'), 'MMM yyyy')
+          }));
+
+        setTemporalComparisonData(temporalData);
       }
     } catch (error) {
       console.error('Error loading comparison data:', error);
@@ -697,6 +811,110 @@ export function MetricsExplorer() {
                   </ResponsiveContainer>
                 </CardContent>
               </Card>
+
+              {temporalComparisonData.length > 0 && (
+                <>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Evolución Temporal - Total de Visitas</CardTitle>
+                      <CardDescription>Tendencia mes a mes de visitas realizadas</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={400}>
+                        <LineChart data={temporalComparisonData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="monthLabel" />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          {compareType === 'gestores' 
+                            ? selectedGestoresForCompare.map((gestorId, index) => {
+                                const gestor = gestores.find(g => g.id === gestorId);
+                                if (!gestor) return null;
+                                const colors = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+                                return (
+                                  <Line
+                                    key={gestorId}
+                                    type="monotone"
+                                    dataKey={`${gestor.name}_visitas`}
+                                    stroke={colors[index % colors.length]}
+                                    strokeWidth={2}
+                                    name={`${gestor.name} - Visitas`}
+                                    connectNulls
+                                  />
+                                );
+                              })
+                            : selectedOficinasForCompare.map((oficina, index) => {
+                                const colors = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+                                return (
+                                  <Line
+                                    key={oficina}
+                                    type="monotone"
+                                    dataKey={`${oficina}_visitas`}
+                                    stroke={colors[index % colors.length]}
+                                    strokeWidth={2}
+                                    name={`${oficina} - Visitas`}
+                                    connectNulls
+                                  />
+                                );
+                              })
+                          }
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Evolución Temporal - Visitas Exitosas</CardTitle>
+                      <CardDescription>Tendencia mes a mes de visitas exitosas</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveContainer width="100%" height={400}>
+                        <LineChart data={temporalComparisonData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="monthLabel" />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          {compareType === 'gestores' 
+                            ? selectedGestoresForCompare.map((gestorId, index) => {
+                                const gestor = gestores.find(g => g.id === gestorId);
+                                if (!gestor) return null;
+                                const colors = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+                                return (
+                                  <Line
+                                    key={gestorId}
+                                    type="monotone"
+                                    dataKey={`${gestor.name}_exitosas`}
+                                    stroke={colors[index % colors.length]}
+                                    strokeWidth={2}
+                                    name={`${gestor.name} - Exitosas`}
+                                    connectNulls
+                                  />
+                                );
+                              })
+                            : selectedOficinasForCompare.map((oficina, index) => {
+                                const colors = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+                                return (
+                                  <Line
+                                    key={oficina}
+                                    type="monotone"
+                                    dataKey={`${oficina}_exitosas`}
+                                    stroke={colors[index % colors.length]}
+                                    strokeWidth={2}
+                                    name={`${oficina} - Exitosas`}
+                                    connectNulls
+                                  />
+                                );
+                              })
+                          }
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </CardContent>
+                  </Card>
+                </>
+              )}
             </>
           )}
           {!comparisonLoading && comparisonData.length === 0 && (
