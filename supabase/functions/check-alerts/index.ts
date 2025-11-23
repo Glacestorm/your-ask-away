@@ -47,7 +47,19 @@ serve(async (req) => {
 
     console.log(`Found ${alerts.length} active alerts`);
 
-    // Get all users to notify
+    // Get all admin users to notify via email
+    const { data: adminUsers, error: adminError } = await supabaseClient
+      .from('user_roles')
+      .select('user_id, profiles(id, email)')
+      .in('role', ['admin', 'superadmin']);
+
+    if (adminError) throw adminError;
+
+    const adminEmails = adminUsers
+      ?.map(u => u.profiles?.email)
+      .filter((email): email is string => email != null) || [];
+
+    // Get all profiles for notifications
     const { data: profiles, error: profilesError } = await supabaseClient
       .from('profiles')
       .select('id');
@@ -186,6 +198,54 @@ serve(async (req) => {
       if (notificationsError) throw notificationsError;
       
       console.log(`Created ${notificationsToCreate.length} notifications`);
+
+      // Send email notifications for critical alerts
+      const criticalNotifications = notificationsToCreate.filter(n => n.severity === 'critical');
+      
+      if (criticalNotifications.length > 0 && adminEmails.length > 0) {
+        console.log(`Sending ${criticalNotifications.length} critical alert emails to ${adminEmails.length} admins`);
+        
+        // Group notifications by alert to avoid sending duplicate emails
+        const uniqueAlerts = new Map<string, typeof notificationsToCreate[0]>();
+        criticalNotifications.forEach(notif => {
+          if (!uniqueAlerts.has(notif.alert_id)) {
+            uniqueAlerts.set(notif.alert_id, notif);
+          }
+        });
+
+        // Send one email per unique critical alert
+        for (const notification of uniqueAlerts.values()) {
+          try {
+            const emailResponse = await fetch(
+              `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-alert-email`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+                },
+                body: JSON.stringify({
+                  to: adminEmails,
+                  alertName: notification.title,
+                  metricType: 'Métrica',
+                  metricValue: notification.metric_value,
+                  thresholdValue: notification.threshold_value,
+                  severity: notification.severity,
+                  message: notification.message,
+                }),
+              }
+            );
+
+            if (!emailResponse.ok) {
+              console.error('Failed to send email:', await emailResponse.text());
+            } else {
+              console.log('Email sent successfully for alert:', notification.title);
+            }
+          } catch (emailError) {
+            console.error('Error sending email:', emailError);
+          }
+        }
+      }
     } else {
       console.log('No alerts triggered');
     }
