@@ -32,10 +32,10 @@ export const markerStyles: Record<MarkerStyle, MarkerStyleConfig> = {
               stroke="white" 
               stroke-width="1.5" 
               filter="url(#shadow-classic)"/>
-        <circle cx="12" cy="8" r="3" fill="white" opacity="0.9"/>
-        ${vinculacionPct ? `
-          <text x="12" y="10" text-anchor="middle" fill="black" font-size="5" font-weight="bold">
-            ${vinculacionPct}%
+        <circle cx="12" cy="8" r="3.5" fill="white" opacity="0.95"/>
+        ${vinculacionPct !== undefined ? `
+          <text x="12" y="9.5" text-anchor="middle" fill="${color}" font-size="4.5" font-weight="bold" font-family="Arial, sans-serif">
+            ${vinculacionPct}
           </text>
         ` : ''}
       </svg>
@@ -69,10 +69,10 @@ export const markerStyles: Record<MarkerStyle, MarkerStyleConfig> = {
               stroke="white" 
               stroke-width="1.2" 
               filter="url(#shadow-modern)"/>
-        <rect x="8" y="8" width="8" height="8" rx="1" fill="white" opacity="0.9"/>
-        ${vinculacionPct ? `
-          <text x="12" y="14" text-anchor="middle" fill="black" font-size="5" font-weight="600">
-            ${vinculacionPct}%
+        <rect x="8" y="8" width="8" height="8" rx="1" fill="white" opacity="0.95"/>
+        ${vinculacionPct !== undefined ? `
+          <text x="12" y="13.5" text-anchor="middle" fill="${color}" font-size="4.5" font-weight="bold" font-family="Arial, sans-serif">
+            ${vinculacionPct}
           </text>
         ` : ''}
       </svg>
@@ -102,10 +102,10 @@ export const markerStyles: Record<MarkerStyle, MarkerStyleConfig> = {
                 stroke="white" 
                 stroke-width="2" 
                 filter="url(#shadow-minimal)"/>
-        <circle cx="12" cy="12" r="5" fill="white" opacity="0.95"/>
-        ${vinculacionPct ? `
-          <text x="12" y="14.5" text-anchor="middle" fill="black" font-size="5" font-weight="500">
-            ${vinculacionPct}%
+        <circle cx="12" cy="12" r="5.5" fill="white" opacity="0.98"/>
+        ${vinculacionPct !== undefined ? `
+          <text x="12" y="14" text-anchor="middle" fill="${color}" font-size="4.5" font-weight="bold" font-family="Arial, sans-serif">
+            ${vinculacionPct}
           </text>
         ` : ''}
         <line x1="12" y1="20" x2="12" y2="28" stroke="${color}" stroke-width="1.5" opacity="0.6"/>
