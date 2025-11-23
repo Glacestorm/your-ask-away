@@ -53,6 +53,7 @@ import { ActivityStatistics } from '@/components/dashboard/ActivityStatistics';
 import { GestorComparison } from '@/components/dashboard/GestorComparison';
 import { GestorEvolutionTimeline } from '@/components/dashboard/GestorEvolutionTimeline';
 import { TPVGoalsDashboard } from '@/components/dashboard/TPVGoalsDashboard';
+import { BestPracticesPanel } from '@/components/dashboard/BestPracticesPanel';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import * as XLSX from 'xlsx';
 
@@ -180,6 +181,10 @@ const Dashboard = () => {
               <Target className="h-4 w-4" />
               <span className="hidden sm:inline">TPV</span>
             </TabsTrigger>
+            <TabsTrigger value="mejores-practicas" className="flex items-center gap-2 py-3">
+              <Award className="h-4 w-4" />
+              <span className="hidden sm:inline">Mejores Prácticas</span>
+            </TabsTrigger>
             <TabsTrigger value="visitas" className="flex items-center gap-2 py-3">
               <BarChart3 className="h-4 w-4" />
               <span className="hidden sm:inline">{t('tabs.visitas')}</span>
@@ -283,6 +288,13 @@ const Dashboard = () => {
                 </p>
               </div>
               <TPVGoalsDashboard />
+            </div>
+          </TabsContent>
+
+          {/* Mejores Prácticas */}
+          <TabsContent value="mejores-practicas" className="space-y-6">
+            <div className="rounded-lg border bg-card p-6">
+              <BestPracticesPanel />
             </div>
           </TabsContent>
 
