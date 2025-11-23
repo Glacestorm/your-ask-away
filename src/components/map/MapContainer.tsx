@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import Supercluster from 'supercluster';
 import { getSectorIcon, iconToSVGString } from './markerIcons';
 import { formatCnaeWithDescription } from '@/lib/cnaeDescriptions';
+import { getMarkerStyle, MarkerStyle } from './markerStyles';
 
 type CompanyPoint = {
   type: 'Feature';
@@ -118,6 +119,7 @@ interface MapContainerProps {
   } | null;
   onSearchLocationClear?: () => void;
   colorMode: MapColorMode;
+  markerStyle?: MarkerStyle;
 }
 
 interface TooltipConfig {
@@ -144,6 +146,7 @@ export function MapContainer({
   searchLocation,
   onSearchLocationClear,
   colorMode,
+  markerStyle = 'classic',
 }: MapContainerProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
@@ -776,46 +779,14 @@ export function MapContainer({
           el.style.height = `${markerHeight}px`;
           el.style.cursor = 'pointer';
           
-          // Get icon based on sector
-          const Icon = getSectorIcon(company.sector);
-          const iconPath = getIconPathForMarker(Icon);
-
-          // Calcular tamaños proporcionales
-          const pinHeight = markerHeight * 0.6;
-          const pinWidth = markerWidth * 0.5;
-          const iconSize = baseSize * 0.3;
-          const badgeWidth = markerWidth * 0.8;
-          const badgeHeight = baseSize * 0.35;
-          const badgeY = pinHeight + 2;
-          const fontSize = Math.max(10, baseSize * 0.22);
-          
-          el.innerHTML = `
-            <svg width="${markerWidth}" height="${markerHeight}" viewBox="0 0 ${markerWidth} ${markerHeight}" xmlns="http://www.w3.org/2000/svg">
-              <!-- Pin background -->
-              <path
-                d="M${markerWidth/2} 2C${markerWidth/2-pinWidth/2} 2 ${markerWidth/2-pinWidth/2} 6 ${markerWidth/2-pinWidth/2} ${pinHeight/2}c0 ${pinHeight/3} ${pinWidth/2} ${pinHeight/2} ${pinWidth/2} ${pinHeight/2}s${pinWidth/2}-${pinHeight/6} ${pinWidth/2}-${pinHeight/2}c0-${pinHeight/2-6}-${pinWidth/2}-${pinHeight/2}-${pinWidth/2}-${pinHeight/2}z"
-                fill="${color}"
-                stroke="white"
-                stroke-width="${Math.max(2, baseSize * 0.05)}"
-              />
-              <!-- Icon circle background -->
-              <circle cx="${markerWidth/2}" cy="${pinHeight/2}" r="${iconSize}" fill="white" />
-              <!-- Icon -->
-              <g transform="translate(${markerWidth/2-iconSize*0.85}, ${pinHeight/2-iconSize*0.85})">
-                <svg width="${iconSize*1.7}" height="${iconSize*1.7}" viewBox="0 0 24 24" fill="none" stroke="${color}" 
-                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  ${iconPath}
-                </svg>
-              </g>
-              ${showVinculacion ? `
-                <!-- Vinculación badge -->
-                <rect x="${markerWidth/2-badgeWidth/2}" y="${badgeY}" width="${badgeWidth}" height="${badgeHeight}" rx="${badgeHeight/2}" fill="${color}" stroke="white" stroke-width="${Math.max(1.5, baseSize * 0.04)}"/>
-                <text x="${markerWidth/2}" y="${badgeY + badgeHeight * 0.65}" text-anchor="middle" fill="white" font-size="${fontSize}" font-weight="bold" font-family="system-ui, -apple-system, sans-serif">
-                  ${vinculacionPct !== undefined ? vinculacionPct + '%' : 'N/A'}
-                </text>
-              ` : ''}
-            </svg>
-          `;
+          // Obtener el estilo de chincheta seleccionado
+          const style = getMarkerStyle(markerStyle);
+          el.innerHTML = style.renderSVG(
+            color, 
+            markerWidth, 
+            markerHeight, 
+            showVinculacion ? vinculacionPct : undefined
+          );
 
           const marker = new maplibregl.Marker({ 
             element: el,
