@@ -31,7 +31,7 @@ const MapView = () => {
   });
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<CompanyWithDetails | null>(null);
-  const [mapStyle, setMapStyle] = useState<'default' | 'satellite' | 'terrain'>('default');
+  const [mapStyle, setMapStyle] = useState<'default' | 'satellite'>('default');
   const [view3D, setView3D] = useState(false);
   const [baseLayers, setBaseLayers] = useState<MapBaseLayers>({
     roads: true,
