@@ -9,10 +9,11 @@ import { subMonths, format } from 'date-fns';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { Building2, Users, TrendingUp, GitCompare } from 'lucide-react';
+import { Building2, Users, TrendingUp, GitCompare, Table as TableIcon } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface GestorMetrics {
   id: string;
@@ -912,6 +913,74 @@ export function MetricsExplorer() {
             <>
               <Card>
                 <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TableIcon className="h-5 w-5" />
+                    Tabla de Métricas Detalladas
+                  </CardTitle>
+                  <CardDescription>
+                    Datos numéricos exactos de la comparación
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="min-w-[150px]">
+                            {compareType === 'gestores' ? 'Gestor' : 'Oficina'}
+                          </TableHead>
+                          <TableHead className="text-right">Total Visitas</TableHead>
+                          <TableHead className="text-right">Visitas Exitosas</TableHead>
+                          <TableHead className="text-right">Visitas Fallidas</TableHead>
+                          <TableHead className="text-right">Tasa de Éxito</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {comparisonData.map((item) => (
+                          <TableRow key={item.name}>
+                            <TableCell className="font-medium">{item.name}</TableCell>
+                            <TableCell className="text-right">{item.visitas}</TableCell>
+                            <TableCell className="text-right text-green-600 dark:text-green-400">
+                              {item.exitosas}
+                            </TableCell>
+                            <TableCell className="text-right text-red-600 dark:text-red-400">
+                              {item.visitas - item.exitosas}
+                            </TableCell>
+                            <TableCell className="text-right font-semibold">
+                              {item.tasaExito}%
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                        <TableRow className="bg-muted/50 font-semibold">
+                          <TableCell>TOTAL</TableCell>
+                          <TableCell className="text-right">
+                            {comparisonData.reduce((sum, item) => sum + item.visitas, 0)}
+                          </TableCell>
+                          <TableCell className="text-right text-green-600 dark:text-green-400">
+                            {comparisonData.reduce((sum, item) => sum + item.exitosas, 0)}
+                          </TableCell>
+                          <TableCell className="text-right text-red-600 dark:text-red-400">
+                            {comparisonData.reduce((sum, item) => sum + (item.visitas - item.exitosas), 0)}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {comparisonData.reduce((sum, item) => sum + item.visitas, 0) > 0
+                              ? Math.round(
+                                  (comparisonData.reduce((sum, item) => sum + item.exitosas, 0) /
+                                    comparisonData.reduce((sum, item) => sum + item.visitas, 0)) *
+                                    100
+                                )
+                              : 0}
+                            %
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
                   <CardTitle>Comparación de Visitas</CardTitle>
                   <CardDescription>Total de visitas y exitosas</CardDescription>
                 </CardHeader>
@@ -950,6 +1019,90 @@ export function MetricsExplorer() {
 
               {temporalComparisonData.length > 0 && (
                 <>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <TableIcon className="h-5 w-5" />
+                        Tabla de Evolución Temporal
+                      </CardTitle>
+                      <CardDescription>
+                        Visitas mes a mes con detalle numérico
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="min-w-[100px]">Mes</TableHead>
+                              {compareType === 'gestores'
+                                ? selectedGestoresForCompare.map((gestorId) => {
+                                    const gestor = gestores.find(g => g.id === gestorId);
+                                    return gestor ? (
+                                      <>
+                                        <TableHead key={`${gestorId}-v`} className="text-right min-w-[80px]">
+                                          {gestor.name} (V)
+                                        </TableHead>
+                                        <TableHead key={`${gestorId}-e`} className="text-right min-w-[80px]">
+                                          {gestor.name} (E)
+                                        </TableHead>
+                                      </>
+                                    ) : null;
+                                  })
+                                : selectedOficinasForCompare.map((oficina) => (
+                                    <>
+                                      <TableHead key={`${oficina}-v`} className="text-right min-w-[80px]">
+                                        {oficina} (V)
+                                      </TableHead>
+                                      <TableHead key={`${oficina}-e`} className="text-right min-w-[80px]">
+                                        {oficina} (E)
+                                      </TableHead>
+                                    </>
+                                  ))
+                              }
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {temporalComparisonData.map((monthData) => (
+                              <TableRow key={monthData.month}>
+                                <TableCell className="font-medium">{monthData.monthLabel}</TableCell>
+                                {compareType === 'gestores'
+                                  ? selectedGestoresForCompare.map((gestorId) => {
+                                      const gestor = gestores.find(g => g.id === gestorId);
+                                      if (!gestor) return null;
+                                      return (
+                                        <>
+                                          <TableCell key={`${gestorId}-v`} className="text-right">
+                                            {monthData[`${gestor.name}_visitas`] || 0}
+                                          </TableCell>
+                                          <TableCell key={`${gestorId}-e`} className="text-right text-green-600 dark:text-green-400">
+                                            {monthData[`${gestor.name}_exitosas`] || 0}
+                                          </TableCell>
+                                        </>
+                                      );
+                                    })
+                                  : selectedOficinasForCompare.map((oficina) => (
+                                      <>
+                                        <TableCell key={`${oficina}-v`} className="text-right">
+                                          {monthData[`${oficina}_visitas`] || 0}
+                                        </TableCell>
+                                        <TableCell key={`${oficina}-e`} className="text-right text-green-600 dark:text-green-400">
+                                          {monthData[`${oficina}_exitosas`] || 0}
+                                        </TableCell>
+                                      </>
+                                    ))
+                                }
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          (V) = Visitas totales, (E) = Visitas exitosas
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
                   <Card>
                     <CardHeader>
                       <CardTitle>Evolución Temporal - Total de Visitas</CardTitle>
