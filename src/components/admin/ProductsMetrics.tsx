@@ -162,9 +162,14 @@ export function ProductsMetrics() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={350}>
-                <BarChart data={topProducts} layout="horizontal">
+                <BarChart 
+                  data={topProducts.filter(p => 
+                    !isNaN(p.contratos) && isFinite(p.contratos)
+                  )} 
+                  layout="horizontal"
+                >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
+                  <XAxis type="number" allowDecimals={false} />
                   <YAxis 
                     dataKey="producto" 
                     type="category" 
@@ -189,9 +194,14 @@ export function ProductsMetrics() {
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={350}>
-                <BarChart data={productsOffered} layout="horizontal">
+                <BarChart 
+                  data={productsOffered.filter(p => 
+                    !isNaN(p.ofertas) && isFinite(p.ofertas)
+                  )} 
+                  layout="horizontal"
+                >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
+                  <XAxis type="number" allowDecimals={false} />
                   <YAxis 
                     dataKey="producto" 
                     type="category" 

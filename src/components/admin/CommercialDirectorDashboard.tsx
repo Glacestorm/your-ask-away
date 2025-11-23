@@ -219,21 +219,29 @@ export function CommercialDirectorDashboard() {
       : 0,
   };
 
-  // Datos por oficina con validación
+  // Datos por oficina con validación estricta
   const oficinaStats = oficinas.map(oficina => {
     const gestoresOficina = gestoresData.filter(g => g.oficina === oficina);
     const validGestoresOficina = gestoresOficina.filter(g => 
-      !isNaN(g.successRate) && isFinite(g.successRate)
+      !isNaN(g.successRate) && isFinite(g.successRate) && g.successRate !== null
     );
+    const totalVisitas = gestoresOficina.reduce((sum, g) => sum + (g.totalVisits || 0), 0);
+    const avgSuccessRate = validGestoresOficina.length > 0
+      ? Math.round(validGestoresOficina.reduce((sum, g) => sum + g.successRate, 0) / validGestoresOficina.length)
+      : 0;
+    
     return {
       oficina,
-      gestores: gestoresOficina.length,
-      visitas: gestoresOficina.reduce((sum, g) => sum + (g.totalVisits || 0), 0),
-      successRate: validGestoresOficina.length > 0
-        ? Math.round(validGestoresOficina.reduce((sum, g) => sum + g.successRate, 0) / validGestoresOficina.length)
-        : 0
+      gestores: gestoresOficina.length || 0,
+      visitas: isFinite(totalVisitas) ? totalVisitas : 0,
+      successRate: isFinite(avgSuccessRate) ? avgSuccessRate : 0
     };
-  }).sort((a, b) => b.visitas - a.visitas);
+  }).filter(stat => 
+    !isNaN(stat.visitas) && 
+    !isNaN(stat.successRate) && 
+    isFinite(stat.visitas) && 
+    isFinite(stat.successRate)
+  ).sort((a, b) => b.visitas - a.visitas);
 
   if (loading) {
     return (
@@ -381,9 +389,14 @@ export function CommercialDirectorDashboard() {
               <CardContent>
                 {gestoresData.length > 0 ? (
                   <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={gestoresData.slice(0, 10)} layout="horizontal">
+                    <BarChart 
+                      data={gestoresData.slice(0, 10).filter(g => 
+                        !isNaN(g.totalVisits) && isFinite(g.totalVisits)
+                      )} 
+                      layout="horizontal"
+                    >
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis type="number" />
+                      <XAxis type="number" allowDecimals={false} />
                       <YAxis 
                         dataKey="name" 
                         type="category" 
@@ -412,11 +425,15 @@ export function CommercialDirectorDashboard() {
                 {gestoresData.length > 0 ? (
                   <ResponsiveContainer width="100%" height={350}>
                     <BarChart 
-                      data={gestoresData.slice(0, 10).sort((a, b) => b.successRate - a.successRate)} 
+                      data={gestoresData
+                        .filter(g => !isNaN(g.successRate) && isFinite(g.successRate))
+                        .slice(0, 10)
+                        .sort((a, b) => b.successRate - a.successRate)
+                      } 
                       layout="horizontal"
                     >
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis type="number" domain={[0, 100]} />
+                      <XAxis type="number" domain={[0, 100]} allowDecimals={false} />
                       <YAxis 
                         dataKey="name" 
                         type="category" 
@@ -445,7 +462,11 @@ export function CommercialDirectorDashboard() {
                 {gestoresData.length > 0 ? (
                   <ResponsiveContainer width="100%" height={350}>
                     <BarChart 
-                      data={gestoresData.slice(0, 10).sort((a, b) => b.avgVinculacion - a.avgVinculacion)}
+                      data={gestoresData
+                        .filter(g => !isNaN(g.avgVinculacion) && isFinite(g.avgVinculacion))
+                        .slice(0, 10)
+                        .sort((a, b) => b.avgVinculacion - a.avgVinculacion)
+                      }
                     >
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis 
@@ -453,7 +474,7 @@ export function CommercialDirectorDashboard() {
                         tick={{ fontSize: 9 }}
                         height={80}
                       />
-                      <YAxis domain={[0, 100]} />
+                      <YAxis domain={[0, 100]} allowDecimals={false} />
                       <Tooltip formatter={(value) => `${value}%`} />
                       <Bar dataKey="avgVinculacion" fill={COLORS[2]} name="% Vinculación" />
                     </BarChart>
@@ -466,17 +487,20 @@ export function CommercialDirectorDashboard() {
               </CardContent>
             </Card>
 
-            {/* Empresas por Gestor */}
             <Card>
               <CardHeader>
-                <CardTitle>Cartera de Empresas</CardTitle>
+                <CardTitle>Empresas por Gestor</CardTitle>
                 <CardDescription>Empresas asignadas por gestor</CardDescription>
               </CardHeader>
               <CardContent>
                 {gestoresData.length > 0 ? (
                   <ResponsiveContainer width="100%" height={350}>
                     <BarChart 
-                      data={gestoresData.slice(0, 10).sort((a, b) => b.companies - a.companies)}
+                      data={gestoresData
+                        .filter(g => !isNaN(g.companies) && isFinite(g.companies))
+                        .slice(0, 10)
+                        .sort((a, b) => b.companies - a.companies)
+                      }
                     >
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis 
@@ -484,7 +508,7 @@ export function CommercialDirectorDashboard() {
                         tick={{ fontSize: 9 }}
                         height={80}
                       />
-                      <YAxis />
+                      <YAxis allowDecimals={false} />
                       <Tooltip />
                       <Bar dataKey="companies" fill={COLORS[3]} name="Empresas" />
                     </BarChart>
@@ -510,10 +534,14 @@ export function CommercialDirectorDashboard() {
               <CardContent>
                 {oficinaStats.length > 0 ? (
                   <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={oficinaStats}>
+                    <BarChart 
+                      data={oficinaStats.filter(o => 
+                        !isNaN(o.visitas) && isFinite(o.visitas)
+                      )}
+                    >
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="oficina" />
-                      <YAxis />
+                      <YAxis allowDecimals={false} />
                       <Tooltip />
                       <Legend />
                       <Bar dataKey="visitas" fill={COLORS[0]} name="Visitas" />
@@ -535,10 +563,17 @@ export function CommercialDirectorDashboard() {
               <CardContent>
                 {oficinaStats.length > 0 ? (
                   <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={oficinaStats}>
+                    <BarChart 
+                      data={oficinaStats.filter(o => 
+                        !isNaN(o.gestores) && 
+                        !isNaN(o.successRate) && 
+                        isFinite(o.gestores) && 
+                        isFinite(o.successRate)
+                      )}
+                    >
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="oficina" />
-                      <YAxis />
+                      <YAxis allowDecimals={false} />
                       <Tooltip />
                       <Legend />
                       <Bar dataKey="gestores" fill={COLORS[1]} name="Gestores" />
@@ -583,11 +618,18 @@ export function CommercialDirectorDashboard() {
                 <CardContent>
                   {gestor.monthlyTrend.length > 0 ? (
                     <ResponsiveContainer width="100%" height={200}>
-                      <AreaChart data={gestor.monthlyTrend}>
+                      <AreaChart 
+                        data={gestor.monthlyTrend.filter(t => 
+                          !isNaN(t.visits) && 
+                          !isNaN(t.success) && 
+                          isFinite(t.visits) && 
+                          isFinite(t.success)
+                        )}
+                      >
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                        <YAxis yAxisId="left" />
-                        <YAxis yAxisId="right" orientation="right" domain={[0, 100]} />
+                        <YAxis yAxisId="left" allowDecimals={false} />
+                        <YAxis yAxisId="right" orientation="right" domain={[0, 100]} allowDecimals={false} />
                         <Tooltip />
                         <Legend />
                         <Area 
@@ -604,6 +646,7 @@ export function CommercialDirectorDashboard() {
                           type="monotone" 
                           dataKey="success" 
                           stroke={COLORS[1]} 
+                          strokeWidth={2}
                           name="% Éxito" 
                         />
                       </AreaChart>
