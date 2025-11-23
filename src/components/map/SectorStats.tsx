@@ -5,9 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { getSectorIcon } from './markerIcons';
 import { cn } from '@/lib/utils';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { useState } from 'react';
-import { CheckSquare, Square, XCircle, Shuffle } from 'lucide-react';
+import { CheckSquare, Square, XCircle, Shuffle, TrendingUp, Users, Package } from 'lucide-react';
 
 interface SectorStatsProps {
   companies: CompanyWithDetails[];
@@ -89,6 +89,31 @@ export function SectorStats({
     if (percentage < 5) return null;
     return `${percentage}%`;
   };
+
+  // Calculate comparative metrics for selected sectors
+  const calculateSectorMetrics = (sector: string) => {
+    const sectorCompanies = sectorStats[sector]?.companies || [];
+    const companiesWithTurnover = sectorCompanies.filter(c => c.turnover);
+    const companiesWithEmployees = sectorCompanies.filter(c => c.employees);
+    const totalProducts = sectorCompanies.reduce((sum, c) => sum + (c.products?.length || 0), 0);
+
+    return {
+      sector,
+      avgTurnover: companiesWithTurnover.length > 0
+        ? companiesWithTurnover.reduce((sum, c) => sum + (c.turnover || 0), 0) / companiesWithTurnover.length
+        : 0,
+      avgEmployees: companiesWithEmployees.length > 0
+        ? companiesWithEmployees.reduce((sum, c) => sum + (c.employees || 0), 0) / companiesWithEmployees.length
+        : 0,
+      avgProducts: sectorCompanies.length > 0
+        ? totalProducts / sectorCompanies.length
+        : 0,
+      totalCompanies: sectorCompanies.length,
+      color: chartData.find(d => d.name === sector)?.color || COLORS[0]
+    };
+  };
+
+  const selectedMetrics = selectedSectors.map(calculateSectorMetrics);
 
   return (
     <div className="space-y-4">
@@ -300,21 +325,111 @@ export function SectorStats({
         </ScrollArea>
       </div>
 
-      {/* Summary footer */}
+      {/* Comparative Metrics */}
       {selectedSectors.length > 0 && (
-        <Card className="p-3 bg-primary/5 border-primary/20">
-          <div className="flex items-center justify-between text-sm">
-            <div>
-              <p className="font-medium text-primary">Análisis Combinado</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {selectedSectors.length} sector{selectedSectors.length > 1 ? 'es' : ''} • {filteredCount} empresa{filteredCount !== 1 ? 's' : ''}
-              </p>
-            </div>
-            <Badge variant="default" className="text-xs">
-              {((filteredCount / totalCompanies) * 100).toFixed(1)}%
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Comparativa de Métricas
+            </h4>
+            <Badge variant="outline" className="text-xs">
+              {selectedSectors.length} sector{selectedSectors.length > 1 ? 'es' : ''}
             </Badge>
           </div>
-        </Card>
+
+          <div className="grid gap-3">
+            {/* Turnover Comparison */}
+            <Card className="p-4 bg-muted/30">
+              <div className="flex items-center gap-2 mb-3">
+                <TrendingUp className="h-4 w-4 text-primary" />
+                <h5 className="text-sm font-semibold">Facturación Promedio</h5>
+              </div>
+              <div className="space-y-2">
+                {selectedMetrics.map((metric) => (
+                  <div key={`turnover-${metric.sector}`} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <div
+                        className="h-2 w-2 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: metric.color }}
+                      />
+                      <span className="text-xs truncate">{metric.sector}</span>
+                    </div>
+                    <span className="text-xs font-medium text-primary ml-2">
+                      {metric.avgTurnover > 0 
+                        ? `€${(metric.avgTurnover / 1000).toFixed(0)}K`
+                        : 'N/A'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            {/* Employees Comparison */}
+            <Card className="p-4 bg-muted/30">
+              <div className="flex items-center gap-2 mb-3">
+                <Users className="h-4 w-4 text-primary" />
+                <h5 className="text-sm font-semibold">Empleados Promedio</h5>
+              </div>
+              <div className="space-y-2">
+                {selectedMetrics.map((metric) => (
+                  <div key={`employees-${metric.sector}`} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <div
+                        className="h-2 w-2 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: metric.color }}
+                      />
+                      <span className="text-xs truncate">{metric.sector}</span>
+                    </div>
+                    <span className="text-xs font-medium text-primary ml-2">
+                      {metric.avgEmployees > 0 
+                        ? metric.avgEmployees.toFixed(1)
+                        : 'N/A'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            {/* Products Comparison */}
+            <Card className="p-4 bg-muted/30">
+              <div className="flex items-center gap-2 mb-3">
+                <Package className="h-4 w-4 text-primary" />
+                <h5 className="text-sm font-semibold">Productos Promedio</h5>
+              </div>
+              <div className="space-y-2">
+                {selectedMetrics.map((metric) => (
+                  <div key={`products-${metric.sector}`} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <div
+                        className="h-2 w-2 rounded-full flex-shrink-0"
+                        style={{ backgroundColor: metric.color }}
+                      />
+                      <span className="text-xs truncate">{metric.sector}</span>
+                    </div>
+                    <span className="text-xs font-medium text-primary ml-2">
+                      {metric.avgProducts.toFixed(1)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
+
+          {/* Summary footer */}
+          <Card className="p-3 bg-primary/5 border-primary/20">
+            <div className="flex items-center justify-between text-sm">
+              <div>
+                <p className="font-medium text-primary">Análisis Combinado</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {selectedSectors.length} sector{selectedSectors.length > 1 ? 'es' : ''} • {filteredCount} empresa{filteredCount !== 1 ? 's' : ''}
+                </p>
+              </div>
+              <Badge variant="default" className="text-xs">
+                {((filteredCount / totalCompanies) * 100).toFixed(1)}%
+              </Badge>
+            </div>
+          </Card>
+        </div>
       )}
     </div>
   );
