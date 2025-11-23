@@ -154,24 +154,25 @@ export function MapHeader({
   };
 
   return (
-    <header className="flex h-16 items-center justify-between border-b bg-card px-4 shadow-sm">
-      <div className="flex items-center gap-3">
+    <header className="flex h-18 items-center justify-between border-b bg-card/95 backdrop-blur-md px-6 shadow-lg supports-[backdrop-filter]:bg-card/80">
+      <div className="flex items-center gap-4">
         <Button
           variant="ghost"
           size="icon"
           onClick={onToggleSidebar}
           aria-label="Toggle sidebar"
+          className="hover:bg-accent/50 transition-colors"
         >
           <Menu className="h-5 w-5" />
         </Button>
         
-        <div className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-            <MapPin className="h-5 w-5 text-primary-foreground" />
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-hover shadow-md">
+            <MapPin className="h-6 w-6 text-primary-foreground" />
           </div>
           <div className="hidden sm:block">
-            <h1 className="text-lg font-semibold">Mapa Empresarial</h1>
-            <p className="text-xs text-muted-foreground">Andorra</p>
+            <h1 className="text-xl font-semibold tracking-tight">Mapa Empresarial</h1>
+            <p className="text-sm text-muted-foreground">Andorra</p>
           </div>
         </div>
         
