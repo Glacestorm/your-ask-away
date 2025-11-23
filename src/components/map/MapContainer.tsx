@@ -485,6 +485,11 @@ export function MapContainer({
         return false;
       }
 
+      // Filter by sector
+      if (filters.sectors.length > 0 && !filters.sectors.includes(company.sector || '')) {
+        return false;
+      }
+
       // Filter by products
       if (filters.productIds.length > 0) {
         const companyProductIds = company.products?.map(p => p.id) || [];

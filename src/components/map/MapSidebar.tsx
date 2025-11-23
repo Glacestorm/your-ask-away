@@ -159,6 +159,7 @@ export function MapSidebar({
       gestorIds: [],
       parroquias: [],
       cnaes: [],
+      sectors: [],
       productIds: [],
       dateRange: null,
       searchTerm: '',

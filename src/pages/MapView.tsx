@@ -23,6 +23,7 @@ const MapView = () => {
     gestorIds: [],
     parroquias: [],
     cnaes: [],
+    sectors: [],
     productIds: [],
     dateRange: null,
     searchTerm: '',
@@ -125,13 +126,17 @@ const MapView = () => {
     );
   }
 
-  // Get unique parroquias and CNAEs from companies
+  // Get unique parroquias, CNAEs, and sectors from companies
   const availableParroquias = Array.from(
     new Set(companies.map((c) => c.parroquia).filter(Boolean))
   ).sort();
   
   const availableCnaes = Array.from(
     new Set(companies.map((c) => c.cnae).filter(Boolean))
+  ).sort();
+  
+  const availableSectors = Array.from(
+    new Set(companies.map((c) => c.sector).filter(Boolean))
   ).sort();
 
   return (
@@ -177,6 +182,7 @@ const MapView = () => {
             onFiltersChange={setFilters}
             availableParroquias={availableParroquias}
             availableCnaes={availableCnaes}
+            availableSectors={availableSectors}
           />
         </div>
       </div>
