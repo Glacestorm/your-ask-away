@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TrendingUp, Activity, BarChart3, Package, Users, Target, CreditCard, Building2, Settings, Database, Mail, Palette, BookOpen, Map, ChevronRight, Search } from 'lucide-react';
+import { TrendingUp, Activity, BarChart3, Package, Users, Target, CreditCard, Building2, Settings, Database, Mail, Palette, BookOpen, Map, ChevronRight } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -98,12 +98,6 @@ export function AdminSidebar({ activeSection, onSectionChange }: AdminSidebarPro
                         <span>Vinculación</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
-                    <SidebarMenuItem>
-                      <SidebarMenuButton onClick={() => onSectionChange('metrics-explorer')} isActive={isActive('metrics-explorer')}>
-                        <Search className="h-4 w-4" />
-                        <span>Explorador</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
                   </SidebarMenu>
                 </SidebarGroupContent>
               </CollapsibleContent>
@@ -135,11 +129,6 @@ export function AdminSidebar({ activeSection, onSectionChange }: AdminSidebarPro
               <SidebarMenuItem>
                 <SidebarMenuButton onClick={() => onSectionChange('vinculacion')} isActive={isActive('vinculacion')} tooltip="Vinculación">
                   <Target className="h-5 w-5" />
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => onSectionChange('metrics-explorer')} isActive={isActive('metrics-explorer')} tooltip="Explorador">
-                  <Search className="h-5 w-5" />
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
