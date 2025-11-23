@@ -69,9 +69,15 @@ export function MetricsExplorer() {
   const [temporalComparisonData, setTemporalComparisonData] = useState<any[]>([]);
   const [comparisonLoading, setComparisonLoading] = useState(false);
   const [compareType, setCompareType] = useState<'gestores' | 'oficinas'>('gestores');
+  
+  // Filters
+  const [sectors, setSectors] = useState<string[]>([]);
+  const [selectedSector, setSelectedSector] = useState<string>('all');
+  const [selectedTurnoverRange, setSelectedTurnoverRange] = useState<string>('all');
 
   useEffect(() => {
     loadGestoresAndOficinas();
+    loadSectors();
   }, []);
 
   useEffect(() => {
@@ -100,7 +106,7 @@ export function MetricsExplorer() {
         loadComparisonData();
       }
     }
-  }, [dateRange, selectedGestoresForCompare, selectedOficinasForCompare, compareType]);
+  }, [dateRange, selectedGestoresForCompare, selectedOficinasForCompare, compareType, selectedSector, selectedTurnoverRange]);
 
   const loadGestoresAndOficinas = async () => {
     try {
@@ -123,6 +129,22 @@ export function MetricsExplorer() {
     } catch (error) {
       console.error('Error loading gestores:', error);
       toast.error('Error al cargar gestores');
+    }
+  };
+
+  const loadSectors = async () => {
+    try {
+      const { data: companies } = await supabase
+        .from('companies')
+        .select('sector')
+        .not('sector', 'is', null);
+
+      if (companies) {
+        const sectorsSet = new Set(companies.map(c => c.sector).filter(Boolean));
+        setSectors(Array.from(sectorsSet).sort());
+      }
+    } catch (error) {
+      console.error('Error loading sectors:', error);
     }
   };
 
@@ -295,6 +317,29 @@ export function MetricsExplorer() {
     }
   };
 
+  const getFilteredCompanyIds = async (gestorIds: string[]) => {
+    let query = supabase
+      .from('companies')
+      .select('id')
+      .in('gestor_id', gestorIds);
+
+    if (selectedSector !== 'all') {
+      query = query.eq('sector', selectedSector);
+    }
+
+    if (selectedTurnoverRange !== 'all') {
+      const [min, max] = selectedTurnoverRange.split('-').map(Number);
+      if (max) {
+        query = query.gte('turnover', min).lte('turnover', max);
+      } else {
+        query = query.gte('turnover', min);
+      }
+    }
+
+    const { data } = await query;
+    return data?.map(c => c.id) || [];
+  };
+
   const loadComparisonData = async () => {
     if (!dateRange?.from || !dateRange?.to) return;
 
@@ -309,20 +354,40 @@ export function MetricsExplorer() {
           const gestor = gestores.find(g => g.id === gestorId);
           if (!gestor) return null;
 
-          const { count: totalVisits } = await supabase
+          // Get filtered company IDs
+          const filteredCompanyIds = await getFilteredCompanyIds([gestorId]);
+
+          let totalVisitsQuery = supabase
             .from('visits')
             .select('*', { count: 'exact', head: true })
             .eq('gestor_id', gestorId)
             .gte('visit_date', fromDate)
             .lte('visit_date', toDate);
 
-          const { count: successfulVisits } = await supabase
+          let successfulVisitsQuery = supabase
             .from('visits')
             .select('*', { count: 'exact', head: true })
             .eq('gestor_id', gestorId)
             .eq('result', 'Exitosa')
             .gte('visit_date', fromDate)
             .lte('visit_date', toDate);
+
+          // Apply company filter if filters are active
+          if (filteredCompanyIds.length > 0 && (selectedSector !== 'all' || selectedTurnoverRange !== 'all')) {
+            totalVisitsQuery = totalVisitsQuery.in('company_id', filteredCompanyIds);
+            successfulVisitsQuery = successfulVisitsQuery.in('company_id', filteredCompanyIds);
+          } else if (selectedSector !== 'all' || selectedTurnoverRange !== 'all') {
+            // No companies match filters, return 0
+            return {
+              name: gestor.name,
+              visitas: 0,
+              exitosas: 0,
+              tasaExito: 0
+            };
+          }
+
+          const { count: totalVisits } = await totalVisitsQuery;
+          const { count: successfulVisits } = await successfulVisitsQuery;
 
           const visits = totalVisits || 0;
           const successful = successfulVisits || 0;
@@ -343,13 +408,23 @@ export function MetricsExplorer() {
           const gestor = gestores.find(g => g.id === gestorId);
           if (!gestor) return null;
 
-          const { data: visits } = await supabase
+          const filteredCompanyIds = await getFilteredCompanyIds([gestorId]);
+
+          let visitsQuery = supabase
             .from('visits')
-            .select('visit_date, result')
+            .select('visit_date, result, company_id')
             .eq('gestor_id', gestorId)
             .gte('visit_date', fromDate)
             .lte('visit_date', toDate)
             .order('visit_date');
+
+          if (filteredCompanyIds.length > 0 && (selectedSector !== 'all' || selectedTurnoverRange !== 'all')) {
+            visitsQuery = visitsQuery.in('company_id', filteredCompanyIds);
+          } else if (selectedSector !== 'all' || selectedTurnoverRange !== 'all') {
+            return { gestorId, gestorName: gestor.name, visits: [] };
+          }
+
+          const { data: visits } = await visitsQuery;
 
           return { gestorId, gestorName: gestor.name, visits: visits || [] };
         });
@@ -407,20 +482,37 @@ export function MetricsExplorer() {
             };
           }
 
-          const { count: totalVisits } = await supabase
+          const filteredCompanyIds = await getFilteredCompanyIds(gestorIds);
+
+          let totalVisitsQuery = supabase
             .from('visits')
             .select('*', { count: 'exact', head: true })
             .in('gestor_id', gestorIds)
             .gte('visit_date', fromDate)
             .lte('visit_date', toDate);
 
-          const { count: successfulVisits } = await supabase
+          let successfulVisitsQuery = supabase
             .from('visits')
             .select('*', { count: 'exact', head: true })
             .in('gestor_id', gestorIds)
             .eq('result', 'Exitosa')
             .gte('visit_date', fromDate)
             .lte('visit_date', toDate);
+
+          if (filteredCompanyIds.length > 0 && (selectedSector !== 'all' || selectedTurnoverRange !== 'all')) {
+            totalVisitsQuery = totalVisitsQuery.in('company_id', filteredCompanyIds);
+            successfulVisitsQuery = successfulVisitsQuery.in('company_id', filteredCompanyIds);
+          } else if (selectedSector !== 'all' || selectedTurnoverRange !== 'all') {
+            return {
+              name: oficina,
+              visitas: 0,
+              exitosas: 0,
+              tasaExito: 0
+            };
+          }
+
+          const { count: totalVisits } = await totalVisitsQuery;
+          const { count: successfulVisits } = await successfulVisitsQuery;
 
           const visits = totalVisits || 0;
           const successful = successfulVisits || 0;
@@ -443,13 +535,23 @@ export function MetricsExplorer() {
 
           if (gestorIds.length === 0) return null;
 
-          const { data: visits } = await supabase
+          const filteredCompanyIds = await getFilteredCompanyIds(gestorIds);
+
+          let visitsQuery = supabase
             .from('visits')
-            .select('visit_date, result')
+            .select('visit_date, result, company_id')
             .in('gestor_id', gestorIds)
             .gte('visit_date', fromDate)
             .lte('visit_date', toDate)
             .order('visit_date');
+
+          if (filteredCompanyIds.length > 0 && (selectedSector !== 'all' || selectedTurnoverRange !== 'all')) {
+            visitsQuery = visitsQuery.in('company_id', filteredCompanyIds);
+          } else if (selectedSector !== 'all' || selectedTurnoverRange !== 'all') {
+            return { oficina, visits: [] };
+          }
+
+          const { data: visits } = await visitsQuery;
 
           return { oficina, visits: visits || [] };
         });
@@ -694,6 +796,40 @@ export function MetricsExplorer() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Filtrar por Sector</Label>
+                  <Select value={selectedSector} onValueChange={setSelectedSector}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Todos los sectores" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos los sectores</SelectItem>
+                      {sectors.map(sector => (
+                        <SelectItem key={sector} value={sector}>
+                          {sector}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Filtrar por Facturación</Label>
+                  <Select value={selectedTurnoverRange} onValueChange={setSelectedTurnoverRange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Todos los rangos" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos los rangos</SelectItem>
+                      <SelectItem value="0-100000">Menos de 100K €</SelectItem>
+                      <SelectItem value="100000-500000">100K - 500K €</SelectItem>
+                      <SelectItem value="500000-1000000">500K - 1M €</SelectItem>
+                      <SelectItem value="1000000-5000000">1M - 5M €</SelectItem>
+                      <SelectItem value="5000000">Más de 5M €</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
               <Tabs value={compareType} onValueChange={(v) => setCompareType(v as 'gestores' | 'oficinas')}>
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="gestores">Comparar Gestores</TabsTrigger>
