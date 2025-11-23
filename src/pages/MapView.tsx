@@ -30,16 +30,11 @@ const MapView = () => {
   });
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<CompanyWithDetails | null>(null);
-  const [mapStyle, setMapStyle] = useState<'default' | 'satellite' | 'dark' | 'traffic' | 'topographic'>('default');
+  const [mapStyle, setMapStyle] = useState<'default' | 'satellite' | 'terrain'>('default');
   const [view3D, setView3D] = useState(false);
   const [baseLayers, setBaseLayers] = useState<MapBaseLayers>({
     roads: true,
     labels: true,
-    water: true,
-    terrain: true,
-    buildings: true,
-    transit: true,
-    poi: true,
     markers: true,
   });
 
