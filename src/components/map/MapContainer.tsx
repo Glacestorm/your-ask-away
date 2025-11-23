@@ -20,7 +20,7 @@ interface MapContainerProps {
   statusColors: StatusColor[];
   filters: MapFilters;
   onSelectCompany: (company: CompanyWithDetails) => void;
-  mapStyle?: 'default' | 'satellite';
+  mapStyle?: 'default' | 'satellite' | 'dark' | 'traffic' | 'topographic';
   view3D?: boolean;
   baseLayers?: {
     roads: boolean;
@@ -149,70 +149,156 @@ export function MapContainer({
     if (!map.current || !mapLoaded) return;
 
     const getMapStyle = (): any => {
-      const baseStyle = mapStyle === 'satellite' ? {
-        version: 8 as const,
-        sources: {
-          'satellite': {
-            type: 'raster',
-            tiles: [
-              'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+      let baseStyle: any;
+      
+      // Define base map style
+      switch (mapStyle) {
+        case 'satellite':
+          baseStyle = {
+            version: 8 as const,
+            sources: {
+              'base': {
+                type: 'raster',
+                tiles: ['https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'],
+                tileSize: 256,
+                attribution: '© Google',
+              },
+            },
+            layers: [{
+              id: 'base',
+              type: 'raster',
+              source: 'base',
+              minzoom: 0,
+              maxzoom: 22,
+            }],
+          };
+          break;
+          
+        case 'dark':
+          baseStyle = {
+            version: 8 as const,
+            sources: {
+              'base': {
+                type: 'raster',
+                tiles: ['https://{a-c}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'],
+                tileSize: 256,
+                attribution: '© CARTO © OpenStreetMap',
+              },
+            },
+            layers: [{
+              id: 'base',
+              type: 'raster',
+              source: 'base',
+              minzoom: 0,
+              maxzoom: 20,
+            }],
+          };
+          break;
+          
+        case 'traffic':
+          baseStyle = {
+            version: 8 as const,
+            sources: {
+              'base': {
+                type: 'raster',
+                tiles: ['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'],
+                tileSize: 256,
+                attribution: '© OpenStreetMap',
+              },
+              'traffic': {
+                type: 'raster',
+                tiles: ['https://mt1.google.com/vt/lyrs=h&x={x}&y={y}&z={z}'],
+                tileSize: 256,
+                attribution: '© Google',
+              },
+            },
+            layers: [
+              {
+                id: 'base',
+                type: 'raster',
+                source: 'base',
+                minzoom: 0,
+                maxzoom: 19,
+              },
+              {
+                id: 'traffic-overlay',
+                type: 'raster',
+                source: 'traffic',
+                minzoom: 0,
+                maxzoom: 22,
+                paint: {
+                  'raster-opacity': 0.6,
+                },
+              },
             ],
-            tileSize: 256,
-            attribution: '© Google',
-          },
-          'protomaps': {
-            type: 'vector',
-            tiles: [
-              'https://tiles.protomaps.com/v3/{z}/{x}/{y}.mvt',
-            ],
-            maxzoom: 15,
-            attribution: '© Protomaps © OpenStreetMap',
-          },
-        },
-        layers: [
-          {
-            id: 'satellite',
-            type: 'raster',
-            source: 'satellite',
-            minzoom: 0,
-            maxzoom: 22,
-          },
-        ],
-      } : {
-        version: 8 as const,
-        sources: {
-          'osm': {
-            type: 'raster',
-            tiles: [
-              'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-              'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-              'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            ],
-            tileSize: 256,
-            attribution: '© OpenStreetMap contributors',
-          },
-          'protomaps': {
-            type: 'vector',
-            tiles: [
-              'https://tiles.protomaps.com/v3/{z}/{x}/{y}.mvt',
-            ],
-            maxzoom: 15,
-            attribution: '© Protomaps © OpenStreetMap',
-          },
-        },
-        layers: [
-          {
-            id: 'osm',
-            type: 'raster',
-            source: 'osm',
-            minzoom: 0,
-            maxzoom: 19,
-          },
-        ],
-      };
+          };
+          break;
+          
+        case 'topographic':
+          baseStyle = {
+            version: 8 as const,
+            sources: {
+              'base': {
+                type: 'raster',
+                tiles: [
+                  'https://a.tile.opentopomap.org/{z}/{x}/{y}.png',
+                  'https://b.tile.opentopomap.org/{z}/{x}/{y}.png',
+                  'https://c.tile.opentopomap.org/{z}/{x}/{y}.png',
+                ],
+                tileSize: 256,
+                attribution: '© OpenTopoMap © OpenStreetMap',
+              },
+            },
+            layers: [{
+              id: 'base',
+              type: 'raster',
+              source: 'base',
+              minzoom: 0,
+              maxzoom: 17,
+            }],
+          };
+          break;
+          
+        default: // 'default'
+          baseStyle = {
+            version: 8 as const,
+            sources: {
+              'base': {
+                type: 'raster',
+                tiles: [
+                  'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                ],
+                tileSize: 256,
+                attribution: '© OpenStreetMap contributors',
+              },
+            },
+            layers: [{
+              id: 'base',
+              type: 'raster',
+              source: 'base',
+              minzoom: 0,
+              maxzoom: 19,
+            }],
+          };
+      }
+
+      // Add protomaps source for vector overlays only if needed
+      if (baseLayers.water || baseLayers.buildings || baseLayers.roads || 
+          baseLayers.transit || baseLayers.poi || baseLayers.labels) {
+        baseStyle.sources['protomaps'] = {
+          type: 'vector',
+          tiles: ['https://tiles.protomaps.com/v3/{z}/{x}/{y}.mvt'],
+          maxzoom: 15,
+          attribution: '© Protomaps © OpenStreetMap',
+        };
+      }
 
       // Add overlay layers based on baseLayers settings
       const overlayLayers: any[] = [];
+      const isDark = mapStyle === 'dark';
+      const isSatellite = mapStyle === 'satellite';
 
       if (baseLayers.water) {
         overlayLayers.push({
@@ -221,8 +307,8 @@ export function MapContainer({
           source: 'protomaps',
           'source-layer': 'water',
           paint: {
-            'fill-color': mapStyle === 'satellite' ? '#4a90e2' : '#a0c8f0',
-            'fill-opacity': 0.4,
+            'fill-color': isSatellite || isDark ? '#4a90e2' : '#a0c8f0',
+            'fill-opacity': 0.3,
           },
         });
       }
@@ -234,9 +320,9 @@ export function MapContainer({
           source: 'protomaps',
           'source-layer': 'buildings',
           paint: {
-            'fill-color': mapStyle === 'satellite' ? '#666' : '#e0e0e0',
-            'fill-opacity': 0.5,
-            'fill-outline-color': mapStyle === 'satellite' ? '#444' : '#bbb',
+            'fill-color': isSatellite || isDark ? '#666' : '#e0e0e0',
+            'fill-opacity': 0.4,
+            'fill-outline-color': isSatellite || isDark ? '#444' : '#bbb',
           },
         });
       }
@@ -248,14 +334,8 @@ export function MapContainer({
           source: 'protomaps',
           'source-layer': 'roads',
           paint: {
-            'line-color': mapStyle === 'satellite' ? '#ffd700' : '#666',
-            'line-width': [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              8, 0.5,
-              16, 3
-            ],
+            'line-color': isSatellite ? '#ffd700' : isDark ? '#999' : '#666',
+            'line-width': ['interpolate', ['linear'], ['zoom'], 8, 0.5, 16, 3],
           },
         });
       }
@@ -297,19 +377,26 @@ export function MapContainer({
           'source-layer': 'places',
           layout: {
             'text-field': ['get', 'name'],
-            'text-size': [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              8, 10,
-              16, 16
-            ],
+            'text-size': ['interpolate', ['linear'], ['zoom'], 8, 10, 16, 16],
             'text-font': ['Open Sans Regular'],
           },
           paint: {
-            'text-color': mapStyle === 'satellite' ? '#fff' : '#333',
-            'text-halo-color': mapStyle === 'satellite' ? '#000' : '#fff',
+            'text-color': isSatellite || isDark ? '#fff' : '#333',
+            'text-halo-color': isSatellite || isDark ? '#000' : '#fff',
             'text-halo-width': 2,
+          },
+        });
+      }
+
+      if (baseLayers.terrain && (mapStyle === 'default' || mapStyle === 'topographic')) {
+        overlayLayers.push({
+          id: 'terrain-overlay',
+          type: 'hillshade',
+          source: 'protomaps',
+          'source-layer': 'landcover',
+          paint: {
+            'hillshade-exaggeration': 0.3,
+            'hillshade-shadow-color': '#000',
           },
         });
       }
@@ -341,7 +428,7 @@ export function MapContainer({
             type: 'fill-extrusion',
             minzoom: 14,
             paint: {
-              'fill-extrusion-color': mapStyle === 'satellite' ? '#888' : '#ccc',
+              'fill-extrusion-color': ['satellite', 'dark'].includes(mapStyle) ? '#888' : '#ccc',
               'fill-extrusion-height': [
                 'case',
                 ['has', 'height'],
