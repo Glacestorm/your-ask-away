@@ -219,11 +219,11 @@ export function MapContainer({
           visitCountMap[visit.company_id] += 1;
 
           // Calculate vinculación
-          if (visit.porcentaje_vinculacion !== null) {
+          if (visit.porcentaje_vinculacion !== null && visit.porcentaje_vinculacion !== undefined) {
             if (!vinculacionMap[visit.company_id]) {
               vinculacionMap[visit.company_id] = { total: 0, count: 0 };
             }
-            vinculacionMap[visit.company_id].total += visit.porcentaje_vinculacion;
+            vinculacionMap[visit.company_id].total += Number(visit.porcentaje_vinculacion);
             vinculacionMap[visit.company_id].count += 1;
           }
         });
@@ -233,6 +233,7 @@ export function MapContainer({
           avgVinculacion[companyId] = Math.round(data.total / data.count);
         });
 
+        console.log('Vinculación data calculada:', Object.keys(avgVinculacion).length, 'empresas con datos');
         setVinculacionData(avgVinculacion);
         setVisitCounts(visitCountMap);
       } catch (error: any) {
@@ -734,6 +735,18 @@ export function MapContainer({
           const vinculacionPct = vinculacionData[company.id];
           const showVinculacion = vinculacionPct !== undefined && zoom >= minZoomVinculacion;
           
+          // Log para debug - solo para primeras empresas
+          if (Math.random() < 0.05) {
+            console.log('Marker debug:', {
+              companyId: company.id,
+              companyName: company.name,
+              vinculacionPct,
+              zoom,
+              minZoomVinculacion,
+              showVinculacion
+            });
+          }
+          
           // Aumentar tamaño si se muestra vinculación
           const markerWidth = showVinculacion ? 50 : 40;
           const markerHeight = showVinculacion ? 65 : 50;
@@ -766,8 +779,8 @@ export function MapContainer({
               </g>
               ${showVinculacion ? `
                 <!-- Vinculación badge -->
-                <rect x="${markerWidth/2-18}" y="30" width="36" height="20" rx="10" fill="${color}" stroke="white" stroke-width="2"/>
-                <text x="${markerWidth/2}" y="43" text-anchor="middle" fill="white" font-size="12" font-weight="bold">
+                <rect x="${markerWidth/2-18}" y="32" width="36" height="18" rx="9" fill="${color}" stroke="white" stroke-width="2"/>
+                <text x="${markerWidth/2}" y="44" text-anchor="middle" fill="white" font-size="11" font-weight="bold" font-family="system-ui, -apple-system, sans-serif">
                   ${vinculacionPct}%
                 </text>
               ` : ''}
@@ -869,7 +882,7 @@ export function MapContainer({
       map.current?.off('moveend', updateMarkers);
       map.current?.off('zoomend', updateMarkers);
     };
-  }, [companies, filters, mapLoaded, statusColors, onSelectCompany, baseLayers.markers, tooltipConfig, vinculacionData]);
+  }, [companies, filters, mapLoaded, statusColors, onSelectCompany, baseLayers.markers, tooltipConfig, vinculacionData, minZoomVinculacion, colorMode, visitCounts]);
 
   // Update building opacity and height multiplier
   useEffect(() => {
