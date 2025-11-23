@@ -4,9 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Activity, Target, Building2, Users } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
 
-// FASE 2: KPIs + Un gráfico simple de barras
+// FASE 3: KPIs + Gráfico + Tabla de gestores
 
 interface BasicStats {
   totalVisits: number;
@@ -20,6 +21,14 @@ interface GestorRanking {
   visits: number;
 }
 
+interface GestorDetail {
+  name: string;
+  oficina: string;
+  totalVisits: number;
+  successRate: number;
+  companies: number;
+}
+
 export function CommercialDirectorDashboard() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<BasicStats>({
@@ -29,6 +38,7 @@ export function CommercialDirectorDashboard() {
     activeGestores: 0
   });
   const [gestorRanking, setGestorRanking] = useState<GestorRanking[]>([]);
+  const [gestorDetails, setGestorDetails] = useState<GestorDetail[]>([]);
 
   useEffect(() => {
     fetchData();
@@ -72,31 +82,59 @@ export function CommercialDirectorDashboard() {
         activeGestores: gestoresCount || 0
       });
 
-      // Obtener ranking de gestores
+      // Obtener datos de gestores
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('id, full_name, email');
+        .select('id, full_name, email, oficina');
 
       if (profiles) {
-        const rankingPromises = profiles.map(async (profile) => {
-          const { count } = await supabase
+        const detailsPromises = profiles.map(async (profile) => {
+          // Contar visitas del gestor
+          const { count: visitCount } = await supabase
             .from('visits')
             .select('*', { count: 'exact', head: true })
             .eq('gestor_id', profile.id);
 
+          // Contar visitas exitosas del gestor
+          const { count: successVisitCount } = await supabase
+            .from('visits')
+            .select('*', { count: 'exact', head: true })
+            .eq('gestor_id', profile.id)
+            .eq('result', 'Exitosa');
+
+          // Contar empresas del gestor
+          const { count: companyCount } = await supabase
+            .from('companies')
+            .select('*', { count: 'exact', head: true })
+            .eq('gestor_id', profile.id);
+
+          const visits = visitCount || 0;
+          const successVisits = successVisitCount || 0;
+          const successRate = visits > 0 ? Math.round((successVisits / visits) * 100) : 0;
+
           return {
             name: profile.full_name || profile.email.split('@')[0],
-            visits: count || 0
+            oficina: profile.oficina || 'Sin asignar',
+            totalVisits: visits,
+            successRate,
+            companies: companyCount || 0
           };
         });
 
-        const ranking = await Promise.all(rankingPromises);
-        const sortedRanking = ranking
-          .filter(r => r.visits > 0)
-          .sort((a, b) => b.visits - a.visits)
-          .slice(0, 10);
+        const details = await Promise.all(detailsPromises);
         
-        setGestorRanking(sortedRanking);
+        // Para el ranking (solo con visitas)
+        const ranking = details
+          .filter(d => d.totalVisits > 0)
+          .sort((a, b) => b.totalVisits - a.totalVisits)
+          .slice(0, 10)
+          .map(d => ({ name: d.name, visits: d.totalVisits }));
+        
+        setGestorRanking(ranking);
+
+        // Para la tabla (todos los gestores)
+        const sortedDetails = details.sort((a, b) => b.totalVisits - a.totalVisits);
+        setGestorDetails(sortedDetails);
       }
 
     } catch (error) {
@@ -134,7 +172,7 @@ export function CommercialDirectorDashboard() {
         <CardHeader>
           <CardTitle>Panel del Director Comercial</CardTitle>
           <CardDescription>
-            Fase 2: KPIs + Gráfico simple de barras
+            Fase 3: KPIs + Gráfico + Tabla de gestores
           </CardDescription>
         </CardHeader>
       </Card>
@@ -218,12 +256,52 @@ export function CommercialDirectorDashboard() {
         </CardContent>
       </Card>
 
+      {/* Tabla de Gestores */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Detalle de Gestores</CardTitle>
+          <CardDescription>Información completa de todos los gestores</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Gestor</TableHead>
+                <TableHead>Oficina</TableHead>
+                <TableHead className="text-right">Visitas</TableHead>
+                <TableHead className="text-right">Tasa Éxito</TableHead>
+                <TableHead className="text-right">Empresas</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {gestorDetails.length > 0 ? (
+                gestorDetails.map((gestor, index) => (
+                  <TableRow key={index}>
+                    <TableCell className="font-medium">{gestor.name}</TableCell>
+                    <TableCell>{gestor.oficina}</TableCell>
+                    <TableCell className="text-right">{gestor.totalVisits}</TableCell>
+                    <TableCell className="text-right">{gestor.successRate}%</TableCell>
+                    <TableCell className="text-right">{gestor.companies}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-muted-foreground">
+                    No hay datos disponibles
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
       {/* Mensaje informativo */}
       <Card>
         <CardContent className="py-8">
           <div className="text-center text-muted-foreground">
-            <p className="mb-2">✓ Fase 2 funcionando correctamente</p>
-            <p className="text-sm">Si no hay errores, podemos continuar con la Fase 3 (tabla de datos)</p>
+            <p className="mb-2">✓ Fase 3 funcionando correctamente</p>
+            <p className="text-sm">Panel básico completo. Si todo funciona bien, esto es suficiente para uso práctico.</p>
           </div>
         </CardContent>
       </Card>
