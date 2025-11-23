@@ -85,6 +85,9 @@ export interface Visit {
   visit_date: string;
   notes: string | null;
   result: string | null;
+  productos_ofrecidos: string[] | null;
+  porcentaje_vinculacion: number | null;
+  pactos_realizados: string | null;
   created_at: string;
 }
 

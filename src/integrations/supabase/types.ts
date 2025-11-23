@@ -436,6 +436,9 @@ export type Database = {
           gestor_id: string
           id: string
           notes: string | null
+          pactos_realizados: string | null
+          porcentaje_vinculacion: number | null
+          productos_ofrecidos: string[] | null
           result: string | null
           visit_date: string
         }
@@ -445,6 +448,9 @@ export type Database = {
           gestor_id: string
           id?: string
           notes?: string | null
+          pactos_realizados?: string | null
+          porcentaje_vinculacion?: number | null
+          productos_ofrecidos?: string[] | null
           result?: string | null
           visit_date: string
         }
@@ -454,6 +460,9 @@ export type Database = {
           gestor_id?: string
           id?: string
           notes?: string | null
+          pactos_realizados?: string | null
+          porcentaje_vinculacion?: number | null
+          productos_ofrecidos?: string[] | null
           result?: string | null
           visit_date?: string
         }
