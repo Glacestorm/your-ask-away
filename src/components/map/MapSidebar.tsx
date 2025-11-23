@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { CompanyWithDetails, MapFilters, StatusColor, Product, Profile } from '@/types/database';
-import { Search, X, Filter, Calendar, History, TrendingUp } from 'lucide-react';
+import { Search, X, Filter, Calendar, History, TrendingUp, Building } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
@@ -18,6 +18,7 @@ import { VisitsPanel } from './VisitsPanel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SectorStats } from './SectorStats';
 import { formatCnaeWithDescription } from '@/lib/cnaeDescriptions';
+import { CompanyDetail } from '@/components/company/CompanyDetail';
 
 interface MapSidebarProps {
   open: boolean;
@@ -244,9 +245,9 @@ export function MapSidebar({
               <TrendingUp className="h-4 w-4" />
               <span className="hidden sm:inline">Sectores</span>
             </TabsTrigger>
-            <TabsTrigger value="visits" className="flex items-center gap-2">
-              <History className="h-4 w-4" />
-              <span className="hidden sm:inline">Visitas</span>
+            <TabsTrigger value="detail" className="flex items-center gap-2">
+              <Building className="h-4 w-4" />
+              <span className="hidden sm:inline">Detalle</span>
             </TabsTrigger>
           </TabsList>
 
@@ -530,8 +531,21 @@ export function MapSidebar({
             />
           </TabsContent>
 
-          <TabsContent value="visits" className="flex-1 p-4">
-            <VisitsPanel company={selectedCompany} />
+          <TabsContent value="detail" className="flex-1 flex flex-col mt-0 p-0">
+            {selectedCompany ? (
+              <CompanyDetail 
+                company={selectedCompany} 
+                onClose={() => onSelectCompany(null)} 
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full text-muted-foreground p-8 text-center">
+                <div>
+                  <Building className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                  <p className="text-lg font-medium">No hay empresa seleccionada</p>
+                  <p className="text-sm mt-1">Selecciona una empresa del mapa o de la lista para ver sus detalles</p>
+                </div>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>
