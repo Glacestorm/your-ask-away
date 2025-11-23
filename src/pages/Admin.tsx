@@ -21,6 +21,8 @@ import { VinculacionMetrics } from '@/components/admin/VinculacionMetrics';
 import { SystemHealthMonitor } from '@/components/admin/SystemHealthMonitor';
 import { TPVManager } from '@/components/admin/TPVManager';
 import { TPVGoalsManager } from '@/components/admin/TPVGoalsManager';
+import { CommercialDirectorDashboard } from '@/components/admin/CommercialDirectorDashboard';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 const Admin = () => {
   const { user, isAdmin, loading: authLoading } = useAuth();
@@ -57,76 +59,93 @@ const Admin = () => {
         </div>
 
         {/* Admin Tabs */}
-        <Tabs defaultValue="health" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-15">
-            {/* Monitor de Salud */}
-            <TabsTrigger value="health" className="flex items-center gap-2">
-              <Activity className="h-4 w-4" />
-              <span className="hidden sm:inline">Sistema</span>
-            </TabsTrigger>
-            
-            {/* Métricas */}
-            <TabsTrigger value="visits" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              <span className="hidden sm:inline">Visitas</span>
-            </TabsTrigger>
-            <TabsTrigger value="products-metrics" className="flex items-center gap-2">
-              <Package className="h-4 w-4" />
-              <span className="hidden sm:inline">Productos</span>
-            </TabsTrigger>
-            <TabsTrigger value="gestores" className="flex items-center gap-2">
-              <UsersIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">Gestores</span>
-            </TabsTrigger>
-            <TabsTrigger value="vinculacion" className="flex items-center gap-2">
-              <Target className="h-4 w-4" />
-              <span className="hidden sm:inline">Vinculación</span>
-            </TabsTrigger>
-            <TabsTrigger value="tpv" className="flex items-center gap-2">
-              <CreditCard className="h-4 w-4" />
-              <span className="hidden sm:inline">TPV</span>
-            </TabsTrigger>
-            <TabsTrigger value="tpv-goals" className="flex items-center gap-2">
-              <Target className="h-4 w-4" />
-              <span className="hidden sm:inline">Objetivos TPV</span>
-            </TabsTrigger>
-            
-            {/* Gestión */}
-            <TabsTrigger value="companies" className="flex items-center gap-2">
-              <Building2 className="h-4 w-4" />
-              <span className="hidden sm:inline">Empresas</span>
-            </TabsTrigger>
-            <TabsTrigger value="products" className="flex items-center gap-2">
-              <Package className="h-4 w-4" />
-              <span className="hidden sm:inline">Catálogo</span>
-            </TabsTrigger>
-            <TabsTrigger value="users" className="flex items-center gap-2">
-              <UsersIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">Usuarios</span>
-            </TabsTrigger>
-            
-            {/* Configuración */}
-            <TabsTrigger value="templates" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline">Emails</span>
-            </TabsTrigger>
-            <TabsTrigger value="colors" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline">Estados</span>
-            </TabsTrigger>
-            <TabsTrigger value="concepts" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline">Conceptos</span>
-            </TabsTrigger>
-            <TabsTrigger value="map-config" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline">Mapa</span>
-            </TabsTrigger>
-            <TabsTrigger value="audit" className="flex items-center gap-2">
-              <Database className="h-4 w-4" />
-              <span className="hidden sm:inline">Auditoría</span>
-            </TabsTrigger>
-          </TabsList>
+        <Tabs defaultValue="director" className="space-y-4">
+          <ScrollArea className="w-full whitespace-nowrap">
+            <TabsList className="inline-flex h-10 items-center justify-start rounded-md bg-muted p-1 text-muted-foreground w-max">
+              {/* Panel Director Comercial */}
+              <TabsTrigger value="director" className="flex items-center gap-2 px-3">
+                <TrendingUp className="h-4 w-4" />
+                <span>Panel Director</span>
+              </TabsTrigger>
+              
+              <div className="mx-2 h-6 w-px bg-border" />
+              {/* Métricas y Análisis */}
+              <TabsTrigger value="health" className="flex items-center gap-2 px-3">
+                <Activity className="h-4 w-4" />
+                <span>Sistema</span>
+              </TabsTrigger>
+              <TabsTrigger value="visits" className="flex items-center gap-2 px-3">
+                <BarChart3 className="h-4 w-4" />
+                <span>Visitas</span>
+              </TabsTrigger>
+              <TabsTrigger value="products-metrics" className="flex items-center gap-2 px-3">
+                <Package className="h-4 w-4" />
+                <span>Productos</span>
+              </TabsTrigger>
+              <TabsTrigger value="gestores" className="flex items-center gap-2 px-3">
+                <UsersIcon className="h-4 w-4" />
+                <span>Gestores</span>
+              </TabsTrigger>
+              <TabsTrigger value="vinculacion" className="flex items-center gap-2 px-3">
+                <Target className="h-4 w-4" />
+                <span>Vinculación</span>
+              </TabsTrigger>
+              <TabsTrigger value="tpv" className="flex items-center gap-2 px-3">
+                <CreditCard className="h-4 w-4" />
+                <span>TPV</span>
+              </TabsTrigger>
+              <TabsTrigger value="tpv-goals" className="flex items-center gap-2 px-3">
+                <Target className="h-4 w-4" />
+                <span>Objetivos TPV</span>
+              </TabsTrigger>
+              
+              <div className="mx-2 h-6 w-px bg-border" />
+              
+              {/* Gestión de Datos */}
+              <TabsTrigger value="companies" className="flex items-center gap-2 px-3">
+                <Building2 className="h-4 w-4" />
+                <span>Empresas</span>
+              </TabsTrigger>
+              <TabsTrigger value="products" className="flex items-center gap-2 px-3">
+                <Package className="h-4 w-4" />
+                <span>Catálogo</span>
+              </TabsTrigger>
+              <TabsTrigger value="users" className="flex items-center gap-2 px-3">
+                <UsersIcon className="h-4 w-4" />
+                <span>Usuarios</span>
+              </TabsTrigger>
+              
+              <div className="mx-2 h-6 w-px bg-border" />
+              
+              {/* Configuración */}
+              <TabsTrigger value="templates" className="flex items-center gap-2 px-3">
+                <Settings className="h-4 w-4" />
+                <span>Emails</span>
+              </TabsTrigger>
+              <TabsTrigger value="colors" className="flex items-center gap-2 px-3">
+                <Settings className="h-4 w-4" />
+                <span>Estados</span>
+              </TabsTrigger>
+              <TabsTrigger value="concepts" className="flex items-center gap-2 px-3">
+                <Settings className="h-4 w-4" />
+                <span>Conceptos</span>
+              </TabsTrigger>
+              <TabsTrigger value="map-config" className="flex items-center gap-2 px-3">
+                <Settings className="h-4 w-4" />
+                <span>Mapa</span>
+              </TabsTrigger>
+              <TabsTrigger value="audit" className="flex items-center gap-2 px-3">
+                <Database className="h-4 w-4" />
+                <span>Auditoría</span>
+              </TabsTrigger>
+            </TabsList>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+
+          {/* PANEL DIRECTOR COMERCIAL */}
+          <TabsContent value="director" className="space-y-4">
+            <CommercialDirectorDashboard />
+          </TabsContent>
 
           {/* MONITOR DE SALUD DEL SISTEMA */}
           <TabsContent value="health" className="space-y-4">
