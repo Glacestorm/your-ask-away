@@ -79,6 +79,12 @@ interface MapContainerProps {
     labels: boolean;
     markers: boolean;
   };
+  searchLocation?: {
+    lat: number;
+    lon: number;
+    name: string;
+  } | null;
+  onSearchLocationClear?: () => void;
 }
 
 export function MapContainer({
@@ -93,12 +99,15 @@ export function MapContainer({
     labels: true,
     markers: true,
   },
+  searchLocation,
+  onSearchLocationClear,
 }: MapContainerProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const markers = useRef<maplibregl.Marker[]>([]);
   const [mapLoaded, setMapLoaded] = useState(false);
   const superclusterRef = useRef<Supercluster<CompanyWithDetails> | null>(null);
+  const searchMarkerRef = useRef<maplibregl.Marker | null>(null);
 
   // Initialize map
   useEffect(() => {
@@ -593,6 +602,90 @@ export function MapContainer({
       map.current?.off('zoomend', updateMarkers);
     };
   }, [companies, filters, mapLoaded, statusColors, onSelectCompany, baseLayers.markers]);
+
+  // Handle search location
+  useEffect(() => {
+    if (!map.current || !mapLoaded || !searchLocation) return;
+
+    // Remove previous search marker
+    if (searchMarkerRef.current) {
+      searchMarkerRef.current.remove();
+      searchMarkerRef.current = null;
+    }
+
+    // Create search marker element
+    const el = document.createElement('div');
+    el.className = 'search-location-marker';
+    el.innerHTML = `
+      <svg width="40" height="50" viewBox="0 0 40 50" xmlns="http://www.w3.org/2000/svg">
+        <!-- Outer glow -->
+        <circle cx="20" cy="20" r="18" fill="hsl(var(--primary))" opacity="0.2"/>
+        <!-- Main pin -->
+        <path d="M20 0C11.716 0 5 6.716 5 15c0 8.284 15 25 15 25s15-16.716 15-25C35 6.716 28.284 0 20 0z" 
+              fill="hsl(var(--primary))" stroke="white" stroke-width="2"/>
+        <!-- Inner circle -->
+        <circle cx="20" cy="15" r="6" fill="white"/>
+        <!-- Search icon -->
+        <g transform="translate(15, 10)">
+          <circle cx="5" cy="5" r="3" fill="none" stroke="hsl(var(--primary))" stroke-width="1.5"/>
+          <line x1="7" y1="7" x2="9" y2="9" stroke="hsl(var(--primary))" stroke-width="1.5" stroke-linecap="round"/>
+        </g>
+      </svg>
+    `;
+
+    // Create and add marker
+    const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
+      .setLngLat([searchLocation.lon, searchLocation.lat])
+      .addTo(map.current);
+
+    const popup = new maplibregl.Popup({
+      offset: 25,
+      closeButton: true,
+      closeOnClick: true,
+    }).setHTML(`
+      <div class="p-3">
+        <div class="flex items-start justify-between gap-2 mb-2">
+          <h3 class="font-semibold text-sm">${searchLocation.name}</h3>
+        </div>
+        <p class="text-xs text-muted-foreground mb-3">
+          Resultado de búsqueda
+        </p>
+        <button 
+          onclick="window.dispatchEvent(new CustomEvent('clearSearchLocation'))"
+          class="text-xs text-primary hover:underline"
+        >
+          Limpiar búsqueda
+        </button>
+      </div>
+    `);
+
+    marker.setPopup(popup);
+    marker.togglePopup();
+    
+    searchMarkerRef.current = marker;
+
+    // Fly to location
+    map.current.flyTo({
+      center: [searchLocation.lon, searchLocation.lat],
+      zoom: 16,
+      duration: 2000,
+    });
+
+    // Listen for clear event
+    const handleClear = () => {
+      if (searchMarkerRef.current) {
+        searchMarkerRef.current.remove();
+        searchMarkerRef.current = null;
+      }
+      onSearchLocationClear?.();
+    };
+
+    window.addEventListener('clearSearchLocation', handleClear);
+
+    return () => {
+      window.removeEventListener('clearSearchLocation', handleClear);
+    };
+  }, [searchLocation, mapLoaded, onSearchLocationClear]);
 
   return (
     <div ref={mapContainer} className="h-full w-full" />

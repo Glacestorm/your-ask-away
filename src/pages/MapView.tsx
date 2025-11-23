@@ -4,10 +4,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { MapContainer } from '@/components/map/MapContainer';
 import { MapSidebar } from '@/components/map/MapSidebar';
 import { MapHeader, MapBaseLayers } from '@/components/map/MapHeader';
+import { GeoSearch } from '@/components/map/GeoSearch';
 import { CompanyWithDetails, MapFilters, StatusColor, Product } from '@/types/database';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Search } from 'lucide-react';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
 
 const MapView = () => {
   const { user, loading: authLoading } = useAuth();
@@ -36,6 +38,12 @@ const MapView = () => {
     labels: true,
     markers: true,
   });
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchLocation, setSearchLocation] = useState<{
+    lat: number;
+    lon: number;
+    name: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -133,6 +141,29 @@ const MapView = () => {
     new Set(companies.map((c) => c.sector).filter(Boolean))
   ).sort();
 
+  const handleSearchResult = (result: any) => {
+    if (result.type === 'company' && result.company) {
+      // If it's a company, select it and close search
+      setSelectedCompany(result.company);
+      setSidebarOpen(true);
+      setSearchLocation({
+        lat: result.lat,
+        lon: result.lon,
+        name: result.name,
+      });
+      toast.success(`Empresa encontrada: ${result.name}`);
+    } else {
+      // If it's a place, just show it on the map
+      setSearchLocation({
+        lat: result.lat,
+        lon: result.lon,
+        name: result.name,
+      });
+      toast.success(`Ubicación encontrada: ${result.name}`);
+    }
+    setShowSearch(false);
+  };
+
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">
       <MapHeader
@@ -166,6 +197,25 @@ const MapView = () => {
         />
         
         <div className="relative flex-1">
+          {showSearch && (
+            <GeoSearch
+              companies={companies}
+              onSelectResult={handleSearchResult}
+              onClose={() => setShowSearch(false)}
+            />
+          )}
+          
+          {!showSearch && (
+            <Button
+              onClick={() => setShowSearch(true)}
+              className="absolute top-4 left-4 z-10 shadow-lg"
+              size="default"
+            >
+              <Search className="mr-2 h-4 w-4" />
+              Buscar ubicación
+            </Button>
+          )}
+
           <MapContainer
             companies={companies}
             statusColors={statusColors}
@@ -174,6 +224,8 @@ const MapView = () => {
             mapStyle={mapStyle}
             view3D={view3D}
             baseLayers={baseLayers}
+            searchLocation={searchLocation}
+            onSearchLocationClear={() => setSearchLocation(null)}
           />
           
         </div>
