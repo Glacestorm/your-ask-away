@@ -26,7 +26,7 @@ import { TPVGoalsManager } from '@/components/admin/TPVGoalsManager';
 import { CommercialDirectorDashboard } from '@/components/admin/CommercialDirectorDashboard';
 import { OfficeDirectorDashboard } from '@/components/admin/OfficeDirectorDashboard';
 const Admin = () => {
-  const { user, isAdmin, loading: authLoading } = useAuth();
+  const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, loading: authLoading } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('director');
@@ -49,8 +49,26 @@ const Admin = () => {
   const renderContent = () => {
     switch (activeSection) {
       case 'director':
+        if (!isCommercialDirector && !isSuperAdmin) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">No tienes permisos para acceder a esta sección.</p>
+              </CardContent>
+            </Card>
+          );
+        }
         return <CommercialDirectorDashboard />;
       case 'office-director':
+        if (!isOfficeDirector && !isSuperAdmin) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">No tienes permisos para acceder a esta sección.</p>
+              </CardContent>
+            </Card>
+          );
+        }
         return <OfficeDirectorDashboard />;
       case 'health':
         return <SystemHealthMonitor />;
@@ -140,7 +158,13 @@ const Admin = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
-        <AdminSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
+        <AdminSidebar 
+          activeSection={activeSection} 
+          onSectionChange={setActiveSection}
+          isCommercialDirector={isCommercialDirector}
+          isOfficeDirector={isOfficeDirector}
+          isSuperAdmin={isSuperAdmin}
+        />
         
         <main className="flex-1 overflow-auto">
           <div className="p-6 space-y-6">

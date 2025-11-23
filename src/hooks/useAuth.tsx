@@ -14,6 +14,8 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   isAdmin: boolean;
   isSuperAdmin: boolean;
+  isCommercialDirector: boolean;
+  isOfficeDirector: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -157,6 +159,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isAdmin = userRole === 'admin' || userRole === 'superadmin';
   const isSuperAdmin = userRole === 'superadmin';
+  const isCommercialDirector = userRole === 'director_comercial' || userRole === 'superadmin';
+  const isOfficeDirector = userRole === 'director_oficina' || userRole === 'superadmin';
   
   // Overall loading state includes both auth and role loading
   const overallLoading = loading || roleLoading;
@@ -166,6 +170,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     userRole, 
     isAdmin, 
     isSuperAdmin,
+    isCommercialDirector,
+    isOfficeDirector,
     loading: overallLoading,
     authLoading: loading,
     roleLoading
@@ -182,6 +188,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signOut,
       isAdmin,
       isSuperAdmin,
+      isCommercialDirector,
+      isOfficeDirector,
     }}>
       {children}
     </AuthContext.Provider>

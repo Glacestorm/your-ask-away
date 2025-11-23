@@ -17,9 +17,18 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 interface AdminSidebarProps {
   activeSection: string;
   onSectionChange: (section: string) => void;
+  isCommercialDirector: boolean;
+  isOfficeDirector: boolean;
+  isSuperAdmin: boolean;
 }
 
-export function AdminSidebar({ activeSection, onSectionChange }: AdminSidebarProps) {
+export function AdminSidebar({ 
+  activeSection, 
+  onSectionChange, 
+  isCommercialDirector, 
+  isOfficeDirector, 
+  isSuperAdmin 
+}: AdminSidebarProps) {
   const { open } = useSidebar();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     metrics: true,
@@ -40,28 +49,32 @@ export function AdminSidebar({ activeSection, onSectionChange }: AdminSidebarPro
         {/* Dashboard Principal */}
         <SidebarGroup>
           <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                onClick={() => onSectionChange('director')}
-                isActive={isActive('director')}
-                className="font-semibold"
-                tooltip={!open ? "Panel Director" : undefined}
-              >
-                <TrendingUp className="h-5 w-5" />
-                <span>Panel Director</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                onClick={() => onSectionChange('office-director')}
-                isActive={isActive('office-director')}
-                className="font-semibold"
-                tooltip={!open ? "Director Oficina" : undefined}
-              >
-                <Building2 className="h-5 w-5" />
-                <span>Director Oficina</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            {(isCommercialDirector || isSuperAdmin) && (
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => onSectionChange('director')}
+                  isActive={isActive('director')}
+                  className="font-semibold"
+                  tooltip={!open ? "Panel Director" : undefined}
+                >
+                  <TrendingUp className="h-5 w-5" />
+                  <span>Panel Director</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
+            {(isOfficeDirector || isSuperAdmin) && (
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => onSectionChange('office-director')}
+                  isActive={isActive('office-director')}
+                  className="font-semibold"
+                  tooltip={!open ? "Director Oficina" : undefined}
+                >
+                  <Building2 className="h-5 w-5" />
+                  <span>Director Oficina</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
           </SidebarMenu>
         </SidebarGroup>
 
