@@ -62,7 +62,7 @@ export const VisitReminders = () => {
         .from('visit_reminder_preferences')
         .select('*')
         .eq('user_id', user.id)
-        .maybeSingle();
+        .maybeSingle() as any;
 
       if (error && error.code !== 'PGRST116') {
         throw error;
@@ -107,7 +107,7 @@ export const VisitReminders = () => {
       if (preference.id) {
         // Update existing
         const { error } = await supabase
-          .from('visit_reminder_preferences')
+          .from('visit_reminder_preferences' as any)
           .update({
             enabled,
             updated_at: new Date().toISOString(),
@@ -118,10 +118,10 @@ export const VisitReminders = () => {
       } else {
         // Insert new
         const { data, error } = await supabase
-          .from('visit_reminder_preferences')
+          .from('visit_reminder_preferences' as any)
           .insert(updatedPref)
           .select()
-          .single();
+          .single() as any;
 
         if (error) throw error;
         updatedPref.id = data.id;
@@ -156,7 +156,7 @@ export const VisitReminders = () => {
 
       if (preference.id) {
         const { error } = await supabase
-          .from('visit_reminder_preferences')
+          .from('visit_reminder_preferences' as any)
           .update({
             minutes_before: minutesBefore,
             updated_at: new Date().toISOString(),
@@ -166,10 +166,10 @@ export const VisitReminders = () => {
         if (error) throw error;
       } else {
         const { data, error } = await supabase
-          .from('visit_reminder_preferences')
+          .from('visit_reminder_preferences' as any)
           .insert(updatedPref)
           .select()
-          .single();
+          .single() as any;
 
         if (error) throw error;
         updatedPref.id = data.id;

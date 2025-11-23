@@ -40,6 +40,8 @@ import { NotificationsPanel } from '@/components/dashboard/NotificationsPanel';
 import { NotificationPreferences } from '@/components/dashboard/NotificationPreferences';
 import { AnalisisEmbudo } from '@/components/dashboard/AnalisisEmbudo';
 import { supabase } from '@/integrations/supabase/client';
+import { VisitReminders } from '@/components/dashboard/VisitReminders';
+import { NotificationService } from '@/components/dashboard/NotificationService';
 import * as XLSX from 'xlsx';
 
 const Dashboard = () => {
@@ -111,6 +113,9 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Notification Service - runs in background */}
+      <NotificationService />
+      
       <div className="container mx-auto p-4 sm:p-6 space-y-6">
         {/* Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -335,6 +340,8 @@ const Dashboard = () => {
               </div>
               <NotificationPreferences />
             </div>
+
+            <VisitReminders />
           </TabsContent>
 
           {/* Generación de Reportes */}
