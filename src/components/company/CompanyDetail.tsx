@@ -1,13 +1,14 @@
 import { CompanyWithDetails } from '@/types/database';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Building2, User, FileText, History, X } from 'lucide-react';
+import { Building2, User, FileText, History, X, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ContactsManager } from './ContactsManager';
 import { DocumentsManager } from './DocumentsManager';
 import { VisitsPanel } from '../map/VisitsPanel';
 import { Badge } from '@/components/ui/badge';
 import { formatCnaeWithDescription } from '@/lib/cnaeDescriptions';
+import { CompanyPhotosManager } from './CompanyPhotosManager';
 
 interface CompanyDetailProps {
   company: CompanyWithDetails;
@@ -56,7 +57,7 @@ export const CompanyDetail = ({ company, onClose }: CompanyDetailProps) => {
 
       {/* Tabs */}
       <Tabs defaultValue="info" className="flex-1 flex flex-col">
-        <TabsList className="mx-4 mt-2 grid grid-cols-4">
+        <TabsList className="mx-4 mt-2 grid grid-cols-5">
           <TabsTrigger value="info" className="text-xs">
             <Building2 className="h-4 w-4 mr-1" />
             Info
@@ -64,6 +65,10 @@ export const CompanyDetail = ({ company, onClose }: CompanyDetailProps) => {
           <TabsTrigger value="contacts" className="text-xs">
             <User className="h-4 w-4 mr-1" />
             Contactos
+          </TabsTrigger>
+          <TabsTrigger value="photos" className="text-xs">
+            <Camera className="h-4 w-4 mr-1" />
+            Fotos
           </TabsTrigger>
           <TabsTrigger value="documents" className="text-xs">
             <FileText className="h-4 w-4 mr-1" />
@@ -257,6 +262,10 @@ export const CompanyDetail = ({ company, onClose }: CompanyDetailProps) => {
 
           <TabsContent value="contacts" className="p-4 mt-0">
             <ContactsManager companyId={company.id} />
+          </TabsContent>
+
+          <TabsContent value="photos" className="p-4 mt-0">
+            <CompanyPhotosManager companyId={company.id} companyName={company.name} />
           </TabsContent>
 
           <TabsContent value="documents" className="p-4 mt-0">
