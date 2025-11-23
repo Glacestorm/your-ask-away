@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
@@ -46,10 +47,12 @@ import { UpcomingVisitsWidget } from '@/components/dashboard/UpcomingVisitsWidge
 import { QuickActionsPanel } from '@/components/dashboard/QuickActionsPanel';
 import { PersonalKPIsDashboard } from '@/components/dashboard/PersonalKPIsDashboard';
 import { GestoresLeaderboard } from '@/components/dashboard/GestoresLeaderboard';
+import { LanguageSelector } from '@/components/LanguageSelector';
 import * as XLSX from 'xlsx';
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
@@ -60,9 +63,9 @@ const Dashboard = () => {
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/auth');
-      toast.error('Debes iniciar sesión para acceder');
+      toast.error(t('auth.loginError'));
     }
-  }, [user, authLoading, navigate]);
+  }, [user, authLoading, navigate, t]);
 
   const exportToExcel = async () => {
     try {
@@ -71,7 +74,7 @@ const Dashboard = () => {
         .select('*, status_colors(status_name), profiles(full_name, email)');
 
       if (!companies) {
-        toast.error('No hay datos para exportar');
+        toast.error(t('dashboard.noData'));
         return;
       }
 
@@ -97,17 +100,17 @@ const Dashboard = () => {
       XLSX.utils.book_append_sheet(wb, ws, 'Empresas');
       XLSX.writeFile(wb, `empresas_dashboard_${new Date().toISOString().split('T')[0]}.xlsx`);
 
-      toast.success('Datos exportados correctamente');
+      toast.success(t('dashboard.exportSuccess'));
     } catch (error: any) {
       console.error('Error exporting:', error);
-      toast.error('Error al exportar los datos');
+      toast.error(t('dashboard.exportError'));
     }
   };
 
   if (authLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <p>Cargando...</p>
+        <p>{t('dashboard.loading')}</p>
       </div>
     );
   }
@@ -128,15 +131,16 @@ const Dashboard = () => {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">Dashboard Comercial</h1>
-              <p className="text-muted-foreground">Análisis integral de gestión y rendimiento</p>
+              <h1 className="text-3xl font-bold tracking-tight">{t('dashboard.title')}</h1>
+              <p className="text-muted-foreground">{t('dashboard.subtitle')}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <LanguageSelector />
             <NotificationsPanel />
             <Button onClick={exportToExcel} className="w-full md:w-auto">
               <Download className="mr-2 h-4 w-4" />
-              Exportar Datos
+              {t('dashboard.exportData')}
             </Button>
           </div>
         </div>
@@ -152,55 +156,55 @@ const Dashboard = () => {
           <TabsList className="grid w-full grid-cols-4 lg:grid-cols-13 h-auto">
             <TabsTrigger value="resumen" className="flex items-center gap-2 py-3">
               <TrendingUp className="h-4 w-4" />
-              <span className="hidden sm:inline">Resumen</span>
+              <span className="hidden sm:inline">{t('tabs.resumen')}</span>
             </TabsTrigger>
             <TabsTrigger value="comparativa" className="flex items-center gap-2 py-3">
               <GitCompare className="h-4 w-4" />
-              <span className="hidden sm:inline">Comparativa</span>
+              <span className="hidden sm:inline">{t('tabs.comparativa')}</span>
             </TabsTrigger>
             <TabsTrigger value="predicciones" className="flex items-center gap-2 py-3">
               <LineChart className="h-4 w-4" />
-              <span className="hidden sm:inline">Predicciones</span>
+              <span className="hidden sm:inline">{t('tabs.predicciones')}</span>
             </TabsTrigger>
             <TabsTrigger value="objetivos" className="flex items-center gap-2 py-3">
               <Award className="h-4 w-4" />
-              <span className="hidden sm:inline">Objetivos</span>
+              <span className="hidden sm:inline">{t('tabs.objetivos')}</span>
             </TabsTrigger>
             <TabsTrigger value="visitas" className="flex items-center gap-2 py-3">
               <BarChart3 className="h-4 w-4" />
-              <span className="hidden sm:inline">Visitas</span>
+              <span className="hidden sm:inline">{t('tabs.visitas')}</span>
             </TabsTrigger>
             <TabsTrigger value="productos" className="flex items-center gap-2 py-3">
               <Package className="h-4 w-4" />
-              <span className="hidden sm:inline">Productos</span>
+              <span className="hidden sm:inline">{t('tabs.productos')}</span>
             </TabsTrigger>
             <TabsTrigger value="gestores" className="flex items-center gap-2 py-3">
               <Users className="h-4 w-4" />
-              <span className="hidden sm:inline">Gestores</span>
+              <span className="hidden sm:inline">{t('tabs.gestores')}</span>
             </TabsTrigger>
             <TabsTrigger value="vinculacion" className="flex items-center gap-2 py-3">
               <Target className="h-4 w-4" />
-              <span className="hidden sm:inline">Vinculación</span>
+              <span className="hidden sm:inline">{t('tabs.vinculacion')}</span>
             </TabsTrigger>
             <TabsTrigger value="geografico" className="flex items-center gap-2 py-3">
               <MapPin className="h-4 w-4" />
-              <span className="hidden sm:inline">Geográfico</span>
+              <span className="hidden sm:inline">{t('tabs.geografico')}</span>
             </TabsTrigger>
             <TabsTrigger value="cohortes" className="flex items-center gap-2 py-3">
               <UserCheck className="h-4 w-4" />
-              <span className="hidden sm:inline">Cohortes</span>
+              <span className="hidden sm:inline">{t('tabs.cohortes')}</span>
             </TabsTrigger>
             <TabsTrigger value="embudo" className="flex items-center gap-2 py-3">
               <Filter className="h-4 w-4" />
-              <span className="hidden sm:inline">Embudo</span>
+              <span className="hidden sm:inline">{t('tabs.embudo')}</span>
             </TabsTrigger>
             <TabsTrigger value="alertas" className="flex items-center gap-2 py-3">
               <Bell className="h-4 w-4" />
-              <span className="hidden sm:inline">Alertas</span>
+              <span className="hidden sm:inline">{t('tabs.alertas')}</span>
             </TabsTrigger>
             <TabsTrigger value="reportes" className="flex items-center gap-2 py-3">
               <FileText className="h-4 w-4" />
-              <span className="hidden sm:inline">Reportes</span>
+              <span className="hidden sm:inline">{t('tabs.reportes')}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -221,9 +225,9 @@ const Dashboard = () => {
           <TabsContent value="predicciones" className="space-y-6">
             <div className="rounded-lg border bg-card p-6">
               <div className="mb-6">
-                <h2 className="text-2xl font-bold">Predicciones y Tendencias</h2>
+                <h2 className="text-2xl font-bold">{t('section.predictions.title')}</h2>
                 <p className="text-muted-foreground">
-                  Proyecciones del próximo trimestre basadas en análisis de regresión
+                  {t('section.predictions.subtitle')}
                 </p>
               </div>
               <PrediccionesFuturas />
@@ -234,9 +238,9 @@ const Dashboard = () => {
           <TabsContent value="objetivos" className="space-y-6">
             <div className="rounded-lg border bg-card p-6">
               <div className="mb-6">
-                <h2 className="text-2xl font-bold">Objetivos y Metas</h2>
+                <h2 className="text-2xl font-bold">{t('section.objectives.title')}</h2>
                 <p className="text-muted-foreground">
-                  Seguimiento de objetivos y comparación con predicciones
+                  {t('section.objectives.subtitle')}
                 </p>
               </div>
               <ObjetivosYMetas />
@@ -247,9 +251,9 @@ const Dashboard = () => {
           <TabsContent value="visitas" className="space-y-6">
             <div className="rounded-lg border bg-card p-6">
               <div className="mb-6">
-                <h2 className="text-2xl font-bold">Análisis de Visitas</h2>
+                <h2 className="text-2xl font-bold">{t('section.visits.title')}</h2>
                 <p className="text-muted-foreground">
-                  Evolución temporal y distribución de visitas comerciales
+                  {t('section.visits.subtitle')}
                 </p>
               </div>
               <VisitsMetrics />
@@ -260,9 +264,9 @@ const Dashboard = () => {
           <TabsContent value="productos" className="space-y-6">
             <div className="rounded-lg border bg-card p-6">
               <div className="mb-6">
-                <h2 className="text-2xl font-bold">Análisis de Productos</h2>
+                <h2 className="text-2xl font-bold">{t('section.products.title')}</h2>
                 <p className="text-muted-foreground">
-                  Productos más contratados y ofrecidos en visitas
+                  {t('section.products.subtitle')}
                 </p>
               </div>
               <ProductsMetrics />
@@ -275,9 +279,9 @@ const Dashboard = () => {
             
             <div className="rounded-lg border bg-card p-6">
               <div className="mb-6">
-                <h2 className="text-2xl font-bold">Métricas Detalladas</h2>
+                <h2 className="text-2xl font-bold">{t('section.managers.title')}</h2>
                 <p className="text-muted-foreground">
-                  Análisis profundo de rendimiento por gestor
+                  {t('section.managers.subtitle')}
                 </p>
               </div>
               <GestoresMetrics />
@@ -288,9 +292,9 @@ const Dashboard = () => {
           <TabsContent value="vinculacion" className="space-y-6">
             <div className="rounded-lg border bg-card p-6">
               <div className="mb-6">
-                <h2 className="text-2xl font-bold">Evolución de Vinculación</h2>
+                <h2 className="text-2xl font-bold">{t('section.linkage.title')}</h2>
                 <p className="text-muted-foreground">
-                  Análisis del porcentaje de vinculación conseguido con clientes
+                  {t('section.linkage.subtitle')}
                 </p>
               </div>
               <VinculacionMetrics />
@@ -306,9 +310,9 @@ const Dashboard = () => {
           <TabsContent value="cohortes" className="space-y-6">
             <div className="rounded-lg border bg-card p-6">
               <div className="mb-6">
-                <h2 className="text-2xl font-bold">Análisis de Cohortes</h2>
+                <h2 className="text-2xl font-bold">{t('section.cohorts.title')}</h2>
                 <p className="text-muted-foreground">
-                  Seguimiento de engagement y retención de empresas por fecha de primera visita
+                  {t('section.cohorts.subtitle')}
                 </p>
               </div>
               <AnalisisCohortes />
@@ -319,9 +323,9 @@ const Dashboard = () => {
           <TabsContent value="embudo" className="space-y-6">
             <div className="rounded-lg border bg-card p-6">
               <div className="mb-6">
-                <h2 className="text-2xl font-bold">Análisis de Embudo de Conversión</h2>
+                <h2 className="text-2xl font-bold">{t('section.funnel.title')}</h2>
                 <p className="text-muted-foreground">
-                  Seguimiento del recorrido del cliente desde primer contacto hasta alta vinculación
+                  {t('section.funnel.subtitle')}
                 </p>
               </div>
               <AnalisisEmbudo />
@@ -332,9 +336,9 @@ const Dashboard = () => {
           <TabsContent value="alertas" className="space-y-6">
             <div className="rounded-lg border bg-card p-6">
               <div className="mb-6">
-                <h2 className="text-2xl font-bold">Sistema de Alertas Automáticas</h2>
+                <h2 className="text-2xl font-bold">{t('section.alerts.title')}</h2>
                 <p className="text-muted-foreground">
-                  Configura alertas para recibir notificaciones cuando las métricas requieran atención
+                  {t('section.alerts.subtitle')}
                 </p>
               </div>
               <AlertsManager />
@@ -342,9 +346,9 @@ const Dashboard = () => {
 
             <div className="rounded-lg border bg-card p-6">
               <div className="mb-6">
-                <h2 className="text-2xl font-bold">Preferencias de Notificaciones</h2>
+                <h2 className="text-2xl font-bold">{t('section.notifications.title')}</h2>
                 <p className="text-muted-foreground">
-                  Personaliza cómo y cuándo quieres recibir notificaciones
+                  {t('section.notifications.subtitle')}
                 </p>
               </div>
               <NotificationPreferences />
@@ -357,9 +361,9 @@ const Dashboard = () => {
           <TabsContent value="reportes" className="space-y-6">
             <div className="rounded-lg border bg-card p-6">
               <div className="mb-6">
-                <h2 className="text-2xl font-bold">Generador de Reportes</h2>
+                <h2 className="text-2xl font-bold">{t('section.reports.title')}</h2>
                 <p className="text-muted-foreground">
-                  Crea reportes personalizados en formato PDF
+                  {t('section.reports.subtitle')}
                 </p>
               </div>
               <ReportGenerator />

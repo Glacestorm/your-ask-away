@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,6 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MapPin, Loader2 } from 'lucide-react';
 import { z } from 'zod';
+import { LanguageSelector } from '@/components/LanguageSelector';
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -28,7 +30,19 @@ const Auth = () => {
   const [errors, setErrors] = useState<any>({});
   
   const { signIn, signUp, user } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
+  
+  const loginSchema = z.object({
+    email: z.string().email(t('auth.invalidEmail')),
+    password: z.string().min(6, t('auth.passwordMin')),
+  });
+
+  const signupSchema = z.object({
+    email: z.string().email(t('auth.invalidEmail')),
+    password: z.string().min(6, t('auth.passwordMin')),
+    fullName: z.string().min(2, t('auth.nameMin')),
+  });
 
   useEffect(() => {
     if (user) {
@@ -95,32 +109,35 @@ const Auth = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/10 p-4">
+      <div className="absolute top-4 right-4">
+        <LanguageSelector />
+      </div>
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-3 text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
             <MapPin className="h-8 w-8 text-primary" />
           </div>
-          <CardTitle className="text-2xl font-bold">Mapa Empresarial Andorra</CardTitle>
+          <CardTitle className="text-2xl font-bold">{t('auth.title')}</CardTitle>
           <CardDescription>
-            Sistema de gestión y visualización de empresas
+            {t('auth.subtitle')}
           </CardDescription>
         </CardHeader>
         
         <CardContent>
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Iniciar Sesión</TabsTrigger>
-              <TabsTrigger value="signup">Registrarse</TabsTrigger>
+              <TabsTrigger value="login">{t('auth.login')}</TabsTrigger>
+              <TabsTrigger value="signup">{t('auth.signup')}</TabsTrigger>
             </TabsList>
             
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="login-email">Email</Label>
+                  <Label htmlFor="login-email">{t('auth.email')}</Label>
                   <Input
                     id="login-email"
                     type="email"
-                    placeholder="tu@email.com"
+                    placeholder={t('auth.emailPlaceholder')}
                     value={loginData.email}
                     onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                     disabled={loading}
@@ -129,7 +146,7 @@ const Auth = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="login-password">Contraseña</Label>
+                  <Label htmlFor="login-password">{t('auth.password')}</Label>
                   <Input
                     id="login-password"
                     type="password"
@@ -143,7 +160,7 @@ const Auth = () => {
                 
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Iniciar Sesión
+                  {t('auth.login')}
                 </Button>
               </form>
             </TabsContent>
@@ -151,11 +168,11 @@ const Auth = () => {
             <TabsContent value="signup">
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-name">Nombre Completo</Label>
+                  <Label htmlFor="signup-name">{t('auth.fullName')}</Label>
                   <Input
                     id="signup-name"
                     type="text"
-                    placeholder="Tu Nombre"
+                    placeholder={t('auth.namePlaceholder')}
                     value={signupData.fullName}
                     onChange={(e) => setSignupData({ ...signupData, fullName: e.target.value })}
                     disabled={loading}
@@ -164,11 +181,11 @@ const Auth = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
+                  <Label htmlFor="signup-email">{t('auth.email')}</Label>
                   <Input
                     id="signup-email"
                     type="email"
-                    placeholder="tu@email.com"
+                    placeholder={t('auth.emailPlaceholder')}
                     value={signupData.email}
                     onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
                     disabled={loading}
@@ -177,7 +194,7 @@ const Auth = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">Contraseña</Label>
+                  <Label htmlFor="signup-password">{t('auth.password')}</Label>
                   <Input
                     id="signup-password"
                     type="password"
@@ -191,7 +208,7 @@ const Auth = () => {
                 
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Crear Cuenta
+                  {t('auth.createAccount')}
                 </Button>
               </form>
             </TabsContent>
@@ -199,7 +216,7 @@ const Auth = () => {
         </CardContent>
         
         <CardFooter className="text-center text-sm text-muted-foreground">
-          Sistema de gestión empresarial del Principado de Andorra
+          {t('auth.footer')}
         </CardFooter>
       </Card>
     </div>
