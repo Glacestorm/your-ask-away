@@ -250,6 +250,9 @@ export type Database = {
           tax_id: string | null
           turnover: number | null
           updated_at: string | null
+          vinculacion_entidad_1: number | null
+          vinculacion_entidad_2: number | null
+          vinculacion_entidad_3: number | null
           website: string | null
         }
         Insert: {
@@ -277,6 +280,9 @@ export type Database = {
           tax_id?: string | null
           turnover?: number | null
           updated_at?: string | null
+          vinculacion_entidad_1?: number | null
+          vinculacion_entidad_2?: number | null
+          vinculacion_entidad_3?: number | null
           website?: string | null
         }
         Update: {
@@ -304,6 +310,9 @@ export type Database = {
           tax_id?: string | null
           turnover?: number | null
           updated_at?: string | null
+          vinculacion_entidad_1?: number | null
+          vinculacion_entidad_2?: number | null
+          vinculacion_entidad_3?: number | null
           website?: string | null
         }
         Relationships: [
