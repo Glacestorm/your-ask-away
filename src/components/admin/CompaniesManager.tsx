@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { Plus, Pencil, Trash2, Upload, Phone, Mail, Globe, Users, Building2, FileText, History, Clock, TrendingUp, Package, Camera } from 'lucide-react';
@@ -439,36 +439,48 @@ export function CompaniesManager() {
           </DialogHeader>
 
           <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-7">
-              <TabsTrigger value="basic">
-                <Building2 className="h-4 w-4 mr-2" />
-                {t('companyForm.basicInfo')}
-              </TabsTrigger>
-              <TabsTrigger value="contact">
-                <Phone className="h-4 w-4 mr-2" />
-                {t('companyForm.contactInfo')}
-              </TabsTrigger>
-              <TabsTrigger value="business">
-                <Users className="h-4 w-4 mr-2" />
-                {t('companyForm.financialInfo')}
-              </TabsTrigger>
-              <TabsTrigger value="legal">
-                <FileText className="h-4 w-4 mr-2" />
-                Legal/Fiscal
-              </TabsTrigger>
-              <TabsTrigger value="management">
-                <Globe className="h-4 w-4 mr-2" />
-                {t('company.manager')}
-              </TabsTrigger>
-              <TabsTrigger value="photos" disabled={!editingCompany}>
-                <Camera className="h-4 w-4 mr-2" />
-                {t('company.photos')}
-              </TabsTrigger>
-              <TabsTrigger value="history" disabled={!editingCompany}>
-                <History className="h-4 w-4 mr-2" />
-                {t('visitForm.visitHistory')}
-              </TabsTrigger>
-            </TabsList>
+            <ScrollArea className="w-full">
+              <TabsList className="inline-flex h-10 items-center justify-start rounded-md bg-muted p-1 text-muted-foreground w-max">
+                {/* Información General */}
+                <TabsTrigger value="basic" className="flex items-center gap-2">
+                  <Building2 className="h-4 w-4" />
+                  <span>{t('companyForm.basicInfo')}</span>
+                </TabsTrigger>
+                <TabsTrigger value="contact" className="flex items-center gap-2">
+                  <Phone className="h-4 w-4" />
+                  <span>{t('companyForm.contactInfo')}</span>
+                </TabsTrigger>
+                
+                <div className="mx-2 h-6 w-px bg-border" />
+                
+                {/* Información Financiera/Legal */}
+                <TabsTrigger value="business" className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4" />
+                  <span>{t('companyForm.financialInfo')}</span>
+                </TabsTrigger>
+                <TabsTrigger value="legal" className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  <span>Legal/Fiscal</span>
+                </TabsTrigger>
+                
+                <div className="mx-2 h-6 w-px bg-border" />
+                
+                {/* Gestión */}
+                <TabsTrigger value="management" className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  <span>{t('company.manager')}</span>
+                </TabsTrigger>
+                <TabsTrigger value="photos" disabled={!editingCompany} className="flex items-center gap-2">
+                  <Camera className="h-4 w-4" />
+                  <span>{t('company.photos')}</span>
+                </TabsTrigger>
+                <TabsTrigger value="history" disabled={!editingCompany} className="flex items-center gap-2">
+                  <History className="h-4 w-4" />
+                  <span>{t('visitForm.visitHistory')}</span>
+                </TabsTrigger>
+              </TabsList>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
 
             {/* Datos Básicos */}
             <TabsContent value="basic" className="space-y-4 mt-4">
