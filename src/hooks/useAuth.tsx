@@ -158,10 +158,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const isAdmin = userRole === 'admin' || userRole === 'superadmin';
+  const isAdmin = userRole === 'admin' || userRole === 'superadmin' || userRole === 'responsable_comercial';
   const isSuperAdmin = userRole === 'superadmin';
-  const isCommercialDirector = userRole === 'director_comercial' || userRole === 'superadmin';
-  const isOfficeDirector = userRole === 'director_oficina' || userRole === 'superadmin';
+  const isCommercialDirector = userRole === 'director_comercial' || userRole === 'superadmin' || userRole === 'responsable_comercial';
+  const isOfficeDirector = userRole === 'director_oficina' || userRole === 'superadmin' || userRole === 'responsable_comercial';
   const isCommercialManager = userRole === 'responsable_comercial' || userRole === 'superadmin';
   
   // Overall loading state includes both auth and role loading

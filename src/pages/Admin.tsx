@@ -50,7 +50,7 @@ const Admin = () => {
   const renderContent = () => {
     switch (activeSection) {
       case 'director':
-        if (!isCommercialDirector && !isSuperAdmin) {
+        if (!isCommercialDirector && !isSuperAdmin && !isCommercialManager) {
           return (
             <Card>
               <CardContent className="p-6">
@@ -61,7 +61,7 @@ const Admin = () => {
         }
         return <CommercialDirectorDashboard />;
       case 'office-director':
-        if (!isOfficeDirector && !isSuperAdmin) {
+        if (!isOfficeDirector && !isSuperAdmin && !isCommercialManager) {
           return (
             <Card>
               <CardContent className="p-6">

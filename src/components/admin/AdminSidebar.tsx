@@ -51,7 +51,7 @@ export function AdminSidebar({
         {/* Dashboard Principal */}
         <SidebarGroup>
           <SidebarMenu>
-            {(isCommercialDirector || isSuperAdmin) && (
+            {(isCommercialDirector || isSuperAdmin || isCommercialManager) && (
               <SidebarMenuItem>
                   <SidebarMenuButton
                     onClick={() => onSectionChange('director')}
@@ -64,7 +64,7 @@ export function AdminSidebar({
                   </SidebarMenuButton>
               </SidebarMenuItem>
             )}
-            {(isOfficeDirector || isSuperAdmin) && (
+            {(isOfficeDirector || isSuperAdmin || isCommercialManager) && (
               <SidebarMenuItem>
                 <SidebarMenuButton
                   onClick={() => onSectionChange('office-director')}
