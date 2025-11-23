@@ -51,15 +51,15 @@ export function AdminSidebar({
           <SidebarMenu>
             {(isCommercialDirector || isSuperAdmin) && (
               <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={() => onSectionChange('director')}
-                  isActive={isActive('director')}
-                  className="font-semibold"
-                  tooltip={!open ? "Panel Director" : undefined}
-                >
-                  <TrendingUp className="h-5 w-5" />
-                  <span>Panel Director</span>
-                </SidebarMenuButton>
+                  <SidebarMenuButton
+                    onClick={() => onSectionChange('director')}
+                    isActive={isActive('director')}
+                    className="font-semibold"
+                    tooltip={!open ? "Director Negocio" : undefined}
+                  >
+                    <TrendingUp className="h-5 w-5" />
+                    <span>Director Negocio</span>
+                  </SidebarMenuButton>
               </SidebarMenuItem>
             )}
             {(isOfficeDirector || isSuperAdmin) && (
