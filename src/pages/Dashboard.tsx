@@ -14,7 +14,8 @@ import {
   FileText,
   Download,
   GitCompare,
-  LineChart
+  LineChart,
+  Award
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { subMonths } from 'date-fns';
@@ -24,6 +25,7 @@ import { AnalisisGeografico } from '@/components/dashboard/AnalisisGeografico';
 import { DateRangeFilter } from '@/components/dashboard/DateRangeFilter';
 import { ComparativaTemporales } from '@/components/dashboard/ComparativaTemporales';
 import { PrediccionesFuturas } from '@/components/dashboard/PrediccionesFuturas';
+import { ObjetivosYMetas } from '@/components/dashboard/ObjetivosYMetas';
 import { VisitsMetrics } from '@/components/admin/VisitsMetrics';
 import { ProductsMetrics } from '@/components/admin/ProductsMetrics';
 import { GestoresMetrics } from '@/components/admin/GestoresMetrics';
@@ -127,7 +129,7 @@ const Dashboard = () => {
 
         {/* Dashboard Tabs */}
         <Tabs defaultValue="resumen" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-9 h-auto">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-10 h-auto">
             <TabsTrigger value="resumen" className="flex items-center gap-2 py-3">
               <TrendingUp className="h-4 w-4" />
               <span className="hidden sm:inline">Resumen</span>
@@ -139,6 +141,10 @@ const Dashboard = () => {
             <TabsTrigger value="predicciones" className="flex items-center gap-2 py-3">
               <LineChart className="h-4 w-4" />
               <span className="hidden sm:inline">Predicciones</span>
+            </TabsTrigger>
+            <TabsTrigger value="objetivos" className="flex items-center gap-2 py-3">
+              <Award className="h-4 w-4" />
+              <span className="hidden sm:inline">Objetivos</span>
             </TabsTrigger>
             <TabsTrigger value="visitas" className="flex items-center gap-2 py-3">
               <BarChart3 className="h-4 w-4" />
@@ -186,6 +192,19 @@ const Dashboard = () => {
                 </p>
               </div>
               <PrediccionesFuturas />
+            </div>
+          </TabsContent>
+
+          {/* Objetivos y Metas */}
+          <TabsContent value="objetivos" className="space-y-6">
+            <div className="rounded-lg border bg-card p-6">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold">Objetivos y Metas</h2>
+                <p className="text-muted-foreground">
+                  Seguimiento de objetivos y comparación con predicciones
+                </p>
+              </div>
+              <ObjetivosYMetas />
             </div>
           </TabsContent>
 
