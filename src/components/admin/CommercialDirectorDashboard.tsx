@@ -6,8 +6,11 @@ import { Activity, Target, Building2, Users } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
+import { DateRangeFilter } from '@/components/dashboard/DateRangeFilter';
+import { DateRange } from 'react-day-picker';
+import { subMonths, format } from 'date-fns';
 
-// FASE 3: KPIs + Gráfico + Tabla de gestores
+// FASE 3: KPIs + Gráfico + Tabla de gestores + Filtro por período
 
 interface BasicStats {
   totalVisits: number;
@@ -31,6 +34,10 @@ interface GestorDetail {
 
 export function CommercialDirectorDashboard() {
   const [loading, setLoading] = useState(true);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
+    const today = new Date();
+    return { from: subMonths(today, 1), to: today };
+  });
   const [stats, setStats] = useState<BasicStats>({
     totalVisits: 0,
     avgSuccessRate: 0,
@@ -41,23 +48,34 @@ export function CommercialDirectorDashboard() {
   const [gestorDetails, setGestorDetails] = useState<GestorDetail[]>([]);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (dateRange?.from && dateRange?.to) {
+      fetchData();
+    }
+  }, [dateRange]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
 
-      // Contar visitas totales
+      if (!dateRange?.from || !dateRange?.to) return;
+
+      const fromDate = format(dateRange.from, 'yyyy-MM-dd');
+      const toDate = format(dateRange.to, 'yyyy-MM-dd');
+
+      // Contar visitas totales en el período
       const { count: visitsCount } = await supabase
         .from('visits')
-        .select('*', { count: 'exact', head: true });
+        .select('*', { count: 'exact', head: true })
+        .gte('visit_date', fromDate)
+        .lte('visit_date', toDate);
 
-      // Contar visitas exitosas
+      // Contar visitas exitosas en el período
       const { count: successCount } = await supabase
         .from('visits')
         .select('*', { count: 'exact', head: true })
-        .eq('result', 'Exitosa');
+        .eq('result', 'Exitosa')
+        .gte('visit_date', fromDate)
+        .lte('visit_date', toDate);
 
       // Contar empresas
       const { count: companiesCount } = await supabase
@@ -89,18 +107,22 @@ export function CommercialDirectorDashboard() {
 
       if (profiles) {
         const detailsPromises = profiles.map(async (profile) => {
-          // Contar visitas del gestor
+          // Contar visitas del gestor en el período
           const { count: visitCount } = await supabase
             .from('visits')
             .select('*', { count: 'exact', head: true })
-            .eq('gestor_id', profile.id);
+            .eq('gestor_id', profile.id)
+            .gte('visit_date', fromDate)
+            .lte('visit_date', toDate);
 
-          // Contar visitas exitosas del gestor
+          // Contar visitas exitosas del gestor en el período
           const { count: successVisitCount } = await supabase
             .from('visits')
             .select('*', { count: 'exact', head: true })
             .eq('gestor_id', profile.id)
-            .eq('result', 'Exitosa');
+            .eq('result', 'Exitosa')
+            .gte('visit_date', fromDate)
+            .lte('visit_date', toDate);
 
           // Contar empresas del gestor
           const { count: companyCount } = await supabase
@@ -172,10 +194,16 @@ export function CommercialDirectorDashboard() {
         <CardHeader>
           <CardTitle>Panel del Director Comercial</CardTitle>
           <CardDescription>
-            Fase 3: KPIs + Gráfico + Tabla de gestores
+            Vista completa con filtros de período
           </CardDescription>
         </CardHeader>
       </Card>
+
+      {/* Filtro de período */}
+      <DateRangeFilter 
+        dateRange={dateRange} 
+        onDateRangeChange={setDateRange}
+      />
 
       {/* KPIs Globales */}
       <div className="grid gap-4 md:grid-cols-4">
@@ -296,15 +324,6 @@ export function CommercialDirectorDashboard() {
         </CardContent>
       </Card>
 
-      {/* Mensaje informativo */}
-      <Card>
-        <CardContent className="py-8">
-          <div className="text-center text-muted-foreground">
-            <p className="mb-2">✓ Fase 3 funcionando correctamente</p>
-            <p className="text-sm">Panel básico completo. Si todo funciona bien, esto es suficiente para uso práctico.</p>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
