@@ -83,7 +83,11 @@ export function MetricsExplorer({ restrictToOficina }: MetricsExplorerProps = {}
   useEffect(() => {
     loadGestoresAndOficinas();
     loadSectors();
-  }, []);
+    // Si hay restricción de oficina, pre-seleccionarla
+    if (restrictToOficina) {
+      setSelectedOficina(restrictToOficina);
+    }
+  }, [restrictToOficina]);
 
   useEffect(() => {
     if (dateRange?.from && dateRange?.to) {
