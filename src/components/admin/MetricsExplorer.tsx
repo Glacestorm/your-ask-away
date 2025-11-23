@@ -43,7 +43,11 @@ interface BancoMetrics {
   companiesCount: number;
 }
 
-export function MetricsExplorer() {
+interface MetricsExplorerProps {
+  restrictToOficina?: string | null;
+}
+
+export function MetricsExplorer({ restrictToOficina }: MetricsExplorerProps = {}) {
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
     const today = new Date();
@@ -111,10 +115,17 @@ export function MetricsExplorer() {
 
   const loadGestoresAndOficinas = async () => {
     try {
-      const { data: profiles } = await supabase
+      let query = supabase
         .from('profiles')
         .select('id, full_name, email, oficina')
         .order('full_name');
+
+      // Si hay restricción de oficina, filtrar solo gestores de esa oficina
+      if (restrictToOficina) {
+        query = query.eq('oficina', restrictToOficina);
+      }
+
+      const { data: profiles } = await query;
 
       if (profiles) {
         const gestoresList = profiles.map(p => ({
@@ -689,7 +700,7 @@ export function MetricsExplorer() {
       <DateRangeFilter dateRange={dateRange} onDateRangeChange={setDateRange} />
 
       <Tabs defaultValue="gestor" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className={`grid w-full ${restrictToOficina ? 'grid-cols-3' : 'grid-cols-4'}`}>
           <TabsTrigger value="gestor">
             <Users className="mr-2 h-4 w-4" />
             Por Gestor
@@ -698,10 +709,12 @@ export function MetricsExplorer() {
             <Building2 className="mr-2 h-4 w-4" />
             Por Oficina
           </TabsTrigger>
-          <TabsTrigger value="banco">
-            <TrendingUp className="mr-2 h-4 w-4" />
-            Total Banco
-          </TabsTrigger>
+          {!restrictToOficina && (
+            <TabsTrigger value="banco">
+              <TrendingUp className="mr-2 h-4 w-4" />
+              Total Banco
+            </TabsTrigger>
+          )}
           <TabsTrigger value="compare">
             <GitCompare className="mr-2 h-4 w-4" />
             Comparar
@@ -832,12 +845,20 @@ export function MetricsExplorer() {
                 </div>
               </div>
               <Tabs value={compareType} onValueChange={(v) => setCompareType(v as 'gestores' | 'oficinas')}>
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="gestores">Comparar Gestores</TabsTrigger>
-                  <TabsTrigger value="oficinas">Comparar Oficinas</TabsTrigger>
-                </TabsList>
+                {!restrictToOficina && (
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="gestores">Comparar Gestores</TabsTrigger>
+                    <TabsTrigger value="oficinas">Comparar Oficinas</TabsTrigger>
+                  </TabsList>
+                )}
+                {restrictToOficina && (
+                  <div className="mb-4">
+                    <h3 className="text-sm font-medium">Comparar Gestores de tu Oficina</h3>
+                    <p className="text-xs text-muted-foreground">Selecciona gestores de {restrictToOficina}</p>
+                  </div>
+                )}
 
-                <TabsContent value="gestores" className="space-y-4 mt-4">
+                <TabsContent value="gestores" className={`space-y-4 ${restrictToOficina ? '' : 'mt-4'}`}>
                   <div className="flex justify-between items-center">
                     <p className="text-sm text-muted-foreground">
                       {selectedGestoresForCompare.length} gestor(es) seleccionado(s)
