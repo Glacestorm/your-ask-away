@@ -22,6 +22,13 @@ interface MapContainerProps {
   onSelectCompany: (company: CompanyWithDetails) => void;
   mapStyle?: 'default' | 'satellite';
   view3D?: boolean;
+  baseLayers?: {
+    roads: boolean;
+    water: boolean;
+    terrain: boolean;
+    buildings: boolean;
+    labels: boolean;
+  };
 }
 
 export function MapContainer({
@@ -31,6 +38,13 @@ export function MapContainer({
   onSelectCompany,
   mapStyle = 'default',
   view3D = false,
+  baseLayers = {
+    roads: true,
+    water: true,
+    terrain: true,
+    buildings: true,
+    labels: true,
+  },
 }: MapContainerProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
@@ -158,6 +172,59 @@ export function MapContainer({
               minzoom: 0,
               maxzoom: 22,
             },
+            ...(baseLayers.water ? [{
+              id: 'water',
+              type: 'fill',
+              source: 'protomaps',
+              'source-layer': 'water',
+              paint: {
+                'fill-color': '#a0c8f0',
+                'fill-opacity': 0.6,
+              },
+            }] : []),
+            ...(baseLayers.roads ? [
+              {
+                id: 'roads',
+                type: 'line',
+                source: 'protomaps',
+                'source-layer': 'roads',
+                paint: {
+                  'line-color': '#fff',
+                  'line-width': 2,
+                },
+              },
+              {
+                id: 'roads-labels',
+                type: 'symbol',
+                source: 'protomaps',
+                'source-layer': 'roads',
+                layout: {
+                  'text-field': ['get', 'name'],
+                  'text-size': 10,
+                  'symbol-placement': 'line',
+                },
+                paint: {
+                  'text-color': '#fff',
+                  'text-halo-color': '#000',
+                  'text-halo-width': 1,
+                },
+              }
+            ] : []),
+            ...(baseLayers.labels ? [{
+              id: 'places-labels',
+              type: 'symbol',
+              source: 'protomaps',
+              'source-layer': 'places',
+              layout: {
+                'text-field': ['get', 'name'],
+                'text-size': 12,
+              },
+              paint: {
+                'text-color': '#fff',
+                'text-halo-color': '#000',
+                'text-halo-width': 2,
+              },
+            }] : []),
           ],
         };
       }
@@ -192,6 +259,31 @@ export function MapContainer({
             minzoom: 0,
             maxzoom: 19,
           },
+          ...(baseLayers.water ? [{
+            id: 'water',
+            type: 'fill',
+            source: 'protomaps',
+            'source-layer': 'water',
+            paint: {
+              'fill-color': '#a0c8f0',
+              'fill-opacity': 0.5,
+            },
+          }] : []),
+          ...(baseLayers.labels ? [{
+            id: 'places-labels',
+            type: 'symbol',
+            source: 'protomaps',
+            'source-layer': 'places',
+            layout: {
+              'text-field': ['get', 'name'],
+              'text-size': 12,
+            },
+            paint: {
+              'text-color': '#333',
+              'text-halo-color': '#fff',
+              'text-halo-width': 2,
+            },
+          }] : []),
         ],
       };
     };
@@ -238,7 +330,7 @@ export function MapContainer({
       pitch: view3D ? 60 : 0,
       duration: 1000,
     });
-  }, [mapStyle, view3D, mapLoaded]);
+  }, [mapStyle, view3D, mapLoaded, baseLayers]);
 
   // Update markers when companies or filters change
   useEffect(() => {
