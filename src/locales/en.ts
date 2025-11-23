@@ -307,4 +307,28 @@ export default {
   'photoForm.photoUploaded': 'Photo uploaded successfully',
   'photoForm.photoDeleted': 'Photo deleted successfully',
   'photoForm.noPhotos': 'No photos',
+  
+  // Product Categories
+  'product.activeCategory': 'Asset Products (Loans)',
+  'product.passiveCategory': 'Liability Products (Savings)',
+  'product.serviceCategory': 'Services',
+  
+  // Visit Results
+  'visit.success': 'Successful',
+  'visit.pending': 'Pending follow-up',
+  'visit.noInterest': 'No interest',
+  'visit.postponed': 'Postponed',
+  
+  // Audit
+  'audit.changesHistory': 'Changes and Updates',
+  'audit.created': 'Creation',
+  'audit.updated': 'Update',
+  'audit.deleted': 'Deletion',
+  'audit.empty': 'empty',
+  'audit.companyCreated': 'Company created in the system',
+  'audit.noChanges': 'No changes recorded',
+  
+  // Company Additional
+  'company.registrationNumber': 'Registration Number',
+  'company.legalForm': 'Legal Form',
 };

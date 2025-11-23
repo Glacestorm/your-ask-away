@@ -307,4 +307,28 @@ export default {
   'photoForm.photoUploaded': 'Photo téléchargée avec succès',
   'photoForm.photoDeleted': 'Photo supprimée avec succès',
   'photoForm.noPhotos': 'Aucune photo',
+  
+  // Product Categories
+  'product.activeCategory': 'Produits d\'Actif (Prêts)',
+  'product.passiveCategory': 'Produits de Passif (Épargne)',
+  'product.serviceCategory': 'Services',
+  
+  // Visit Results
+  'visit.success': 'Réussie',
+  'visit.pending': 'En attente de suivi',
+  'visit.noInterest': 'Sans intérêt',
+  'visit.postponed': 'Reportée',
+  
+  // Audit
+  'audit.changesHistory': 'Changements et Mises à jour',
+  'audit.created': 'Création',
+  'audit.updated': 'Mise à jour',
+  'audit.deleted': 'Suppression',
+  'audit.empty': 'vide',
+  'audit.companyCreated': 'Entreprise créée dans le système',
+  'audit.noChanges': 'Aucun changement enregistré',
+  
+  // Company Additional
+  'company.registrationNumber': 'Numéro d\'enregistrement',
+  'company.legalForm': 'Forme juridique',
 };

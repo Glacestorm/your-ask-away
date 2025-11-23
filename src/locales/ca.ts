@@ -307,4 +307,28 @@ export default {
   'photoForm.photoUploaded': 'Foto pujada correctament',
   'photoForm.photoDeleted': 'Foto eliminada correctament',
   'photoForm.noPhotos': 'No hi ha fotos',
+  
+  // Product Categories
+  'product.activeCategory': 'Productes d\'Actiu (Préstecs)',
+  'product.passiveCategory': 'Productes de Passiu (Estalvi)',
+  'product.serviceCategory': 'Serveis',
+  
+  // Visit Results
+  'visit.success': 'Exitosa',
+  'visit.pending': 'Pendent seguiment',
+  'visit.noInterest': 'Sense interès',
+  'visit.postponed': 'Ajornada',
+  
+  // Audit
+  'audit.changesHistory': 'Canvis i Actualitzacions',
+  'audit.created': 'Creació',
+  'audit.updated': 'Actualització',
+  'audit.deleted': 'Eliminació',
+  'audit.empty': 'buit',
+  'audit.companyCreated': 'Empresa creada al sistema',
+  'audit.noChanges': 'No hi ha canvis registrats',
+  
+  // Company Additional
+  'company.registrationNumber': 'Número de Registre',
+  'company.legalForm': 'Forma Jurídica',
 };
