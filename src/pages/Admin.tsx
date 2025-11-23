@@ -55,7 +55,7 @@ const Admin = () => {
           return (
             <Card>
               <CardContent className="p-6">
-                <p className="text-muted-foreground">No tienes permisos para acceder a esta sección.</p>
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
               </CardContent>
             </Card>
           );
@@ -66,7 +66,7 @@ const Admin = () => {
           return (
             <Card>
               <CardContent className="p-6">
-                <p className="text-muted-foreground">No tienes permisos para acceder a esta sección.</p>
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
               </CardContent>
             </Card>
           );
@@ -77,7 +77,7 @@ const Admin = () => {
           return (
             <Card>
               <CardContent className="p-6">
-                <p className="text-muted-foreground">No tienes permisos para acceder a esta sección.</p>
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
               </CardContent>
             </Card>
           );
@@ -88,7 +88,7 @@ const Admin = () => {
           return (
             <Card>
               <CardContent className="p-6">
-                <p className="text-muted-foreground">No tienes permisos para acceder a esta sección.</p>
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
               </CardContent>
             </Card>
           );
@@ -100,9 +100,9 @@ const Admin = () => {
         return (
           <div className="rounded-lg border bg-card p-6">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold">Métricas de Visitas</h2>
+              <h2 className="text-2xl font-bold">{t('section.visits.title')}</h2>
               <p className="text-sm text-muted-foreground">
-                Análisis detallado de visitas por mes y tendencias
+                {t('section.visits.subtitle')}
               </p>
             </div>
             <VisitsMetrics />
@@ -112,9 +112,9 @@ const Admin = () => {
         return (
           <div className="rounded-lg border bg-card p-6">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold">Métricas de Productos</h2>
+              <h2 className="text-2xl font-bold">{t('section.products.title')}</h2>
               <p className="text-sm text-muted-foreground">
-                Productos más contratados y ofrecidos en visitas
+                {t('section.products.subtitle')}
               </p>
             </div>
             <ProductsMetrics />
@@ -124,9 +124,9 @@ const Admin = () => {
         return (
           <div className="rounded-lg border bg-card p-6">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold">Métricas de Gestores</h2>
+              <h2 className="text-2xl font-bold">{t('section.managers.title')}</h2>
               <p className="text-sm text-muted-foreground">
-                Rendimiento y tasa de éxito por gestor
+                {t('section.managers.subtitle')}
               </p>
             </div>
             <GestoresMetrics />
@@ -136,9 +136,9 @@ const Admin = () => {
         return (
           <div className="rounded-lg border bg-card p-6">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold">Evolución de Vinculación</h2>
+              <h2 className="text-2xl font-bold">{t('section.linkage.title')}</h2>
               <p className="text-sm text-muted-foreground">
-                Análisis del porcentaje de vinculación conseguido
+                {t('section.linkage.subtitle')}
               </p>
             </div>
             <VinculacionMetrics />
@@ -150,9 +150,9 @@ const Admin = () => {
         return (
           <div className="rounded-lg border bg-card p-6">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold">Gestión de Objetivos TPV</h2>
+              <h2 className="text-2xl font-bold">{t('tpv.title')}</h2>
               <p className="text-sm text-muted-foreground">
-                Crear, editar y eliminar metas de facturación, vinculación y comisiones
+                {t('tpv.subtitle')}
               </p>
             </div>
             <TPVGoalsManager />

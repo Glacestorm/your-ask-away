@@ -13,6 +13,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface AdminSidebarProps {
   activeSection: string;
@@ -31,6 +32,7 @@ export function AdminSidebar({
   isCommercialManager,
   isSuperAdmin
 }: AdminSidebarProps) {
+  const { t } = useLanguage();
   const { open } = useSidebar();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     metrics: true,
@@ -57,10 +59,10 @@ export function AdminSidebar({
                     onClick={() => onSectionChange('director')}
                     isActive={isActive('director')}
                     className="font-semibold"
-                    tooltip={!open ? "Director Negocio" : undefined}
+                    tooltip={!open ? t('adminSidebar.commercialDirector') : undefined}
                   >
                     <TrendingUp className="h-5 w-5" />
-                    <span>Director Negocio</span>
+                    <span>{t('adminSidebar.commercialDirector')}</span>
                   </SidebarMenuButton>
               </SidebarMenuItem>
             )}
@@ -70,10 +72,10 @@ export function AdminSidebar({
                   onClick={() => onSectionChange('office-director')}
                   isActive={isActive('office-director')}
                   className="font-semibold"
-                  tooltip={!open ? "Director Oficina" : undefined}
+                  tooltip={!open ? t('adminSidebar.officeDirector') : undefined}
                 >
                   <Building2 className="h-5 w-5" />
-                  <span>Director Oficina</span>
+                  <span>{t('adminSidebar.officeDirector')}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )}
@@ -83,10 +85,10 @@ export function AdminSidebar({
                   onClick={() => onSectionChange('commercial-manager')}
                   isActive={isActive('commercial-manager')}
                   className="font-semibold"
-                  tooltip={!open ? "Responsable Comercial" : undefined}
+                  tooltip={!open ? t('adminSidebar.commercialManager') : undefined}
                 >
                   <TrendingUp className="h-5 w-5" />
-                  <span>Responsable Comercial</span>
+                  <span>{t('adminSidebar.commercialManager')}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )}
@@ -100,7 +102,7 @@ export function AdminSidebar({
               <CollapsibleTrigger asChild>
                 <SidebarGroupLabel className="cursor-pointer hover:bg-muted/50 rounded-md p-2">
                   <BarChart3 className="h-4 w-4 mr-2" />
-                  <span className="flex-1">Métricas</span>
+                  <span className="flex-1">{t('admin.metrics')}</span>
                   <ChevronRight className={`h-4 w-4 transition-transform ${openGroups.metrics ? 'rotate-90' : ''}`} />
                 </SidebarGroupLabel>
               </CollapsibleTrigger>
@@ -110,31 +112,31 @@ export function AdminSidebar({
                     <SidebarMenuItem>
                       <SidebarMenuButton onClick={() => onSectionChange('health')} isActive={isActive('health')}>
                         <Activity className="h-4 w-4" />
-                        <span>Sistema</span>
+                        <span>{t('health.title')}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                       <SidebarMenuButton onClick={() => onSectionChange('visits')} isActive={isActive('visits')}>
                         <BarChart3 className="h-4 w-4" />
-                        <span>Visitas</span>
+                        <span>{t('sidebar.visits')}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                       <SidebarMenuButton onClick={() => onSectionChange('products-metrics')} isActive={isActive('products-metrics')}>
                         <Package className="h-4 w-4" />
-                        <span>Productos</span>
+                        <span>{t('admin.products')}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                       <SidebarMenuButton onClick={() => onSectionChange('gestores')} isActive={isActive('gestores')}>
                         <Users className="h-4 w-4" />
-                        <span>Gestores</span>
+                        <span>{t('map.managers')}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                       <SidebarMenuButton onClick={() => onSectionChange('vinculacion')} isActive={isActive('vinculacion')}>
                         <Target className="h-4 w-4" />
-                        <span>Vinculación</span>
+                        <span>{t('tabs.vinculacion')}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   </SidebarMenu>
@@ -146,27 +148,27 @@ export function AdminSidebar({
           <SidebarGroup>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => onSectionChange('health')} isActive={isActive('health')} tooltip="Sistema">
+                <SidebarMenuButton onClick={() => onSectionChange('health')} isActive={isActive('health')} tooltip={t('health.title')}>
                   <Activity className="h-5 w-5" />
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => onSectionChange('visits')} isActive={isActive('visits')} tooltip="Visitas">
+                <SidebarMenuButton onClick={() => onSectionChange('visits')} isActive={isActive('visits')} tooltip={t('sidebar.visits')}>
                   <BarChart3 className="h-5 w-5" />
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => onSectionChange('products-metrics')} isActive={isActive('products-metrics')} tooltip="Productos">
+                <SidebarMenuButton onClick={() => onSectionChange('products-metrics')} isActive={isActive('products-metrics')} tooltip={t('admin.products')}>
                   <Package className="h-5 w-5" />
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => onSectionChange('gestores')} isActive={isActive('gestores')} tooltip="Gestores">
+                <SidebarMenuButton onClick={() => onSectionChange('gestores')} isActive={isActive('gestores')} tooltip={t('map.managers')}>
                   <Users className="h-5 w-5" />
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => onSectionChange('vinculacion')} isActive={isActive('vinculacion')} tooltip="Vinculación">
+                <SidebarMenuButton onClick={() => onSectionChange('vinculacion')} isActive={isActive('vinculacion')} tooltip={t('tabs.vinculacion')}>
                   <Target className="h-5 w-5" />
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -191,13 +193,13 @@ export function AdminSidebar({
                     <SidebarMenuItem>
                       <SidebarMenuButton onClick={() => onSectionChange('tpv')} isActive={isActive('tpv')}>
                         <CreditCard className="h-4 w-4" />
-                        <span>Gestión TPV</span>
+                        <span>{t('tpv.title')}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                       <SidebarMenuButton onClick={() => onSectionChange('tpv-goals')} isActive={isActive('tpv-goals')}>
                         <Target className="h-4 w-4" />
-                        <span>Objetivos TPV</span>
+                        <span>{t('tpv.goals')}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   </SidebarMenu>
@@ -209,12 +211,12 @@ export function AdminSidebar({
           <SidebarGroup>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => onSectionChange('tpv')} isActive={isActive('tpv')} tooltip="Gestión TPV">
+                <SidebarMenuButton onClick={() => onSectionChange('tpv')} isActive={isActive('tpv')} tooltip={t('tpv.title')}>
                   <CreditCard className="h-5 w-5" />
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => onSectionChange('tpv-goals')} isActive={isActive('tpv-goals')} tooltip="Objetivos TPV">
+                <SidebarMenuButton onClick={() => onSectionChange('tpv-goals')} isActive={isActive('tpv-goals')} tooltip={t('tpv.goals')}>
                   <Target className="h-5 w-5" />
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -229,7 +231,7 @@ export function AdminSidebar({
               <CollapsibleTrigger asChild>
                 <SidebarGroupLabel className="cursor-pointer hover:bg-muted/50 rounded-md p-2">
                   <Building2 className="h-4 w-4 mr-2" />
-                  <span className="flex-1">Gestión</span>
+                  <span className="flex-1">{t('admin.dataManagement')}</span>
                   <ChevronRight className={`h-4 w-4 transition-transform ${openGroups.management ? 'rotate-90' : ''}`} />
                 </SidebarGroupLabel>
               </CollapsibleTrigger>
@@ -239,19 +241,19 @@ export function AdminSidebar({
                     <SidebarMenuItem>
                       <SidebarMenuButton onClick={() => onSectionChange('companies')} isActive={isActive('companies')}>
                         <Building2 className="h-4 w-4" />
-                        <span>Empresas</span>
+                        <span>{t('admin.companies')}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                       <SidebarMenuButton onClick={() => onSectionChange('products')} isActive={isActive('products')}>
                         <Package className="h-4 w-4" />
-                        <span>Catálogo</span>
+                        <span>{t('productForm.title')}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                       <SidebarMenuButton onClick={() => onSectionChange('users')} isActive={isActive('users')}>
                         <Users className="h-4 w-4" />
-                        <span>Usuarios</span>
+                        <span>{t('admin.users')}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   </SidebarMenu>
@@ -263,17 +265,17 @@ export function AdminSidebar({
           <SidebarGroup>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => onSectionChange('companies')} isActive={isActive('companies')} tooltip="Empresas">
+                <SidebarMenuButton onClick={() => onSectionChange('companies')} isActive={isActive('companies')} tooltip={t('admin.companies')}>
                   <Building2 className="h-5 w-5" />
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => onSectionChange('products')} isActive={isActive('products')} tooltip="Catálogo">
+                <SidebarMenuButton onClick={() => onSectionChange('products')} isActive={isActive('products')} tooltip={t('productForm.title')}>
                   <Package className="h-5 w-5" />
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => onSectionChange('users')} isActive={isActive('users')} tooltip="Usuarios">
+                <SidebarMenuButton onClick={() => onSectionChange('users')} isActive={isActive('users')} tooltip={t('admin.users')}>
                   <Users className="h-5 w-5" />
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -288,7 +290,7 @@ export function AdminSidebar({
               <CollapsibleTrigger asChild>
                 <SidebarGroupLabel className="cursor-pointer hover:bg-muted/50 rounded-md p-2">
                   <Settings className="h-4 w-4 mr-2" />
-                  <span className="flex-1">Configuración</span>
+                  <span className="flex-1">{t('admin.configuration')}</span>
                   <ChevronRight className={`h-4 w-4 transition-transform ${openGroups.config ? 'rotate-90' : ''}`} />
                 </SidebarGroupLabel>
               </CollapsibleTrigger>
@@ -298,38 +300,38 @@ export function AdminSidebar({
                     <SidebarMenuItem>
                       <SidebarMenuButton onClick={() => onSectionChange('templates')} isActive={isActive('templates')}>
                         <Mail className="h-4 w-4" />
-                        <span>Emails</span>
+                        <span>{t('admin.emailTemplates')}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                       <SidebarMenuButton onClick={() => onSectionChange('colors')} isActive={isActive('colors')}>
                         <Palette className="h-4 w-4" />
-                        <span>Estados</span>
+                        <span>{t('admin.statusColors')}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                       <SidebarMenuButton onClick={() => onSectionChange('concepts')} isActive={isActive('concepts')}>
                         <BookOpen className="h-4 w-4" />
-                        <span>Conceptos</span>
+                        <span>{t('admin.concepts')}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                       <SidebarMenuButton onClick={() => onSectionChange('map-config')} isActive={isActive('map-config')}>
                         <Map className="h-4 w-4" />
-                        <span>Mapa</span>
+                        <span>{t('map.layers')}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
                       <SidebarMenuButton onClick={() => onSectionChange('audit')} isActive={isActive('audit')}>
                         <Database className="h-4 w-4" />
-                        <span>Auditoría</span>
+                        <span>{t('admin.auditLogs')}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                     {(isCommercialManager || isSuperAdmin) && (
                       <SidebarMenuItem>
                         <SidebarMenuButton onClick={() => onSectionChange('commercial-manager-audit')} isActive={isActive('commercial-manager-audit')}>
                           <FileText className="h-4 w-4" />
-                          <span>Auditoría Responsables</span>
+                          <span>{t('adminSidebar.commercialManagerAudit')}</span>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                     )}
@@ -342,33 +344,33 @@ export function AdminSidebar({
           <SidebarGroup>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => onSectionChange('templates')} isActive={isActive('templates')} tooltip="Emails">
+                <SidebarMenuButton onClick={() => onSectionChange('templates')} isActive={isActive('templates')} tooltip={t('admin.emailTemplates')}>
                   <Mail className="h-5 w-5" />
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => onSectionChange('colors')} isActive={isActive('colors')} tooltip="Estados">
+                <SidebarMenuButton onClick={() => onSectionChange('colors')} isActive={isActive('colors')} tooltip={t('admin.statusColors')}>
                   <Palette className="h-5 w-5" />
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => onSectionChange('concepts')} isActive={isActive('concepts')} tooltip="Conceptos">
+                <SidebarMenuButton onClick={() => onSectionChange('concepts')} isActive={isActive('concepts')} tooltip={t('admin.concepts')}>
                   <BookOpen className="h-5 w-5" />
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => onSectionChange('map-config')} isActive={isActive('map-config')} tooltip="Mapa">
+                <SidebarMenuButton onClick={() => onSectionChange('map-config')} isActive={isActive('map-config')} tooltip={t('map.layers')}>
                   <Map className="h-5 w-5" />
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => onSectionChange('audit')} isActive={isActive('audit')} tooltip="Auditoría">
+                <SidebarMenuButton onClick={() => onSectionChange('audit')} isActive={isActive('audit')} tooltip={t('admin.auditLogs')}>
                   <Database className="h-5 w-5" />
                 </SidebarMenuButton>
               </SidebarMenuItem>
               {(isCommercialManager || isSuperAdmin) && (
                 <SidebarMenuItem>
-                  <SidebarMenuButton onClick={() => onSectionChange('commercial-manager-audit')} isActive={isActive('commercial-manager-audit')} tooltip="Auditoría Responsables">
+                  <SidebarMenuButton onClick={() => onSectionChange('commercial-manager-audit')} isActive={isActive('commercial-manager-audit')} tooltip={t('adminSidebar.commercialManagerAudit')}>
                     <FileText className="h-5 w-5" />
                   </SidebarMenuButton>
                 </SidebarMenuItem>
