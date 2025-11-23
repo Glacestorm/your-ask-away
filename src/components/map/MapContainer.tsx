@@ -818,7 +818,14 @@ export function MapContainer({
             }
           };
 
-          el.addEventListener('mouseenter', () => {
+          let hideTimeout: NodeJS.Timeout | null = null;
+
+          const showTooltip = () => {
+            if (hideTimeout) {
+              clearTimeout(hideTimeout);
+              hideTimeout = null;
+            }
+            
             const tooltipHTML = `
               <div class="p-3 min-w-[200px]">
                 <h3 class="font-semibold text-sm mb-3 border-b pb-2">${company.name}</h3>
@@ -841,11 +848,32 @@ export function MapContainer({
             `;
             
             hoverPopup.setLngLat([longitude, latitude]).setHTML(tooltipHTML).addTo(map.current!);
-          });
 
-          el.addEventListener('mouseleave', () => {
-            hoverPopup.remove();
-          });
+            // Add event listeners to the popup element
+            const popupElement = hoverPopup.getElement();
+            if (popupElement) {
+              popupElement.addEventListener('mouseenter', () => {
+                if (hideTimeout) {
+                  clearTimeout(hideTimeout);
+                  hideTimeout = null;
+                }
+              });
+
+              popupElement.addEventListener('mouseleave', () => {
+                hideTooltip();
+              });
+            }
+          };
+
+          const hideTooltip = () => {
+            hideTimeout = setTimeout(() => {
+              hoverPopup.remove();
+              hideTimeout = null;
+            }, 100);
+          };
+
+          el.addEventListener('mouseenter', showTooltip);
+          el.addEventListener('mouseleave', hideTooltip);
 
           // Click popup (existing functionality)
           const clickPopup = new maplibregl.Popup({
