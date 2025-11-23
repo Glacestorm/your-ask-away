@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Plus, Pencil, Trash2, Upload, Phone, Mail, Globe, Users, Building2, FileText, History, Clock } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Plus, Pencil, Trash2, Upload, Phone, Mail, Globe, Users, Building2, FileText, History, Clock, TrendingUp, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { CompanyWithDetails, StatusColor, Profile } from '@/types/database';
 import * as XLSX from 'xlsx';
@@ -42,6 +43,9 @@ interface Visit {
   visit_date: string;
   notes: string | null;
   result: string | null;
+  productos_ofrecidos: string[] | null;
+  porcentaje_vinculacion: number | null;
+  pactos_realizados: string | null;
   gestor: { full_name: string | null; email: string } | null;
 }
 
@@ -63,6 +67,17 @@ export function CompaniesManager() {
   const [loading, setLoading] = useState(false);
   const [visits, setVisits] = useState<Visit[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [showVisitForm, setShowVisitForm] = useState(false);
+  const [visitFormData, setVisitFormData] = useState({
+    visit_date: new Date().toISOString().split('T')[0],
+    gestor_id: '',
+    productos_ofrecidos: [] as string[],
+    porcentaje_vinculacion: '',
+    pactos_realizados: '',
+    result: '',
+    notes: '',
+  });
   const [formData, setFormData] = useState({
     name: '',
     address: '',
@@ -92,17 +107,19 @@ export function CompaniesManager() {
 
   const fetchData = async () => {
     try {
-      const [companiesRes, statusRes, gestoresRes, conceptsRes] = await Promise.all([
+      const [companiesRes, statusRes, gestoresRes, conceptsRes, productsRes] = await Promise.all([
         supabase.from('companies').select('*, status_colors(*), profiles(*)').order('name'),
         supabase.from('status_colors').select('*').order('display_order'),
         supabase.from('profiles').select('*').order('full_name'),
         supabase.from('concepts').select('*').eq('concept_type', 'parroquia').eq('active', true),
+        supabase.from('products').select('*').eq('active', true).order('category, name'),
       ]);
 
       if (companiesRes.data) setCompanies(companiesRes.data as CompanyWithDetails[]);
       if (statusRes.data) setStatusColors(statusRes.data);
       if (gestoresRes.data) setGestores(gestoresRes.data);
       if (conceptsRes.data) setParroquias(conceptsRes.data.map((c: any) => c.concept_value));
+      if (productsRes.data) setProducts(productsRes.data);
     } catch (error: any) {
       console.error('Error fetching data:', error);
       toast.error('Error al cargar los datos');
@@ -224,7 +241,7 @@ export function CompaniesManager() {
       // Fetch visits
       const { data: visitsData, error: visitsError } = await supabase
         .from('visits')
-        .select('id, visit_date, notes, result, gestor:profiles(full_name, email)')
+        .select('id, visit_date, notes, result, productos_ofrecidos, porcentaje_vinculacion, pactos_realizados, gestor:profiles(full_name, email)')
         .eq('company_id', companyId)
         .order('visit_date', { ascending: false });
 
@@ -245,6 +262,59 @@ export function CompaniesManager() {
     } catch (error: any) {
       console.error('Error fetching activity history:', error);
     }
+  };
+
+  const handleSaveVisit = async () => {
+    if (!editingCompany) return;
+
+    try {
+      setLoading(true);
+
+      if (!visitFormData.visit_date || !visitFormData.gestor_id) {
+        toast.error('Por favor completa los campos obligatorios (Fecha y Gestor)');
+        return;
+      }
+
+      const { error } = await supabase.from('visits').insert({
+        company_id: editingCompany.id,
+        visit_date: visitFormData.visit_date,
+        gestor_id: visitFormData.gestor_id,
+        productos_ofrecidos: visitFormData.productos_ofrecidos.length > 0 ? visitFormData.productos_ofrecidos : null,
+        porcentaje_vinculacion: visitFormData.porcentaje_vinculacion ? Number(visitFormData.porcentaje_vinculacion) : null,
+        pactos_realizados: visitFormData.pactos_realizados || null,
+        result: visitFormData.result || null,
+        notes: visitFormData.notes || null,
+      });
+
+      if (error) throw error;
+
+      toast.success('Visita registrada correctamente');
+      setShowVisitForm(false);
+      setVisitFormData({
+        visit_date: new Date().toISOString().split('T')[0],
+        gestor_id: '',
+        productos_ofrecidos: [],
+        porcentaje_vinculacion: '',
+        pactos_realizados: '',
+        result: '',
+        notes: '',
+      });
+      await fetchActivityHistory(editingCompany.id);
+    } catch (error: any) {
+      console.error('Error saving visit:', error);
+      toast.error('Error al guardar la visita');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleProducto = (productName: string) => {
+    setVisitFormData(prev => ({
+      ...prev,
+      productos_ofrecidos: prev.productos_ofrecidos.includes(productName)
+        ? prev.productos_ofrecidos.filter(p => p !== productName)
+        : [...prev.productos_ofrecidos, productName]
+    }));
   };
 
   const resetForm = () => {
@@ -664,38 +734,244 @@ export function CompaniesManager() {
             <TabsContent value="history" className="space-y-4 mt-4">
               {editingCompany && (
                 <div className="space-y-6">
-                  {/* Visitas */}
+                  {/* Formulario para nueva visita */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-lg font-semibold flex items-center gap-2">
+                        <Clock className="h-5 w-5" />
+                        Registrar Nueva Visita
+                      </h3>
+                      <Button 
+                        variant={showVisitForm ? "outline" : "default"}
+                        size="sm"
+                        onClick={() => setShowVisitForm(!showVisitForm)}
+                      >
+                        {showVisitForm ? 'Cancelar' : 'Nueva Visita'}
+                      </Button>
+                    </div>
+
+                    {showVisitForm && (
+                      <Card className="p-4 mb-4">
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="visit_date">Fecha de Visita *</Label>
+                              <Input
+                                id="visit_date"
+                                type="date"
+                                value={visitFormData.visit_date}
+                                onChange={(e) => setVisitFormData({ ...visitFormData, visit_date: e.target.value })}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="visit_gestor">Gestor *</Label>
+                              <Select 
+                                value={visitFormData.gestor_id} 
+                                onValueChange={(v) => setVisitFormData({ ...visitFormData, gestor_id: v })}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Seleccionar gestor" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {gestores.map((g) => (
+                                    <SelectItem key={g.id} value={g.id}>
+                                      {g.full_name || g.email}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>Productos Ofrecidos</Label>
+                            <ScrollArea className="h-[200px] border rounded-md p-3">
+                              <div className="space-y-4">
+                                {['activo', 'pasivo', 'servicio'].map((category) => (
+                                  <div key={category}>
+                                    <h4 className="font-medium text-sm mb-2 capitalize flex items-center gap-2">
+                                      <Package className="h-4 w-4" />
+                                      {category === 'activo' ? 'Productos de Activo (Préstamos)' :
+                                       category === 'pasivo' ? 'Productos de Pasivo (Ahorro)' :
+                                       'Servicios'}
+                                    </h4>
+                                    <div className="space-y-2 ml-6">
+                                      {products
+                                        .filter((p) => p.category === category)
+                                        .map((product) => (
+                                          <div key={product.id} className="flex items-center space-x-2">
+                                            <Checkbox
+                                              id={`product-${product.id}`}
+                                              checked={visitFormData.productos_ofrecidos.includes(product.name)}
+                                              onCheckedChange={() => toggleProducto(product.name)}
+                                            />
+                                            <label
+                                              htmlFor={`product-${product.id}`}
+                                              className="text-sm cursor-pointer"
+                                            >
+                                              {product.name}
+                                              {product.description && (
+                                                <span className="text-muted-foreground ml-1">
+                                                  - {product.description}
+                                                </span>
+                                              )}
+                                            </label>
+                                          </div>
+                                        ))}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </ScrollArea>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="porcentaje_vinculacion">
+                                Porcentaje de Vinculación (%)
+                              </Label>
+                              <Input
+                                id="porcentaje_vinculacion"
+                                type="number"
+                                min="0"
+                                max="100"
+                                step="0.01"
+                                value={visitFormData.porcentaje_vinculacion}
+                                onChange={(e) => setVisitFormData({ ...visitFormData, porcentaje_vinculacion: e.target.value })}
+                                placeholder="0.00"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="result">Resultado</Label>
+                              <Select 
+                                value={visitFormData.result} 
+                                onValueChange={(v) => setVisitFormData({ ...visitFormData, result: v })}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Seleccionar resultado" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Exitosa">Exitosa</SelectItem>
+                                  <SelectItem value="Pendiente seguimiento">Pendiente seguimiento</SelectItem>
+                                  <SelectItem value="Sin interés">Sin interés</SelectItem>
+                                  <SelectItem value="Aplazada">Aplazada</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="pactos_realizados">Pactos Realizados</Label>
+                            <Textarea
+                              id="pactos_realizados"
+                              value={visitFormData.pactos_realizados}
+                              onChange={(e) => setVisitFormData({ ...visitFormData, pactos_realizados: e.target.value })}
+                              rows={3}
+                              placeholder="Detalles de los acuerdos alcanzados con el cliente..."
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="visit_notes">Notas de la Visita</Label>
+                            <Textarea
+                              id="visit_notes"
+                              value={visitFormData.notes}
+                              onChange={(e) => setVisitFormData({ ...visitFormData, notes: e.target.value })}
+                              rows={3}
+                              placeholder="Observaciones adicionales sobre la visita..."
+                            />
+                          </div>
+
+                          <div className="flex justify-end gap-2">
+                            <Button 
+                              variant="outline" 
+                              onClick={() => setShowVisitForm(false)}
+                            >
+                              Cancelar
+                            </Button>
+                            <Button onClick={handleSaveVisit} disabled={loading}>
+                              {loading ? 'Guardando...' : 'Guardar Visita'}
+                            </Button>
+                          </div>
+                        </div>
+                      </Card>
+                    )}
+                  </div>
+
+                  {/* Visitas Realizadas */}
                   <div>
                     <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                       <Clock className="h-5 w-5" />
-                      Visitas Realizadas
+                      Visitas Realizadas ({visits.length})
                     </h3>
-                    <ScrollArea className="h-[200px] border rounded-md p-4">
+                    <ScrollArea className="h-[300px] border rounded-md p-4">
                       {visits.length > 0 ? (
                         <div className="space-y-3">
                           {visits.map((visit) => (
-                            <Card key={visit.id} className="p-3">
-                              <div className="flex items-start justify-between">
-                                <div className="space-y-1">
-                                  <p className="text-sm font-medium">
-                                    {new Date(visit.visit_date).toLocaleDateString('es-ES', {
-                                      year: 'numeric',
-                                      month: 'long',
-                                      day: 'numeric'
-                                    })}
-                                  </p>
-                                  <p className="text-sm text-muted-foreground">
-                                    Gestor: {visit.gestor?.full_name || visit.gestor?.email || 'N/A'}
-                                  </p>
-                                  {visit.result && (
-                                    <p className="text-sm">
-                                      <span className="font-medium">Resultado:</span> {visit.result}
+                            <Card key={visit.id} className="p-4">
+                              <div className="space-y-3">
+                                <div className="flex items-start justify-between">
+                                  <div>
+                                    <p className="text-sm font-semibold">
+                                      {new Date(visit.visit_date).toLocaleDateString('es-ES', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                      })}
                                     </p>
-                                  )}
-                                  {visit.notes && (
-                                    <p className="text-sm text-muted-foreground mt-2">{visit.notes}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      Gestor: {visit.gestor?.full_name || visit.gestor?.email || 'N/A'}
+                                    </p>
+                                  </div>
+                                  {visit.result && (
+                                    <span className={`text-xs px-2 py-1 rounded ${
+                                      visit.result === 'Exitosa' ? 'bg-green-100 text-green-800' :
+                                      visit.result === 'Sin interés' ? 'bg-red-100 text-red-800' :
+                                      'bg-yellow-100 text-yellow-800'
+                                    }`}>
+                                      {visit.result}
+                                    </span>
                                   )}
                                 </div>
+
+                                {visit.productos_ofrecidos && visit.productos_ofrecidos.length > 0 && (
+                                  <div>
+                                    <p className="text-xs font-medium mb-1">Productos Ofrecidos:</p>
+                                    <div className="flex flex-wrap gap-1">
+                                      {visit.productos_ofrecidos.map((prod, idx) => (
+                                        <span 
+                                          key={idx} 
+                                          className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded"
+                                        >
+                                          {prod}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {visit.porcentaje_vinculacion !== null && (
+                                  <div className="flex items-center gap-2">
+                                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                                    <span className="text-sm">
+                                      <span className="font-medium">Vinculación:</span> {visit.porcentaje_vinculacion}%
+                                    </span>
+                                  </div>
+                                )}
+
+                                {visit.pactos_realizados && (
+                                  <div>
+                                    <p className="text-xs font-medium mb-1">Pactos Realizados:</p>
+                                    <p className="text-sm text-muted-foreground">{visit.pactos_realizados}</p>
+                                  </div>
+                                )}
+
+                                {visit.notes && (
+                                  <div>
+                                    <p className="text-xs font-medium mb-1">Notas:</p>
+                                    <p className="text-sm text-muted-foreground">{visit.notes}</p>
+                                  </div>
+                                )}
                               </div>
                             </Card>
                           ))}
