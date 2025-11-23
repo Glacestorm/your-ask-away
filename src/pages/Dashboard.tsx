@@ -51,6 +51,7 @@ import { GestoresLeaderboard } from '@/components/dashboard/GestoresLeaderboard'
 import { PersonalActivityHistory } from '@/components/dashboard/PersonalActivityHistory';
 import { ActivityStatistics } from '@/components/dashboard/ActivityStatistics';
 import { GestorComparison } from '@/components/dashboard/GestorComparison';
+import { GestorEvolutionTimeline } from '@/components/dashboard/GestorEvolutionTimeline';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import * as XLSX from 'xlsx';
 
@@ -157,7 +158,7 @@ const Dashboard = () => {
 
         {/* Dashboard Tabs */}
         <Tabs defaultValue="resumen" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-16 h-auto">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-17 h-auto">
             <TabsTrigger value="resumen" className="flex items-center gap-2 py-3">
               <TrendingUp className="h-4 w-4" />
               <span className="hidden sm:inline">{t('tabs.resumen')}</span>
@@ -217,6 +218,10 @@ const Dashboard = () => {
             <TabsTrigger value="comparacion" className="flex items-center gap-2 py-3">
               <Users className="h-4 w-4" />
               <span className="hidden sm:inline">Comparación</span>
+            </TabsTrigger>
+            <TabsTrigger value="evolucion" className="flex items-center gap-2 py-3">
+              <TrendingUp className="h-4 w-4" />
+              <span className="hidden sm:inline">Evolución</span>
             </TabsTrigger>
             <TabsTrigger value="reportes" className="flex items-center gap-2 py-3">
               <FileText className="h-4 w-4" />
@@ -386,6 +391,11 @@ const Dashboard = () => {
           {/* Comparación entre Gestores */}
           <TabsContent value="comparacion" className="space-y-6">
             <GestorComparison />
+          </TabsContent>
+
+          {/* Evolución Temporal */}
+          <TabsContent value="evolucion" className="space-y-6">
+            <GestorEvolutionTimeline />
           </TabsContent>
 
           {/* Generación de Reportes */}
