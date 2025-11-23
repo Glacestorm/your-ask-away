@@ -17,8 +17,16 @@ interface TooltipConfig {
   enabled: boolean;
 }
 
+interface MapConfig {
+  id: string;
+  config_key: string;
+  config_value: { value: number };
+  description: string;
+}
+
 export function MapTooltipConfig() {
   const [configs, setConfigs] = useState<TooltipConfig[]>([]);
+  const [minZoom, setMinZoom] = useState<number>(15);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -29,13 +37,28 @@ export function MapTooltipConfig() {
   const fetchConfigs = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      // Fetch tooltip configs
+      const { data: tooltipData, error: tooltipError } = await supabase
         .from('map_tooltip_config')
         .select('*')
         .order('display_order');
 
-      if (error) throw error;
-      setConfigs(data || []);
+      if (tooltipError) throw tooltipError;
+      setConfigs(tooltipData || []);
+
+      // Fetch map config for min zoom
+      const { data: mapConfigData, error: mapConfigError } = await supabase
+        .from('map_config')
+        .select('*')
+        .eq('config_key', 'min_zoom_vinculacion')
+        .single();
+
+      if (mapConfigError) throw mapConfigError;
+      if (mapConfigData) {
+        const configValue = mapConfigData.config_value as { value: number };
+        setMinZoom(configValue.value);
+      }
     } catch (error) {
       console.error('Error fetching configs:', error);
       toast.error('Error al cargar configuración');
@@ -79,6 +102,7 @@ export function MapTooltipConfig() {
     try {
       setSaving(true);
       
+      // Save tooltip configs
       for (const config of configs) {
         const { error } = await supabase
           .from('map_tooltip_config')
@@ -90,6 +114,17 @@ export function MapTooltipConfig() {
 
         if (error) throw error;
       }
+
+      // Save min zoom config
+      const { error: zoomError } = await supabase
+        .from('map_config')
+        .update({ 
+          config_value: { value: minZoom },
+          updated_at: new Date().toISOString()
+        })
+        .eq('config_key', 'min_zoom_vinculacion');
+
+      if (zoomError) throw zoomError;
 
       toast.success('Todos los cambios guardados');
     } catch (error) {
@@ -144,6 +179,29 @@ export function MapTooltipConfig() {
               Los campos habilitados se mostrarán en el tooltip cuando los usuarios pasen el cursor sobre una empresa en el mapa.
               El orden determina en qué secuencia aparecerán los datos.
             </p>
+          </div>
+        </div>
+
+        <div className="rounded-lg border bg-card p-4">
+          <div className="space-y-3">
+            <Label htmlFor="minZoom" className="text-sm font-medium">
+              Nivel de zoom mínimo para mostrar % de vinculación
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              Define el nivel de zoom mínimo del mapa para que se muestre el porcentaje de vinculación en las chinchetas (entre 10 y 20)
+            </p>
+            <div className="flex items-center gap-3">
+              <Input
+                id="minZoom"
+                type="number"
+                min="10"
+                max="20"
+                value={minZoom}
+                onChange={(e) => setMinZoom(parseInt(e.target.value) || 15)}
+                className="w-24"
+              />
+              <span className="text-sm text-muted-foreground">Zoom actual: {minZoom}</span>
+            </div>
           </div>
         </div>
 
