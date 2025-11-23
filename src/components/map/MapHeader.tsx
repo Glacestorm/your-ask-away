@@ -1,5 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { LanguageSelector } from '@/components/LanguageSelector';
 import { MapPin, Menu, LogOut, Settings, BarChart3, UserCircle, Mountain, Layers, Info, Filter } from 'lucide-react';
 import {
   DropdownMenu,
@@ -480,6 +482,7 @@ export function MapHeader({
       </div>
 
       <div className="flex items-center gap-2">
+        <LanguageSelector />
         {isAdmin && (
           <>
             <Button
