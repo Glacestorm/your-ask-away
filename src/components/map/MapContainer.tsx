@@ -293,42 +293,45 @@ export function MapContainer({
           };
       }
 
-      // Add overlay layers
+      // Add overlay layers only for non-satellite views
+      // Satellite imagery should be shown without OSM overlays for clarity
       const overlayLayers: any[] = [];
-      const isSatellite = mapStyle === 'satellite';
-
-      if (baseLayers.roads) {
-        baseStyle.sources['osm-overlay'] = {
-          type: 'raster',
-          tiles: ['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'],
-          tileSize: 256,
-        };
-        overlayLayers.push({
-          id: 'roads-overlay',
-          type: 'raster',
-          source: 'osm-overlay',
-          paint: {
-            'raster-opacity': isSatellite ? 0.3 : 0.5,
-          },
-        });
-      }
-
-      if (baseLayers.labels) {
-        if (!baseStyle.sources['osm-overlay']) {
+      
+      // Only add overlays for default map style (not satellite or terrain)
+      if (mapStyle === 'default') {
+        if (baseLayers.roads) {
           baseStyle.sources['osm-overlay'] = {
             type: 'raster',
             tiles: ['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'],
             tileSize: 256,
           };
+          overlayLayers.push({
+            id: 'roads-overlay',
+            type: 'raster',
+            source: 'osm-overlay',
+            paint: {
+              'raster-opacity': 0.5,
+            },
+          });
         }
-        overlayLayers.push({
-          id: 'labels-overlay',
-          type: 'raster',
-          source: 'osm-overlay',
-          paint: {
-            'raster-opacity': isSatellite ? 0.6 : 0.3,
-          },
-        });
+
+        if (baseLayers.labels) {
+          if (!baseStyle.sources['osm-overlay']) {
+            baseStyle.sources['osm-overlay'] = {
+              type: 'raster',
+              tiles: ['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'],
+              tileSize: 256,
+            };
+          }
+          overlayLayers.push({
+            id: 'labels-overlay',
+            type: 'raster',
+            source: 'osm-overlay',
+            paint: {
+              'raster-opacity': 0.3,
+            },
+          });
+        }
       }
 
       baseStyle.layers.push(...overlayLayers);
