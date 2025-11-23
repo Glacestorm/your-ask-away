@@ -124,7 +124,7 @@ export function CommercialDirectorDashboard() {
           .map(([month, data]) => ({
             month,
             visits: data.visits,
-            success: Math.round((data.success / data.visits) * 100)
+            success: data.visits > 0 ? Math.round((data.success / data.visits) * 100) : 0
           }))
           .sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime())
           .slice(-6);
@@ -166,27 +166,37 @@ export function CommercialDirectorDashboard() {
     }
   };
 
-  // Calcular totales globales
+  // Calcular totales globales con validación
+  const validGestores = gestoresData.filter(g => 
+    !isNaN(g.successRate) && 
+    !isNaN(g.avgVinculacion) && 
+    isFinite(g.successRate) && 
+    isFinite(g.avgVinculacion)
+  );
+  
   const globalStats = {
-    totalVisits: gestoresData.reduce((sum, g) => sum + g.totalVisits, 0),
-    avgSuccessRate: gestoresData.length > 0 
-      ? Math.round(gestoresData.reduce((sum, g) => sum + g.successRate, 0) / gestoresData.length)
+    totalVisits: gestoresData.reduce((sum, g) => sum + (g.totalVisits || 0), 0),
+    avgSuccessRate: validGestores.length > 0 
+      ? Math.round(validGestores.reduce((sum, g) => sum + g.successRate, 0) / validGestores.length)
       : 0,
-    totalCompanies: gestoresData.reduce((sum, g) => sum + g.companies, 0),
-    avgVinculacion: gestoresData.length > 0
-      ? Math.round(gestoresData.reduce((sum, g) => sum + g.avgVinculacion, 0) / gestoresData.length)
+    totalCompanies: gestoresData.reduce((sum, g) => sum + (g.companies || 0), 0),
+    avgVinculacion: validGestores.length > 0
+      ? Math.round(validGestores.reduce((sum, g) => sum + g.avgVinculacion, 0) / validGestores.length)
       : 0,
   };
 
-  // Datos por oficina
+  // Datos por oficina con validación
   const oficinaStats = oficinas.map(oficina => {
     const gestoresOficina = gestoresData.filter(g => g.oficina === oficina);
+    const validGestoresOficina = gestoresOficina.filter(g => 
+      !isNaN(g.successRate) && isFinite(g.successRate)
+    );
     return {
       oficina,
       gestores: gestoresOficina.length,
-      visitas: gestoresOficina.reduce((sum, g) => sum + g.totalVisits, 0),
-      successRate: gestoresOficina.length > 0
-        ? Math.round(gestoresOficina.reduce((sum, g) => sum + g.successRate, 0) / gestoresOficina.length)
+      visitas: gestoresOficina.reduce((sum, g) => sum + (g.totalVisits || 0), 0),
+      successRate: validGestoresOficina.length > 0
+        ? Math.round(validGestoresOficina.reduce((sum, g) => sum + g.successRate, 0) / validGestoresOficina.length)
         : 0
     };
   }).sort((a, b) => b.visitas - a.visitas);
