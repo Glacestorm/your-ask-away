@@ -7,6 +7,7 @@ import { Filter, CalendarDays } from 'lucide-react';
 import { format, subMonths, subDays, startOfYear, endOfYear } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { DateRange } from 'react-day-picker';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface DateRangeFilterProps {
   dateRange: DateRange | undefined;
@@ -14,6 +15,7 @@ interface DateRangeFilterProps {
 }
 
 export function DateRangeFilter({ dateRange, onDateRangeChange }: DateRangeFilterProps) {
+  const { t } = useLanguage();
   const [selectedPeriod, setSelectedPeriod] = useState<string>('lastMonth');
 
   const setPredefinedPeriod = (period: string) => {
@@ -56,10 +58,10 @@ export function DateRangeFilter({ dateRange, onDateRangeChange }: DateRangeFilte
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Filter className="h-5 w-5" />
-          Filtros de Periodo
+          {t('dateFilter.title')}
         </CardTitle>
         <CardDescription>
-          Selecciona un rango de fechas para analizar los datos
+          {t('dateFilter.subtitle')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -71,35 +73,35 @@ export function DateRangeFilter({ dateRange, onDateRangeChange }: DateRangeFilte
               size="sm"
               onClick={() => setPredefinedPeriod('last7days')}
             >
-              Últimos 7 días
+              {t('dateFilter.last7days')}
             </Button>
             <Button
               variant={selectedPeriod === 'lastMonth' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setPredefinedPeriod('lastMonth')}
             >
-              Último mes
+              {t('dateFilter.lastMonth')}
             </Button>
             <Button
               variant={selectedPeriod === 'last3months' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setPredefinedPeriod('last3months')}
             >
-              Últimos 3 meses
+              {t('dateFilter.last3months')}
             </Button>
             <Button
               variant={selectedPeriod === 'last6months' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setPredefinedPeriod('last6months')}
             >
-              Últimos 6 meses
+              {t('dateFilter.last6months')}
             </Button>
             <Button
               variant={selectedPeriod === 'thisYear' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setPredefinedPeriod('thisYear')}
             >
-              Este año
+              {t('dateFilter.thisYear')}
             </Button>
             <Button
               variant={selectedPeriod === 'lastYear' ? 'default' : 'outline'}
@@ -132,7 +134,7 @@ export function DateRangeFilter({ dateRange, onDateRangeChange }: DateRangeFilte
                       format(dateRange.from, 'dd/MM/yyyy')
                     )
                   ) : (
-                    <span>Rango personalizado</span>
+                    <span>{t('dateFilter.customRange')}</span>
                   )}
                 </Button>
               </PopoverTrigger>

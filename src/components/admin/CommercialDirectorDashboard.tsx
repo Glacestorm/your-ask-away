@@ -11,6 +11,7 @@ import { DateRangeFilter } from '@/components/dashboard/DateRangeFilter';
 import { DateRange } from 'react-day-picker';
 import { subMonths, format } from 'date-fns';
 import { MetricsExplorer } from '@/components/admin/MetricsExplorer';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Panel del Director con vista general y explorador de métricas
 
@@ -35,6 +36,7 @@ interface GestorDetail {
 }
 
 export function CommercialDirectorDashboard() {
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
     const today = new Date();
@@ -194,18 +196,18 @@ export function CommercialDirectorDashboard() {
       {/* Encabezado */}
       <Card>
         <CardHeader>
-          <CardTitle>Director de Negocio</CardTitle>
+          <CardTitle>{t('director.title')}</CardTitle>
           <CardDescription>
-            Vista general y explorador de métricas por gestor, oficina y banco
+            {t('director.subtitle')}
           </CardDescription>
         </CardHeader>
       </Card>
 
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="grid w-full max-w-2xl grid-cols-3">
-          <TabsTrigger value="overview">Vista General</TabsTrigger>
-          <TabsTrigger value="commercial">Responsable Comercial</TabsTrigger>
-          <TabsTrigger value="explorer">Explorador de Métricas</TabsTrigger>
+          <TabsTrigger value="overview">{t('director.overviewTab')}</TabsTrigger>
+          <TabsTrigger value="commercial">{t('director.commercialTab')}</TabsTrigger>
+          <TabsTrigger value="explorer">{t('director.explorerTab')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -219,47 +221,47 @@ export function CommercialDirectorDashboard() {
           <div className="grid gap-4 md:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Visitas</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('director.totalVisits')}</CardTitle>
                 <Activity className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.totalVisits}</div>
                 <p className="text-xs text-muted-foreground">
-                  Todas las visitas registradas
+                  {t('director.allVisitsDesc')}
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Tasa de Éxito</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('director.successRate')}</CardTitle>
                 <Target className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.avgSuccessRate}%</div>
-                <p className="text-xs text-muted-foreground">Promedio general</p>
+                <p className="text-xs text-muted-foreground">{t('director.avgDesc')}</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Empresas</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('director.companies')}</CardTitle>
                 <Building2 className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.totalCompanies}</div>
-                <p className="text-xs text-muted-foreground">Total en cartera</p>
+                <p className="text-xs text-muted-foreground">{t('director.portfolioDesc')}</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Gestores</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('director.managers')}</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.activeGestores}</div>
-                <p className="text-xs text-muted-foreground">Registrados</p>
+                <p className="text-xs text-muted-foreground">{t('director.registeredDesc')}</p>
               </CardContent>
             </Card>
           </div>
@@ -267,8 +269,8 @@ export function CommercialDirectorDashboard() {
           {/* Gráfico de Ranking */}
           <Card>
             <CardHeader>
-              <CardTitle>Ranking de Gestores</CardTitle>
-              <CardDescription>Top 10 por número de visitas</CardDescription>
+              <CardTitle>{t('director.rankingTitle')}</CardTitle>
+              <CardDescription>{t('director.rankingDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
               {gestorRanking.length > 0 ? (
@@ -288,7 +290,7 @@ export function CommercialDirectorDashboard() {
                 </ResponsiveContainer>
               ) : (
                 <div className="flex h-[350px] items-center justify-center text-muted-foreground">
-                  No hay datos disponibles
+                  {t('director.noData')}
                 </div>
               )}
             </CardContent>
@@ -297,18 +299,18 @@ export function CommercialDirectorDashboard() {
           {/* Tabla de Gestores */}
           <Card>
             <CardHeader>
-              <CardTitle>Detalle de Gestores</CardTitle>
-              <CardDescription>Información completa de todos los gestores</CardDescription>
+              <CardTitle>{t('director.detailsTitle')}</CardTitle>
+              <CardDescription>{t('director.detailsDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Gestor</TableHead>
-                    <TableHead>Oficina</TableHead>
-                    <TableHead className="text-right">Visitas</TableHead>
-                    <TableHead className="text-right">Tasa Éxito</TableHead>
-                    <TableHead className="text-right">Empresas</TableHead>
+                    <TableHead>{t('director.managerCol')}</TableHead>
+                    <TableHead>{t('director.officeCol')}</TableHead>
+                    <TableHead className="text-right">{t('director.visitsCol')}</TableHead>
+                    <TableHead className="text-right">{t('director.successCol')}</TableHead>
+                    <TableHead className="text-right">{t('director.companiesCol')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -325,7 +327,7 @@ export function CommercialDirectorDashboard() {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={5} className="text-center text-muted-foreground">
-                        No hay datos disponibles
+                        {t('director.noData')}
                       </TableCell>
                     </TableRow>
                   )}
@@ -346,47 +348,47 @@ export function CommercialDirectorDashboard() {
           <div className="grid gap-4 md:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Visitas</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('director.totalVisits')}</CardTitle>
                 <Activity className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.totalVisits}</div>
                 <p className="text-xs text-muted-foreground">
-                  Todas las visitas registradas
+                  {t('director.allVisitsDesc')}
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Tasa de Éxito</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('director.successRate')}</CardTitle>
                 <Target className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.avgSuccessRate}%</div>
-                <p className="text-xs text-muted-foreground">Promedio general</p>
+                <p className="text-xs text-muted-foreground">{t('director.avgDesc')}</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Empresas</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('director.companies')}</CardTitle>
                 <Building2 className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.totalCompanies}</div>
-                <p className="text-xs text-muted-foreground">Total en cartera</p>
+                <p className="text-xs text-muted-foreground">{t('director.portfolioDesc')}</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Gestores</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('director.managers')}</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.activeGestores}</div>
-                <p className="text-xs text-muted-foreground">Registrados</p>
+                <p className="text-xs text-muted-foreground">{t('director.registeredDesc')}</p>
               </CardContent>
             </Card>
           </div>
@@ -394,8 +396,8 @@ export function CommercialDirectorDashboard() {
           {/* Gráfico de Ranking del Responsable Comercial */}
           <Card>
             <CardHeader>
-              <CardTitle>Ranking de Gestores</CardTitle>
-              <CardDescription>Top 10 por número de visitas</CardDescription>
+              <CardTitle>{t('director.rankingTitle')}</CardTitle>
+              <CardDescription>{t('director.rankingDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
               {gestorRanking.length > 0 ? (
@@ -415,7 +417,7 @@ export function CommercialDirectorDashboard() {
                 </ResponsiveContainer>
               ) : (
                 <div className="flex h-[350px] items-center justify-center text-muted-foreground">
-                  No hay datos disponibles
+                  {t('director.noData')}
                 </div>
               )}
             </CardContent>
@@ -424,18 +426,18 @@ export function CommercialDirectorDashboard() {
           {/* Tabla de Gestores del Responsable Comercial */}
           <Card>
             <CardHeader>
-              <CardTitle>Detalle de Gestores</CardTitle>
-              <CardDescription>Información completa de todos los gestores</CardDescription>
+              <CardTitle>{t('director.detailsTitle')}</CardTitle>
+              <CardDescription>{t('director.detailsDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Gestor</TableHead>
-                    <TableHead>Oficina</TableHead>
-                    <TableHead className="text-right">Visitas</TableHead>
-                    <TableHead className="text-right">Tasa Éxito</TableHead>
-                    <TableHead className="text-right">Empresas</TableHead>
+                    <TableHead>{t('director.managerCol')}</TableHead>
+                    <TableHead>{t('director.officeCol')}</TableHead>
+                    <TableHead className="text-right">{t('director.visitsCol')}</TableHead>
+                    <TableHead className="text-right">{t('director.successCol')}</TableHead>
+                    <TableHead className="text-right">{t('director.companiesCol')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -452,7 +454,7 @@ export function CommercialDirectorDashboard() {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={5} className="text-center text-muted-foreground">
-                        No hay datos disponibles
+                        {t('director.noData')}
                       </TableCell>
                     </TableRow>
                   )}

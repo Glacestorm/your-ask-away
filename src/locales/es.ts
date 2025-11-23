@@ -467,4 +467,39 @@ export default {
   
   // French locale needed
   'fr': 'Francés',
+  
+  // Director Dashboard
+  'director.title': 'Director de Negocio',
+  'director.subtitle': 'Vista general y explorador de métricas por gestor, oficina y banco',
+  'director.overviewTab': 'Vista General',
+  'director.commercialTab': 'Responsable Comercial',
+  'director.explorerTab': 'Explorador de Métricas',
+  'director.totalVisits': 'Total Visitas',
+  'director.successRate': 'Tasa de Éxito',
+  'director.companies': 'Empresas',
+  'director.managers': 'Gestores',
+  'director.allVisitsDesc': 'Todas las visitas registradas',
+  'director.avgDesc': 'Promedio general',
+  'director.portfolioDesc': 'Total en cartera',
+  'director.registeredDesc': 'Registrados',
+  'director.rankingTitle': 'Ranking de Gestores',
+  'director.rankingDesc': 'Top 10 por número de visitas',
+  'director.detailsTitle': 'Detalle de Gestores',
+  'director.detailsDesc': 'Información completa de todos los gestores',
+  'director.noData': 'No hay datos disponibles',
+  'director.managerCol': 'Gestor',
+  'director.officeCol': 'Oficina',
+  'director.visitsCol': 'Visitas',
+  'director.successCol': 'Tasa Éxito',
+  'director.companiesCol': 'Empresas',
+  
+  // Date Range Filter
+  'dateFilter.title': 'Filtros de Período',
+  'dateFilter.subtitle': 'Selecciona el rango de fechas para analizar los datos',
+  'dateFilter.last7days': 'Últimos 7 días',
+  'dateFilter.lastMonth': 'Último mes',
+  'dateFilter.last3months': 'Últimos 3 meses',
+  'dateFilter.last6months': 'Últimos 6 meses',
+  'dateFilter.thisYear': 'Este año',
+  'dateFilter.customRange': 'Rango personalizado',
 };
