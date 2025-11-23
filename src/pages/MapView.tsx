@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { MarkerStyle } from '@/components/map/markerStyles';
 
 const MapView = () => {
   const { user, loading: authLoading } = useAuth();
@@ -63,6 +64,10 @@ const MapView = () => {
     name: string;
   } | null>(null);
   const [colorMode, setColorMode] = useState<MapColorMode>('status');
+  const [markerStyle, setMarkerStyle] = useState<MarkerStyle>(() => {
+    const saved = localStorage.getItem('markerStyle');
+    return (saved as MarkerStyle) || 'classic';
+  });
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -232,6 +237,11 @@ const MapView = () => {
         availableSectors={availableSectors}
         colorMode={colorMode}
         onColorModeChange={setColorMode}
+        markerStyle={markerStyle}
+        onMarkerStyleChange={(style) => {
+          setMarkerStyle(style);
+          localStorage.setItem('markerStyle', style);
+        }}
       />
       
       <div className="relative flex flex-1 overflow-hidden">
@@ -279,6 +289,7 @@ const MapView = () => {
             searchLocation={searchLocation}
             onSearchLocationClear={() => setSearchLocation(null)}
             colorMode={colorMode}
+            markerStyle={markerStyle}
           />
           
         </div>

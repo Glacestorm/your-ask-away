@@ -25,6 +25,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
 import { getSectorIcon } from './markerIcons';
 import { formatCnaeWithDescription } from '@/lib/cnaeDescriptions';
+import { MarkerStyle } from './markerStyles';
 
 export interface MapBaseLayers {
   roads: boolean;
@@ -54,6 +55,8 @@ interface MapHeaderProps {
   availableSectors: string[];
   colorMode: MapColorMode;
   onColorModeChange: (mode: MapColorMode) => void;
+  markerStyle: MarkerStyle;
+  onMarkerStyleChange: (style: MarkerStyle) => void;
 }
 
 export function MapHeader({ 
@@ -78,6 +81,8 @@ export function MapHeader({
   availableSectors,
   colorMode,
   onColorModeChange,
+  markerStyle,
+  onMarkerStyleChange,
 }: MapHeaderProps) {
   const { user, signOut, userRole, isAdmin } = useAuth();
   const { t } = useLanguage();
@@ -334,6 +339,38 @@ export function MapHeader({
                       </div>
                     </>
                   )}
+                  
+                  <Separator />
+
+                  {/* Marker style selector */}
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      Estilo de chinchetas
+                    </p>
+                    <div className="space-y-1">
+                      {[
+                        { value: 'classic', label: 'Clásica', desc: 'Chincheta tradicional' },
+                        { value: 'modern', label: 'Moderna', desc: 'Diseño geométrico' },
+                        { value: 'minimal', label: 'Minimalista', desc: 'Simple y limpia' },
+                      ].map((style) => (
+                        <div key={style.value} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`marker-${style.value}`}
+                            checked={markerStyle === style.value}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                onMarkerStyleChange(style.value as MarkerStyle);
+                              }
+                            }}
+                          />
+                          <Label htmlFor={`marker-${style.value}`} className="flex-1 cursor-pointer">
+                            <div className="text-sm font-normal">{style.label}</div>
+                            <div className="text-xs text-muted-foreground">{style.desc}</div>
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                   
                   <Separator />
 
