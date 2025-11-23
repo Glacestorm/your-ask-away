@@ -277,6 +277,12 @@
     animation: tooltipFadeOut 0.2s cubic-bezier(0.4, 0, 1, 1) forwards;
   }
 
+  /* Persistent tooltip with enhanced styling */
+  .persistent-tooltip .maplibregl-popup-content {
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.18), 0 0 0 2px hsl(var(--primary) / 0.3);
+    border-color: hsl(var(--primary) / 0.4);
+  }
+
   .hover-tooltip .maplibregl-popup-tip {
     border-top-color: hsl(var(--card));
   }

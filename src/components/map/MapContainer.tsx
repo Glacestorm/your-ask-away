@@ -158,6 +158,7 @@ export function MapContainer({
   const [vinculacionData, setVinculacionData] = useState<Record<string, number>>({});
   const [minZoomVinculacion, setMinZoomVinculacion] = useState<number>(11);
   const [visitCounts, setVisitCounts] = useState<Record<string, number>>({});
+  const persistentPopupRef = useRef<{ popup: maplibregl.Popup; companyId: string } | null>(null);
 
   // Fetch tooltip configuration
   useEffect(() => {
@@ -819,48 +820,51 @@ export function MapContainer({
           };
 
           let hideTimeout: NodeJS.Timeout | null = null;
+          let isPersistent = false;
+
+          const createTooltipHTML = () => `
+            <div class="p-3 min-w-[200px]">
+              <h3 class="font-semibold text-sm mb-3 border-b pb-2">${company.name}</h3>
+              ${vinculacionPct !== undefined ? `
+                <div class="mb-2 flex items-center gap-2">
+                  <span class="text-xs font-medium">% Vinculación:</span>
+                  <span class="px-2 py-0.5 rounded-full text-xs font-bold" style="background: ${color}20; color: ${color}">
+                    ${vinculacionPct}%
+                  </span>
+                </div>
+              ` : ''}
+              <div class="space-y-1 text-xs">
+                ${tooltipConfig
+                  .map(config => `
+                    <p><strong>${config.field_label}:</strong> ${getFieldValue(config.field_name)}</p>
+                  `)
+                  .join('')}
+              </div>
+              <div class="mt-3 pt-2 border-t">
+                <button 
+                  class="view-photos-btn w-full text-xs font-medium px-2 py-1 rounded transition-colors"
+                  style="background: ${color}15; color: ${color}; border: 1px solid ${color}30;"
+                  onmouseover="this.style.background='${color}25'"
+                  onmouseout="this.style.background='${color}15'"
+                  data-company-id="${company.id}"
+                >
+                  📸 Ver fotos de la empresa
+                </button>
+              </div>
+            </div>
+          `;
 
           const showTooltip = () => {
+            // Don't show hover tooltip if there's a persistent popup
+            if (persistentPopupRef.current) return;
+            
             if (hideTimeout) {
               clearTimeout(hideTimeout);
               hideTimeout = null;
             }
             
-            const tooltipHTML = `
-              <div class="p-3 min-w-[200px]">
-                <h3 class="font-semibold text-sm mb-3 border-b pb-2">${company.name}</h3>
-                ${vinculacionPct !== undefined ? `
-                  <div class="mb-2 flex items-center gap-2">
-                    <span class="text-xs font-medium">% Vinculación:</span>
-                    <span class="px-2 py-0.5 rounded-full text-xs font-bold" style="background: ${color}20; color: ${color}">
-                      ${vinculacionPct}%
-                    </span>
-                  </div>
-                ` : ''}
-                <div class="space-y-1 text-xs">
-                  ${tooltipConfig
-                    .map(config => `
-                      <p><strong>${config.field_label}:</strong> ${getFieldValue(config.field_name)}</p>
-                    `)
-                    .join('')}
-                </div>
-                <div class="mt-3 pt-2 border-t">
-                  <button 
-                    class="view-photos-btn w-full text-xs font-medium px-2 py-1 rounded transition-colors"
-                    style="background: ${color}15; color: ${color}; border: 1px solid ${color}30;"
-                    onmouseover="this.style.background='${color}25'"
-                    onmouseout="this.style.background='${color}15'"
-                    data-company-id="${company.id}"
-                  >
-                    📸 Ver fotos de la empresa
-                  </button>
-                </div>
-              </div>
-            `;
-            
-            hoverPopup.setLngLat([longitude, latitude]).setHTML(tooltipHTML).addTo(map.current!);
+            hoverPopup.setLngLat([longitude, latitude]).setHTML(createTooltipHTML()).addTo(map.current!);
 
-            // Add event listeners to the popup element
             const popupElement = hoverPopup.getElement();
             if (popupElement) {
               popupElement.addEventListener('mouseenter', () => {
@@ -871,15 +875,18 @@ export function MapContainer({
               });
 
               popupElement.addEventListener('mouseleave', () => {
-                hideTooltip();
+                if (!isPersistent) hideTooltip();
               });
 
-              // Add click handler for photo view button
               const photoBtn = popupElement.querySelector('.view-photos-btn');
               if (photoBtn) {
                 photoBtn.addEventListener('click', (e) => {
                   e.stopPropagation();
                   hoverPopup.remove();
+                  if (persistentPopupRef.current) {
+                    persistentPopupRef.current.popup.remove();
+                    persistentPopupRef.current = null;
+                  }
                   onSelectCompany(company);
                 });
               }
@@ -887,12 +894,12 @@ export function MapContainer({
           };
 
           const hideTooltip = () => {
+            if (isPersistent) return;
+            
             hideTimeout = setTimeout(() => {
-              // Add hiding class for exit animation
               const popupElement = hoverPopup.getElement();
               if (popupElement) {
                 popupElement.classList.add('tooltip-hiding');
-                // Wait for animation to complete before removing
                 setTimeout(() => {
                   hoverPopup.remove();
                 }, 200);
@@ -906,30 +913,64 @@ export function MapContainer({
           el.addEventListener('mouseenter', showTooltip);
           el.addEventListener('mouseleave', hideTooltip);
 
-          // Click popup (existing functionality)
-          const clickPopup = new maplibregl.Popup({
-            offset: 25,
-            closeButton: true,
-            closeOnClick: false,
-          }).setHTML(`
-            <div class="p-3">
-              <h3 class="font-semibold text-sm mb-2">${company.name}</h3>
-              <div class="space-y-1 text-xs">
-                <p><strong>Estado:</strong> ${company.status?.status_name || 'N/A'}</p>
-                <p><strong>Dirección:</strong> ${company.address}</p>
-                <p><strong>Parroquia:</strong> ${company.parroquia}</p>
-                ${company.cnae ? `<p><strong>CNAE:</strong> ${formatCnaeWithDescription(company.cnae)}</p>` : ''}
-                ${company.gestor ? `<strong>Gestor:</strong> ${company.gestor.full_name || company.gestor.email}</p>` : ''}
-                ${company.products && company.products.length > 0 ? `<p><strong>Productos:</strong> ${company.products.length}</p>` : ''}
-              </div>
-            </div>
-          `);
+          el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            
+            // If clicking on the same marker that has persistent popup, close it
+            if (persistentPopupRef.current && persistentPopupRef.current.companyId === company.id) {
+              const popupElement = persistentPopupRef.current.popup.getElement();
+              if (popupElement) {
+                popupElement.classList.add('tooltip-hiding');
+                setTimeout(() => {
+                  persistentPopupRef.current?.popup.remove();
+                  persistentPopupRef.current = null;
+                  isPersistent = false;
+                }, 200);
+              }
+              return;
+            }
 
-          el.addEventListener('click', () => {
-            hoverPopup.remove(); // Remove hover tooltip on click
-            marker.setPopup(clickPopup);
-            marker.togglePopup();
-            onSelectCompany(company);
+            // Close any existing persistent popup
+            if (persistentPopupRef.current) {
+              const oldPopupElement = persistentPopupRef.current.popup.getElement();
+              if (oldPopupElement) {
+                oldPopupElement.classList.add('tooltip-hiding');
+                setTimeout(() => {
+                  persistentPopupRef.current?.popup.remove();
+                }, 200);
+              }
+            }
+
+            // Remove hover tooltip
+            hoverPopup.remove();
+
+            // Create new persistent popup
+            const persistentPopup = new maplibregl.Popup({
+              offset: 25,
+              closeButton: false,
+              closeOnClick: false,
+              className: 'hover-tooltip persistent-tooltip',
+            });
+
+            persistentPopup.setLngLat([longitude, latitude]).setHTML(createTooltipHTML()).addTo(map.current!);
+            
+            isPersistent = true;
+            persistentPopupRef.current = { popup: persistentPopup, companyId: company.id };
+
+            // Add photo button handler to persistent popup
+            const popupElement = persistentPopup.getElement();
+            if (popupElement) {
+              const photoBtn = popupElement.querySelector('.view-photos-btn');
+              if (photoBtn) {
+                photoBtn.addEventListener('click', (e) => {
+                  e.stopPropagation();
+                  persistentPopup.remove();
+                  persistentPopupRef.current = null;
+                  isPersistent = false;
+                  onSelectCompany(company);
+                });
+              }
+            }
           });
 
           markers.current.push(marker);
@@ -939,12 +980,28 @@ export function MapContainer({
 
     updateMarkers();
 
+    // Close persistent popup when clicking on map
+    const handleMapClick = () => {
+      if (persistentPopupRef.current) {
+        const popupElement = persistentPopupRef.current.popup.getElement();
+        if (popupElement) {
+          popupElement.classList.add('tooltip-hiding');
+          setTimeout(() => {
+            persistentPopupRef.current?.popup.remove();
+            persistentPopupRef.current = null;
+          }, 200);
+        }
+      }
+    };
+
     map.current.on('moveend', updateMarkers);
     map.current.on('zoomend', updateMarkers);
+    map.current.on('click', handleMapClick);
 
     return () => {
       map.current?.off('moveend', updateMarkers);
       map.current?.off('zoomend', updateMarkers);
+      map.current?.off('click', handleMapClick);
     };
   }, [companies, filters, mapLoaded, statusColors, onSelectCompany, baseLayers.markers, tooltipConfig, vinculacionData, minZoomVinculacion, colorMode, visitCounts]);
 
