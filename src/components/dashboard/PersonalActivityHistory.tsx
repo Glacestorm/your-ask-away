@@ -10,11 +10,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-import { CalendarIcon, Filter, Activity, Eye, Edit, Plus, Trash2, Clock } from 'lucide-react';
+import { CalendarIcon, Filter, Activity, Eye, Edit, Plus, Trash2, Clock, FileDown, FileSpreadsheet } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
+import { toast } from 'sonner';
 
 interface ActivityFilters {
   dateFrom: Date | undefined;
@@ -197,18 +201,158 @@ export function PersonalActivityHistory() {
     return null;
   };
 
+  const getFilterSummary = () => {
+    const parts: string[] = [];
+    if (filters.dateFrom) parts.push(`Desde: ${format(filters.dateFrom, 'dd/MM/yyyy')}`);
+    if (filters.dateTo) parts.push(`Hasta: ${format(filters.dateTo, 'dd/MM/yyyy')}`);
+    if (filters.actionType !== 'all') parts.push(`Acción: ${filters.actionType}`);
+    if (filters.tableName !== 'all') parts.push(`Tabla: ${getTableDisplayName(filters.tableName)}`);
+    return parts.length > 0 ? parts.join(' | ') : 'Sin filtros aplicados';
+  };
+
+  const exportToPDF = () => {
+    try {
+      const doc = new jsPDF();
+      
+      // Header
+      doc.setFontSize(18);
+      doc.text('Historial de Actividad Personal', 14, 20);
+      
+      doc.setFontSize(10);
+      doc.text(`Generado: ${format(new Date(), "dd/MM/yyyy HH:mm")}`, 14, 28);
+      doc.text(`Usuario: ${user?.email || 'N/A'}`, 14, 34);
+      doc.text(`Filtros: ${getFilterSummary()}`, 14, 40);
+      
+      // Table data
+      const tableData = activities.map((activity) => {
+        let details = '';
+        if (activity.action === 'UPDATE' && activity.old_data && activity.new_data) {
+          const oldData = activity.old_data as Record<string, any>;
+          const newData = activity.new_data as Record<string, any>;
+          const changes = Object.keys(newData)
+            .filter(key => oldData[key] !== newData[key] && key !== 'updated_at')
+            .map(key => `${key}: ${oldData[key]} → ${newData[key]}`)
+            .join('; ');
+          details = changes || 'Sin cambios';
+        } else if (activity.action === 'INSERT' && activity.new_data) {
+          const data = activity.new_data as Record<string, any>;
+          details = Object.entries(data).slice(0, 3).map(([k, v]) => `${k}: ${v}`).join('; ');
+        } else if (activity.action === 'DELETE' && activity.old_data) {
+          const data = activity.old_data as Record<string, any>;
+          details = Object.entries(data).slice(0, 3).map(([k, v]) => `${k}: ${v}`).join('; ');
+        }
+        
+        return [
+          format(new Date(activity.created_at!), 'dd/MM/yyyy HH:mm'),
+          activity.action,
+          getTableDisplayName(activity.table_name),
+          details.substring(0, 100) + (details.length > 100 ? '...' : '')
+        ];
+      });
+
+      autoTable(doc, {
+        startY: 48,
+        head: [['Fecha', 'Acción', 'Tabla', 'Detalles']],
+        body: tableData,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [79, 70, 229] },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+      });
+
+      doc.save(`historial-actividad-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+      toast.success('PDF exportado correctamente');
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      toast.error('Error al exportar PDF');
+    }
+  };
+
+  const exportToExcel = () => {
+    try {
+      const exportData = activities.map((activity) => {
+        let details = '';
+        if (activity.action === 'UPDATE' && activity.old_data && activity.new_data) {
+          const oldData = activity.old_data as Record<string, any>;
+          const newData = activity.new_data as Record<string, any>;
+          const changes = Object.keys(newData)
+            .filter(key => oldData[key] !== newData[key] && key !== 'updated_at')
+            .map(key => `${key}: ${oldData[key]} → ${newData[key]}`)
+            .join('; ');
+          details = changes || 'Sin cambios';
+        } else if (activity.action === 'INSERT' && activity.new_data) {
+          const data = activity.new_data as Record<string, any>;
+          details = Object.entries(data).map(([k, v]) => `${k}: ${v}`).join('; ');
+        } else if (activity.action === 'DELETE' && activity.old_data) {
+          const data = activity.old_data as Record<string, any>;
+          details = Object.entries(data).map(([k, v]) => `${k}: ${v}`).join('; ');
+        }
+
+        return {
+          'Fecha': format(new Date(activity.created_at!), 'dd/MM/yyyy HH:mm'),
+          'Acción': activity.action,
+          'Tabla': getTableDisplayName(activity.table_name),
+          'Detalles': details,
+          'ID Registro': activity.record_id || 'N/A'
+        };
+      });
+
+      // Add header info
+      const headerInfo = [
+        { 'Historial de Actividad Personal': '' },
+        { 'Generado': format(new Date(), 'dd/MM/yyyy HH:mm') },
+        { 'Usuario': user?.email || 'N/A' },
+        { 'Filtros': getFilterSummary() },
+        {},
+      ];
+
+      const ws = XLSX.utils.json_to_sheet([...headerInfo, ...exportData]);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Historial');
+      
+      XLSX.writeFile(wb, `historial-actividad-${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+      toast.success('Excel exportado correctamente');
+    } catch (error) {
+      console.error('Error exporting Excel:', error);
+      toast.error('Error al exportar Excel');
+    }
+  };
+
   const uniqueTables = Array.from(new Set(activities.map((a) => a.table_name)));
 
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Activity className="h-5 w-5" />
-          Mi Historial de Actividad
-        </CardTitle>
-        <CardDescription>
-          Registro de todas tus acciones en el sistema
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              Mi Historial de Actividad
+            </CardTitle>
+            <CardDescription>
+              Registro de todas tus acciones en el sistema
+            </CardDescription>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={exportToPDF}
+              disabled={activities.length === 0}
+            >
+              <FileDown className="h-4 w-4 mr-2" />
+              Exportar PDF
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={exportToExcel}
+              disabled={activities.length === 0}
+            >
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+              Exportar Excel
+            </Button>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         {/* Filters */}
