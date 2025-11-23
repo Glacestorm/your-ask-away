@@ -172,24 +172,13 @@
 
 /* Interactive marker hover effects */
 .custom-marker {
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .custom-marker:hover {
-  transform: scale(1.15);
-  animation: markerPulse 1.5s ease-in-out infinite;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.25));
-}
-
-@keyframes markerPulse {
-  0%, 100% {
-    transform: scale(1.15);
-    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.25));
-  }
-  50% {
-    transform: scale(1.17);
-    filter: drop-shadow(0 5px 14px rgba(0, 0, 0, 0.28));
-  }
+  transform: scale(1.08);
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.3));
 }
 
 /* Cluster marker hover effects */
