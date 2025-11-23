@@ -24,7 +24,6 @@ import { SystemHealthMonitor } from '@/components/admin/SystemHealthMonitor';
 import { TPVManager } from '@/components/admin/TPVManager';
 import { TPVGoalsManager } from '@/components/admin/TPVGoalsManager';
 import { CommercialDirectorDashboard } from '@/components/admin/CommercialDirectorDashboard';
-import { MetricsExplorer } from '@/components/admin/MetricsExplorer';
 const Admin = () => {
   const { user, isAdmin, loading: authLoading } = useAuth();
   const { t } = useLanguage();
@@ -50,8 +49,6 @@ const Admin = () => {
     switch (activeSection) {
       case 'director':
         return <CommercialDirectorDashboard />;
-      case 'metrics-explorer':
-        return <MetricsExplorer />;
       case 'health':
         return <SystemHealthMonitor />;
       case 'visits':
