@@ -39,6 +39,8 @@ import {
   ArrowRight,
   Download,
   Users,
+  Sparkles,
+  Loader2,
 } from 'lucide-react';
 
 interface ExcelImporterProps {
@@ -108,6 +110,7 @@ export const ExcelImporter = ({ open, onOpenChange, onImportComplete, parroquias
   const [importProgress, setImportProgress] = useState(0);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [importing, setImporting] = useState(false);
+  const [smartMapping, setSmartMapping] = useState(false);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -173,6 +176,56 @@ export const ExcelImporter = ({ open, onOpenChange, onImportComplete, parroquias
     });
 
     return mapping;
+  };
+
+  const smartAutoMap = async () => {
+    setSmartMapping(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('smart-column-mapping', {
+        body: {
+          columns: excelColumns,
+          sampleData: excelData.slice(0, 3)
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.error) {
+        if (data.error.includes('Rate limit')) {
+          toast.error('Límite de solicitudes alcanzado. Por favor, espera un momento e intenta de nuevo.');
+        } else if (data.error.includes('Payment required')) {
+          toast.error('Se requiere pago. Por favor, añade créditos a tu espacio de trabajo Lovable AI.');
+        } else {
+          toast.error('Error en el mapeo inteligente: ' + data.error);
+        }
+        return;
+      }
+
+      if (data.mappings && Array.isArray(data.mappings)) {
+        const aiMappings: MappedColumn[] = data.mappings.map((m: any) => ({
+          excelColumn: m.excelColumn,
+          dbField: m.dbField
+        }));
+        
+        setColumnMapping(aiMappings);
+        toast.success(`✨ Mapeo inteligente completado: ${data.mappedColumns} de ${data.totalColumns} columnas mapeadas`);
+        
+        // Show reasoning if available
+        if (data.mappings.some((m: any) => m.reasoning)) {
+          console.log('AI Mapping Reasoning:', data.mappings);
+        }
+      } else {
+        toast.error('Respuesta inválida del servicio de mapeo');
+      }
+    } catch (error: any) {
+      console.error('Error in smart mapping:', error);
+      toast.error('Error al realizar el mapeo inteligente. Usando mapeo automático básico.');
+      // Fallback to basic mapping
+      const basicMapping = autoMapColumns(excelColumns);
+      setColumnMapping(basicMapping);
+    } finally {
+      setSmartMapping(false);
+    }
   };
 
   const updateMapping = (excelColumn: string, dbField: string) => {
@@ -535,6 +588,37 @@ export const ExcelImporter = ({ open, onOpenChange, onImportComplete, parroquias
                 el mapeo según sea necesario.
               </AlertDescription>
             </Alert>
+
+            <div className="flex gap-2">
+              <Button 
+                onClick={smartAutoMap} 
+                disabled={smartMapping}
+                variant="default"
+                className="flex-1"
+              >
+                {smartMapping ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Analizando con IA...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Mapeo Inteligente con IA
+                  </>
+                )}
+              </Button>
+              <Button 
+                onClick={() => {
+                  const basicMapping = autoMapColumns(excelColumns);
+                  setColumnMapping(basicMapping);
+                  toast.success('Mapeo básico aplicado');
+                }}
+                variant="outline"
+              >
+                Mapeo Básico
+              </Button>
+            </div>
 
             <ScrollArea className="h-[400px] border rounded-lg p-4">
               <div className="space-y-3">

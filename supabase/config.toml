@@ -1,1 +1,4 @@
 project_id = "avaugfnqvvqcilhiudlf"
+
+[functions.smart-column-mapping]
+verify_jwt = false
