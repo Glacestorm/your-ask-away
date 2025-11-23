@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { MapPin, Menu, LogOut, Settings, BarChart3, UserCircle, Mountain, Layers, Info } from 'lucide-react';
+import { MapPin, Menu, LogOut, Settings, BarChart3, UserCircle, Mountain, Layers, Info, Filter } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +15,13 @@ import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { MapFilters, StatusColor, Product } from '@/types/database';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useState } from 'react';
+import { getSectorIcon } from './markerIcons';
+import { formatCnaeWithDescription } from '@/lib/cnaeDescriptions';
 
 export interface MapBaseLayers {
   roads: boolean;
@@ -31,6 +38,13 @@ interface MapHeaderProps {
   onView3DChange: (enabled: boolean) => void;
   baseLayers: MapBaseLayers;
   onBaseLayersChange: (layers: MapBaseLayers) => void;
+  statusColors: StatusColor[];
+  products: Product[];
+  filters: MapFilters;
+  onFiltersChange: (filters: MapFilters) => void;
+  availableParroquias: string[];
+  availableCnaes: string[];
+  availableSectors: string[];
 }
 
 export function MapHeader({ 
@@ -41,10 +55,68 @@ export function MapHeader({
   onMapStyleChange,
   onView3DChange,
   baseLayers,
-  onBaseLayersChange
+  onBaseLayersChange,
+  statusColors,
+  products,
+  filters,
+  onFiltersChange,
+  availableParroquias,
+  availableCnaes,
+  availableSectors,
 }: MapHeaderProps) {
   const { user, signOut, userRole, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const [openSections, setOpenSections] = useState<string[]>(['status', 'products']);
+
+  const toggleSection = (section: string) => {
+    setOpenSections((prev) =>
+      prev.includes(section)
+        ? prev.filter((s) => s !== section)
+        : [...prev, section]
+    );
+  };
+
+  const handleStatusToggle = (statusId: string) => {
+    const newStatusIds = filters.statusIds.includes(statusId)
+      ? filters.statusIds.filter((id) => id !== statusId)
+      : [...filters.statusIds, statusId];
+    onFiltersChange({ ...filters, statusIds: newStatusIds });
+  };
+
+  const handleProductToggle = (productId: string) => {
+    const newProductIds = filters.productIds.includes(productId)
+      ? filters.productIds.filter((id) => id !== productId)
+      : [...filters.productIds, productId];
+    onFiltersChange({ ...filters, productIds: newProductIds });
+  };
+
+  const handleParroquiaToggle = (parroquia: string) => {
+    const newParroquias = filters.parroquias.includes(parroquia)
+      ? filters.parroquias.filter((p) => p !== parroquia)
+      : [...filters.parroquias, parroquia];
+    onFiltersChange({ ...filters, parroquias: newParroquias });
+  };
+
+  const handleCnaeToggle = (cnae: string) => {
+    const newCnaes = filters.cnaes.includes(cnae)
+      ? filters.cnaes.filter((c) => c !== cnae)
+      : [...filters.cnaes, cnae];
+    onFiltersChange({ ...filters, cnaes: newCnaes });
+  };
+
+  const handleSectorToggle = (sector: string) => {
+    const newSectors = filters.sectors.includes(sector)
+      ? filters.sectors.filter((s) => s !== sector)
+      : [...filters.sectors, sector];
+    onFiltersChange({ ...filters, sectors: newSectors });
+  };
+
+  const activeFiltersCount = 
+    filters.statusIds.length + 
+    filters.productIds.length + 
+    filters.parroquias.length + 
+    filters.cnaes.length +
+    filters.sectors.length;
 
   const getUserInitials = () => {
     if (!user?.email) return 'U';
@@ -135,57 +207,277 @@ export function MapHeader({
               >
                 <Layers className="mr-1 h-3 w-3" />
                 Capas
+                {activeFiltersCount > 0 && (
+                  <span className="ml-2 rounded-full bg-primary px-1.5 py-0.5 text-xs text-primary-foreground">
+                    {activeFiltersCount}
+                  </span>
+                )}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 z-50 bg-card">
-              <div className="p-3 space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="markers"
-                    checked={baseLayers.markers}
-                    onCheckedChange={(checked) =>
-                      onBaseLayersChange({ ...baseLayers, markers: !!checked })
-                    }
-                  />
-                  <Label htmlFor="markers" className="text-sm font-medium cursor-pointer">
-                    📍 Marcadores de empresas
-                  </Label>
-                </div>
-                
-                <Separator />
-                
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Opciones de visualización
-                  </p>
-                  
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="labels"
-                      checked={baseLayers.labels}
-                      onCheckedChange={(checked) =>
-                        onBaseLayersChange({ ...baseLayers, labels: !!checked })
-                      }
-                    />
-                    <Label htmlFor="labels" className="text-sm font-normal cursor-pointer">
-                      Etiquetas de lugares
-                    </Label>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="roads"
-                      checked={baseLayers.roads}
-                      onCheckedChange={(checked) =>
-                        onBaseLayersChange({ ...baseLayers, roads: !!checked })
-                      }
-                    />
-                    <Label htmlFor="roads" className="text-sm font-normal cursor-pointer">
-                      Carreteras destacadas
-                    </Label>
-                  </div>
-                </div>
+            <DropdownMenuContent align="end" className="w-80 max-h-[600px] z-50 bg-card p-0">
+              <div className="p-3 border-b">
+                <h4 className="font-semibold text-sm">Capas del mapa</h4>
               </div>
+              
+              <ScrollArea className="h-[500px]">
+                <div className="p-3 space-y-3">
+                  {/* Base layers section */}
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      Capas base
+                    </p>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="markers"
+                        checked={baseLayers.markers}
+                        onCheckedChange={(checked) =>
+                          onBaseLayersChange({ ...baseLayers, markers: !!checked })
+                        }
+                      />
+                      <Label htmlFor="markers" className="text-sm font-medium cursor-pointer">
+                        📍 Marcadores de empresas
+                      </Label>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="labels"
+                        checked={baseLayers.labels}
+                        onCheckedChange={(checked) =>
+                          onBaseLayersChange({ ...baseLayers, labels: !!checked })
+                        }
+                      />
+                      <Label htmlFor="labels" className="text-sm font-normal cursor-pointer">
+                        Etiquetas de lugares
+                      </Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="roads"
+                        checked={baseLayers.roads}
+                        onCheckedChange={(checked) =>
+                          onBaseLayersChange({ ...baseLayers, roads: !!checked })
+                        }
+                      />
+                      <Label htmlFor="roads" className="text-sm font-normal cursor-pointer">
+                        Carreteras destacadas
+                      </Label>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+
+                  {/* Filter sections */}
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                      <Filter className="inline h-3 w-3 mr-1" />
+                      Filtros
+                    </p>
+
+                    {/* Estados */}
+                    <Collapsible
+                      open={openSections.includes('status')}
+                      onOpenChange={() => toggleSection('status')}
+                    >
+                      <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md px-2 py-2 hover:bg-accent">
+                        <span className="text-sm font-medium">Estados</span>
+                        {openSections.includes('status') ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4" />
+                        )}
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="space-y-2 pt-2">
+                        {statusColors.map((status) => (
+                          <div key={status.id} className="flex items-center space-x-2 px-2">
+                            <Checkbox
+                              id={`status-${status.id}`}
+                              checked={filters.statusIds.includes(status.id)}
+                              onCheckedChange={() => handleStatusToggle(status.id)}
+                            />
+                            <div className="flex flex-1 items-center gap-2">
+                              <div
+                                className="h-3 w-3 rounded-full"
+                                style={{ backgroundColor: status.color_hex }}
+                              />
+                              <Label
+                                htmlFor={`status-${status.id}`}
+                                className="flex-1 cursor-pointer text-sm font-normal"
+                              >
+                                {status.status_name}
+                              </Label>
+                            </div>
+                          </div>
+                        ))}
+                      </CollapsibleContent>
+                    </Collapsible>
+
+                    {/* Productos */}
+                    <Collapsible
+                      open={openSections.includes('products')}
+                      onOpenChange={() => toggleSection('products')}
+                    >
+                      <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md px-2 py-2 hover:bg-accent">
+                        <span className="text-sm font-medium">Productos</span>
+                        {openSections.includes('products') ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4" />
+                        )}
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="space-y-2 pt-2">
+                        {products.map((product) => (
+                          <div key={product.id} className="flex items-center space-x-2 px-2">
+                            <Checkbox
+                              id={`product-${product.id}`}
+                              checked={filters.productIds.includes(product.id)}
+                              onCheckedChange={() => handleProductToggle(product.id)}
+                            />
+                            <Label
+                              htmlFor={`product-${product.id}`}
+                              className="flex-1 cursor-pointer text-sm font-normal"
+                            >
+                              {product.name}
+                            </Label>
+                          </div>
+                        ))}
+                      </CollapsibleContent>
+                    </Collapsible>
+
+                    {/* Parroquias */}
+                    {availableParroquias.length > 0 && (
+                      <Collapsible
+                        open={openSections.includes('parroquias')}
+                        onOpenChange={() => toggleSection('parroquias')}
+                      >
+                        <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md px-2 py-2 hover:bg-accent">
+                          <span className="text-sm font-medium">Parroquias</span>
+                          {openSections.includes('parroquias') ? (
+                            <ChevronUp className="h-4 w-4" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4" />
+                          )}
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="space-y-2 pt-2">
+                          {availableParroquias.map((parroquia) => (
+                            <div key={parroquia} className="flex items-center space-x-2 px-2">
+                              <Checkbox
+                                id={`parroquia-${parroquia}`}
+                                checked={filters.parroquias.includes(parroquia)}
+                                onCheckedChange={() => handleParroquiaToggle(parroquia)}
+                              />
+                              <Label
+                                htmlFor={`parroquia-${parroquia}`}
+                                className="flex-1 cursor-pointer text-sm font-normal"
+                              >
+                                {parroquia}
+                              </Label>
+                            </div>
+                          ))}
+                        </CollapsibleContent>
+                      </Collapsible>
+                    )}
+
+                    {/* Sectores */}
+                    {availableSectors.length > 0 && (
+                      <Collapsible
+                        open={openSections.includes('sectors')}
+                        onOpenChange={() => toggleSection('sectors')}
+                      >
+                        <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md px-2 py-2 hover:bg-accent">
+                          <span className="text-sm font-medium">Sectores</span>
+                          {openSections.includes('sectors') ? (
+                            <ChevronUp className="h-4 w-4" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4" />
+                          )}
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="space-y-2 pt-2">
+                          {availableSectors.map((sector) => {
+                            const Icon = getSectorIcon(sector);
+                            return (
+                              <div key={sector} className="flex items-center space-x-2 px-2">
+                                <Checkbox
+                                  id={`sector-${sector}`}
+                                  checked={filters.sectors.includes(sector)}
+                                  onCheckedChange={() => handleSectorToggle(sector)}
+                                />
+                                <div className="flex flex-1 items-center gap-2">
+                                  <Icon className="h-4 w-4 text-muted-foreground" />
+                                  <Label
+                                    htmlFor={`sector-${sector}`}
+                                    className="flex-1 cursor-pointer text-sm font-normal"
+                                  >
+                                    {sector}
+                                  </Label>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </CollapsibleContent>
+                      </Collapsible>
+                    )}
+
+                    {/* CNAEs */}
+                    {availableCnaes.length > 0 && (
+                      <Collapsible
+                        open={openSections.includes('cnaes')}
+                        onOpenChange={() => toggleSection('cnaes')}
+                      >
+                        <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md px-2 py-2 hover:bg-accent">
+                          <span className="text-sm font-medium">CNAE</span>
+                          {openSections.includes('cnaes') ? (
+                            <ChevronUp className="h-4 w-4" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4" />
+                          )}
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="space-y-2 pt-2">
+                          {availableCnaes.map((cnae) => (
+                            <div key={cnae} className="flex items-center space-x-2 px-2">
+                              <Checkbox
+                                id={`cnae-${cnae}`}
+                                checked={filters.cnaes.includes(cnae)}
+                                onCheckedChange={() => handleCnaeToggle(cnae)}
+                              />
+                              <Label
+                                htmlFor={`cnae-${cnae}`}
+                                className="flex-1 cursor-pointer text-sm font-normal"
+                              >
+                                {formatCnaeWithDescription(cnae)}
+                              </Label>
+                            </div>
+                          ))}
+                        </CollapsibleContent>
+                      </Collapsible>
+                    )}
+                  </div>
+                </div>
+              </ScrollArea>
+
+              {activeFiltersCount > 0 && (
+                <div className="border-t p-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      onFiltersChange({
+                        ...filters,
+                        statusIds: [],
+                        productIds: [],
+                        parroquias: [],
+                        cnaes: [],
+                        sectors: [],
+                      })
+                    }
+                    className="w-full"
+                  >
+                    Limpiar filtros
+                  </Button>
+                </div>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

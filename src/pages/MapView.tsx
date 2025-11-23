@@ -145,6 +145,13 @@ const MapView = () => {
         onView3DChange={setView3D}
         baseLayers={baseLayers}
         onBaseLayersChange={setBaseLayers}
+        statusColors={statusColors}
+        products={products}
+        filters={filters}
+        onFiltersChange={setFilters}
+        availableParroquias={availableParroquias}
+        availableCnaes={availableCnaes}
+        availableSectors={availableSectors}
       />
       
       <div className="relative flex flex-1 overflow-hidden">
@@ -170,15 +177,6 @@ const MapView = () => {
             baseLayers={baseLayers}
           />
           
-          <MapLayersControl
-            statusColors={statusColors}
-            products={products}
-            filters={filters}
-            onFiltersChange={setFilters}
-            availableParroquias={availableParroquias}
-            availableCnaes={availableCnaes}
-            availableSectors={availableSectors}
-          />
         </div>
       </div>
     </div>
