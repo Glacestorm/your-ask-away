@@ -68,8 +68,8 @@ export function AdminSidebar({
                     className="font-semibold py-3 rounded-xl transition-all hover:shadow-md"
                     tooltip={!open ? t('adminSidebar.commercialDirector') : undefined}
                   >
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-hover transition-transform duration-300 hover:scale-110">
-                      <TrendingUp className="h-5 w-5 text-white drop-shadow-md" />
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl">
+                      <TrendingUp className="h-5 w-5 text-primary-foreground" />
                     </div>
                     <span className={`text-base transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
                       {t('adminSidebar.commercialDirector')}
@@ -85,8 +85,8 @@ export function AdminSidebar({
                   className="font-semibold py-3 rounded-xl transition-all hover:shadow-md"
                   tooltip={!open ? t('adminSidebar.officeDirector') : undefined}
                 >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-hover transition-transform duration-300 hover:scale-110">
-                    <Building2 className="h-5 w-5 text-white drop-shadow-md" />
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl">
+                    <Building2 className="h-5 w-5 text-primary-foreground" />
                   </div>
                   <span className={`text-base transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
                     {t('adminSidebar.officeDirector')}
@@ -102,8 +102,8 @@ export function AdminSidebar({
                   className="font-semibold py-3 rounded-xl transition-all hover:shadow-md"
                   tooltip={!open ? t('adminSidebar.commercialManager') : undefined}
                 >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-hover transition-transform duration-300 hover:scale-110">
-                    <Briefcase className="h-5 w-5 text-white drop-shadow-md" />
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl">
+                    <Briefcase className="h-5 w-5 text-primary-foreground" />
                   </div>
                   <span className={`text-base transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
                     {t('adminSidebar.commercialManager')}
