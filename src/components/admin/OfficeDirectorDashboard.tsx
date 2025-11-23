@@ -384,7 +384,7 @@ export function OfficeDirectorDashboard() {
         </TabsContent>
 
         <TabsContent value="explorer">
-          <MetricsExplorer />
+          <MetricsExplorer restrictToOficina={userOficina} />
         </TabsContent>
       </Tabs>
     </div>
