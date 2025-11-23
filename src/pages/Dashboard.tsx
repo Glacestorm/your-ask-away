@@ -42,6 +42,7 @@ import { AnalisisEmbudo } from '@/components/dashboard/AnalisisEmbudo';
 import { supabase } from '@/integrations/supabase/client';
 import { VisitReminders } from '@/components/dashboard/VisitReminders';
 import { NotificationService } from '@/components/dashboard/NotificationService';
+import { UpcomingVisitsWidget } from '@/components/dashboard/UpcomingVisitsWidget';
 import * as XLSX from 'xlsx';
 
 const Dashboard = () => {
@@ -202,6 +203,7 @@ const Dashboard = () => {
 
           {/* Resumen Ejecutivo */}
           <TabsContent value="resumen" className="space-y-6">
+            <UpcomingVisitsWidget />
             <ResumenEjecutivo startDate={startDate} endDate={endDate} />
           </TabsContent>
 
