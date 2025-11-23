@@ -12,6 +12,7 @@ import { DateRange } from 'react-day-picker';
 import { subMonths, format } from 'date-fns';
 import { MetricsExplorer } from '@/components/admin/MetricsExplorer';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Panel del Director de Oficina con vista filtrada por su oficina
 
@@ -36,6 +37,7 @@ interface GestorDetail {
 
 export function OfficeDirectorDashboard() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [userOficina, setUserOficina] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
@@ -186,11 +188,9 @@ export function OfficeDirectorDashboard() {
 
       const details = await Promise.all(detailsPromises);
       
-      // Para el ranking (solo con visitas)
+      // Para el ranking
       const ranking = details
-        .filter(d => d.totalVisits > 0)
         .sort((a, b) => b.totalVisits - a.totalVisits)
-        .slice(0, 10)
         .map(d => ({ name: d.name, visits: d.totalVisits }));
       
       setGestorRanking(ranking);
@@ -199,26 +199,13 @@ export function OfficeDirectorDashboard() {
       const sortedDetails = details.sort((a, b) => b.totalVisits - a.totalVisits);
       setGestorDetails(sortedDetails);
 
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);
-      toast.error('Error al cargar datos');
-    } finally {
+      toast.error('Error al cargar los datos');
       setLoading(false);
     }
   };
-
-  if (!userOficina && !loading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Error de configuración</CardTitle>
-          <CardDescription>
-            No tienes una oficina asignada. Contacta al administrador del sistema.
-          </CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
 
   if (loading) {
     return (
@@ -240,22 +227,33 @@ export function OfficeDirectorDashboard() {
     );
   }
 
+  if (!userOficina) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Error</CardTitle>
+          <CardDescription>No tienes una oficina asignada. Contacta al administrador.</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Encabezado */}
       <Card>
         <CardHeader>
-          <CardTitle>Panel del Director de Oficina</CardTitle>
+          <CardTitle>{t('director.title')}</CardTitle>
           <CardDescription>
-            Vista de tu oficina: {userOficina} - Métricas de gestores y explorador
+            Vista de tu oficina: {userOficina} - {t('director.subtitle')}
           </CardDescription>
         </CardHeader>
       </Card>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="overview">Vista General</TabsTrigger>
-          <TabsTrigger value="explorer">Explorador de Métricas</TabsTrigger>
+        <TabsList className="grid w-full max-w-2xl grid-cols-2">
+          <TabsTrigger value="overview">{t('director.overviewTab')}</TabsTrigger>
+          <TabsTrigger value="explorer">{t('director.explorerTab')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -265,46 +263,46 @@ export function OfficeDirectorDashboard() {
             onDateRangeChange={setDateRange}
           />
 
-          {/* KPIs de la Oficina */}
+          {/* KPIs */}
           <div className="grid gap-4 md:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Visitas</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('director.totalVisits')}</CardTitle>
                 <Activity className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.totalVisits}</div>
                 <p className="text-xs text-muted-foreground">
-                  De tu oficina
+                  {t('director.allVisitsDesc')}
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Tasa de Éxito</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('director.successRate')}</CardTitle>
                 <Target className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.avgSuccessRate}%</div>
-                <p className="text-xs text-muted-foreground">Promedio oficina</p>
+                <p className="text-xs text-muted-foreground">{t('director.avgDesc')}</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Empresas</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('director.companies')}</CardTitle>
                 <Building2 className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.totalCompanies}</div>
-                <p className="text-xs text-muted-foreground">En cartera</p>
+                <p className="text-xs text-muted-foreground">{t('director.portfolioDesc')}</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Gestores</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('director.managers')}</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -317,7 +315,7 @@ export function OfficeDirectorDashboard() {
           {/* Gráfico de Ranking */}
           <Card>
             <CardHeader>
-              <CardTitle>Ranking de Gestores</CardTitle>
+              <CardTitle>{t('director.rankingTitle')}</CardTitle>
               <CardDescription>Top gestores de tu oficina por visitas</CardDescription>
             </CardHeader>
             <CardContent>
@@ -333,12 +331,12 @@ export function OfficeDirectorDashboard() {
                       tick={{ fontSize: 12 }}
                     />
                     <Tooltip />
-                    <Bar dataKey="visits" fill="hsl(var(--chart-1))" />
+                    <Bar dataKey="visits" fill="hsl(var(--chart-3))" />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
                 <div className="flex h-[350px] items-center justify-center text-muted-foreground">
-                  No hay datos disponibles
+                  {t('director.noData')}
                 </div>
               )}
             </CardContent>
@@ -347,17 +345,17 @@ export function OfficeDirectorDashboard() {
           {/* Tabla de Gestores */}
           <Card>
             <CardHeader>
-              <CardTitle>Detalle de Gestores</CardTitle>
+              <CardTitle>{t('director.detailsTitle')}</CardTitle>
               <CardDescription>Información completa de los gestores de tu oficina</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Gestor</TableHead>
-                    <TableHead className="text-right">Visitas</TableHead>
-                    <TableHead className="text-right">Tasa Éxito</TableHead>
-                    <TableHead className="text-right">Empresas</TableHead>
+                    <TableHead>{t('director.managerCol')}</TableHead>
+                    <TableHead className="text-right">{t('director.visitsCol')}</TableHead>
+                    <TableHead className="text-right">{t('director.successCol')}</TableHead>
+                    <TableHead className="text-right">{t('director.companiesCol')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -373,7 +371,7 @@ export function OfficeDirectorDashboard() {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={4} className="text-center text-muted-foreground">
-                        No hay datos disponibles
+                        {t('director.noData')}
                       </TableCell>
                     </TableRow>
                   )}
@@ -383,8 +381,8 @@ export function OfficeDirectorDashboard() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="explorer">
-          <MetricsExplorer restrictToOficina={userOficina} />
+        <TabsContent value="explorer" className="space-y-6">
+          <MetricsExplorer />
         </TabsContent>
       </Tabs>
     </div>

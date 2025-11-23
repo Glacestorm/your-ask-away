@@ -467,4 +467,39 @@ export default {
   
   // French locale needed
   'fr': 'Francès',
+  
+  // Director Dashboard
+  'director.title': 'Director de Negoci',
+  'director.subtitle': 'Vista general i explorador de mètriques per gestor, oficina i banc',
+  'director.overviewTab': 'Vista General',
+  'director.commercialTab': 'Responsable Comercial',
+  'director.explorerTab': 'Explorador de Mètriques',
+  'director.totalVisits': 'Total Visites',
+  'director.successRate': 'Taxa d\'Èxit',
+  'director.companies': 'Empreses',
+  'director.managers': 'Gestors',
+  'director.allVisitsDesc': 'Totes les visites registrades',
+  'director.avgDesc': 'Promedi general',
+  'director.portfolioDesc': 'Total en cartera',
+  'director.registeredDesc': 'Registrats',
+  'director.rankingTitle': 'Rànquing de Gestors',
+  'director.rankingDesc': 'Top 10 per nombre de visites',
+  'director.detailsTitle': 'Detall de Gestors',
+  'director.detailsDesc': 'Informació completa de tots els gestors',
+  'director.noData': 'No hi ha dades disponibles',
+  'director.managerCol': 'Gestor',
+  'director.officeCol': 'Oficina',
+  'director.visitsCol': 'Visites',
+  'director.successCol': 'Taxa Èxit',
+  'director.companiesCol': 'Empreses',
+  
+  // Date Range Filter
+  'dateFilter.title': 'Filtres de Període',
+  'dateFilter.subtitle': 'Selecciona el rang de dates per analitzar les dades',
+  'dateFilter.last7days': 'Últims 7 dies',
+  'dateFilter.lastMonth': 'Últim mes',
+  'dateFilter.last3months': 'Últims 3 mesos',
+  'dateFilter.last6months': 'Últims 6 mesos',
+  'dateFilter.thisYear': 'Aquest any',
+  'dateFilter.customRange': 'Rang personalitzat',
 };
