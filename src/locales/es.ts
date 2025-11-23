@@ -501,5 +501,6 @@ export default {
   'dateFilter.last3months': 'Últimos 3 meses',
   'dateFilter.last6months': 'Últimos 6 meses',
   'dateFilter.thisYear': 'Este año',
+  'dateFilter.lastYear': 'Año pasado',
   'dateFilter.customRange': 'Rango personalizado',
 };

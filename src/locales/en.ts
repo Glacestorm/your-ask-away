@@ -501,5 +501,6 @@ export default {
   'dateFilter.last3months': 'Last 3 months',
   'dateFilter.last6months': 'Last 6 months',
   'dateFilter.thisYear': 'This year',
+  'dateFilter.lastYear': 'Last year',
   'dateFilter.customRange': 'Custom range',
 };

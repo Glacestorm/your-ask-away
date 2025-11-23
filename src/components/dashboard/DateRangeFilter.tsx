@@ -108,7 +108,7 @@ export function DateRangeFilter({ dateRange, onDateRangeChange }: DateRangeFilte
               size="sm"
               onClick={() => setPredefinedPeriod('lastYear')}
             >
-              Año pasado
+              {t('dateFilter.lastYear')}
             </Button>
           </div>
 

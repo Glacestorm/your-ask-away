@@ -501,5 +501,6 @@ export default {
   'dateFilter.last3months': 'Últims 3 mesos',
   'dateFilter.last6months': 'Últims 6 mesos',
   'dateFilter.thisYear': 'Aquest any',
+  'dateFilter.lastYear': 'Any anterior',
   'dateFilter.customRange': 'Rang personalitzat',
 };
