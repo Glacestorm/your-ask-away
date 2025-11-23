@@ -52,6 +52,7 @@ import { PersonalActivityHistory } from '@/components/dashboard/PersonalActivity
 import { ActivityStatistics } from '@/components/dashboard/ActivityStatistics';
 import { GestorComparison } from '@/components/dashboard/GestorComparison';
 import { GestorEvolutionTimeline } from '@/components/dashboard/GestorEvolutionTimeline';
+import { TPVGoalsDashboard } from '@/components/dashboard/TPVGoalsDashboard';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import * as XLSX from 'xlsx';
 
@@ -158,7 +159,7 @@ const Dashboard = () => {
 
         {/* Dashboard Tabs */}
         <Tabs defaultValue="resumen" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-17 h-auto">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-18 h-auto">
             <TabsTrigger value="resumen" className="flex items-center gap-2 py-3">
               <TrendingUp className="h-4 w-4" />
               <span className="hidden sm:inline">{t('tabs.resumen')}</span>
@@ -174,6 +175,10 @@ const Dashboard = () => {
             <TabsTrigger value="objetivos" className="flex items-center gap-2 py-3">
               <Award className="h-4 w-4" />
               <span className="hidden sm:inline">{t('tabs.objetivos')}</span>
+            </TabsTrigger>
+            <TabsTrigger value="tpv-goals" className="flex items-center gap-2 py-3">
+              <Target className="h-4 w-4" />
+              <span className="hidden sm:inline">TPV</span>
             </TabsTrigger>
             <TabsTrigger value="visitas" className="flex items-center gap-2 py-3">
               <BarChart3 className="h-4 w-4" />
@@ -265,6 +270,19 @@ const Dashboard = () => {
                 </p>
               </div>
               <ObjetivosYMetas />
+            </div>
+          </TabsContent>
+
+          {/* Objetivos de TPV */}
+          <TabsContent value="tpv-goals" className="space-y-6">
+            <div className="rounded-lg border bg-card p-6">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold">Objetivos de TPV</h2>
+                <p className="text-muted-foreground">
+                  Seguimiento de metas de facturación, vinculación y comisiones
+                </p>
+              </div>
+              <TPVGoalsDashboard />
             </div>
           </TabsContent>
 
