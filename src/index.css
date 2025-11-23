@@ -2,151 +2,156 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* ========================================
+   TEMA DÍA (Light Mode - Default)
+   ======================================== */
+.theme-day {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 84% 4.9%;
+  --primary: 210 100% 50%;
+  --primary-foreground: 0 0% 100%;
+  --primary-glow: 210 100% 60%;
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 210 100% 50%;
+  --radius: 0.75rem;
+  --chart-1: 210 100% 50%;
+  --chart-2: 173 58% 39%;
+  --chart-3: 197 37% 24%;
+  --chart-4: 43 74% 66%;
+  --chart-5: 27 87% 67%;
+  
+  --gradient-primary: linear-gradient(135deg, hsl(210 100% 50%), hsl(210 100% 60%));
+  --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(210 40% 98%));
+  --shadow-elegant: 0 10px 30px -10px hsl(210 100% 50% / 0.2);
+  --shadow-glow: 0 0 40px hsl(210 100% 60% / 0.3);
+}
+
+/* ========================================
+   TEMA NOCHE (Dark Mode)
+   ======================================== */
+.theme-night {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222.2 84% 4.9%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 210 100% 60%;
+  --primary-foreground: 222.2 47.4% 11.2%;
+  --primary-glow: 210 100% 70%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 212.7 26.8% 83.9%;
+  --chart-1: 210 100% 60%;
+  --chart-2: 160 60% 45%;
+  --chart-3: 30 80% 55%;
+  --chart-4: 280 65% 60%;
+  --chart-5: 340 75% 55%;
+  
+  --gradient-primary: linear-gradient(135deg, hsl(210 100% 60%), hsl(210 100% 70%));
+  --gradient-subtle: linear-gradient(180deg, hsl(222.2 84% 4.9%), hsl(217.2 32.6% 10%));
+  --shadow-elegant: 0 10px 30px -10px hsl(210 100% 60% / 0.3);
+  --shadow-glow: 0 0 40px hsl(210 100% 70% / 0.4);
+}
+
+/* ========================================
+   TEMA CREAND (Corporativo)
+   ======================================== */
+.theme-creand {
+  --background: 0 0% 100%;
+  --foreground: 220 39% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 220 39% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 220 39% 11%;
+  --primary: 211 100% 43%;
+  --primary-foreground: 0 0% 100%;
+  --primary-glow: 211 100% 53%;
+  --secondary: 210 17% 95%;
+  --secondary-foreground: 220 39% 11%;
+  --muted: 210 17% 95%;
+  --muted-foreground: 220 14% 46%;
+  --accent: 211 100% 96%;
+  --accent-foreground: 211 100% 43%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 210 17% 90%;
+  --input: 210 17% 90%;
+  --ring: 211 100% 43%;
+  --radius: 0.5rem;
+  --chart-1: 211 100% 43%;
+  --chart-2: 220 39% 11%;
+  --chart-3: 210 17% 60%;
+  --chart-4: 200 80% 50%;
+  --chart-5: 190 70% 45%;
+  
+  --gradient-primary: linear-gradient(135deg, hsl(211 100% 43%), hsl(211 100% 53%));
+  --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(210 17% 98%));
+  --shadow-elegant: 0 10px 30px -10px hsl(211 100% 43% / 0.25);
+  --shadow-glow: 0 0 40px hsl(211 100% 53% / 0.35);
+}
+
+/* ========================================
+   TEMA AURORA (Moderno y Vibrante)
+   ======================================== */
+.theme-aurora {
+  --background: 250 100% 98%;
+  --foreground: 260 50% 15%;
+  --card: 0 0% 100%;
+  --card-foreground: 260 50% 15%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 260 50% 15%;
+  --primary: 280 80% 60%;
+  --primary-foreground: 0 0% 100%;
+  --primary-glow: 280 80% 70%;
+  --secondary: 200 90% 60%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 250 60% 95%;
+  --muted-foreground: 260 20% 50%;
+  --accent: 320 85% 65%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 250 40% 90%;
+  --input: 250 40% 90%;
+  --ring: 280 80% 60%;
+  --radius: 1rem;
+  --chart-1: 280 80% 60%;
+  --chart-2: 200 90% 60%;
+  --chart-3: 320 85% 65%;
+  --chart-4: 340 75% 65%;
+  --chart-5: 260 70% 55%;
+  
+  --gradient-primary: linear-gradient(135deg, hsl(280 80% 60%), hsl(200 90% 60%));
+  --gradient-subtle: linear-gradient(180deg, hsl(250 100% 98%), hsl(280 60% 96%));
+  --shadow-elegant: 0 10px 30px -10px hsl(280 80% 60% / 0.3);
+  --shadow-glow: 0 0 40px hsl(280 80% 70% / 0.5);
+}
 
 @layer base {
   :root {
-    /* Sistema de diseño profesional */
-    --background: 0 0% 100%;
-    --foreground: 220 13% 18%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 220 13% 18%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 13% 18%;
-
-    /* Azul corporativo profesional */
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 100%;
-    --primary-hover: 217 91% 55%;
-
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 220 13% 18%;
-
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
-
-    --accent: 217 91% 95%;
-    --accent-foreground: 217 91% 60%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 217 91% 60%;
-
-    --radius: 0.75rem;
-    
-    /* Efectos y sombras profesionales */
-    --shadow-sm: 0 1px 2px 0 hsl(220 13% 18% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(220 13% 18% / 0.1), 0 2px 4px -2px hsl(220 13% 18% / 0.1);
-    --shadow-lg: 0 10px 15px -3px hsl(220 13% 18% / 0.1), 0 4px 6px -4px hsl(220 13% 18% / 0.1);
-    --shadow-xl: 0 20px 25px -5px hsl(220 13% 18% / 0.1), 0 8px 10px -6px hsl(220 13% 18% / 0.1);
-
-    /* Gradientes profesionales */
-    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(217 91% 70%) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(220 14% 98%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(220 14% 99%) 100%);
-
-    /* Colores para gráficos */
-    --chart-1: 217 91% 60%;
-    --chart-2: 142 76% 36%;
-    --chart-3: 38 92% 50%;
-    --chart-4: 280 87% 65%;
-    --chart-5: 0 84% 60%;
-
-    /* Colores específicos del mapa */
-    --map-control-bg: 0 0% 100%;
-    --map-control-shadow: 0 0% 0% / 0.08;
-    --map-border: 220 13% 91%;
-    
-    /* Transiciones profesionales */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-
-    /* Glassmorphism */
-    --glass-bg: hsl(0 0% 100% / 0.8);
-    --glass-border: hsl(220 13% 91% / 0.5);
-
-    --sidebar-background: 220 14% 98%;
-    --sidebar-foreground: 220 13% 18%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 96%;
-    --sidebar-accent-foreground: 217 91% 60%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217 91% 60%;
-  }
-
-  .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-
-    --card: 222 47% 14%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222 47% 14%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 100%;
-    --primary-hover: 217 91% 65%;
-
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-
-    --accent: 217 33% 17%;
-    --accent-foreground: 217 91% 60%;
-
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217 33% 20%;
-    --input: 217 33% 20%;
-    --ring: 217 91% 60%;
-    
-    /* Efectos y sombras para modo oscuro */
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.3);
-    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.3), 0 2px 4px -2px hsl(0 0% 0% / 0.3);
-    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.3), 0 4px 6px -4px hsl(0 0% 0% / 0.3);
-    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.4), 0 8px 10px -6px hsl(0 0% 0% / 0.4);
-    
-    /* Gradientes para modo oscuro */
-    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(217 91% 70%) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(222 47% 11%) 0%, hsl(222 47% 14%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(222 47% 14%) 0%, hsl(222 47% 16%) 100%);
-    
-    /* Colores para gráficos */
-    --chart-1: 217 91% 60%;
-    --chart-2: 142 76% 45%;
-    --chart-3: 38 92% 60%;
-    --chart-4: 280 87% 70%;
-    --chart-5: 0 72% 60%;
-
-    /* Colores específicos del mapa */
-    --map-control-bg: 217 33% 17%;
-    --map-control-shadow: 0 0% 0% / 0.4;
-    --map-border: 217 33% 25%;
-    
-    /* Glassmorphism */
-    --glass-bg: hsl(222 47% 14% / 0.8);
-    --glass-border: hsl(217 33% 20% / 0.5);
-
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 217 91% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217 33% 17%;
-    --sidebar-accent-foreground: 217 91% 60%;
-    --sidebar-border: 217 33% 20%;
-    --sidebar-ring: 217 91% 60%;
   }
 }
 
@@ -174,6 +179,11 @@ All colors MUST be HSL.
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     letter-spacing: -0.011em;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  * {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
   }
   
   h1, h2, h3, h4, h5, h6 {

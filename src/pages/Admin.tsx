@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Activity } from 'lucide-react';
 import { toast } from 'sonner';
+import { LanguageSelector } from '@/components/LanguageSelector';
+import { ThemeSelector } from '@/components/ThemeSelector';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { CompaniesManager } from '@/components/admin/CompaniesManager';
@@ -194,14 +196,20 @@ const Admin = () => {
         <main className="flex-1 overflow-auto">
           <div className="p-6 space-y-6">
             {/* Header */}
-            <div className="flex items-center gap-4">
-              <SidebarTrigger />
-              <Button variant="ghost" size="icon" onClick={() => navigate('/map')}>
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div>
-                <h1 className="text-3xl font-bold">{t('admin.title')}</h1>
-                <p className="text-muted-foreground">{t('admin.subtitle')}</p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger />
+                <Button variant="ghost" size="icon" onClick={() => navigate('/map')}>
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+                <div>
+                  <h1 className="text-3xl font-bold">{t('admin.title')}</h1>
+                  <p className="text-muted-foreground">{t('admin.subtitle')}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <ThemeSelector />
+                <LanguageSelector />
               </div>
             </div>
 

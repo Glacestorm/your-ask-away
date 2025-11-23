@@ -55,6 +55,7 @@ import { GestorEvolutionTimeline } from '@/components/dashboard/GestorEvolutionT
 import { TPVGoalsDashboard } from '@/components/dashboard/TPVGoalsDashboard';
 import { BestPracticesPanel } from '@/components/dashboard/BestPracticesPanel';
 import { LanguageSelector } from '@/components/LanguageSelector';
+import { ThemeSelector } from '@/components/ThemeSelector';
 import * as XLSX from 'xlsx';
 
 const Dashboard = () => {
@@ -150,6 +151,7 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <ThemeSelector />
             <LanguageSelector />
             <NotificationsPanel />
             <Button onClick={exportToExcel} className="w-full md:w-auto shadow-md hover:shadow-lg transition-shadow">
