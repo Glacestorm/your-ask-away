@@ -145,6 +145,7 @@ export function MapTooltipConfig() {
       turnover: 'Facturación anual',
       sector: 'Sector de actividad',
       status_name: 'Estado actual de la empresa',
+      porcentaje_vinculacion: 'Porcentaje de vinculación con la empresa',
     };
     return descriptions[fieldName] || fieldName;
   };
