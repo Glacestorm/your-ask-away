@@ -184,6 +184,25 @@ export function MapSidebar({
     onFiltersChange({ ...filters, sectors: newSectors });
   };
 
+  const handleSelectAllSectors = () => {
+    const allSectors = Array.from(
+      new Set(companies.map((c) => c.sector || 'Sin sector'))
+    );
+    onFiltersChange({ ...filters, sectors: allSectors });
+  };
+
+  const handleClearSectorSelection = () => {
+    onFiltersChange({ ...filters, sectors: [] });
+  };
+
+  const handleInvertSectorSelection = () => {
+    const allSectors = Array.from(
+      new Set(companies.map((c) => c.sector || 'Sin sector'))
+    );
+    const newSectors = allSectors.filter((s) => !filters.sectors.includes(s));
+    onFiltersChange({ ...filters, sectors: newSectors });
+  };
+
   const hasActiveFilters = 
     filters.statusIds.length > 0 ||
     filters.gestorIds.length > 0 ||
@@ -487,6 +506,9 @@ export function MapSidebar({
               companies={filteredCompanies}
               onSectorClick={handleSectorClick}
               selectedSectors={filters.sectors}
+              onSelectAll={handleSelectAllSectors}
+              onClearSelection={handleClearSectorSelection}
+              onInvertSelection={handleInvertSectorSelection}
             />
           </TabsContent>
 
