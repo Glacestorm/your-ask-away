@@ -132,20 +132,27 @@ const Dashboard = () => {
       
       <div className="container mx-auto p-4 sm:p-6 space-y-6">
         {/* Header */}
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between rounded-2xl bg-gradient-to-br from-card via-card to-accent/20 p-6 shadow-lg border border-border/50">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/map')}>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => navigate('/map')}
+              className="hover:bg-accent/50 transition-colors rounded-xl h-11 w-11"
+            >
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">{t('dashboard.title')}</h1>
-              <p className="text-muted-foreground">{t('dashboard.subtitle')}</p>
+              <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                {t('dashboard.title')}
+              </h1>
+              <p className="text-base text-muted-foreground mt-1">{t('dashboard.subtitle')}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <LanguageSelector />
             <NotificationsPanel />
-            <Button onClick={exportToExcel} className="w-full md:w-auto">
+            <Button onClick={exportToExcel} className="w-full md:w-auto shadow-md hover:shadow-lg transition-shadow">
               <Download className="mr-2 h-4 w-4" />
               {t('dashboard.exportData')}
             </Button>

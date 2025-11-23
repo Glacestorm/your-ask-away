@@ -48,21 +48,23 @@ export function AdminSidebar({
   const isActive = (section: string) => activeSection === section;
 
   return (
-    <Sidebar className={`border-r transition-all duration-300 ${open ? 'w-64' : 'w-16'}`} collapsible="icon">
-      <SidebarContent>
+    <Sidebar className={`border-r border-border/50 bg-gradient-to-b from-card to-accent/5 transition-all duration-300 ${open ? 'w-72' : 'w-20'} shadow-lg`} collapsible="icon">
+      <SidebarContent className="py-4 px-2">
         {/* Dashboard Principal */}
         <SidebarGroup>
-          <SidebarMenu>
+          <SidebarMenu className="space-y-2">
             {(isCommercialDirector || isSuperAdmin || isCommercialManager) && (
               <SidebarMenuItem>
                   <SidebarMenuButton
                     onClick={() => onSectionChange('director')}
                     isActive={isActive('director')}
-                    className="font-semibold"
+                    className="font-semibold py-3 rounded-xl transition-all hover:shadow-md"
                     tooltip={!open ? t('adminSidebar.commercialDirector') : undefined}
                   >
-                    <TrendingUp className="h-5 w-5" />
-                    <span>{t('adminSidebar.commercialDirector')}</span>
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-hover">
+                      <TrendingUp className="h-5 w-5 text-primary-foreground" />
+                    </div>
+                    <span className="text-base">{t('adminSidebar.commercialDirector')}</span>
                   </SidebarMenuButton>
               </SidebarMenuItem>
             )}
@@ -71,11 +73,13 @@ export function AdminSidebar({
                 <SidebarMenuButton
                   onClick={() => onSectionChange('office-director')}
                   isActive={isActive('office-director')}
-                  className="font-semibold"
+                  className="font-semibold py-3 rounded-xl transition-all hover:shadow-md"
                   tooltip={!open ? t('adminSidebar.officeDirector') : undefined}
                 >
-                  <Building2 className="h-5 w-5" />
-                  <span>{t('adminSidebar.officeDirector')}</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-hover">
+                    <Building2 className="h-5 w-5 text-primary-foreground" />
+                  </div>
+                  <span className="text-base">{t('adminSidebar.officeDirector')}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )}
@@ -84,11 +88,13 @@ export function AdminSidebar({
                 <SidebarMenuButton
                   onClick={() => onSectionChange('commercial-manager')}
                   isActive={isActive('commercial-manager')}
-                  className="font-semibold"
+                  className="font-semibold py-3 rounded-xl transition-all hover:shadow-md"
                   tooltip={!open ? t('adminSidebar.commercialManager') : undefined}
                 >
-                  <TrendingUp className="h-5 w-5" />
-                  <span>{t('adminSidebar.commercialManager')}</span>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-hover">
+                    <TrendingUp className="h-5 w-5 text-primary-foreground" />
+                  </div>
+                  <span className="text-base">{t('adminSidebar.commercialManager')}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )}
@@ -98,45 +104,65 @@ export function AdminSidebar({
         {/* Métricas y Análisis */}
         {open ? (
           <Collapsible open={openGroups.metrics} onOpenChange={() => toggleGroup('metrics')}>
-            <SidebarGroup>
+            <SidebarGroup className="mt-4">
               <CollapsibleTrigger asChild>
-                <SidebarGroupLabel className="cursor-pointer hover:bg-muted/50 rounded-md p-2">
-                  <BarChart3 className="h-4 w-4 mr-2" />
+                <SidebarGroupLabel className="cursor-pointer hover:bg-accent/50 rounded-xl p-3 transition-all flex items-center gap-2 text-sm font-medium">
+                  <BarChart3 className="h-4 w-4" />
                   <span className="flex-1">{t('admin.metrics')}</span>
-                  <ChevronRight className={`h-4 w-4 transition-transform ${openGroups.metrics ? 'rotate-90' : ''}`} />
+                  <ChevronRight className={`h-4 w-4 transition-transform duration-200 ${openGroups.metrics ? 'rotate-90' : ''}`} />
                 </SidebarGroupLabel>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <SidebarGroupContent>
-                  <SidebarMenu>
+                <SidebarGroupContent className="mt-2">
+                  <SidebarMenu className="space-y-1">
                     <SidebarMenuItem>
-                      <SidebarMenuButton onClick={() => onSectionChange('health')} isActive={isActive('health')}>
+                      <SidebarMenuButton 
+                        onClick={() => onSectionChange('health')} 
+                        isActive={isActive('health')}
+                        className="rounded-lg hover:bg-accent/50 transition-all"
+                      >
                         <Activity className="h-4 w-4" />
-                        <span>{t('health.title')}</span>
+                        <span className="text-sm">{t('health.title')}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
-                      <SidebarMenuButton onClick={() => onSectionChange('visits')} isActive={isActive('visits')}>
+                      <SidebarMenuButton 
+                        onClick={() => onSectionChange('visits')} 
+                        isActive={isActive('visits')}
+                        className="rounded-lg hover:bg-accent/50 transition-all"
+                      >
                         <BarChart3 className="h-4 w-4" />
-                        <span>{t('sidebar.visits')}</span>
+                        <span className="text-sm">{t('sidebar.visits')}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
-                      <SidebarMenuButton onClick={() => onSectionChange('products-metrics')} isActive={isActive('products-metrics')}>
+                      <SidebarMenuButton 
+                        onClick={() => onSectionChange('products-metrics')} 
+                        isActive={isActive('products-metrics')}
+                        className="rounded-lg hover:bg-accent/50 transition-all"
+                      >
                         <Package className="h-4 w-4" />
-                        <span>{t('admin.products')}</span>
+                        <span className="text-sm">{t('admin.products')}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
-                      <SidebarMenuButton onClick={() => onSectionChange('gestores')} isActive={isActive('gestores')}>
+                      <SidebarMenuButton 
+                        onClick={() => onSectionChange('gestores')} 
+                        isActive={isActive('gestores')}
+                        className="rounded-lg hover:bg-accent/50 transition-all"
+                      >
                         <Users className="h-4 w-4" />
-                        <span>{t('map.managers')}</span>
+                        <span className="text-sm">{t('map.managers')}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                     <SidebarMenuItem>
-                      <SidebarMenuButton onClick={() => onSectionChange('vinculacion')} isActive={isActive('vinculacion')}>
+                      <SidebarMenuButton 
+                        onClick={() => onSectionChange('vinculacion')} 
+                        isActive={isActive('vinculacion')}
+                        className="rounded-lg hover:bg-accent/50 transition-all"
+                      >
                         <Target className="h-4 w-4" />
-                        <span>{t('tabs.vinculacion')}</span>
+                        <span className="text-sm">{t('tabs.vinculacion')}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   </SidebarMenu>
@@ -145,30 +171,55 @@ export function AdminSidebar({
             </SidebarGroup>
           </Collapsible>
         ) : (
-          <SidebarGroup>
-            <SidebarMenu>
+          <SidebarGroup className="mt-4">
+            <SidebarMenu className="space-y-2">
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => onSectionChange('health')} isActive={isActive('health')} tooltip={t('health.title')}>
+                <SidebarMenuButton 
+                  onClick={() => onSectionChange('health')} 
+                  isActive={isActive('health')} 
+                  tooltip={t('health.title')}
+                  className="rounded-xl hover:shadow-md transition-all"
+                >
                   <Activity className="h-5 w-5" />
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => onSectionChange('visits')} isActive={isActive('visits')} tooltip={t('sidebar.visits')}>
+                <SidebarMenuButton 
+                  onClick={() => onSectionChange('visits')} 
+                  isActive={isActive('visits')} 
+                  tooltip={t('sidebar.visits')}
+                  className="rounded-xl hover:shadow-md transition-all"
+                >
                   <BarChart3 className="h-5 w-5" />
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => onSectionChange('products-metrics')} isActive={isActive('products-metrics')} tooltip={t('admin.products')}>
+                <SidebarMenuButton 
+                  onClick={() => onSectionChange('products-metrics')} 
+                  isActive={isActive('products-metrics')} 
+                  tooltip={t('admin.products')}
+                  className="rounded-xl hover:shadow-md transition-all"
+                >
                   <Package className="h-5 w-5" />
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => onSectionChange('gestores')} isActive={isActive('gestores')} tooltip={t('map.managers')}>
+                <SidebarMenuButton 
+                  onClick={() => onSectionChange('gestores')} 
+                  isActive={isActive('gestores')} 
+                  tooltip={t('map.managers')}
+                  className="rounded-xl hover:shadow-md transition-all"
+                >
                   <Users className="h-5 w-5" />
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={() => onSectionChange('vinculacion')} isActive={isActive('vinculacion')} tooltip={t('tabs.vinculacion')}>
+                <SidebarMenuButton 
+                  onClick={() => onSectionChange('vinculacion')} 
+                  isActive={isActive('vinculacion')} 
+                  tooltip={t('tabs.vinculacion')}
+                  className="rounded-xl hover:shadow-md transition-all"
+                >
                   <Target className="h-5 w-5" />
                 </SidebarMenuButton>
               </SidebarMenuItem>
