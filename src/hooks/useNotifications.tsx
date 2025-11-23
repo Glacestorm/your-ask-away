@@ -84,7 +84,6 @@ export const useNotifications = () => {
         tag,
         requireInteraction,
         data,
-        vibrate: [200, 100, 200], // Vibration pattern for mobile
       });
 
       notification.onclick = (event) => {
