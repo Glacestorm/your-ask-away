@@ -12,7 +12,8 @@ import {
   Target, 
   MapPin, 
   FileText,
-  Download
+  Download,
+  GitCompare
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { subMonths } from 'date-fns';
@@ -20,6 +21,7 @@ import { DateRange } from 'react-day-picker';
 import { ResumenEjecutivo } from '@/components/dashboard/ResumenEjecutivo';
 import { AnalisisGeografico } from '@/components/dashboard/AnalisisGeografico';
 import { DateRangeFilter } from '@/components/dashboard/DateRangeFilter';
+import { ComparativaTemporales } from '@/components/dashboard/ComparativaTemporales';
 import { VisitsMetrics } from '@/components/admin/VisitsMetrics';
 import { ProductsMetrics } from '@/components/admin/ProductsMetrics';
 import { GestoresMetrics } from '@/components/admin/GestoresMetrics';
@@ -123,10 +125,14 @@ const Dashboard = () => {
 
         {/* Dashboard Tabs */}
         <Tabs defaultValue="resumen" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7 h-auto">
+          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 h-auto">
             <TabsTrigger value="resumen" className="flex items-center gap-2 py-3">
               <TrendingUp className="h-4 w-4" />
               <span className="hidden sm:inline">Resumen</span>
+            </TabsTrigger>
+            <TabsTrigger value="comparativa" className="flex items-center gap-2 py-3">
+              <GitCompare className="h-4 w-4" />
+              <span className="hidden sm:inline">Comparativa</span>
             </TabsTrigger>
             <TabsTrigger value="visitas" className="flex items-center gap-2 py-3">
               <BarChart3 className="h-4 w-4" />
@@ -157,6 +163,11 @@ const Dashboard = () => {
           {/* Resumen Ejecutivo */}
           <TabsContent value="resumen" className="space-y-6">
             <ResumenEjecutivo startDate={startDate} endDate={endDate} />
+          </TabsContent>
+
+          {/* Análisis Comparativo */}
+          <TabsContent value="comparativa" className="space-y-6">
+            <ComparativaTemporales startDate={startDate} endDate={endDate} />
           </TabsContent>
 
           {/* Análisis de Visitas */}
