@@ -67,6 +67,8 @@ export interface Company {
   vinculacion_entidad_1: number | null;
   vinculacion_entidad_2: number | null;
   vinculacion_entidad_3: number | null;
+  bp: string | null;
+  client_type: 'cliente' | 'potencial_cliente' | null;
   created_at: string;
   updated_at: string;
 }
