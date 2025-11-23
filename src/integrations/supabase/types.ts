@@ -92,6 +92,7 @@ export type Database = {
       companies: {
         Row: {
           address: string
+          beneficios: number | null
           cnae: string | null
           created_at: string | null
           email: string | null
@@ -107,6 +108,7 @@ export type Database = {
           oficina: string | null
           parroquia: string
           phone: string | null
+          pl_banco: number | null
           registration_number: string | null
           sector: string | null
           status_id: string | null
@@ -117,6 +119,7 @@ export type Database = {
         }
         Insert: {
           address: string
+          beneficios?: number | null
           cnae?: string | null
           created_at?: string | null
           email?: string | null
@@ -132,6 +135,7 @@ export type Database = {
           oficina?: string | null
           parroquia: string
           phone?: string | null
+          pl_banco?: number | null
           registration_number?: string | null
           sector?: string | null
           status_id?: string | null
@@ -142,6 +146,7 @@ export type Database = {
         }
         Update: {
           address?: string
+          beneficios?: number | null
           cnae?: string | null
           created_at?: string | null
           email?: string | null
@@ -157,6 +162,7 @@ export type Database = {
           oficina?: string | null
           parroquia?: string
           phone?: string | null
+          pl_banco?: number | null
           registration_number?: string | null
           sector?: string | null
           status_id?: string | null
@@ -474,6 +480,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      map_color_mode: {
+        Row: {
+          created_at: string | null
+          id: string
+          mode: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          mode?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          mode?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       map_config: {
         Row: {

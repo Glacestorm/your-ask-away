@@ -188,6 +188,18 @@ export function MapSidebar({
         min: 0,
         max: 100,
       },
+      facturacionRange: {
+        min: 0,
+        max: 10000000,
+      },
+      plBancoRange: {
+        min: -1000000,
+        max: 1000000,
+      },
+      beneficiosRange: {
+        min: -1000000,
+        max: 1000000,
+      },
     });
   };
 

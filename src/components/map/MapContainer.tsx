@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { CompanyWithDetails, MapFilters, StatusColor } from '@/types/database';
+import { CompanyWithDetails, MapFilters, StatusColor, MapColorMode } from '@/types/database';
 import { supabase } from '@/integrations/supabase/client';
 import Supercluster from 'supercluster';
 import { getSectorIcon, iconToSVGString } from './markerIcons';
@@ -117,6 +117,7 @@ interface MapContainerProps {
     name: string;
   } | null;
   onSearchLocationClear?: () => void;
+  colorMode: MapColorMode;
 }
 
 interface TooltipConfig {
@@ -142,6 +143,7 @@ export function MapContainer({
   buildingHeightMultiplier = 1,
   searchLocation,
   onSearchLocationClear,
+  colorMode,
 }: MapContainerProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
@@ -152,6 +154,7 @@ export function MapContainer({
   const [tooltipConfig, setTooltipConfig] = useState<TooltipConfig[]>([]);
   const [vinculacionData, setVinculacionData] = useState<Record<string, number>>({});
   const [minZoomVinculacion, setMinZoomVinculacion] = useState<number>(15);
+  const [visitCounts, setVisitCounts] = useState<Record<string, number>>({});
 
   // Fetch tooltip configuration
   useEffect(() => {
@@ -186,9 +189,9 @@ export function MapContainer({
     fetchTooltipConfig();
   }, []);
 
-  // Calculate average vinculación for each company
+  // Calculate average vinculación and visit counts for each company
   useEffect(() => {
-    const calculateVinculacion = async () => {
+    const calculateMetrics = async () => {
       try {
         const { data: visits, error } = await supabase
           .from('visits')
@@ -197,8 +200,16 @@ export function MapContainer({
         if (error) throw error;
 
         const vinculacionMap: Record<string, { total: number; count: number }> = {};
+        const visitCountMap: Record<string, number> = {};
         
         visits?.forEach(visit => {
+          // Count visits
+          if (!visitCountMap[visit.company_id]) {
+            visitCountMap[visit.company_id] = 0;
+          }
+          visitCountMap[visit.company_id] += 1;
+
+          // Calculate vinculación
           if (visit.porcentaje_vinculacion !== null) {
             if (!vinculacionMap[visit.company_id]) {
               vinculacionMap[visit.company_id] = { total: 0, count: 0 };
@@ -214,12 +225,13 @@ export function MapContainer({
         });
 
         setVinculacionData(avgVinculacion);
+        setVisitCounts(visitCountMap);
       } catch (error) {
-        console.error('Error calculating vinculación:', error);
+        console.error('Error calculating metrics:', error);
       }
     };
 
-    calculateVinculacion();
+    calculateMetrics();
   }, [companies]);
 
   // Initialize map
@@ -508,6 +520,51 @@ export function MapContainer({
         }
       }
 
+      // Filter by facturación range
+      if (filters.facturacionRange) {
+        const turnover = company.turnover;
+        if (turnover !== null) {
+          if (turnover < filters.facturacionRange.min || turnover > filters.facturacionRange.max) {
+            return false;
+          }
+        } else {
+          // If no facturación data, only show if min is 0
+          if (filters.facturacionRange.min > 0) {
+            return false;
+          }
+        }
+      }
+
+      // Filter by P&L banco range
+      if (filters.plBancoRange) {
+        const pl = company.pl_banco;
+        if (pl !== null) {
+          if (pl < filters.plBancoRange.min || pl > filters.plBancoRange.max) {
+            return false;
+          }
+        } else {
+          // If no P&L data, only show if range includes null
+          if (filters.plBancoRange.min > -1000000 || filters.plBancoRange.max < 1000000) {
+            return false;
+          }
+        }
+      }
+
+      // Filter by beneficios range
+      if (filters.beneficiosRange) {
+        const benef = company.beneficios;
+        if (benef !== null) {
+          if (benef < filters.beneficiosRange.min || benef > filters.beneficiosRange.max) {
+            return false;
+          }
+        } else {
+          // If no beneficios data, only show if range includes null
+          if (filters.beneficiosRange.min > -1000000 || filters.beneficiosRange.max < 1000000) {
+            return false;
+          }
+        }
+      }
+
       // Filter by search term
       if (filters.searchTerm) {
         const searchLower = filters.searchTerm.toLowerCase();
@@ -604,10 +661,65 @@ export function MapContainer({
         } else {
           // Create individual company marker
           const company = properties as CompanyWithDetails;
+          
+          // Helper function to get color based on color mode
+          const getMarkerColor = (): string => {
+            switch (colorMode) {
+              case 'status':
+                return company.status?.color_hex || '#3B82F6';
+              
+              case 'vinculacion': {
+                const vinc = vinculacionData[company.id];
+                if (vinc === undefined) return '#94A3B8'; // gray for no data
+                if (vinc >= 70) return '#22C55E'; // green
+                if (vinc >= 30) return '#EAB308'; // yellow
+                return '#EF4444'; // red
+              }
+              
+              case 'facturacion': {
+                const turnover = company.turnover;
+                if (turnover === null) return '#94A3B8';
+                if (turnover >= 1000000) return '#22C55E';
+                if (turnover >= 500000) return '#EAB308';
+                if (turnover >= 100000) return '#F97316';
+                return '#EF4444';
+              }
+              
+              case 'pl_banco': {
+                const pl = company.pl_banco;
+                if (pl === null) return '#94A3B8';
+                if (pl > 100000) return '#22C55E';
+                if (pl > 0) return '#84CC16';
+                if (pl > -50000) return '#EAB308';
+                return '#EF4444';
+              }
+              
+              case 'beneficios': {
+                const benef = company.beneficios;
+                if (benef === null) return '#94A3B8';
+                if (benef > 100000) return '#22C55E';
+                if (benef > 0) return '#84CC16';
+                if (benef > -50000) return '#EAB308';
+                return '#EF4444';
+              }
+              
+              case 'visitas': {
+                const count = visitCounts[company.id] || 0;
+                if (count === 0) return '#EF4444'; // red - no visits
+                if (count >= 10) return '#22C55E'; // green - many visits
+                if (count >= 5) return '#EAB308'; // yellow - moderate
+                return '#F97316'; // orange - few visits
+              }
+              
+              default:
+                return company.status?.color_hex || '#3B82F6';
+            }
+          };
+
           const el = document.createElement('div');
           el.className = 'custom-marker';
           
-          const color = company.status?.color_hex || '#3B82F6';
+          const color = getMarkerColor();
           const vinculacionPct = vinculacionData[company.id];
           const showVinculacion = vinculacionPct !== undefined && zoom >= minZoomVinculacion;
           
