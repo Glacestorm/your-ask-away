@@ -66,7 +66,10 @@ export function AdminSidebar({
                     onClick={() => onSectionChange('director')}
                     isActive={isActive('director')}
                     className="font-semibold py-3 rounded-xl transition-all hover:shadow-md"
-                    tooltip={!open ? t('adminSidebar.commercialDirector') : undefined}
+                    tooltip={!open ? {
+                      children: t('adminSidebar.commercialDirector'),
+                      className: "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
+                    } : undefined}
                   >
                     <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl">
                       <TrendingUp className="h-5 w-5 text-primary-foreground" />
@@ -83,7 +86,10 @@ export function AdminSidebar({
                   onClick={() => onSectionChange('office-director')}
                   isActive={isActive('office-director')}
                   className="font-semibold py-3 rounded-xl transition-all hover:shadow-md"
-                  tooltip={!open ? t('adminSidebar.officeDirector') : undefined}
+                  tooltip={!open ? {
+                    children: t('adminSidebar.officeDirector'),
+                    className: "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
+                  } : undefined}
                 >
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl">
                     <Building2 className="h-5 w-5 text-primary-foreground" />
@@ -100,7 +106,10 @@ export function AdminSidebar({
                   onClick={() => onSectionChange('commercial-manager')}
                   isActive={isActive('commercial-manager')}
                   className="font-semibold py-3 rounded-xl transition-all hover:shadow-md"
-                  tooltip={!open ? t('adminSidebar.commercialManager') : undefined}
+                  tooltip={!open ? {
+                    children: t('adminSidebar.commercialManager'),
+                    className: "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
+                  } : undefined}
                 >
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl">
                     <Briefcase className="h-5 w-5 text-primary-foreground" />
