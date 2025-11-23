@@ -98,13 +98,20 @@ export function CommercialDirectorDashboard() {
           .select('id')
           .eq('gestor_id', gestor.id);
 
-        // Calcular métricas
+        // Calcular métricas con validación estricta
         const totalVisits = visits?.length || 0;
         const successfulVisits = visits?.filter(v => v.result === 'Exitosa').length || 0;
         const successRate = totalVisits > 0 ? Math.round((successfulVisits / totalVisits) * 100) : 0;
         
-        const avgVinculacion = visits && visits.length > 0
-          ? Math.round(visits.reduce((sum, v) => sum + (v.porcentaje_vinculacion || 0), 0) / visits.length)
+        // Filtrar solo visitas con porcentaje_vinculacion válido
+        const validVinculaciones = visits?.filter(v => 
+          v.porcentaje_vinculacion !== null && 
+          v.porcentaje_vinculacion !== undefined && 
+          !isNaN(v.porcentaje_vinculacion)
+        ) || [];
+        
+        const avgVinculacion = validVinculaciones.length > 0
+          ? Math.round(validVinculaciones.reduce((sum, v) => sum + v.porcentaje_vinculacion!, 0) / validVinculaciones.length)
           : 0;
 
         // Tendencia mensual
@@ -156,7 +163,20 @@ export function CommercialDirectorDashboard() {
       });
 
       const data = await Promise.all(gestoresDataPromises);
-      setGestoresData(data.sort((a, b) => b.totalVisits - a.totalVisits));
+      
+      // Filtrar y validar datos antes de establecerlos
+      const validData = data.filter(g => 
+        !isNaN(g.totalVisits) && 
+        !isNaN(g.successRate) && 
+        !isNaN(g.avgVinculacion) &&
+        !isNaN(g.companies) &&
+        isFinite(g.totalVisits) &&
+        isFinite(g.successRate) &&
+        isFinite(g.avgVinculacion) &&
+        isFinite(g.companies)
+      );
+      
+      setGestoresData(validData.sort((a, b) => b.totalVisits - a.totalVisits));
 
     } catch (error: any) {
       console.error('Error fetching commercial data:', error);
@@ -331,20 +351,26 @@ export function CommercialDirectorDashboard() {
                 <CardDescription>Top 10 gestores más activos</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={350}>
-                  <BarChart data={gestoresData.slice(0, 10)} layout="horizontal">
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" />
-                    <YAxis 
-                      dataKey="name" 
-                      type="category" 
-                      width={100}
-                      tick={{ fontSize: 10 }}
-                    />
-                    <Tooltip />
-                    <Bar dataKey="totalVisits" fill={COLORS[0]} name="Visitas" />
-                  </BarChart>
-                </ResponsiveContainer>
+                {gestoresData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={350}>
+                    <BarChart data={gestoresData.slice(0, 10)} layout="horizontal">
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" />
+                      <YAxis 
+                        dataKey="name" 
+                        type="category" 
+                        width={100}
+                        tick={{ fontSize: 10 }}
+                      />
+                      <Tooltip />
+                      <Bar dataKey="totalVisits" fill={COLORS[0]} name="Visitas" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex h-[350px] items-center justify-center text-muted-foreground">
+                    No hay datos de gestores disponibles
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -355,23 +381,29 @@ export function CommercialDirectorDashboard() {
                 <CardDescription>Porcentaje de visitas exitosas</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={350}>
-                  <BarChart 
-                    data={gestoresData.slice(0, 10).sort((a, b) => b.successRate - a.successRate)} 
-                    layout="horizontal"
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis type="number" domain={[0, 100]} />
-                    <YAxis 
-                      dataKey="name" 
-                      type="category" 
-                      width={100}
-                      tick={{ fontSize: 10 }}
-                    />
-                    <Tooltip formatter={(value) => `${value}%`} />
-                    <Bar dataKey="successRate" fill={COLORS[1]} name="% Éxito" />
-                  </BarChart>
-                </ResponsiveContainer>
+                {gestoresData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={350}>
+                    <BarChart 
+                      data={gestoresData.slice(0, 10).sort((a, b) => b.successRate - a.successRate)} 
+                      layout="horizontal"
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" domain={[0, 100]} />
+                      <YAxis 
+                        dataKey="name" 
+                        type="category" 
+                        width={100}
+                        tick={{ fontSize: 10 }}
+                      />
+                      <Tooltip formatter={(value) => `${value}%`} />
+                      <Bar dataKey="successRate" fill={COLORS[1]} name="% Éxito" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex h-[350px] items-center justify-center text-muted-foreground">
+                    No hay datos disponibles
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -382,21 +414,27 @@ export function CommercialDirectorDashboard() {
                 <CardDescription>Porcentaje promedio conseguido</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={350}>
-                  <BarChart 
-                    data={gestoresData.slice(0, 10).sort((a, b) => b.avgVinculacion - a.avgVinculacion)}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis 
-                      dataKey="name" 
-                      tick={{ fontSize: 9 }}
-                      height={80}
-                    />
-                    <YAxis domain={[0, 100]} />
-                    <Tooltip formatter={(value) => `${value}%`} />
-                    <Bar dataKey="avgVinculacion" fill={COLORS[2]} name="% Vinculación" />
-                  </BarChart>
-                </ResponsiveContainer>
+                {gestoresData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={350}>
+                    <BarChart 
+                      data={gestoresData.slice(0, 10).sort((a, b) => b.avgVinculacion - a.avgVinculacion)}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="name" 
+                        tick={{ fontSize: 9 }}
+                        height={80}
+                      />
+                      <YAxis domain={[0, 100]} />
+                      <Tooltip formatter={(value) => `${value}%`} />
+                      <Bar dataKey="avgVinculacion" fill={COLORS[2]} name="% Vinculación" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex h-[350px] items-center justify-center text-muted-foreground">
+                    No hay datos disponibles
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -407,21 +445,27 @@ export function CommercialDirectorDashboard() {
                 <CardDescription>Empresas asignadas por gestor</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={350}>
-                  <BarChart 
-                    data={gestoresData.slice(0, 10).sort((a, b) => b.companies - a.companies)}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis 
-                      dataKey="name" 
-                      tick={{ fontSize: 9 }}
-                      height={80}
-                    />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="companies" fill={COLORS[3]} name="Empresas" />
-                  </BarChart>
-                </ResponsiveContainer>
+                {gestoresData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={350}>
+                    <BarChart 
+                      data={gestoresData.slice(0, 10).sort((a, b) => b.companies - a.companies)}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="name" 
+                        tick={{ fontSize: 9 }}
+                        height={80}
+                      />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="companies" fill={COLORS[3]} name="Empresas" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex h-[350px] items-center justify-center text-muted-foreground">
+                    No hay datos disponibles
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -436,16 +480,22 @@ export function CommercialDirectorDashboard() {
                 <CardDescription>Actividad comercial por ubicación</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={350}>
-                  <BarChart data={oficinaStats}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="oficina" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="visitas" fill={COLORS[0]} name="Visitas" />
-                  </BarChart>
-                </ResponsiveContainer>
+                {oficinaStats.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={350}>
+                    <BarChart data={oficinaStats}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="oficina" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="visitas" fill={COLORS[0]} name="Visitas" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex h-[350px] items-center justify-center text-muted-foreground">
+                    No hay datos de oficinas disponibles
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -455,17 +505,23 @@ export function CommercialDirectorDashboard() {
                 <CardDescription>Tasa de éxito y número de gestores</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={350}>
-                  <BarChart data={oficinaStats}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="oficina" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="gestores" fill={COLORS[1]} name="Gestores" />
-                    <Bar dataKey="successRate" fill={COLORS[2]} name="% Éxito" />
-                  </BarChart>
-                </ResponsiveContainer>
+                {oficinaStats.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={350}>
+                    <BarChart data={oficinaStats}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="oficina" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="gestores" fill={COLORS[1]} name="Gestores" />
+                      <Bar dataKey="successRate" fill={COLORS[2]} name="% Éxito" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex h-[350px] items-center justify-center text-muted-foreground">
+                    No hay datos disponibles
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -473,58 +529,72 @@ export function CommercialDirectorDashboard() {
 
         {/* Vista de Evolución */}
         <TabsContent value="evolucion" className="space-y-4">
-          {gestoresData.slice(0, 5).map((gestor) => (
-            <Card key={gestor.id}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>{gestor.name}</CardTitle>
-                    <CardDescription>
-                      {gestor.oficina} • {gestor.totalVisits} visitas • {gestor.successRate}% éxito
-                    </CardDescription>
-                  </div>
-                  <div className="flex gap-4 text-sm">
-                    <div className="text-center">
-                      <div className="text-xs text-muted-foreground">Empresas</div>
-                      <div className="font-bold">{gestor.companies}</div>
+          {gestoresData.length > 0 ? (
+            gestoresData.slice(0, 5).map((gestor) => (
+              <Card key={gestor.id}>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>{gestor.name}</CardTitle>
+                      <CardDescription>
+                        {gestor.oficina} • {gestor.totalVisits} visitas • {gestor.successRate}% éxito
+                      </CardDescription>
                     </div>
-                    <div className="text-center">
-                      <div className="text-xs text-muted-foreground">Vinculación</div>
-                      <div className="font-bold">{gestor.avgVinculacion}%</div>
+                    <div className="flex gap-4 text-sm">
+                      <div className="text-center">
+                        <div className="text-xs text-muted-foreground">Empresas</div>
+                        <div className="font-bold">{gestor.companies}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-xs text-muted-foreground">Vinculación</div>
+                        <div className="font-bold">{gestor.avgVinculacion}%</div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={200}>
-                  <AreaChart data={gestor.monthlyTrend}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                    <YAxis yAxisId="left" />
-                    <YAxis yAxisId="right" orientation="right" domain={[0, 100]} />
-                    <Tooltip />
-                    <Legend />
-                    <Area 
-                      yAxisId="left"
-                      type="monotone" 
-                      dataKey="visits" 
-                      stroke={COLORS[0]} 
-                      fill={COLORS[0]} 
-                      fillOpacity={0.3}
-                      name="Visitas" 
-                    />
-                    <Line 
-                      yAxisId="right"
-                      type="monotone" 
-                      dataKey="success" 
-                      stroke={COLORS[1]} 
-                      name="% Éxito" 
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+                </CardHeader>
+                <CardContent>
+                  {gestor.monthlyTrend.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={200}>
+                      <AreaChart data={gestor.monthlyTrend}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                        <YAxis yAxisId="left" />
+                        <YAxis yAxisId="right" orientation="right" domain={[0, 100]} />
+                        <Tooltip />
+                        <Legend />
+                        <Area 
+                          yAxisId="left"
+                          type="monotone" 
+                          dataKey="visits" 
+                          stroke={COLORS[0]} 
+                          fill={COLORS[0]} 
+                          fillOpacity={0.3}
+                          name="Visitas" 
+                        />
+                        <Line 
+                          yAxisId="right"
+                          type="monotone" 
+                          dataKey="success" 
+                          stroke={COLORS[1]} 
+                          name="% Éxito" 
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex h-[200px] items-center justify-center text-muted-foreground">
+                      No hay datos de evolución disponibles
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <Card>
+              <CardContent className="flex h-[300px] items-center justify-center">
+                <p className="text-muted-foreground">No hay datos de gestores disponibles</p>
               </CardContent>
             </Card>
-          ))}
+          )}
         </TabsContent>
       </Tabs>
     </div>
