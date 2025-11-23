@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Database, BarChart3, Package, Users as UsersIcon, TrendingUp, Target, Building2, Settings } from 'lucide-react';
@@ -19,19 +20,20 @@ import { VinculacionMetrics } from '@/components/admin/VinculacionMetrics';
 
 const Admin = () => {
   const { user, isAdmin, loading: authLoading } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!authLoading && (!user || !isAdmin)) {
       navigate('/map');
-      toast.error('No tienes permisos para acceder a esta página');
+      toast.error(t('admin.noPermissions'));
     }
-  }, [user, isAdmin, authLoading, navigate]);
+  }, [user, isAdmin, authLoading, navigate, t]);
 
   if (authLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <p>Cargando...</p>
+        <p>{t('common.loading')}</p>
       </div>
     );
   }
@@ -45,8 +47,8 @@ const Admin = () => {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Panel de Administración</h1>
-            <p className="text-muted-foreground">Análisis, métricas y gestión del sistema</p>
+            <h1 className="text-3xl font-bold">{t('admin.title')}</h1>
+            <p className="text-muted-foreground">{t('admin.subtitle')}</p>
           </div>
         </div>
 
