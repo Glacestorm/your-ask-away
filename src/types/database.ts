@@ -59,6 +59,8 @@ export interface Company {
   tax_id: string | null;
   registration_number: string | null;
   legal_form: string | null;
+  pl_banco: number | null;
+  beneficios: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -176,4 +178,18 @@ export interface MapFilters {
     min: number;
     max: number;
   };
+  facturacionRange: {
+    min: number;
+    max: number;
+  };
+  plBancoRange: {
+    min: number;
+    max: number;
+  };
+  beneficiosRange: {
+    min: number;
+    max: number;
+  };
 }
+
+export type MapColorMode = 'status' | 'vinculacion' | 'facturacion' | 'pl_banco' | 'beneficios' | 'visitas';

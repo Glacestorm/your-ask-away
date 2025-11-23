@@ -18,7 +18,7 @@ import { Slider } from '@/components/ui/slider';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useNavigate } from 'react-router-dom';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { MapFilters, StatusColor, Product } from '@/types/database';
+import { MapFilters, StatusColor, Product, MapColorMode } from '@/types/database';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, ChevronUp } from 'lucide-react';
@@ -52,6 +52,8 @@ interface MapHeaderProps {
   availableParroquias: string[];
   availableCnaes: string[];
   availableSectors: string[];
+  colorMode: MapColorMode;
+  onColorModeChange: (mode: MapColorMode) => void;
 }
 
 export function MapHeader({ 
@@ -74,6 +76,8 @@ export function MapHeader({
   availableParroquias,
   availableCnaes,
   availableSectors,
+  colorMode,
+  onColorModeChange,
 }: MapHeaderProps) {
   const { user, signOut, userRole, isAdmin } = useAuth();
   const { t } = useLanguage();
@@ -134,7 +138,10 @@ export function MapHeader({
     (filters?.parroquias?.length || 0) + 
     (filters?.cnaes?.length || 0) +
     (filters?.sectors?.length || 0) +
-    ((filters?.vinculacionRange?.min !== 0 || filters?.vinculacionRange?.max !== 100) ? 1 : 0);
+    ((filters?.vinculacionRange?.min !== 0 || filters?.vinculacionRange?.max !== 100) ? 1 : 0) +
+    ((filters?.facturacionRange?.min !== 0 || filters?.facturacionRange?.max !== 10000000) ? 1 : 0) +
+    ((filters?.plBancoRange?.min !== -1000000 || filters?.plBancoRange?.max !== 1000000) ? 1 : 0) +
+    ((filters?.beneficiosRange?.min !== -1000000 || filters?.beneficiosRange?.max !== 1000000) ? 1 : 0);
 
   const getUserInitials = () => {
     if (!user?.email) return 'U';
@@ -327,6 +334,40 @@ export function MapHeader({
                       </div>
                     </>
                   )}
+                  
+                  <Separator />
+
+                  {/* Color mode selector */}
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      Coloración de chinchetas
+                    </p>
+                    <div className="space-y-1">
+                      {[
+                        { value: 'status', label: 'Por Estado' },
+                        { value: 'vinculacion', label: 'Por % Vinculación' },
+                        { value: 'facturacion', label: 'Por Facturación' },
+                        { value: 'pl_banco', label: 'Por P&L del Banco' },
+                        { value: 'beneficios', label: 'Por Beneficios' },
+                        { value: 'visitas', label: 'Por Nº Visitas' },
+                      ].map((mode) => (
+                        <div key={mode.value} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`color-${mode.value}`}
+                            checked={colorMode === mode.value}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                onColorModeChange(mode.value as MapColorMode);
+                              }
+                            }}
+                          />
+                          <Label htmlFor={`color-${mode.value}`} className="text-sm font-normal cursor-pointer">
+                            {mode.label}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                   
                   <Separator />
 
@@ -546,6 +587,81 @@ export function MapHeader({
                           <span>100%</span>
                         </div>
                       </div>
+
+                      {/* Facturación Range */}
+                      <div className="space-y-2 mt-4">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-sm font-medium">
+                            Facturación (€)
+                          </Label>
+                          <span className="text-xs text-muted-foreground">
+                            {(filters?.facturacionRange?.min || 0).toLocaleString()}€ - {(filters?.facturacionRange?.max || 10000000).toLocaleString()}€
+                          </span>
+                        </div>
+                        <Slider
+                          min={0}
+                          max={10000000}
+                          step={100000}
+                          value={[filters?.facturacionRange?.min || 0, filters?.facturacionRange?.max || 10000000]}
+                          onValueChange={(value) =>
+                            onFiltersChange({
+                              ...filters,
+                              facturacionRange: { min: value[0], max: value[1] },
+                            })
+                          }
+                          className="w-full"
+                        />
+                      </div>
+
+                      {/* P&L Banco Range */}
+                      <div className="space-y-2 mt-4">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-sm font-medium">
+                            P&L del Banco (€)
+                          </Label>
+                          <span className="text-xs text-muted-foreground">
+                            {(filters?.plBancoRange?.min || -1000000).toLocaleString()}€ - {(filters?.plBancoRange?.max || 1000000).toLocaleString()}€
+                          </span>
+                        </div>
+                        <Slider
+                          min={-1000000}
+                          max={1000000}
+                          step={50000}
+                          value={[filters?.plBancoRange?.min || -1000000, filters?.plBancoRange?.max || 1000000]}
+                          onValueChange={(value) =>
+                            onFiltersChange({
+                              ...filters,
+                              plBancoRange: { min: value[0], max: value[1] },
+                            })
+                          }
+                          className="w-full"
+                        />
+                      </div>
+
+                      {/* Beneficios Range */}
+                      <div className="space-y-2 mt-4">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-sm font-medium">
+                            Beneficios (€)
+                          </Label>
+                          <span className="text-xs text-muted-foreground">
+                            {(filters?.beneficiosRange?.min || -1000000).toLocaleString()}€ - {(filters?.beneficiosRange?.max || 1000000).toLocaleString()}€
+                          </span>
+                        </div>
+                        <Slider
+                          min={-1000000}
+                          max={1000000}
+                          step={50000}
+                          value={[filters?.beneficiosRange?.min || -1000000, filters?.beneficiosRange?.max || 1000000]}
+                          onValueChange={(value) =>
+                            onFiltersChange({
+                              ...filters,
+                              beneficiosRange: { min: value[0], max: value[1] },
+                            })
+                          }
+                          className="w-full"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -567,6 +683,18 @@ export function MapHeader({
                         vinculacionRange: {
                           min: 0,
                           max: 100,
+                        },
+                        facturacionRange: {
+                          min: 0,
+                          max: 10000000,
+                        },
+                        plBancoRange: {
+                          min: -1000000,
+                          max: 1000000,
+                        },
+                        beneficiosRange: {
+                          min: -1000000,
+                          max: 1000000,
                         },
                       })
                     }

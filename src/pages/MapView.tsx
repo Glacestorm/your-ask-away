@@ -5,7 +5,7 @@ import { MapContainer } from '@/components/map/MapContainer';
 import { MapSidebar } from '@/components/map/MapSidebar';
 import { MapHeader, MapBaseLayers } from '@/components/map/MapHeader';
 import { GeoSearch } from '@/components/map/GeoSearch';
-import { CompanyWithDetails, MapFilters, StatusColor, Product } from '@/types/database';
+import { CompanyWithDetails, MapFilters, StatusColor, Product, MapColorMode } from '@/types/database';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Search } from 'lucide-react';
 import { toast } from 'sonner';
@@ -32,6 +32,18 @@ const MapView = () => {
       min: 0,
       max: 100,
     },
+    facturacionRange: {
+      min: 0,
+      max: 10000000,
+    },
+    plBancoRange: {
+      min: -1000000,
+      max: 1000000,
+    },
+    beneficiosRange: {
+      min: -1000000,
+      max: 1000000,
+    },
   });
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<CompanyWithDetails | null>(null);
@@ -50,6 +62,7 @@ const MapView = () => {
     lon: number;
     name: string;
   } | null>(null);
+  const [colorMode, setColorMode] = useState<MapColorMode>('status');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -192,6 +205,8 @@ const MapView = () => {
         availableParroquias={availableParroquias}
         availableCnaes={availableCnaes}
         availableSectors={availableSectors}
+        colorMode={colorMode}
+        onColorModeChange={setColorMode}
       />
       
       <div className="relative flex flex-1 overflow-hidden">
@@ -238,6 +253,7 @@ const MapView = () => {
             buildingHeightMultiplier={buildingHeightMultiplier}
             searchLocation={searchLocation}
             onSearchLocationClear={() => setSearchLocation(null)}
+            colorMode={colorMode}
           />
           
         </div>
