@@ -281,6 +281,37 @@
     border-top-color: hsl(var(--card));
   }
 
+  /* Detailed tooltip styling for click popups */
+  .detailed-tooltip .maplibregl-popup-content {
+    @apply rounded-xl shadow-2xl p-0 border-2;
+    background: hsl(var(--card));
+    border-color: hsl(var(--primary) / 0.2);
+    animation: detailedTooltipFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15), 
+                0 0 0 1px hsl(var(--border)),
+                0 4px 12px hsl(var(--primary) / 0.1);
+    max-height: 600px;
+    overflow-y: auto;
+  }
+
+  .detailed-tooltip .maplibregl-popup-tip {
+    border-top-color: hsl(var(--card));
+  }
+
+  .detailed-tooltip .maplibregl-popup-close-button {
+    @apply text-lg font-bold;
+    color: hsl(var(--muted-foreground));
+    transition: all 0.2s ease;
+    right: 12px;
+    top: 12px;
+  }
+
+  .detailed-tooltip .maplibregl-popup-close-button:hover {
+    color: hsl(var(--foreground));
+    transform: scale(1.1);
+  }
+
   @keyframes tooltipFadeIn {
     0% {
       opacity: 0;
@@ -302,6 +333,17 @@
     100% {
       opacity: 0;
       transform: translateY(-6px) scale(0.96);
+    }
+  }
+
+  @keyframes detailedTooltipFadeIn {
+    0% {
+      opacity: 0;
+      transform: translateY(-12px) scale(0.92);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
     }
   }
 }
