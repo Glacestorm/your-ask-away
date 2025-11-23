@@ -184,6 +184,10 @@ export function MapSidebar({
       productIds: [],
       dateRange: null,
       searchTerm: '',
+      vinculacionRange: {
+        min: 0,
+        max: 100,
+      },
     });
   };
 

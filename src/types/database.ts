@@ -172,4 +172,8 @@ export interface MapFilters {
     to: Date | null;
   } | null;
   searchTerm: string;
+  vinculacionRange: {
+    min: number;
+    max: number;
+  };
 }
