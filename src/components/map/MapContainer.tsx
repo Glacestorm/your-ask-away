@@ -885,21 +885,157 @@ export function MapContainer({
           el.addEventListener('mouseenter', showTooltip);
           el.addEventListener('mouseleave', hideTooltip);
 
-          // Click popup (existing functionality)
+          // Click popup - Enhanced detailed tooltip
           const clickPopup = new maplibregl.Popup({
             offset: 25,
             closeButton: true,
             closeOnClick: false,
+            maxWidth: '420px',
+            className: 'detailed-tooltip',
           }).setHTML(`
-            <div class="p-3">
-              <h3 class="font-semibold text-sm mb-2">${company.name}</h3>
-              <div class="space-y-1 text-xs">
-                <p><strong>Estado:</strong> ${company.status?.status_name || 'N/A'}</p>
-                <p><strong>Dirección:</strong> ${company.address}</p>
-                <p><strong>Parroquia:</strong> ${company.parroquia}</p>
-                ${company.cnae ? `<p><strong>CNAE:</strong> ${formatCnaeWithDescription(company.cnae)}</p>` : ''}
-                ${company.gestor ? `<strong>Gestor:</strong> ${company.gestor.full_name || company.gestor.email}</p>` : ''}
-                ${company.products && company.products.length > 0 ? `<p><strong>Productos:</strong> ${company.products.length}</p>` : ''}
+            <div class="p-5 max-w-md">
+              <div class="flex items-start justify-between mb-4 pb-3 border-b">
+                <div class="flex-1">
+                  <h3 class="font-bold text-lg mb-1">${company.name}</h3>
+                  ${company.status ? `
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold" 
+                          style="background-color: ${company.status.color_hex}20; color: ${company.status.color_hex}; border: 1px solid ${company.status.color_hex}40;">
+                      ${company.status.status_name}
+                    </span>
+                  ` : ''}
+                </div>
+              </div>
+              
+              <div class="space-y-3">
+                <!-- Información básica -->
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <p class="text-xs text-muted-foreground mb-1">Dirección</p>
+                    <p class="text-sm font-medium">${company.address}</p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-muted-foreground mb-1">Parroquia</p>
+                    <p class="text-sm font-medium">${company.parroquia}</p>
+                  </div>
+                </div>
+
+                ${company.phone || company.email ? `
+                  <div class="grid grid-cols-2 gap-3 pt-2 border-t">
+                    ${company.phone ? `
+                      <div>
+                        <p class="text-xs text-muted-foreground mb-1">Teléfono</p>
+                        <p class="text-sm font-medium">${company.phone}</p>
+                      </div>
+                    ` : ''}
+                    ${company.email ? `
+                      <div>
+                        <p class="text-xs text-muted-foreground mb-1">Email</p>
+                        <p class="text-sm font-medium truncate">${company.email}</p>
+                      </div>
+                    ` : ''}
+                  </div>
+                ` : ''}
+
+                <!-- Información comercial -->
+                ${company.cnae || company.sector || company.employees ? `
+                  <div class="pt-2 border-t">
+                    <p class="text-xs font-semibold text-muted-foreground mb-2">Información Comercial</p>
+                    <div class="space-y-2">
+                      ${company.cnae ? `
+                        <div>
+                          <p class="text-xs text-muted-foreground">CNAE</p>
+                          <p class="text-sm">${formatCnaeWithDescription(company.cnae)}</p>
+                        </div>
+                      ` : ''}
+                      <div class="grid grid-cols-2 gap-3">
+                        ${company.sector ? `
+                          <div>
+                            <p class="text-xs text-muted-foreground">Sector</p>
+                            <p class="text-sm font-medium">${company.sector}</p>
+                          </div>
+                        ` : ''}
+                        ${company.employees ? `
+                          <div>
+                            <p class="text-xs text-muted-foreground">Empleados</p>
+                            <p class="text-sm font-medium">${company.employees}</p>
+                          </div>
+                        ` : ''}
+                      </div>
+                    </div>
+                  </div>
+                ` : ''}
+
+                <!-- Métricas financieras -->
+                ${vinculacionPct !== undefined || company.turnover !== null || company.pl_banco !== null || company.beneficios !== null ? `
+                  <div class="pt-2 border-t">
+                    <p class="text-xs font-semibold text-muted-foreground mb-2">Métricas Financieras</p>
+                    <div class="grid grid-cols-2 gap-3">
+                      ${vinculacionPct !== undefined ? `
+                        <div>
+                          <p class="text-xs text-muted-foreground">Vinculación</p>
+                          <p class="text-sm font-bold" style="color: ${color}">${vinculacionPct}%</p>
+                        </div>
+                      ` : ''}
+                      ${company.turnover !== null ? `
+                        <div>
+                          <p class="text-xs text-muted-foreground">Facturación</p>
+                          <p class="text-sm font-medium">€${company.turnover.toLocaleString()}</p>
+                        </div>
+                      ` : ''}
+                      ${company.pl_banco !== null ? `
+                        <div>
+                          <p class="text-xs text-muted-foreground">P&L Banco</p>
+                          <p class="text-sm font-medium">€${company.pl_banco.toLocaleString()}</p>
+                        </div>
+                      ` : ''}
+                      ${company.beneficios !== null ? `
+                        <div>
+                          <p class="text-xs text-muted-foreground">Beneficios</p>
+                          <p class="text-sm font-medium">€${company.beneficios.toLocaleString()}</p>
+                        </div>
+                      ` : ''}
+                    </div>
+                  </div>
+                ` : ''}
+
+                <!-- Gestor y última visita -->
+                <div class="pt-2 border-t">
+                  <div class="grid grid-cols-2 gap-3">
+                    ${company.gestor ? `
+                      <div>
+                        <p class="text-xs text-muted-foreground mb-1">Gestor</p>
+                        <p class="text-sm font-medium">${company.gestor.full_name || company.gestor.email}</p>
+                      </div>
+                    ` : ''}
+                    ${company.fecha_ultima_visita ? `
+                      <div>
+                        <p class="text-xs text-muted-foreground mb-1">Última Visita</p>
+                        <p class="text-sm font-medium">${new Date(company.fecha_ultima_visita).toLocaleDateString('es-ES')}</p>
+                      </div>
+                    ` : ''}
+                  </div>
+                </div>
+
+                <!-- Productos -->
+                ${company.products && company.products.length > 0 ? `
+                  <div class="pt-2 border-t">
+                    <p class="text-xs font-semibold text-muted-foreground mb-2">Productos (${company.products.length})</p>
+                    <div class="flex flex-wrap gap-1.5">
+                      ${company.products.map(p => `
+                        <span class="px-2 py-1 bg-primary/10 text-primary text-xs rounded-md font-medium">
+                          ${p.name}
+                        </span>
+                      `).join('')}
+                    </div>
+                  </div>
+                ` : ''}
+
+                ${visitCounts[company.id] ? `
+                  <div class="pt-2 border-t">
+                    <p class="text-xs text-muted-foreground">Total de Visitas</p>
+                    <p class="text-sm font-bold">${visitCounts[company.id]}</p>
+                  </div>
+                ` : ''}
               </div>
             </div>
           `);
