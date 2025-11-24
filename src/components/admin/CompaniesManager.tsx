@@ -444,9 +444,22 @@ export function CompaniesManager() {
     }
   };
 
-  const detectDuplicates = () => {
+  const detectDuplicates = async () => {
     setDetectingDuplicates(true);
     try {
+      // Obtener TODAS las empresas de la base de datos
+      const { data: allCompanies, error } = await supabase
+        .from('companies')
+        .select('*, status_colors(*), profiles(*)')
+        .order('name');
+
+      if (error) throw error;
+      if (!allCompanies || allCompanies.length === 0) {
+        toast.info('No hay empresas en la base de datos');
+        return;
+      }
+
+      const companies = allCompanies as CompanyWithDetails[];
       const duplicateGroups: { group: CompanyWithDetails[], reason: string }[] = [];
       const processed = new Set<string>();
 
@@ -488,11 +501,12 @@ export function CompaniesManager() {
       });
 
       if (duplicateGroups.length === 0) {
-        toast.info('No se encontraron empresas duplicadas');
+        toast.info('No se encontraron empresas duplicadas en toda la base de datos');
       } else {
+        const totalDuplicates = duplicateGroups.reduce((sum, g) => sum + g.group.length, 0);
         setDuplicates(duplicateGroups);
         setShowDuplicates(true);
-        toast.success(`Se encontraron ${duplicateGroups.length} grupos de duplicados`);
+        toast.success(`Se encontraron ${duplicateGroups.length} grupos con ${totalDuplicates} empresas duplicadas en total`);
       }
     } catch (error) {
       console.error('Error detecting duplicates:', error);
