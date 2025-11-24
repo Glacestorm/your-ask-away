@@ -14,6 +14,7 @@
   --popover-foreground: 222.2 84% 4.9%;
   --primary: 210 100% 50%;
   --primary-foreground: 0 0% 100%;
+  --primary-hover: 210 100% 45%;
   --primary-glow: 210 100% 60%;
   --secondary: 210 40% 96.1%;
   --secondary-foreground: 222.2 47.4% 11.2%;
@@ -51,6 +52,7 @@
   --popover-foreground: 210 40% 98%;
   --primary: 210 100% 60%;
   --primary-foreground: 222.2 47.4% 11.2%;
+  --primary-hover: 210 100% 55%;
   --primary-glow: 210 100% 70%;
   --secondary: 217.2 32.6% 17.5%;
   --secondary-foreground: 210 40% 98%;
@@ -87,6 +89,7 @@
   --popover-foreground: 0 0% 13%;
   --primary: 145 55% 42%;
   --primary-foreground: 0 0% 100%;
+  --primary-hover: 145 55% 37%;
   --primary-glow: 145 55% 52%;
   --secondary: 145 25% 90%;
   --secondary-foreground: 145 55% 25%;
@@ -124,6 +127,7 @@
   --popover-foreground: 260 50% 15%;
   --primary: 280 80% 60%;
   --primary-foreground: 0 0% 100%;
+  --primary-hover: 280 80% 55%;
   --primary-glow: 280 80% 70%;
   --secondary: 200 90% 60%;
   --secondary-foreground: 0 0% 100%;
