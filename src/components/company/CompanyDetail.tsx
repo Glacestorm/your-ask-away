@@ -1,7 +1,7 @@
 import { CompanyWithDetails } from '@/types/database';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Building2, User, FileText, History, X, Camera, CreditCard, Landmark } from 'lucide-react';
+import { Building2, User, FileText, History, X, Camera, CreditCard, Landmark, Phone, Mail, Globe, MapPin, Users, TrendingUp, Scale, FileCheck, Briefcase, Clock, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ContactsManager } from './ContactsManager';
 import { DocumentsManager } from './DocumentsManager';
@@ -12,6 +12,8 @@ import { CompanyPhotosManager } from './CompanyPhotosManager';
 import { BankAffiliationsManager } from './BankAffiliationsManager';
 import { TPVTerminalsManager } from './TPVTerminalsManager';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 
 interface CompanyDetailProps {
   company: CompanyWithDetails;
@@ -22,279 +24,386 @@ export const CompanyDetail = ({ company, onClose }: CompanyDetailProps) => {
   const { t } = useLanguage();
   
   return (
-    <div className="flex h-full flex-col">
-      {/* Header */}
-      <div className="border-b p-4">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <h2 className="text-xl font-semibold mb-1">{company.name}</h2>
-            <p className="text-sm text-muted-foreground">{company.address}</p>
-            <div className="flex flex-wrap gap-2 mt-2">
+    <div className="flex h-full flex-col bg-gradient-to-br from-background to-muted/20">
+      {/* Enhanced Header */}
+      <div className="border-b bg-card/80 backdrop-blur-sm p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 space-y-2">
+            <div className="flex items-start gap-2">
+              <div className="p-2 rounded-lg bg-primary/10 mt-1">
+                <Building2 className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-lg font-bold leading-tight mb-1">{company.name}</h2>
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <MapPin className="h-3 w-3" />
+                  {company.address}
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap gap-1.5">
               {company.status && (
                 <Badge
-                  variant="secondary"
+                  className="text-xs font-medium"
                   style={{
                     backgroundColor: company.status.color_hex + '20',
                     borderColor: company.status.color_hex,
+                    color: company.status.color_hex,
                   }}
                 >
                   {company.status.status_name}
                 </Badge>
               )}
               {company.parroquia && (
-                <Badge variant="outline">{company.parroquia}</Badge>
+                <Badge variant="secondary" className="text-xs">
+                  <MapPin className="h-3 w-3 mr-1" />
+                  {company.parroquia}
+                </Badge>
               )}
               {company.sector && (
-                <Badge variant="outline">{company.sector}</Badge>
+                <Badge variant="outline" className="text-xs">
+                  <Briefcase className="h-3 w-3 mr-1" />
+                  {company.sector}
+                </Badge>
               )}
             </div>
           </div>
+          
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             onClick={onClose}
-            className="ml-2"
+            className="shrink-0 hover:bg-destructive/10 hover:text-destructive"
           >
             <X className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="info" className="flex-1 flex flex-col">
-        <TabsList className="mx-4 mt-2 grid grid-cols-7">
-          <TabsTrigger value="info" className="text-xs">
-            <Building2 className="h-4 w-4 mr-1" />
-            {t('company.details')}
-          </TabsTrigger>
-          <TabsTrigger value="banking" className="text-xs">
-            <Landmark className="h-4 w-4 mr-1" />
-            Bancos
-          </TabsTrigger>
-          <TabsTrigger value="tpv" className="text-xs">
-            <CreditCard className="h-4 w-4 mr-1" />
-            TPV
-          </TabsTrigger>
-          <TabsTrigger value="contacts" className="text-xs">
-            <User className="h-4 w-4 mr-1" />
-            {t('company.contacts')}
-          </TabsTrigger>
-          <TabsTrigger value="photos" className="text-xs">
-            <Camera className="h-4 w-4 mr-1" />
-            {t('company.photos')}
-          </TabsTrigger>
-          <TabsTrigger value="documents" className="text-xs">
-            <FileText className="h-4 w-4 mr-1" />
-            {t('company.documents')}
-          </TabsTrigger>
-          <TabsTrigger value="visits" className="text-xs">
-            <History className="h-4 w-4 mr-1" />
-            {t('company.visits')}
-          </TabsTrigger>
-        </TabsList>
+      {/* Modern Tabs Navigation */}
+      <Tabs defaultValue="info" className="flex-1 flex flex-col overflow-hidden">
+        <div className="px-4 pt-3 pb-2 bg-card/50 border-b">
+          <TabsList className="grid grid-cols-4 h-auto p-1 gap-1 bg-muted/50">
+            <TabsTrigger value="info" className="flex flex-col items-center py-2 px-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Building2 className="h-4 w-4 mb-1" />
+              <span className="text-[10px] font-medium">Info</span>
+            </TabsTrigger>
+            <TabsTrigger value="relations" className="flex flex-col items-center py-2 px-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Landmark className="h-4 w-4 mb-1" />
+              <span className="text-[10px] font-medium">Relaciones</span>
+            </TabsTrigger>
+            <TabsTrigger value="media" className="flex flex-col items-center py-2 px-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Camera className="h-4 w-4 mb-1" />
+              <span className="text-[10px] font-medium">Multimedia</span>
+            </TabsTrigger>
+            <TabsTrigger value="activity" className="flex flex-col items-center py-2 px-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <History className="h-4 w-4 mb-1" />
+              <span className="text-[10px] font-medium">Actividad</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <ScrollArea className="flex-1">
-          <TabsContent value="info" className="p-4 space-y-4 mt-0">
-            <div>
-              <h3 className="text-sm font-semibold mb-2 text-muted-foreground">
-                Información General
-              </h3>
-              <div className="space-y-2 text-sm">
+          {/* Info Tab - Redesigned with Cards */}
+          <TabsContent value="info" className="p-3 space-y-3 mt-0">
+            {/* Quick Actions */}
+            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+              <CardContent className="p-3 flex flex-wrap gap-2">
+                {company.phone && (
+                  <Button size="sm" variant="outline" className="flex-1 min-w-[100px]" asChild>
+                    <a href={`tel:${company.phone}`}>
+                      <Phone className="h-3 w-3 mr-1" />
+                      Llamar
+                    </a>
+                  </Button>
+                )}
+                {company.email && (
+                  <Button size="sm" variant="outline" className="flex-1 min-w-[100px]" asChild>
+                    <a href={`mailto:${company.email}`}>
+                      <Mail className="h-3 w-3 mr-1" />
+                      Email
+                    </a>
+                  </Button>
+                )}
+                {company.website && (
+                  <Button size="sm" variant="outline" className="flex-1 min-w-[100px]" asChild>
+                    <a href={company.website} target="_blank" rel="noopener noreferrer">
+                      <Globe className="h-3 w-3 mr-1" />
+                      Web
+                    </a>
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* General Info Card */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Building2 className="h-4 w-4 text-primary" />
+                  Información General
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 pb-4">
                 {company.cnae && (
-                  <div>
-                    <span className="font-medium">CNAE:</span>{' '}
-                    <span className="text-muted-foreground">
-                      {formatCnaeWithDescription(company.cnae)}
-                    </span>
+                  <div className="flex items-start gap-3 p-2 rounded-lg bg-muted/50">
+                    <FileCheck className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-muted-foreground">CNAE</p>
+                      <p className="text-sm break-words">{formatCnaeWithDescription(company.cnae)}</p>
+                    </div>
                   </div>
                 )}
                 {company.sector && (
-                  <div>
-                    <span className="font-medium">Sector:</span>{' '}
-                    <span className="text-muted-foreground">{company.sector}</span>
+                  <div className="flex items-start gap-3 p-2 rounded-lg bg-muted/50">
+                    <Briefcase className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-xs font-medium text-muted-foreground">Sector</p>
+                      <p className="text-sm">{company.sector}</p>
+                    </div>
                   </div>
                 )}
                 {company.oficina && (
-                  <div>
-                    <span className="font-medium">Oficina:</span>{' '}
-                    <span className="text-muted-foreground">{company.oficina}</span>
+                  <div className="flex items-start gap-3 p-2 rounded-lg bg-muted/50">
+                    <Building2 className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-xs font-medium text-muted-foreground">Oficina</p>
+                      <p className="text-sm">{company.oficina}</p>
+                    </div>
                   </div>
                 )}
                 {company.gestor && (
-                  <div>
-                    <span className="font-medium">Gestor:</span>{' '}
-                    <span className="text-muted-foreground">
-                      {company.gestor.full_name || company.gestor.email}
-                    </span>
+                  <div className="flex items-start gap-3 p-2 rounded-lg bg-muted/50">
+                    <User className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-xs font-medium text-muted-foreground">Gestor</p>
+                      <p className="text-sm">{company.gestor.full_name || company.gestor.email}</p>
+                    </div>
                   </div>
                 )}
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
-            {(company.phone || company.email || company.website) && (
-              <div>
-                <h3 className="text-sm font-semibold mb-2 text-muted-foreground">
-                  Datos de Contacto
-                </h3>
-                <div className="space-y-2 text-sm">
-                  {company.phone && (
-                    <div>
-                      <span className="font-medium">Teléfono:</span>{' '}
-                      <a href={`tel:${company.phone}`} className="text-primary hover:underline">
-                        {company.phone}
-                      </a>
-                    </div>
-                  )}
-                  {company.email && (
-                    <div>
-                      <span className="font-medium">Email:</span>{' '}
-                      <a href={`mailto:${company.email}`} className="text-primary hover:underline">
-                        {company.email}
-                      </a>
-                    </div>
-                  )}
-                  {company.website && (
-                    <div>
-                      <span className="font-medium">Web:</span>{' '}
-                      <a
-                        href={company.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        {company.website}
-                      </a>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
+            {/* Economic Data Card */}
             {(company.employees !== null || company.turnover !== null) && (
-              <div>
-                <h3 className="text-sm font-semibold mb-2 text-muted-foreground">
-                  Datos Económicos
-                </h3>
-                <div className="space-y-2 text-sm">
-                  {company.employees !== null && (
-                    <div>
-                      <span className="font-medium">Empleados:</span>{' '}
-                      <span className="text-muted-foreground">{company.employees}</span>
-                    </div>
-                  )}
-                  {company.turnover !== null && (
-                    <div>
-                      <span className="font-medium">Facturación:</span>{' '}
-                      <span className="text-muted-foreground">
-                        {new Intl.NumberFormat('es-ES', {
-                          style: 'currency',
-                          currency: 'EUR',
-                        }).format(Number(company.turnover))}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-primary" />
+                    Datos Económicos
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 pb-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    {company.employees !== null && (
+                      <div className="p-3 rounded-lg bg-gradient-to-br from-blue-500/10 to-blue-500/5 border border-blue-500/20">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Users className="h-4 w-4 text-blue-600" />
+                          <p className="text-xs font-medium text-muted-foreground">Empleados</p>
+                        </div>
+                        <p className="text-lg font-bold">{company.employees}</p>
+                      </div>
+                    )}
+                    {company.turnover !== null && (
+                      <div className="p-3 rounded-lg bg-gradient-to-br from-green-500/10 to-green-500/5 border border-green-500/20">
+                        <div className="flex items-center gap-2 mb-1">
+                          <TrendingUp className="h-4 w-4 text-green-600" />
+                          <p className="text-xs font-medium text-muted-foreground">Facturación</p>
+                        </div>
+                        <p className="text-sm font-bold">
+                          {new Intl.NumberFormat('es-ES', {
+                            style: 'currency',
+                            currency: 'EUR',
+                            notation: 'compact',
+                            maximumFractionDigits: 1,
+                          }).format(Number(company.turnover))}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             )}
 
+            {/* Legal Data Card */}
             {(company.tax_id || company.registration_number || company.legal_form) && (
-              <div>
-                <h3 className="text-sm font-semibold mb-2 text-muted-foreground">
-                  Datos Legales
-                </h3>
-                <div className="space-y-2 text-sm">
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Scale className="h-4 w-4 text-primary" />
+                    Datos Legales
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2 pb-4">
                   {company.tax_id && (
-                    <div>
-                      <span className="font-medium">NIF:</span>{' '}
-                      <span className="text-muted-foreground">{company.tax_id}</span>
+                    <div className="flex justify-between items-center p-2 rounded-lg bg-muted/50">
+                      <span className="text-xs font-medium text-muted-foreground">NIF</span>
+                      <span className="text-sm font-mono">{company.tax_id}</span>
                     </div>
                   )}
                   {company.registration_number && (
-                    <div>
-                      <span className="font-medium">Nº Registro:</span>{' '}
-                      <span className="text-muted-foreground">{company.registration_number}</span>
+                    <div className="flex justify-between items-center p-2 rounded-lg bg-muted/50">
+                      <span className="text-xs font-medium text-muted-foreground">Nº Registro</span>
+                      <span className="text-sm font-mono">{company.registration_number}</span>
                     </div>
                   )}
                   {company.legal_form && (
-                    <div>
-                      <span className="font-medium">Forma Legal:</span>{' '}
-                      <span className="text-muted-foreground">{company.legal_form}</span>
+                    <div className="flex justify-between items-center p-2 rounded-lg bg-muted/50">
+                      <span className="text-xs font-medium text-muted-foreground">Forma Legal</span>
+                      <span className="text-sm">{company.legal_form}</span>
                     </div>
                   )}
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             )}
 
+            {/* Products Card */}
             {company.products && company.products.length > 0 && (
-              <div>
-                <h3 className="text-sm font-semibold mb-2 text-muted-foreground">
-                  Productos Contratados
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {company.products.map((product) => (
-                    <Badge key={product.id} variant="secondary">
-                      {product.name}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <CreditCard className="h-4 w-4 text-primary" />
+                    Productos Contratados
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pb-4">
+                  <div className="flex flex-wrap gap-2">
+                    {company.products.map((product) => (
+                      <Badge key={product.id} variant="secondary" className="text-xs">
+                        {product.name}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             )}
 
+            {/* Observations Card */}
             {company.observaciones && (
-              <div>
-                <h3 className="text-sm font-semibold mb-2 text-muted-foreground">
-                  Observaciones
-                </h3>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                  {company.observaciones}
-                </p>
-              </div>
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-primary" />
+                    Observaciones
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pb-4">
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                    {company.observaciones}
+                  </p>
+                </CardContent>
+              </Card>
             )}
 
+            {/* Last Visit Card */}
             {company.fecha_ultima_visita && (
-              <div>
-                <h3 className="text-sm font-semibold mb-2 text-muted-foreground">
-                  Última Visita
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {new Date(company.fecha_ultima_visita).toLocaleDateString('es-ES', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                </p>
-              </div>
+              <Card className="border-orange-500/20 bg-gradient-to-br from-orange-500/5 to-orange-500/10">
+                <CardContent className="p-3 flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-orange-500/10">
+                    <Clock className="h-4 w-4 text-orange-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground">Última Visita</p>
+                    <p className="text-sm font-semibold">
+                      {new Date(company.fecha_ultima_visita).toLocaleDateString('es-ES', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
             )}
 
-            <div className="pt-2 border-t">
+            {/* Coordinates */}
+            <div className="text-center py-2">
               <p className="text-xs text-muted-foreground">
-                Coordenadas: {company.latitude.toFixed(6)}, {company.longitude.toFixed(6)}
+                📍 {company.latitude.toFixed(6)}, {company.longitude.toFixed(6)}
               </p>
             </div>
           </TabsContent>
 
-          <TabsContent value="banking" className="p-4 mt-0">
-            <BankAffiliationsManager companyId={company.id} />
+          {/* Relations Tab - Banking, TPV, Contacts */}
+          <TabsContent value="relations" className="p-3 space-y-3 mt-0">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Landmark className="h-4 w-4 text-primary" />
+                  Afiliaciones Bancarias
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <BankAffiliationsManager companyId={company.id} />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <CreditCard className="h-4 w-4 text-primary" />
+                  Terminales TPV
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <TPVTerminalsManager companyId={company.id} />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <User className="h-4 w-4 text-primary" />
+                  Contactos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ContactsManager companyId={company.id} />
+              </CardContent>
+            </Card>
           </TabsContent>
 
-          <TabsContent value="tpv" className="p-4 mt-0">
-            <TPVTerminalsManager companyId={company.id} />
+          {/* Media Tab - Photos and Documents */}
+          <TabsContent value="media" className="p-3 space-y-3 mt-0">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Camera className="h-4 w-4 text-primary" />
+                  Fotografías
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CompanyPhotosManager companyId={company.id} companyName={company.name} />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-primary" />
+                  Documentos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <DocumentsManager companyId={company.id} companyName={company.name} />
+              </CardContent>
+            </Card>
           </TabsContent>
 
-          <TabsContent value="contacts" className="p-4 mt-0">
-            <ContactsManager companyId={company.id} />
-          </TabsContent>
-
-          <TabsContent value="photos" className="p-4 mt-0">
-            <CompanyPhotosManager companyId={company.id} companyName={company.name} />
-          </TabsContent>
-
-          <TabsContent value="documents" className="p-4 mt-0">
-            <DocumentsManager companyId={company.id} companyName={company.name} />
-          </TabsContent>
-
-          <TabsContent value="visits" className="p-4 mt-0">
-            <VisitsPanel company={company} />
+          {/* Activity Tab - Visits */}
+          <TabsContent value="activity" className="p-3 mt-0">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <History className="h-4 w-4 text-primary" />
+                  Historial de Visitas
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <VisitsPanel company={company} />
+              </CardContent>
+            </Card>
           </TabsContent>
         </ScrollArea>
       </Tabs>
