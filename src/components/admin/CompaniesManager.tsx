@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
-import { Plus, Pencil, Trash2, Upload, Phone, Mail, Globe, Users, Building2, FileText, History, Clock, TrendingUp, Package, Camera, MapPin, Copy, AlertTriangle, CheckCircle2, XCircle, Loader2, Search, Eye, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Upload, Phone, Mail, Globe, Users, Building2, FileText, History, Clock, TrendingUp, Package, Camera, MapPin, Copy, AlertTriangle, CheckCircle2, XCircle, Loader2, Search, Eye, X, Grid3x3, List } from 'lucide-react';
 import { toast } from 'sonner';
 import { CompanyWithDetails, StatusColor, Profile } from '@/types/database';
 import { ExcelImporter } from './ExcelImporter';
@@ -87,6 +87,7 @@ export function CompaniesManager() {
   const [isSearchingPhotos, setIsSearchingPhotos] = useState(false);
   const [photoSearchProgress, setPhotoSearchProgress] = useState(0);
   const [sortBy, setSortBy] = useState<string>('name-asc');
+  const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
   const [visitFormData, setVisitFormData] = useState({
     visit_date: new Date().toISOString().split('T')[0],
     gestor_id: '',
@@ -819,7 +820,7 @@ export function CompaniesManager() {
         </div>
       </CardHeader>
       <CardContent>
-        {/* Search Bar and Sort Selector */}
+        {/* Search Bar, Sort Selector, and View Toggle */}
         <div className="mb-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
           <div className="relative flex-1">
             <Input
@@ -846,10 +847,29 @@ export function CompaniesManager() {
               </SelectContent>
             </Select>
           </div>
+          <div className="flex gap-2">
+            <Button
+              variant={viewMode === 'cards' ? 'default' : 'outline'}
+              size="icon"
+              onClick={() => setViewMode('cards')}
+              title={t('companyForm.cardView')}
+            >
+              <Grid3x3 className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'outline'}
+              size="icon"
+              onClick={() => setViewMode('list')}
+              title={t('companyForm.listView')}
+            >
+              <List className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
-        <ScrollArea className="h-[600px]">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {viewMode === 'cards' ? (
+          <ScrollArea className="h-[600px]">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredAndSortedCompanies.map((company) => {
               const photoUrl = companyPhotos.get(company.id);
               return (
@@ -1028,6 +1048,125 @@ export function CompaniesManager() {
             })}
           </div>
         </ScrollArea>
+        ) : (
+          <ScrollArea className="h-[600px]">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[30px]"></TableHead>
+                  <TableHead>{t('company.name')}</TableHead>
+                  <TableHead>{t('company.address')}</TableHead>
+                  <TableHead>{t('company.phone')}</TableHead>
+                  <TableHead>{t('company.status')}</TableHead>
+                  <TableHead>{t('company.manager')}</TableHead>
+                  <TableHead className="text-center">{t('companyForm.creandLinkage')}</TableHead>
+                  <TableHead className="text-right">{t('common.actions')}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredAndSortedCompanies.map((company) => {
+                  const avgLinkage = getAverageLinkage(company);
+                  return (
+                    <TableRow key={company.id} className="hover:bg-muted/50">
+                      <TableCell>
+                        <div 
+                          className="w-6 h-6 rounded-full flex items-center justify-center"
+                          style={{
+                            backgroundColor: isGeolocated(company) ? '#10b98150' : '#ef444450',
+                          }}
+                          title={isGeolocated(company) ? t('companyForm.geolocated') : t('companyForm.notGeolocated')}
+                        >
+                          <MapPin className="h-3 w-3" style={{ color: isGeolocated(company) ? '#10b981' : '#ef4444' }} />
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          {companyPhotos.get(company.id) && (
+                            <div 
+                              className="w-8 h-8 rounded bg-cover bg-center cursor-pointer flex-shrink-0"
+                              style={{ backgroundImage: `url(${companyPhotos.get(company.id)})` }}
+                              onClick={() => setSelectedPhoto(companyPhotos.get(company.id)!)}
+                            />
+                          )}
+                          <span className="truncate max-w-[200px]">{company.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="max-w-[200px] truncate text-sm text-muted-foreground">
+                          {company.address}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {(company as any).phone ? (
+                          <a 
+                            href={`tel:${(company as any).phone}`}
+                            className="text-sm hover:text-primary transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {(company as any).phone}
+                          </a>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">{t('companyForm.noPhone')}</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {company.status && (
+                          <div 
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium"
+                            style={{ 
+                              backgroundColor: `${company.status.color_hex}30`,
+                              color: company.status.color_hex,
+                            }}
+                          >
+                            {company.status.status_name}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="max-w-[150px] truncate text-sm">
+                          {company.gestor?.full_name || company.gestor?.email || '-'}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {avgLinkage > 0 ? (
+                          <div className="inline-flex items-center gap-1 px-2 py-1 rounded bg-primary/10 text-primary font-semibold text-sm">
+                            <TrendingUp className="h-3 w-3" />
+                            {Math.round(avgLinkage)}%
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center justify-end gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => {
+                              setDetailsCompany(company);
+                              handleEdit(company);
+                            }}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => handleDelete(company.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </ScrollArea>
+        )}
       </CardContent>
 
       {/* Photo Viewer Dialog */}

@@ -272,6 +272,8 @@ export default {
   'companyForm.sortVisitDesc': 'Dernière visite (Plus récent)',
   'companyForm.sortVisitAsc': 'Dernière visite (Plus ancien)',
   'companyForm.sortGeolocated': 'Localisés d\'abord',
+  'companyForm.cardView': 'Vue en cartes',
+  'companyForm.listView': 'Vue en liste',
   
   // Product Forms
   'productForm.title': 'Produits',
