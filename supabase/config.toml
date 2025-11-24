@@ -2,3 +2,6 @@ project_id = "avaugfnqvvqcilhiudlf"
 
 [functions.smart-column-mapping]
 verify_jwt = false
+
+[functions.geocode-address]
+verify_jwt = false
