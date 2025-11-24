@@ -89,12 +89,16 @@ export function CompaniesManager() {
   const [sortBy, setSortBy] = useState<string>('name-asc');
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
   const [selectedCompanies, setSelectedCompanies] = useState<Set<string>>(new Set());
-  const [bulkActionDialog, setBulkActionDialog] = useState<'gestor' | 'status' | 'products' | 'oficina' | null>(null);
+  const [bulkActionDialog, setBulkActionDialog] = useState<'gestor' | 'status' | 'products' | 'oficina' | 'tags' | null>(null);
   const [bulkGestorId, setBulkGestorId] = useState<string>('');
   const [bulkStatusId, setBulkStatusId] = useState<string>('');
   const [bulkProductIds, setBulkProductIds] = useState<string[]>([]);
   const [bulkOficina, setBulkOficina] = useState<string>('');
   const [oficinas, setOficinas] = useState<any[]>([]);
+  const [allTags, setAllTags] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [newTag, setNewTag] = useState('');
+  const [bulkTags, setBulkTags] = useState<string[]>([]);
   const [visitFormData, setVisitFormData] = useState({
     visit_date: new Date().toISOString().split('T')[0],
     gestor_id: '',
@@ -130,11 +134,13 @@ export function CompaniesManager() {
     vinculacion_entidad_3: '',
     bp: '',
     client_type: '',
+    tags: [] as string[],
   });
 
   useEffect(() => {
     fetchData();
     loadCompanyPhotos();
+    loadAllTags();
   }, []);
 
   const loadCompanyPhotos = async () => {
@@ -157,6 +163,28 @@ export function CompaniesManager() {
       setCompanyPhotos(photosMap);
     } catch (error) {
       console.error('Error loading company photos:', error);
+    }
+  };
+
+  const loadAllTags = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('companies')
+        .select('tags');
+
+      if (error) throw error;
+
+      // Extract all unique tags
+      const tagsSet = new Set<string>();
+      data?.forEach(company => {
+        if (company.tags && Array.isArray(company.tags)) {
+          company.tags.forEach((tag: string) => tagsSet.add(tag));
+        }
+      });
+
+      setAllTags(Array.from(tagsSet).sort());
+    } catch (error) {
+      console.error('Error loading tags:', error);
     }
   };
 
@@ -218,6 +246,7 @@ export function CompaniesManager() {
         vinculacion_entidad_3: formData.vinculacion_entidad_3 ? Number(formData.vinculacion_entidad_3) : null,
         bp: formData.bp || null,
         client_type: formData.client_type || null,
+        tags: formData.tags || [],
       };
 
       if (editingCompany) {
@@ -241,6 +270,7 @@ export function CompaniesManager() {
       setEditingCompany(null);
       resetForm();
       fetchData();
+      loadAllTags();
     } catch (error: any) {
       console.error('Error saving company:', error);
       toast.error(t('form.errorSaving'));
@@ -295,6 +325,7 @@ export function CompaniesManager() {
       vinculacion_entidad_3: (company as any).vinculacion_entidad_3?.toString() || '',
       bp: (company as any).bp || '',
       client_type: (company as any).client_type || '',
+      tags: (company as any).tags || [],
     });
     
     // Load activity history
@@ -411,6 +442,7 @@ export function CompaniesManager() {
       vinculacion_entidad_3: '',
       bp: '',
       client_type: '',
+      tags: [],
     });
   };
 
@@ -892,8 +924,70 @@ export function CompaniesManager() {
     }
   };
 
+  const handleBulkAddTags = async () => {
+    if (bulkTags.length === 0) {
+      toast.error(t('companyForm.selectTags'));
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      for (const companyId of selectedCompanies) {
+        const company = companies.find(c => c.id === companyId);
+        const existingTags = (company as any)?.tags || [];
+        const newTags = [...new Set([...existingTags, ...bulkTags])];
+        
+        await supabase
+          .from('companies')
+          .update({ tags: newTags })
+          .eq('id', companyId);
+      }
+      
+      toast.success(`${t('companyForm.bulkTagsSuccess')} (${selectedCompanies.size})`);
+      setSelectedCompanies(new Set());
+      setBulkActionDialog(null);
+      setBulkTags([]);
+      await fetchData();
+      await loadAllTags();
+    } catch (error: any) {
+      console.error('Error adding tags:', error);
+      toast.error(t('form.errorSaving'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addTagToCompany = (tag: string) => {
+    if (!tag.trim()) return;
+    if (formData.tags.includes(tag)) {
+      toast.info(t('companyForm.tagAlreadyExists'));
+      return;
+    }
+    setFormData({ ...formData, tags: [...formData.tags, tag] });
+    setNewTag('');
+  };
+
+  const removeTagFromCompany = (tag: string) => {
+    setFormData({ ...formData, tags: formData.tags.filter(t => t !== tag) });
+  };
+
+  const toggleTagFilter = (tag: string) => {
+    setSelectedTags(prev => 
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    );
+  };
+
   const filteredAndSortedCompanies = companies
     .filter(company => {
+      // Tag filter
+      if (selectedTags.length > 0) {
+        const companyTags = (company as any).tags || [];
+        const hasAllTags = selectedTags.every(tag => companyTags.includes(tag));
+        if (!hasAllTags) return false;
+      }
+
+      // Search filter
       if (!searchQuery) return true;
       
       const query = searchQuery.toLowerCase();
@@ -1000,6 +1094,39 @@ export function CompaniesManager() {
         </div>
       </CardHeader>
       <CardContent>
+        {/* Tags Filter */}
+        {allTags.length > 0 && (
+          <div className="mb-4 p-4 bg-muted/30 rounded-lg border border-border">
+            <div className="flex items-center gap-2 mb-3">
+              <Tag className="h-4 w-4 text-primary" />
+              <h4 className="font-semibold text-sm">{t('companyForm.filterByTags')}</h4>
+              {selectedTags.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedTags([])}
+                  className="ml-auto h-6 text-xs"
+                >
+                  {t('companyForm.clearTagFilters')}
+                </Button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {allTags.map((tag) => (
+                <Button
+                  key={tag}
+                  variant={selectedTags.includes(tag) ? 'default' : 'outline'}
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => toggleTagFilter(tag)}
+                >
+                  {tag}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Search Bar, Sort Selector, and View Toggle */}
         <div className="mb-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
           <div className="relative flex-1">
@@ -1193,6 +1320,22 @@ export function CompaniesManager() {
                           </p>
                         </div>
                       )}
+
+                      {/* Tags */}
+                      {(company as any).tags && (company as any).tags.length > 0 && (
+                        <div className="bg-background/60 backdrop-blur-sm p-3 rounded-lg shadow-sm">
+                          <div className="flex flex-wrap gap-1.5">
+                            {(company as any).tags.map((tag: string, idx: number) => (
+                              <span 
+                                key={idx}
+                                className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-primary/20 text-primary border border-primary/30"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Actions */}
@@ -1279,6 +1422,14 @@ export function CompaniesManager() {
                     {t('companyForm.changeOficina')}
                   </Button>
                   <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setBulkActionDialog('tags')}
+                  >
+                    <Tag className="h-4 w-4 mr-2" />
+                    {t('companyForm.addTags')}
+                  </Button>
+                  <Button 
                     variant="destructive" 
                     size="sm"
                     onClick={handleBulkDelete}
@@ -1307,6 +1458,7 @@ export function CompaniesManager() {
                     <TableHead>{t('company.phone')}</TableHead>
                     <TableHead>{t('company.status')}</TableHead>
                     <TableHead>{t('company.manager')}</TableHead>
+                    <TableHead>{t('companyForm.tags')}</TableHead>
                     <TableHead className="text-center">{t('companyForm.creandLinkage')}</TableHead>
                     <TableHead className="text-right">{t('common.actions')}</TableHead>
                   </TableRow>
@@ -1379,6 +1531,25 @@ export function CompaniesManager() {
                       <TableCell>
                         <div className="max-w-[150px] truncate text-sm">
                           {company.gestor?.full_name || company.gestor?.email || '-'}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1 max-w-[150px]">
+                          {(company as any).tags && (company as any).tags.length > 0 ? (
+                            (company as any).tags.slice(0, 2).map((tag: string, idx: number) => (
+                              <span 
+                                key={idx}
+                                className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-primary/20 text-primary"
+                              >
+                                {tag}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-xs text-muted-foreground">-</span>
+                          )}
+                          {(company as any).tags && (company as any).tags.length > 2 && (
+                            <span className="text-xs text-muted-foreground">+{(company as any).tags.length - 2}</span>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell className="text-center">
@@ -1485,6 +1656,10 @@ export function CompaniesManager() {
               <TabsTrigger value="management" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
                 <span>{t('company.manager')}</span>
+              </TabsTrigger>
+              <TabsTrigger value="tags" className="flex items-center gap-2">
+                <Tag className="h-4 w-4" />
+                <span>{t('companyForm.tags')}</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="photos" 
@@ -1813,6 +1988,90 @@ export function CompaniesManager() {
                   value={formData.fecha_ultima_visita}
                   onChange={(e) => setFormData({ ...formData, fecha_ultima_visita: e.target.value })}
                 />
+              </div>
+            </TabsContent>
+
+            {/* Tags */}
+            <TabsContent value="tags" className="space-y-4 mt-4">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                    <Tag className="h-5 w-5" />
+                    {t('companyForm.manageTags')}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {t('companyForm.tagsDescription')}
+                  </p>
+                </div>
+
+                {/* Add New Tag */}
+                <div className="flex gap-2">
+                  <Input
+                    placeholder={t('companyForm.addNewTag')}
+                    value={newTag}
+                    onChange={(e) => setNewTag(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addTagToCompany(newTag);
+                      }
+                    }}
+                  />
+                  <Button
+                    variant="default"
+                    onClick={() => addTagToCompany(newTag)}
+                    disabled={!newTag.trim()}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t('common.add')}
+                  </Button>
+                </div>
+
+                {/* Current Tags */}
+                {formData.tags.length > 0 && (
+                  <div>
+                    <Label className="mb-2 block">{t('companyForm.currentTags')}</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {formData.tags.map((tag, index) => (
+                        <div
+                          key={index}
+                          className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary rounded-md border border-primary/30"
+                        >
+                          <span className="text-sm font-medium">{tag}</span>
+                          <button
+                            onClick={() => removeTagFromCompany(tag)}
+                            className="hover:text-destructive transition-colors"
+                          >
+                            <XCircle className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Suggested Tags from Other Companies */}
+                {allTags.length > 0 && (
+                  <div>
+                    <Label className="mb-2 block">{t('companyForm.suggestedTags')}</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {allTags
+                        .filter(tag => !formData.tags.includes(tag))
+                        .map((tag, index) => (
+                          <Button
+                            key={index}
+                            variant="outline"
+                            size="sm"
+                            onClick={() => addTagToCompany(tag)}
+                            className="h-8"
+                          >
+                            <Plus className="h-3 w-3 mr-1" />
+                            {tag}
+                          </Button>
+                        ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </TabsContent>
 
@@ -2505,6 +2764,62 @@ export function CompaniesManager() {
               {t('common.cancel')}
             </Button>
             <Button onClick={handleBulkChangeOficina} disabled={loading || !bulkOficina}>
+              {loading ? t('common.loading') : t('common.save')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Add Tags Dialog */}
+      <Dialog open={bulkActionDialog === 'tags'} onOpenChange={() => setBulkActionDialog(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('companyForm.addTags')}</DialogTitle>
+            <DialogDescription>
+              {t('companyForm.bulkTagsDescription')} ({selectedCompanies.size})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>{t('companyForm.selectTagsToAdd')}</Label>
+              <ScrollArea className="h-[200px] border rounded-md p-3">
+                <div className="space-y-2">
+                  {allTags.length > 0 ? (
+                    allTags.map((tag) => (
+                      <div key={tag} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`bulk-tag-${tag}`}
+                          checked={bulkTags.includes(tag)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setBulkTags([...bulkTags, tag]);
+                            } else {
+                              setBulkTags(bulkTags.filter(t => t !== tag));
+                            }
+                          }}
+                        />
+                        <label
+                          htmlFor={`bulk-tag-${tag}`}
+                          className="text-sm cursor-pointer"
+                        >
+                          {tag}
+                        </label>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      {t('companyForm.noTagsAvailable')}
+                    </p>
+                  )}
+                </div>
+              </ScrollArea>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkActionDialog(null)}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={handleBulkAddTags} disabled={loading || bulkTags.length === 0}>
               {loading ? t('common.loading') : t('common.save')}
             </Button>
           </DialogFooter>

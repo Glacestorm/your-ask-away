@@ -250,6 +250,7 @@ export type Database = {
           registration_number: string | null
           sector: string | null
           status_id: string | null
+          tags: string[] | null
           tax_id: string | null
           turnover: number | null
           updated_at: string | null
@@ -283,6 +284,7 @@ export type Database = {
           registration_number?: string | null
           sector?: string | null
           status_id?: string | null
+          tags?: string[] | null
           tax_id?: string | null
           turnover?: number | null
           updated_at?: string | null
@@ -316,6 +318,7 @@ export type Database = {
           registration_number?: string | null
           sector?: string | null
           status_id?: string | null
+          tags?: string[] | null
           tax_id?: string | null
           turnover?: number | null
           updated_at?: string | null
