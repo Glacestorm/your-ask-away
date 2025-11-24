@@ -722,58 +722,63 @@ export function CompaniesManager() {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4">
           <div>
             <CardTitle>{t('admin.companies')}</CardTitle>
             <CardDescription>{t('companyForm.title')}</CardDescription>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button 
               variant="outline" 
+              size="sm"
               onClick={detectDuplicates}
               disabled={detectingDuplicates}
             >
               {detectingDuplicates ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <Copy className="mr-2 h-4 w-4" />
+                <Copy className="h-4 w-4" />
               )}
-              Detectar Duplicados
+              <span className="ml-2">{t('companyForm.detectDuplicates')}</span>
             </Button>
             <Button 
               variant="outline" 
+              size="sm"
               onClick={handleBulkGeocode}
               disabled={geocoding}
             >
-              <MapPin className="mr-2 h-4 w-4" />
-              {geocoding ? `Geocodificando ${geocodingProgress.current}/${geocodingProgress.total}...` : 'Geocodificar Empresas'}
+              <MapPin className="h-4 w-4" />
+              <span className="ml-2">
+                {geocoding ? `${t('companyForm.geocoding')} ${geocodingProgress.current}/${geocodingProgress.total}...` : t('companyForm.geocodeCompanies')}
+              </span>
             </Button>
             
             <Button 
               variant="outline" 
+              size="sm"
               onClick={handleSearchPhotosAll}
               disabled={isSearchingPhotos}
             >
               {isSearchingPhotos ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Buscando fotos... {photoSearchProgress}%
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="ml-2">{t('companyForm.searchingPhotos')} {photoSearchProgress}%</span>
                 </>
               ) : (
                 <>
-                  <Camera className="mr-2 h-4 w-4" />
-                  Buscar Fotos
+                  <Camera className="h-4 w-4" />
+                  <span className="ml-2">{t('companyForm.searchPhotos')}</span>
                 </>
               )}
             </Button>
             
-            <Button variant="outline" onClick={() => setImporterOpen(true)}>
-              <Upload className="mr-2 h-4 w-4" />
-              {t('companyForm.importExcel')}
+            <Button variant="outline" size="sm" onClick={() => setImporterOpen(true)}>
+              <Upload className="h-4 w-4" />
+              <span className="ml-2">{t('companyForm.importExcel')}</span>
             </Button>
-            <Button onClick={() => { resetForm(); setDialogOpen(true); }}>
-              <Plus className="mr-2 h-4 w-4" />
-              {t('companyForm.addCompany')}
+            <Button size="sm" onClick={() => { resetForm(); setDialogOpen(true); }}>
+              <Plus className="h-4 w-4" />
+              <span className="ml-2">{t('companyForm.addCompany')}</span>
             </Button>
           </div>
         </div>
@@ -841,18 +846,17 @@ export function CompaniesManager() {
                             {company.status?.status_name || 'N/A'}
                           </div>
                           
-                          {/* Geolocation Badge */}
-                          {isGeolocated(company) ? (
-                            <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-500/90 text-white text-xs font-semibold border-2 border-green-400 shadow-lg backdrop-blur-sm">
-                              <CheckCircle2 className="h-3 w-3" />
-                              Ubicado
-                            </div>
-                          ) : (
-                            <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-500/90 text-white text-xs font-semibold border-2 border-red-400 shadow-lg backdrop-blur-sm">
-                              <XCircle className="h-3 w-3" />
-                              Sin ubicar
-                            </div>
-                          )}
+                          {/* Geolocation Indicator - Compact */}
+                          <div 
+                            className="inline-flex items-center justify-center w-7 h-7 rounded-full shadow-lg backdrop-blur-sm border-2"
+                            style={{
+                              backgroundColor: isGeolocated(company) ? '#10b98190' : '#ef444490',
+                              borderColor: isGeolocated(company) ? '#10b981' : '#ef4444'
+                            }}
+                            title={isGeolocated(company) ? t('companyForm.geolocated') : t('companyForm.notGeolocated')}
+                          >
+                            <MapPin className="h-4 w-4 text-white" />
+                          </div>
 
                           {/* Client Type Badge */}
                           {(company as any).client_type && (
@@ -879,10 +883,10 @@ export function CompaniesManager() {
                         </div>
                       </div>
 
-                      {/* Phone */}
-                      {(company as any).phone && (
-                        <div className="flex items-center gap-2 bg-background/60 backdrop-blur-sm p-3 rounded-lg shadow-sm">
-                          <Phone className="h-4 w-4 text-primary flex-shrink-0" />
+                      {/* Phone - Always visible */}
+                      <div className="flex items-center gap-2 bg-background/60 backdrop-blur-sm p-3 rounded-lg shadow-sm">
+                        <Phone className="h-4 w-4 text-primary flex-shrink-0" />
+                        {(company as any).phone ? (
                           <a 
                             href={`tel:${(company as any).phone}`}
                             className="text-foreground font-medium hover:text-primary transition-colors"
@@ -890,6 +894,28 @@ export function CompaniesManager() {
                           >
                             {(company as any).phone}
                           </a>
+                        ) : (
+                          <span className="text-muted-foreground text-xs">{t('companyForm.noPhone')}</span>
+                        )}
+                      </div>
+
+                      {/* Vinculación Creand */}
+                      {((company as any).vinculacion_entidad_1 || (company as any).vinculacion_entidad_2 || (company as any).vinculacion_entidad_3) && (
+                        <div className="flex items-center gap-2 bg-primary/10 backdrop-blur-sm p-3 rounded-lg shadow-sm border border-primary/30">
+                          <TrendingUp className="h-4 w-4 text-primary flex-shrink-0" />
+                          <div className="flex-1">
+                            <p className="font-semibold text-primary">
+                              {t('companyForm.creandLinkage')}: {
+                                Math.round(
+                                  (
+                                    ((company as any).vinculacion_entidad_1 || 0) +
+                                    ((company as any).vinculacion_entidad_2 || 0) +
+                                    ((company as any).vinculacion_entidad_3 || 0)
+                                  ) / 3
+                                )
+                              }%
+                            </p>
+                          </div>
                         </div>
                       )}
 
