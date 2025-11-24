@@ -573,12 +573,27 @@ export function CompaniesManager() {
   };
 
   const selectAllDuplicates = () => {
-    const allIds = new Set<string>();
-    duplicates.forEach(duplicateGroup => {
-      duplicateGroup.group.forEach(company => allIds.add(company.id));
-    });
-    setSelectedForDeletion(allIds);
-    toast.success(`${allIds.size} empresas seleccionadas`);
+    try {
+      const allIds = new Set<string>();
+      duplicates.forEach(duplicateGroup => {
+        duplicateGroup.group.forEach(company => {
+          if (company && company.id) {
+            allIds.add(company.id);
+          }
+        });
+      });
+      
+      if (allIds.size === 0) {
+        toast.error('No hay empresas para seleccionar');
+        return;
+      }
+      
+      setSelectedForDeletion(allIds);
+      toast.success(`${allIds.size} empresas seleccionadas para eliminar`);
+    } catch (error) {
+      console.error('Error al seleccionar todas las empresas:', error);
+      toast.error('Error al seleccionar empresas');
+    }
   };
 
   const deselectAll = () => {
