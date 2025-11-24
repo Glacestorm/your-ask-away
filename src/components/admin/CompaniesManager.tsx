@@ -80,6 +80,10 @@ export function CompaniesManager() {
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [showVisitForm, setShowVisitForm] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+  const [companyPhotos, setCompanyPhotos] = useState<Map<string, string>>(new Map());
+  const [detailsCompany, setDetailsCompany] = useState<CompanyWithDetails | null>(null);
   const [visitFormData, setVisitFormData] = useState({
     visit_date: new Date().toISOString().split('T')[0],
     gestor_id: '',
@@ -119,7 +123,31 @@ export function CompaniesManager() {
 
   useEffect(() => {
     fetchData();
+    loadCompanyPhotos();
   }, []);
+
+  const loadCompanyPhotos = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('company_photos')
+        .select('company_id, photo_url, uploaded_at')
+        .order('uploaded_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Map company_id to most recent photo_url
+      const photosMap = new Map<string, string>();
+      data?.forEach(photo => {
+        if (!photosMap.has(photo.company_id)) {
+          photosMap.set(photo.company_id, photo.photo_url);
+        }
+      });
+
+      setCompanyPhotos(photosMap);
+    } catch (error) {
+      console.error('Error loading company photos:', error);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -609,6 +637,21 @@ export function CompaniesManager() {
     return company.latitude && company.longitude && company.latitude !== 0 && company.longitude !== 0;
   };
 
+  const filteredCompanies = companies.filter(company => {
+    if (!searchQuery) return true;
+    
+    const query = searchQuery.toLowerCase();
+    return (
+      company.name.toLowerCase().includes(query) ||
+      company.address.toLowerCase().includes(query) ||
+      company.parroquia.toLowerCase().includes(query) ||
+      ((company as any).phone && (company as any).phone.toLowerCase().includes(query)) ||
+      ((company as any).email && (company as any).email.toLowerCase().includes(query)) ||
+      ((company as any).tax_id && (company as any).tax_id.toLowerCase().includes(query)) ||
+      (company.gestor?.full_name && company.gestor.full_name.toLowerCase().includes(query))
+    );
+  });
+
 
   return (
     <Card>
@@ -651,162 +694,200 @@ export function CompaniesManager() {
         </div>
       </CardHeader>
       <CardContent>
+        {/* Search Bar */}
+        <div className="mb-6 flex items-center gap-4">
+          <div className="relative flex-1">
+            <Input
+              placeholder="Buscar empresas por nombre, dirección, teléfono, email o NIF..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+            <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          </div>
+        </div>
+
         <ScrollArea className="h-[600px]">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {companies.map((company) => (
-              <Card key={company.id} className="group hover:shadow-lg transition-all duration-300 border-border/50 hover:border-primary/20">
-                <CardContent className="p-6 space-y-4">
-                  {/* Header */}
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-lg truncate mb-1 group-hover:text-primary transition-colors">
-                        {company.name}
-                      </h3>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {/* Status Badge */}
-                        <div 
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
-                          style={{ 
-                            backgroundColor: `${company.status?.color_hex || '#gray'}20`,
-                            color: company.status?.color_hex || '#gray',
-                            border: `1px solid ${company.status?.color_hex || '#gray'}40`
-                          }}
-                        >
-                          <div
-                            className="h-1.5 w-1.5 rounded-full animate-pulse"
-                            style={{ backgroundColor: company.status?.color_hex || '#gray' }}
-                          />
-                          {company.status?.status_name || 'N/A'}
-                        </div>
-                        
-                        {/* Geolocation Badge */}
-                        {isGeolocated(company) ? (
-                          <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-success/10 text-success text-xs font-medium border border-success/20">
-                            <CheckCircle2 className="h-3 w-3" />
-                            Geolocalizado
-                          </div>
-                        ) : (
-                          <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-destructive/10 text-destructive text-xs font-medium border border-destructive/20">
-                            <XCircle className="h-3 w-3" />
-                            Sin coordenadas
-                          </div>
-                        )}
-
-                        {/* Client Type Badge */}
-                        {(company as any).client_type && (
-                          <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                            (company as any).client_type === 'cliente' 
-                              ? 'bg-primary/10 text-primary border border-primary/20'
-                              : 'bg-muted text-muted-foreground border border-border'
-                          }`}>
-                            {(company as any).client_type === 'cliente' ? 'Cliente' : 'Potencial'}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Info Grid */}
-                  <div className="space-y-2.5 text-sm">
-                    {/* Address */}
-                    <div className="flex items-start gap-2">
-                      <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCompanies.map((company) => {
+              const photoUrl = companyPhotos.get(company.id);
+              return (
+                <Card 
+                  key={company.id} 
+                  className="group relative overflow-hidden hover:shadow-2xl transition-all duration-500 border-border/50 hover:border-primary/30 cursor-pointer"
+                >
+                  {/* Background Photo with Blur */}
+                  {photoUrl && (
+                    <div 
+                      className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+                      style={{
+                        backgroundImage: `url(${photoUrl})`,
+                        filter: 'blur(20px) brightness(0.3)',
+                      }}
+                      onClick={() => setSelectedPhoto(photoUrl)}
+                    />
+                  )}
+                  
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/85 to-background/75" />
+                  
+                  {/* Content */}
+                  <CardContent className="relative p-6 space-y-4 z-10">
+                    {/* Header */}
+                    <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
-                        <p className="text-muted-foreground text-xs font-medium mb-0.5">Dirección</p>
-                        <p className="text-foreground truncate">{company.address}</p>
-                        <p className="text-muted-foreground text-xs">{company.parroquia}</p>
+                        <h3 className="font-bold text-xl truncate mb-2 text-foreground drop-shadow-lg">
+                          {company.name}
+                        </h3>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {/* Status Badge */}
+                          <div 
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm"
+                            style={{ 
+                              backgroundColor: `${company.status?.color_hex || '#gray'}90`,
+                              color: '#ffffff',
+                              border: `2px solid ${company.status?.color_hex || '#gray'}`
+                            }}
+                          >
+                            <div
+                              className="h-2 w-2 rounded-full animate-pulse"
+                              style={{ backgroundColor: '#ffffff' }}
+                            />
+                            {company.status?.status_name || 'N/A'}
+                          </div>
+                          
+                          {/* Geolocation Badge */}
+                          {isGeolocated(company) ? (
+                            <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-500/90 text-white text-xs font-semibold border-2 border-green-400 shadow-lg backdrop-blur-sm">
+                              <CheckCircle2 className="h-3 w-3" />
+                              Ubicado
+                            </div>
+                          ) : (
+                            <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-500/90 text-white text-xs font-semibold border-2 border-red-400 shadow-lg backdrop-blur-sm">
+                              <XCircle className="h-3 w-3" />
+                              Sin ubicar
+                            </div>
+                          )}
+
+                          {/* Client Type Badge */}
+                          {(company as any).client_type && (
+                            <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm ${
+                              (company as any).client_type === 'cliente' 
+                                ? 'bg-primary/90 text-white border-2 border-primary'
+                                : 'bg-muted/90 text-foreground border-2 border-muted-foreground/30'
+                            }`}>
+                              {(company as any).client_type === 'cliente' ? '⭐ Cliente' : '💼 Potencial'}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
 
-                    {/* Contact */}
-                    {((company as any).phone || (company as any).email) && (
-                      <div className="flex items-start gap-2">
-                        <Phone className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                    {/* Key Info - Most Important Data */}
+                    <div className="space-y-3 text-sm">
+                      {/* Address */}
+                      <div className="flex items-start gap-2 bg-background/60 backdrop-blur-sm p-3 rounded-lg shadow-sm">
+                        <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-muted-foreground text-xs font-medium mb-0.5">Contacto</p>
-                          {(company as any).phone && (
-                            <p className="text-foreground">{(company as any).phone}</p>
-                          )}
-                          {(company as any).email && (
-                            <p className="text-foreground truncate text-xs">{(company as any).email}</p>
-                          )}
+                          <p className="font-semibold text-foreground">{company.address}</p>
+                          <p className="text-muted-foreground text-xs mt-0.5">{company.parroquia}</p>
                         </div>
                       </div>
-                    )}
 
-                    {/* Manager */}
-                    {company.gestor && (
-                      <div className="flex items-start gap-2">
-                        <Users className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-muted-foreground text-xs font-medium mb-0.5">Gestor</p>
-                          <p className="text-foreground truncate">{company.gestor.full_name || company.gestor.email}</p>
+                      {/* Phone */}
+                      {(company as any).phone && (
+                        <div className="flex items-center gap-2 bg-background/60 backdrop-blur-sm p-3 rounded-lg shadow-sm">
+                          <Phone className="h-4 w-4 text-primary flex-shrink-0" />
+                          <a 
+                            href={`tel:${(company as any).phone}`}
+                            className="text-foreground font-medium hover:text-primary transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {(company as any).phone}
+                          </a>
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {/* Business Info */}
-                    {((company as any).employees || (company as any).turnover) && (
-                      <div className="flex items-start gap-2">
-                        <Building2 className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-muted-foreground text-xs font-medium mb-0.5">Datos</p>
-                          <div className="flex items-center gap-3 text-xs">
-                            {(company as any).employees && (
-                              <span className="text-foreground">
-                                <strong>{(company as any).employees}</strong> empleados
-                              </span>
-                            )}
-                            {(company as any).turnover && (
-                              <span className="text-foreground">
-                                <strong>{Number((company as any).turnover).toLocaleString('es-ES')}€</strong> facturación
-                              </span>
-                            )}
-                          </div>
+                      {/* Email */}
+                      {(company as any).email && (
+                        <div className="flex items-center gap-2 bg-background/60 backdrop-blur-sm p-3 rounded-lg shadow-sm">
+                          <Mail className="h-4 w-4 text-primary flex-shrink-0" />
+                          <a 
+                            href={`mailto:${(company as any).email}`}
+                            className="text-foreground truncate hover:text-primary transition-colors text-xs"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {(company as any).email}
+                          </a>
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {/* Last Visit */}
-                    {company.fecha_ultima_visita && (
-                      <div className="flex items-start gap-2">
-                        <Clock className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-muted-foreground text-xs font-medium mb-0.5">Última visita</p>
-                          <p className="text-foreground text-xs">
-                            {new Date(company.fecha_ultima_visita).toLocaleDateString('es-ES')}
+                      {/* Manager */}
+                      {company.gestor && (
+                        <div className="flex items-center gap-2 bg-background/60 backdrop-blur-sm p-3 rounded-lg shadow-sm">
+                          <Users className="h-4 w-4 text-primary flex-shrink-0" />
+                          <p className="text-foreground truncate font-medium">
+                            {company.gestor.full_name || company.gestor.email}
                           </p>
                         </div>
-                      </div>
-                    )}
-                  </div>
+                      )}
+                    </div>
 
-                  {/* Actions */}
-                  <div className="flex gap-2 pt-2 border-t border-border/50">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1"
-                      onClick={() => handleEdit(company)}
-                    >
-                      <Pencil className="h-3.5 w-3.5 mr-1.5" />
-                      Editar
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="text-destructive hover:bg-destructive/10"
-                      onClick={() => handleDelete(company.id)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    {/* Actions */}
+                    <div className="flex gap-2 pt-3">
+                      <Button 
+                        variant="default" 
+                        size="sm" 
+                        className="flex-1 shadow-lg backdrop-blur-sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDetailsCompany(company);
+                          handleEdit(company);
+                        }}
+                      >
+                        <FileText className="h-3.5 w-3.5 mr-1.5" />
+                        Ver Detalles
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="shadow-lg backdrop-blur-sm bg-background/80 hover:bg-destructive/20 text-destructive hover:text-destructive border-destructive/30"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(company.id);
+                        }}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </ScrollArea>
       </CardContent>
+
+      {/* Photo Viewer Dialog */}
+      <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
+        <DialogContent className="max-w-5xl max-h-[90vh] p-0 overflow-hidden">
+          <div className="relative w-full h-full">
+            <img 
+              src={selectedPhoto || ''} 
+              alt="Foto de empresa" 
+              className="w-full h-auto max-h-[85vh] object-contain"
+            />
+            <Button
+              variant="outline"
+              size="icon"
+              className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm"
+              onClick={() => setSelectedPhoto(null)}
+            >
+              <XCircle className="h-4 w-4" />
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Dialog for Create/Edit with Tabs */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

@@ -85,8 +85,8 @@ interface ImportResult {
 const DB_FIELDS = [
   { value: 'name', label: 'Nombre *', required: true },
   { value: 'address', label: 'Dirección *', required: true },
-  { value: 'latitude', label: 'Latitud *', required: true },
-  { value: 'longitude', label: 'Longitud *', required: true },
+  { value: 'latitude', label: 'Latitud', required: false },
+  { value: 'longitude', label: 'Longitud', required: false },
   { value: 'parroquia', label: 'Parroquia *', required: true },
   { value: 'tax_id', label: 'NIF/CIF', required: false },
   { value: 'cnae', label: 'CNAE', required: false },
@@ -282,24 +282,28 @@ export const ExcelImporter = ({ open, onOpenChange, onImportComplete, parroquias
         return;
       }
 
-      // Validate coordinates
-      const lat = Number(mappedData.latitude);
-      const lon = Number(mappedData.longitude);
-      if (isNaN(lat) || lat < -90 || lat > 90) {
-        errors.push({
-          row: index + 2,
-          field: 'latitude',
-          value: mappedData.latitude,
-          error: 'Latitud inválida (debe estar entre -90 y 90)',
-        });
+      // Validate coordinates (optional, but if provided must be valid)
+      if (mappedData.latitude !== undefined && mappedData.latitude !== null && mappedData.latitude !== '') {
+        const lat = Number(mappedData.latitude);
+        if (isNaN(lat) || lat < -90 || lat > 90) {
+          errors.push({
+            row: index + 2,
+            field: 'latitude',
+            value: mappedData.latitude,
+            error: 'Latitud inválida (debe estar entre -90 y 90)',
+          });
+        }
       }
-      if (isNaN(lon) || lon < -180 || lon > 180) {
-        errors.push({
-          row: index + 2,
-          field: 'longitude',
-          value: mappedData.longitude,
-          error: 'Longitud inválida (debe estar entre -180 y 180)',
-        });
+      if (mappedData.longitude !== undefined && mappedData.longitude !== null && mappedData.longitude !== '') {
+        const lon = Number(mappedData.longitude);
+        if (isNaN(lon) || lon < -180 || lon > 180) {
+          errors.push({
+            row: index + 2,
+            field: 'longitude',
+            value: mappedData.longitude,
+            error: 'Longitud inválida (debe estar entre -180 y 180)',
+          });
+        }
       }
 
       // Validate email format
@@ -765,8 +769,8 @@ export const ExcelImporter = ({ open, onOpenChange, onImportComplete, parroquias
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>Campos Obligatorios Faltantes</AlertTitle>
                 <AlertDescription>
-                  Debes mapear todos los campos obligatorios: Nombre, Dirección, Latitud,
-                  Longitud y Parroquia.
+                  Debes mapear todos los campos obligatorios: Nombre, Dirección y Parroquia.
+                  Latitud y Longitud son opcionales y se geocodificarán automáticamente si no se proporcionan.
                 </AlertDescription>
               </Alert>
             )}
