@@ -493,7 +493,7 @@ export const ExcelImporter = ({ open, onOpenChange, onImportComplete, parroquias
       }
 
       try {
-        const { error } = await supabase.from('companies').insert({
+        const { data: newCompany, error } = await supabase.from('companies').insert({
           name: mappedData.name,
           address: mappedData.address,
           latitude: latitude,
@@ -512,16 +512,62 @@ export const ExcelImporter = ({ open, onOpenChange, onImportComplete, parroquias
           legal_form: mappedData.legal_form || null,
           observaciones: mappedData.observaciones || null,
           import_batch_id: batchData.id,
-        });
+        })
+        .select()
+        .single();
 
         if (error) throw error;
-        result.success++;
+        
+        // Store the new company for photo search later
+        if (newCompany) {
+          result.success++;
+        }
       } catch (error: any) {
         console.error(`Error importing row ${rowNumber}:`, error);
         result.errors++;
       }
 
-      setImportProgress(((i + 1) / totalRows) * 100);
+      setImportProgress(Math.round(((i + 1) / totalRows) * 90));
+    }
+
+    // Get all newly imported companies for photo search
+    const { data: importedCompanies } = await supabase
+      .from('companies')
+      .select('id, name, address, parroquia')
+      .eq('import_batch_id', batchData.id);
+
+    // Search and import photos for companies
+    if (importedCompanies && importedCompanies.length > 0) {
+      console.log("Starting photo search for imported companies...");
+      
+      let photosImported = 0;
+      for (let i = 0; i < importedCompanies.length; i++) {
+        const company = importedCompanies[i];
+        try {
+          const { data: photoData, error: photoError } = await supabase.functions.invoke(
+            'search-company-photo',
+            {
+              body: {
+                companyId: company.id,
+                companyName: company.name,
+                address: company.address,
+                parroquia: company.parroquia,
+              },
+            }
+          );
+
+          if (!photoError && photoData?.success) {
+            photosImported++;
+            console.log(`Photo imported for ${company.name}`);
+          }
+        } catch (error) {
+          console.error(`Error searching photo for ${company.name}:`, error);
+        }
+        
+        setImportProgress(Math.round(90 + ((i + 1) / importedCompanies.length * 10)));
+      }
+
+      console.log(`Photos imported: ${photosImported} of ${importedCompanies.length}`);
     }
 
     // Actualizar estadísticas del lote
@@ -537,8 +583,11 @@ export const ExcelImporter = ({ open, onOpenChange, onImportComplete, parroquias
     setImporting(false);
     setStep('import');
 
+    const photoMessage = importedCompanies && importedCompanies.length > 0 
+      ? ` (buscando ${importedCompanies.length} fotos en segundo plano)` 
+      : '';
     toast.success(
-      `Importación completada: ${result.success} empresas importadas correctamente`
+      `Importación completada: ${result.success} empresas importadas correctamente${photoMessage}`
     );
     onImportComplete();
   };
