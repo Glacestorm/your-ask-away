@@ -254,6 +254,15 @@ export default {
   'companyForm.companyCreated': 'Empresa creada correctament',
   'companyForm.companyUpdated': 'Empresa actualitzada correctament',
   'companyForm.companyDeleted': 'Empresa eliminada correctament',
+  'companyForm.detectDuplicates': 'Detectar Duplicats',
+  'companyForm.geocodeCompanies': 'Geocodificar Empreses',
+  'companyForm.geocoding': 'Geocodificant',
+  'companyForm.searchPhotos': 'Cercar Fotos',
+  'companyForm.searchingPhotos': 'Cercant fotos...',
+  'companyForm.geolocated': 'Ubicat',
+  'companyForm.notGeolocated': 'Sense ubicar',
+  'companyForm.noPhone': 'Sense telèfon',
+  'companyForm.creandLinkage': 'Vinculació Creand',
   
   // Product Forms
   'productForm.title': 'Productes',
