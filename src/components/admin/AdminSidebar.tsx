@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TrendingUp, Activity, BarChart3, Package, Users, Target, CreditCard, Building2, Settings, Database, Mail, Palette, BookOpen, Map, ChevronRight, FileText, Briefcase } from 'lucide-react';
+import { TrendingUp, Activity, BarChart3, Package, Users, Target, CreditCard, Building2, Settings, Database, Mail, Palette, BookOpen, Map, ChevronRight, FileText, Briefcase, History } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -329,6 +329,12 @@ export function AdminSidebar({
                         <span className="transition-all duration-300">{t('admin.users')}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton onClick={() => onSectionChange('import-history')} isActive={isActive('import-history')}>
+                        <History className="h-4 w-4 transition-transform duration-200" />
+                        <span className="transition-all duration-300">Historial de Importaciones</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
                   </SidebarMenu>
                 </SidebarGroupContent>
               </CollapsibleContent>
@@ -350,6 +356,11 @@ export function AdminSidebar({
               <SidebarMenuItem>
                 <SidebarMenuButton onClick={() => onSectionChange('users')} isActive={isActive('users')} tooltip={t('admin.users')}>
                   <Users className="h-5 w-5" />
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton onClick={() => onSectionChange('import-history')} isActive={isActive('import-history')} tooltip="Historial de Importaciones">
+                  <History className="h-5 w-5" />
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
