@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
-import { Plus, Pencil, Trash2, Upload, Phone, Mail, Globe, Users, Building2, FileText, History, Clock, TrendingUp, Package, Camera, MapPin, Copy, AlertTriangle, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Upload, Phone, Mail, Globe, Users, Building2, FileText, History, Clock, TrendingUp, Package, Camera, MapPin, Copy, AlertTriangle, CheckCircle2, XCircle, Loader2, Search, Eye, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { CompanyWithDetails, StatusColor, Profile } from '@/types/database';
 import { ExcelImporter } from './ExcelImporter';
@@ -84,6 +84,8 @@ export function CompaniesManager() {
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
   const [companyPhotos, setCompanyPhotos] = useState<Map<string, string>>(new Map());
   const [detailsCompany, setDetailsCompany] = useState<CompanyWithDetails | null>(null);
+  const [isSearchingPhotos, setIsSearchingPhotos] = useState(false);
+  const [photoSearchProgress, setPhotoSearchProgress] = useState(0);
   const [visitFormData, setVisitFormData] = useState({
     visit_date: new Date().toISOString().split('T')[0],
     gestor_id: '',
@@ -472,7 +474,71 @@ export function CompaniesManager() {
     }
   };
 
-  const detectDuplicates = async () => {
+  const handleSearchPhotosAll = async () => {
+    if (!confirm('¿Desea buscar fotos para todas las empresas? Este proceso puede tardar varios minutos y consumirá créditos de la API de Bing.')) {
+      return;
+    }
+
+    setIsSearchingPhotos(true);
+    setPhotoSearchProgress(0);
+
+    try {
+      const totalCompanies = companies.length;
+
+      if (totalCompanies === 0) {
+        toast.info("No se encontraron empresas en la base de datos");
+        return;
+      }
+
+      console.log(`Buscando fotos para ${totalCompanies} empresas...`);
+
+      let photosFound = 0;
+      let processed = 0;
+
+      for (const company of companies) {
+        try {
+          const { data: photoData, error: photoError } = await supabase.functions.invoke(
+            'search-company-photo',
+            {
+              body: {
+                companyId: company.id,
+                companyName: company.name,
+                address: company.address,
+                parroquia: company.parroquia,
+              },
+            }
+          );
+
+          if (!photoError && photoData?.success) {
+            photosFound++;
+            console.log(`Foto encontrada para: ${company.name}`);
+          }
+        } catch (error) {
+          console.error(`Error buscando foto para ${company.name}:`, error);
+        }
+
+        processed++;
+        setPhotoSearchProgress(Math.round((processed / totalCompanies) * 100));
+        
+        // Pequeña pausa entre solicitudes para no sobrecargar el servicio
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+
+      toast.success(`Búsqueda completada: ${photosFound} fotos encontradas de ${totalCompanies} empresas`);
+
+      // Reload company photos
+      await loadCompanyPhotos();
+      await fetchData();
+    } catch (error) {
+      console.error("Error en búsqueda de fotos:", error);
+      toast.error("Error al buscar fotos de empresas");
+    } finally {
+      setIsSearchingPhotos(false);
+      setPhotoSearchProgress(0);
+    }
+  };
+
+  const detectDuplicates = async () {
     setDetectingDuplicates(true);
     try {
       // Obtener TODAS las empresas de la base de datos
@@ -682,6 +748,25 @@ export function CompaniesManager() {
               <MapPin className="mr-2 h-4 w-4" />
               {geocoding ? `Geocodificando ${geocodingProgress.current}/${geocodingProgress.total}...` : 'Geocodificar Empresas'}
             </Button>
+            
+            <Button 
+              variant="outline" 
+              onClick={handleSearchPhotosAll}
+              disabled={isSearchingPhotos}
+            >
+              {isSearchingPhotos ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Buscando fotos... {photoSearchProgress}%
+                </>
+              ) : (
+                <>
+                  <Camera className="mr-2 h-4 w-4" />
+                  Buscar Fotos
+                </>
+              )}
+            </Button>
+            
             <Button variant="outline" onClick={() => setImporterOpen(true)}>
               <Upload className="mr-2 h-4 w-4" />
               {t('companyForm.importExcel')}
