@@ -237,6 +237,7 @@ export type Database = {
           fecha_ultima_visita: string | null
           gestor_id: string | null
           id: string
+          import_batch_id: string | null
           latitude: number
           legal_form: string | null
           longitude: number
@@ -269,6 +270,7 @@ export type Database = {
           fecha_ultima_visita?: string | null
           gestor_id?: string | null
           id?: string
+          import_batch_id?: string | null
           latitude: number
           legal_form?: string | null
           longitude: number
@@ -301,6 +303,7 @@ export type Database = {
           fecha_ultima_visita?: string | null
           gestor_id?: string | null
           id?: string
+          import_batch_id?: string | null
           latitude?: number
           legal_form?: string | null
           longitude?: number
@@ -327,6 +330,13 @@ export type Database = {
             columns: ["gestor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "companies_import_batch_id_fkey"
+            columns: ["import_batch_id"]
+            isOneToOne: false
+            referencedRelation: "import_batches"
             referencedColumns: ["id"]
           },
           {
@@ -630,6 +640,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      import_batches: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          failed_records: number
+          filename: string | null
+          id: string
+          notes: string | null
+          successful_records: number
+          total_records: number
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          failed_records?: number
+          filename?: string | null
+          id?: string
+          notes?: string | null
+          successful_records?: number
+          total_records?: number
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          failed_records?: number
+          filename?: string | null
+          id?: string
+          notes?: string | null
+          successful_records?: number
+          total_records?: number
+        }
+        Relationships: []
       }
       map_color_mode: {
         Row: {

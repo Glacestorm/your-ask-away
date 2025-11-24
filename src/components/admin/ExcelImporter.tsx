@@ -41,7 +41,9 @@ import {
   Users,
   Sparkles,
   Loader2,
+  Trash2,
 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface ExcelImporterProps {
   open: boolean;
@@ -111,6 +113,10 @@ export const ExcelImporter = ({ open, onOpenChange, onImportComplete, parroquias
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [importing, setImporting] = useState(false);
   const [smartMapping, setSmartMapping] = useState(false);
+  const [currentBatchId, setCurrentBatchId] = useState<string | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDeleteLastDialog, setShowDeleteLastDialog] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -414,6 +420,26 @@ export const ExcelImporter = ({ open, onOpenChange, onImportComplete, parroquias
       skipped: 0,
     };
 
+    // Crear registro de lote de importación
+    const { data: batchData, error: batchError } = await supabase
+      .from('import_batches')
+      .insert([{
+        filename: 'import.xlsx',
+        total_records: excelData.length,
+        successful_records: 0,
+        failed_records: 0
+      }])
+      .select()
+      .single();
+
+    if (batchError || !batchData) {
+      toast.error("No se pudo crear el registro de importación");
+      setImporting(false);
+      return;
+    }
+
+    setCurrentBatchId(batchData.id);
+
     const totalRows = excelData.length;
     const duplicateRows = new Set(duplicates.map((d) => d.row));
     const errorRows = new Set(validationErrors.map((e) => e.row));
@@ -440,12 +466,34 @@ export const ExcelImporter = ({ open, onOpenChange, onImportComplete, parroquias
         mappedData[dbField] = row[excelColumn];
       });
 
+      // Geocodificar si faltan coordenadas
+      let latitude = mappedData.latitude ? Number(mappedData.latitude) : null;
+      let longitude = mappedData.longitude ? Number(mappedData.longitude) : null;
+
+      if ((!latitude || !longitude) && mappedData.address) {
+        try {
+          const { data: geoData, error: geoError } = await supabase.functions.invoke('geocode-address', {
+            body: { 
+              address: mappedData.address,
+              parroquia: mappedData.parroquia 
+            }
+          });
+
+          if (!geoError && geoData?.latitude && geoData?.longitude) {
+            latitude = geoData.latitude;
+            longitude = geoData.longitude;
+          }
+        } catch (geoError) {
+          console.warn(`Geocoding failed for row ${rowNumber}:`, geoError);
+        }
+      }
+
       try {
         const { error } = await supabase.from('companies').insert({
           name: mappedData.name,
           address: mappedData.address,
-          latitude: Number(mappedData.latitude),
-          longitude: Number(mappedData.longitude),
+          latitude: latitude,
+          longitude: longitude,
           parroquia: mappedData.parroquia,
           cnae: mappedData.cnae || null,
           sector: mappedData.sector || null,
@@ -459,6 +507,7 @@ export const ExcelImporter = ({ open, onOpenChange, onImportComplete, parroquias
           registration_number: mappedData.registration_number || null,
           legal_form: mappedData.legal_form || null,
           observaciones: mappedData.observaciones || null,
+          import_batch_id: batchData.id,
         });
 
         if (error) throw error;
@@ -471,6 +520,15 @@ export const ExcelImporter = ({ open, onOpenChange, onImportComplete, parroquias
       setImportProgress(((i + 1) / totalRows) * 100);
     }
 
+    // Actualizar estadísticas del lote
+    await supabase
+      .from('import_batches')
+      .update({
+        successful_records: result.success,
+        failed_records: result.errors + result.duplicates
+      })
+      .eq('id', batchData.id);
+
     setImportResult(result);
     setImporting(false);
     setStep('import');
@@ -479,6 +537,53 @@ export const ExcelImporter = ({ open, onOpenChange, onImportComplete, parroquias
       `Importación completada: ${result.success} empresas importadas correctamente`
     );
     onImportComplete();
+  };
+
+  const handleDeleteAll = async () => {
+    setDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('companies')
+        .delete()
+        .not('id', 'is', null);
+
+      if (error) throw error;
+
+      toast.success("Todas las empresas han sido eliminadas correctamente");
+      onImportComplete();
+      handleClose();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Error al eliminar empresas");
+    } finally {
+      setDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  };
+
+  const handleDeleteLastImport = async () => {
+    if (!currentBatchId) {
+      toast.error("No hay importación reciente para eliminar");
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('companies')
+        .delete()
+        .eq('import_batch_id', currentBatchId);
+
+      if (error) throw error;
+
+      toast.success("Las empresas de la última importación han sido eliminadas");
+      onImportComplete();
+      handleClose();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Error al eliminar importación");
+    } finally {
+      setDeleting(false);
+      setShowDeleteLastDialog(false);
+    }
   };
 
   const handleClose = () => {
@@ -490,6 +595,7 @@ export const ExcelImporter = ({ open, onOpenChange, onImportComplete, parroquias
     setDuplicates([]);
     setImportProgress(0);
     setImportResult(null);
+    setCurrentBatchId(null);
     onOpenChange(false);
   };
 
@@ -865,15 +971,104 @@ export const ExcelImporter = ({ open, onOpenChange, onImportComplete, parroquias
                     </div>
                   </div>
 
-                  <Button onClick={handleClose} className="w-full">
-                    Cerrar
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={() => setShowDeleteLastDialog(true)}
+                      variant="destructive"
+                      disabled={!currentBatchId}
+                      size="sm"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Eliminar Última Importación
+                    </Button>
+                    <Button onClick={handleClose} className="flex-1">
+                      Cerrar
+                    </Button>
+                  </div>
                 </div>
               )
             )}
           </TabsContent>
         </Tabs>
+        
+        {/* Botón de borrado masivo en el footer */}
+        <div className="flex justify-between items-center pt-4 border-t mt-4">
+          <Button 
+            onClick={() => setShowDeleteDialog(true)}
+            variant="destructive"
+            size="sm"
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            Eliminar Todas las Empresas
+          </Button>
+        </div>
       </DialogContent>
+      
+      {/* Dialog para confirmar borrado masivo */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
+              ¿Eliminar todas las empresas?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará TODAS las empresas de la base de datos de forma permanente. 
+              Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteAll}
+              disabled={deleting}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Eliminando...
+                </>
+              ) : (
+                'Sí, eliminar todas'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialog para confirmar borrado de última importación */}
+      <AlertDialog open={showDeleteLastDialog} onOpenChange={setShowDeleteLastDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
+              ¿Eliminar última importación?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará todas las empresas importadas en la última sesión de importación.
+              Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteLastImport}
+              disabled={deleting}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Eliminando...
+                </>
+              ) : (
+                'Sí, eliminar importación'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 };
