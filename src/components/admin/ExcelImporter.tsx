@@ -466,11 +466,11 @@ export const ExcelImporter = ({ open, onOpenChange, onImportComplete, parroquias
         mappedData[dbField] = row[excelColumn];
       });
 
-      // Geocodificar si faltan coordenadas
+      // Geocodificar si faltan coordenadas o son 0
       let latitude = mappedData.latitude ? Number(mappedData.latitude) : null;
       let longitude = mappedData.longitude ? Number(mappedData.longitude) : null;
 
-      if ((!latitude || !longitude) && mappedData.address) {
+      if ((!latitude || latitude === 0 || !longitude || longitude === 0) && mappedData.address) {
         try {
           const { data: geoData, error: geoError } = await supabase.functions.invoke('geocode-address', {
             body: { 
@@ -783,6 +783,23 @@ export const ExcelImporter = ({ open, onOpenChange, onImportComplete, parroquias
 
           {/* Step 3: Validate */}
           <TabsContent value="validate" className="space-y-4">
+            {importing && (
+              <Alert>
+                <FileSpreadsheet className="h-4 w-4 animate-pulse" />
+                <AlertTitle>Importando Datos...</AlertTitle>
+                <AlertDescription>
+                  Por favor espera mientras se importan los registros. Las empresas sin coordenadas se están geolocalizando automáticamente.
+                </AlertDescription>
+              </Alert>
+            )}
+            {importing && (
+              <div className="space-y-2">
+                <Progress value={importProgress} className="w-full" />
+                <p className="text-center text-sm text-muted-foreground">
+                  {Math.round(importProgress)}% completado
+                </p>
+              </div>
+            )}
             <div className="grid grid-cols-3 gap-4">
               <Alert>
                 <CheckCircle2 className="h-4 w-4 text-green-500" />
@@ -903,15 +920,24 @@ export const ExcelImporter = ({ open, onOpenChange, onImportComplete, parroquias
             </Tabs>
 
             <div className="flex justify-between">
-              <Button variant="outline" onClick={() => setStep('map')}>
+              <Button variant="outline" onClick={() => setStep('map')} disabled={importing}>
                 Atrás
               </Button>
               <Button
                 onClick={performImport}
-                disabled={validationErrors.length > 0 || excelData.length === duplicates.length}
+                disabled={importing || validationErrors.length > 0 || excelData.length === duplicates.length}
               >
-                Iniciar Importación ({excelData.length - validationErrors.length - duplicates.length}{' '}
-                registros)
+                {importing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Importando... {Math.round(importProgress)}%
+                  </>
+                ) : (
+                  <>
+                    Iniciar Importación ({excelData.length - validationErrors.length - duplicates.length}{' '}
+                    registros)
+                  </>
+                )}
               </Button>
             </div>
           </TabsContent>
