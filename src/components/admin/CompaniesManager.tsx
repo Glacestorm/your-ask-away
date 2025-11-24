@@ -542,6 +542,40 @@ export function CompaniesManager() {
     }
   };
 
+  const selectAllInGroup = (group: CompanyWithDetails[]) => {
+    setSelectedForDeletion(prev => {
+      const newSet = new Set(prev);
+      group.forEach(company => newSet.add(company.id));
+      return newSet;
+    });
+  };
+
+  const deselectAllInGroup = (group: CompanyWithDetails[]) => {
+    setSelectedForDeletion(prev => {
+      const newSet = new Set(prev);
+      group.forEach(company => newSet.delete(company.id));
+      return newSet;
+    });
+  };
+
+  const selectAllDuplicates = () => {
+    const allIds = new Set<string>();
+    duplicates.forEach(duplicateGroup => {
+      duplicateGroup.group.forEach(company => allIds.add(company.id));
+    });
+    setSelectedForDeletion(allIds);
+    toast.success(`${allIds.size} empresas seleccionadas`);
+  };
+
+  const deselectAll = () => {
+    setSelectedForDeletion(new Set());
+    toast.info('Selección limpiada');
+  };
+
+  const isGroupFullySelected = (group: CompanyWithDetails[]) => {
+    return group.every(company => selectedForDeletion.has(company.id));
+  };
+
   const isGeolocated = (company: CompanyWithDetails) => {
     return company.latitude && company.longitude && company.latitude !== 0 && company.longitude !== 0;
   };
@@ -1483,14 +1517,90 @@ export function CompaniesManager() {
             </DialogDescription>
           </DialogHeader>
 
+          {/* Action Bar */}
+          <div className="flex items-center justify-between gap-4 p-4 bg-muted/50 rounded-lg border border-border">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={selectAllDuplicates}
+                className="gap-2"
+              >
+                <CheckCircle2 className="h-4 w-4" />
+                Seleccionar Todos
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={deselectAll}
+                disabled={selectedForDeletion.size === 0}
+                className="gap-2"
+              >
+                <XCircle className="h-4 w-4" />
+                Limpiar Selección
+              </Button>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="text-sm">
+                {selectedForDeletion.size > 0 ? (
+                  <span className="text-destructive font-semibold">
+                    {selectedForDeletion.size} seleccionada(s)
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground">Ninguna seleccionada</span>
+                )}
+              </div>
+              <Button 
+                variant="destructive" 
+                size="sm"
+                onClick={handleDeleteDuplicates}
+                disabled={selectedForDeletion.size === 0}
+                className="gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                Eliminar Seleccionados
+              </Button>
+            </div>
+          </div>
+
+          <Separator />
+
           <div className="space-y-6">
             {duplicates.map((duplicateGroup, groupIndex) => (
               <Card key={groupIndex} className="border-warning/20 bg-warning/5">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <Copy className="h-4 w-4" />
-                    {duplicateGroup.reason}
-                  </CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <Copy className="h-4 w-4" />
+                      {duplicateGroup.reason}
+                      <span className="text-xs text-muted-foreground font-normal">
+                        ({duplicateGroup.group.length} empresas)
+                      </span>
+                    </CardTitle>
+                    <div className="flex gap-2">
+                      {isGroupFullySelected(duplicateGroup.group) ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deselectAllInGroup(duplicateGroup.group)}
+                          className="h-8 text-xs gap-1.5"
+                        >
+                          <XCircle className="h-3.5 w-3.5" />
+                          Deseleccionar Grupo
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => selectAllInGroup(duplicateGroup.group)}
+                          className="h-8 text-xs gap-1.5"
+                        >
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          Seleccionar Grupo
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {duplicateGroup.group.map((company) => (
@@ -1562,32 +1672,16 @@ export function CompaniesManager() {
             ))}
           </div>
 
-          <DialogFooter className="flex items-center justify-between gap-4">
-            <div className="text-sm text-muted-foreground">
-              {selectedForDeletion.size > 0 ? (
-                <span className="text-destructive font-medium">
-                  {selectedForDeletion.size} empresa(s) seleccionada(s) para eliminar
-                </span>
-              ) : (
-                <span>Selecciona las empresas que deseas eliminar</span>
-              )}
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => {
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
                 setShowDuplicates(false);
                 setSelectedForDeletion(new Set());
-              }}>
-                Cancelar
-              </Button>
-              <Button 
-                variant="destructive" 
-                onClick={handleDeleteDuplicates}
-                disabled={selectedForDeletion.size === 0}
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Eliminar Seleccionados
-              </Button>
-            </div>
+              }}
+            >
+              Cerrar
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
