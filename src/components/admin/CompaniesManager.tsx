@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
-import { Plus, Pencil, Trash2, Upload, Phone, Mail, Globe, Users, Building2, FileText, History, Clock, TrendingUp, Package, Camera, MapPin } from 'lucide-react';
+import { Plus, Pencil, Trash2, Upload, Phone, Mail, Globe, Users, Building2, FileText, History, Clock, TrendingUp, Package, Camera, MapPin, Copy, AlertTriangle, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { CompanyWithDetails, StatusColor, Profile } from '@/types/database';
 import { ExcelImporter } from './ExcelImporter';
@@ -72,6 +72,10 @@ export function CompaniesManager() {
   const [importerOpen, setImporterOpen] = useState(false);
   const [geocoding, setGeocoding] = useState(false);
   const [geocodingProgress, setGeocodingProgress] = useState({ current: 0, total: 0 });
+  const [duplicates, setDuplicates] = useState<{ group: CompanyWithDetails[], reason: string }[]>([]);
+  const [showDuplicates, setShowDuplicates] = useState(false);
+  const [detectingDuplicates, setDetectingDuplicates] = useState(false);
+  const [selectedForDeletion, setSelectedForDeletion] = useState<Set<string>>(new Set());
   const [visits, setVisits] = useState<Visit[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [products, setProducts] = useState<any[]>([]);
@@ -440,6 +444,108 @@ export function CompaniesManager() {
     }
   };
 
+  const detectDuplicates = () => {
+    setDetectingDuplicates(true);
+    try {
+      const duplicateGroups: { group: CompanyWithDetails[], reason: string }[] = [];
+      const processed = new Set<string>();
+
+      // Detectar por nombre exacto
+      const nameGroups = new Map<string, CompanyWithDetails[]>();
+      companies.forEach(company => {
+        const normalizedName = company.name.toLowerCase().trim();
+        if (!nameGroups.has(normalizedName)) {
+          nameGroups.set(normalizedName, []);
+        }
+        nameGroups.get(normalizedName)!.push(company);
+      });
+
+      nameGroups.forEach((group, name) => {
+        if (group.length > 1) {
+          duplicateGroups.push({ group, reason: `Nombre idéntico: "${name}"` });
+          group.forEach(c => processed.add(c.id));
+        }
+      });
+
+      // Detectar por tax_id
+      const taxIdGroups = new Map<string, CompanyWithDetails[]>();
+      companies.forEach(company => {
+        const taxId = (company as any).tax_id;
+        if (taxId && taxId.trim() && !processed.has(company.id)) {
+          const normalized = taxId.toLowerCase().trim();
+          if (!taxIdGroups.has(normalized)) {
+            taxIdGroups.set(normalized, []);
+          }
+          taxIdGroups.get(normalized)!.push(company);
+        }
+      });
+
+      taxIdGroups.forEach((group, taxId) => {
+        if (group.length > 1) {
+          duplicateGroups.push({ group, reason: `NIF/CIF idéntico: "${taxId}"` });
+          group.forEach(c => processed.add(c.id));
+        }
+      });
+
+      if (duplicateGroups.length === 0) {
+        toast.info('No se encontraron empresas duplicadas');
+      } else {
+        setDuplicates(duplicateGroups);
+        setShowDuplicates(true);
+        toast.success(`Se encontraron ${duplicateGroups.length} grupos de duplicados`);
+      }
+    } catch (error) {
+      console.error('Error detecting duplicates:', error);
+      toast.error('Error al detectar duplicados');
+    } finally {
+      setDetectingDuplicates(false);
+    }
+  };
+
+  const toggleSelection = (companyId: string) => {
+    setSelectedForDeletion(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(companyId)) {
+        newSet.delete(companyId);
+      } else {
+        newSet.add(companyId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleDeleteDuplicates = async () => {
+    if (selectedForDeletion.size === 0) {
+      toast.error('Selecciona al menos una empresa para eliminar');
+      return;
+    }
+
+    if (!confirm(`¿Estás seguro de eliminar ${selectedForDeletion.size} empresa(s)?`)) {
+      return;
+    }
+
+    try {
+      const deletePromises = Array.from(selectedForDeletion).map(id =>
+        supabase.from('companies').delete().eq('id', id)
+      );
+
+      await Promise.all(deletePromises);
+      
+      toast.success(`Se eliminaron ${selectedForDeletion.size} empresa(s)`);
+      setSelectedForDeletion(new Set());
+      setShowDuplicates(false);
+      setDuplicates([]);
+      await fetchData();
+    } catch (error: any) {
+      console.error('Error deleting duplicates:', error);
+      toast.error('Error al eliminar duplicados');
+    }
+  };
+
+  const isGeolocated = (company: CompanyWithDetails) => {
+    return company.latitude && company.longitude && company.latitude !== 0 && company.longitude !== 0;
+  };
+
 
   return (
     <Card>
@@ -450,6 +556,18 @@ export function CompaniesManager() {
             <CardDescription>{t('companyForm.title')}</CardDescription>
           </div>
           <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={detectDuplicates}
+              disabled={detectingDuplicates}
+            >
+              {detectingDuplicates ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Copy className="mr-2 h-4 w-4" />
+              )}
+              Detectar Duplicados
+            </Button>
             <Button 
               variant="outline" 
               onClick={handleBulkGeocode}
@@ -470,50 +588,160 @@ export function CompaniesManager() {
         </div>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[500px]">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('common.name')}</TableHead>
-                <TableHead>{t('companyForm.address')}</TableHead>
-                <TableHead>{t('companyForm.parish')}</TableHead>
-                <TableHead>{t('company.phone')}</TableHead>
-                <TableHead>{t('company.email')}</TableHead>
-                <TableHead>{t('common.status')}</TableHead>
-                <TableHead>{t('companyForm.manager')}</TableHead>
-                <TableHead className="text-right">{t('common.actions')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {companies.map((company) => (
-                <TableRow key={company.id}>
-                  <TableCell className="font-medium">{company.name}</TableCell>
-                  <TableCell>{company.address}</TableCell>
-                  <TableCell>{company.parroquia}</TableCell>
-                  <TableCell>{(company as any).phone || '-'}</TableCell>
-                  <TableCell>{(company as any).email || '-'}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="h-3 w-3 rounded-full"
-                        style={{ backgroundColor: company.status?.color_hex || '#gray' }}
-                      />
-                      {company.status?.status_name || 'N/A'}
+        <ScrollArea className="h-[600px]">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {companies.map((company) => (
+              <Card key={company.id} className="group hover:shadow-lg transition-all duration-300 border-border/50 hover:border-primary/20">
+                <CardContent className="p-6 space-y-4">
+                  {/* Header */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-lg truncate mb-1 group-hover:text-primary transition-colors">
+                        {company.name}
+                      </h3>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {/* Status Badge */}
+                        <div 
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+                          style={{ 
+                            backgroundColor: `${company.status?.color_hex || '#gray'}20`,
+                            color: company.status?.color_hex || '#gray',
+                            border: `1px solid ${company.status?.color_hex || '#gray'}40`
+                          }}
+                        >
+                          <div
+                            className="h-1.5 w-1.5 rounded-full animate-pulse"
+                            style={{ backgroundColor: company.status?.color_hex || '#gray' }}
+                          />
+                          {company.status?.status_name || 'N/A'}
+                        </div>
+                        
+                        {/* Geolocation Badge */}
+                        {isGeolocated(company) ? (
+                          <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-success/10 text-success text-xs font-medium border border-success/20">
+                            <CheckCircle2 className="h-3 w-3" />
+                            Geolocalizado
+                          </div>
+                        ) : (
+                          <div className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-destructive/10 text-destructive text-xs font-medium border border-destructive/20">
+                            <XCircle className="h-3 w-3" />
+                            Sin coordenadas
+                          </div>
+                        )}
+
+                        {/* Client Type Badge */}
+                        {(company as any).client_type && (
+                          <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                            (company as any).client_type === 'cliente' 
+                              ? 'bg-primary/10 text-primary border border-primary/20'
+                              : 'bg-muted text-muted-foreground border border-border'
+                          }`}>
+                            {(company as any).client_type === 'cliente' ? 'Cliente' : 'Potencial'}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </TableCell>
-                  <TableCell>{company.gestor?.full_name || company.gestor?.email || 'N/A'}</TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => handleEdit(company)}>
-                      <Pencil className="h-4 w-4" />
+                  </div>
+
+                  {/* Info Grid */}
+                  <div className="space-y-2.5 text-sm">
+                    {/* Address */}
+                    <div className="flex items-start gap-2">
+                      <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-muted-foreground text-xs font-medium mb-0.5">Dirección</p>
+                        <p className="text-foreground truncate">{company.address}</p>
+                        <p className="text-muted-foreground text-xs">{company.parroquia}</p>
+                      </div>
+                    </div>
+
+                    {/* Contact */}
+                    {((company as any).phone || (company as any).email) && (
+                      <div className="flex items-start gap-2">
+                        <Phone className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-muted-foreground text-xs font-medium mb-0.5">Contacto</p>
+                          {(company as any).phone && (
+                            <p className="text-foreground">{(company as any).phone}</p>
+                          )}
+                          {(company as any).email && (
+                            <p className="text-foreground truncate text-xs">{(company as any).email}</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Manager */}
+                    {company.gestor && (
+                      <div className="flex items-start gap-2">
+                        <Users className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-muted-foreground text-xs font-medium mb-0.5">Gestor</p>
+                          <p className="text-foreground truncate">{company.gestor.full_name || company.gestor.email}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Business Info */}
+                    {((company as any).employees || (company as any).turnover) && (
+                      <div className="flex items-start gap-2">
+                        <Building2 className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-muted-foreground text-xs font-medium mb-0.5">Datos</p>
+                          <div className="flex items-center gap-3 text-xs">
+                            {(company as any).employees && (
+                              <span className="text-foreground">
+                                <strong>{(company as any).employees}</strong> empleados
+                              </span>
+                            )}
+                            {(company as any).turnover && (
+                              <span className="text-foreground">
+                                <strong>{Number((company as any).turnover).toLocaleString('es-ES')}€</strong> facturación
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Last Visit */}
+                    {company.fecha_ultima_visita && (
+                      <div className="flex items-start gap-2">
+                        <Clock className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-muted-foreground text-xs font-medium mb-0.5">Última visita</p>
+                          <p className="text-foreground text-xs">
+                            {new Date(company.fecha_ultima_visita).toLocaleDateString('es-ES')}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2 pt-2 border-t border-border/50">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1"
+                      onClick={() => handleEdit(company)}
+                    >
+                      <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                      Editar
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(company.id)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="text-destructive hover:bg-destructive/10"
+                      onClick={() => handleDelete(company.id)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
                     </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </ScrollArea>
       </CardContent>
 
@@ -1241,6 +1469,128 @@ export function CompaniesManager() {
         onImportComplete={fetchData}
         parroquias={parroquias}
       />
+
+      {/* Duplicates Dialog */}
+      <Dialog open={showDuplicates} onOpenChange={setShowDuplicates}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-warning" />
+              Empresas Duplicadas Detectadas
+            </DialogTitle>
+            <DialogDescription>
+              Se encontraron {duplicates.length} grupos de empresas duplicadas. Selecciona las que deseas eliminar.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            {duplicates.map((duplicateGroup, groupIndex) => (
+              <Card key={groupIndex} className="border-warning/20 bg-warning/5">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Copy className="h-4 w-4" />
+                    {duplicateGroup.reason}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {duplicateGroup.group.map((company) => (
+                    <div 
+                      key={company.id}
+                      className={`flex items-start gap-3 p-3 rounded-lg border transition-all ${
+                        selectedForDeletion.has(company.id)
+                          ? 'bg-destructive/10 border-destructive/50'
+                          : 'bg-background border-border hover:border-primary/30'
+                      }`}
+                    >
+                      <Checkbox
+                        checked={selectedForDeletion.has(company.id)}
+                        onCheckedChange={() => toggleSelection(company.id)}
+                        className="mt-1"
+                      />
+                      <div className="flex-1 min-w-0 space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <p className="font-medium">{company.name}</p>
+                            <p className="text-sm text-muted-foreground">{company.address}, {company.parroquia}</p>
+                          </div>
+                          {isGeolocated(company) ? (
+                            <div className="flex items-center gap-1 text-xs text-success">
+                              <CheckCircle2 className="h-3 w-3" />
+                              Geolocalizado
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1 text-xs text-destructive">
+                              <XCircle className="h-3 w-3" />
+                              Sin coordenadas
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+                          {(company as any).tax_id && (
+                            <span>NIF: {(company as any).tax_id}</span>
+                          )}
+                          {(company as any).phone && (
+                            <span className="flex items-center gap-1">
+                              <Phone className="h-3 w-3" />
+                              {(company as any).phone}
+                            </span>
+                          )}
+                          {(company as any).email && (
+                            <span className="flex items-center gap-1">
+                              <Mail className="h-3 w-3" />
+                              {(company as any).email}
+                            </span>
+                          )}
+                          {company.gestor && (
+                            <span className="flex items-center gap-1">
+                              <Users className="h-3 w-3" />
+                              {company.gestor.full_name || company.gestor.email}
+                            </span>
+                          )}
+                          {company.fecha_ultima_visita && (
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {new Date(company.fecha_ultima_visita).toLocaleDateString('es-ES')}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <DialogFooter className="flex items-center justify-between gap-4">
+            <div className="text-sm text-muted-foreground">
+              {selectedForDeletion.size > 0 ? (
+                <span className="text-destructive font-medium">
+                  {selectedForDeletion.size} empresa(s) seleccionada(s) para eliminar
+                </span>
+              ) : (
+                <span>Selecciona las empresas que deseas eliminar</span>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => {
+                setShowDuplicates(false);
+                setSelectedForDeletion(new Set());
+              }}>
+                Cancelar
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={handleDeleteDuplicates}
+                disabled={selectedForDeletion.size === 0}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Eliminar Seleccionados
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
