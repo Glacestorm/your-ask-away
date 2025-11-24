@@ -29,6 +29,7 @@ import { CommercialDirectorDashboard } from '@/components/admin/CommercialDirect
 import { OfficeDirectorDashboard } from '@/components/admin/OfficeDirectorDashboard';
 import { CommercialManagerDashboard } from '@/components/admin/CommercialManagerDashboard';
 import { CommercialManagerAudit } from '@/components/admin/CommercialManagerAudit';
+import { ImportHistoryViewer } from '@/components/admin/ImportHistoryViewer';
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, loading: authLoading } = useAuth();
   const { t } = useLanguage();
@@ -176,6 +177,18 @@ const Admin = () => {
         return <MapTooltipConfig />;
       case 'audit':
         return <AuditLogsViewer />;
+      case 'import-history':
+        return (
+          <div className="rounded-lg border bg-card p-6">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold">Historial de Importaciones</h2>
+              <p className="text-sm text-muted-foreground">
+                Consulta y exporta el historial completo de importaciones de empresas
+              </p>
+            </div>
+            <ImportHistoryViewer />
+          </div>
+        );
       default:
         return null;
     }
