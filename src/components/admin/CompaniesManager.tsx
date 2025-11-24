@@ -460,7 +460,7 @@ export function CompaniesManager() {
         }
 
         // Pequeña pausa entre solicitudes para no sobrecargar el servicio
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
 
       toast.success(`Geocodificación completada: ${successCount} exitosas, ${failCount} fallidas`);
@@ -475,7 +475,7 @@ export function CompaniesManager() {
   };
 
   const handleSearchPhotosAll = async () => {
-    if (!confirm('¿Desea buscar fotos para todas las empresas? Este proceso puede tardar varios minutos y consumirá créditos de la API de Bing.')) {
+    if (!confirm(`¿Desea buscar fotos para todas las empresas? Este proceso puede tardar varios minutos y consumirá créditos de la API de Bing.`)) {
       return;
     }
 
@@ -521,7 +521,7 @@ export function CompaniesManager() {
         setPhotoSearchProgress(Math.round((processed / totalCompanies) * 100));
         
         // Pequeña pausa entre solicitudes para no sobrecargar el servicio
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
 
       toast.success(`Búsqueda completada: ${photosFound} fotos encontradas de ${totalCompanies} empresas`);
@@ -538,7 +538,7 @@ export function CompaniesManager() {
     }
   };
 
-  const detectDuplicates = async () {
+  const detectDuplicates = async () => {
     setDetectingDuplicates(true);
     try {
       // Obtener TODAS las empresas de la base de datos
