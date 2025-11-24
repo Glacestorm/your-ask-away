@@ -288,6 +288,14 @@ export default {
   'companyForm.bulkStatusSuccess': 'Status updated successfully',
   'companyForm.bulkGestorDescription': 'Change the manager of selected companies',
   'companyForm.bulkStatusDescription': 'Change the status of selected companies',
+  'companyForm.assignProducts': 'Assign Products',
+  'companyForm.bulkAssignProductsDesc': 'Assign products to selected companies',
+  'companyForm.selectProducts': 'Select at least one product',
+  'companyForm.bulkProductsSuccess': 'Products assigned successfully',
+  'companyForm.changeOficina': 'Change Office',
+  'companyForm.bulkChangeOficinaDesc': 'Change office for selected companies',
+  'companyForm.selectOficina': 'Select an office',
+  'companyForm.bulkOficinaSuccess': 'Office updated successfully',
   
   // Product Forms
   'productForm.title': 'Products',
