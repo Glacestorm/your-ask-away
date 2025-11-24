@@ -88,6 +88,10 @@ export function CompaniesManager() {
   const [photoSearchProgress, setPhotoSearchProgress] = useState(0);
   const [sortBy, setSortBy] = useState<string>('name-asc');
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
+  const [selectedCompanies, setSelectedCompanies] = useState<Set<string>>(new Set());
+  const [bulkActionDialog, setBulkActionDialog] = useState<'gestor' | 'status' | null>(null);
+  const [bulkGestorId, setBulkGestorId] = useState<string>('');
+  const [bulkStatusId, setBulkStatusId] = useState<string>('');
   const [visitFormData, setVisitFormData] = useState({
     visit_date: new Date().toISOString().split('T')[0],
     gestor_id: '',
@@ -712,6 +716,106 @@ export function CompaniesManager() {
     return (v1 + v2 + v3) / 3;
   };
 
+  const toggleCompanySelection = (companyId: string) => {
+    setSelectedCompanies(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(companyId)) {
+        newSet.delete(companyId);
+      } else {
+        newSet.add(companyId);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedCompanies.size === filteredAndSortedCompanies.length) {
+      setSelectedCompanies(new Set());
+    } else {
+      setSelectedCompanies(new Set(filteredAndSortedCompanies.map(c => c.id)));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedCompanies.size === 0) {
+      toast.error(t('companyForm.selectCompanies'));
+      return;
+    }
+
+    if (!confirm(`${t('companyForm.confirmBulkDelete')} (${selectedCompanies.size})?`)) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const deletePromises = Array.from(selectedCompanies).map(id =>
+        supabase.from('companies').delete().eq('id', id)
+      );
+      await Promise.all(deletePromises);
+      
+      toast.success(`${t('companyForm.bulkDeleteSuccess')} (${selectedCompanies.size})`);
+      setSelectedCompanies(new Set());
+      await fetchData();
+    } catch (error: any) {
+      console.error('Error deleting companies:', error);
+      toast.error(t('form.errorDeleting'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBulkChangeGestor = async () => {
+    if (!bulkGestorId) {
+      toast.error(t('companyForm.selectGestor'));
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const updatePromises = Array.from(selectedCompanies).map(id =>
+        supabase.from('companies').update({ gestor_id: bulkGestorId }).eq('id', id)
+      );
+      await Promise.all(updatePromises);
+      
+      toast.success(`${t('companyForm.bulkGestorSuccess')} (${selectedCompanies.size})`);
+      setSelectedCompanies(new Set());
+      setBulkActionDialog(null);
+      setBulkGestorId('');
+      await fetchData();
+    } catch (error: any) {
+      console.error('Error updating gestor:', error);
+      toast.error(t('form.errorSaving'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBulkChangeStatus = async () => {
+    if (!bulkStatusId) {
+      toast.error(t('companyForm.selectStatus'));
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const updatePromises = Array.from(selectedCompanies).map(id =>
+        supabase.from('companies').update({ status_id: bulkStatusId }).eq('id', id)
+      );
+      await Promise.all(updatePromises);
+      
+      toast.success(`${t('companyForm.bulkStatusSuccess')} (${selectedCompanies.size})`);
+      setSelectedCompanies(new Set());
+      setBulkActionDialog(null);
+      setBulkStatusId('');
+      await fetchData();
+    } catch (error: any) {
+      console.error('Error updating status:', error);
+      toast.error(t('form.errorSaving'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredAndSortedCompanies = companies
     .filter(company => {
       if (!searchQuery) return true;
@@ -1049,26 +1153,84 @@ export function CompaniesManager() {
           </div>
         </ScrollArea>
         ) : (
-          <ScrollArea className="h-[600px]">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[30px]"></TableHead>
-                  <TableHead>{t('company.name')}</TableHead>
-                  <TableHead>{t('company.address')}</TableHead>
-                  <TableHead>{t('company.phone')}</TableHead>
-                  <TableHead>{t('company.status')}</TableHead>
-                  <TableHead>{t('company.manager')}</TableHead>
-                  <TableHead className="text-center">{t('companyForm.creandLinkage')}</TableHead>
-                  <TableHead className="text-right">{t('common.actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredAndSortedCompanies.map((company) => {
-                  const avgLinkage = getAverageLinkage(company);
-                  return (
-                    <TableRow key={company.id} className="hover:bg-muted/50">
-                      <TableCell>
+          <>
+            {/* Bulk Actions Bar */}
+            {selectedCompanies.size > 0 && (
+              <div className="mb-4 p-4 bg-primary/10 border border-primary/30 rounded-lg flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <span className="text-sm font-medium">
+                    {t('companyForm.selectedCount')}: {selectedCompanies.size}
+                  </span>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setSelectedCompanies(new Set())}
+                  >
+                    {t('companyForm.clearSelection')}
+                  </Button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setBulkActionDialog('gestor')}
+                  >
+                    <Users className="h-4 w-4 mr-2" />
+                    {t('companyForm.changeGestor')}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setBulkActionDialog('status')}
+                  >
+                    <Package className="h-4 w-4 mr-2" />
+                    {t('companyForm.changeStatus')}
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    size="sm"
+                    onClick={handleBulkDelete}
+                    disabled={loading}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    {t('companyForm.deleteSelected')}
+                  </Button>
+                </div>
+              </div>
+            )}
+            
+            <ScrollArea className="h-[600px]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[50px]">
+                      <Checkbox
+                        checked={selectedCompanies.size === filteredAndSortedCompanies.length && filteredAndSortedCompanies.length > 0}
+                        onCheckedChange={toggleSelectAll}
+                      />
+                    </TableHead>
+                    <TableHead className="w-[30px]"></TableHead>
+                    <TableHead>{t('company.name')}</TableHead>
+                    <TableHead>{t('company.address')}</TableHead>
+                    <TableHead>{t('company.phone')}</TableHead>
+                    <TableHead>{t('company.status')}</TableHead>
+                    <TableHead>{t('company.manager')}</TableHead>
+                    <TableHead className="text-center">{t('companyForm.creandLinkage')}</TableHead>
+                    <TableHead className="text-right">{t('common.actions')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredAndSortedCompanies.map((company) => {
+                    const avgLinkage = getAverageLinkage(company);
+                    return (
+                      <TableRow key={company.id} className="hover:bg-muted/50">
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedCompanies.has(company.id)}
+                            onCheckedChange={() => toggleCompanySelection(company.id)}
+                          />
+                        </TableCell>
+                        <TableCell>
                         <div 
                           className="w-6 h-6 rounded-full flex items-center justify-center"
                           style={{
@@ -1166,6 +1328,7 @@ export function CompaniesManager() {
               </TableBody>
             </Table>
           </ScrollArea>
+          </>
         )}
       </CardContent>
 
@@ -2092,6 +2255,80 @@ export function CompaniesManager() {
               }}
             >
               Cerrar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Change Gestor Dialog */}
+      <Dialog open={bulkActionDialog === 'gestor'} onOpenChange={() => setBulkActionDialog(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('companyForm.changeGestor')}</DialogTitle>
+            <DialogDescription>
+              {t('companyForm.bulkGestorDescription')} ({selectedCompanies.size})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="bulk-gestor">{t('company.manager')}</Label>
+              <Select value={bulkGestorId} onValueChange={setBulkGestorId}>
+                <SelectTrigger id="bulk-gestor">
+                  <SelectValue placeholder={t('form.selectOption')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {gestores.map((gestor) => (
+                    <SelectItem key={gestor.id} value={gestor.id}>
+                      {gestor.full_name || gestor.email}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkActionDialog(null)}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={handleBulkChangeGestor} disabled={loading || !bulkGestorId}>
+              {loading ? t('common.loading') : t('common.save')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Change Status Dialog */}
+      <Dialog open={bulkActionDialog === 'status'} onOpenChange={() => setBulkActionDialog(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('companyForm.changeStatus')}</DialogTitle>
+            <DialogDescription>
+              {t('companyForm.bulkStatusDescription')} ({selectedCompanies.size})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="bulk-status">{t('company.status')}</Label>
+              <Select value={bulkStatusId} onValueChange={setBulkStatusId}>
+                <SelectTrigger id="bulk-status">
+                  <SelectValue placeholder={t('form.selectOption')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {statusColors.map((status) => (
+                    <SelectItem key={status.id} value={status.id}>
+                      {status.status_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkActionDialog(null)}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={handleBulkChangeStatus} disabled={loading || !bulkStatusId}>
+              {loading ? t('common.loading') : t('common.save')}
             </Button>
           </DialogFooter>
         </DialogContent>
