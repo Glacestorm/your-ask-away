@@ -288,6 +288,14 @@ export default {
   'companyForm.bulkStatusSuccess': 'Estat actualitzat correctament',
   'companyForm.bulkGestorDescription': 'Canviar el gestor de les empreses seleccionades',
   'companyForm.bulkStatusDescription': 'Canviar l\'estat de les empreses seleccionades',
+  'companyForm.assignProducts': 'Assignar Productes',
+  'companyForm.bulkAssignProductsDesc': 'Assignar productes a les empreses seleccionades',
+  'companyForm.selectProducts': 'Selecciona almenys un producte',
+  'companyForm.bulkProductsSuccess': 'Productes assignats correctament',
+  'companyForm.changeOficina': 'Canviar Oficina',
+  'companyForm.bulkChangeOficinaDesc': 'Canviar l\'oficina de les empreses seleccionades',
+  'companyForm.selectOficina': 'Selecciona una oficina',
+  'companyForm.bulkOficinaSuccess': 'Oficina actualitzada correctament',
   
   // Product Forms
   'productForm.title': 'Productes',

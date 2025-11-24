@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
-import { Plus, Pencil, Trash2, Upload, Phone, Mail, Globe, Users, Building2, FileText, History, Clock, TrendingUp, Package, Camera, MapPin, Copy, AlertTriangle, CheckCircle2, XCircle, Loader2, Search, Eye, X, Grid3x3, List } from 'lucide-react';
+import { Building2, MapPin, Phone, Tag, User, Eye, Trash2, Plus, Search, Grid3x3, List, CheckSquare, Square, Package, Users, Mail, FileText, TrendingUp, Camera, Upload, Copy, Loader2, AlertTriangle, CheckCircle2, XCircle, Clock, History, Pencil, Globe } from "lucide-react";
 import { toast } from 'sonner';
 import { CompanyWithDetails, StatusColor, Profile } from '@/types/database';
 import { ExcelImporter } from './ExcelImporter';
@@ -89,9 +89,12 @@ export function CompaniesManager() {
   const [sortBy, setSortBy] = useState<string>('name-asc');
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
   const [selectedCompanies, setSelectedCompanies] = useState<Set<string>>(new Set());
-  const [bulkActionDialog, setBulkActionDialog] = useState<'gestor' | 'status' | null>(null);
+  const [bulkActionDialog, setBulkActionDialog] = useState<'gestor' | 'status' | 'products' | 'oficina' | null>(null);
   const [bulkGestorId, setBulkGestorId] = useState<string>('');
   const [bulkStatusId, setBulkStatusId] = useState<string>('');
+  const [bulkProductIds, setBulkProductIds] = useState<string[]>([]);
+  const [bulkOficina, setBulkOficina] = useState<string>('');
+  const [oficinas, setOficinas] = useState<any[]>([]);
   const [visitFormData, setVisitFormData] = useState({
     visit_date: new Date().toISOString().split('T')[0],
     gestor_id: '',
@@ -159,12 +162,13 @@ export function CompaniesManager() {
 
   const fetchData = async () => {
     try {
-      const [companiesRes, statusRes, gestoresRes, conceptsRes, productsRes] = await Promise.all([
+      const [companiesRes, statusRes, gestoresRes, conceptsRes, productsRes, oficinasRes] = await Promise.all([
         supabase.from('companies').select('*, status_colors(*), profiles(*)').order('name'),
         supabase.from('status_colors').select('*').order('display_order'),
         supabase.from('profiles').select('*').order('full_name'),
         supabase.from('concepts').select('*').eq('concept_type', 'parroquia').eq('active', true),
         supabase.from('products').select('*').eq('active', true).order('category, name'),
+        supabase.from('concepts').select('*').eq('concept_type', 'oficina').eq('active', true),
       ]);
 
       if (companiesRes.data) setCompanies(companiesRes.data as CompanyWithDetails[]);
@@ -172,6 +176,7 @@ export function CompaniesManager() {
       if (gestoresRes.data) setGestores(gestoresRes.data);
       if (conceptsRes.data) setParroquias(conceptsRes.data.map((c: any) => c.concept_value));
       if (productsRes.data) setProducts(productsRes.data);
+      if (oficinasRes.data) setOficinas(oficinasRes.data);
     } catch (error: any) {
       console.error('Error fetching data:', error);
       toast.error(t('form.errorLoading'));
@@ -816,6 +821,77 @@ export function CompaniesManager() {
     }
   };
 
+  const handleBulkAssignProducts = async () => {
+    if (bulkProductIds.length === 0) {
+      toast.error(t('companyForm.selectProducts'));
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      for (const companyId of selectedCompanies) {
+        // Get existing products for this company
+        const { data: existingProducts } = await supabase
+          .from('company_products')
+          .select('product_id')
+          .eq('company_id', companyId);
+        
+        const existingProductIds = existingProducts?.map(p => p.product_id) || [];
+        
+        // Only insert products that don't already exist
+        const newProducts = bulkProductIds.filter(pid => !existingProductIds.includes(pid));
+        
+        if (newProducts.length > 0) {
+          const productRecords = newProducts.map(productId => ({
+            company_id: companyId,
+            product_id: productId,
+            active: true
+          }));
+          
+          await supabase.from('company_products').insert(productRecords);
+        }
+      }
+      
+      toast.success(`${t('companyForm.bulkProductsSuccess')} (${selectedCompanies.size})`);
+      setSelectedCompanies(new Set());
+      setBulkActionDialog(null);
+      setBulkProductIds([]);
+      await fetchData();
+    } catch (error: any) {
+      console.error('Error assigning products:', error);
+      toast.error(t('form.errorSaving'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBulkChangeOficina = async () => {
+    if (!bulkOficina) {
+      toast.error(t('companyForm.selectOficina'));
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const updatePromises = Array.from(selectedCompanies).map(id =>
+        supabase.from('companies').update({ oficina: bulkOficina }).eq('id', id)
+      );
+      await Promise.all(updatePromises);
+      
+      toast.success(`${t('companyForm.bulkOficinaSuccess')} (${selectedCompanies.size})`);
+      setSelectedCompanies(new Set());
+      setBulkActionDialog(null);
+      setBulkOficina('');
+      await fetchData();
+    } catch (error: any) {
+      console.error('Error updating oficina:', error);
+      toast.error(t('form.errorSaving'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredAndSortedCompanies = companies
     .filter(company => {
       if (!searchQuery) return true;
@@ -1183,8 +1259,24 @@ export function CompaniesManager() {
                     size="sm"
                     onClick={() => setBulkActionDialog('status')}
                   >
-                    <Package className="h-4 w-4 mr-2" />
+                    <Tag className="h-4 w-4 mr-2" />
                     {t('companyForm.changeStatus')}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setBulkActionDialog('products')}
+                  >
+                    <Package className="h-4 w-4 mr-2" />
+                    {t('companyForm.assignProducts')}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setBulkActionDialog('oficina')}
+                  >
+                    <Building2 className="h-4 w-4 mr-2" />
+                    {t('companyForm.changeOficina')}
                   </Button>
                   <Button 
                     variant="destructive" 
@@ -2328,6 +2420,91 @@ export function CompaniesManager() {
               {t('common.cancel')}
             </Button>
             <Button onClick={handleBulkChangeStatus} disabled={loading || !bulkStatusId}>
+              {loading ? t('common.loading') : t('common.save')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Assign Products Dialog */}
+      <Dialog open={bulkActionDialog === 'products'} onOpenChange={() => setBulkActionDialog(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('companyForm.assignProducts')}</DialogTitle>
+            <DialogDescription>
+              {t('companyForm.bulkAssignProductsDesc')} ({selectedCompanies.size})
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="max-h-[400px] pr-4">
+            <div className="space-y-3">
+              {products.map((product) => (
+                <div key={product.id} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                  <Checkbox
+                    id={`product-${product.id}`}
+                    checked={bulkProductIds.includes(product.id)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setBulkProductIds([...bulkProductIds, product.id]);
+                      } else {
+                        setBulkProductIds(bulkProductIds.filter(id => id !== product.id));
+                      }
+                    }}
+                  />
+                  <label
+                    htmlFor={`product-${product.id}`}
+                    className="flex-1 text-sm font-medium leading-none cursor-pointer"
+                  >
+                    {product.name}
+                    {product.description && (
+                      <span className="block text-xs text-muted-foreground mt-1">{product.description}</span>
+                    )}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkActionDialog(null)}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={handleBulkAssignProducts} disabled={loading || bulkProductIds.length === 0}>
+              {loading ? t('common.loading') : t('common.save')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Change Oficina Dialog */}
+      <Dialog open={bulkActionDialog === 'oficina'} onOpenChange={() => setBulkActionDialog(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('companyForm.changeOficina')}</DialogTitle>
+            <DialogDescription>
+              {t('companyForm.bulkChangeOficinaDesc')} ({selectedCompanies.size})
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="bulk-oficina">{t('companyForm.office')}</Label>
+              <Select value={bulkOficina} onValueChange={setBulkOficina}>
+                <SelectTrigger id="bulk-oficina">
+                  <SelectValue placeholder={t('form.selectOption')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {oficinas.map((oficina) => (
+                    <SelectItem key={oficina.concept_value} value={oficina.concept_value}>
+                      {oficina.concept_value}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkActionDialog(null)}>
+              {t('common.cancel')}
+            </Button>
+            <Button onClick={handleBulkChangeOficina} disabled={loading || !bulkOficina}>
               {loading ? t('common.loading') : t('common.save')}
             </Button>
           </DialogFooter>
