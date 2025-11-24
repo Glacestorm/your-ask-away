@@ -263,6 +263,15 @@ export default {
   'companyForm.notGeolocated': 'Non localisé',
   'companyForm.noPhone': 'Pas de téléphone',
   'companyForm.creandLinkage': 'Liaison Creand',
+  'companyForm.searchPlaceholder': 'Rechercher des entreprises par nom, adresse, téléphone, email ou NIF...',
+  'companyForm.sortBy': 'Trier par',
+  'companyForm.sortNameAsc': 'Nom (A-Z)',
+  'companyForm.sortNameDesc': 'Nom (Z-A)',
+  'companyForm.sortLinkageDesc': 'Liaison (Haut à bas)',
+  'companyForm.sortLinkageAsc': 'Liaison (Bas à haut)',
+  'companyForm.sortVisitDesc': 'Dernière visite (Plus récent)',
+  'companyForm.sortVisitAsc': 'Dernière visite (Plus ancien)',
+  'companyForm.sortGeolocated': 'Localisés d\'abord',
   
   // Product Forms
   'productForm.title': 'Produits',

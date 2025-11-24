@@ -263,6 +263,15 @@ export default {
   'companyForm.notGeolocated': 'Sin ubicar',
   'companyForm.noPhone': 'Sin teléfono',
   'companyForm.creandLinkage': 'Vinculación Creand',
+  'companyForm.searchPlaceholder': 'Buscar empresas por nombre, dirección, teléfono, email o NIF...',
+  'companyForm.sortBy': 'Ordenar por',
+  'companyForm.sortNameAsc': 'Nombre (A-Z)',
+  'companyForm.sortNameDesc': 'Nombre (Z-A)',
+  'companyForm.sortLinkageDesc': 'Vinculación (Mayor a menor)',
+  'companyForm.sortLinkageAsc': 'Vinculación (Menor a mayor)',
+  'companyForm.sortVisitDesc': 'Última visita (Más reciente)',
+  'companyForm.sortVisitAsc': 'Última visita (Más antigua)',
+  'companyForm.sortGeolocated': 'Ubicados primero',
   
   // Product Forms
   'productForm.title': 'Productos',

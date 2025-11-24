@@ -86,6 +86,7 @@ export function CompaniesManager() {
   const [detailsCompany, setDetailsCompany] = useState<CompanyWithDetails | null>(null);
   const [isSearchingPhotos, setIsSearchingPhotos] = useState(false);
   const [photoSearchProgress, setPhotoSearchProgress] = useState(0);
+  const [sortBy, setSortBy] = useState<string>('name-asc');
   const [visitFormData, setVisitFormData] = useState({
     visit_date: new Date().toISOString().split('T')[0],
     gestor_id: '',
@@ -703,20 +704,54 @@ export function CompaniesManager() {
     return company.latitude && company.longitude && company.latitude !== 0 && company.longitude !== 0;
   };
 
-  const filteredCompanies = companies.filter(company => {
-    if (!searchQuery) return true;
-    
-    const query = searchQuery.toLowerCase();
-    return (
-      company.name.toLowerCase().includes(query) ||
-      company.address.toLowerCase().includes(query) ||
-      company.parroquia.toLowerCase().includes(query) ||
-      ((company as any).phone && (company as any).phone.toLowerCase().includes(query)) ||
-      ((company as any).email && (company as any).email.toLowerCase().includes(query)) ||
-      ((company as any).tax_id && (company as any).tax_id.toLowerCase().includes(query)) ||
-      (company.gestor?.full_name && company.gestor.full_name.toLowerCase().includes(query))
-    );
-  });
+  const getAverageLinkage = (company: CompanyWithDetails) => {
+    const v1 = (company as any).vinculacion_entidad_1 || 0;
+    const v2 = (company as any).vinculacion_entidad_2 || 0;
+    const v3 = (company as any).vinculacion_entidad_3 || 0;
+    return (v1 + v2 + v3) / 3;
+  };
+
+  const filteredAndSortedCompanies = companies
+    .filter(company => {
+      if (!searchQuery) return true;
+      
+      const query = searchQuery.toLowerCase();
+      return (
+        company.name.toLowerCase().includes(query) ||
+        company.address.toLowerCase().includes(query) ||
+        company.parroquia.toLowerCase().includes(query) ||
+        ((company as any).phone && (company as any).phone.toLowerCase().includes(query)) ||
+        ((company as any).email && (company as any).email.toLowerCase().includes(query)) ||
+        ((company as any).tax_id && (company as any).tax_id.toLowerCase().includes(query)) ||
+        (company.gestor?.full_name && company.gestor.full_name.toLowerCase().includes(query))
+      );
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'name-asc':
+          return a.name.localeCompare(b.name);
+        case 'name-desc':
+          return b.name.localeCompare(a.name);
+        case 'linkage-desc':
+          return getAverageLinkage(b) - getAverageLinkage(a);
+        case 'linkage-asc':
+          return getAverageLinkage(a) - getAverageLinkage(b);
+        case 'visit-desc':
+          const dateA = a.fecha_ultima_visita ? new Date(a.fecha_ultima_visita).getTime() : 0;
+          const dateB = b.fecha_ultima_visita ? new Date(b.fecha_ultima_visita).getTime() : 0;
+          return dateB - dateA;
+        case 'visit-asc':
+          const dateAsc1 = a.fecha_ultima_visita ? new Date(a.fecha_ultima_visita).getTime() : 0;
+          const dateAsc2 = b.fecha_ultima_visita ? new Date(b.fecha_ultima_visita).getTime() : 0;
+          return dateAsc1 - dateAsc2;
+        case 'geolocated':
+          const geoA = isGeolocated(a) ? 1 : 0;
+          const geoB = isGeolocated(b) ? 1 : 0;
+          return geoB - geoA;
+        default:
+          return 0;
+      }
+    });
 
 
   return (
@@ -784,22 +819,38 @@ export function CompaniesManager() {
         </div>
       </CardHeader>
       <CardContent>
-        {/* Search Bar */}
-        <div className="mb-6 flex items-center gap-4">
+        {/* Search Bar and Sort Selector */}
+        <div className="mb-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
           <div className="relative flex-1">
             <Input
-              placeholder="Buscar empresas por nombre, dirección, teléfono, email o NIF..."
+              placeholder={t('companyForm.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
             />
             <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           </div>
+          <div className="sm:w-64">
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger>
+                <SelectValue placeholder={t('companyForm.sortBy')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="name-asc">{t('companyForm.sortNameAsc')}</SelectItem>
+                <SelectItem value="name-desc">{t('companyForm.sortNameDesc')}</SelectItem>
+                <SelectItem value="linkage-desc">{t('companyForm.sortLinkageDesc')}</SelectItem>
+                <SelectItem value="linkage-asc">{t('companyForm.sortLinkageAsc')}</SelectItem>
+                <SelectItem value="visit-desc">{t('companyForm.sortVisitDesc')}</SelectItem>
+                <SelectItem value="visit-asc">{t('companyForm.sortVisitAsc')}</SelectItem>
+                <SelectItem value="geolocated">{t('companyForm.sortGeolocated')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <ScrollArea className="h-[600px]">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCompanies.map((company) => {
+            {filteredAndSortedCompanies.map((company) => {
               const photoUrl = companyPhotos.get(company.id);
               return (
                 <Card 
