@@ -263,6 +263,15 @@ export default {
   'companyForm.notGeolocated': 'Not located',
   'companyForm.noPhone': 'No phone',
   'companyForm.creandLinkage': 'Creand Linkage',
+  'companyForm.searchPlaceholder': 'Search companies by name, address, phone, email or NIF...',
+  'companyForm.sortBy': 'Sort by',
+  'companyForm.sortNameAsc': 'Name (A-Z)',
+  'companyForm.sortNameDesc': 'Name (Z-A)',
+  'companyForm.sortLinkageDesc': 'Linkage (High to low)',
+  'companyForm.sortLinkageAsc': 'Linkage (Low to high)',
+  'companyForm.sortVisitDesc': 'Last visit (Most recent)',
+  'companyForm.sortVisitAsc': 'Last visit (Oldest)',
+  'companyForm.sortGeolocated': 'Located first',
   
   // Product Forms
   'productForm.title': 'Products',

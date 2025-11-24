@@ -263,6 +263,15 @@ export default {
   'companyForm.notGeolocated': 'Sense ubicar',
   'companyForm.noPhone': 'Sense telèfon',
   'companyForm.creandLinkage': 'Vinculació Creand',
+  'companyForm.searchPlaceholder': 'Cercar empreses per nom, adreça, telèfon, email o NIF...',
+  'companyForm.sortBy': 'Ordenar per',
+  'companyForm.sortNameAsc': 'Nom (A-Z)',
+  'companyForm.sortNameDesc': 'Nom (Z-A)',
+  'companyForm.sortLinkageDesc': 'Vinculació (Major a menor)',
+  'companyForm.sortLinkageAsc': 'Vinculació (Menor a major)',
+  'companyForm.sortVisitDesc': 'Última visita (Més recent)',
+  'companyForm.sortVisitAsc': 'Última visita (Més antiga)',
+  'companyForm.sortGeolocated': 'Ubicats primer',
   
   // Product Forms
   'productForm.title': 'Productes',
