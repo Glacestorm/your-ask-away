@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
-import { Plus, Pencil, Trash2, Upload, Phone, Mail, Globe, Users, Building2, FileText, History, Clock, TrendingUp, Package, Camera } from 'lucide-react';
+import { Plus, Pencil, Trash2, Upload, Phone, Mail, Globe, Users, Building2, FileText, History, Clock, TrendingUp, Package, Camera, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import { CompanyWithDetails, StatusColor, Profile } from '@/types/database';
 import { ExcelImporter } from './ExcelImporter';
@@ -70,6 +70,8 @@ export function CompaniesManager() {
   const [editingCompany, setEditingCompany] = useState<CompanyWithDetails | null>(null);
   const [loading, setLoading] = useState(false);
   const [importerOpen, setImporterOpen] = useState(false);
+  const [geocoding, setGeocoding] = useState(false);
+  const [geocodingProgress, setGeocodingProgress] = useState({ current: 0, total: 0 });
   const [visits, setVisits] = useState<Visit[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [products, setProducts] = useState<any[]>([]);
@@ -367,6 +369,77 @@ export function CompaniesManager() {
     });
   };
 
+  const handleBulkGeocode = async () => {
+    if (!confirm('¿Desea geocodificar todas las empresas sin coordenadas? Este proceso puede tardar varios minutos.')) {
+      return;
+    }
+
+    try {
+      setGeocoding(true);
+      
+      // Obtener empresas sin coordenadas válidas
+      const companiesWithoutCoords = companies.filter(
+        c => !c.latitude || !c.longitude || c.latitude === 0 || c.longitude === 0
+      );
+
+      if (companiesWithoutCoords.length === 0) {
+        toast.info('Todas las empresas ya tienen coordenadas asignadas');
+        return;
+      }
+
+      setGeocodingProgress({ current: 0, total: companiesWithoutCoords.length });
+      
+      let successCount = 0;
+      let failCount = 0;
+
+      for (let i = 0; i < companiesWithoutCoords.length; i++) {
+        const company = companiesWithoutCoords[i];
+        setGeocodingProgress({ current: i + 1, total: companiesWithoutCoords.length });
+
+        try {
+          const { data, error } = await supabase.functions.invoke('geocode-address', {
+            body: {
+              address: company.address,
+              parroquia: company.parroquia
+            }
+          });
+
+          if (error) throw error;
+
+          if (data.latitude && data.longitude) {
+            const { error: updateError } = await supabase
+              .from('companies')
+              .update({
+                latitude: data.latitude,
+                longitude: data.longitude
+              })
+              .eq('id', company.id);
+
+            if (updateError) throw updateError;
+            successCount++;
+          } else {
+            failCount++;
+          }
+        } catch (error) {
+          console.error(`Error geocoding company ${company.name}:`, error);
+          failCount++;
+        }
+
+        // Pequeña pausa entre solicitudes para no sobrecargar el servicio
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
+      toast.success(`Geocodificación completada: ${successCount} exitosas, ${failCount} fallidas`);
+      await fetchData();
+    } catch (error: any) {
+      console.error('Error in bulk geocoding:', error);
+      toast.error('Error en el proceso de geocodificación masiva');
+    } finally {
+      setGeocoding(false);
+      setGeocodingProgress({ current: 0, total: 0 });
+    }
+  };
+
 
   return (
     <Card>
@@ -377,6 +450,14 @@ export function CompaniesManager() {
             <CardDescription>{t('companyForm.title')}</CardDescription>
           </div>
           <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={handleBulkGeocode}
+              disabled={geocoding}
+            >
+              <MapPin className="mr-2 h-4 w-4" />
+              {geocoding ? `Geocodificando ${geocodingProgress.current}/${geocodingProgress.total}...` : 'Geocodificar Empresas'}
+            </Button>
             <Button variant="outline" onClick={() => setImporterOpen(true)}>
               <Upload className="mr-2 h-4 w-4" />
               {t('companyForm.importExcel')}
