@@ -348,6 +348,59 @@ export type Database = {
           },
         ]
       }
+      company_bank_affiliations: {
+        Row: {
+          account_number: string | null
+          active: boolean | null
+          affiliation_type: string | null
+          bank_code: string | null
+          bank_name: string
+          company_id: string
+          created_at: string
+          id: string
+          is_primary: boolean | null
+          notes: string | null
+          priority_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          account_number?: string | null
+          active?: boolean | null
+          affiliation_type?: string | null
+          bank_code?: string | null
+          bank_name: string
+          company_id: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean | null
+          notes?: string | null
+          priority_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          account_number?: string | null
+          active?: boolean | null
+          affiliation_type?: string | null
+          bank_code?: string | null
+          bank_name?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean | null
+          notes?: string | null
+          priority_order?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_company"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_contacts: {
         Row: {
           company_id: string
@@ -518,6 +571,59 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_tpv_terminals: {
+        Row: {
+          commission_rate: number | null
+          company_id: string
+          created_at: string
+          id: string
+          installation_date: string | null
+          monthly_transactions: number | null
+          monthly_volume: number | null
+          notes: string | null
+          provider: string
+          status: string | null
+          terminal_id: string
+          updated_at: string
+        }
+        Insert: {
+          commission_rate?: number | null
+          company_id: string
+          created_at?: string
+          id?: string
+          installation_date?: string | null
+          monthly_transactions?: number | null
+          monthly_volume?: number | null
+          notes?: string | null
+          provider: string
+          status?: string | null
+          terminal_id: string
+          updated_at?: string
+        }
+        Update: {
+          commission_rate?: number | null
+          company_id?: string
+          created_at?: string
+          id?: string
+          installation_date?: string | null
+          monthly_transactions?: number | null
+          monthly_volume?: number | null
+          notes?: string | null
+          provider?: string
+          status?: string | null
+          terminal_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_company_tpv"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]
