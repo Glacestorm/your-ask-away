@@ -948,6 +948,8 @@ export function MapContainer({
                   isPersistent = false;
                 }, 200);
               }
+              // Clear selection when closing
+              onSelectCompany(null);
               return;
             }
 
@@ -964,6 +966,9 @@ export function MapContainer({
 
             // Remove hover tooltip
             hoverPopup.remove();
+
+            // ✅ FIX: Select company immediately when clicking marker
+            onSelectCompany(company);
 
             // Create new persistent popup
             const persistentPopup = new maplibregl.Popup({
@@ -988,7 +993,7 @@ export function MapContainer({
                   persistentPopup.remove();
                   persistentPopupRef.current = null;
                   isPersistent = false;
-                  onSelectCompany(company);
+                  // Company is already selected, just keep selection
                 });
               }
             }
