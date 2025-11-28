@@ -655,6 +655,17 @@ export default {
   'gestor.dashboard.goals.history.goalsByMetric': 'Objectius per Tipus de Mètrica',
   'gestor.dashboard.goals.history.completedGoalsList': 'Llista d\'Objectius Completats',
   'gestor.dashboard.goals.history.finalValue': 'Valor Final',
+  'gestor.dashboard.goals.history.benchmarkTitle': 'Comparació amb Equip',
+  'gestor.dashboard.goals.history.benchmarkDescription': 'Compara el teu rendiment amb les mitjanes de la teva oficina i equip',
+  'gestor.dashboard.goals.history.personalAverage': 'La Meva Mitjana',
+  'gestor.dashboard.goals.history.officeAverage': 'Mitjana Oficina',
+  'gestor.dashboard.goals.history.teamAverage': 'Mitjana Equip',
+  'gestor.dashboard.goals.history.officeGoals': 'objectius d\'oficina',
+  'gestor.dashboard.goals.history.teamGoals': 'objectius d\'equip',
+  'gestor.dashboard.goals.history.equalPerformance': 'Mateix rendiment',
+  'gestor.dashboard.goals.history.personal': 'Personal',
+  'gestor.dashboard.goals.history.office': 'Oficina',
+  'gestor.dashboard.goals.history.team': 'Equip',
   
   // Date Range Filter
   'dateFilter.title': 'Filtres de Període',

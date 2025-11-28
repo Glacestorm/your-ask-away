@@ -655,6 +655,17 @@ export default {
   'gestor.dashboard.goals.history.goalsByMetric': 'Goals by Metric Type',
   'gestor.dashboard.goals.history.completedGoalsList': 'Completed Goals List',
   'gestor.dashboard.goals.history.finalValue': 'Final Value',
+  'gestor.dashboard.goals.history.benchmarkTitle': 'Team Comparison',
+  'gestor.dashboard.goals.history.benchmarkDescription': 'Compare your performance with office and team averages',
+  'gestor.dashboard.goals.history.personalAverage': 'My Average',
+  'gestor.dashboard.goals.history.officeAverage': 'Office Average',
+  'gestor.dashboard.goals.history.teamAverage': 'Team Average',
+  'gestor.dashboard.goals.history.officeGoals': 'office goals',
+  'gestor.dashboard.goals.history.teamGoals': 'team goals',
+  'gestor.dashboard.goals.history.equalPerformance': 'Equal performance',
+  'gestor.dashboard.goals.history.personal': 'Personal',
+  'gestor.dashboard.goals.history.office': 'Office',
+  'gestor.dashboard.goals.history.team': 'Team',
   
   // Date Range Filter
   'dateFilter.title': 'Period Filters',

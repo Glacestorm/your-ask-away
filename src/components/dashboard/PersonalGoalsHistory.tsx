@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Trophy, TrendingUp, Target, Calendar, Award } from 'lucide-react';
+import { Loader2, Trophy, TrendingUp, Target, Calendar, Award, Users, Building2, TrendingDown } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { format } from 'date-fns';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
@@ -29,6 +29,18 @@ interface GoalStats {
   total_by_metric: Record<string, number>;
 }
 
+interface BenchmarkStats {
+  office_avg_achievement: number;
+  team_avg_achievement: number;
+  office_total_goals: number;
+  team_total_goals: number;
+  metric_comparison: Record<string, {
+    personal: number;
+    office: number;
+    team: number;
+  }>;
+}
+
 interface TrendData {
   month: string;
   achievement: number;
@@ -41,6 +53,7 @@ export function PersonalGoalsHistory() {
   const [goals, setGoals] = useState<CompletedGoal[]>([]);
   const [stats, setStats] = useState<GoalStats | null>(null);
   const [trends, setTrends] = useState<TrendData[]>([]);
+  const [benchmark, setBenchmark] = useState<BenchmarkStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -82,10 +95,136 @@ export function PersonalGoalsHistory() {
       setGoals(goalsWithProgress);
       calculateStats(goalsWithProgress);
       calculateTrends(goalsWithProgress);
+      await fetchBenchmarkData(goalsWithProgress);
     } catch (error: any) {
       console.error('Error fetching completed goals:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchBenchmarkData = async (personalGoals: CompletedGoal[]) => {
+    try {
+      // Get current user's office
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('oficina')
+        .eq('id', user?.id)
+        .single();
+
+      if (!profile?.oficina) return;
+
+      // Fetch office goals (same office, excluding current user)
+      const { data: officeUsers } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('oficina', profile.oficina)
+        .neq('id', user?.id);
+
+      const officeUserIds = officeUsers?.map(u => u.id) || [];
+
+      // Fetch team goals (all gestores excluding current user)
+      const { data: teamUsers } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'user')
+        .neq('user_id', user?.id);
+
+      const teamUserIds = teamUsers?.map(u => u.user_id) || [];
+
+      const today = new Date().toISOString().split('T')[0];
+
+      // Fetch office goals
+      let officeGoals: CompletedGoal[] = [];
+      if (officeUserIds.length > 0) {
+        const { data: officeGoalsData } = await supabase
+          .from('goals')
+          .select('*')
+          .in('created_by', officeUserIds)
+          .lt('period_end', today);
+
+        officeGoals = await Promise.all(
+          (officeGoalsData || []).map(async (goal) => {
+            const finalValue = await calculateFinalValue(goal);
+            return {
+              ...goal,
+              final_value: finalValue,
+              achievement_percentage: goal.target_value > 0 
+                ? Math.round((finalValue / goal.target_value) * 100)
+                : 0
+            };
+          })
+        );
+      }
+
+      // Fetch team goals
+      let teamGoals: CompletedGoal[] = [];
+      if (teamUserIds.length > 0) {
+        const { data: teamGoalsData } = await supabase
+          .from('goals')
+          .select('*')
+          .in('created_by', teamUserIds)
+          .lt('period_end', today);
+
+        teamGoals = await Promise.all(
+          (teamGoalsData || []).map(async (goal) => {
+            const finalValue = await calculateFinalValue(goal);
+            return {
+              ...goal,
+              final_value: finalValue,
+              achievement_percentage: goal.target_value > 0 
+                ? Math.round((finalValue / goal.target_value) * 100)
+                : 0
+            };
+          })
+        );
+      }
+
+      // Calculate averages
+      const officeAvg = officeGoals.length > 0
+        ? officeGoals.reduce((sum, g) => sum + g.achievement_percentage, 0) / officeGoals.length
+        : 0;
+
+      const teamAvg = teamGoals.length > 0
+        ? teamGoals.reduce((sum, g) => sum + g.achievement_percentage, 0) / teamGoals.length
+        : 0;
+
+      // Calculate metric-specific comparisons
+      const metricComparison: Record<string, { personal: number; office: number; team: number }> = {};
+      
+      const allMetrics = new Set([
+        ...personalGoals.map(g => g.metric_type),
+        ...officeGoals.map(g => g.metric_type),
+        ...teamGoals.map(g => g.metric_type)
+      ]);
+
+      allMetrics.forEach(metric => {
+        const personalMetricGoals = personalGoals.filter(g => g.metric_type === metric);
+        const officeMetricGoals = officeGoals.filter(g => g.metric_type === metric);
+        const teamMetricGoals = teamGoals.filter(g => g.metric_type === metric);
+
+        metricComparison[metric] = {
+          personal: personalMetricGoals.length > 0
+            ? personalMetricGoals.reduce((sum, g) => sum + g.achievement_percentage, 0) / personalMetricGoals.length
+            : 0,
+          office: officeMetricGoals.length > 0
+            ? officeMetricGoals.reduce((sum, g) => sum + g.achievement_percentage, 0) / officeMetricGoals.length
+            : 0,
+          team: teamMetricGoals.length > 0
+            ? teamMetricGoals.reduce((sum, g) => sum + g.achievement_percentage, 0) / teamMetricGoals.length
+            : 0
+        };
+      });
+
+      setBenchmark({
+        office_avg_achievement: officeAvg,
+        team_avg_achievement: teamAvg,
+        office_total_goals: officeGoals.length,
+        team_total_goals: teamGoals.length,
+        metric_comparison: metricComparison
+      });
+    } catch (error) {
+      console.error('Error fetching benchmark data:', error);
     }
   };
 
@@ -312,6 +451,120 @@ export function PersonalGoalsHistory() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Benchmark Comparison */}
+      {benchmark && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              {t('gestor.dashboard.goals.history.benchmarkTitle')}
+            </CardTitle>
+            <CardDescription>{t('gestor.dashboard.goals.history.benchmarkDescription')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <Card className="border-2">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Target className="h-4 w-4" />
+                    {t('gestor.dashboard.goals.history.personalAverage')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-primary">{stats.average_achievement.toFixed(0)}%</div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-2">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Building2 className="h-4 w-4" />
+                    {t('gestor.dashboard.goals.history.officeAverage')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{benchmark.office_avg_achievement.toFixed(0)}%</div>
+                  <div className="flex items-center gap-1 text-xs mt-1">
+                    {stats.average_achievement > benchmark.office_avg_achievement ? (
+                      <>
+                        <TrendingUp className="h-3 w-3 text-green-500" />
+                        <span className="text-green-500">
+                          +{(stats.average_achievement - benchmark.office_avg_achievement).toFixed(0)}% vs oficina
+                        </span>
+                      </>
+                    ) : stats.average_achievement < benchmark.office_avg_achievement ? (
+                      <>
+                        <TrendingDown className="h-3 w-3 text-red-500" />
+                        <span className="text-red-500">
+                          {(stats.average_achievement - benchmark.office_avg_achievement).toFixed(0)}% vs oficina
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-muted-foreground">{t('gestor.dashboard.goals.history.equalPerformance')}</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {benchmark.office_total_goals} {t('gestor.dashboard.goals.history.officeGoals')}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-2">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    {t('gestor.dashboard.goals.history.teamAverage')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{benchmark.team_avg_achievement.toFixed(0)}%</div>
+                  <div className="flex items-center gap-1 text-xs mt-1">
+                    {stats.average_achievement > benchmark.team_avg_achievement ? (
+                      <>
+                        <TrendingUp className="h-3 w-3 text-green-500" />
+                        <span className="text-green-500">
+                          +{(stats.average_achievement - benchmark.team_avg_achievement).toFixed(0)}% vs equipo
+                        </span>
+                      </>
+                    ) : stats.average_achievement < benchmark.team_avg_achievement ? (
+                      <>
+                        <TrendingDown className="h-3 w-3 text-red-500" />
+                        <span className="text-red-500">
+                          {(stats.average_achievement - benchmark.team_avg_achievement).toFixed(0)}% vs equipo
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-muted-foreground">{t('gestor.dashboard.goals.history.equalPerformance')}</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {benchmark.team_total_goals} {t('gestor.dashboard.goals.history.teamGoals')}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={Object.keys(benchmark.metric_comparison).map(metric => ({
+                metric: getMetricLabel(metric),
+                personal: benchmark.metric_comparison[metric].personal,
+                office: benchmark.metric_comparison[metric].office,
+                team: benchmark.metric_comparison[metric].team
+              }))}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="metric" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="personal" fill="hsl(var(--primary))" name={t('gestor.dashboard.goals.history.personal')} />
+                <Bar dataKey="office" fill="hsl(var(--secondary))" name={t('gestor.dashboard.goals.history.office')} />
+                <Bar dataKey="team" fill="hsl(var(--accent))" name={t('gestor.dashboard.goals.history.team')} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Trends Chart */}
       {trends.length > 0 && (
