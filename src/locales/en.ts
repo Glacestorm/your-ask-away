@@ -580,6 +580,17 @@ export default {
   'gestor.dashboard.topCompaniesDesc': 'Top 10 companies by linkage level',
   'gestor.dashboard.vinculacion': 'Linkage',
   'gestor.dashboard.visits': 'Visits',
+  'gestor.dashboard.filters': 'Filters',
+  'gestor.dashboard.filtersDesc': 'Filter data by different criteria',
+  'gestor.dashboard.clearFilters': 'Clear Filters',
+  'gestor.dashboard.showFilters': 'Show Advanced Filters',
+  'gestor.dashboard.hideFilters': 'Hide Filters',
+  'gestor.dashboard.dateRange': 'Date Range',
+  'gestor.dashboard.filterByProducts': 'Filter by Products',
+  'gestor.dashboard.vinculacionRange': 'Linkage Range',
+  'gestor.dashboard.minVinculacion': 'Minimum',
+  'gestor.dashboard.maxVinculacion': 'Maximum',
+  'gestor.dashboard.vinculacionRangeDesc': 'Showing companies with linkage between',
   
   // Date Range Filter
   'dateFilter.title': 'Period Filters',

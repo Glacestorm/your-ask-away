@@ -3,14 +3,20 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { Activity, Target, Building2, Package } from 'lucide-react';
+import { Activity, Target, Building2, Package, Filter, X } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
 import { DateRangeFilter } from '@/components/dashboard/DateRangeFilter';
 import { DateRange } from 'react-day-picker';
-import { subMonths, format, startOfMonth, endOfMonth } from 'date-fns';
+import { subMonths, format } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface GestorStats {
   totalVisits: number;
@@ -67,12 +73,59 @@ export function GestorDashboard() {
   const [resultDistribution, setResultDistribution] = useState<ResultDistribution[]>([]);
   const [topProducts, setTopProducts] = useState<ProductCount[]>([]);
   const [topCompanies, setTopCompanies] = useState<TopCompany[]>([]);
+  
+  // Filtros avanzados
+  const [availableProducts, setAvailableProducts] = useState<string[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [minVinculacion, setMinVinculacion] = useState<number>(0);
+  const [maxVinculacion, setMaxVinculacion] = useState<number>(100);
+  const [showFilters, setShowFilters] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      loadAvailableProducts();
+    }
+  }, [user]);
 
   useEffect(() => {
     if (user && dateRange?.from && dateRange?.to) {
       fetchData();
     }
-  }, [user, dateRange]);
+  }, [user, dateRange, selectedProducts, minVinculacion, maxVinculacion]);
+
+  const loadAvailableProducts = async () => {
+    if (!user) return;
+    
+    try {
+      const { data: products } = await supabase
+        .from('products')
+        .select('name')
+        .eq('active', true)
+        .order('name');
+      
+      if (products) {
+        setAvailableProducts(products.map(p => p.name));
+      }
+    } catch (error) {
+      console.error('Error loading products:', error);
+    }
+  };
+
+  const toggleProductFilter = (product: string) => {
+    setSelectedProducts(prev => 
+      prev.includes(product) 
+        ? prev.filter(p => p !== product)
+        : [...prev, product]
+    );
+  };
+
+  const clearFilters = () => {
+    setSelectedProducts([]);
+    setMinVinculacion(0);
+    setMaxVinculacion(100);
+  };
+
+  const hasActiveFilters = selectedProducts.length > 0 || minVinculacion > 0 || maxVinculacion < 100;
 
   const fetchData = async () => {
     if (!user) return;
@@ -84,15 +137,32 @@ export function GestorDashboard() {
       const toDate = format(dateRange!.to!, 'yyyy-MM-dd');
 
       // Obtener visitas del gestor en el período
-      const { data: visits, error: visitsError } = await supabase
+      const { data: allVisits, error: visitsError } = await supabase
         .from('visits')
-        .select('*, companies(name)')
+        .select('*, companies(name, vinculacion_entidad_1)')
         .eq('gestor_id', user.id)
         .gte('visit_date', fromDate)
         .lte('visit_date', toDate)
         .order('visit_date', { ascending: false });
 
       if (visitsError) throw visitsError;
+
+      // Aplicar filtros adicionales
+      let visits = allVisits || [];
+
+      // Filtrar por productos seleccionados
+      if (selectedProducts.length > 0) {
+        visits = visits.filter(visit => {
+          if (!visit.productos_ofrecidos || !Array.isArray(visit.productos_ofrecidos)) return false;
+          return visit.productos_ofrecidos.some(p => selectedProducts.includes(p));
+        });
+      }
+
+      // Filtrar por rango de vinculación
+      visits = visits.filter(visit => {
+        const vinculacion = visit.companies?.vinculacion_entidad_1 || 0;
+        return vinculacion >= minVinculacion && vinculacion <= maxVinculacion;
+      });
 
       const totalVisits = visits?.length || 0;
       const successfulVisits = visits?.filter(v => v.result === 'Exitosa').length || 0;
@@ -189,17 +259,19 @@ export function GestorDashboard() {
         .slice(0, 10);
       setTopProducts(topProductsData);
 
-      // Empresas con mayor vinculación
-      const { data: companies, error: companiesError } = await supabase
+      // Empresas con mayor vinculación (aplicar filtro de rango)
+      const { data: allCompanies, error: companiesError } = await supabase
         .from('companies')
         .select('name, vinculacion_entidad_1, vinculacion_entidad_2, vinculacion_entidad_3')
         .eq('gestor_id', user.id)
+        .gte('vinculacion_entidad_1', minVinculacion)
+        .lte('vinculacion_entidad_1', maxVinculacion)
         .order('vinculacion_entidad_1', { ascending: false, nullsFirst: false })
         .limit(10);
 
       if (companiesError) throw companiesError;
 
-      const topCompaniesData: TopCompany[] = (companies || []).map(c => ({
+      const topCompaniesData: TopCompany[] = (allCompanies || []).map(c => ({
         name: c.name,
         vinculacion: c.vinculacion_entidad_1 || 0
       }));
@@ -245,11 +317,116 @@ export function GestorDashboard() {
         </CardHeader>
       </Card>
 
-      {/* Filtro de período */}
-      <DateRangeFilter 
-        dateRange={dateRange} 
-        onDateRangeChange={setDateRange}
-      />
+      {/* Filtros */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Filter className="h-5 w-5" />
+                {t('gestor.dashboard.filters')}
+              </CardTitle>
+              <CardDescription>{t('gestor.dashboard.filtersDesc')}</CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              {hasActiveFilters && (
+                <Button variant="ghost" size="sm" onClick={clearFilters}>
+                  <X className="h-4 w-4 mr-2" />
+                  {t('gestor.dashboard.clearFilters')}
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowFilters(!showFilters)}
+              >
+                {showFilters ? t('gestor.dashboard.hideFilters') : t('gestor.dashboard.showFilters')}
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Filtro de fecha */}
+          <div>
+            <Label>{t('gestor.dashboard.dateRange')}</Label>
+            <DateRangeFilter 
+              dateRange={dateRange} 
+              onDateRangeChange={setDateRange}
+            />
+          </div>
+
+          {showFilters && (
+            <>
+              {/* Filtro de productos */}
+              <div className="space-y-2">
+                <Label>{t('gestor.dashboard.filterByProducts')}</Label>
+                <ScrollArea className="h-32 border rounded-md p-3">
+                  <div className="space-y-2">
+                    {availableProducts.map(product => (
+                      <div key={product} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`product-${product}`}
+                          checked={selectedProducts.includes(product)}
+                          onCheckedChange={() => toggleProductFilter(product)}
+                        />
+                        <label
+                          htmlFor={`product-${product}`}
+                          className="text-sm cursor-pointer"
+                        >
+                          {product}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+                {selectedProducts.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {selectedProducts.map(product => (
+                      <Badge key={product} variant="secondary" className="text-xs">
+                        {product}
+                        <X
+                          className="h-3 w-3 ml-1 cursor-pointer"
+                          onClick={() => toggleProductFilter(product)}
+                        />
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Filtro de rango de vinculación */}
+              <div className="space-y-2">
+                <Label>{t('gestor.dashboard.vinculacionRange')}</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">{t('gestor.dashboard.minVinculacion')}</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={minVinculacion}
+                      onChange={(e) => setMinVinculacion(Math.max(0, Math.min(100, Number(e.target.value))))}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">{t('gestor.dashboard.maxVinculacion')}</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={maxVinculacion}
+                      onChange={(e) => setMaxVinculacion(Math.max(0, Math.min(100, Number(e.target.value))))}
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {t('gestor.dashboard.vinculacionRangeDesc')}: {minVinculacion}% - {maxVinculacion}%
+                </p>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       {/* KPIs Personales */}
       <div className="grid gap-4 md:grid-cols-4">

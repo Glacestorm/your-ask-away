@@ -577,6 +577,17 @@ export default {
   'gestor.dashboard.topCompaniesDesc': 'Top 10 des entreprises par niveau d\'affiliation',
   'gestor.dashboard.vinculacion': 'Affiliation',
   'gestor.dashboard.visits': 'Visites',
+  'gestor.dashboard.filters': 'Filtres',
+  'gestor.dashboard.filtersDesc': 'Filtrer les données selon différents critères',
+  'gestor.dashboard.clearFilters': 'Effacer les Filtres',
+  'gestor.dashboard.showFilters': 'Afficher les Filtres Avancés',
+  'gestor.dashboard.hideFilters': 'Masquer les Filtres',
+  'gestor.dashboard.dateRange': 'Plage de Dates',
+  'gestor.dashboard.filterByProducts': 'Filtrer par Produits',
+  'gestor.dashboard.vinculacionRange': 'Plage d\'Affiliation',
+  'gestor.dashboard.minVinculacion': 'Minimum',
+  'gestor.dashboard.maxVinculacion': 'Maximum',
+  'gestor.dashboard.vinculacionRangeDesc': 'Affichage des entreprises avec affiliation entre',
   
   // Date Range Filter
   'dateFilter.title': 'Filtres de Période',
