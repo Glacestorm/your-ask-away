@@ -33,6 +33,21 @@ interface RecentVisit {
   notes: string;
 }
 
+interface ResultDistribution {
+  result: string;
+  count: number;
+}
+
+interface ProductCount {
+  product: string;
+  count: number;
+}
+
+interface TopCompany {
+  name: string;
+  vinculacion: number;
+}
+
 export function GestorDashboard() {
   const { t } = useLanguage();
   const { user } = useAuth();
@@ -49,6 +64,9 @@ export function GestorDashboard() {
   });
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
   const [recentVisits, setRecentVisits] = useState<RecentVisit[]>([]);
+  const [resultDistribution, setResultDistribution] = useState<ResultDistribution[]>([]);
+  const [topProducts, setTopProducts] = useState<ProductCount[]>([]);
+  const [topCompanies, setTopCompanies] = useState<TopCompany[]>([]);
 
   useEffect(() => {
     if (user && dateRange?.from && dateRange?.to) {
@@ -143,6 +161,49 @@ export function GestorDashboard() {
       }));
 
       setRecentVisits(recentVisitsData);
+
+      // Distribución de visitas por resultado
+      const resultsMap = new Map<string, number>();
+      visits?.forEach(visit => {
+        const result = visit.result || 'Sin resultado';
+        resultsMap.set(result, (resultsMap.get(result) || 0) + 1);
+      });
+      const resultDistData: ResultDistribution[] = Array.from(resultsMap.entries()).map(([result, count]) => ({
+        result,
+        count
+      }));
+      setResultDistribution(resultDistData);
+
+      // Productos más ofrecidos
+      const productsMap = new Map<string, number>();
+      visits?.forEach(visit => {
+        if (visit.productos_ofrecidos && Array.isArray(visit.productos_ofrecidos)) {
+          visit.productos_ofrecidos.forEach(product => {
+            productsMap.set(product, (productsMap.get(product) || 0) + 1);
+          });
+        }
+      });
+      const topProductsData: ProductCount[] = Array.from(productsMap.entries())
+        .map(([product, count]) => ({ product, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10);
+      setTopProducts(topProductsData);
+
+      // Empresas con mayor vinculación
+      const { data: companies, error: companiesError } = await supabase
+        .from('companies')
+        .select('name, vinculacion_entidad_1, vinculacion_entidad_2, vinculacion_entidad_3')
+        .eq('gestor_id', user.id)
+        .order('vinculacion_entidad_1', { ascending: false, nullsFirst: false })
+        .limit(10);
+
+      if (companiesError) throw companiesError;
+
+      const topCompaniesData: TopCompany[] = (companies || []).map(c => ({
+        name: c.name,
+        vinculacion: c.vinculacion_entidad_1 || 0
+      }));
+      setTopCompanies(topCompaniesData);
 
       setLoading(false);
     } catch (error) {
@@ -268,6 +329,81 @@ export function GestorDashboard() {
                   name={t('gestor.dashboard.successfulVisits')}
                 />
               </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex h-[300px] items-center justify-center text-muted-foreground">
+              {t('director.noData')}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Distribución de visitas por resultado */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('gestor.dashboard.resultDistribution')}</CardTitle>
+          <CardDescription>{t('gestor.dashboard.resultDistributionDesc')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {resultDistribution.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={resultDistribution}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="result" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="count" fill="hsl(var(--chart-1))" name={t('gestor.dashboard.visits')} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex h-[300px] items-center justify-center text-muted-foreground">
+              {t('director.noData')}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Productos más ofrecidos */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('gestor.dashboard.topProducts')}</CardTitle>
+          <CardDescription>{t('gestor.dashboard.topProductsDesc')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {topProducts.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={topProducts} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis type="number" />
+                <YAxis dataKey="product" type="category" width={120} />
+                <Tooltip />
+                <Bar dataKey="count" fill="hsl(var(--chart-2))" name={t('gestor.dashboard.timesOffered')} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex h-[300px] items-center justify-center text-muted-foreground">
+              {t('director.noData')}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Empresas con mayor vinculación */}
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('gestor.dashboard.topCompanies')}</CardTitle>
+          <CardDescription>{t('gestor.dashboard.topCompaniesDesc')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {topCompanies.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={topCompanies} layout="vertical">
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis type="number" />
+                <YAxis dataKey="name" type="category" width={150} />
+                <Tooltip />
+                <Bar dataKey="vinculacion" fill="hsl(var(--chart-3))" name={t('gestor.dashboard.vinculacion')} />
+              </BarChart>
             </ResponsiveContainer>
           ) : (
             <div className="flex h-[300px] items-center justify-center text-muted-foreground">
