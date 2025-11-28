@@ -571,6 +571,15 @@ export default {
   'gestor.dashboard.result': 'Resultat',
   'gestor.dashboard.notes': 'Notes',
   'gestor.dashboard.successfulVisits': 'Visites Exitoses',
+  'gestor.dashboard.resultDistribution': 'Distribució per Resultat',
+  'gestor.dashboard.resultDistributionDesc': 'Quantitat de visites segons el seu resultat',
+  'gestor.dashboard.topProducts': 'Productes Més Oferts',
+  'gestor.dashboard.topProductsDesc': 'Top 10 productes oferts en visites',
+  'gestor.dashboard.timesOffered': 'Vegades ofert',
+  'gestor.dashboard.topCompanies': 'Empreses amb Major Vinculació',
+  'gestor.dashboard.topCompaniesDesc': 'Top 10 empreses per nivell de vinculació',
+  'gestor.dashboard.vinculacion': 'Vinculació',
+  'gestor.dashboard.visits': 'Visites',
   
   // Date Range Filter
   'dateFilter.title': 'Filtres de Període',

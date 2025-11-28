@@ -571,6 +571,15 @@ export default {
   'gestor.dashboard.result': 'Resultado',
   'gestor.dashboard.notes': 'Notas',
   'gestor.dashboard.successfulVisits': 'Visitas Exitosas',
+  'gestor.dashboard.resultDistribution': 'Distribución por Resultado',
+  'gestor.dashboard.resultDistributionDesc': 'Cantidad de visitas según su resultado',
+  'gestor.dashboard.topProducts': 'Productos Más Ofrecidos',
+  'gestor.dashboard.topProductsDesc': 'Top 10 productos ofrecidos en visitas',
+  'gestor.dashboard.timesOffered': 'Veces ofrecido',
+  'gestor.dashboard.topCompanies': 'Empresas con Mayor Vinculación',
+  'gestor.dashboard.topCompaniesDesc': 'Top 10 empresas por nivel de vinculación',
+  'gestor.dashboard.vinculacion': 'Vinculación',
+  'gestor.dashboard.visits': 'Visitas',
   
   // Date Range Filter
   'dateFilter.title': 'Filtros de Período',

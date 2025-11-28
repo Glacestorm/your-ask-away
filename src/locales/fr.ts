@@ -568,6 +568,15 @@ export default {
   'gestor.dashboard.result': 'Résultat',
   'gestor.dashboard.notes': 'Notes',
   'gestor.dashboard.successfulVisits': 'Visites Réussies',
+  'gestor.dashboard.resultDistribution': 'Distribution par Résultat',
+  'gestor.dashboard.resultDistributionDesc': 'Nombre de visites par résultat',
+  'gestor.dashboard.topProducts': 'Produits les Plus Proposés',
+  'gestor.dashboard.topProductsDesc': 'Top 10 des produits proposés lors des visites',
+  'gestor.dashboard.timesOffered': 'Fois proposé',
+  'gestor.dashboard.topCompanies': 'Entreprises avec Plus Grande Affiliation',
+  'gestor.dashboard.topCompaniesDesc': 'Top 10 des entreprises par niveau d\'affiliation',
+  'gestor.dashboard.vinculacion': 'Affiliation',
+  'gestor.dashboard.visits': 'Visites',
   
   // Date Range Filter
   'dateFilter.title': 'Filtres de Période',
