@@ -580,6 +580,17 @@ export default {
   'gestor.dashboard.topCompaniesDesc': 'Top 10 empreses per nivell de vinculació',
   'gestor.dashboard.vinculacion': 'Vinculació',
   'gestor.dashboard.visits': 'Visites',
+  'gestor.dashboard.filters': 'Filtres',
+  'gestor.dashboard.filtersDesc': 'Filtra les dades segons diferents criteris',
+  'gestor.dashboard.clearFilters': 'Netejar Filtres',
+  'gestor.dashboard.showFilters': 'Mostrar Filtres Avançats',
+  'gestor.dashboard.hideFilters': 'Amagar Filtres',
+  'gestor.dashboard.dateRange': 'Rang de Dates',
+  'gestor.dashboard.filterByProducts': 'Filtrar per Productes',
+  'gestor.dashboard.vinculacionRange': 'Rang de Vinculació',
+  'gestor.dashboard.minVinculacion': 'Mínim',
+  'gestor.dashboard.maxVinculacion': 'Màxim',
+  'gestor.dashboard.vinculacionRangeDesc': 'Mostrant empreses amb vinculació entre',
   
   // Date Range Filter
   'dateFilter.title': 'Filtres de Període',
