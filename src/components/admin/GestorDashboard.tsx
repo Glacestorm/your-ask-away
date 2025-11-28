@@ -19,6 +19,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PersonalGoalsTracker } from '@/components/dashboard/PersonalGoalsTracker';
+import { PersonalGoalsHistory } from '@/components/dashboard/PersonalGoalsHistory';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface GestorStats {
@@ -458,8 +459,9 @@ export function GestorDashboard() {
   return (
     <Tabs defaultValue="overview" className="space-y-6">
       <TabsList className="mb-6">
-        <TabsTrigger value="overview">{t('gestorDashboard.tabs.overview')}</TabsTrigger>
-        <TabsTrigger value="goals">{t('gestorDashboard.tabs.goals')}</TabsTrigger>
+        <TabsTrigger value="overview">{t('gestor.dashboard.tabs.overview')}</TabsTrigger>
+        <TabsTrigger value="goals">{t('gestor.dashboard.tabs.goals')}</TabsTrigger>
+        <TabsTrigger value="history">{t('gestor.dashboard.tabs.history')}</TabsTrigger>
       </TabsList>
 
       <TabsContent value="overview" className="space-y-6">
@@ -873,6 +875,10 @@ export function GestorDashboard() {
 
       <TabsContent value="goals">
         <PersonalGoalsTracker />
+      </TabsContent>
+
+      <TabsContent value="history">
+        <PersonalGoalsHistory />
       </TabsContent>
     </Tabs>
   );
