@@ -588,6 +588,16 @@ export default {
   'gestor.dashboard.minVinculacion': 'Minimum',
   'gestor.dashboard.maxVinculacion': 'Maximum',
   'gestor.dashboard.vinculacionRangeDesc': 'Affichage des entreprises avec affiliation entre',
+  'gestor.dashboard.periodComparison': 'Comparaison de Périodes',
+  'gestor.dashboard.selectComparison': 'Sélectionner période de comparaison',
+  'gestor.dashboard.noComparison': 'Sans comparaison',
+  'gestor.dashboard.previousPeriod': 'Période précédente',
+  'gestor.dashboard.sameLastYear': 'Même mois année dernière',
+  'gestor.dashboard.previous6Months': '6 mois précédents',
+  'gestor.dashboard.comparingWith': 'En comparaison avec',
+  'gestor.dashboard.comparison': 'Comparaison',
+  'gestor.dashboard.currentPeriod': 'Période actuelle',
+  'gestor.dashboard.comparisonPeriod': 'Période de comparaison',
   
   // Date Range Filter
   'dateFilter.title': 'Filtres de Période',

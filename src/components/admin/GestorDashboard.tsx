@@ -2,14 +2,14 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
-import { Activity, Target, Building2, Package, Filter, X } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts';
+import { Activity, Target, Building2, Package, Filter, X, GitCompare } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
 import { DateRangeFilter } from '@/components/dashboard/DateRangeFilter';
 import { DateRange } from 'react-day-picker';
-import { subMonths, format } from 'date-fns';
+import { subMonths, format, subYears, startOfMonth, endOfMonth, differenceInMonths } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface GestorStats {
   totalVisits: number;
@@ -29,6 +30,8 @@ interface MonthlyData {
   month: string;
   visits: number;
   successful: number;
+  comparisonVisits?: number;
+  comparisonSuccessful?: number;
 }
 
 interface RecentVisit {
@@ -81,6 +84,17 @@ export function GestorDashboard() {
   const [maxVinculacion, setMaxVinculacion] = useState<number>(100);
   const [showFilters, setShowFilters] = useState(false);
 
+  // Comparación de períodos
+  const [comparisonPeriod, setComparisonPeriod] = useState<string>('none');
+  const [comparisonDateRange, setComparisonDateRange] = useState<DateRange | undefined>();
+  const [showComparison, setShowComparison] = useState(false);
+  const [comparisonStats, setComparisonStats] = useState<GestorStats>({
+    totalVisits: 0,
+    successRate: 0,
+    totalCompanies: 0,
+    totalProducts: 0
+  });
+
   useEffect(() => {
     if (user) {
       loadAvailableProducts();
@@ -91,7 +105,16 @@ export function GestorDashboard() {
     if (user && dateRange?.from && dateRange?.to) {
       fetchData();
     }
-  }, [user, dateRange, selectedProducts, minVinculacion, maxVinculacion]);
+  }, [user, dateRange, selectedProducts, minVinculacion, maxVinculacion, comparisonPeriod]);
+
+  useEffect(() => {
+    if (comparisonPeriod !== 'none' && dateRange?.from && dateRange?.to) {
+      calculateComparisonPeriod();
+    } else {
+      setComparisonDateRange(undefined);
+      setShowComparison(false);
+    }
+  }, [comparisonPeriod, dateRange]);
 
   const loadAvailableProducts = async () => {
     if (!user) return;
@@ -126,6 +149,34 @@ export function GestorDashboard() {
   };
 
   const hasActiveFilters = selectedProducts.length > 0 || minVinculacion > 0 || maxVinculacion < 100;
+
+  const calculateComparisonPeriod = () => {
+    if (!dateRange?.from || !dateRange?.to) return;
+
+    let compFrom: Date;
+    let compTo: Date;
+
+    switch (comparisonPeriod) {
+      case 'previous_month':
+        const monthsDiff = differenceInMonths(dateRange.to, dateRange.from);
+        compFrom = subMonths(dateRange.from, monthsDiff + 1);
+        compTo = subMonths(dateRange.to, monthsDiff + 1);
+        break;
+      case 'same_last_year':
+        compFrom = subYears(dateRange.from, 1);
+        compTo = subYears(dateRange.to, 1);
+        break;
+      case 'previous_6_months':
+        compFrom = subMonths(dateRange.from, 6);
+        compTo = subMonths(dateRange.to, 6);
+        break;
+      default:
+        return;
+    }
+
+    setComparisonDateRange({ from: compFrom, to: compTo });
+    setShowComparison(true);
+  };
 
   const fetchData = async () => {
     if (!user) return;
@@ -277,11 +328,108 @@ export function GestorDashboard() {
       }));
       setTopCompanies(topCompaniesData);
 
+      // Obtener datos de comparación si está habilitado
+      if (showComparison && comparisonDateRange?.from && comparisonDateRange?.to) {
+        await fetchComparisonData();
+      }
+
       setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Error al cargar los datos');
       setLoading(false);
+    }
+  };
+
+  const fetchComparisonData = async () => {
+    if (!user || !comparisonDateRange?.from || !comparisonDateRange?.to) return;
+
+    try {
+      const fromDate = format(comparisonDateRange.from, 'yyyy-MM-dd');
+      const toDate = format(comparisonDateRange.to, 'yyyy-MM-dd');
+
+      // Obtener visitas del período de comparación
+      const { data: allCompVisits, error: compVisitsError } = await supabase
+        .from('visits')
+        .select('*, companies(name, vinculacion_entidad_1)')
+        .eq('gestor_id', user.id)
+        .gte('visit_date', fromDate)
+        .lte('visit_date', toDate)
+        .order('visit_date', { ascending: false });
+
+      if (compVisitsError) throw compVisitsError;
+
+      // Aplicar los mismos filtros
+      let compVisits = allCompVisits || [];
+
+      if (selectedProducts.length > 0) {
+        compVisits = compVisits.filter(visit => {
+          if (!visit.productos_ofrecidos || !Array.isArray(visit.productos_ofrecidos)) return false;
+          return visit.productos_ofrecidos.some(p => selectedProducts.includes(p));
+        });
+      }
+
+      compVisits = compVisits.filter(visit => {
+        const vinculacion = visit.companies?.vinculacion_entidad_1 || 0;
+        return vinculacion >= minVinculacion && vinculacion <= maxVinculacion;
+      });
+
+      const totalCompVisits = compVisits?.length || 0;
+      const successfulCompVisits = compVisits?.filter(v => v.result === 'Exitosa').length || 0;
+      const compSuccessRate = totalCompVisits > 0 ? Math.round((successfulCompVisits / totalCompVisits) * 100) : 0;
+
+      // Productos únicos del período de comparación
+      const compUniqueProducts = new Set<string>();
+      compVisits?.forEach(visit => {
+        if (visit.productos_ofrecidos && Array.isArray(visit.productos_ofrecidos)) {
+          visit.productos_ofrecidos.forEach(p => compUniqueProducts.add(p));
+        }
+      });
+
+      setComparisonStats({
+        totalVisits: totalCompVisits,
+        successRate: compSuccessRate,
+        totalCompanies: stats.totalCompanies, // Same companies
+        totalProducts: compUniqueProducts.size
+      });
+
+      // Agrupar visitas de comparación por mes para el gráfico
+      const compMonthlyMap = new Map<string, { visits: number; successful: number }>();
+      
+      let current = new Date(comparisonDateRange.from);
+      const end = new Date(comparisonDateRange.to);
+      
+      while (current <= end) {
+        const monthKey = format(current, 'yyyy-MM');
+        compMonthlyMap.set(monthKey, { visits: 0, successful: 0 });
+        current = new Date(current.getFullYear(), current.getMonth() + 1, 1);
+      }
+
+      compVisits?.forEach(visit => {
+        const monthKey = format(new Date(visit.visit_date), 'yyyy-MM');
+        if (compMonthlyMap.has(monthKey)) {
+          const data = compMonthlyMap.get(monthKey)!;
+          data.visits++;
+          if (visit.result === 'Exitosa') {
+            data.successful++;
+          }
+          compMonthlyMap.set(monthKey, data);
+        }
+      });
+
+      // Combinar datos mensuales con datos de comparación
+      setMonthlyData(prev => {
+        const compArray = Array.from(compMonthlyMap.entries());
+        return prev.map((item, index) => ({
+          ...item,
+          comparisonVisits: compArray[index]?.[1].visits || 0,
+          comparisonSuccessful: compArray[index]?.[1].successful || 0
+        }));
+      });
+
+    } catch (error) {
+      console.error('Error fetching comparison data:', error);
+      toast.error('Error al cargar datos de comparación');
     }
   };
 
@@ -353,6 +501,30 @@ export function GestorDashboard() {
               dateRange={dateRange} 
               onDateRangeChange={setDateRange}
             />
+          </div>
+
+          {/* Comparación de períodos */}
+          <div className="space-y-2 border-t pt-4">
+            <Label className="flex items-center gap-2">
+              <GitCompare className="h-4 w-4" />
+              {t('gestor.dashboard.periodComparison')}
+            </Label>
+            <Select value={comparisonPeriod} onValueChange={setComparisonPeriod}>
+              <SelectTrigger>
+                <SelectValue placeholder={t('gestor.dashboard.selectComparison')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">{t('gestor.dashboard.noComparison')}</SelectItem>
+                <SelectItem value="previous_month">{t('gestor.dashboard.previousPeriod')}</SelectItem>
+                <SelectItem value="same_last_year">{t('gestor.dashboard.sameLastYear')}</SelectItem>
+                <SelectItem value="previous_6_months">{t('gestor.dashboard.previous6Months')}</SelectItem>
+              </SelectContent>
+            </Select>
+            {showComparison && comparisonDateRange && (
+              <p className="text-xs text-muted-foreground">
+                {t('gestor.dashboard.comparingWith')}: {format(comparisonDateRange.from!, 'dd/MM/yyyy')} - {format(comparisonDateRange.to!, 'dd/MM/yyyy')}
+              </p>
+            )}
           </div>
 
           {showFilters && (
@@ -437,6 +609,18 @@ export function GestorDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalVisits}</div>
+            {showComparison && (
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-xs text-muted-foreground">
+                  {t('gestor.dashboard.comparison')}: {comparisonStats.totalVisits}
+                </span>
+                {stats.totalVisits > comparisonStats.totalVisits ? (
+                  <span className="text-xs text-green-600">↑ {stats.totalVisits - comparisonStats.totalVisits}</span>
+                ) : stats.totalVisits < comparisonStats.totalVisits ? (
+                  <span className="text-xs text-red-600">↓ {comparisonStats.totalVisits - stats.totalVisits}</span>
+                ) : null}
+              </div>
+            )}
             <p className="text-xs text-muted-foreground">
               {t('gestor.dashboard.visitsDesc')}
             </p>
@@ -450,6 +634,18 @@ export function GestorDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.successRate}%</div>
+            {showComparison && (
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-xs text-muted-foreground">
+                  {t('gestor.dashboard.comparison')}: {comparisonStats.successRate}%
+                </span>
+                {stats.successRate > comparisonStats.successRate ? (
+                  <span className="text-xs text-green-600">↑ {stats.successRate - comparisonStats.successRate}%</span>
+                ) : stats.successRate < comparisonStats.successRate ? (
+                  <span className="text-xs text-red-600">↓ {comparisonStats.successRate - stats.successRate}%</span>
+                ) : null}
+              </div>
+            )}
             <p className="text-xs text-muted-foreground">{t('gestor.dashboard.successDesc')}</p>
           </CardContent>
         </Card>
@@ -472,6 +668,13 @@ export function GestorDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalProducts}</div>
+            {showComparison && (
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-xs text-muted-foreground">
+                  {t('gestor.dashboard.comparison')}: {comparisonStats.totalProducts}
+                </span>
+              </div>
+            )}
             <p className="text-xs text-muted-foreground">{t('gestor.dashboard.productsDesc')}</p>
           </CardContent>
         </Card>
@@ -491,20 +694,41 @@ export function GestorDashboard() {
                 <XAxis dataKey="month" />
                 <YAxis />
                 <Tooltip />
+                <Legend />
                 <Line 
                   type="monotone" 
                   dataKey="visits" 
                   stroke="hsl(var(--chart-1))" 
                   strokeWidth={2}
-                  name={t('gestor.dashboard.totalVisits')}
+                  name={t('gestor.dashboard.currentPeriod') + ' - ' + t('gestor.dashboard.totalVisits')}
                 />
                 <Line 
                   type="monotone" 
                   dataKey="successful" 
                   stroke="hsl(var(--chart-2))" 
                   strokeWidth={2}
-                  name={t('gestor.dashboard.successfulVisits')}
+                  name={t('gestor.dashboard.currentPeriod') + ' - ' + t('gestor.dashboard.successfulVisits')}
                 />
+                {showComparison && (
+                  <>
+                    <Line 
+                      type="monotone" 
+                      dataKey="comparisonVisits" 
+                      stroke="hsl(var(--chart-3))" 
+                      strokeWidth={2}
+                      strokeDasharray="5 5"
+                      name={t('gestor.dashboard.comparisonPeriod') + ' - ' + t('gestor.dashboard.totalVisits')}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="comparisonSuccessful" 
+                      stroke="hsl(var(--chart-4))" 
+                      strokeWidth={2}
+                      strokeDasharray="5 5"
+                      name={t('gestor.dashboard.comparisonPeriod') + ' - ' + t('gestor.dashboard.successfulVisits')}
+                    />
+                  </>
+                )}
               </LineChart>
             </ResponsiveContainer>
           ) : (
