@@ -120,6 +120,24 @@ export function AdminSidebar({
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )}
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => onSectionChange('gestor-dashboard')}
+                isActive={isActive('gestor-dashboard')}
+                className="font-semibold py-3 rounded-xl transition-all hover:shadow-md"
+                tooltip={!open ? {
+                  children: t('adminSidebar.gestor'),
+                  className: "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
+                } : undefined}
+              >
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl">
+                  <Users className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
+                  {t('adminSidebar.gestor')}
+                </span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
 

@@ -30,6 +30,7 @@ import { OfficeDirectorDashboard } from '@/components/admin/OfficeDirectorDashbo
 import { CommercialManagerDashboard } from '@/components/admin/CommercialManagerDashboard';
 import { CommercialManagerAudit } from '@/components/admin/CommercialManagerAudit';
 import { ImportHistoryViewer } from '@/components/admin/ImportHistoryViewer';
+import { GestorDashboard } from '@/components/admin/GestorDashboard';
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, loading: authLoading } = useAuth();
   const { t } = useLanguage();
@@ -97,6 +98,8 @@ const Admin = () => {
           );
         }
         return <CommercialManagerAudit />;
+      case 'gestor-dashboard':
+        return <GestorDashboard />;
       case 'health':
         return <SystemHealthMonitor />;
       case 'visits':
