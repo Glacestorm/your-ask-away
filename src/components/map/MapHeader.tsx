@@ -781,29 +781,6 @@ export function MapHeader({
       <div className="flex items-center gap-2">
         <ThemeSelector />
         <LanguageSelector />
-        {isAdmin && (
-          <>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/dashboard')}
-              className="hidden sm:flex"
-            >
-              <BarChart3 className="mr-2 h-4 w-4" />
-              {t('menu.dashboard')}
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/admin')}
-              className="hidden sm:flex"
-            >
-              <Settings className="mr-2 h-4 w-4" />
-              {t('menu.administration')}
-            </Button>
-          </>
-        )}
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -831,27 +808,7 @@ export function MapHeader({
               {t('menu.profile')}
             </DropdownMenuItem>
             
-            {isAdmin && (
-              <>
-                <DropdownMenuItem 
-                  onClick={() => navigate('/dashboard')}
-                  className="sm:hidden"
-                >
-                  <BarChart3 className="mr-2 h-4 w-4" />
-                  {t('menu.dashboard')}
-                </DropdownMenuItem>
-                
-                <DropdownMenuItem 
-                  onClick={() => navigate('/admin')}
-                  className="sm:hidden"
-                >
-                  <Settings className="mr-2 h-4 w-4" />
-                  {t('menu.administration')}
-                </DropdownMenuItem>
-                
-                <DropdownMenuSeparator className="sm:hidden" />
-              </>
-            )}
+            <DropdownMenuSeparator />
             
             <DropdownMenuItem onClick={signOut}>
               <LogOut className="mr-2 h-4 w-4" />
