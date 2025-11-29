@@ -1229,6 +1229,173 @@ export type Database = {
         }
         Relationships: []
       }
+      visit_sheets: {
+        Row: {
+          acciones_acordadas: Json | null
+          actualizacion_kyc: string | null
+          ahorro_inversion_disponible: number | null
+          canal: string | null
+          cargo_contacto: string | null
+          company_id: string
+          created_at: string
+          diagnostico_inicial: Json | null
+          documentacion_pendiente: string | null
+          duracion: number | null
+          ebitda_estimado: number | null
+          email_contacto: string | null
+          endeudamiento_particular: number | null
+          endeudamiento_total: number | null
+          facturacion_anual: number | null
+          fecha: string
+          gestor_id: string
+          hora: string | null
+          id: string
+          ingresos_netos_mensuales: number | null
+          liquidez_disponible: number | null
+          necesidades_detectadas: Json | null
+          nivel_vinculacion_recomendado: string | null
+          notas_gestor: string | null
+          oportunidades_futuras: string | null
+          persona_contacto: string | null
+          potencial_anual_estimado: number | null
+          probabilidad_cierre: number | null
+          productos_servicios: Json | null
+          propuesta_valor: Json | null
+          proxima_cita: string | null
+          proxima_llamada: string | null
+          renovaciones: string | null
+          responsable_seguimiento: string | null
+          revision_cartera: string | null
+          riesgos_cumplimiento: Json | null
+          situacion_laboral: string | null
+          telefono_contacto: string | null
+          tipo_cliente: string | null
+          tipo_visita: string | null
+          tpv_volumen_mensual: number | null
+          updated_at: string
+          visit_id: string
+        }
+        Insert: {
+          acciones_acordadas?: Json | null
+          actualizacion_kyc?: string | null
+          ahorro_inversion_disponible?: number | null
+          canal?: string | null
+          cargo_contacto?: string | null
+          company_id: string
+          created_at?: string
+          diagnostico_inicial?: Json | null
+          documentacion_pendiente?: string | null
+          duracion?: number | null
+          ebitda_estimado?: number | null
+          email_contacto?: string | null
+          endeudamiento_particular?: number | null
+          endeudamiento_total?: number | null
+          facturacion_anual?: number | null
+          fecha: string
+          gestor_id: string
+          hora?: string | null
+          id?: string
+          ingresos_netos_mensuales?: number | null
+          liquidez_disponible?: number | null
+          necesidades_detectadas?: Json | null
+          nivel_vinculacion_recomendado?: string | null
+          notas_gestor?: string | null
+          oportunidades_futuras?: string | null
+          persona_contacto?: string | null
+          potencial_anual_estimado?: number | null
+          probabilidad_cierre?: number | null
+          productos_servicios?: Json | null
+          propuesta_valor?: Json | null
+          proxima_cita?: string | null
+          proxima_llamada?: string | null
+          renovaciones?: string | null
+          responsable_seguimiento?: string | null
+          revision_cartera?: string | null
+          riesgos_cumplimiento?: Json | null
+          situacion_laboral?: string | null
+          telefono_contacto?: string | null
+          tipo_cliente?: string | null
+          tipo_visita?: string | null
+          tpv_volumen_mensual?: number | null
+          updated_at?: string
+          visit_id: string
+        }
+        Update: {
+          acciones_acordadas?: Json | null
+          actualizacion_kyc?: string | null
+          ahorro_inversion_disponible?: number | null
+          canal?: string | null
+          cargo_contacto?: string | null
+          company_id?: string
+          created_at?: string
+          diagnostico_inicial?: Json | null
+          documentacion_pendiente?: string | null
+          duracion?: number | null
+          ebitda_estimado?: number | null
+          email_contacto?: string | null
+          endeudamiento_particular?: number | null
+          endeudamiento_total?: number | null
+          facturacion_anual?: number | null
+          fecha?: string
+          gestor_id?: string
+          hora?: string | null
+          id?: string
+          ingresos_netos_mensuales?: number | null
+          liquidez_disponible?: number | null
+          necesidades_detectadas?: Json | null
+          nivel_vinculacion_recomendado?: string | null
+          notas_gestor?: string | null
+          oportunidades_futuras?: string | null
+          persona_contacto?: string | null
+          potencial_anual_estimado?: number | null
+          probabilidad_cierre?: number | null
+          productos_servicios?: Json | null
+          propuesta_valor?: Json | null
+          proxima_cita?: string | null
+          proxima_llamada?: string | null
+          renovaciones?: string | null
+          responsable_seguimiento?: string | null
+          revision_cartera?: string | null
+          riesgos_cumplimiento?: Json | null
+          situacion_laboral?: string | null
+          telefono_contacto?: string | null
+          tipo_cliente?: string | null
+          tipo_visita?: string | null
+          tpv_volumen_mensual?: number | null
+          updated_at?: string
+          visit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visit_sheets_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visit_sheets_gestor_id_fkey"
+            columns: ["gestor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visit_sheets_responsable_seguimiento_fkey"
+            columns: ["responsable_seguimiento"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visit_sheets_visit_id_fkey"
+            columns: ["visit_id"]
+            isOneToOne: false
+            referencedRelation: "visits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       visits: {
         Row: {
           company_id: string

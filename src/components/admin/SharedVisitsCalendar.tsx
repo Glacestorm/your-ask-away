@@ -6,9 +6,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Users, User, Calendar as CalendarIcon, FileText } from 'lucide-react';
 import { toast } from 'sonner';
+import { VisitSheetForm } from '@/components/visits/VisitSheetForm';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 const locales = {
@@ -59,6 +61,7 @@ export function SharedVisitsCalendar() {
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [sheetDialogOpen, setSheetDialogOpen] = useState(false);
   const [view, setView] = useState<View>('month');
 
   const fetchVisits = useCallback(async () => {
@@ -317,10 +320,37 @@ export function SharedVisitsCalendar() {
                   </div>
                 )}
               </div>
+
+              <div className="pt-4 border-t">
+                <Button 
+                  onClick={() => {
+                    setDialogOpen(false);
+                    setSheetDialogOpen(true);
+                  }}
+                  className="w-full"
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  Ver/Crear Ficha Completa de Visita
+                </Button>
+              </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Visit Sheet Dialog */}
+      {selectedEvent && (
+        <VisitSheetForm
+          visitId={selectedEvent.id}
+          companyId={selectedEvent.resource.company_id}
+          open={sheetDialogOpen}
+          onOpenChange={setSheetDialogOpen}
+          onSaved={() => {
+            toast.success('Ficha de visita guardada');
+            fetchVisits();
+          }}
+        />
+      )}
     </div>
   );
 }
