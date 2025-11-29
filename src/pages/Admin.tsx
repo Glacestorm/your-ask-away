@@ -31,6 +31,7 @@ import { CommercialManagerDashboard } from '@/components/admin/CommercialManager
 import { CommercialManagerAudit } from '@/components/admin/CommercialManagerAudit';
 import { ImportHistoryViewer } from '@/components/admin/ImportHistoryViewer';
 import { GestorDashboard } from '@/components/admin/GestorDashboard';
+import { AuditorDashboard } from '@/components/admin/AuditorDashboard';
 import { AlertsManager } from '@/components/dashboard/AlertsManager';
 import { NotificationPreferences } from '@/components/dashboard/NotificationPreferences';
 import MapView from './MapView';
@@ -104,6 +105,8 @@ const Admin = () => {
         return <CommercialManagerAudit />;
       case 'gestor-dashboard':
         return <GestorDashboard />;
+      case 'audit':
+        return <AuditorDashboard />;
       case 'map':
         return <MapView />;
       case 'health':
@@ -184,7 +187,7 @@ const Admin = () => {
         return <ConceptsManager />;
       case 'map-config':
         return <MapTooltipConfig />;
-      case 'audit':
+      case 'audit-logs':
         return <AuditLogsViewer />;
       case 'import-history':
         return (
