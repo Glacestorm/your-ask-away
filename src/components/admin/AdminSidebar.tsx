@@ -43,6 +43,7 @@ export function AdminSidebar({
     management: false,
     auditor: false,
     config: false,
+    administration: false,
   });
 
   const toggleGroup = (group: string) => {
@@ -333,12 +334,6 @@ export function AdminSidebar({
                          <span className="transition-all duration-300 group-hover:translate-x-1">{t('tpv.title')}</span>
                        </SidebarMenuButton>
                      </SidebarMenuItem>
-                     <SidebarMenuItem>
-                       <SidebarMenuButton onClick={() => onSectionChange('tpv-goals')} isActive={isActive('tpv-goals')} className="group">
-                         <Target className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                         <span className="transition-all duration-300 group-hover:translate-x-1">{t('tpv.goals')}</span>
-                       </SidebarMenuButton>
-                     </SidebarMenuItem>
                   </SidebarMenu>
                 </SidebarGroupContent>
               </CollapsibleContent>
@@ -350,11 +345,6 @@ export function AdminSidebar({
                <SidebarMenuItem>
                  <SidebarMenuButton onClick={() => onSectionChange('tpv')} isActive={isActive('tpv')} tooltip={t('tpv.title')} className="group">
                    <CreditCard className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
-                 </SidebarMenuButton>
-               </SidebarMenuItem>
-               <SidebarMenuItem>
-                 <SidebarMenuButton onClick={() => onSectionChange('tpv-goals')} isActive={isActive('tpv-goals')} tooltip={t('tpv.goals')} className="group">
-                   <Target className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
                  </SidebarMenuButton>
                </SidebarMenuItem>
             </SidebarMenu>
@@ -452,12 +442,6 @@ export function AdminSidebar({
                        </SidebarMenuButton>
                      </SidebarMenuItem>
                      <SidebarMenuItem>
-                       <SidebarMenuButton onClick={() => onSectionChange('products')} isActive={isActive('products')} className="group">
-                         <Package className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                         <span className="transition-all duration-300 group-hover:translate-x-1">{t('productForm.title')}</span>
-                       </SidebarMenuButton>
-                     </SidebarMenuItem>
-                     <SidebarMenuItem>
                        <SidebarMenuButton onClick={() => onSectionChange('users')} isActive={isActive('users')} className="group">
                          <Users className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
                          <span className="transition-all duration-300 group-hover:translate-x-1">{t('admin.users')}</span>
@@ -480,11 +464,6 @@ export function AdminSidebar({
                <SidebarMenuItem>
                  <SidebarMenuButton onClick={() => onSectionChange('companies')} isActive={isActive('companies')} tooltip={t('admin.companies')} className="group">
                    <Building2 className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
-                 </SidebarMenuButton>
-               </SidebarMenuItem>
-               <SidebarMenuItem>
-                 <SidebarMenuButton onClick={() => onSectionChange('products')} isActive={isActive('products')} tooltip={t('productForm.title')} className="group">
-                   <Package className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
                  </SidebarMenuButton>
                </SidebarMenuItem>
                <SidebarMenuItem>
@@ -571,29 +550,75 @@ export function AdminSidebar({
           </SidebarGroup>
         )}
 
-        {/* Administració */}
-        <SidebarGroup className="mt-4">
-          <SidebarMenu className="space-y-2">
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                onClick={() => onSectionChange('users')}
-                isActive={isActive('users')}
-                className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
-                tooltip={!open ? {
-                  children: 'Administració',
-                  className: "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
-                } : undefined}
-              >
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-primary/50 group-hover:rotate-6">
-                  <Settings className="h-5 w-5 text-primary-foreground transition-all duration-300 group-hover:scale-110 group-hover:rotate-90" />
-                </div>
-                <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
-                  Administració
-                </span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
+        {/* Administració - Solo para roles administrativos */}
+        {(isSuperAdmin || isCommercialDirector || isCommercialManager) && (
+          <>
+            {open ? (
+              <Collapsible open={openGroups.administration} onOpenChange={() => toggleGroup('administration')}>
+                <SidebarGroup className="mt-4">
+                  <CollapsibleTrigger asChild>
+                    <SidebarGroupLabel className="cursor-pointer hover:bg-accent/50 rounded-xl p-3 transition-all duration-300 flex items-center gap-2 text-sm font-medium group">
+                      <Settings className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary group-hover:rotate-90" />
+                      <span className="flex-1 transition-all duration-300 group-hover:translate-x-1">Administració</span>
+                      <ChevronRight className={`h-4 w-4 transition-all duration-300 group-hover:text-primary ${openGroups.administration ? 'rotate-90' : ''}`} />
+                    </SidebarGroupLabel>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="transition-all duration-300 data-[state=open]:animate-slide-in data-[state=closed]:animate-slide-out">
+                    <SidebarGroupContent className="mt-2">
+                      <SidebarMenu className="space-y-1">
+                        <SidebarMenuItem>
+                          <SidebarMenuButton 
+                            onClick={() => onSectionChange('products')} 
+                            isActive={isActive('products')}
+                            className="rounded-lg hover:bg-accent/50 transition-all group"
+                          >
+                            <Package className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
+                            <span className="text-sm transition-all duration-300 group-hover:translate-x-1">{t('productForm.title')}</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                          <SidebarMenuButton 
+                            onClick={() => onSectionChange('tpv-goals')} 
+                            isActive={isActive('tpv-goals')}
+                            className="rounded-lg hover:bg-accent/50 transition-all group"
+                          >
+                            <Target className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
+                            <span className="text-sm transition-all duration-300 group-hover:translate-x-1">{t('tpv.goals')}</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      </SidebarMenu>
+                    </SidebarGroupContent>
+                  </CollapsibleContent>
+                </SidebarGroup>
+              </Collapsible>
+            ) : (
+              <SidebarGroup className="mt-4">
+                <SidebarMenu className="space-y-2">
+                  <SidebarMenuItem>
+                    <SidebarMenuButton 
+                      onClick={() => onSectionChange('products')} 
+                      isActive={isActive('products')} 
+                      tooltip={t('productForm.title')}
+                      className="rounded-xl hover:shadow-md transition-all duration-300 group"
+                    >
+                      <Package className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton 
+                      onClick={() => onSectionChange('tpv-goals')} 
+                      isActive={isActive('tpv-goals')} 
+                      tooltip={t('tpv.goals')}
+                      className="rounded-xl hover:shadow-md transition-all duration-300 group"
+                    >
+                      <Target className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroup>
+            )}
+          </>
+        )}
       </SidebarContent>
     </Sidebar>
   );
