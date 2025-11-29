@@ -137,19 +137,47 @@ serve(async (req) => {
                 is_read: false,
               });
 
-              // Si es crítico (1-2 días), también enviar email
-              if (daysUntil <= 2) {
+              // Verificar preferencias de email del usuario antes de enviar
+              if (daysUntil <= 7) {
                 const gestorEmail = (sheet.gestor as any)?.email;
                 if (gestorEmail) {
-                  console.log(`Scheduling email for ${reminder.type} to ${gestorEmail}`);
-                  emailsToSend.push({
-                    to: gestorEmail,
-                    gestorName: gestorName,
-                    companyName: companyName,
-                    reminderType: reminder.type,
-                    reminderDate: reminder.date,
-                    daysUntil: daysUntil,
-                  });
+                  // Obtener preferencias de email del gestor
+                  const { data: emailPrefs } = await supabase
+                    .from('email_reminder_preferences')
+                    .select('email_enabled, urgency_level')
+                    .eq('user_id', sheet.gestor_id)
+                    .maybeSingle();
+
+                  // Determinar si se debe enviar email basado en preferencias
+                  let shouldSendEmail = false;
+                  
+                  if (emailPrefs && emailPrefs.email_enabled) {
+                    if (emailPrefs.urgency_level === 'all') {
+                      // Enviar para todos los recordatorios
+                      shouldSendEmail = true;
+                    } else if (emailPrefs.urgency_level === 'urgent' && daysUntil <= 2) {
+                      // Solo enviar para urgentes (1-2 días)
+                      shouldSendEmail = true;
+                    }
+                    // Si urgency_level === 'disabled', no enviar email
+                  } else if (!emailPrefs) {
+                    // Si no hay preferencias configuradas, comportamiento por defecto: solo urgentes
+                    shouldSendEmail = daysUntil <= 2;
+                  }
+
+                  if (shouldSendEmail) {
+                    console.log(`Scheduling email for ${reminder.type} to ${gestorEmail} (${daysUntil} days)`);
+                    emailsToSend.push({
+                      to: gestorEmail,
+                      gestorName: gestorName,
+                      companyName: companyName,
+                      reminderType: reminder.type,
+                      reminderDate: reminder.date,
+                      daysUntil: daysUntil,
+                    });
+                  } else {
+                    console.log(`Skipping email for ${reminder.type} to ${gestorEmail} based on preferences`);
+                  }
                 }
               }
             }

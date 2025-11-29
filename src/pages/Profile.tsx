@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ArrowLeft, User, Lock, Loader2, Upload, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { EmailReminderPreferences } from '@/components/dashboard/EmailReminderPreferences';
 
 // Validation schemas
 const profileSchema = z.object({
@@ -463,6 +464,9 @@ const Profile = () => {
             </form>
           </CardContent>
         </Card>
+
+        {/* Email Reminder Preferences Card */}
+        <EmailReminderPreferences />
       </div>
     </div>
   );
