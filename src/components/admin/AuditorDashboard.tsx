@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -19,7 +20,9 @@ import {
   CheckCircle,
   XCircle,
   Loader2,
-  Search
+  Search,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -115,10 +118,17 @@ export function AuditorDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterAction, setFilterAction] = useState<string>('all');
   const [filterTable, setFilterTable] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
+  const [totalLogs, setTotalLogs] = useState(0);
 
   useEffect(() => {
     fetchAllData();
   }, []);
+
+  useEffect(() => {
+    fetchFullLogs();
+  }, [currentPage, itemsPerPage]);
 
   const fetchAllData = async () => {
     try {
@@ -297,11 +307,21 @@ export function AuditorDashboard() {
   };
 
   const fetchFullLogs = async () => {
+    // Get total count first
+    const { count, error: countError } = await supabase
+      .from('audit_logs')
+      .select('*', { count: 'exact', head: true });
+
+    if (countError) throw countError;
+    setTotalLogs(count || 0);
+
+    // Fetch paginated data
+    const offset = (currentPage - 1) * itemsPerPage;
     const { data, error } = await supabase
       .from('audit_logs')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(100);
+      .range(offset, offset + itemsPerPage - 1);
 
     if (error) throw error;
     setFullLogs(data || []);
@@ -320,6 +340,27 @@ export function AuditorDashboard() {
 
   const uniqueActions = [...new Set(fullLogs.map(log => log.action))];
   const uniqueTables = [...new Set(fullLogs.map(log => log.table_name))];
+
+  const totalPages = Math.ceil(totalLogs / itemsPerPage);
+  const startItem = (currentPage - 1) * itemsPerPage + 1;
+  const endItem = Math.min(currentPage * itemsPerPage, totalLogs);
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handleItemsPerPageChange = (value: string) => {
+    setItemsPerPage(Number(value));
+    setCurrentPage(1); // Reset to first page when changing items per page
+  };
 
   const getActionIcon = (action: string) => {
     switch (action) {
@@ -797,8 +838,29 @@ export function AuditorDashboard() {
                 </Select>
               </div>
 
-              <div className="text-sm text-muted-foreground">
-                Mostrant {filteredFullLogs.length} de {fullLogs.length} registres
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-muted-foreground">
+                  Mostrant {startItem} - {endItem} de {totalLogs} registres totals
+                  {filteredFullLogs.length !== fullLogs.length && (
+                    <span className="ml-2 text-primary">
+                      ({filteredFullLogs.length} filtrats)
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Registres per pàgina:</span>
+                  <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
+                    <SelectTrigger className="w-20">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="25">25</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                      <SelectItem value="100">100</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <ScrollArea className="h-[600px] rounded-md border">
@@ -871,6 +933,32 @@ export function AuditorDashboard() {
                   )}
                 </div>
               </ScrollArea>
+
+              <div className="flex items-center justify-between pt-4 border-t">
+                <div className="text-sm text-muted-foreground">
+                  Pàgina {currentPage} de {totalPages}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePreviousPage}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    Anterior
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
+                  >
+                    Següent
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
