@@ -3,10 +3,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Trophy, TrendingUp, Target, Calendar, Award, Users, Building2, TrendingDown } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Loader2, Trophy, TrendingUp, Target, Calendar, Award, Users, Building2, TrendingDown, BarChart3 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { format } from 'date-fns';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
+import { PersonalGoalsDetailedAnalysis } from './PersonalGoalsDetailedAnalysis';
 
 interface CompletedGoal {
   id: string;
@@ -397,9 +399,21 @@ export function PersonalGoalsHistory() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <Tabs defaultValue="overview" className="space-y-6">
+      <TabsList className="grid w-full grid-cols-2 max-w-md">
+        <TabsTrigger value="overview" className="flex items-center gap-2">
+          <Trophy className="h-4 w-4" />
+          {t('gestor.dashboard.goals.history.tabs.overview')}
+        </TabsTrigger>
+        <TabsTrigger value="analysis" className="flex items-center gap-2">
+          <BarChart3 className="h-4 w-4" />
+          {t('gestor.dashboard.goals.history.tabs.analysis')}
+        </TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="overview" className="space-y-6">
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -682,6 +696,18 @@ export function PersonalGoalsHistory() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </TabsContent>
+
+      <TabsContent value="analysis" className="space-y-6">
+        {benchmark && (
+          <PersonalGoalsDetailedAnalysis
+            personalAvg={stats.average_achievement}
+            officeAvg={benchmark.office_avg_achievement}
+            teamAvg={benchmark.team_avg_achievement}
+            metricComparison={benchmark.metric_comparison}
+          />
+        )}
+      </TabsContent>
+    </Tabs>
   );
 }
