@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { TrendingUp, Activity, BarChart3, Package, Users, Target, CreditCard, Building2, Settings, Database, Mail, Palette, BookOpen, Map, ChevronRight, FileText, Briefcase, History } from 'lucide-react';
+import { TrendingUp, Activity, BarChart3, Package, Users, Target, CreditCard, Building2, Settings, Database, Mail, Palette, BookOpen, Map, ChevronRight, FileText, Briefcase, History, Bell } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -582,6 +582,26 @@ export function AdminSidebar({
                             <span className="text-sm transition-all duration-300 group-hover:translate-x-1">{t('admin.statusColors')}</span>
                           </SidebarMenuButton>
                         </SidebarMenuItem>
+                        <SidebarMenuItem>
+                          <SidebarMenuButton 
+                            onClick={() => onSectionChange('alerts')} 
+                            isActive={isActive('alerts')}
+                            className="rounded-lg hover:bg-accent/50 transition-all group"
+                          >
+                            <Bell className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
+                            <span className="text-sm transition-all duration-300 group-hover:translate-x-1">Alertes</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                          <SidebarMenuButton 
+                            onClick={() => onSectionChange('notifications')} 
+                            isActive={isActive('notifications')}
+                            className="rounded-lg hover:bg-accent/50 transition-all group"
+                          >
+                            <Settings className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
+                            <span className="text-sm transition-all duration-300 group-hover:translate-x-1">Notificacions</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
                       </SidebarMenu>
                     </SidebarGroupContent>
                   </CollapsibleContent>
@@ -648,6 +668,26 @@ export function AdminSidebar({
                       className="rounded-xl hover:shadow-md transition-all duration-300 group"
                     >
                       <Palette className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary group-hover:rotate-12" />
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton 
+                      onClick={() => onSectionChange('alerts')} 
+                      isActive={isActive('alerts')} 
+                      tooltip="Alertes"
+                      className="rounded-xl hover:shadow-md transition-all duration-300 group"
+                    >
+                      <Bell className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton 
+                      onClick={() => onSectionChange('notifications')} 
+                      isActive={isActive('notifications')} 
+                      tooltip="Notificacions"
+                      className="rounded-xl hover:shadow-md transition-all duration-300 group"
+                    >
+                      <Settings className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>
