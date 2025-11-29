@@ -11,6 +11,7 @@ import { formatCnaeWithDescription } from '@/lib/cnaeDescriptions';
 import { CompanyPhotosManager } from './CompanyPhotosManager';
 import { BankAffiliationsManager } from './BankAffiliationsManager';
 import { TPVTerminalsManager } from './TPVTerminalsManager';
+import { VisitSheetsHistory } from './VisitSheetsHistory';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -392,7 +393,19 @@ export const CompanyDetail = ({ company, onClose }: CompanyDetailProps) => {
           </TabsContent>
 
           {/* Activity Tab - Visits */}
-          <TabsContent value="activity" className="p-3 mt-0">
+          <TabsContent value="activity" className="p-3 space-y-3 mt-0">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-primary" />
+                  Historial de Fichas de Visita
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <VisitSheetsHistory companyId={company.id} />
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
