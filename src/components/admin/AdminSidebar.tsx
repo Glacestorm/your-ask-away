@@ -41,6 +41,7 @@ export function AdminSidebar({
     metrics: true,
     tpv: false,
     management: false,
+    auditor: false,
     config: false,
   });
 
@@ -165,7 +166,7 @@ export function AdminSidebar({
                 isActive={location.pathname === '/dashboard'}
                 className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
                 tooltip={!open ? {
-                  children: 'Tauler',
+                  children: 'Gestor',
                   className: "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
                 } : undefined}
               >
@@ -173,7 +174,7 @@ export function AdminSidebar({
                   <BarChart3 className="h-5 w-5 text-primary-foreground transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3" />
                 </div>
                 <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
-                  Tauler
+                  Gestor
                 </span>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -372,6 +373,76 @@ export function AdminSidebar({
           </SidebarGroup>
         )}
 
+        {/* Auditor */}
+        {open ? (
+          <Collapsible open={openGroups.auditor} onOpenChange={() => toggleGroup('auditor')}>
+            <SidebarGroup>
+               <CollapsibleTrigger asChild>
+                 <SidebarGroupLabel className="cursor-pointer hover:bg-accent/50 rounded-xl p-3 transition-all duration-300 flex items-center gap-2 text-sm font-medium group">
+                   <FileText className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
+                   <span className="flex-1 transition-all duration-300 group-hover:translate-x-1">Auditor</span>
+                   <ChevronRight className={`h-4 w-4 transition-all duration-300 group-hover:text-primary ${openGroups.auditor ? 'rotate-90' : ''}`} />
+                 </SidebarGroupLabel>
+               </CollapsibleTrigger>
+              <CollapsibleContent className="transition-all duration-300 data-[state=open]:animate-slide-in data-[state=closed]:animate-slide-out">
+                <SidebarGroupContent className="mt-2">
+                  <SidebarMenu className="space-y-1">
+                     <SidebarMenuItem>
+                       <SidebarMenuButton 
+                         onClick={() => onSectionChange('audit')} 
+                         isActive={isActive('audit')}
+                         className="rounded-lg hover:bg-accent/50 transition-all group"
+                        >
+                          <Database className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
+                          <span className="text-sm transition-all duration-300 group-hover:translate-x-1">{t('admin.auditLogs')}</span>
+                       </SidebarMenuButton>
+                     </SidebarMenuItem>
+                    {(isCommercialManager || isSuperAdmin) && (
+                       <SidebarMenuItem>
+                         <SidebarMenuButton 
+                           onClick={() => onSectionChange('commercial-manager-audit')} 
+                           isActive={isActive('commercial-manager-audit')}
+                           className="rounded-lg hover:bg-accent/50 transition-all group"
+                          >
+                            <FileText className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
+                            <span className="text-sm transition-all duration-300 group-hover:translate-x-1">{t('adminSidebar.commercialManagerAudit')}</span>
+                         </SidebarMenuButton>
+                       </SidebarMenuItem>
+                    )}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </CollapsibleContent>
+            </SidebarGroup>
+          </Collapsible>
+        ) : (
+          <SidebarGroup className="mt-4">
+            <SidebarMenu className="space-y-2">
+               <SidebarMenuItem>
+                 <SidebarMenuButton 
+                   onClick={() => onSectionChange('audit')} 
+                   isActive={isActive('audit')} 
+                  tooltip={t('admin.auditLogs')}
+                  className="rounded-xl hover:shadow-md transition-all duration-300 group"
+                >
+                  <Database className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
+                 </SidebarMenuButton>
+               </SidebarMenuItem>
+              {(isCommercialManager || isSuperAdmin) && (
+                 <SidebarMenuItem>
+                   <SidebarMenuButton 
+                     onClick={() => onSectionChange('commercial-manager-audit')} 
+                     isActive={isActive('commercial-manager-audit')} 
+                    tooltip={t('adminSidebar.commercialManagerAudit')}
+                    className="rounded-xl hover:shadow-md transition-all duration-300 group"
+                  >
+                    <FileText className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
+                   </SidebarMenuButton>
+                 </SidebarMenuItem>
+              )}
+            </SidebarMenu>
+          </SidebarGroup>
+        )}
+
         {/* Gestión de Datos */}
         {open ? (
           <Collapsible open={openGroups.management} onOpenChange={() => toggleGroup('management')}>
@@ -480,20 +551,6 @@ export function AdminSidebar({
                          <span className="transition-all duration-300 group-hover:translate-x-1">{t('map.layers')}</span>
                        </SidebarMenuButton>
                      </SidebarMenuItem>
-                     <SidebarMenuItem>
-                       <SidebarMenuButton onClick={() => onSectionChange('audit')} isActive={isActive('audit')} className="group">
-                         <Database className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                         <span className="transition-all duration-300 group-hover:translate-x-1">{t('admin.auditLogs')}</span>
-                       </SidebarMenuButton>
-                     </SidebarMenuItem>
-                    {(isCommercialManager || isSuperAdmin) && (
-                       <SidebarMenuItem>
-                         <SidebarMenuButton onClick={() => onSectionChange('commercial-manager-audit')} isActive={isActive('commercial-manager-audit')} className="group">
-                           <FileText className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                           <span className="transition-all duration-300 group-hover:translate-x-1">{t('adminSidebar.commercialManagerAudit')}</span>
-                         </SidebarMenuButton>
-                       </SidebarMenuItem>
-                    )}
                   </SidebarMenu>
                 </SidebarGroupContent>
               </CollapsibleContent>
@@ -522,18 +579,6 @@ export function AdminSidebar({
                    <Map className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
                  </SidebarMenuButton>
                </SidebarMenuItem>
-               <SidebarMenuItem>
-                 <SidebarMenuButton onClick={() => onSectionChange('audit')} isActive={isActive('audit')} tooltip={t('admin.auditLogs')} className="group">
-                   <Database className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
-                 </SidebarMenuButton>
-               </SidebarMenuItem>
-              {(isCommercialManager || isSuperAdmin) && (
-                 <SidebarMenuItem>
-                   <SidebarMenuButton onClick={() => onSectionChange('commercial-manager-audit')} isActive={isActive('commercial-manager-audit')} tooltip={t('adminSidebar.commercialManagerAudit')} className="group">
-                     <FileText className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
-                   </SidebarMenuButton>
-                 </SidebarMenuItem>
-              )}
             </SidebarMenu>
           </SidebarGroup>
         )}
