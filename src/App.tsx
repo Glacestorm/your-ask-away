@@ -8,6 +8,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Auth from "./pages/Auth";
+import Home from "./pages/Home";
 import MapView from "./pages/MapView";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
@@ -27,8 +28,9 @@ const App = () => (
                 <Toaster />
                 <Sonner />
                 <Routes>
-                  <Route path="/" element={<Navigate to="/admin" replace />} />
+                  <Route path="/" element={<Navigate to="/home" replace />} />
                   <Route path="/auth" element={<Auth />} />
+                  <Route path="/home" element={<Home />} />
                   <Route path="/map" element={<MapView />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/admin" element={<Admin />} />

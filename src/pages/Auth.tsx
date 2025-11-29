@@ -46,7 +46,7 @@ const Auth = () => {
 
   useEffect(() => {
     if (user) {
-      navigate('/map');
+      navigate('/home');
     }
   }, [user, navigate]);
 
@@ -61,7 +61,7 @@ const Auth = () => {
       const { error } = await signIn(validated.email, validated.password);
       
       if (!error) {
-        navigate('/map');
+        navigate('/home');
       }
     } catch (error: any) {
       if (error instanceof z.ZodError) {

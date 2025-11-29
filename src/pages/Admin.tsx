@@ -44,11 +44,11 @@ const Admin = () => {
   const [activeSection, setActiveSection] = useState('director');
 
   useEffect(() => {
-    if (!authLoading && (!user || !isAdmin)) {
-      navigate('/map');
+    if (!authLoading && !user) {
+      navigate('/auth');
       toast.error(t('admin.noPermissions'));
     }
-  }, [user, isAdmin, authLoading, navigate, t]);
+  }, [user, authLoading, navigate, t]);
 
   if (authLoading) {
     return (
