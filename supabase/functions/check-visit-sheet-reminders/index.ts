@@ -73,6 +73,7 @@ serve(async (req) => {
     console.log(`Found ${sheets?.length || 0} visit sheets with upcoming reminders`);
 
     const notifications = [];
+    const emailsToSend = [];
 
     for (const sheet of sheets || []) {
       const companyName = (sheet.company as any)?.name || 'Cliente';
@@ -126,13 +127,31 @@ serve(async (req) => {
             if (!existingNotifications || existingNotifications.length === 0) {
               console.log(`Creating notification: ${reminder.type} for ${companyName} in ${daysUntil} days`);
               
+              const severity = daysUntil <= 1 ? 'high' : daysUntil <= 3 ? 'medium' : 'info';
+              
               notifications.push({
                 user_id: sheet.gestor_id,
                 title: reminder.title,
                 message: reminder.message,
-                severity: daysUntil <= 1 ? 'high' : daysUntil <= 3 ? 'medium' : 'info',
+                severity,
                 is_read: false,
               });
+
+              // Si es crítico (1-2 días), también enviar email
+              if (daysUntil <= 2) {
+                const gestorEmail = (sheet.gestor as any)?.email;
+                if (gestorEmail) {
+                  console.log(`Scheduling email for ${reminder.type} to ${gestorEmail}`);
+                  emailsToSend.push({
+                    to: gestorEmail,
+                    gestorName: gestorName,
+                    companyName: companyName,
+                    reminderType: reminder.type,
+                    reminderDate: reminder.date,
+                    daysUntil: daysUntil,
+                  });
+                }
+              }
             }
           }
         }
@@ -155,11 +174,35 @@ serve(async (req) => {
       console.log('No new notifications to create');
     }
 
+    // Enviar emails para recordatorios críticos
+    if (emailsToSend.length > 0) {
+      console.log(`Sending ${emailsToSend.length} reminder emails...`);
+      
+      for (const emailData of emailsToSend) {
+        try {
+          const emailResponse = await supabase.functions.invoke('send-reminder-email', {
+            body: emailData,
+          });
+          
+          if (emailResponse.error) {
+            console.error('Error sending email:', emailResponse.error);
+          } else {
+            console.log(`Email sent successfully to ${emailData.to}`);
+          }
+        } catch (emailError) {
+          console.error('Error invoking send-reminder-email function:', emailError);
+        }
+      }
+    } else {
+      console.log('No critical reminders requiring email notification');
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
         sheetsChecked: sheets?.length || 0,
         notificationsCreated: notifications.length,
+        emailsSent: emailsToSend.length,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
