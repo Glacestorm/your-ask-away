@@ -34,6 +34,7 @@ import { GestorDashboard } from '@/components/admin/GestorDashboard';
 import { AuditorDashboard } from '@/components/admin/AuditorDashboard';
 import { AlertsManager } from '@/components/dashboard/AlertsManager';
 import { NotificationPreferences } from '@/components/dashboard/NotificationPreferences';
+import { SharedVisitsCalendar } from '@/components/admin/SharedVisitsCalendar';
 import MapView from './MapView';
 
 const Admin = () => {
@@ -109,6 +110,18 @@ const Admin = () => {
         return <AuditorDashboard />;
       case 'map':
         return <MapView />;
+      case 'shared-calendar':
+        return (
+          <div className="rounded-lg border bg-card p-6">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold">Calendario de Visitas</h2>
+              <p className="text-sm text-muted-foreground">
+                Visualiza todas tus visitas individuales y conjuntas en un calendario compartido
+              </p>
+            </div>
+            <SharedVisitsCalendar />
+          </div>
+        );
       case 'health':
         return <SystemHealthMonitor />;
       case 'visits':
