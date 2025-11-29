@@ -33,7 +33,8 @@ interface GoalProgress {
 
 export function PersonalGoalsTracker() {
   const { t } = useLanguage();
-  const { user } = useAuth();
+  const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager } = useAuth();
+  const canManageGoals = isAdmin || isSuperAdmin || isCommercialDirector || isOfficeDirector || isCommercialManager;
   const [goals, setGoals] = useState<PersonalGoal[]>([]);
   const [progress, setProgress] = useState<Record<string, GoalProgress>>({});
   const [loading, setLoading] = useState(true);
@@ -71,8 +72,7 @@ export function PersonalGoalsTracker() {
         {
           event: '*',
           schema: 'public',
-          table: 'goals',
-          filter: `created_by=eq.${user?.id}`
+          table: 'goals'
         },
         () => {
           fetchGoals();
@@ -100,12 +100,20 @@ export function PersonalGoalsTracker() {
   const fetchGoals = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      // Admins can see all goals, gestores only see their assigned goals or global goals
+      let query = supabase
         .from('goals')
         .select('*')
-        .eq('created_by', user?.id)
         .gte('period_end', new Date().toISOString().split('T')[0])
         .order('period_start', { ascending: false });
+
+      // If not admin, filter by assigned_to (user's goals or global goals)
+      if (!canManageGoals) {
+        query = query.or(`assigned_to.eq.${user?.id},assigned_to.is.null`);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setGoals(data || []);
@@ -333,15 +341,21 @@ export function PersonalGoalsTracker() {
               <Target className="h-5 w-5" />
               {t('gestor.dashboard.goals.title')}
             </CardTitle>
-            <CardDescription>{t('gestor.dashboard.goals.description')}</CardDescription>
+            <CardDescription>
+              {canManageGoals 
+                ? t('gestor.dashboard.goals.description')
+                : 'Aquests són els teus objectius assignats. Consulta amb el teu responsable per a més informació.'
+              }
+            </CardDescription>
           </div>
-          <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                {t('gestor.dashboard.goals.addGoal')}
-              </Button>
-            </DialogTrigger>
+          {canManageGoals && (
+            <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  {t('gestor.dashboard.goals.addGoal')}
+                </Button>
+              </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>
@@ -441,6 +455,7 @@ export function PersonalGoalsTracker() {
               </form>
             </DialogContent>
           </Dialog>
+          )}
         </div>
       </CardHeader>
       <CardContent>
@@ -470,20 +485,24 @@ export function PersonalGoalsTracker() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant={statusVariant}>{statusLabel}</Badge>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => openEditDialog(goal)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(goal.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {canManageGoals && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openEditDialog(goal)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDelete(goal.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </div>
 
