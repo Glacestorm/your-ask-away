@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts';
-import { Activity, Target, Building2, Package, Filter, X, GitCompare } from 'lucide-react';
+import { Activity, Target, Building2, Package, Filter, X, GitCompare, TrendingUp, Award, BarChart3, Users } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
@@ -21,6 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { PersonalGoalsTracker } from '@/components/dashboard/PersonalGoalsTracker';
 import { PersonalGoalsHistory } from '@/components/dashboard/PersonalGoalsHistory';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
 
 interface GestorStats {
   totalVisits: number;
@@ -457,24 +458,39 @@ export function GestorDashboard() {
   }
 
   return (
+    <div className="space-y-8">
+      {/* Encabezado con identidad del gestor */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">El Meu Dashboard</h1>
+          <p className="text-muted-foreground mt-1">
+            Vista exclusiva de les meves mètriques i objectius personals
+          </p>
+        </div>
+        <Badge variant="outline" className="h-9 px-4 text-sm">
+          <Users className="h-4 w-4 mr-2" />
+          Gestor Personal
+        </Badge>
+      </div>
+
     <Tabs defaultValue="overview" className="space-y-6">
-      <TabsList className="mb-6">
-        <TabsTrigger value="overview">{t('gestor.dashboard.tabs.overview')}</TabsTrigger>
-        <TabsTrigger value="goals">{t('gestor.dashboard.tabs.goals')}</TabsTrigger>
-        <TabsTrigger value="history">{t('gestor.dashboard.tabs.history')}</TabsTrigger>
+      <TabsList className="grid w-full grid-cols-3">
+        <TabsTrigger value="overview" className="gap-2">
+          <BarChart3 className="h-4 w-4" />
+          {t('gestor.dashboard.tabs.overview')}
+        </TabsTrigger>
+        <TabsTrigger value="goals" className="gap-2">
+          <Target className="h-4 w-4" />
+          {t('gestor.dashboard.tabs.goals')}
+        </TabsTrigger>
+        <TabsTrigger value="history" className="gap-2">
+          <TrendingUp className="h-4 w-4" />
+          {t('gestor.dashboard.tabs.history')}
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="overview" className="space-y-6">
-        <div className="space-y-6">
-      {/* Encabezado */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('gestor.dashboard.title')}</CardTitle>
-          <CardDescription>
-            {t('gestor.dashboard.subtitle')}
-          </CardDescription>
-        </CardHeader>
-      </Card>
+        <div className="space-y-8">
 
       {/* Filtros */}
       <Card>
@@ -611,93 +627,126 @@ export function GestorDashboard() {
         </CardContent>
       </Card>
 
-      {/* KPIs Personales */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('gestor.dashboard.totalVisits')}</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalVisits}</div>
-            {showComparison && (
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-xs text-muted-foreground">
-                  {t('gestor.dashboard.comparison')}: {comparisonStats.totalVisits}
-                </span>
-                {stats.totalVisits > comparisonStats.totalVisits ? (
-                  <span className="text-xs text-green-600">↑ {stats.totalVisits - comparisonStats.totalVisits}</span>
-                ) : stats.totalVisits < comparisonStats.totalVisits ? (
-                  <span className="text-xs text-red-600">↓ {comparisonStats.totalVisits - stats.totalVisits}</span>
-                ) : null}
-              </div>
-            )}
-            <p className="text-xs text-muted-foreground">
-              {t('gestor.dashboard.visitsDesc')}
-            </p>
-          </CardContent>
-        </Card>
+      {/* SECCIÓN 1: MÈTRIQUES CLAU (KPIs Principals) */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+            <Award className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold">Mètriques Clau</h2>
+            <p className="text-sm text-muted-foreground">Indicadors principals del meu rendiment</p>
+          </div>
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('gestor.dashboard.successRate')}</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.successRate}%</div>
-            {showComparison && (
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-xs text-muted-foreground">
-                  {t('gestor.dashboard.comparison')}: {comparisonStats.successRate}%
-                </span>
-                {stats.successRate > comparisonStats.successRate ? (
-                  <span className="text-xs text-green-600">↑ {stats.successRate - comparisonStats.successRate}%</span>
-                ) : stats.successRate < comparisonStats.successRate ? (
-                  <span className="text-xs text-red-600">↓ {comparisonStats.successRate - stats.successRate}%</span>
-                ) : null}
-              </div>
-            )}
-            <p className="text-xs text-muted-foreground">{t('gestor.dashboard.successDesc')}</p>
-          </CardContent>
-        </Card>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="border-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{t('gestor.dashboard.totalVisits')}</CardTitle>
+              <Activity className="h-5 w-5 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-primary">{stats.totalVisits}</div>
+              {showComparison && (
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-xs text-muted-foreground">
+                    vs {comparisonStats.totalVisits}
+                  </span>
+                  {stats.totalVisits > comparisonStats.totalVisits ? (
+                    <Badge variant="default" className="bg-green-500/10 text-green-600 border-green-500/20">
+                      ↑ {stats.totalVisits - comparisonStats.totalVisits}
+                    </Badge>
+                  ) : stats.totalVisits < comparisonStats.totalVisits ? (
+                    <Badge variant="default" className="bg-red-500/10 text-red-600 border-red-500/20">
+                      ↓ {comparisonStats.totalVisits - stats.totalVisits}
+                    </Badge>
+                  ) : null}
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                {t('gestor.dashboard.visitsDesc')}
+              </p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('gestor.dashboard.companies')}</CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalCompanies}</div>
-            <p className="text-xs text-muted-foreground">{t('gestor.dashboard.companiesDesc')}</p>
-          </CardContent>
-        </Card>
+          <Card className="border-2 border-primary/20 bg-primary/5">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{t('gestor.dashboard.successRate')}</CardTitle>
+              <Target className="h-5 w-5 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-primary">{stats.successRate}%</div>
+              {showComparison && (
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-xs text-muted-foreground">
+                    vs {comparisonStats.successRate}%
+                  </span>
+                  {stats.successRate > comparisonStats.successRate ? (
+                    <Badge variant="default" className="bg-green-500/10 text-green-600 border-green-500/20">
+                      ↑ {stats.successRate - comparisonStats.successRate}%
+                    </Badge>
+                  ) : stats.successRate < comparisonStats.successRate ? (
+                    <Badge variant="default" className="bg-red-500/10 text-red-600 border-red-500/20">
+                      ↓ {comparisonStats.successRate - stats.successRate}%
+                    </Badge>
+                  ) : null}
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">{t('gestor.dashboard.successDesc')}</p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('gestor.dashboard.products')}</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalProducts}</div>
-            {showComparison && (
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-xs text-muted-foreground">
-                  {t('gestor.dashboard.comparison')}: {comparisonStats.totalProducts}
-                </span>
-              </div>
-            )}
-            <p className="text-xs text-muted-foreground">{t('gestor.dashboard.productsDesc')}</p>
-          </CardContent>
-        </Card>
+          <Card className="border-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{t('gestor.dashboard.companies')}</CardTitle>
+              <Building2 className="h-5 w-5 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-primary">{stats.totalCompanies}</div>
+              <p className="text-xs text-muted-foreground mt-1">{t('gestor.dashboard.companiesDesc')}</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{t('gestor.dashboard.products')}</CardTitle>
+              <Package className="h-5 w-5 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-primary">{stats.totalProducts}</div>
+              {showComparison && (
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-xs text-muted-foreground">
+                    vs {comparisonStats.totalProducts}
+                  </span>
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">{t('gestor.dashboard.productsDesc')}</p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
-      {/* Gráfico de evolución mensual */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('gestor.dashboard.monthlyEvolution')}</CardTitle>
-          <CardDescription>{t('gestor.dashboard.monthlyEvolutionDesc')}</CardDescription>
-        </CardHeader>
-        <CardContent>
+      <Separator className="my-8" />
+
+      {/* SECCIÓN 2: EVOLUCIÓ TEMPORAL */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-chart-2/10">
+            <TrendingUp className="h-5 w-5 text-chart-2" />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold">Evolució Temporal</h2>
+            <p className="text-sm text-muted-foreground">Rendiment al llarg del temps</p>
+          </div>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('gestor.dashboard.monthlyEvolution')}</CardTitle>
+            <CardDescription>{t('gestor.dashboard.monthlyEvolutionDesc')}</CardDescription>
+          </CardHeader>
+          <CardContent>
           {monthlyData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={monthlyData}>
@@ -748,10 +797,26 @@ export function GestorDashboard() {
             </div>
           )}
         </CardContent>
-      </Card>
+        </Card>
+      </div>
 
-      {/* Distribución de visitas por resultado */}
-      <Card>
+      <Separator className="my-8" />
+
+      {/* SECCIÓN 3: ANÀLISI DE RENDIMENT */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-chart-3/10">
+            <BarChart3 className="h-5 w-5 text-chart-3" />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold">Anàlisi de Rendiment</h2>
+            <p className="text-sm text-muted-foreground">Detall dels meus resultats i empreses</p>
+          </div>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Distribución de visitas por resultado */}
+          <Card>
         <CardHeader>
           <CardTitle>{t('gestor.dashboard.resultDistribution')}</CardTitle>
           <CardDescription>{t('gestor.dashboard.resultDistributionDesc')}</CardDescription>
@@ -772,11 +837,12 @@ export function GestorDashboard() {
               {t('director.noData')}
             </div>
           )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+        </div>
 
-      {/* Productos más ofrecidos */}
-      <Card>
+        {/* Productos más ofrecidos - ancho completo */}
+        <Card>
         <CardHeader>
           <CardTitle>{t('gestor.dashboard.topProducts')}</CardTitle>
           <CardDescription>{t('gestor.dashboard.topProductsDesc')}</CardDescription>
@@ -822,11 +888,25 @@ export function GestorDashboard() {
               {t('director.noData')}
             </div>
           )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
 
-      {/* Tabla de visitas recientes */}
-      <Card>
+      <Separator className="my-8" />
+
+      {/* SECCIÓN 4: ACTIVITAT RECENT */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-chart-1/10">
+            <Activity className="h-5 w-5 text-chart-1" />
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold">Activitat Recent</h2>
+            <p className="text-sm text-muted-foreground">Les meves últimes visites</p>
+          </div>
+        </div>
+
+        <Card>
         <CardHeader>
           <CardTitle>{t('gestor.dashboard.recentVisits')}</CardTitle>
           <CardDescription>{t('gestor.dashboard.recentVisitsDesc')}</CardDescription>
@@ -869,7 +949,8 @@ export function GestorDashboard() {
             </TableBody>
           </Table>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
         </div>
       </TabsContent>
 
@@ -881,5 +962,6 @@ export function GestorDashboard() {
         <PersonalGoalsHistory />
       </TabsContent>
     </Tabs>
+    </div>
   );
 }
