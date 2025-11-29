@@ -31,6 +31,8 @@ import { CommercialManagerDashboard } from '@/components/admin/CommercialManager
 import { CommercialManagerAudit } from '@/components/admin/CommercialManagerAudit';
 import { ImportHistoryViewer } from '@/components/admin/ImportHistoryViewer';
 import { GestorDashboard } from '@/components/admin/GestorDashboard';
+import MapView from './MapView';
+
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, loading: authLoading } = useAuth();
   const { t } = useLanguage();
@@ -100,6 +102,8 @@ const Admin = () => {
         return <CommercialManagerAudit />;
       case 'gestor-dashboard':
         return <GestorDashboard />;
+      case 'map':
+        return <MapView />;
       case 'health':
         return <SystemHealthMonitor />;
       case 'visits':
@@ -215,9 +219,6 @@ const Admin = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <SidebarTrigger />
-                <Button variant="ghost" size="icon" onClick={() => navigate('/map')}>
-                  <ArrowLeft className="h-5 w-5" />
-                </Button>
                 <div>
                   <h1 className="text-3xl font-bold">{t('admin.title')}</h1>
                   <p className="text-muted-foreground">{t('admin.subtitle')}</p>

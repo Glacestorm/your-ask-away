@@ -27,7 +27,7 @@ const App = () => (
                 <Toaster />
                 <Sonner />
                 <Routes>
-                  <Route path="/" element={<Navigate to="/map" replace />} />
+                  <Route path="/" element={<Navigate to="/admin" replace />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/map" element={<MapView />} />
                   <Route path="/dashboard" element={<Dashboard />} />
