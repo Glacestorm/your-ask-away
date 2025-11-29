@@ -18,6 +18,7 @@ import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { ParticipantsSelector } from '@/components/visits/ParticipantsSelector';
 
 interface Visit {
   id: string;
@@ -49,6 +50,7 @@ export function VisitsPanel({ company }: VisitsPanelProps) {
     result: '',
     notes: '',
   });
+  const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
 
   useEffect(() => {
     if (company) {
@@ -87,7 +89,8 @@ export function VisitsPanel({ company }: VisitsPanelProps) {
     try {
       setLoading(true);
       
-      const { error } = await supabase
+      // Insert visit
+      const { data: visitData, error: visitError } = await supabase
         .from('visits')
         .insert({
           company_id: company.id,
@@ -95,9 +98,25 @@ export function VisitsPanel({ company }: VisitsPanelProps) {
           visit_date: format(formData.visit_date, 'yyyy-MM-dd'),
           result: formData.result || null,
           notes: formData.notes || null,
-        });
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (visitError) throw visitError;
+
+      // Insert participants if any
+      if (selectedParticipants.length > 0 && visitData) {
+        const participantsData = selectedParticipants.map(userId => ({
+          visit_id: visitData.id,
+          user_id: userId,
+        }));
+
+        const { error: participantsError } = await supabase
+          .from('visit_participants')
+          .insert(participantsData);
+
+        if (participantsError) throw participantsError;
+      }
 
       // Update company's last visit date
       await supabase
@@ -112,6 +131,7 @@ export function VisitsPanel({ company }: VisitsPanelProps) {
         result: '',
         notes: '',
       });
+      setSelectedParticipants([]);
       fetchVisits();
     } catch (error: any) {
       console.error('Error creating visit:', error);
@@ -204,6 +224,14 @@ export function VisitsPanel({ company }: VisitsPanelProps) {
                     rows={4}
                   />
                 </div>
+
+                {user && (
+                  <ParticipantsSelector
+                    selectedParticipants={selectedParticipants}
+                    onParticipantsChange={setSelectedParticipants}
+                    currentUserId={user.id}
+                  />
+                )}
 
                 <div className="flex justify-end gap-2">
                   <Button
