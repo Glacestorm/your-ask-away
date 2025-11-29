@@ -14,6 +14,101 @@ export type Database = {
   }
   public: {
     Tables: {
+      action_plan_steps: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          id: string
+          plan_id: string
+          step_number: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          plan_id: string
+          step_number: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          plan_id?: string
+          step_number?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "action_plan_steps_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "action_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      action_plans: {
+        Row: {
+          created_at: string
+          current_value: number | null
+          description: string | null
+          gap_percentage: number | null
+          generated_at: string
+          id: string
+          status: string
+          target_date: string | null
+          target_metric: string
+          target_value: number | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_value?: number | null
+          description?: string | null
+          gap_percentage?: number | null
+          generated_at?: string
+          id?: string
+          status?: string
+          target_date?: string | null
+          target_metric: string
+          target_value?: number | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_value?: number | null
+          description?: string | null
+          gap_percentage?: number | null
+          generated_at?: string
+          id?: string
+          status?: string
+          target_date?: string | null
+          target_metric?: string
+          target_value?: number | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       alerts: {
         Row: {
           active: boolean | null
