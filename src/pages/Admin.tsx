@@ -31,6 +31,8 @@ import { CommercialManagerDashboard } from '@/components/admin/CommercialManager
 import { CommercialManagerAudit } from '@/components/admin/CommercialManagerAudit';
 import { ImportHistoryViewer } from '@/components/admin/ImportHistoryViewer';
 import { GestorDashboard } from '@/components/admin/GestorDashboard';
+import { AlertsManager } from '@/components/dashboard/AlertsManager';
+import { NotificationPreferences } from '@/components/dashboard/NotificationPreferences';
 import MapView from './MapView';
 
 const Admin = () => {
@@ -194,6 +196,48 @@ const Admin = () => {
               </p>
             </div>
             <ImportHistoryViewer />
+          </div>
+        );
+      case 'alerts':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return (
+          <div className="rounded-lg border bg-card p-6">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold">Gestió d'Alertes</h2>
+              <p className="text-sm text-muted-foreground">
+                Configura alertes automàtiques per mètriques clau del negoci
+              </p>
+            </div>
+            <AlertsManager />
+          </div>
+        );
+      case 'notifications':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return (
+          <div className="rounded-lg border bg-card p-6">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold">Preferències de Notificacions</h2>
+              <p className="text-sm text-muted-foreground">
+                Personalitza com i quan reps notificacions d'alertes
+              </p>
+            </div>
+            <NotificationPreferences />
           </div>
         );
       default:
