@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { ParticipantsSelector } from '@/components/visits/ParticipantsSelector';
 
 interface TodayVisit {
   id: string;
@@ -54,6 +55,7 @@ export const QuickActionsPanel = () => {
   const [visitDate, setVisitDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [visitTime, setVisitTime] = useState(format(new Date(), 'HH:mm'));
   const [notes, setNotes] = useState('');
+  const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
 
   useEffect(() => {
     if (user) {
@@ -141,21 +143,39 @@ export const QuickActionsPanel = () => {
 
       const visitDateTime = `${visitDate}T${visitTime}:00`;
 
-      const { error } = await supabase
+      // Insert visit
+      const { data: visitData, error: visitError } = await supabase
         .from('visits' as any)
         .insert({
           company_id: selectedCompany,
           gestor_id: user.id,
           visit_date: visitDateTime,
           notes: notes || null,
-        });
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (visitError) throw visitError;
+
+      // Insert participants if any
+      if (selectedParticipants.length > 0 && visitData && (visitData as any).id) {
+        const participantsData = selectedParticipants.map(userId => ({
+          visit_id: (visitData as any).id,
+          user_id: userId,
+        }));
+
+        const { error: participantsError } = await supabase
+          .from('visit_participants')
+          .insert(participantsData);
+
+        if (participantsError) throw participantsError;
+      }
 
       toast.success('Visita creada correctamente');
       setDialogOpen(false);
       setSelectedCompany('');
       setNotes('');
+      setSelectedParticipants([]);
       fetchData();
     } catch (error: any) {
       console.error('Error creating visit:', error);
@@ -285,6 +305,14 @@ export const QuickActionsPanel = () => {
                     rows={3}
                   />
                 </div>
+
+                {user && (
+                  <ParticipantsSelector
+                    selectedParticipants={selectedParticipants}
+                    onParticipantsChange={setSelectedParticipants}
+                    currentUserId={user.id}
+                  />
+                )}
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setDialogOpen(false)}>
