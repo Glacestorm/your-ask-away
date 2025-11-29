@@ -759,6 +759,33 @@ export type Database = {
         }
         Relationships: []
       }
+      email_reminder_preferences: {
+        Row: {
+          created_at: string | null
+          email_enabled: boolean
+          id: string
+          updated_at: string | null
+          urgency_level: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email_enabled?: boolean
+          id?: string
+          updated_at?: string | null
+          urgency_level?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          email_enabled?: boolean
+          id?: string
+          updated_at?: string | null
+          urgency_level?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       email_templates: {
         Row: {
           created_at: string | null
