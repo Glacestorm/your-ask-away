@@ -442,12 +442,6 @@ export function AdminSidebar({
                        </SidebarMenuButton>
                      </SidebarMenuItem>
                      <SidebarMenuItem>
-                       <SidebarMenuButton onClick={() => onSectionChange('users')} isActive={isActive('users')} className="group">
-                         <Users className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                         <span className="transition-all duration-300 group-hover:translate-x-1">{t('admin.users')}</span>
-                       </SidebarMenuButton>
-                     </SidebarMenuItem>
-                     <SidebarMenuItem>
                        <SidebarMenuButton onClick={() => onSectionChange('import-history')} isActive={isActive('import-history')} className="group">
                          <History className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
                          <span className="transition-all duration-300 group-hover:translate-x-1">Historial de Importaciones</span>
@@ -464,11 +458,6 @@ export function AdminSidebar({
                <SidebarMenuItem>
                  <SidebarMenuButton onClick={() => onSectionChange('companies')} isActive={isActive('companies')} tooltip={t('admin.companies')} className="group">
                    <Building2 className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
-                 </SidebarMenuButton>
-               </SidebarMenuItem>
-               <SidebarMenuItem>
-                 <SidebarMenuButton onClick={() => onSectionChange('users')} isActive={isActive('users')} tooltip={t('admin.users')} className="group">
-                   <Users className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
                  </SidebarMenuButton>
                </SidebarMenuItem>
                <SidebarMenuItem>
@@ -495,24 +484,6 @@ export function AdminSidebar({
                 <SidebarGroupContent>
                   <SidebarMenu>
                      <SidebarMenuItem>
-                       <SidebarMenuButton onClick={() => onSectionChange('templates')} isActive={isActive('templates')} className="group">
-                         <Mail className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                         <span className="transition-all duration-300 group-hover:translate-x-1">{t('admin.emailTemplates')}</span>
-                       </SidebarMenuButton>
-                     </SidebarMenuItem>
-                     <SidebarMenuItem>
-                       <SidebarMenuButton onClick={() => onSectionChange('colors')} isActive={isActive('colors')} className="group">
-                         <Palette className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary group-hover:rotate-12" />
-                         <span className="transition-all duration-300 group-hover:translate-x-1">{t('admin.statusColors')}</span>
-                       </SidebarMenuButton>
-                     </SidebarMenuItem>
-                     <SidebarMenuItem>
-                       <SidebarMenuButton onClick={() => onSectionChange('concepts')} isActive={isActive('concepts')} className="group">
-                         <BookOpen className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                         <span className="transition-all duration-300 group-hover:translate-x-1">{t('admin.concepts')}</span>
-                       </SidebarMenuButton>
-                     </SidebarMenuItem>
-                     <SidebarMenuItem>
                        <SidebarMenuButton onClick={() => onSectionChange('map-config')} isActive={isActive('map-config')} className="group">
                          <Map className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
                          <span className="transition-all duration-300 group-hover:translate-x-1">{t('map.layers')}</span>
@@ -526,21 +497,6 @@ export function AdminSidebar({
         ) : (
           <SidebarGroup>
             <SidebarMenu>
-               <SidebarMenuItem>
-                 <SidebarMenuButton onClick={() => onSectionChange('templates')} isActive={isActive('templates')} tooltip={t('admin.emailTemplates')} className="group">
-                   <Mail className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
-                 </SidebarMenuButton>
-               </SidebarMenuItem>
-               <SidebarMenuItem>
-                 <SidebarMenuButton onClick={() => onSectionChange('colors')} isActive={isActive('colors')} tooltip={t('admin.statusColors')} className="group">
-                   <Palette className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary group-hover:rotate-12" />
-                 </SidebarMenuButton>
-               </SidebarMenuItem>
-               <SidebarMenuItem>
-                 <SidebarMenuButton onClick={() => onSectionChange('concepts')} isActive={isActive('concepts')} tooltip={t('admin.concepts')} className="group">
-                   <BookOpen className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
-                 </SidebarMenuButton>
-               </SidebarMenuItem>
                <SidebarMenuItem>
                  <SidebarMenuButton onClick={() => onSectionChange('map-config')} isActive={isActive('map-config')} tooltip={t('map.layers')} className="group">
                    <Map className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
@@ -568,6 +524,16 @@ export function AdminSidebar({
                       <SidebarMenu className="space-y-1">
                         <SidebarMenuItem>
                           <SidebarMenuButton 
+                            onClick={() => onSectionChange('users')} 
+                            isActive={isActive('users')}
+                            className="rounded-lg hover:bg-accent/50 transition-all group"
+                          >
+                            <Users className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
+                            <span className="text-sm transition-all duration-300 group-hover:translate-x-1">{t('admin.users')}</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                          <SidebarMenuButton 
                             onClick={() => onSectionChange('products')} 
                             isActive={isActive('products')}
                             className="rounded-lg hover:bg-accent/50 transition-all group"
@@ -586,6 +552,36 @@ export function AdminSidebar({
                             <span className="text-sm transition-all duration-300 group-hover:translate-x-1">{t('tpv.goals')}</span>
                           </SidebarMenuButton>
                         </SidebarMenuItem>
+                        <SidebarMenuItem>
+                          <SidebarMenuButton 
+                            onClick={() => onSectionChange('concepts')} 
+                            isActive={isActive('concepts')}
+                            className="rounded-lg hover:bg-accent/50 transition-all group"
+                          >
+                            <BookOpen className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
+                            <span className="text-sm transition-all duration-300 group-hover:translate-x-1">{t('admin.concepts')}</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                          <SidebarMenuButton 
+                            onClick={() => onSectionChange('templates')} 
+                            isActive={isActive('templates')}
+                            className="rounded-lg hover:bg-accent/50 transition-all group"
+                          >
+                            <Mail className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
+                            <span className="text-sm transition-all duration-300 group-hover:translate-x-1">{t('admin.emailTemplates')}</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                          <SidebarMenuButton 
+                            onClick={() => onSectionChange('colors')} 
+                            isActive={isActive('colors')}
+                            className="rounded-lg hover:bg-accent/50 transition-all group"
+                          >
+                            <Palette className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary group-hover:rotate-12" />
+                            <span className="text-sm transition-all duration-300 group-hover:translate-x-1">{t('admin.statusColors')}</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
                       </SidebarMenu>
                     </SidebarGroupContent>
                   </CollapsibleContent>
@@ -594,6 +590,16 @@ export function AdminSidebar({
             ) : (
               <SidebarGroup className="mt-4">
                 <SidebarMenu className="space-y-2">
+                  <SidebarMenuItem>
+                    <SidebarMenuButton 
+                      onClick={() => onSectionChange('users')} 
+                      isActive={isActive('users')} 
+                      tooltip={t('admin.users')}
+                      className="rounded-xl hover:shadow-md transition-all duration-300 group"
+                    >
+                      <Users className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton 
                       onClick={() => onSectionChange('products')} 
@@ -612,6 +618,36 @@ export function AdminSidebar({
                       className="rounded-xl hover:shadow-md transition-all duration-300 group"
                     >
                       <Target className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton 
+                      onClick={() => onSectionChange('concepts')} 
+                      isActive={isActive('concepts')} 
+                      tooltip={t('admin.concepts')}
+                      className="rounded-xl hover:shadow-md transition-all duration-300 group"
+                    >
+                      <BookOpen className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton 
+                      onClick={() => onSectionChange('templates')} 
+                      isActive={isActive('templates')} 
+                      tooltip={t('admin.emailTemplates')}
+                      className="rounded-xl hover:shadow-md transition-all duration-300 group"
+                    >
+                      <Mail className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton 
+                      onClick={() => onSectionChange('colors')} 
+                      isActive={isActive('colors')} 
+                      tooltip={t('admin.statusColors')}
+                      className="rounded-xl hover:shadow-md transition-all duration-300 group"
+                    >
+                      <Palette className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary group-hover:rotate-12" />
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>
