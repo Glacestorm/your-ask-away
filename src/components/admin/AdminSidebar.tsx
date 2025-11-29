@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { TrendingUp, Activity, BarChart3, Package, Users, Target, CreditCard, Building2, Settings, Database, Mail, Palette, BookOpen, Map, ChevronRight, FileText, Briefcase, History } from 'lucide-react';
 import {
   Sidebar,
@@ -34,6 +35,8 @@ export function AdminSidebar({
 }: AdminSidebarProps) {
   const { t } = useLanguage();
   const { open } = useSidebar();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     metrics: true,
     tpv: false,
@@ -153,6 +156,42 @@ export function AdminSidebar({
                 </div>
                 <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
                   Mapa
+                </span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => navigate('/dashboard')}
+                isActive={location.pathname === '/dashboard'}
+                className="font-semibold py-3 rounded-xl transition-all hover:shadow-md"
+                tooltip={!open ? {
+                  children: 'Tauler',
+                  className: "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
+                } : undefined}
+              >
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl">
+                  <BarChart3 className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
+                  Tauler
+                </span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => onSectionChange('users')}
+                isActive={isActive('users')}
+                className="font-semibold py-3 rounded-xl transition-all hover:shadow-md"
+                tooltip={!open ? {
+                  children: 'Administració',
+                  className: "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
+                } : undefined}
+              >
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl">
+                  <Settings className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
+                  Administració
                 </span>
               </SidebarMenuButton>
             </SidebarMenuItem>
