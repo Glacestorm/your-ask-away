@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { TrendingUp, Activity, BarChart3, Package, Users, Target, CreditCard, Building2, Settings, Database, Mail, Palette, BookOpen, Map, ChevronRight, FileText, Briefcase, History, Bell } from 'lucide-react';
+import { TrendingUp, Activity, BarChart3, Package, Users, Target, CreditCard, Building2, Settings, Database, Mail, Palette, BookOpen, Map, ChevronRight, FileText, Briefcase, History, Bell, UserCog } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -131,7 +131,7 @@ export function AdminSidebar({
                 isActive={isActive('gestor-dashboard')}
                 className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
                 tooltip={!open ? {
-                  children: t('adminSidebar.gestor'),
+                  children: 'Gestor',
                   className: "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
                 } : undefined}
               >
@@ -139,7 +139,25 @@ export function AdminSidebar({
                   <Users className="h-5 w-5 text-primary-foreground transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3" />
                 </div>
                 <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
-                  {t('adminSidebar.gestor')}
+                  Gestor
+                </span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => onSectionChange('audit')}
+                isActive={isActive('audit')}
+                className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
+                tooltip={!open ? {
+                  children: 'Auditor',
+                  className: "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
+                } : undefined}
+              >
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-primary/50 group-hover:rotate-3">
+                  <UserCog className="h-5 w-5 text-primary-foreground transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3" />
+                </div>
+                <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
+                  Auditor
                 </span>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -347,76 +365,6 @@ export function AdminSidebar({
                    <CreditCard className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
                  </SidebarMenuButton>
                </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroup>
-        )}
-
-        {/* Auditor */}
-        {open ? (
-          <Collapsible open={openGroups.auditor} onOpenChange={() => toggleGroup('auditor')}>
-            <SidebarGroup>
-               <CollapsibleTrigger asChild>
-                 <SidebarGroupLabel className="cursor-pointer hover:bg-accent/50 rounded-xl p-3 transition-all duration-300 flex items-center gap-2 text-sm font-medium group">
-                   <FileText className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                   <span className="flex-1 transition-all duration-300 group-hover:translate-x-1">Auditor</span>
-                   <ChevronRight className={`h-4 w-4 transition-all duration-300 group-hover:text-primary ${openGroups.auditor ? 'rotate-90' : ''}`} />
-                 </SidebarGroupLabel>
-               </CollapsibleTrigger>
-              <CollapsibleContent className="transition-all duration-300 data-[state=open]:animate-slide-in data-[state=closed]:animate-slide-out">
-                <SidebarGroupContent className="mt-2">
-                  <SidebarMenu className="space-y-1">
-                     <SidebarMenuItem>
-                       <SidebarMenuButton 
-                         onClick={() => onSectionChange('audit')} 
-                         isActive={isActive('audit')}
-                         className="rounded-lg hover:bg-accent/50 transition-all group"
-                        >
-                          <Database className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                          <span className="text-sm transition-all duration-300 group-hover:translate-x-1">{t('admin.auditLogs')}</span>
-                       </SidebarMenuButton>
-                     </SidebarMenuItem>
-                    {(isCommercialManager || isSuperAdmin) && (
-                       <SidebarMenuItem>
-                         <SidebarMenuButton 
-                           onClick={() => onSectionChange('commercial-manager-audit')} 
-                           isActive={isActive('commercial-manager-audit')}
-                           className="rounded-lg hover:bg-accent/50 transition-all group"
-                          >
-                            <FileText className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                            <span className="text-sm transition-all duration-300 group-hover:translate-x-1">{t('adminSidebar.commercialManagerAudit')}</span>
-                         </SidebarMenuButton>
-                       </SidebarMenuItem>
-                    )}
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </CollapsibleContent>
-            </SidebarGroup>
-          </Collapsible>
-        ) : (
-          <SidebarGroup className="mt-4">
-            <SidebarMenu className="space-y-2">
-               <SidebarMenuItem>
-                 <SidebarMenuButton 
-                   onClick={() => onSectionChange('audit')} 
-                   isActive={isActive('audit')} 
-                  tooltip={t('admin.auditLogs')}
-                  className="rounded-xl hover:shadow-md transition-all duration-300 group"
-                >
-                  <Database className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
-                 </SidebarMenuButton>
-               </SidebarMenuItem>
-              {(isCommercialManager || isSuperAdmin) && (
-                 <SidebarMenuItem>
-                   <SidebarMenuButton 
-                     onClick={() => onSectionChange('commercial-manager-audit')} 
-                     isActive={isActive('commercial-manager-audit')} 
-                    tooltip={t('adminSidebar.commercialManagerAudit')}
-                    className="rounded-xl hover:shadow-md transition-all duration-300 group"
-                  >
-                    <FileText className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
-                   </SidebarMenuButton>
-                 </SidebarMenuItem>
-              )}
             </SidebarMenu>
           </SidebarGroup>
         )}
