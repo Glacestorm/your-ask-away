@@ -256,6 +256,7 @@ const Admin = () => {
           isOfficeDirector={isOfficeDirector}
           isCommercialManager={isCommercialManager}
           isSuperAdmin={isSuperAdmin}
+          isAdmin={isAdmin}
         />
         
         <main className="flex-1 overflow-auto bg-background">

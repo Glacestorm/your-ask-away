@@ -23,6 +23,7 @@ interface AdminSidebarProps {
   isOfficeDirector: boolean;
   isCommercialManager: boolean;
   isSuperAdmin: boolean;
+  isAdmin: boolean;
 }
 
 export function AdminSidebar({ 
@@ -31,8 +32,11 @@ export function AdminSidebar({
   isCommercialDirector,
   isOfficeDirector,
   isCommercialManager,
-  isSuperAdmin
+  isSuperAdmin,
+  isAdmin
 }: AdminSidebarProps) {
+  // Check if user is a regular gestor (not admin, not director, not manager)
+  const isRegularGestor = !isAdmin && !isSuperAdmin && !isCommercialDirector && !isOfficeDirector && !isCommercialManager;
   const { t } = useLanguage();
   const { open } = useSidebar();
   const navigate = useNavigate();
@@ -62,10 +66,34 @@ export function AdminSidebar({
       collapsible="icon"
     >
       <SidebarContent className="py-4 px-2">
-        {/* 1. Dashboards Principales */}
-        <SidebarGroup>
-          <SidebarMenu className="space-y-2">
-            {(isCommercialDirector || isSuperAdmin || isCommercialManager) && (
+        {/* 1. Dashboards - Only show gestor dashboard for regular gestores */}
+        {isRegularGestor ? (
+          <SidebarGroup>
+            <SidebarMenu className="space-y-2">
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => onSectionChange('gestor-dashboard')}
+                  isActive={isActive('gestor-dashboard')}
+                  className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
+                  tooltip={!open ? {
+                    children: 'El Meu Dashboard',
+                    className: "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
+                  } : undefined}
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-primary/50 group-hover:rotate-3">
+                    <Users className="h-5 w-5 text-primary-foreground transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3" />
+                  </div>
+                  <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
+                    El Meu Dashboard
+                  </span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroup>
+        ) : (
+          <SidebarGroup>
+            <SidebarMenu className="space-y-2">
+              {(isCommercialDirector || isSuperAdmin || isCommercialManager) && (
               <SidebarMenuItem>
                   <SidebarMenuButton
                     onClick={() => onSectionChange('director')}
@@ -143,28 +171,29 @@ export function AdminSidebar({
                 </span>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                onClick={() => onSectionChange('audit')}
-                isActive={isActive('audit')}
-                className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
-                tooltip={!open ? {
-                  children: 'Auditor',
-                  className: "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
-                } : undefined}
-              >
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-primary/50 group-hover:rotate-3">
-                  <UserCog className="h-5 w-5 text-primary-foreground transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3" />
-                </div>
-                <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
-                  Auditor
-                </span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => onSectionChange('audit')}
+                  isActive={isActive('audit')}
+                  className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
+                  tooltip={!open ? {
+                    children: 'Auditor',
+                    className: "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
+                  } : undefined}
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-primary/50 group-hover:rotate-3">
+                    <UserCog className="h-5 w-5 text-primary-foreground transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3" />
+                  </div>
+                  <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
+                    Auditor
+                  </span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroup>
+        )}
 
-        {/* 2. Navegación y Visualización */}
+        {/* 2. Navegación y Visualización - Available to all users */}
         <SidebarGroup className="mt-4">
           <SidebarMenu className="space-y-2">
             <SidebarMenuItem>
@@ -206,8 +235,8 @@ export function AdminSidebar({
           </SidebarMenu>
         </SidebarGroup>
 
-        {/* Métricas y Análisis */}
-        {open ? (
+        {/* Métricas y Análisis - Hide from regular gestores */}
+        {!isRegularGestor && open ? (
           <Collapsible open={openGroups.metrics} onOpenChange={() => toggleGroup('metrics')}>
             <SidebarGroup className="mt-4">
                <CollapsibleTrigger asChild>
@@ -275,7 +304,7 @@ export function AdminSidebar({
               </CollapsibleContent>
             </SidebarGroup>
           </Collapsible>
-        ) : (
+        ) : !isRegularGestor ? (
           <SidebarGroup className="mt-4">
             <SidebarMenu className="space-y-2">
                <SidebarMenuItem>
@@ -328,130 +357,142 @@ export function AdminSidebar({
                   <Target className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
                  </SidebarMenuButton>
                </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroup>
-        )}
-
-        {/* TPV */}
-        {open ? (
-          <Collapsible open={openGroups.tpv} onOpenChange={() => toggleGroup('tpv')}>
-            <SidebarGroup>
-               <CollapsibleTrigger asChild>
-                 <SidebarGroupLabel className="cursor-pointer hover:bg-muted/50 rounded-md p-2 transition-all duration-300 group">
-                   <CreditCard className="h-4 w-4 mr-2 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                   <span className="flex-1 transition-all duration-300 group-hover:translate-x-1">TPV</span>
-                   <ChevronRight className={`h-4 w-4 transition-all duration-300 group-hover:text-primary ${openGroups.tpv ? 'rotate-90' : ''}`} />
-                 </SidebarGroupLabel>
-               </CollapsibleTrigger>
-              <CollapsibleContent className="transition-all duration-300 data-[state=open]:animate-slide-in data-[state=closed]:animate-slide-out">
-                <SidebarGroupContent>
-                  <SidebarMenu>
-                     <SidebarMenuItem>
-                       <SidebarMenuButton onClick={() => onSectionChange('tpv')} isActive={isActive('tpv')} className="group">
-                         <CreditCard className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                         <span className="transition-all duration-300 group-hover:translate-x-1">{t('tpv.title')}</span>
-                       </SidebarMenuButton>
-                     </SidebarMenuItem>
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </CollapsibleContent>
-            </SidebarGroup>
-          </Collapsible>
-        ) : (
-          <SidebarGroup>
-            <SidebarMenu>
-               <SidebarMenuItem>
-                 <SidebarMenuButton onClick={() => onSectionChange('tpv')} isActive={isActive('tpv')} tooltip={t('tpv.title')} className="group">
-                   <CreditCard className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
-                 </SidebarMenuButton>
-               </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroup>
-        )}
-
-        {/* Gestión de Datos */}
-        {open ? (
-          <Collapsible open={openGroups.management} onOpenChange={() => toggleGroup('management')}>
-            <SidebarGroup>
-               <CollapsibleTrigger asChild>
-                 <SidebarGroupLabel className="cursor-pointer hover:bg-muted/50 rounded-md p-2 transition-all duration-300 group">
-                   <Building2 className="h-4 w-4 mr-2 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                   <span className="flex-1 transition-all duration-300 group-hover:translate-x-1">{t('admin.dataManagement')}</span>
-                   <ChevronRight className={`h-4 w-4 transition-all duration-300 group-hover:text-primary ${openGroups.management ? 'rotate-90' : ''}`} />
-                 </SidebarGroupLabel>
-               </CollapsibleTrigger>
-              <CollapsibleContent className="transition-all duration-300 data-[state=open]:animate-slide-in data-[state=closed]:animate-slide-out">
-                <SidebarGroupContent>
-                  <SidebarMenu>
-                     <SidebarMenuItem>
-                       <SidebarMenuButton onClick={() => onSectionChange('companies')} isActive={isActive('companies')} className="group">
-                         <Building2 className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                         <span className="transition-all duration-300 group-hover:translate-x-1">{t('admin.companies')}</span>
-                       </SidebarMenuButton>
-                     </SidebarMenuItem>
-                     <SidebarMenuItem>
-                       <SidebarMenuButton onClick={() => onSectionChange('import-history')} isActive={isActive('import-history')} className="group">
-                         <History className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                         <span className="transition-all duration-300 group-hover:translate-x-1">Historial de Importaciones</span>
-                       </SidebarMenuButton>
-                     </SidebarMenuItem>
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </CollapsibleContent>
-            </SidebarGroup>
-          </Collapsible>
-        ) : (
-          <SidebarGroup>
-            <SidebarMenu>
-               <SidebarMenuItem>
-                 <SidebarMenuButton onClick={() => onSectionChange('companies')} isActive={isActive('companies')} tooltip={t('admin.companies')} className="group">
-                   <Building2 className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
-                 </SidebarMenuButton>
-               </SidebarMenuItem>
-               <SidebarMenuItem>
-                 <SidebarMenuButton onClick={() => onSectionChange('import-history')} isActive={isActive('import-history')} tooltip="Historial de Importaciones" className="group">
-                   <History className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
-                 </SidebarMenuButton>
-               </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroup>
-        )}
-
-        {/* Configuración */}
-        {open ? (
-          <Collapsible open={openGroups.config} onOpenChange={() => toggleGroup('config')}>
-            <SidebarGroup>
-               <CollapsibleTrigger asChild>
-                 <SidebarGroupLabel className="cursor-pointer hover:bg-muted/50 rounded-md p-2 transition-all duration-300 group">
-                   <Settings className="h-4 w-4 mr-2 transition-all duration-300 group-hover:scale-110 group-hover:text-primary group-hover:rotate-90" />
-                   <span className="flex-1 transition-all duration-300 group-hover:translate-x-1">{t('admin.configuration')}</span>
-                   <ChevronRight className={`h-4 w-4 transition-all duration-300 group-hover:text-primary ${openGroups.config ? 'rotate-90' : ''}`} />
-                 </SidebarGroupLabel>
-               </CollapsibleTrigger>
-              <CollapsibleContent className="transition-all duration-300 data-[state=open]:animate-slide-in data-[state=closed]:animate-slide-out">
-                <SidebarGroupContent>
-                  <SidebarMenu>
-                     <SidebarMenuItem>
-                       <SidebarMenuButton onClick={() => onSectionChange('map-config')} isActive={isActive('map-config')} className="group">
-                         <Map className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                         <span className="transition-all duration-300 group-hover:translate-x-1">{t('map.layers')}</span>
-                       </SidebarMenuButton>
-                     </SidebarMenuItem>
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </CollapsibleContent>
-            </SidebarGroup>
-          </Collapsible>
-        ) : (
-          <SidebarGroup>
-            <SidebarMenu>
-               <SidebarMenuItem>
-                 <SidebarMenuButton onClick={() => onSectionChange('map-config')} isActive={isActive('map-config')} tooltip={t('map.layers')} className="group">
-                   <Map className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
-                 </SidebarMenuButton>
-               </SidebarMenuItem>
              </SidebarMenu>
-          </SidebarGroup>
+           </SidebarGroup>
+         ) : null}
+
+        {/* TPV Management - Hide from regular gestores */}
+        {!isRegularGestor && (
+          <>
+            {open ? (
+              <Collapsible open={openGroups.tpv} onOpenChange={() => toggleGroup('tpv')}>
+                <SidebarGroup>
+                  <CollapsibleTrigger asChild>
+                    <SidebarGroupLabel className="cursor-pointer hover:bg-muted/50 rounded-md p-2 transition-all duration-300 group">
+                      <CreditCard className="h-4 w-4 mr-2 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
+                      <span className="flex-1 transition-all duration-300 group-hover:translate-x-1">TPV</span>
+                      <ChevronRight className={`h-4 w-4 transition-all duration-300 group-hover:text-primary ${openGroups.tpv ? 'rotate-90' : ''}`} />
+                    </SidebarGroupLabel>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="transition-all duration-300 data-[state=open]:animate-slide-in data-[state=closed]:animate-slide-out">
+                    <SidebarGroupContent>
+                      <SidebarMenu>
+                        <SidebarMenuItem>
+                          <SidebarMenuButton onClick={() => onSectionChange('tpv')} isActive={isActive('tpv')} className="group">
+                            <CreditCard className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
+                            <span className="transition-all duration-300 group-hover:translate-x-1">{t('tpv.title')}</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      </SidebarMenu>
+                    </SidebarGroupContent>
+                  </CollapsibleContent>
+                </SidebarGroup>
+              </Collapsible>
+            ) : (
+              <SidebarGroup>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => onSectionChange('tpv')} isActive={isActive('tpv')} tooltip={t('tpv.title')} className="group">
+                      <CreditCard className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroup>
+            )}
+          </>
+        )}
+
+        {/* Gestión de Datos - Hide from regular gestores */}
+        {!isRegularGestor && (isSuperAdmin || isCommercialDirector || isCommercialManager) && (
+          <>
+            {open ? (
+              <Collapsible open={openGroups.management} onOpenChange={() => toggleGroup('management')}>
+                <SidebarGroup>
+                  <CollapsibleTrigger asChild>
+                    <SidebarGroupLabel className="cursor-pointer hover:bg-muted/50 rounded-md p-2 transition-all duration-300 group">
+                      <Building2 className="h-4 w-4 mr-2 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
+                      <span className="flex-1 transition-all duration-300 group-hover:translate-x-1">{t('admin.dataManagement')}</span>
+                      <ChevronRight className={`h-4 w-4 transition-all duration-300 group-hover:text-primary ${openGroups.management ? 'rotate-90' : ''}`} />
+                    </SidebarGroupLabel>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="transition-all duration-300 data-[state=open]:animate-slide-in data-[state=closed]:animate-slide-out">
+                    <SidebarGroupContent>
+                      <SidebarMenu>
+                        <SidebarMenuItem>
+                          <SidebarMenuButton onClick={() => onSectionChange('companies')} isActive={isActive('companies')} className="group">
+                            <Building2 className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
+                            <span className="transition-all duration-300 group-hover:translate-x-1">{t('admin.companies')}</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                          <SidebarMenuButton onClick={() => onSectionChange('import-history')} isActive={isActive('import-history')} className="group">
+                            <History className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
+                            <span className="transition-all duration-300 group-hover:translate-x-1">Historial de Importaciones</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      </SidebarMenu>
+                    </SidebarGroupContent>
+                  </CollapsibleContent>
+                </SidebarGroup>
+              </Collapsible>
+            ) : (
+              <SidebarGroup>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => onSectionChange('companies')} isActive={isActive('companies')} tooltip={t('admin.companies')} className="group">
+                      <Building2 className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => onSectionChange('import-history')} isActive={isActive('import-history')} tooltip="Historial de Importaciones" className="group">
+                      <History className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroup>
+            )}
+          </>
+        )}
+
+        {/* Configuración - Hide from regular gestores */}
+        {!isRegularGestor && (isSuperAdmin || isCommercialDirector || isCommercialManager) && (
+          <>
+            {open ? (
+              <Collapsible open={openGroups.config} onOpenChange={() => toggleGroup('config')}>
+                <SidebarGroup>
+                  <CollapsibleTrigger asChild>
+                    <SidebarGroupLabel className="cursor-pointer hover:bg-muted/50 rounded-md p-2 transition-all duration-300 group">
+                      <Settings className="h-4 w-4 mr-2 transition-all duration-300 group-hover:scale-110 group-hover:text-primary group-hover:rotate-90" />
+                      <span className="flex-1 transition-all duration-300 group-hover:translate-x-1">{t('admin.configuration')}</span>
+                      <ChevronRight className={`h-4 w-4 transition-all duration-300 group-hover:text-primary ${openGroups.config ? 'rotate-90' : ''}`} />
+                    </SidebarGroupLabel>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="transition-all duration-300 data-[state=open]:animate-slide-in data-[state=closed]:animate-slide-out">
+                    <SidebarGroupContent>
+                      <SidebarMenu>
+                        <SidebarMenuItem>
+                          <SidebarMenuButton onClick={() => onSectionChange('map-config')} isActive={isActive('map-config')} className="group">
+                            <Map className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
+                            <span className="transition-all duration-300 group-hover:translate-x-1">{t('map.layers')}</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      </SidebarMenu>
+                    </SidebarGroupContent>
+                  </CollapsibleContent>
+                </SidebarGroup>
+              </Collapsible>
+            ) : (
+              <SidebarGroup>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => onSectionChange('map-config')} isActive={isActive('map-config')} tooltip={t('map.layers')} className="group">
+                      <Map className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroup>
+            )}
+          </>
         )}
 
         {/* Administració - Solo para roles administrativos */}
