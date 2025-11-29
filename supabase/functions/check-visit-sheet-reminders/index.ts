@@ -75,8 +75,8 @@ serve(async (req) => {
     const notifications = [];
 
     for (const sheet of sheets || []) {
-      const companyName = sheet.company?.name || 'Cliente';
-      const gestorName = sheet.gestor?.full_name || sheet.gestor?.email || 'Gestor';
+      const companyName = (sheet.company as any)?.name || 'Cliente';
+      const gestorName = (sheet.gestor as any)?.full_name || (sheet.gestor as any)?.email || 'Gestor';
 
       // Check each reminder type
       const reminders = [
