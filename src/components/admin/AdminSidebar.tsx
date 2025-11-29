@@ -61,7 +61,7 @@ export function AdminSidebar({
       collapsible="icon"
     >
       <SidebarContent className="py-4 px-2">
-        {/* Dashboard Principal */}
+        {/* 1. Dashboards Principales */}
         <SidebarGroup>
           <SidebarMenu className="space-y-2">
             {(isCommercialDirector || isSuperAdmin || isCommercialManager) && (
@@ -142,6 +142,12 @@ export function AdminSidebar({
                 </span>
               </SidebarMenuButton>
             </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+
+        {/* 2. Navegación y Visualización */}
+        <SidebarGroup className="mt-4">
+          <SidebarMenu className="space-y-2">
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={() => onSectionChange('map')}
@@ -166,7 +172,7 @@ export function AdminSidebar({
                 isActive={location.pathname === '/dashboard'}
                 className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
                 tooltip={!open ? {
-                  children: 'Gestor',
+                  children: 'Tauler',
                   className: "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
                 } : undefined}
               >
@@ -174,25 +180,7 @@ export function AdminSidebar({
                   <BarChart3 className="h-5 w-5 text-primary-foreground transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3" />
                 </div>
                 <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
-                  Gestor
-                </span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                onClick={() => onSectionChange('users')}
-                isActive={isActive('users')}
-                className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
-                tooltip={!open ? {
-                  children: 'Administració',
-                  className: "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
-                } : undefined}
-              >
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-primary/50 group-hover:rotate-6">
-                  <Settings className="h-5 w-5 text-primary-foreground transition-all duration-300 group-hover:scale-110 group-hover:rotate-90" />
-                </div>
-                <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
-                  Administració
+                  Tauler
                 </span>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -579,9 +567,33 @@ export function AdminSidebar({
                    <Map className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
                  </SidebarMenuButton>
                </SidebarMenuItem>
-            </SidebarMenu>
+             </SidebarMenu>
           </SidebarGroup>
         )}
+
+        {/* Administració */}
+        <SidebarGroup className="mt-4">
+          <SidebarMenu className="space-y-2">
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => onSectionChange('users')}
+                isActive={isActive('users')}
+                className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
+                tooltip={!open ? {
+                  children: 'Administració',
+                  className: "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
+                } : undefined}
+              >
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-primary/50 group-hover:rotate-6">
+                  <Settings className="h-5 w-5 text-primary-foreground transition-all duration-300 group-hover:scale-110 group-hover:rotate-90" />
+                </div>
+                <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
+                  Administració
+                </span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
     </Sidebar>
   );
