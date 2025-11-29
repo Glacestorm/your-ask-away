@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.generate-action-plan]
 verify_jwt = false
+
+[functions.send-reminder-email]
+verify_jwt = false
