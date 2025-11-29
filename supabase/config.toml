@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.geocode-address]
 verify_jwt = false
+
+[functions.generate-action-plan]
+verify_jwt = false

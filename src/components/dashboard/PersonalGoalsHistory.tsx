@@ -4,11 +4,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Trophy, TrendingUp, Target, Calendar, Award, Users, Building2, TrendingDown, BarChart3 } from 'lucide-react';
+import { Loader2, Trophy, TrendingUp, Target, Calendar, Award, Users, Building2, TrendingDown, BarChart3, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { format } from 'date-fns';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { PersonalGoalsDetailedAnalysis } from './PersonalGoalsDetailedAnalysis';
+import { ActionPlanManager } from './ActionPlanManager';
 
 interface CompletedGoal {
   id: string;
@@ -400,7 +401,7 @@ export function PersonalGoalsHistory() {
 
   return (
     <Tabs defaultValue="overview" className="space-y-6">
-      <TabsList className="grid w-full grid-cols-2 max-w-md">
+      <TabsList className="grid w-full grid-cols-3 max-w-2xl">
         <TabsTrigger value="overview" className="flex items-center gap-2">
           <Trophy className="h-4 w-4" />
           {t('gestor.dashboard.goals.history.tabs.overview')}
@@ -408,6 +409,10 @@ export function PersonalGoalsHistory() {
         <TabsTrigger value="analysis" className="flex items-center gap-2">
           <BarChart3 className="h-4 w-4" />
           {t('gestor.dashboard.goals.history.tabs.analysis')}
+        </TabsTrigger>
+        <TabsTrigger value="actionPlan" className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4" />
+          {t('gestor.dashboard.goals.history.tabs.actionPlan')}
         </TabsTrigger>
       </TabsList>
 
@@ -704,6 +709,14 @@ export function PersonalGoalsHistory() {
             personalAvg={stats.average_achievement}
             officeAvg={benchmark.office_avg_achievement}
             teamAvg={benchmark.team_avg_achievement}
+            metricComparison={benchmark.metric_comparison}
+          />
+        )}
+      </TabsContent>
+
+      <TabsContent value="actionPlan" className="space-y-6">
+        {benchmark && (
+          <ActionPlanManager
             metricComparison={benchmark.metric_comparison}
           />
         )}
