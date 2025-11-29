@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { ThemeSelector } from '@/components/ThemeSelector';
-import { MapPin, Menu, LogOut, Settings, BarChart3, UserCircle, Mountain, Layers, Info, Filter } from 'lucide-react';
+import { MapPin, Menu, LogOut, Settings, BarChart3, UserCircle, Mountain, Layers, Info, Filter, Home } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -161,6 +161,25 @@ export function MapHeader({
   return (
     <header className="flex h-18 items-center justify-between border-b bg-card/95 backdrop-blur-md px-6 shadow-lg supports-[backdrop-filter]:bg-card/80">
       <div className="flex items-center gap-4">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/admin')}
+                aria-label="Menú Principal"
+                className="hover:bg-accent/50 transition-colors"
+              >
+                <Home className="h-5 w-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>Menú Principal</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
         <Button
           variant="ghost"
           size="icon"
