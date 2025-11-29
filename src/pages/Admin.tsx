@@ -187,8 +187,6 @@ const Admin = () => {
         return <ConceptsManager />;
       case 'map-config':
         return <MapTooltipConfig />;
-      case 'audit-logs':
-        return <AuditLogsViewer />;
       case 'import-history':
         return (
           <div className="rounded-lg border bg-card p-6">

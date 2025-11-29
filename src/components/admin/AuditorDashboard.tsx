@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Database, 
   Activity, 
@@ -16,7 +18,8 @@ import {
   AlertCircle,
   CheckCircle,
   XCircle,
-  Loader2
+  Loader2,
+  Search
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -79,6 +82,17 @@ interface RecentLog {
   user_id: string | null;
 }
 
+interface FullLog {
+  id: string;
+  user_id: string | null;
+  action: string;
+  table_name: string;
+  record_id: string | null;
+  old_data: any;
+  new_data: any;
+  created_at: string;
+}
+
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
 
 export function AuditorDashboard() {
@@ -97,6 +111,10 @@ export function AuditorDashboard() {
   const [userActivity, setUserActivity] = useState<UserActivity[]>([]);
   const [timelineData, setTimelineData] = useState<TimelineActivity[]>([]);
   const [recentLogs, setRecentLogs] = useState<RecentLog[]>([]);
+  const [fullLogs, setFullLogs] = useState<FullLog[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterAction, setFilterAction] = useState<string>('all');
+  const [filterTable, setFilterTable] = useState<string>('all');
 
   useEffect(() => {
     fetchAllData();
@@ -110,7 +128,8 @@ export function AuditorDashboard() {
         fetchTableActivity(),
         fetchUserActivity(),
         fetchTimelineActivity(),
-        fetchRecentLogs()
+        fetchRecentLogs(),
+        fetchFullLogs()
       ]);
     } catch (error: any) {
       console.error('Error fetching audit data:', error);
@@ -277,6 +296,31 @@ export function AuditorDashboard() {
     setRecentLogs(data || []);
   };
 
+  const fetchFullLogs = async () => {
+    const { data, error } = await supabase
+      .from('audit_logs')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    if (error) throw error;
+    setFullLogs(data || []);
+  };
+
+  const filteredFullLogs = fullLogs.filter((log) => {
+    const matchesSearch = searchTerm === '' || 
+      log.table_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      log.action.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesAction = filterAction === 'all' || log.action === filterAction;
+    const matchesTable = filterTable === 'all' || log.table_name === filterTable;
+
+    return matchesSearch && matchesAction && matchesTable;
+  });
+
+  const uniqueActions = [...new Set(fullLogs.map(log => log.action))];
+  const uniqueTables = [...new Set(fullLogs.map(log => log.table_name))];
+
   const getActionIcon = (action: string) => {
     switch (action) {
       case 'INSERT':
@@ -415,7 +459,7 @@ export function AuditorDashboard() {
 
       {/* Charts and Detailed Info */}
       <Tabs defaultValue="timeline" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="timeline">
             <TrendingUp className="h-4 w-4 mr-2" />
             Evolució
@@ -435,6 +479,10 @@ export function AuditorDashboard() {
           <TabsTrigger value="recent">
             <Clock className="h-4 w-4 mr-2" />
             Recents
+          </TabsTrigger>
+          <TabsTrigger value="full-logs">
+            <FileText className="h-4 w-4 mr-2" />
+            Logs Complets
           </TabsTrigger>
         </TabsList>
 
@@ -696,6 +744,131 @@ export function AuditorDashboard() {
                       </div>
                     </div>
                   ))}
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="full-logs" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Database className="h-5 w-5" />
+                Logs d'Auditoría Complets
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar per taula o acció..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <Select value={filterAction} onValueChange={setFilterAction}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Filtrar per acció" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Totes les accions</SelectItem>
+                    {uniqueActions.map((action) => (
+                      <SelectItem key={action} value={action}>
+                        {action}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={filterTable} onValueChange={setFilterTable}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Filtrar per taula" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Totes les taules</SelectItem>
+                    {uniqueTables.map((table) => (
+                      <SelectItem key={table} value={table}>
+                        {table}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="text-sm text-muted-foreground">
+                Mostrant {filteredFullLogs.length} de {fullLogs.length} registres
+              </div>
+
+              <ScrollArea className="h-[600px] rounded-md border">
+                <div className="space-y-2 p-4">
+                  {filteredFullLogs.map((log) => (
+                    <Card key={log.id} className="overflow-hidden">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex items-start gap-3 flex-1 min-w-0">
+                            {getActionIcon(log.action)}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-2">
+                                {getActionBadge(log.action)}
+                                <Badge variant="outline">{log.table_name}</Badge>
+                                {log.record_id && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    ID: {log.record_id.substring(0, 8)}...
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground mb-2">
+                                {format(parseISO(log.created_at), "dd MMM yyyy 'a les' HH:mm:ss", { locale: es })}
+                              </p>
+                              
+                              {(log.old_data || log.new_data) && (
+                                <div className="grid gap-2 mt-3">
+                                  {log.old_data && log.action === 'UPDATE' && (
+                                    <div className="rounded-md bg-red-500/5 border border-red-500/10 p-3">
+                                      <p className="text-xs font-medium text-red-600 mb-1">Dades anteriors:</p>
+                                      <pre className="text-xs overflow-x-auto text-muted-foreground">
+                                        {JSON.stringify(log.old_data, null, 2)}
+                                      </pre>
+                                    </div>
+                                  )}
+                                  {log.new_data && (
+                                    <div className="rounded-md bg-green-500/5 border border-green-500/10 p-3">
+                                      <p className="text-xs font-medium text-green-600 mb-1">
+                                        {log.action === 'UPDATE' ? 'Dades noves:' : 'Dades:'}
+                                      </p>
+                                      <pre className="text-xs overflow-x-auto text-muted-foreground">
+                                        {JSON.stringify(log.new_data, null, 2)}
+                                      </pre>
+                                    </div>
+                                  )}
+                                  {log.old_data && log.action === 'DELETE' && (
+                                    <div className="rounded-md bg-red-500/5 border border-red-500/10 p-3">
+                                      <p className="text-xs font-medium text-red-600 mb-1">Dades eliminades:</p>
+                                      <pre className="text-xs overflow-x-auto text-muted-foreground">
+                                        {JSON.stringify(log.old_data, null, 2)}
+                                      </pre>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                  
+                  {filteredFullLogs.length === 0 && (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <Database className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                      <p className="text-sm font-medium">No s'han trobat registres</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Prova d'ajustar els filtres de cerca
+                      </p>
+                    </div>
+                  )}
                 </div>
               </ScrollArea>
             </CardContent>
