@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Activity } from 'lucide-react';
 import { toast } from 'sonner';
+import VisitSheets from '@/pages/VisitSheets';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { GlobalNavHeader } from '@/components/GlobalNavHeader';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
@@ -109,6 +110,8 @@ const Admin = () => {
         return <AuditorDashboard />;
       case 'map':
         return <MapView />;
+      case 'visit-sheets':
+        return <VisitSheets />;
       case 'shared-calendar':
         return (
           <div className="rounded-lg border bg-card p-6">
