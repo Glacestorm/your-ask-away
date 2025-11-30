@@ -18,17 +18,17 @@ export function GlobalNavHeader({ title, subtitle, showSidebarTrigger = false }:
   const { user } = useAuth();
 
   return (
-    <div className="flex items-center justify-between rounded-2xl bg-gradient-to-br from-card via-card to-accent/20 p-6 shadow-lg border border-border/50">
+    <div className="flex items-center justify-between rounded-2xl bg-gradient-to-br from-card via-card to-accent/20 p-4 shadow-lg border border-border/50">
       <div className="flex items-center gap-4">
         {showSidebarTrigger && <SidebarTrigger />}
         {(title || subtitle) && (
           <div>
             {title && (
-              <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
                 {title}
               </h1>
             )}
-            {subtitle && <p className="text-muted-foreground mt-1">{subtitle}</p>}
+            {subtitle && <p className="text-sm text-muted-foreground mt-0.5">{subtitle}</p>}
           </div>
         )}
       </div>
