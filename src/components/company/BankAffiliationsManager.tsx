@@ -23,6 +23,7 @@ interface BankAffiliation {
   is_primary: boolean | null;
   active: boolean | null;
   notes: string | null;
+  affiliation_percentage: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -44,6 +45,7 @@ export function BankAffiliationsManager({ companyId }: Props) {
     is_primary: false,
     active: true,
     notes: '',
+    affiliation_percentage: 0,
   });
 
   useEffect(() => {
@@ -72,7 +74,35 @@ export function BankAffiliationsManager({ companyId }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validar porcentaje
+    if (formData.affiliation_percentage < 0 || formData.affiliation_percentage > 100) {
+      toast.error('El porcentaje debe estar entre 0 y 100');
+      return;
+    }
+
     try {
+      // Calcular el total de porcentajes actuales (excluyendo el que estamos editando)
+      const { data: existingAffiliations, error: fetchError } = await supabase
+        .from('company_bank_affiliations' as any)
+        .select('affiliation_percentage')
+        .eq('company_id', companyId)
+        .eq('active', true)
+        .neq('id', editingAffiliation?.id || '00000000-0000-0000-0000-000000000000') as any;
+
+      if (fetchError) throw fetchError;
+
+      const currentTotal = (existingAffiliations || []).reduce(
+        (sum: number, aff: any) => sum + (aff.affiliation_percentage || 0), 
+        0
+      );
+      
+      const newTotal = currentTotal + formData.affiliation_percentage;
+
+      if (newTotal > 100) {
+        toast.error(`La suma de porcentajes no puede superar 100%. Actualmente: ${currentTotal}%. Máximo disponible: ${100 - currentTotal}%`);
+        return;
+      }
+
       if (editingAffiliation) {
         const { error } = await supabase
           .from('company_bank_affiliations' as any)
@@ -82,6 +112,7 @@ export function BankAffiliationsManager({ companyId }: Props) {
             is_primary: formData.is_primary,
             active: formData.active,
             notes: formData.notes,
+            affiliation_percentage: formData.affiliation_percentage,
           })
           .eq('id', editingAffiliation.id);
 
@@ -97,10 +128,16 @@ export function BankAffiliationsManager({ companyId }: Props) {
             is_primary: formData.is_primary,
             active: formData.active,
             notes: formData.notes,
+            affiliation_percentage: formData.affiliation_percentage,
           });
 
         if (error) throw error;
         toast.success('Vinculación añadida');
+      }
+
+      // Advertir si no suma 100%
+      if (newTotal !== 100) {
+        toast.warning(`Atención: La vinculación total es ${newTotal}%. Se recomienda que sume 100%.`);
       }
 
       setIsDialogOpen(false);
@@ -138,6 +175,7 @@ export function BankAffiliationsManager({ companyId }: Props) {
       is_primary: affiliation.is_primary || false,
       active: affiliation.active !== false,
       notes: affiliation.notes || '',
+      affiliation_percentage: affiliation.affiliation_percentage || 0,
     });
     setIsDialogOpen(true);
   };
@@ -149,9 +187,15 @@ export function BankAffiliationsManager({ companyId }: Props) {
       is_primary: false,
       active: true,
       notes: '',
+      affiliation_percentage: 0,
     });
     setEditingAffiliation(null);
   };
+
+  // Calcular total de porcentajes
+  const totalPercentage = affiliations
+    .filter(aff => aff.active)
+    .reduce((sum, aff) => sum + (aff.affiliation_percentage || 0), 0);
 
   return (
     <Card>
@@ -162,6 +206,16 @@ export function BankAffiliationsManager({ companyId }: Props) {
             <CardDescription>
               Gestiona las entidades bancarias y porcentajes de vinculación
             </CardDescription>
+            {affiliations.length > 0 && (
+              <div className={`mt-2 text-sm font-medium ${
+                totalPercentage === 100 ? 'text-green-600' : 
+                totalPercentage > 100 ? 'text-red-600' : 
+                'text-orange-600'
+              }`}>
+                Total vinculación: {totalPercentage}%
+                {totalPercentage !== 100 && ` (Debe sumar 100%)`}
+              </div>
+            )}
           </div>
           <Dialog open={isDialogOpen} onOpenChange={(open) => {
             setIsDialogOpen(open);
@@ -221,6 +275,23 @@ export function BankAffiliationsManager({ companyId }: Props) {
                   </Select>
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="affiliation_percentage">Porcentaje de Vinculación (%)</Label>
+                  <Input
+                    id="affiliation_percentage"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={formData.affiliation_percentage}
+                    onChange={(e) => setFormData({ ...formData, affiliation_percentage: Number(e.target.value) })}
+                    placeholder="% de vinculación"
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    La suma total de todas las entidades debe ser 100%
+                  </p>
+                </div>
+
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="is_primary"
@@ -273,6 +344,7 @@ export function BankAffiliationsManager({ companyId }: Props) {
                 <TableRow>
                   <TableHead>Prioridad</TableHead>
                   <TableHead>Banco</TableHead>
+                  <TableHead>% Vinculación</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead>Notas</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
@@ -280,7 +352,10 @@ export function BankAffiliationsManager({ companyId }: Props) {
               </TableHeader>
               <TableBody>
                 {affiliations.map((affiliation) => (
-                  <TableRow key={affiliation.id}>
+                  <TableRow 
+                    key={affiliation.id}
+                    className={affiliation.is_primary ? 'bg-primary/5' : ''}
+                  >
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{affiliation.priority_order}</span>
@@ -289,7 +364,12 @@ export function BankAffiliationsManager({ companyId }: Props) {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>{affiliation.bank_name}</TableCell>
+                    <TableCell className="font-medium">{affiliation.bank_name}</TableCell>
+                    <TableCell>
+                      <span className="font-bold text-lg">
+                        {affiliation.affiliation_percentage || 0}%
+                      </span>
+                    </TableCell>
                     <TableCell>
                       {affiliation.active ? (
                         <Badge variant="default" className="bg-green-500">Activo</Badge>

@@ -450,6 +450,7 @@ export type Database = {
         Row: {
           account_number: string | null
           active: boolean | null
+          affiliation_percentage: number | null
           affiliation_type: string | null
           bank_code: string | null
           bank_name: string
@@ -464,6 +465,7 @@ export type Database = {
         Insert: {
           account_number?: string | null
           active?: boolean | null
+          affiliation_percentage?: number | null
           affiliation_type?: string | null
           bank_code?: string | null
           bank_name: string
@@ -478,6 +480,7 @@ export type Database = {
         Update: {
           account_number?: string | null
           active?: boolean | null
+          affiliation_percentage?: number | null
           affiliation_type?: string | null
           bank_code?: string | null
           bank_name?: string
