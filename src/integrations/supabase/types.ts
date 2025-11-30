@@ -329,10 +329,12 @@ export type Database = {
           created_at: string | null
           email: string | null
           employees: number | null
+          facturacion_anual: number | null
           fecha_ultima_visita: string | null
           gestor_id: string | null
           id: string
           import_batch_id: string | null
+          ingresos_creand: number | null
           latitude: number
           legal_form: string | null
           longitude: number
@@ -340,6 +342,7 @@ export type Database = {
           observaciones: string | null
           oficina: string | null
           parroquia: string
+          periodo_facturacion: string | null
           phone: string | null
           pl_banco: number | null
           registration_number: string | null
@@ -352,6 +355,7 @@ export type Database = {
           vinculacion_entidad_1: number | null
           vinculacion_entidad_2: number | null
           vinculacion_entidad_3: number | null
+          vinculacion_modo: string | null
           website: string | null
         }
         Insert: {
@@ -363,10 +367,12 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           employees?: number | null
+          facturacion_anual?: number | null
           fecha_ultima_visita?: string | null
           gestor_id?: string | null
           id?: string
           import_batch_id?: string | null
+          ingresos_creand?: number | null
           latitude: number
           legal_form?: string | null
           longitude: number
@@ -374,6 +380,7 @@ export type Database = {
           observaciones?: string | null
           oficina?: string | null
           parroquia: string
+          periodo_facturacion?: string | null
           phone?: string | null
           pl_banco?: number | null
           registration_number?: string | null
@@ -386,6 +393,7 @@ export type Database = {
           vinculacion_entidad_1?: number | null
           vinculacion_entidad_2?: number | null
           vinculacion_entidad_3?: number | null
+          vinculacion_modo?: string | null
           website?: string | null
         }
         Update: {
@@ -397,10 +405,12 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           employees?: number | null
+          facturacion_anual?: number | null
           fecha_ultima_visita?: string | null
           gestor_id?: string | null
           id?: string
           import_batch_id?: string | null
+          ingresos_creand?: number | null
           latitude?: number
           legal_form?: string | null
           longitude?: number
@@ -408,6 +418,7 @@ export type Database = {
           observaciones?: string | null
           oficina?: string | null
           parroquia?: string
+          periodo_facturacion?: string | null
           phone?: string | null
           pl_banco?: number | null
           registration_number?: string | null
@@ -420,6 +431,7 @@ export type Database = {
           vinculacion_entidad_1?: number | null
           vinculacion_entidad_2?: number | null
           vinculacion_entidad_3?: number | null
+          vinculacion_modo?: string | null
           website?: string | null
         }
         Relationships: [

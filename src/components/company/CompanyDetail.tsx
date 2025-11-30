@@ -328,95 +328,25 @@ export const CompanyDetail = ({ company, onClose }: CompanyDetailProps) => {
 
           {/* Relations Tab - Banking, TPV, Contacts */}
           <TabsContent value="relations" className="p-3 space-y-3 mt-0">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Landmark className="h-4 w-4 text-primary" />
-                  Afiliaciones Bancarias
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <BankAffiliationsManager companyId={company.id} />
-              </CardContent>
-            </Card>
+            <BankAffiliationsManager companyId={company.id} />
 
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <CreditCard className="h-4 w-4 text-primary" />
-                  Terminales TPV
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <TPVTerminalsManager companyId={company.id} />
-              </CardContent>
-            </Card>
+            <TPVTerminalsManager companyId={company.id} />
 
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <User className="h-4 w-4 text-primary" />
-                  Contactos
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ContactsManager companyId={company.id} />
-              </CardContent>
-            </Card>
+            <ContactsManager companyId={company.id} />
           </TabsContent>
 
           {/* Media Tab - Photos and Documents */}
           <TabsContent value="media" className="p-3 space-y-3 mt-0">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Camera className="h-4 w-4 text-primary" />
-                  Fotografías
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CompanyPhotosManager companyId={company.id} companyName={company.name} />
-              </CardContent>
-            </Card>
+            <CompanyPhotosManager companyId={company.id} companyName={company.name} />
 
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-primary" />
-                  Documentos
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <DocumentsManager companyId={company.id} companyName={company.name} />
-              </CardContent>
-            </Card>
+            <DocumentsManager companyId={company.id} companyName={company.name} />
           </TabsContent>
 
           {/* Activity Tab - Visits */}
           <TabsContent value="activity" className="p-3 space-y-3 mt-0">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-primary" />
-                  Historial de Fichas de Visita
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <VisitSheetsHistory companyId={company.id} />
-              </CardContent>
-            </Card>
+            <VisitSheetsHistory companyId={company.id} />
 
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <History className="h-4 w-4 text-primary" />
-                  Historial de Visitas
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <VisitsPanel company={company} />
-              </CardContent>
-            </Card>
+            <VisitsPanel company={company} />
           </TabsContent>
         </ScrollArea>
       </Tabs>
