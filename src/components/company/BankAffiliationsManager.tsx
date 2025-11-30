@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Plus, Trash2, Pencil } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -218,6 +219,22 @@ export function BankAffiliationsManager({ companyId }: Props) {
                       <SelectItem value="3">3 - Terciario</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="is_primary"
+                    checked={formData.is_primary}
+                    onCheckedChange={(checked) => 
+                      setFormData({ ...formData, is_primary: checked as boolean })
+                    }
+                  />
+                  <Label 
+                    htmlFor="is_primary" 
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Marcar como principal
+                  </Label>
                 </div>
 
                 <div className="space-y-2">
