@@ -329,55 +329,63 @@ export const CompanyDetail = ({ company, onClose, defaultTab = "info" }: Company
           </TabsContent>
 
           {/* Relations Tab - Banking, TPV, Contacts */}
-          <TabsContent value="relations" className="mt-0 h-full">
-            <ScrollArea className="h-full px-3">
-              <div className="space-y-3 py-3">
-                <Collapsible defaultOpen className="border rounded-lg overflow-hidden bg-card">
-              <CollapsibleTrigger className="flex w-full items-center justify-between p-4 hover:bg-muted/50 transition-colors">
+          <TabsContent value="relations" className="p-3 space-y-3 mt-0">
+            {/* Vinculación Bancaria Section */}
+            <Collapsible defaultOpen className="border rounded-lg overflow-hidden bg-card shadow-sm">
+              <CollapsibleTrigger className="flex w-full items-center justify-between p-3 hover:bg-muted/50 transition-colors group">
                 <div className="flex items-center gap-2">
-                  <Landmark className="h-5 w-5 text-primary" />
-                  <h3 className="text-base font-semibold">Vinculación Bancaria</h3>
+                  <div className="p-1.5 rounded-md bg-primary/10">
+                    <Landmark className="h-4 w-4 text-primary" />
+                  </div>
+                  <h3 className="text-sm font-semibold">Vinculación Bancaria</h3>
                 </div>
-                <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform duration-200 data-[state=open]:rotate-180" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="px-4 pb-4">
+                <Separator />
+                <div className="p-3">
                   <BankAffiliationsManager companyId={company.id} />
                 </div>
               </CollapsibleContent>
             </Collapsible>
 
-            <Collapsible defaultOpen className="border rounded-lg overflow-hidden bg-card">
-              <CollapsibleTrigger className="flex w-full items-center justify-between p-4 hover:bg-muted/50 transition-colors">
+            {/* TPV Terminals Section */}
+            <Collapsible defaultOpen className="border rounded-lg overflow-hidden bg-card shadow-sm">
+              <CollapsibleTrigger className="flex w-full items-center justify-between p-3 hover:bg-muted/50 transition-colors group">
                 <div className="flex items-center gap-2">
-                  <CreditCard className="h-5 w-5 text-primary" />
-                  <h3 className="text-base font-semibold">Terminales TPV</h3>
+                  <div className="p-1.5 rounded-md bg-primary/10">
+                    <CreditCard className="h-4 w-4 text-primary" />
+                  </div>
+                  <h3 className="text-sm font-semibold">Terminales TPV</h3>
                 </div>
-                <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform duration-200 data-[state=open]:rotate-180" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="px-4 pb-4">
+                <Separator />
+                <div className="p-3">
                   <TPVTerminalsManager companyId={company.id} />
                 </div>
               </CollapsibleContent>
             </Collapsible>
 
-            <Collapsible defaultOpen className="border rounded-lg overflow-hidden bg-card">
-              <CollapsibleTrigger className="flex w-full items-center justify-between p-4 hover:bg-muted/50 transition-colors">
+            {/* Contacts Section */}
+            <Collapsible defaultOpen className="border rounded-lg overflow-hidden bg-card shadow-sm">
+              <CollapsibleTrigger className="flex w-full items-center justify-between p-3 hover:bg-muted/50 transition-colors group">
                 <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-primary" />
-                  <h3 className="text-base font-semibold">Contactos</h3>
+                  <div className="p-1.5 rounded-md bg-primary/10">
+                    <Users className="h-4 w-4 text-primary" />
+                  </div>
+                  <h3 className="text-sm font-semibold">Contactos</h3>
                 </div>
-                <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform duration-200 data-[state=open]:rotate-180" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="px-4 pb-4">
+                <Separator />
+                <div className="p-3">
                   <ContactsManager companyId={company.id} />
                 </div>
               </CollapsibleContent>
             </Collapsible>
-              </div>
-            </ScrollArea>
           </TabsContent>
 
           {/* Media Tab - Photos and Documents */}
