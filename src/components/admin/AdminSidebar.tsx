@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { TrendingUp, Activity, BarChart3, Package, Users, Target, CreditCard, Building2, Settings, Database, Mail, Palette, BookOpen, Map, ChevronRight, FileText, Briefcase, History, Bell, UserCog, CalendarDays } from 'lucide-react';
+import { TrendingUp, Activity, BarChart3, Package, Users, Target, CreditCard, Building2, Settings, Database, Mail, Palette, BookOpen, Map, ChevronRight, FileText, Briefcase, History, Bell, UserCog, CalendarDays, Home, User } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -702,6 +702,48 @@ export function AdminSidebar({
             )}
           </>
         )}
+
+        {/* Navigation - Available to all users */}
+        <SidebarGroup className="mt-auto pt-4 border-t border-border/50">
+          <SidebarMenu className="space-y-2">
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => navigate('/home')}
+                isActive={location.pathname === '/home'}
+                className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
+                tooltip={!open ? {
+                  children: 'Inicio',
+                  className: "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
+                } : undefined}
+              >
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-primary/50 group-hover:rotate-3">
+                  <Home className="h-5 w-5 text-primary-foreground transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3" />
+                </div>
+                <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
+                  Inicio
+                </span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => navigate('/profile')}
+                isActive={location.pathname === '/profile'}
+                className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
+                tooltip={!open ? {
+                  children: 'Mi Perfil',
+                  className: "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
+                } : undefined}
+              >
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-primary/50 group-hover:rotate-3">
+                  <User className="h-5 w-5 text-primary-foreground transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3" />
+                </div>
+                <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
+                  Mi Perfil
+                </span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
     </Sidebar>
   );

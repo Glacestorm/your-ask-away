@@ -9,10 +9,11 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, User, Lock, Loader2, Upload, Shield } from 'lucide-react';
+import { User, Lock, Loader2, Upload, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { EmailReminderPreferences } from '@/components/dashboard/EmailReminderPreferences';
+import { GlobalNavHeader } from '@/components/GlobalNavHeader';
 
 // Validation schemas
 const profileSchema = z.object({
@@ -252,16 +253,7 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="mx-auto max-w-4xl space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/map')}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Mi Perfil</h1>
-            <p className="text-muted-foreground">Gestiona tu información personal</p>
-          </div>
-        </div>
+        <GlobalNavHeader title="Mi Perfil" subtitle="Gestiona tu información personal" />
 
         {/* Profile Information Card */}
         <Card>
