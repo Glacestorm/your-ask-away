@@ -128,8 +128,9 @@ export function BankAffiliationsManager({ companyId }: Props) {
   const handleSave = async () => {
     const total = percentages.Creand + percentages.Morabanc + percentages.Andbank;
     
-    if (total !== 100) {
-      toast.error(`La suma debe ser 100%. Actualmente: ${total}%`);
+    // Allow a tolerance of ±0.5% to handle rounding precision issues
+    if (Math.abs(total - 100) > 0.5) {
+      toast.error(`La suma debe ser 100%. Actualmente: ${total.toFixed(1)}%`);
       return;
     }
 
@@ -199,7 +200,7 @@ export function BankAffiliationsManager({ companyId }: Props) {
   };
 
   const totalPercentage = percentages.Creand + percentages.Morabanc + percentages.Andbank;
-  const isValid = totalPercentage === 100;
+  const isValid = Math.abs(totalPercentage - 100) <= 0.5;
 
   if (loading) {
     return (

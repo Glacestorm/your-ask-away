@@ -555,12 +555,12 @@ export function MapSidebar({
             />
           </TabsContent>
 
-          <TabsContent value="detail" className="flex-1 flex flex-col mt-0 p-0">
+          <TabsContent value="detail" className="flex-1 flex flex-col mt-0 p-0 overflow-hidden">
             {selectedCompany ? (
               <CompanyDetail 
                 company={selectedCompany} 
                 onClose={() => onSelectCompany(null)}
-                defaultTab="media"
+                defaultTab={(selectedCompany as any)._openMediaTab ? "media" : "info"}
               />
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground p-8 text-center">
