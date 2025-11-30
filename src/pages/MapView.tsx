@@ -289,7 +289,12 @@ const MapView = () => {
             companies={companies}
             statusColors={statusColors}
             filters={filters}
-            onSelectCompany={setSelectedCompany}
+            onSelectCompany={(company) => {
+              setSelectedCompany(company);
+              if (company) {
+                setSidebarOpen(true);
+              }
+            }}
             mapStyle={mapStyle}
             view3D={view3D}
             baseLayers={baseLayers}

@@ -20,9 +20,10 @@ import { Separator } from '@/components/ui/separator';
 interface CompanyDetailProps {
   company: CompanyWithDetails;
   onClose: () => void;
+  defaultTab?: string;
 }
 
-export const CompanyDetail = ({ company, onClose }: CompanyDetailProps) => {
+export const CompanyDetail = ({ company, onClose, defaultTab = "info" }: CompanyDetailProps) => {
   const { t } = useLanguage();
   
   return (
@@ -84,7 +85,7 @@ export const CompanyDetail = ({ company, onClose }: CompanyDetailProps) => {
       </div>
 
       {/* Modern Tabs Navigation */}
-      <Tabs defaultValue="info" className="flex-1 flex flex-col overflow-hidden">
+      <Tabs defaultValue={defaultTab} className="flex-1 flex flex-col overflow-hidden">
         <div className="px-4 pt-3 pb-2 bg-card/50 border-b">
           <TabsList className="grid grid-cols-4 h-auto p-1 gap-1 bg-muted/50">
             <TabsTrigger value="info" className="flex flex-col items-center py-2 px-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">

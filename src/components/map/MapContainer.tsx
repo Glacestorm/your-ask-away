@@ -159,7 +159,12 @@ export function MapContainer({
   const superclusterRef = useRef<Supercluster<CompanyWithDetails> | null>(null);
   const searchMarkerRef = useRef<maplibregl.Marker | null>(null);
   const [tooltipConfig, setTooltipConfig] = useState<TooltipConfig[]>([]);
-  const [vinculacionData, setVinculacionData] = useState<Record<string, { percentage: number; bank: string; color: string }>>({});
+  const [vinculacionData, setVinculacionData] = useState<Record<string, { 
+    percentage: number; 
+    bank: string; 
+    color: string;
+    allBanks: { bank: string; percentage: number; color: string }[];
+  }>>({});
   const [minZoomVinculacion, setMinZoomVinculacion] = useState<number>(minZoomVinculacionProp || 8);
   const [visitCounts, setVisitCounts] = useState<Record<string, number>>({});
   const persistentPopupRef = useRef<{ popup: maplibregl.Popup; companyId: string } | null>(null);
@@ -220,16 +225,16 @@ export function MapContainer({
     fetchTooltipConfig();
   }, []);
 
-  // Calculate primary bank affiliation for each company
+  // Calculate bank affiliation for each company
   useEffect(() => {
     const calculateMetrics = async () => {
       try {
-        // Fetch primary bank affiliations
+        // Fetch ALL bank affiliations (not just primary)
         const { data: bankAffiliations, error: bankError } = await supabase
           .from('company_bank_affiliations' as any)
           .select('company_id, bank_name, affiliation_percentage, is_primary, active')
           .eq('active', true)
-          .eq('is_primary', true);
+          .order('is_primary', { ascending: false });
 
         if (bankError) {
           console.error('Error fetching bank affiliations:', bankError);
@@ -243,17 +248,40 @@ export function MapContainer({
           'Andbank': '#f59e0b', // amber
         };
 
-        const vinculacionMap: Record<string, { percentage: number; bank: string; color: string }> = {};
+        const vinculacionMap: Record<string, { 
+          percentage: number; 
+          bank: string; 
+          color: string;
+          allBanks: { bank: string; percentage: number; color: string }[];
+        }> = {};
         
+        // Group by company_id
+        const groupedByCompany: Record<string, any[]> = {};
         bankAffiliations?.forEach((aff: any) => {
-          vinculacionMap[aff.company_id] = {
-            percentage: aff.affiliation_percentage || 0,
+          if (!groupedByCompany[aff.company_id]) {
+            groupedByCompany[aff.company_id] = [];
+          }
+          groupedByCompany[aff.company_id].push(aff);
+        });
+
+        // For each company, store primary and all banks
+        Object.entries(groupedByCompany).forEach(([companyId, affiliations]) => {
+          const primary = affiliations.find(a => a.is_primary) || affiliations[0];
+          const allBanks = affiliations.map(aff => ({
             bank: aff.bank_name,
-            color: bankColors[aff.bank_name] || '#6b7280', // default gray
+            percentage: aff.affiliation_percentage || 0,
+            color: bankColors[aff.bank_name] || '#6b7280',
+          }));
+
+          vinculacionMap[companyId] = {
+            percentage: primary.affiliation_percentage || 0,
+            bank: primary.bank_name,
+            color: bankColors[primary.bank_name] || '#6b7280',
+            allBanks,
           };
         });
 
-        console.log('Vinculación bancaria principal calculada:', Object.keys(vinculacionMap).length, 'empresas');
+        console.log('Vinculación bancaria calculada:', Object.keys(vinculacionMap).length, 'empresas');
         setVinculacionData(vinculacionMap);
 
         // Fetch visit counts
@@ -858,9 +886,14 @@ export function MapContainer({
           let hideTimeout: NodeJS.Timeout | null = null;
           let isPersistent = false;
 
-          const createTooltipHTML = () => `
-            <div class="p-3 min-w-[200px]">
+          const createTooltipHTML = () => {
+            const vinculacionBanks = vinculacionInfo?.allBanks || [];
+            const totalVinculacion = vinculacionBanks.reduce((sum, bank) => sum + bank.percentage, 0);
+            
+            return `
+            <div class="p-3 min-w-[220px]">
               <h3 class="font-semibold text-sm mb-3 border-b pb-2">${company.name}</h3>
+              
               ${vinculacionPct !== undefined ? `
                 <div class="mb-2 flex items-center gap-2">
                   <span class="text-xs font-medium">% Vinculación:</span>
@@ -869,6 +902,25 @@ export function MapContainer({
                   </span>
                 </div>
               ` : ''}
+              
+              ${vinculacionBanks.length > 0 ? `
+                <div class="mb-2 space-y-1">
+                  <p class="text-xs font-medium">Bancos y Vinculación:</p>
+                  ${vinculacionBanks.map(bank => `
+                    <div class="flex items-center justify-between text-xs pl-2">
+                      <span>${bank.bank}:</span>
+                      <span class="px-1.5 py-0.5 rounded text-xs font-semibold" style="background: ${bank.color}20; color: ${bank.color}">
+                        ${bank.percentage}%
+                      </span>
+                    </div>
+                  `).join('')}
+                  <div class="flex items-center justify-between text-xs font-bold pl-2 pt-1 border-t mt-1">
+                    <span>Total:</span>
+                    <span>${totalVinculacion}%</span>
+                  </div>
+                </div>
+              ` : ''}
+              
               <div class="space-y-1 text-xs">
                 ${tooltipConfig
                   .map(config => `
@@ -889,6 +941,7 @@ export function MapContainer({
               </div>
             </div>
           `;
+          };
 
           const showTooltip = () => {
             // Don't show hover tooltip if there's a persistent popup
