@@ -204,198 +204,184 @@ export function BankAffiliationsManager({ companyId }: Props) {
 
   if (loading) {
     return (
-      <Card>
-        <CardContent className="py-12">
-          <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="py-8 text-center">
+        <div className="inline-flex items-center justify-center">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-4 pb-6">
-      <Card className="border-2">
-        <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
-            <div className="space-y-1">
-              <CardTitle className="text-xl flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-primary" />
-                Vinculación Bancaria
-              </CardTitle>
-              <CardDescription>
-                Configure la distribución entre las tres entidades
-              </CardDescription>
+    <div className="space-y-4">
+      {/* Header with total percentage */}
+      <div className="space-y-3">
+        <div className="flex items-start justify-between">
+          <div className="space-y-1">
+            <h4 className="text-sm font-semibold flex items-center gap-2">
+              <Building2 className="h-4 w-4 text-primary" />
+              Vinculación Bancaria
+            </h4>
+            <p className="text-xs text-muted-foreground">
+              Configure la distribución entre las tres entidades
+            </p>
+          </div>
+          <div className="text-right">
+            <div className={`text-xl font-bold transition-colors ${
+              isValid ? 'text-green-600' : 
+              totalPercentage > 100 ? 'text-red-600' : 
+              'text-orange-600'
+            }`}>
+              {totalPercentage}%
             </div>
-            <div className="text-right">
-              <div className={`text-2xl font-bold transition-colors ${
-                isValid ? 'text-green-600' : 
-                totalPercentage > 100 ? 'text-red-600' : 
-                'text-orange-600'
-              }`}>
-                {totalPercentage}%
-              </div>
-              <div className="text-xs text-muted-foreground mt-1">
-                {isValid ? (
-                  <span className="flex items-center gap-1 text-green-600">
-                    <CheckCircle2 className="h-3 w-3" />
-                    Completo
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
-                    Falta {100 - totalPercentage}%
-                  </span>
-                )}
-              </div>
+            <div className="text-xs text-muted-foreground mt-1">
+              {isValid ? (
+                <span className="flex items-center gap-1 text-green-600">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Completo
+                </span>
+              ) : (
+                <span className="flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  Falta {100 - totalPercentage}%
+                </span>
+              )}
             </div>
           </div>
-          
-          <div className="pt-3">
-            <Progress value={Math.min(totalPercentage, 100)} className="h-1.5" />
-          </div>
-        </CardHeader>
+        </div>
+        <Progress value={Math.min(totalPercentage, 100)} className="h-1.5" />
+      </div>
 
-        <CardContent className="space-y-4">
-          {/* Mode selector */}
-          <Card className="bg-muted/30">
-            <CardContent className="pt-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  {isAutomatic ? (
-                    <Calculator className="h-4 w-4 text-primary" />
-                  ) : (
-                    <Hand className="h-4 w-4 text-primary" />
-                  )}
-                  <Label htmlFor="mode" className="font-medium">
-                    {isAutomatic ? 'Cálculo Automático' : 'Configuración Manual'}
-                  </Label>
-                </div>
-                <Switch
-                  id="mode"
-                  checked={isAutomatic}
-                  onCheckedChange={setIsAutomatic}
+      {/* Mode selector */}
+      <div className="bg-muted/30 rounded-lg border p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {isAutomatic ? (
+              <Calculator className="h-4 w-4 text-primary" />
+            ) : (
+              <Hand className="h-4 w-4 text-primary" />
+            )}
+            <Label htmlFor="mode" className="text-sm font-medium">
+              {isAutomatic ? 'Cálculo Automático' : 'Configuración Manual'}
+            </Label>
+          </div>
+          <Switch
+            id="mode"
+            checked={isAutomatic}
+            onCheckedChange={setIsAutomatic}
+          />
+        </div>
+
+        {isAutomatic && (
+          <div className="space-y-3 pt-2 border-t">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Facturación Anual (€)</Label>
+                <Input
+                  type="number"
+                  value={facturacionAnual || ''}
+                  onChange={(e) => setFacturacionAnual(Number(e.target.value))}
+                  placeholder="Ej: 1000000"
+                  className="h-9"
                 />
               </div>
-
-              {isAutomatic && (
-                <div className="space-y-3 pt-2 border-t">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Facturación Anual (€)</Label>
-                      <Input
-                        type="number"
-                        value={facturacionAnual || ''}
-                        onChange={(e) => setFacturacionAnual(Number(e.target.value))}
-                        placeholder="Ej: 1000000"
-                        className="h-9"
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-xs">Periodo</Label>
-                      <Select value={periodoFacturacion} onValueChange={setPeriodoFacturacion}>
-                        <SelectTrigger className="h-9">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="semestral">Semestral</SelectItem>
-                          <SelectItem value="anual">Anual</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Ingresos por Creand (€)</Label>
-                    <Input
-                      type="number"
-                      value={ingresosCreand || ''}
-                      onChange={(e) => setIngresosCreand(Number(e.target.value))}
-                      placeholder="Ej: 450000"
-                      className="h-9"
-                    />
-                  </div>
-                  <Button 
-                    onClick={calculateAutomaticPercentages}
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                  >
-                    <Calculator className="h-3 w-3 mr-2" />
-                    Calcular Automáticamente
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Bank sliders */}
-          <div className="grid gap-3">
-            {BANKS.map((bank, index) => {
-              const percentage = percentages[bank.name as keyof typeof percentages];
-              return (
-                <Card key={bank.name} className="border">
-                  <CardContent className="pt-3 pb-3">
-                    <div className="flex items-center gap-3">
-                      <span className="text-xl">{bank.icon}</span>
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-sm">{bank.name}</span>
-                            {index === 0 && (
-                              <Badge variant="default" className="text-[10px] h-4 px-1.5">Principal</Badge>
-                            )}
-                          </div>
-                          <div className={`text-xl font-bold bg-gradient-to-r ${bank.color} bg-clip-text text-transparent`}>
-                            {percentage}%
-                          </div>
-                        </div>
-                        <Slider
-                          value={[percentage]}
-                          onValueChange={([value]) => {
-                            if (!isAutomatic) {
-                              setPercentages({
-                                ...percentages,
-                                [bank.name]: value
-                              });
-                            }
-                          }}
-                          max={100}
-                          step={1}
-                          disabled={isAutomatic}
-                          className={isAutomatic ? 'opacity-50' : 'cursor-pointer'}
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-
-          {/* Save button */}
-          <div className="pt-2">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Periodo</Label>
+                <Select value={periodoFacturacion} onValueChange={setPeriodoFacturacion}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="semestral">Semestral</SelectItem>
+                    <SelectItem value="anual">Anual</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Ingresos por Creand (€)</Label>
+              <Input
+                type="number"
+                value={ingresosCreand || ''}
+                onChange={(e) => setIngresosCreand(Number(e.target.value))}
+                placeholder="Ej: 450000"
+                className="h-9"
+              />
+            </div>
             <Button 
-              onClick={handleSave} 
-              disabled={saving || !isValid}
-              size="lg"
+              onClick={calculateAutomaticPercentages}
+              variant="outline"
+              size="sm"
               className="w-full"
             >
-              {saving ? (
-                <>
-                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  Guardando...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Guardar Todo
-                </>
-              )}
+              <Calculator className="h-3 w-3 mr-2" />
+              Calcular Automáticamente
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
+
+      {/* Bank sliders */}
+      <div className="grid gap-3">
+        {BANKS.map((bank, index) => {
+          const percentage = percentages[bank.name as keyof typeof percentages];
+          return (
+            <div key={bank.name} className="border rounded-lg p-3 bg-card">
+              <div className="flex items-center gap-3">
+                <span className="text-xl">{bank.icon}</span>
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm">{bank.name}</span>
+                      {index === 0 && (
+                        <Badge variant="default" className="text-[10px] h-4 px-1.5">Principal</Badge>
+                      )}
+                    </div>
+                    <div className={`text-lg font-bold bg-gradient-to-r ${bank.color} bg-clip-text text-transparent`}>
+                      {percentage}%
+                    </div>
+                  </div>
+                  <Slider
+                    value={[percentage]}
+                    onValueChange={([value]) => {
+                      if (!isAutomatic) {
+                        setPercentages({
+                          ...percentages,
+                          [bank.name]: value
+                        });
+                      }
+                    }}
+                    max={100}
+                    step={1}
+                    disabled={isAutomatic}
+                    className={isAutomatic ? 'opacity-50' : 'cursor-pointer'}
+                  />
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Save button */}
+      <Button 
+        onClick={handleSave} 
+        disabled={saving || !isValid}
+        size="sm"
+        className="w-full"
+      >
+        {saving ? (
+          <>
+            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            Guardando...
+          </>
+        ) : (
+          <>
+            <Save className="mr-2 h-4 w-4" />
+            Guardar Todo
+          </>
+        )}
+      </Button>
     </div>
   );
 }

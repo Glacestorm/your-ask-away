@@ -231,28 +231,24 @@ export function TPVTerminalsManager({ companyId }: Props) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5" />
-              Terminales TPV
-            </CardTitle>
-            <CardDescription>
-              Gestiona los terminales de punto de venta y comisiones
-            </CardDescription>
-          </div>
-          <Dialog open={isDialogOpen} onOpenChange={(open) => {
-            setIsDialogOpen(open);
-            if (!open) resetForm();
-          }}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Añadir Terminal
-              </Button>
-            </DialogTrigger>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h4 className="text-sm font-semibold">Terminales TPV</h4>
+          <p className="text-xs text-muted-foreground">
+            Gestiona los terminales de punto de venta y comisiones
+          </p>
+        </div>
+        <Dialog open={isDialogOpen} onOpenChange={(open) => {
+          setIsDialogOpen(open);
+          if (!open) resetForm();
+        }}>
+          <DialogTrigger asChild>
+            <Button size="sm">
+              <Plus className="mr-2 h-4 w-4" />
+              Añadir TPV
+            </Button>
+          </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
@@ -388,14 +384,19 @@ export function TPVTerminalsManager({ companyId }: Props) {
                 </div>
               </form>
             </DialogContent>
-          </Dialog>
+        </Dialog>
+      </div>
+      
+      {loading ? (
+        <p className="text-center text-muted-foreground py-4">Cargando...</p>
+      ) : terminals.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-sm text-muted-foreground mb-3">No hay terminales TPV registrados</p>
+          <Button size="sm" variant="outline" onClick={() => setIsDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Añadir Primer Terminal
+          </Button>
         </div>
-      </CardHeader>
-      <CardContent>
-        {loading ? (
-          <p className="text-center text-muted-foreground">Cargando...</p>
-        ) : terminals.length === 0 ? (
-          <p className="text-center text-muted-foreground">No hay terminales TPV</p>
         ) : (
           <>
             <Accordion type="single" collapsible className="w-full">
@@ -464,7 +465,6 @@ export function TPVTerminalsManager({ companyId }: Props) {
             </div>
           </>
         )}
-      </CardContent>
-    </Card>
+    </div>
   );
 }
