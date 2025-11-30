@@ -37,7 +37,7 @@ import { SharedVisitsCalendar } from '@/components/admin/SharedVisitsCalendar';
 import MapView from './MapView';
 
 const Admin = () => {
-  const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, loading: authLoading } = useAuth();
+  const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('director');
@@ -269,6 +269,7 @@ const Admin = () => {
           isCommercialManager={isCommercialManager}
           isSuperAdmin={isSuperAdmin}
           isAdmin={isAdmin}
+          isAuditor={isAuditor}
         />
         
         <main className="flex-1 overflow-auto bg-background">

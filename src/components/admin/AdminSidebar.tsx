@@ -24,6 +24,7 @@ interface AdminSidebarProps {
   isCommercialManager: boolean;
   isSuperAdmin: boolean;
   isAdmin: boolean;
+  isAuditor: boolean;
 }
 
 export function AdminSidebar({ 
@@ -33,7 +34,8 @@ export function AdminSidebar({
   isOfficeDirector,
   isCommercialManager,
   isSuperAdmin,
-  isAdmin
+  isAdmin,
+  isAuditor
 }: AdminSidebarProps) {
   // Check if user is a regular gestor (not admin, not director, not manager)
   const isRegularGestor = !isAdmin && !isSuperAdmin && !isCommercialDirector && !isOfficeDirector && !isCommercialManager;
@@ -193,27 +195,29 @@ export function AdminSidebar({
           </SidebarGroup>
         )}
 
-        {/* 2. Navegación y Visualización - Available to all users */}
+        {/* 2. Navegación y Visualización - Available to all users except auditors */}
         <SidebarGroup className="mt-4">
           <SidebarMenu className="space-y-2">
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                onClick={() => onSectionChange('map')}
-                isActive={isActive('map')}
-                className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
-                tooltip={!open ? {
-                  children: 'Mapa',
-                  className: "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
-                } : undefined}
-              >
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-primary/50 group-hover:rotate-3">
-                  <Map className="h-5 w-5 text-primary-foreground transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3" />
-                </div>
-                <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
-                  Mapa
-                </span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            {!isAuditor && (
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => onSectionChange('map')}
+                  isActive={isActive('map')}
+                  className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
+                  tooltip={!open ? {
+                    children: 'Mapa',
+                    className: "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
+                  } : undefined}
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-primary/50 group-hover:rotate-3">
+                    <Map className="h-5 w-5 text-primary-foreground transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3" />
+                  </div>
+                  <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
+                    Mapa
+                  </span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={() => onSectionChange('shared-calendar')}
