@@ -251,7 +251,15 @@ export function MapSidebar({
       className="absolute left-0 top-0 z-10 h-full w-96 border-r bg-card shadow-lg lg:relative"
     >
       <div className="flex h-full flex-col">
-        <Tabs defaultValue="companies" className="flex-1 flex flex-col">
+        <Tabs 
+          value={selectedCompany ? "detail" : "companies"} 
+          onValueChange={(value) => {
+            if (value !== "detail") {
+              onSelectCompany(null);
+            }
+          }}
+          className="flex-1 flex flex-col"
+        >
           <TabsList className="mx-4 mt-4 grid grid-cols-3">
             <TabsTrigger value="companies" className="flex items-center gap-2">
               <Search className="h-4 w-4" />
@@ -551,7 +559,8 @@ export function MapSidebar({
             {selectedCompany ? (
               <CompanyDetail 
                 company={selectedCompany} 
-                onClose={() => onSelectCompany(null)} 
+                onClose={() => onSelectCompany(null)}
+                defaultTab="media"
               />
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground p-8 text-center">
