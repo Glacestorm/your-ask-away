@@ -976,7 +976,9 @@ export function MapContainer({
                     persistentPopupRef.current.popup.remove();
                     persistentPopupRef.current = null;
                   }
-                  onSelectCompany(company);
+                  // Pass a flag to indicate we want to open the media tab
+                  const companyWithMediaFlag = { ...company, _openMediaTab: true };
+                  onSelectCompany(companyWithMediaFlag as any);
                 });
               }
             }

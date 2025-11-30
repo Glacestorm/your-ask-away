@@ -329,8 +329,10 @@ export const CompanyDetail = ({ company, onClose, defaultTab = "info" }: Company
           </TabsContent>
 
           {/* Relations Tab - Banking, TPV, Contacts */}
-          <TabsContent value="relations" className="p-3 space-y-3 mt-0">
-            <Collapsible defaultOpen className="border rounded-lg overflow-hidden bg-card">
+          <TabsContent value="relations" className="mt-0 h-full">
+            <ScrollArea className="h-full px-3">
+              <div className="space-y-3 py-3">
+                <Collapsible defaultOpen className="border rounded-lg overflow-hidden bg-card">
               <CollapsibleTrigger className="flex w-full items-center justify-between p-4 hover:bg-muted/50 transition-colors">
                 <div className="flex items-center gap-2">
                   <Landmark className="h-5 w-5 text-primary" />
@@ -374,6 +376,8 @@ export const CompanyDetail = ({ company, onClose, defaultTab = "info" }: Company
                 </div>
               </CollapsibleContent>
             </Collapsible>
+              </div>
+            </ScrollArea>
           </TabsContent>
 
           {/* Media Tab - Photos and Documents */}
