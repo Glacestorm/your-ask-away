@@ -283,6 +283,41 @@ export const documentUploadSchema = z.object({
     ),
 });
 
+// Visit sheet validation schema
+export const visitSheetUpdateSchema = z.object({
+  tipo_visita: z.string()
+    .trim()
+    .max(100, { message: "El tipo de visita debe tener menos de 100 caracteres" })
+    .optional()
+    .nullable(),
+  notas_gestor: z.string()
+    .trim()
+    .max(5000, { message: "Las notas deben tener menos de 5000 caracteres" })
+    .optional()
+    .nullable(),
+  probabilidad_cierre: z.number()
+    .int({ message: "Debe ser un número entero" })
+    .min(0, { message: "La probabilidad no puede ser negativa" })
+    .max(100, { message: "La probabilidad no puede ser mayor a 100" })
+    .optional()
+    .nullable(),
+  potencial_anual_estimado: z.number()
+    .min(0, { message: "El potencial no puede ser negativo" })
+    .max(999999999, { message: "Valor demasiado alto" })
+    .optional()
+    .nullable(),
+  nivel_vinculacion_recomendado: z.string()
+    .trim()
+    .max(100, { message: "El nivel debe tener menos de 100 caracteres" })
+    .optional()
+    .nullable(),
+  oportunidades_futuras: z.string()
+    .trim()
+    .max(2000, { message: "Las oportunidades deben tener menos de 2000 caracteres" })
+    .optional()
+    .nullable(),
+});
+
 export type CompanyFormData = z.infer<typeof companySchema>;
 export type CompanyContactFormData = z.infer<typeof companyContactSchema>;
 export type VisitFormData = z.infer<typeof visitSchema>;
@@ -291,3 +326,4 @@ export type UserProfileFormData = z.infer<typeof userProfileSchema>;
 export type StatusColorFormData = z.infer<typeof statusColorSchema>;
 export type ConceptFormData = z.infer<typeof conceptSchema>;
 export type DocumentUploadFormData = z.infer<typeof documentUploadSchema>;
+export type VisitSheetUpdateData = z.infer<typeof visitSheetUpdateSchema>;
