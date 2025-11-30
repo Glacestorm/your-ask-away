@@ -1,7 +1,8 @@
 import { CompanyWithDetails } from '@/types/database';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Building2, User, FileText, History, X, Camera, CreditCard, Landmark, Phone, Mail, Globe, MapPin, Users, TrendingUp, Scale, FileCheck, Briefcase, Clock, ExternalLink } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Building2, User, FileText, History, X, Camera, CreditCard, Landmark, Phone, Mail, Globe, MapPin, Users, TrendingUp, Scale, FileCheck, Briefcase, Clock, ExternalLink, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ContactsManager } from './ContactsManager';
 import { DocumentsManager } from './DocumentsManager';
@@ -328,11 +329,50 @@ export const CompanyDetail = ({ company, onClose }: CompanyDetailProps) => {
 
           {/* Relations Tab - Banking, TPV, Contacts */}
           <TabsContent value="relations" className="p-3 space-y-3 mt-0">
-            <BankAffiliationsManager companyId={company.id} />
+            <Collapsible defaultOpen className="border rounded-lg overflow-hidden bg-card">
+              <CollapsibleTrigger className="flex w-full items-center justify-between p-4 hover:bg-muted/50 transition-colors">
+                <div className="flex items-center gap-2">
+                  <Landmark className="h-5 w-5 text-primary" />
+                  <h3 className="text-base font-semibold">Vinculación Bancaria</h3>
+                </div>
+                <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform duration-200 data-[state=open]:rotate-180" />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="px-4 pb-4">
+                  <BankAffiliationsManager companyId={company.id} />
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
 
-            <TPVTerminalsManager companyId={company.id} />
+            <Collapsible defaultOpen className="border rounded-lg overflow-hidden bg-card">
+              <CollapsibleTrigger className="flex w-full items-center justify-between p-4 hover:bg-muted/50 transition-colors">
+                <div className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-primary" />
+                  <h3 className="text-base font-semibold">Terminales TPV</h3>
+                </div>
+                <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform duration-200 data-[state=open]:rotate-180" />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="px-4 pb-4">
+                  <TPVTerminalsManager companyId={company.id} />
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
 
-            <ContactsManager companyId={company.id} />
+            <Collapsible defaultOpen className="border rounded-lg overflow-hidden bg-card">
+              <CollapsibleTrigger className="flex w-full items-center justify-between p-4 hover:bg-muted/50 transition-colors">
+                <div className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-primary" />
+                  <h3 className="text-base font-semibold">Contactos</h3>
+                </div>
+                <ChevronDown className="h-5 w-5 text-muted-foreground transition-transform duration-200 data-[state=open]:rotate-180" />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="px-4 pb-4">
+                  <ContactsManager companyId={company.id} />
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
           </TabsContent>
 
           {/* Media Tab - Photos and Documents */}
