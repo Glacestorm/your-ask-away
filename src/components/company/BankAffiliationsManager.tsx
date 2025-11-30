@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
-import { Save } from 'lucide-react';
+import { Save, CheckCircle2, AlertCircle, Building2 } from 'lucide-react';
 
 interface BankAffiliation {
   id: string;
@@ -25,7 +24,11 @@ interface Props {
   companyId: string;
 }
 
-const BANKS = ['Creand', 'Morabanc', 'Andbank'];
+const BANKS = [
+  { name: 'Creand', color: 'from-emerald-500 to-green-600', icon: '🏦' },
+  { name: 'Morabanc', color: 'from-blue-500 to-indigo-600', icon: '🏛️' },
+  { name: 'Andbank', color: 'from-amber-500 to-orange-600', icon: '🏢' }
+];
 
 export function BankAffiliationsManager({ companyId }: Props) {
   const [affiliations, setAffiliations] = useState<BankAffiliation[]>([]);
@@ -45,17 +48,16 @@ export function BankAffiliationsManager({ companyId }: Props) {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('company_bank_affiliations' as any)
+        .from('company_bank_affiliations')
         .select('*')
         .eq('company_id', companyId)
         .order('priority_order');
 
       if (error) throw error;
       
-      const affiliationsData = data as any || [];
+      const affiliationsData = data || [];
       setAffiliations(affiliationsData);
       
-      // Cargar porcentajes existentes
       const newPercentages = { Creand: 0, Morabanc: 0, Andbank: 0 };
       affiliationsData.forEach((aff: BankAffiliation) => {
         if (aff.bank_name in newPercentages) {
@@ -72,28 +74,25 @@ export function BankAffiliationsManager({ companyId }: Props) {
   };
 
   const handleSave = async () => {
-    // Validar que la suma sea 100%
     const total = percentages.Creand + percentages.Morabanc + percentages.Andbank;
     
     if (total !== 100) {
-      toast.error(`La suma de porcentajes debe ser 100%. Actualmente: ${total}%`);
+      toast.error(`La suma debe ser 100%. Actualmente: ${total}%`);
       return;
     }
 
     try {
       setSaving(true);
 
-      // Preparar las operaciones para las 3 entidades
-      const operations = BANKS.map(async (bankName, index) => {
-        const percentage = percentages[bankName as keyof typeof percentages];
-        const existing = affiliations.find(aff => aff.bank_name === bankName);
+      const operations = BANKS.map(async (bank, index) => {
+        const percentage = percentages[bank.name as keyof typeof percentages];
+        const existing = affiliations.find(aff => aff.bank_name === bank.name);
         const priorityOrder = index + 1;
-        const isPrimary = index === 0; // Creand es principal
+        const isPrimary = index === 0;
 
         if (existing) {
-          // Actualizar existente
           return supabase
-            .from('company_bank_affiliations' as any)
+            .from('company_bank_affiliations')
             .update({
               affiliation_percentage: percentage,
               priority_order: priorityOrder,
@@ -102,12 +101,11 @@ export function BankAffiliationsManager({ companyId }: Props) {
             })
             .eq('id', existing.id);
         } else if (percentage > 0) {
-          // Insertar nuevo si tiene porcentaje
           return supabase
-            .from('company_bank_affiliations' as any)
+            .from('company_bank_affiliations')
             .insert({
               company_id: companyId,
-              bank_name: bankName,
+              bank_name: bank.name,
               affiliation_percentage: percentage,
               priority_order: priorityOrder,
               is_primary: isPrimary,
@@ -117,11 +115,9 @@ export function BankAffiliationsManager({ companyId }: Props) {
         return Promise.resolve({ error: null });
       });
 
-      // Ejecutar todas las operaciones en paralelo
       const results = await Promise.all(operations);
-      
-      // Verificar errores
       const errors = results.filter(r => r?.error);
+      
       if (errors.length > 0) {
         throw errors[0].error;
       }
@@ -137,109 +133,209 @@ export function BankAffiliationsManager({ companyId }: Props) {
   };
 
   const totalPercentage = percentages.Creand + percentages.Morabanc + percentages.Andbank;
+  const isValid = totalPercentage === 100;
+
+  if (loading) {
+    return (
+      <Card>
+        <CardContent className="py-12">
+          <div className="flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <Card>
-      <CardHeader>
-        <div>
-          <CardTitle>Vinculación Bancaria</CardTitle>
-          <CardDescription>
-            Configure los porcentajes de vinculación con las 3 entidades
-          </CardDescription>
-          <div className={`mt-2 text-sm font-medium ${
-            totalPercentage === 100 ? 'text-green-600' : 
-            totalPercentage > 100 ? 'text-red-600' : 
-            'text-orange-600'
-          }`}>
-            Total vinculación: {totalPercentage}%
-            {totalPercentage !== 100 && ` (Debe sumar 100%)`}
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {loading ? (
-          <p className="text-center text-muted-foreground">Cargando...</p>
-        ) : (
-          <div className="space-y-6">
-            <div className="grid gap-4 md:grid-cols-3">
-              {BANKS.map((bank, index) => (
-                <div key={bank} className="space-y-2">
-                  <Label htmlFor={bank} className="flex items-center gap-2">
-                    {bank}
-                    {index === 0 && (
-                      <Badge variant="default" className="text-xs">Principal</Badge>
-                    )}
-                  </Label>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      id={bank}
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={percentages[bank as keyof typeof percentages]}
-                      onChange={(e) => setPercentages({
-                        ...percentages,
-                        [bank]: Number(e.target.value)
-                      })}
-                      className="text-lg font-semibold"
-                    />
-                    <span className="text-lg font-medium text-muted-foreground">%</span>
-                  </div>
-                </div>
-              ))}
+    <div className="space-y-6">
+      <Card className="border-2">
+        <CardHeader className="pb-4">
+          <div className="flex items-start justify-between">
+            <div className="space-y-1">
+              <CardTitle className="text-2xl flex items-center gap-2">
+                <Building2 className="h-6 w-6 text-primary" />
+                Vinculación Bancaria
+              </CardTitle>
+              <CardDescription>
+                Configure la distribución de vinculación entre las tres entidades
+              </CardDescription>
             </div>
-
-            <div className="flex justify-end">
-              <Button 
-                onClick={handleSave} 
-                disabled={saving || totalPercentage !== 100}
-                size="lg"
-              >
-                <Save className="mr-2 h-4 w-4" />
-                {saving ? 'Guardando...' : 'Guardar Vinculaciones'}
-              </Button>
-            </div>
-
-            {affiliations.length > 0 && (
-              <div className="mt-6">
-                <h3 className="text-sm font-medium mb-2">Vinculaciones Actuales</h3>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Banco</TableHead>
-                      <TableHead>% Vinculación</TableHead>
-                      <TableHead>Prioridad</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {affiliations.map((affiliation) => (
-                      <TableRow 
-                        key={affiliation.id}
-                        className={affiliation.is_primary ? 'bg-primary/5' : ''}
-                      >
-                        <TableCell className="font-medium">
-                          <div className="flex items-center gap-2">
-                            {affiliation.bank_name}
-                            {affiliation.is_primary && (
-                              <Badge variant="default" className="text-xs">Principal</Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <span className="font-bold text-lg">
-                            {affiliation.affiliation_percentage || 0}%
-                          </span>
-                        </TableCell>
-                        <TableCell>{affiliation.priority_order}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+            <div className="text-right">
+              <div className={`text-3xl font-bold transition-colors ${
+                isValid ? 'text-green-600' : 
+                totalPercentage > 100 ? 'text-red-600' : 
+                'text-orange-600'
+              }`}>
+                {totalPercentage}%
               </div>
-            )}
+              <div className="text-xs text-muted-foreground mt-1">
+                {isValid ? (
+                  <span className="flex items-center gap-1 text-green-600">
+                    <CheckCircle2 className="h-3 w-3" />
+                    Completo
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    Falta {100 - totalPercentage}%
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
-        )}
-      </CardContent>
-    </Card>
+          
+          <div className="pt-4">
+            <Progress value={Math.min(totalPercentage, 100)} className="h-2" />
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
+            {BANKS.map((bank, index) => {
+              const percentage = percentages[bank.name as keyof typeof percentages];
+              return (
+                <Card 
+                  key={bank.name} 
+                  className="relative overflow-hidden border-2 transition-all hover:shadow-lg"
+                >
+                  <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${bank.color}`} />
+                  
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">{bank.icon}</span>
+                        <CardTitle className="text-lg">{bank.name}</CardTitle>
+                      </div>
+                      {index === 0 && (
+                        <Badge variant="default" className="text-xs">
+                          Principal
+                        </Badge>
+                      )}
+                    </div>
+                  </CardHeader>
+
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-muted-foreground">
+                          Porcentaje
+                        </span>
+                        <div className={`text-3xl font-bold bg-gradient-to-r ${bank.color} bg-clip-text text-transparent`}>
+                          {percentage}%
+                        </div>
+                      </div>
+                      
+                      <Slider
+                        value={[percentage]}
+                        onValueChange={([value]) => {
+                          setPercentages({
+                            ...percentages,
+                            [bank.name]: value
+                          });
+                        }}
+                        max={100}
+                        step={1}
+                        className="cursor-pointer"
+                      />
+                      
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>0%</span>
+                        <span>50%</span>
+                        <span>100%</span>
+                      </div>
+                    </div>
+
+                    <div className="pt-2">
+                      <Progress 
+                        value={percentage} 
+                        className="h-1.5"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          <div className="flex items-center justify-between pt-4 border-t">
+            <div className="space-y-1">
+              <p className="text-sm font-medium">
+                Estado de la vinculación
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {isValid 
+                  ? 'La distribución es correcta y está lista para guardar' 
+                  : 'Ajuste los porcentajes para que sumen exactamente 100%'
+                }
+              </p>
+            </div>
+
+            <Button 
+              onClick={handleSave} 
+              disabled={saving || !isValid}
+              size="lg"
+              className="min-w-[200px]"
+            >
+              {saving ? (
+                <>
+                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  Guardando...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Guardar Vinculaciones
+                </>
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {affiliations.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Resumen de Vinculaciones Actuales</CardTitle>
+            <CardDescription>
+              Distribución registrada en el sistema
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-3">
+              {affiliations.map((affiliation) => {
+                const bank = BANKS.find(b => b.name === affiliation.bank_name);
+                return (
+                  <div 
+                    key={affiliation.id}
+                    className="flex items-center justify-between p-4 rounded-lg border bg-card"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{bank?.icon || '🏦'}</span>
+                      <div>
+                        <p className="font-medium">{affiliation.bank_name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Prioridad {affiliation.priority_order}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold">
+                        {affiliation.affiliation_percentage || 0}%
+                      </p>
+                      {affiliation.is_primary && (
+                        <Badge variant="outline" className="text-xs mt-1">
+                          Principal
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }
