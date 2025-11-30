@@ -159,7 +159,7 @@ export function MapContainer({
   const superclusterRef = useRef<Supercluster<CompanyWithDetails> | null>(null);
   const searchMarkerRef = useRef<maplibregl.Marker | null>(null);
   const [tooltipConfig, setTooltipConfig] = useState<TooltipConfig[]>([]);
-  const [vinculacionData, setVinculacionData] = useState<Record<string, number>>({});
+  const [vinculacionData, setVinculacionData] = useState<Record<string, { percentage: number; bank: string; color: string }>>({});
   const [minZoomVinculacion, setMinZoomVinculacion] = useState<number>(minZoomVinculacionProp || 8);
   const [visitCounts, setVisitCounts] = useState<Record<string, number>>({});
   const persistentPopupRef = useRef<{ popup: maplibregl.Popup; companyId: string } | null>(null);
@@ -220,46 +220,61 @@ export function MapContainer({
     fetchTooltipConfig();
   }, []);
 
-  // Calculate average vinculación and visit counts for each company
+  // Calculate primary bank affiliation for each company
   useEffect(() => {
     const calculateMetrics = async () => {
       try {
+        // Fetch primary bank affiliations
+        const { data: bankAffiliations, error: bankError } = await supabase
+          .from('company_bank_affiliations' as any)
+          .select('company_id, bank_name, affiliation_percentage, is_primary, active')
+          .eq('active', true)
+          .eq('is_primary', true);
+
+        if (bankError) {
+          console.error('Error fetching bank affiliations:', bankError);
+          throw bankError;
+        }
+
+        // Map bank names to colors
+        const bankColors: Record<string, string> = {
+          'Creand': '#10b981', // green
+          'Morabanc': '#3b82f6', // blue
+          'Andbank': '#f59e0b', // amber
+        };
+
+        const vinculacionMap: Record<string, { percentage: number; bank: string; color: string }> = {};
+        
+        bankAffiliations?.forEach((aff: any) => {
+          vinculacionMap[aff.company_id] = {
+            percentage: aff.affiliation_percentage || 0,
+            bank: aff.bank_name,
+            color: bankColors[aff.bank_name] || '#6b7280', // default gray
+          };
+        });
+
+        console.log('Vinculación bancaria principal calculada:', Object.keys(vinculacionMap).length, 'empresas');
+        setVinculacionData(vinculacionMap);
+
+        // Fetch visit counts
         const { data: visits, error } = await supabase
           .from('visits')
-          .select('company_id, porcentaje_vinculacion');
+          .select('company_id');
 
         if (error) {
           console.error('Error fetching visits:', error);
           throw error;
         }
 
-        const vinculacionMap: Record<string, { total: number; count: number }> = {};
         const visitCountMap: Record<string, number> = {};
         
         visits?.forEach(visit => {
-          // Count visits
           if (!visitCountMap[visit.company_id]) {
             visitCountMap[visit.company_id] = 0;
           }
           visitCountMap[visit.company_id] += 1;
-
-          // Calculate vinculación
-          if (visit.porcentaje_vinculacion !== null && visit.porcentaje_vinculacion !== undefined) {
-            if (!vinculacionMap[visit.company_id]) {
-              vinculacionMap[visit.company_id] = { total: 0, count: 0 };
-            }
-            vinculacionMap[visit.company_id].total += Number(visit.porcentaje_vinculacion);
-            vinculacionMap[visit.company_id].count += 1;
-          }
         });
 
-        const avgVinculacion: Record<string, number> = {};
-        Object.entries(vinculacionMap).forEach(([companyId, data]) => {
-          avgVinculacion[companyId] = Math.round(data.total / data.count);
-        });
-
-        console.log('Vinculación data calculada:', Object.keys(avgVinculacion).length, 'empresas con datos');
-        setVinculacionData(avgVinculacion);
         setVisitCounts(visitCountMap);
       } catch (error: any) {
         console.error('Error general calculando métricas:', error);
@@ -546,7 +561,7 @@ export function MapContainer({
       if (filters.vinculacionRange) {
         const companyVinculacion = vinculacionData[company.id];
         if (companyVinculacion !== undefined) {
-          if (companyVinculacion < filters.vinculacionRange.min || companyVinculacion > filters.vinculacionRange.max) {
+          if (companyVinculacion.percentage < filters.vinculacionRange.min || companyVinculacion.percentage > filters.vinculacionRange.max) {
             return false;
           }
         } else {
@@ -738,9 +753,8 @@ export function MapContainer({
               case 'vinculacion': {
                 const vinc = vinculacionData[company.id];
                 if (vinc === undefined) return '#94A3B8'; // gray for no data
-                if (vinc >= 70) return '#22C55E'; // green
-                if (vinc >= 30) return '#EAB308'; // yellow
-                return '#EF4444'; // red
+                // Use the bank-specific color
+                return vinc.color;
               }
               
               case 'facturacion': {
@@ -789,7 +803,8 @@ export function MapContainer({
           el.style.zIndex = '1000';
           
           const color = getMarkerColor();
-          const vinculacionPct = vinculacionData[company.id];
+          const vinculacionInfo = vinculacionData[company.id];
+          const vinculacionPct = vinculacionInfo?.percentage;
           const showVinculacion = zoom >= minZoomVinculacion;
           
           // Tamaño base más grande y escalado más pronunciado
@@ -807,7 +822,7 @@ export function MapContainer({
             color, 
             markerWidth, 
             markerHeight, 
-            showVinculacion ? vinculacionPct : undefined
+            showVinculacion && vinculacionPct !== undefined ? vinculacionPct : undefined
           );
 
           const marker = new maplibregl.Marker({ 
