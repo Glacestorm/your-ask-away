@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,11 +11,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { CalendarIcon, FileText, Search, Filter } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { CalendarIcon, FileText, Search, Filter, Loader2, Save, CheckCircle2, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { visitSheetUpdateSchema } from '@/lib/validations';
 
 interface VisitSheet {
   id: string;
@@ -48,9 +49,12 @@ export default function VisitSheets() {
   const [selectedCompany, setSelectedCompany] = useState<string>('all');
   const [selectedProbability, setSelectedProbability] = useState<string>('all');
   const [selectedSheet, setSelectedSheet] = useState<any | null>(null);
+  const [editedSheet, setEditedSheet] = useState<any | null>(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [gestores, setGestores] = useState<Array<{ id: string; full_name: string }>>([]);
   const [companies, setCompanies] = useState<Array<{ id: string; name: string }>>([]);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -201,12 +205,91 @@ export default function VisitSheets() {
 
       if (error) throw error;
       setSelectedSheet(data);
+      setEditedSheet(data);
+      setSaveStatus('idle');
       setShowDetails(true);
     } catch (error) {
       console.error('Error fetching sheet details:', error);
       toast.error('Error al cargar los detalles');
     }
   };
+
+  const handleFieldChange = useCallback((field: string, value: any) => {
+    setEditedSheet((prev: any) => ({
+      ...prev,
+      [field]: value
+    }));
+
+    // Clear existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // Set new timeout for auto-save (1 second debounce)
+    setSaveStatus('idle');
+    saveTimeoutRef.current = setTimeout(() => {
+      autoSave(field, value);
+    }, 1000);
+  }, []);
+
+  const autoSave = async (field: string, value: any) => {
+    if (!editedSheet || !selectedSheet) return;
+
+    try {
+      setSaveStatus('saving');
+
+      // Validate the update data
+      const updateData: any = {
+        [field]: value
+      };
+
+      const validationResult = visitSheetUpdateSchema.safeParse(updateData);
+      
+      if (!validationResult.success) {
+        const errorMessage = validationResult.error.errors[0]?.message || 'Error de validación';
+        toast.error(errorMessage);
+        setSaveStatus('error');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('visit_sheets')
+        .update(updateData)
+        .eq('id', selectedSheet.id);
+
+      if (error) throw error;
+
+      setSaveStatus('saved');
+      
+      // Reset to idle after 2 seconds
+      setTimeout(() => {
+        setSaveStatus('idle');
+      }, 2000);
+
+      // Update the main sheets list
+      setSheets(prevSheets => 
+        prevSheets.map(sheet => 
+          sheet.id === selectedSheet.id 
+            ? { ...sheet, [field]: value }
+            : sheet
+        )
+      );
+
+    } catch (error: any) {
+      console.error('Error auto-saving:', error);
+      toast.error('Error al guardar los cambios');
+      setSaveStatus('error');
+    }
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   if (loading) {
     return (
@@ -431,17 +514,37 @@ export default function VisitSheets() {
         </Card>
       )}
 
-      {/* Dialog de detalles */}
+      {/* Dialog de detalles con edición */}
       <Dialog open={showDetails} onOpenChange={setShowDetails}>
         <DialogContent className="max-w-4xl max-h-[90vh]">
           <DialogHeader>
-            <DialogTitle>Detalles de la Ficha de Visita</DialogTitle>
+            <DialogTitle className="flex items-center justify-between">
+              <span>Detalles de la Ficha de Visita</span>
+              {saveStatus === 'saving' && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Guardando...
+                </Badge>
+              )}
+              {saveStatus === 'saved' && (
+                <Badge variant="default" className="flex items-center gap-1 bg-green-500">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Guardado
+                </Badge>
+              )}
+              {saveStatus === 'error' && (
+                <Badge variant="destructive" className="flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  Error
+                </Badge>
+              )}
+            </DialogTitle>
           </DialogHeader>
           
-          {selectedSheet && (
+          {editedSheet && selectedSheet && (
             <ScrollArea className="h-[calc(90vh-8rem)]">
               <div className="space-y-6 pr-4">
-                {/* Información básica */}
+                {/* Información básica (no editable) */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">Empresa</p>
@@ -465,60 +568,102 @@ export default function VisitSheets() {
 
                 <Separator />
 
-                {/* Notas del gestor */}
-                {selectedSheet.notas_gestor && (
-                  <>
-                    <div>
-                      <h3 className="font-semibold mb-2">Notas del Gestor</h3>
-                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                        {selectedSheet.notas_gestor}
-                      </p>
-                    </div>
-                    <Separator />
-                  </>
-                )}
+                {/* Campos editables */}
+                <div className="space-y-4">
+                  {/* Tipo de visita */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Tipo de Visita</label>
+                    <Input
+                      value={editedSheet.tipo_visita || ''}
+                      onChange={(e) => handleFieldChange('tipo_visita', e.target.value)}
+                      placeholder="Ej: Primera visita, Seguimiento, Cierre..."
+                      maxLength={100}
+                    />
+                  </div>
 
-                {/* Métricas */}
-                {(selectedSheet.probabilidad_cierre !== null || selectedSheet.potencial_anual_estimado !== null) && (
-                  <>
-                    <div className="grid grid-cols-2 gap-4">
-                      {selectedSheet.probabilidad_cierre !== null && (
-                        <div>
-                          <p className="text-sm font-medium text-muted-foreground">Probabilidad de Cierre</p>
-                          <p className="text-2xl font-bold text-primary">{selectedSheet.probabilidad_cierre}%</p>
-                        </div>
-                      )}
-                      {selectedSheet.potencial_anual_estimado !== null && (
-                        <div>
-                          <p className="text-sm font-medium text-muted-foreground">Potencial Anual Estimado</p>
-                          <p className="text-2xl font-bold text-primary">
-                            €{selectedSheet.potencial_anual_estimado.toLocaleString()}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                    <Separator />
-                  </>
-                )}
+                  {/* Notas del gestor */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Notas del Gestor</label>
+                    <Textarea
+                      value={editedSheet.notas_gestor || ''}
+                      onChange={(e) => handleFieldChange('notas_gestor', e.target.value)}
+                      placeholder="Escribe tus notas aquí..."
+                      rows={6}
+                      maxLength={5000}
+                      className="resize-none"
+                    />
+                    <p className="text-xs text-muted-foreground text-right">
+                      {editedSheet.notas_gestor?.length || 0} / 5000
+                    </p>
+                  </div>
 
-                {/* Información adicional */}
+                  {/* Métricas editables */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Probabilidad de Cierre (%)</label>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={editedSheet.probabilidad_cierre ?? ''}
+                        onChange={(e) => handleFieldChange('probabilidad_cierre', e.target.value ? parseInt(e.target.value) : null)}
+                        placeholder="0-100"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Potencial Anual Estimado (€)</label>
+                      <Input
+                        type="number"
+                        min="0"
+                        value={editedSheet.potencial_anual_estimado ?? ''}
+                        onChange={(e) => handleFieldChange('potencial_anual_estimado', e.target.value ? parseFloat(e.target.value) : null)}
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Nivel de vinculación recomendado */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Nivel de Vinculación Recomendado</label>
+                    <Input
+                      value={editedSheet.nivel_vinculacion_recomendado || ''}
+                      onChange={(e) => handleFieldChange('nivel_vinculacion_recomendado', e.target.value)}
+                      placeholder="Ej: Alto, Medio, Bajo..."
+                      maxLength={100}
+                    />
+                  </div>
+
+                  {/* Oportunidades futuras */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Oportunidades Futuras</label>
+                    <Textarea
+                      value={editedSheet.oportunidades_futuras || ''}
+                      onChange={(e) => handleFieldChange('oportunidades_futuras', e.target.value)}
+                      placeholder="Describe las oportunidades identificadas..."
+                      rows={4}
+                      maxLength={2000}
+                      className="resize-none"
+                    />
+                    <p className="text-xs text-muted-foreground text-right">
+                      {editedSheet.oportunidades_futuras?.length || 0} / 2000
+                    </p>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Información adicional no editable */}
                 <div className="space-y-4 text-sm">
-                  {selectedSheet.tipo_visita && (
-                    <div>
-                      <p className="font-medium">Tipo de Visita</p>
-                      <p className="text-muted-foreground">{selectedSheet.tipo_visita}</p>
-                    </div>
-                  )}
                   {selectedSheet.canal && (
                     <div>
                       <p className="font-medium">Canal</p>
                       <p className="text-muted-foreground">{selectedSheet.canal}</p>
                     </div>
                   )}
-                  {selectedSheet.nivel_vinculacion_recomendado && (
+                  {selectedSheet.duracion && (
                     <div>
-                      <p className="font-medium">Nivel de Vinculación Recomendado</p>
-                      <p className="text-muted-foreground">{selectedSheet.nivel_vinculacion_recomendado}</p>
+                      <p className="font-medium">Duración (minutos)</p>
+                      <p className="text-muted-foreground">{selectedSheet.duracion}</p>
                     </div>
                   )}
                 </div>
