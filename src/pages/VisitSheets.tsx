@@ -45,20 +45,24 @@ export default function VisitSheets() {
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [selectedGestor, setSelectedGestor] = useState<string>('all');
+  const [selectedCompany, setSelectedCompany] = useState<string>('all');
+  const [selectedProbability, setSelectedProbability] = useState<string>('all');
   const [selectedSheet, setSelectedSheet] = useState<any | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const [gestores, setGestores] = useState<Array<{ id: string; full_name: string }>>([]);
+  const [companies, setCompanies] = useState<Array<{ id: string; name: string }>>([]);
 
   useEffect(() => {
     if (user) {
       fetchSheets();
       fetchGestores();
+      fetchCompanies();
     }
   }, [user]);
 
   useEffect(() => {
     applyFilters();
-  }, [sheets, searchTerm, dateFrom, dateTo, selectedGestor]);
+  }, [sheets, searchTerm, dateFrom, dateTo, selectedGestor, selectedCompany, selectedProbability]);
 
   const fetchGestores = async () => {
     try {
@@ -71,6 +75,20 @@ export default function VisitSheets() {
       setGestores(data || []);
     } catch (error) {
       console.error('Error fetching gestores:', error);
+    }
+  };
+
+  const fetchCompanies = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('companies')
+        .select('id, name')
+        .order('name');
+
+      if (error) throw error;
+      setCompanies(data || []);
+    } catch (error) {
+      console.error('Error fetching companies:', error);
     }
   };
 
@@ -133,6 +151,29 @@ export default function VisitSheets() {
       filtered = filtered.filter(sheet => sheet.gestor.id === selectedGestor);
     }
 
+    // Filtrar por empresa
+    if (selectedCompany !== 'all') {
+      filtered = filtered.filter(sheet => sheet.company.id === selectedCompany);
+    }
+
+    // Filtrar por probabilidad de cierre
+    if (selectedProbability !== 'all') {
+      filtered = filtered.filter(sheet => {
+        if (sheet.probabilidad_cierre === null) return false;
+        
+        switch (selectedProbability) {
+          case 'alta':
+            return sheet.probabilidad_cierre >= 75;
+          case 'media':
+            return sheet.probabilidad_cierre >= 50 && sheet.probabilidad_cierre < 75;
+          case 'baja':
+            return sheet.probabilidad_cierre < 50;
+          default:
+            return true;
+        }
+      });
+    }
+
     setFilteredSheets(filtered);
   };
 
@@ -141,6 +182,8 @@ export default function VisitSheets() {
     setDateFrom(undefined);
     setDateTo(undefined);
     setSelectedGestor('all');
+    setSelectedCompany('all');
+    setSelectedProbability('all');
   };
 
   const handleViewDetails = async (sheetId: string) => {
@@ -197,14 +240,15 @@ export default function VisitSheets() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Primera fila: Búsqueda y rango de fechas */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Búsqueda */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Buscar</label>
+              <label className="text-sm font-medium">Búsqueda general</label>
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Empresa, gestor..."
+                  placeholder="Empresa, gestor, email..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-8"
@@ -214,7 +258,7 @@ export default function VisitSheets() {
 
             {/* Fecha desde */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Desde</label>
+              <label className="text-sm font-medium">Fecha desde</label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start">
@@ -228,6 +272,7 @@ export default function VisitSheets() {
                     selected={dateFrom}
                     onSelect={setDateFrom}
                     locale={es}
+                    className="pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>
@@ -235,7 +280,7 @@ export default function VisitSheets() {
 
             {/* Fecha hasta */}
             <div className="space-y-2">
-              <label className="text-sm font-medium">Hasta</label>
+              <label className="text-sm font-medium">Fecha hasta</label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start">
@@ -249,9 +294,31 @@ export default function VisitSheets() {
                     selected={dateTo}
                     onSelect={setDateTo}
                     locale={es}
+                    className="pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>
+            </div>
+          </div>
+
+          {/* Segunda fila: Filtros específicos */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Empresa */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Empresa</label>
+              <Select value={selectedCompany} onValueChange={setSelectedCompany}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Todas las empresas" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las empresas</SelectItem>
+                  {companies.map(company => (
+                    <SelectItem key={company.id} value={company.id}>
+                      {company.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Gestor */}
@@ -260,7 +327,7 @@ export default function VisitSheets() {
                 <label className="text-sm font-medium">Gestor</label>
                 <Select value={selectedGestor} onValueChange={setSelectedGestor}>
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Todos los gestores" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos los gestores</SelectItem>
@@ -273,6 +340,22 @@ export default function VisitSheets() {
                 </Select>
               </div>
             )}
+
+            {/* Probabilidad de cierre */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Probabilidad de cierre</label>
+              <Select value={selectedProbability} onValueChange={setSelectedProbability}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Todas las probabilidades" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las probabilidades</SelectItem>
+                  <SelectItem value="alta">Alta (≥75%)</SelectItem>
+                  <SelectItem value="media">Media (50-74%)</SelectItem>
+                  <SelectItem value="baja">Baja (&lt;50%)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="flex justify-end">
