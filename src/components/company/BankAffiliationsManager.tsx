@@ -213,82 +213,77 @@ export function BankAffiliationsManager({ companyId }: Props) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2.5">
       {/* Header with total percentage */}
-      <div className="space-y-3">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <h4 className="text-sm font-semibold flex items-center gap-2">
-              <Building2 className="h-4 w-4 text-primary" />
-              Vinculación Bancaria
-            </h4>
-            <p className="text-xs text-muted-foreground">
-              Configure la distribución entre las tres entidades
-            </p>
-          </div>
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-muted-foreground">
+            Distribución entre entidades
+          </p>
           <div className="text-right">
-            <div className={`text-xl font-bold transition-colors ${
+            <div className={`text-lg font-bold transition-colors ${
               isValid ? 'text-green-600' : 
               totalPercentage > 100 ? 'text-red-600' : 
               'text-orange-600'
             }`}>
               {totalPercentage}%
             </div>
-            <div className="text-xs text-muted-foreground mt-1">
+            <div className="text-[10px] text-muted-foreground">
               {isValid ? (
-                <span className="flex items-center gap-1 text-green-600">
-                  <CheckCircle2 className="h-3 w-3" />
-                  Completo
+                <span className="flex items-center gap-0.5 text-green-600">
+                  <CheckCircle2 className="h-2.5 w-2.5" />
+                  OK
                 </span>
               ) : (
-                <span className="flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
+                <span className="flex items-center gap-0.5">
+                  <AlertCircle className="h-2.5 w-2.5" />
                   Falta {100 - totalPercentage}%
                 </span>
               )}
             </div>
           </div>
         </div>
-        <Progress value={Math.min(totalPercentage, 100)} className="h-1.5" />
+        <Progress value={Math.min(totalPercentage, 100)} className="h-1" />
       </div>
 
       {/* Mode selector */}
-      <div className="bg-muted/30 rounded-lg border p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+      <div className="bg-muted/30 rounded border p-2 space-y-2">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5">
             {isAutomatic ? (
-              <Calculator className="h-4 w-4 text-primary" />
+              <Calculator className="h-3 w-3 text-primary" />
             ) : (
-              <Hand className="h-4 w-4 text-primary" />
+              <Hand className="h-3 w-3 text-primary" />
             )}
-            <Label htmlFor="mode" className="text-sm font-medium">
-              {isAutomatic ? 'Cálculo Automático' : 'Configuración Manual'}
+            <Label htmlFor="mode" className="text-xs font-medium">
+              {isAutomatic ? 'Automático' : 'Manual'}
             </Label>
           </div>
           <Switch
             id="mode"
             checked={isAutomatic}
             onCheckedChange={setIsAutomatic}
+            className="scale-75"
           />
         </div>
 
         {isAutomatic && (
-          <div className="space-y-3 pt-2 border-t">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-xs">Facturación Anual (€)</Label>
+          <div className="space-y-2 pt-1 border-t">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label className="text-[10px]">Facturación (€)</Label>
                 <Input
                   type="number"
                   value={facturacionAnual || ''}
                   onChange={(e) => setFacturacionAnual(Number(e.target.value))}
-                  placeholder="Ej: 1000000"
-                  className="h-9"
+                  placeholder="1000000"
+                  className="h-7 text-xs"
                 />
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Periodo</Label>
+              <div className="space-y-1">
+                <Label className="text-[10px]">Periodo</Label>
                 <Select value={periodoFacturacion} onValueChange={setPeriodoFacturacion}>
-                  <SelectTrigger className="h-9">
+                  <SelectTrigger className="h-7 text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -298,46 +293,46 @@ export function BankAffiliationsManager({ companyId }: Props) {
                 </Select>
               </div>
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Ingresos por Creand (€)</Label>
+            <div className="space-y-1">
+              <Label className="text-[10px]">Ingresos Creand (€)</Label>
               <Input
                 type="number"
                 value={ingresosCreand || ''}
                 onChange={(e) => setIngresosCreand(Number(e.target.value))}
-                placeholder="Ej: 450000"
-                className="h-9"
+                placeholder="450000"
+                className="h-7 text-xs"
               />
             </div>
             <Button 
               onClick={calculateAutomaticPercentages}
               variant="outline"
               size="sm"
-              className="w-full"
+              className="w-full h-7 text-xs"
             >
-              <Calculator className="h-3 w-3 mr-2" />
-              Calcular Automáticamente
+              <Calculator className="h-3 w-3 mr-1" />
+              Calcular
             </Button>
           </div>
         )}
       </div>
 
       {/* Bank sliders */}
-      <div className="grid gap-3">
+      <div className="space-y-2">
         {BANKS.map((bank, index) => {
           const percentage = percentages[bank.name as keyof typeof percentages];
           return (
-            <div key={bank.name} className="border rounded-lg p-3 bg-card">
-              <div className="flex items-center gap-3">
-                <span className="text-xl">{bank.icon}</span>
-                <div className="flex-1 space-y-2">
+            <div key={bank.name} className="border rounded p-2 bg-card">
+              <div className="flex items-center gap-2">
+                <span className="text-base">{bank.icon}</span>
+                <div className="flex-1 space-y-1">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm">{bank.name}</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-medium text-xs">{bank.name}</span>
                       {index === 0 && (
-                        <Badge variant="default" className="text-[10px] h-4 px-1.5">Principal</Badge>
+                        <Badge variant="default" className="text-[9px] h-3.5 px-1">Principal</Badge>
                       )}
                     </div>
-                    <div className={`text-lg font-bold bg-gradient-to-r ${bank.color} bg-clip-text text-transparent`}>
+                    <div className={`text-sm font-bold bg-gradient-to-r ${bank.color} bg-clip-text text-transparent`}>
                       {percentage}%
                     </div>
                   </div>
@@ -368,17 +363,17 @@ export function BankAffiliationsManager({ companyId }: Props) {
         onClick={handleSave} 
         disabled={saving || !isValid}
         size="sm"
-        className="w-full"
+        className="w-full h-8 text-xs"
       >
         {saving ? (
           <>
-            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            <div className="mr-1.5 h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
             Guardando...
           </>
         ) : (
           <>
-            <Save className="mr-2 h-4 w-4" />
-            Guardar Todo
+            <Save className="mr-1.5 h-3 w-3" />
+            Guardar
           </>
         )}
       </Button>

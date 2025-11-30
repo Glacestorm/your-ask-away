@@ -231,22 +231,19 @@ export function TPVTerminalsManager({ companyId }: Props) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2.5">
       <div className="flex items-center justify-between">
-        <div>
-          <h4 className="text-sm font-semibold">Terminales TPV</h4>
-          <p className="text-xs text-muted-foreground">
-            Gestiona los terminales de punto de venta y comisiones
-          </p>
-        </div>
+        <p className="text-xs text-muted-foreground">
+          Gestión de terminales y comisiones
+        </p>
         <Dialog open={isDialogOpen} onOpenChange={(open) => {
           setIsDialogOpen(open);
           if (!open) resetForm();
         }}>
           <DialogTrigger asChild>
-            <Button size="sm">
-              <Plus className="mr-2 h-4 w-4" />
-              Añadir TPV
+            <Button size="sm" className="h-7 text-xs">
+              <Plus className="mr-1.5 h-3 w-3" />
+              Añadir
             </Button>
           </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -388,67 +385,74 @@ export function TPVTerminalsManager({ companyId }: Props) {
       </div>
       
       {loading ? (
-        <p className="text-center text-muted-foreground py-4">Cargando...</p>
+        <p className="text-center text-xs text-muted-foreground py-3">Cargando...</p>
       ) : terminals.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-sm text-muted-foreground mb-3">No hay terminales TPV registrados</p>
-          <Button size="sm" variant="outline" onClick={() => setIsDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Añadir Primer Terminal
+        <div className="text-center py-6">
+          <p className="text-xs text-muted-foreground mb-2">No hay terminales TPV</p>
+          <Button size="sm" variant="outline" onClick={() => setIsDialogOpen(true)} className="h-7 text-xs">
+            <Plus className="mr-1.5 h-3 w-3" />
+            Añadir Primero
           </Button>
         </div>
         ) : (
           <>
             <Accordion type="single" collapsible className="w-full">
               {terminals.map((terminal) => (
-                <AccordionItem key={terminal.id} value={terminal.id}>
-                  <AccordionTrigger className="hover:no-underline">
-                    <div className="flex items-center justify-between w-full pr-4">
-                      <div className="flex items-center gap-4">
-                        <Badge variant={terminal.active ? "default" : "secondary"}>
+                <AccordionItem key={terminal.id} value={terminal.id} className="border-b-0">
+                  <AccordionTrigger className="hover:no-underline py-2">
+                    <div className="flex items-center justify-between w-full pr-3">
+                      <div className="flex items-center gap-2">
+                        <Badge variant={terminal.active ? "default" : "secondary"} className="text-[10px] h-4">
                           {terminal.terminal_type}
                         </Badge>
-                        <span className="font-medium">{terminal.terminal_identifier}</span>
-                        <span className="text-sm text-muted-foreground">{terminal.bank_name}</span>
+                        <span className="font-medium text-xs">{terminal.terminal_identifier}</span>
+                        <span className="text-[10px] text-muted-foreground">{terminal.bank_name}</span>
                       </div>
-                      <div className="flex items-center gap-4">
-                        <span className="text-sm">
-                          {terminal.annual_revenue.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px]">
+                          {terminal.annual_revenue.toLocaleString('es-ES', { 
+                            style: 'currency', 
+                            currency: 'EUR',
+                            notation: 'compact',
+                            maximumFractionDigits: 0
+                          })}
                         </span>
-                        <span className="text-sm text-muted-foreground">
-                          {terminal.affiliation_percentage}% vinc.
+                        <span className="text-[10px] text-muted-foreground">
+                          {terminal.affiliation_percentage}%
                         </span>
                       </div>
                     </div>
                   </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="space-y-4 pt-4">
+                  <AccordionContent className="pb-2">
+                    <div className="space-y-2 pt-2">
                       <div>
-                        <h4 className="text-sm font-semibold mb-2">Comisiones</h4>
-                        <div className="grid grid-cols-3 gap-2">
+                        <h4 className="text-xs font-semibold mb-1.5">Comisiones</h4>
+                        <div className="grid grid-cols-3 gap-1.5">
                           {commissions[terminal.id]?.map((comm) => (
-                            <div key={comm.id} className="rounded-md border p-2 text-center">
-                              <p className="text-xs text-muted-foreground">{comm.card_type}</p>
-                              <p className="text-sm font-medium">{comm.commission_rate}%</p>
+                            <div key={comm.id} className="rounded border p-1.5 text-center">
+                              <p className="text-[9px] text-muted-foreground">{comm.card_type}</p>
+                              <p className="text-xs font-medium">{comm.commission_rate}%</p>
                             </div>
                           ))}
                         </div>
                       </div>
-                      <div className="flex justify-end gap-2">
+                      <div className="flex justify-end gap-1.5">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleEdit(terminal)}
+                          className="h-6 text-[10px] px-2"
                         >
-                          <Pencil className="mr-2 h-4 w-4" />
+                          <Pencil className="mr-1 h-3 w-3" />
                           Editar
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleDelete(terminal.id)}
+                          className="h-6 text-[10px] px-2"
                         >
-                          <Trash2 className="mr-2 h-4 w-4 text-destructive" />
+                          <Trash2 className="mr-1 h-3 w-3 text-destructive" />
                           Eliminar
                         </Button>
                       </div>

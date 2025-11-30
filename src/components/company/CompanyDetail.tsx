@@ -1,8 +1,8 @@
 import { CompanyWithDetails } from '@/types/database';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Building2, User, FileText, History, X, Camera, CreditCard, Landmark, Phone, Mail, Globe, MapPin, Users, TrendingUp, Scale, FileCheck, Briefcase, Clock, ExternalLink, ChevronDown } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Building2, User, FileText, History, X, Camera, CreditCard, Landmark, Phone, Mail, Globe, MapPin, Users, TrendingUp, Scale, FileCheck, Briefcase, Clock, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ContactsManager } from './ContactsManager';
 import { DocumentsManager } from './DocumentsManager';
@@ -329,63 +329,55 @@ export const CompanyDetail = ({ company, onClose, defaultTab = "info" }: Company
           </TabsContent>
 
           {/* Relations Tab - Banking, TPV, Contacts */}
-          <TabsContent value="relations" className="p-3 space-y-3 mt-0">
-            {/* Vinculación Bancaria Section */}
-            <Collapsible defaultOpen className="border rounded-lg overflow-hidden bg-card shadow-sm">
-              <CollapsibleTrigger className="flex w-full items-center justify-between p-3 hover:bg-muted/50 transition-colors group">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-md bg-primary/10">
-                    <Landmark className="h-4 w-4 text-primary" />
-                  </div>
-                  <h3 className="text-sm font-semibold">Vinculación Bancaria</h3>
-                </div>
-                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <Separator />
-                <div className="p-3">
-                  <BankAffiliationsManager companyId={company.id} />
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
+          <TabsContent value="relations" className="p-2 mt-0">
+            <div className="max-h-[calc(100vh-250px)] overflow-y-auto">
+              <Accordion type="single" collapsible className="space-y-2">
+                {/* Vinculación Bancaria Section */}
+                <AccordionItem value="bank" className="border rounded-lg bg-card shadow-sm">
+                  <AccordionTrigger className="px-3 py-2 hover:bg-muted/50 hover:no-underline">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1 rounded-md bg-primary/10">
+                        <Landmark className="h-3.5 w-3.5 text-primary" />
+                      </div>
+                      <span className="text-sm font-semibold">Vinculación Bancaria</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3 pt-2">
+                    <BankAffiliationsManager companyId={company.id} />
+                  </AccordionContent>
+                </AccordionItem>
 
-            {/* TPV Terminals Section */}
-            <Collapsible defaultOpen className="border rounded-lg overflow-hidden bg-card shadow-sm">
-              <CollapsibleTrigger className="flex w-full items-center justify-between p-3 hover:bg-muted/50 transition-colors group">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-md bg-primary/10">
-                    <CreditCard className="h-4 w-4 text-primary" />
-                  </div>
-                  <h3 className="text-sm font-semibold">Terminales TPV</h3>
-                </div>
-                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <Separator />
-                <div className="p-3">
-                  <TPVTerminalsManager companyId={company.id} />
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
+                {/* TPV Terminals Section */}
+                <AccordionItem value="tpv" className="border rounded-lg bg-card shadow-sm">
+                  <AccordionTrigger className="px-3 py-2 hover:bg-muted/50 hover:no-underline">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1 rounded-md bg-primary/10">
+                        <CreditCard className="h-3.5 w-3.5 text-primary" />
+                      </div>
+                      <span className="text-sm font-semibold">Terminales TPV</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3 pt-2">
+                    <TPVTerminalsManager companyId={company.id} />
+                  </AccordionContent>
+                </AccordionItem>
 
-            {/* Contacts Section */}
-            <Collapsible defaultOpen className="border rounded-lg overflow-hidden bg-card shadow-sm">
-              <CollapsibleTrigger className="flex w-full items-center justify-between p-3 hover:bg-muted/50 transition-colors group">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-md bg-primary/10">
-                    <Users className="h-4 w-4 text-primary" />
-                  </div>
-                  <h3 className="text-sm font-semibold">Contactos</h3>
-                </div>
-                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <Separator />
-                <div className="p-3">
-                  <ContactsManager companyId={company.id} />
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
+                {/* Contacts Section */}
+                <AccordionItem value="contacts" className="border rounded-lg bg-card shadow-sm">
+                  <AccordionTrigger className="px-3 py-2 hover:bg-muted/50 hover:no-underline">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1 rounded-md bg-primary/10">
+                        <Users className="h-3.5 w-3.5 text-primary" />
+                      </div>
+                      <span className="text-sm font-semibold">Contactos</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3 pt-2">
+                    <ContactsManager companyId={company.id} />
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </div>
           </TabsContent>
 
           {/* Media Tab - Photos and Documents */}
