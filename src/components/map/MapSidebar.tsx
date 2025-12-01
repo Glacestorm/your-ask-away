@@ -274,7 +274,7 @@ export function MapSidebar({
   if (!open) return null;
 
   return (
-    <aside className="absolute right-0 top-0 bottom-0 z-10 w-[380px] border-l bg-card shadow-xl lg:relative lg:h-full animate-in slide-in-from-right duration-300 flex flex-col overflow-hidden">
+    <aside className="w-[380px] h-full border-l bg-card shadow-xl flex flex-col shrink-0 z-10 animate-in slide-in-from-right duration-300">
       {/* Compact Header */}
       <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/30 shrink-0">
           <div className="flex items-center gap-2">
@@ -324,7 +324,7 @@ export function MapSidebar({
               onSelectCompany(null);
             }
           }}
-          className="flex-1 flex flex-col min-h-0"
+          className="flex-1 flex flex-col overflow-hidden"
         >
           <TabsList className="mx-2 mt-2 grid grid-cols-3 h-9 bg-muted shrink-0">
             <TabsTrigger 
@@ -351,7 +351,7 @@ export function MapSidebar({
           </TabsList>
 
           {/* Companies Tab */}
-          <TabsContent value="companies" className="flex-1 flex flex-col mt-0 min-h-0">
+          <TabsContent value="companies" className="flex-1 flex flex-col mt-0 overflow-hidden">
             {/* Search */}
             <div className="px-2 py-2 shrink-0">
               <div className="relative">
@@ -365,8 +365,8 @@ export function MapSidebar({
               </div>
             </div>
 
-            {/* Scrollable Content */}
-            <div className="flex-1 min-h-0 overflow-y-auto">
+            {/* Content - scrolls only when needed */}
+            <div className="flex-1 overflow-y-auto">
               <div className="px-2 pb-2">
                 <Accordion type="single" collapsible className="w-full space-y-1">
                   {/* Basic Filters */}
@@ -745,64 +745,81 @@ export function MapSidebar({
                   </AccordionItem>
                 </Accordion>
 
-                {/* Companies List Header */}
-                <div className="mt-4 mb-2 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-semibold">Empresas</h3>
-                    <Badge variant="outline" className="h-5 px-1.5 text-xs">
-                      {filteredCompanies.length}
-                    </Badge>
-                  </div>
-                </div>
-                
-                {/* Companies List */}
-                <div className="space-y-1.5">
-                  {filteredCompanies.map((company) => (
-                    <button
-                      key={company.id}
-                      onClick={() => onSelectCompany(company)}
-                      className={cn(
-                        'w-full rounded-lg border p-2.5 text-left transition-all hover:bg-accent hover:border-primary/30',
-                        selectedCompany?.id === company.id && 'border-primary bg-primary/5 shadow-sm'
-                      )}
-                    >
-                      <div className="flex items-start gap-2">
-                        <div
-                          className="mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full"
-                          style={{ backgroundColor: company.status?.color_hex || '#gray' }}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="truncate font-medium text-sm">{company.name}</p>
-                          <p className="truncate text-xs text-muted-foreground mt-0.5">
-                            {company.address}
-                          </p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs text-muted-foreground">{company.parroquia}</span>
-                            {company.vinculacion_entidad_1 !== null && (
-                              <Badge variant="outline" className="h-4 px-1 text-[10px]">
-                                {company.vinculacion_entidad_1}%
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                        <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-1" />
+                {/* Companies List - Only show when searching */}
+                {filters.searchTerm ? (
+                  <>
+                    <div className="mt-4 mb-2 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-semibold">Resultados</h3>
+                        <Badge variant="outline" className="h-5 px-1.5 text-xs">
+                          {filteredCompanies.length}
+                        </Badge>
                       </div>
-                    </button>
-                  ))}
-
-                  {filteredCompanies.length === 0 && (
-                    <div className="py-8 text-center text-sm text-muted-foreground">
-                      <Search className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                      No se encontraron empresas
                     </div>
-                  )}
-                </div>
+                    
+                    <div className="space-y-1.5">
+                      {filteredCompanies.slice(0, 20).map((company) => (
+                        <button
+                          key={company.id}
+                          onClick={() => onSelectCompany(company)}
+                          className={cn(
+                            'w-full rounded-lg border p-2.5 text-left transition-all hover:bg-accent hover:border-primary/30',
+                            selectedCompany?.id === company.id && 'border-primary bg-primary/5 shadow-sm'
+                          )}
+                        >
+                          <div className="flex items-start gap-2">
+                            <div
+                              className="mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full"
+                              style={{ backgroundColor: company.status?.color_hex || '#gray' }}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="truncate font-medium text-sm">{company.name}</p>
+                              <p className="truncate text-xs text-muted-foreground mt-0.5">
+                                {company.address}
+                              </p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-xs text-muted-foreground">{company.parroquia}</span>
+                                {company.vinculacion_entidad_1 !== null && (
+                                  <Badge variant="outline" className="h-4 px-1 text-[10px]">
+                                    {company.vinculacion_entidad_1}%
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                            <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-1" />
+                          </div>
+                        </button>
+                      ))}
+
+                      {filteredCompanies.length === 0 && (
+                        <div className="py-8 text-center text-sm text-muted-foreground">
+                          <Search className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                          No se encontraron empresas
+                        </div>
+                      )}
+                      
+                      {filteredCompanies.length > 20 && (
+                        <p className="text-xs text-muted-foreground text-center py-2">
+                          Mostrando 20 de {filteredCompanies.length} resultados
+                        </p>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <div className="mt-6 py-8 text-center text-muted-foreground">
+                    <Search className="h-10 w-10 mx-auto mb-3 opacity-20" />
+                    <p className="text-sm font-medium">Busca una empresa</p>
+                    <p className="text-xs mt-1 opacity-70">
+                      Escribe en el buscador o usa los filtros
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </TabsContent>
 
-          {/* Sectors Tab - Full Scroll */}
-          <TabsContent value="sectors" className="flex-1 min-h-0 mt-0 overflow-y-auto">
+          {/* Sectors Tab */}
+          <TabsContent value="sectors" className="flex-1 mt-0 overflow-y-auto">
             <div className="p-2">
               <SectorStats
                 companies={filteredCompanies}
@@ -819,8 +836,8 @@ export function MapSidebar({
             </div>
           </TabsContent>
 
-          {/* Detail Tab - Compact Layout */}
-          <TabsContent value="detail" className="flex-1 flex flex-col mt-0 min-h-0">
+          {/* Detail Tab */}
+          <TabsContent value="detail" className="flex-1 flex flex-col mt-0 overflow-hidden">
             {selectedCompany ? (
               <div className="flex-1 overflow-y-auto">
                 <CompanyDetail
