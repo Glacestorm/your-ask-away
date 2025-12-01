@@ -12,7 +12,14 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { MarkerStyle } from '@/components/map/markerStyles';
 
-const MapView = () => {
+interface MapViewProps {
+  canGoBack?: boolean;
+  canGoForward?: boolean;
+  onGoBack?: () => void;
+  onGoForward?: () => void;
+}
+
+const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProps) => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   
@@ -251,6 +258,10 @@ const MapView = () => {
           setMinZoomVinculacion(zoom);
           localStorage.setItem('minZoomVinculacion', zoom.toString());
         }}
+        canGoBack={canGoBack}
+        canGoForward={canGoForward}
+        onGoBack={onGoBack}
+        onGoForward={onGoForward}
       />
       
       <div className="relative flex flex-1 overflow-hidden">

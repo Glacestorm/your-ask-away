@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { ThemeSelector } from '@/components/ThemeSelector';
-import { MapPin, Menu, LogOut, Settings, BarChart3, UserCircle, Mountain, Layers, Info, Filter, Home } from 'lucide-react';
+import { MapPin, Menu, LogOut, Settings, BarChart3, UserCircle, Mountain, Layers, Info, Filter, Home, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,6 +60,10 @@ interface MapHeaderProps {
   onMarkerStyleChange: (style: MarkerStyle) => void;
   minZoomVinculacion: number;
   onMinZoomVinculacionChange: (zoom: number) => void;
+  canGoBack?: boolean;
+  canGoForward?: boolean;
+  onGoBack?: () => void;
+  onGoForward?: () => void;
 }
 
 export function MapHeader({ 
@@ -88,6 +92,10 @@ export function MapHeader({
   onMarkerStyleChange,
   minZoomVinculacion,
   onMinZoomVinculacionChange,
+  canGoBack,
+  canGoForward,
+  onGoBack,
+  onGoForward,
 }: MapHeaderProps) {
   const { user, signOut, userRole, isAdmin } = useAuth();
   const { t } = useLanguage();
@@ -179,6 +187,45 @@ export function MapHeader({
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
+
+        {(onGoBack || onGoForward) && (
+          <TooltipProvider>
+            <div className="flex items-center gap-1">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={onGoBack}
+                    disabled={!canGoBack}
+                    className="h-8 w-8 hover:bg-accent/50 disabled:opacity-30 transition-colors"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p>Enrere</p>
+                </TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={onGoForward}
+                    disabled={!canGoForward}
+                    className="h-8 w-8 hover:bg-accent/50 disabled:opacity-30 transition-colors"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p>Endavant</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+          </TooltipProvider>
+        )}
 
         <Button
           variant="ghost"
