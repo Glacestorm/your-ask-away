@@ -382,21 +382,293 @@ export function MapSidebar({
           {/* Companies Tab */}
           <TabsContent value="companies" className="flex-1 flex flex-col mt-0 overflow-hidden">
             {/* Search */}
-            <div className="px-2 py-2 shrink-0">
+            <div className={cn("shrink-0", fullscreen ? "px-4 py-3" : "px-2 py-2")}>
               <div className="relative">
                 <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Buscar empresas..."
                   value={filters.searchTerm}
                   onChange={(e) => onFiltersChange({ ...filters, searchTerm: e.target.value })}
-                  className="pl-8 h-8 text-sm"
+                  className={cn("pl-8 text-sm", fullscreen ? "h-10" : "h-8")}
                 />
               </div>
+              {fullscreen && (
+                <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+                  <Badge variant="outline">{filteredCompanies.length} empresas</Badge>
+                  {hasActiveFilters && (
+                    <span>con {getActiveFiltersCount()} filtros activos</span>
+                  )}
+                </div>
+              )}
             </div>
 
-            {/* Content - scrolls only when needed */}
+            {/* Content - Different layout for fullscreen */}
             <div className="flex-1 overflow-y-auto">
-              <div className="px-2 pb-2">
+              {fullscreen ? (
+                /* Fullscreen Grid Layout */
+                <div className="p-4 space-y-6">
+                  {/* Stats Summary */}
+                  <div className="grid grid-cols-4 gap-3">
+                    <div className="p-3 rounded-lg bg-muted/50 border">
+                      <div className="text-2xl font-bold">{companies.length}</div>
+                      <div className="text-xs text-muted-foreground">Total empresas</div>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/50 border">
+                      <div className="text-2xl font-bold">{filteredCompanies.length}</div>
+                      <div className="text-xs text-muted-foreground">Filtradas</div>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/50 border">
+                      <div className="text-2xl font-bold">{sectors.length}</div>
+                      <div className="text-xs text-muted-foreground">Sectores</div>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/50 border">
+                      <div className="text-2xl font-bold">{gestores.length}</div>
+                      <div className="text-xs text-muted-foreground">Gestores</div>
+                    </div>
+                  </div>
+
+                  {/* Filters Grid */}
+                  <div className="grid grid-cols-3 gap-4">
+                    {/* Column 1: Estado y Gestor */}
+                    <div className="space-y-4">
+                      <div className="p-4 rounded-lg border bg-card">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Users className="h-4 w-4 text-primary" />
+                          <h3 className="font-semibold text-sm">Estado</h3>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          {statusColors.map((status) => (
+                            <div key={status.id} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`fs-status-${status.id}`}
+                                checked={filters.statusIds.includes(status.id)}
+                                onCheckedChange={() => handleStatusToggle(status.id)}
+                                className="h-4 w-4"
+                              />
+                              <label
+                                htmlFor={`fs-status-${status.id}`}
+                                className="flex items-center gap-1.5 text-sm cursor-pointer"
+                              >
+                                <div
+                                  className="h-2.5 w-2.5 rounded-full shrink-0"
+                                  style={{ backgroundColor: status.color_hex }}
+                                />
+                                <span className="truncate">{status.status_name}</span>
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="p-4 rounded-lg border bg-card">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Users className="h-4 w-4 text-primary" />
+                          <h3 className="font-semibold text-sm">Gestor</h3>
+                        </div>
+                        <ScrollArea className="h-40">
+                          <div className="grid grid-cols-2 gap-2 pr-3">
+                            {gestores.map((gestor) => (
+                              <div key={gestor.id} className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`fs-gestor-${gestor.id}`}
+                                  checked={filters.gestorIds.includes(gestor.id)}
+                                  onCheckedChange={() => handleGestorToggle(gestor.id)}
+                                  className="h-4 w-4"
+                                />
+                                <label
+                                  htmlFor={`fs-gestor-${gestor.id}`}
+                                  className="text-sm cursor-pointer truncate"
+                                >
+                                  {gestor.full_name || gestor.email}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      </div>
+                    </div>
+
+                    {/* Column 2: Ubicación, Sector, CNAE */}
+                    <div className="space-y-4">
+                      <div className="p-4 rounded-lg border bg-card">
+                        <div className="flex items-center gap-2 mb-3">
+                          <MapPin className="h-4 w-4 text-primary" />
+                          <h3 className="font-semibold text-sm">Parroquia</h3>
+                        </div>
+                        <ScrollArea className="h-32">
+                          <div className="grid grid-cols-2 gap-2 pr-3">
+                            {parroquias.map((parroquia) => (
+                              <div key={parroquia} className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`fs-parroquia-${parroquia}`}
+                                  checked={filters.parroquias.includes(parroquia)}
+                                  onCheckedChange={() => handleParroquiaToggle(parroquia)}
+                                  className="h-4 w-4"
+                                />
+                                <label
+                                  htmlFor={`fs-parroquia-${parroquia}`}
+                                  className="text-sm cursor-pointer truncate"
+                                >
+                                  {parroquia}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      </div>
+
+                      <div className="p-4 rounded-lg border bg-card">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Tag className="h-4 w-4 text-primary" />
+                          <h3 className="font-semibold text-sm">Sector</h3>
+                        </div>
+                        <ScrollArea className="h-32">
+                          <div className="grid grid-cols-2 gap-2 pr-3">
+                            {sectors.map((sector) => (
+                              <div key={sector} className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`fs-sector-${sector}`}
+                                  checked={filters.sectors.includes(sector)}
+                                  onCheckedChange={() => handleSectorToggle(sector)}
+                                  className="h-4 w-4"
+                                />
+                                <label
+                                  htmlFor={`fs-sector-${sector}`}
+                                  className="text-sm cursor-pointer truncate"
+                                >
+                                  {sector}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      </div>
+                    </div>
+
+                    {/* Column 3: Productos y Valores Numéricos */}
+                    <div className="space-y-4">
+                      <div className="p-4 rounded-lg border bg-card">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Package className="h-4 w-4 text-primary" />
+                          <h3 className="font-semibold text-sm">Productos</h3>
+                        </div>
+                        <ScrollArea className="h-32">
+                          <div className="grid grid-cols-2 gap-2 pr-3">
+                            {products.map((product) => (
+                              <div key={product.id} className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`fs-product-${product.id}`}
+                                  checked={filters.productIds.includes(product.id)}
+                                  onCheckedChange={() => handleProductToggle(product.id)}
+                                  className="h-4 w-4"
+                                />
+                                <label
+                                  htmlFor={`fs-product-${product.id}`}
+                                  className="text-sm cursor-pointer truncate"
+                                >
+                                  {product.name}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      </div>
+
+                      <div className="p-4 rounded-lg border bg-card">
+                        <div className="flex items-center gap-2 mb-3">
+                          <DollarSign className="h-4 w-4 text-primary" />
+                          <h3 className="font-semibold text-sm">Valores Numéricos</h3>
+                        </div>
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-muted-foreground">% Vinculación</span>
+                              <span className="text-xs font-medium">
+                                {filters?.vinculacionRange?.min || 0}% - {filters?.vinculacionRange?.max || 100}%
+                              </span>
+                            </div>
+                            <Slider
+                              min={0}
+                              max={100}
+                              step={5}
+                              value={[filters?.vinculacionRange?.min || 0, filters?.vinculacionRange?.max || 100]}
+                              onValueChange={(value) =>
+                                onFiltersChange({
+                                  ...filters,
+                                  vinculacionRange: { min: value[0], max: value[1] },
+                                })
+                              }
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-muted-foreground">Facturación</span>
+                              <span className="text-xs font-medium">
+                                {((filters?.facturacionRange?.min || 0) / 1000000).toFixed(1)}M - {((filters?.facturacionRange?.max || 10000000) / 1000000).toFixed(1)}M €
+                              </span>
+                            </div>
+                            <Slider
+                              min={0}
+                              max={10000000}
+                              step={100000}
+                              value={[filters?.facturacionRange?.min || 0, filters?.facturacionRange?.max || 10000000]}
+                              onValueChange={(value) =>
+                                onFiltersChange({
+                                  ...filters,
+                                  facturacionRange: { min: value[0], max: value[1] },
+                                })
+                              }
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Filtered Results */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold">Resultados ({filteredCompanies.length})</h3>
+                    </div>
+                    <div className="grid grid-cols-4 gap-3">
+                      {filteredCompanies.slice(0, 20).map((company) => (
+                        <div
+                          key={company.id}
+                          onClick={() => onSelectCompany(company)}
+                          className="p-3 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <div className="font-medium text-sm truncate">{company.name}</div>
+                              <div className="text-xs text-muted-foreground truncate">{company.parroquia}</div>
+                            </div>
+                            {company.status && (
+                              <div
+                                className="h-2.5 w-2.5 rounded-full shrink-0 mt-1"
+                                style={{ backgroundColor: company.status.color_hex }}
+                              />
+                            )}
+                          </div>
+                          <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                            {company.vinculacion_entidad_1 != null && (
+                              <Badge variant="outline" className="text-xs">
+                                {company.vinculacion_entidad_1}% vinc.
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {filteredCompanies.length > 20 && (
+                      <p className="text-sm text-muted-foreground text-center">
+                        Mostrando 20 de {filteredCompanies.length} empresas. Usa los filtros para refinar.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                /* Normal Accordion Layout */
+                <div className="px-2 pb-2">
                 <Accordion type="single" collapsible className="w-full space-y-1">
                   {/* Basic Filters */}
                   <AccordionItem value="basic" className="border rounded-lg px-3">
@@ -844,6 +1116,7 @@ export function MapSidebar({
                   </div>
                 )}
               </div>
+              )}
             </div>
           </TabsContent>
 
