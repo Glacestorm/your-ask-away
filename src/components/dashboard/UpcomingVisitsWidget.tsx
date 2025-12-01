@@ -131,7 +131,7 @@ export const UpcomingVisitsWidget = () => {
   };
 
   const handleViewOnMap = (companyId: string) => {
-    navigate(`/map?company=${companyId}`);
+    navigate(`/admin?section=map&company=${companyId}`);
   };
 
   if (loading) {

@@ -64,7 +64,7 @@ export const NotificationService = () => {
               
               // Navigate based on notification type
               if (notification.title.includes('Visita')) {
-                window.location.href = '/map';
+                window.location.href = '/admin?section=map';
               } else if (notification.title.includes('Alerta')) {
                 window.location.href = '/dashboard';
               }
