@@ -150,7 +150,7 @@ export function SectorStats({
   const selectedMetrics = selectedSectors.map(calculateSectorMetrics);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 h-full overflow-y-auto pb-4">
       {/* Header with controls */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
