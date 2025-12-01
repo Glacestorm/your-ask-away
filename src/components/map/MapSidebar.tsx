@@ -278,12 +278,15 @@ export function MapSidebar({
   if (!open) return null;
 
   return (
-    <aside className={cn(
-      "bg-card shadow-xl flex flex-col animate-in duration-300",
-      fullscreen 
-        ? "fixed inset-0 z-50 border-0" 
-        : "w-[380px] h-full border-l shrink-0 z-10 slide-in-from-right"
-    )}>
+    <aside 
+      className={cn(
+        "bg-card shadow-xl flex flex-col animate-in duration-300",
+        fullscreen 
+          ? "fixed top-0 left-0 right-0 bottom-0 w-screen h-screen z-[9999] border-0" 
+          : "w-[380px] h-full border-l shrink-0 z-10 slide-in-from-right"
+      )}
+      style={fullscreen ? { position: 'fixed', width: '100vw', height: '100vh', top: 0, left: 0 } : undefined}
+    >
       {/* Header - Different style for fullscreen */}
       <div className={cn(
         "flex items-center justify-between border-b bg-muted/30 shrink-0",
