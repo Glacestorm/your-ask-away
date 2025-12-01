@@ -30,6 +30,8 @@ interface MapSidebarProps {
   onFiltersChange: (filters: MapFilters) => void;
   selectedCompany: CompanyWithDetails | null;
   onSelectCompany: (company: CompanyWithDetails | null) => void;
+  fullscreen?: boolean;
+  onFullscreenChange?: (fullscreen: boolean) => void;
 }
 
 export function MapSidebar({
@@ -41,6 +43,8 @@ export function MapSidebar({
   onFiltersChange,
   selectedCompany,
   onSelectCompany,
+  fullscreen = false,
+  onFullscreenChange,
 }: MapSidebarProps) {
   const [gestores, setGestores] = useState<Profile[]>([]);
   const [parroquias, setParroquias] = useState<string[]>([]);
@@ -274,7 +278,10 @@ export function MapSidebar({
   if (!open) return null;
 
   return (
-    <aside className="w-[380px] h-full border-l bg-card shadow-xl flex flex-col shrink-0 z-10 animate-in slide-in-from-right duration-300">
+    <aside className={cn(
+      "h-full border-l bg-card shadow-xl flex flex-col shrink-0 z-10 animate-in slide-in-from-right duration-300",
+      fullscreen ? "w-full absolute inset-0 border-l-0" : "w-[380px]"
+    )}>
       {/* Compact Header */}
       <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/30 shrink-0">
           <div className="flex items-center gap-2">
@@ -306,6 +313,7 @@ export function MapSidebar({
                 "h-7 w-7 p-0 transition-all",
                 densityMode === 'compact' && "bg-primary/10 text-primary"
               )}
+              title={densityMode === 'compact' ? "Expandir" : "Compactar"}
             >
               {densityMode === 'compact' ? (
                 <Maximize2 className="h-3.5 w-3.5" />
@@ -313,6 +321,27 @@ export function MapSidebar({
                 <Minimize2 className="h-3.5 w-3.5" />
               )}
             </Button>
+            {onFullscreenChange && (
+              <Button
+                variant={fullscreen ? "default" : "ghost"}
+                size="sm"
+                onClick={() => onFullscreenChange(!fullscreen)}
+                className="h-7 px-2 text-xs"
+                title={fullscreen ? "Salir de pantalla completa" : "Pantalla completa"}
+              >
+                {fullscreen ? (
+                  <>
+                    <Minimize2 className="h-3.5 w-3.5 mr-1" />
+                    Mapa
+                  </>
+                ) : (
+                  <>
+                    <Maximize2 className="h-3.5 w-3.5 mr-1" />
+                    Expandir
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </div>
 

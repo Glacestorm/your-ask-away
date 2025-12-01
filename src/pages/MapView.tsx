@@ -79,6 +79,7 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
     const saved = localStorage.getItem('minZoomVinculacion');
     return saved ? parseFloat(saved) : 8;
   });
+  const [sidebarFullscreen, setSidebarFullscreen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -264,7 +265,7 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
         onGoForward={onGoForward}
       />
       
-      <div className="flex flex-1 min-h-0 h-full">
+      <div className="flex flex-1 min-h-0 h-full relative">
         <MapSidebar
           open={sidebarOpen}
           companies={companies}
@@ -274,55 +275,58 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
           onFiltersChange={setFilters}
           selectedCompany={selectedCompany}
           onSelectCompany={setSelectedCompany}
+          fullscreen={sidebarFullscreen}
+          onFullscreenChange={setSidebarFullscreen}
         />
         
-        <div className="relative flex-1">
-          {showSearch && (
-            <GeoSearch
-              companies={companies}
-              onSelectResult={handleSearchResult}
-              onClose={() => setShowSearch(false)}
-            />
-          )}
-          
-          {!showSearch && (
-            <Button
-              onClick={() => setShowSearch(true)}
-              className="absolute top-4 left-4 z-10 shadow-lg"
-              size="default"
-            >
-              <Search className="mr-2 h-4 w-4" />
-              Buscar ubicación
-            </Button>
-          )}
+        {!sidebarFullscreen && (
+          <div className="relative flex-1">
+            {showSearch && (
+              <GeoSearch
+                companies={companies}
+                onSelectResult={handleSearchResult}
+                onClose={() => setShowSearch(false)}
+              />
+            )}
+            
+            {!showSearch && (
+              <Button
+                onClick={() => setShowSearch(true)}
+                className="absolute top-4 left-4 z-10 shadow-lg"
+                size="default"
+              >
+                <Search className="mr-2 h-4 w-4" />
+                Buscar ubicación
+              </Button>
+            )}
 
-          <MapContainer
-            companies={companies}
-            statusColors={statusColors}
-            filters={filters}
-            onSelectCompany={(company) => {
-              setSelectedCompany(company);
-              if (company) {
-                setSidebarOpen(true);
-              }
-            }}
-            mapStyle={mapStyle}
-            view3D={view3D}
-            baseLayers={baseLayers}
-            buildingOpacity={buildingOpacity}
-            buildingHeightMultiplier={buildingHeightMultiplier}
-            searchLocation={searchLocation}
-            onSearchLocationClear={() => setSearchLocation(null)}
-            colorMode={colorMode}
-            markerStyle={markerStyle}
-            minZoomVinculacion={minZoomVinculacion}
-            onMinZoomVinculacionChange={(zoom) => {
-              setMinZoomVinculacion(zoom);
-              localStorage.setItem('minZoomVinculacion', zoom.toString());
-            }}
-          />
-          
-        </div>
+            <MapContainer
+              companies={companies}
+              statusColors={statusColors}
+              filters={filters}
+              onSelectCompany={(company) => {
+                setSelectedCompany(company);
+                if (company) {
+                  setSidebarOpen(true);
+                }
+              }}
+              mapStyle={mapStyle}
+              view3D={view3D}
+              baseLayers={baseLayers}
+              buildingOpacity={buildingOpacity}
+              buildingHeightMultiplier={buildingHeightMultiplier}
+              searchLocation={searchLocation}
+              onSearchLocationClear={() => setSearchLocation(null)}
+              colorMode={colorMode}
+              markerStyle={markerStyle}
+              minZoomVinculacion={minZoomVinculacion}
+              onMinZoomVinculacionChange={(zoom) => {
+                setMinZoomVinculacion(zoom);
+                localStorage.setItem('minZoomVinculacion', zoom.toString());
+              }}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
