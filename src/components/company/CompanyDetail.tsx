@@ -149,65 +149,85 @@ export const CompanyDetail = ({
               value="info" 
               className={cn(
                 "flex flex-col items-center h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all",
-                isCompact ? "py-0.5 px-0.5" : "py-1 px-1"
+                isCompact ? "py-1 px-1" : "py-2 px-2"
               )}
             >
               <Building2 className={cn(
-                "mb-0.5",
-                isCompact ? "h-2.5 w-2.5" : "h-3 w-3"
+                "mb-1 drop-shadow-md",
+                isCompact ? "h-4 w-4" : "h-5 w-5"
               )} />
-              <span className={cn(
-                "font-medium",
-                isCompact ? "text-[7px]" : "text-[8px]"
-              )}>Info</span>
+              <span 
+                className={cn(
+                  "font-bold tracking-wide",
+                  isCompact ? "text-xs" : "text-sm"
+                )}
+                style={{
+                  textShadow: '1px 1px 0px rgba(0,0,0,0.3), 2px 2px 2px rgba(0,0,0,0.15)'
+                }}
+              >Info</span>
             </TabsTrigger>
             <TabsTrigger 
               value="relations" 
               className={cn(
                 "flex flex-col items-center h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all",
-                isCompact ? "py-0.5 px-0.5" : "py-1 px-1"
+                isCompact ? "py-1 px-1" : "py-2 px-2"
               )}
             >
               <Landmark className={cn(
-                "mb-0.5",
-                isCompact ? "h-2.5 w-2.5" : "h-3 w-3"
+                "mb-1 drop-shadow-md",
+                isCompact ? "h-4 w-4" : "h-5 w-5"
               )} />
-              <span className={cn(
-                "font-medium",
-                isCompact ? "text-[7px]" : "text-[8px]"
-              )}>Relaciones</span>
+              <span 
+                className={cn(
+                  "font-bold tracking-wide",
+                  isCompact ? "text-xs" : "text-sm"
+                )}
+                style={{
+                  textShadow: '1px 1px 0px rgba(0,0,0,0.3), 2px 2px 2px rgba(0,0,0,0.15)'
+                }}
+              >Relaciones</span>
             </TabsTrigger>
             <TabsTrigger 
               value="media" 
               className={cn(
                 "flex flex-col items-center h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all",
-                isCompact ? "py-0.5 px-0.5" : "py-1 px-1"
+                isCompact ? "py-1 px-1" : "py-2 px-2"
               )}
             >
               <Camera className={cn(
-                "mb-0.5",
-                isCompact ? "h-2.5 w-2.5" : "h-3 w-3"
+                "mb-1 drop-shadow-md",
+                isCompact ? "h-4 w-4" : "h-5 w-5"
               )} />
-              <span className={cn(
-                "font-medium",
-                isCompact ? "text-[7px]" : "text-[8px]"
-              )}>Multimedia</span>
+              <span 
+                className={cn(
+                  "font-bold tracking-wide",
+                  isCompact ? "text-xs" : "text-sm"
+                )}
+                style={{
+                  textShadow: '1px 1px 0px rgba(0,0,0,0.3), 2px 2px 2px rgba(0,0,0,0.15)'
+                }}
+              >Multimedia</span>
             </TabsTrigger>
             <TabsTrigger 
               value="activity" 
               className={cn(
                 "flex flex-col items-center h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all",
-                isCompact ? "py-0.5 px-0.5" : "py-1 px-1"
+                isCompact ? "py-1 px-1" : "py-2 px-2"
               )}
             >
               <History className={cn(
-                "mb-0.5",
-                isCompact ? "h-2.5 w-2.5" : "h-3 w-3"
+                "mb-1 drop-shadow-md",
+                isCompact ? "h-4 w-4" : "h-5 w-5"
               )} />
-              <span className={cn(
-                "font-medium",
-                isCompact ? "text-[7px]" : "text-[8px]"
-              )}>Actividad</span>
+              <span 
+                className={cn(
+                  "font-bold tracking-wide",
+                  isCompact ? "text-xs" : "text-sm"
+                )}
+                style={{
+                  textShadow: '1px 1px 0px rgba(0,0,0,0.3), 2px 2px 2px rgba(0,0,0,0.15)'
+                }}
+              >Actividad</span>
             </TabsTrigger>
           </TabsList>
         </div>
