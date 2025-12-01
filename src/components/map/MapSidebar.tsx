@@ -274,10 +274,9 @@ export function MapSidebar({
   if (!open) return null;
 
   return (
-    <aside className="absolute right-0 top-0 bottom-0 z-10 w-[380px] border-l bg-card shadow-xl lg:relative animate-in slide-in-from-right duration-300">
-      <div className="absolute inset-0 flex flex-col">
-        {/* Compact Header */}
-        <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/30 shrink-0">
+    <aside className="absolute right-0 top-0 bottom-0 z-10 w-[380px] border-l bg-card shadow-xl lg:relative animate-in slide-in-from-right duration-300 flex flex-col">
+      {/* Compact Header */}
+      <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/30 shrink-0">
           <div className="flex items-center gap-2">
             <Building className="h-4 w-4 text-primary" />
             <span className="text-sm font-semibold">Panel</span>
@@ -842,7 +841,6 @@ export function MapSidebar({
             )}
           </TabsContent>
         </Tabs>
-      </div>
     </aside>
   );
 }
