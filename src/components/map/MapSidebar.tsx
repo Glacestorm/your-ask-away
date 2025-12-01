@@ -274,7 +274,7 @@ export function MapSidebar({
   if (!open) return null;
 
   return (
-    <aside className="absolute right-0 top-0 bottom-0 z-10 w-[380px] border-l bg-card shadow-xl lg:relative animate-in slide-in-from-right duration-300 flex flex-col">
+    <aside className="absolute right-0 top-0 bottom-0 z-10 w-[380px] border-l bg-card shadow-xl lg:relative lg:h-full animate-in slide-in-from-right duration-300 flex flex-col overflow-hidden">
       {/* Compact Header */}
       <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/30 shrink-0">
           <div className="flex items-center gap-2">
@@ -351,9 +351,9 @@ export function MapSidebar({
           </TabsList>
 
           {/* Companies Tab */}
-          <TabsContent value="companies" className="flex-1 flex flex-col mt-2 min-h-0 overflow-hidden">
+          <TabsContent value="companies" className="flex-1 flex flex-col mt-0 min-h-0">
             {/* Search */}
-            <div className="px-2 pb-2 shrink-0">
+            <div className="px-2 py-2 shrink-0">
               <div className="relative">
                 <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -366,8 +366,8 @@ export function MapSidebar({
             </div>
 
             {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto">
-              <div className="px-2 pb-4">
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              <div className="px-2 pb-2">
                 <Accordion type="single" collapsible className="w-full space-y-1">
                   {/* Basic Filters */}
                   <AccordionItem value="basic" className="border rounded-lg px-3">
@@ -802,7 +802,7 @@ export function MapSidebar({
           </TabsContent>
 
           {/* Sectors Tab - Full Scroll */}
-          <TabsContent value="sectors" className="flex-1 mt-2 overflow-y-auto">
+          <TabsContent value="sectors" className="flex-1 min-h-0 mt-0 overflow-y-auto">
             <div className="p-2">
               <SectorStats
                 companies={filteredCompanies}
@@ -820,7 +820,7 @@ export function MapSidebar({
           </TabsContent>
 
           {/* Detail Tab - Compact Layout */}
-          <TabsContent value="detail" className="flex-1 flex flex-col mt-2 min-h-0 overflow-hidden">
+          <TabsContent value="detail" className="flex-1 flex flex-col mt-0 min-h-0">
             {selectedCompany ? (
               <div className="flex-1 overflow-y-auto">
                 <CompanyDetail
