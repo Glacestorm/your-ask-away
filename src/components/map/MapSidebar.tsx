@@ -333,6 +333,351 @@ export function MapSidebar({
     );
   }
 
+  // Fullscreen mode without selected company - show full list view
+  if (fullscreen && !selectedCompany) {
+    return (
+      <aside 
+        className="fixed top-0 left-0 right-0 bottom-0 w-screen h-screen z-[9999] border-0 bg-card shadow-xl flex flex-col animate-in duration-300"
+        style={{ position: 'fixed', width: '100vw', height: '100vh', top: 0, left: 0 }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between border-b bg-muted/30 shrink-0 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <Building className="h-6 w-6 text-primary" />
+            <span className="font-semibold text-lg">Panel de Empresas</span>
+            {hasActiveFilters && (
+              <Badge variant="default" className="h-6 px-2">
+                {getActiveFiltersCount()} filtros
+              </Badge>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                onClick={clearFilters}
+                className="text-muted-foreground hover:text-destructive px-3"
+              >
+                <X className="h-4 w-4 mr-1" />
+                Limpiar filtros
+              </Button>
+            )}
+            {onFullscreenChange && (
+              <Button
+                variant="default"
+                onClick={() => onFullscreenChange(false)}
+                className="px-4"
+              >
+                <MapPin className="h-4 w-4 mr-2" />
+                Volver al Mapa
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Search */}
+        <div className="shrink-0 px-6 py-4 border-b">
+          <div className="relative max-w-xl">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar empresas..."
+              value={filters.searchTerm}
+              onChange={(e) => onFiltersChange({ ...filters, searchTerm: e.target.value })}
+              className="pl-10 h-10"
+            />
+          </div>
+          <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+            <Badge variant="outline">{filteredCompanies.length} empresas</Badge>
+            {hasActiveFilters && (
+              <span>con {getActiveFiltersCount()} filtros activos</span>
+            )}
+          </div>
+        </div>
+
+        {/* Full content area */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {/* Stats Summary */}
+          <div className="grid grid-cols-4 gap-4 mb-6">
+            <div className="p-4 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border">
+              <div className="text-3xl font-bold">{companies.length}</div>
+              <div className="text-sm text-muted-foreground">Total empresas</div>
+            </div>
+            <div className="p-4 rounded-xl bg-gradient-to-br from-green-500/10 to-green-500/5 border">
+              <div className="text-3xl font-bold">{filteredCompanies.length}</div>
+              <div className="text-sm text-muted-foreground">Filtradas</div>
+            </div>
+            <div className="p-4 rounded-xl bg-gradient-to-br from-blue-500/10 to-blue-500/5 border">
+              <div className="text-3xl font-bold">{sectors.length}</div>
+              <div className="text-sm text-muted-foreground">Sectores</div>
+            </div>
+            <div className="p-4 rounded-xl bg-gradient-to-br from-amber-500/10 to-amber-500/5 border">
+              <div className="text-3xl font-bold">{gestores.length}</div>
+              <div className="text-sm text-muted-foreground">Gestores</div>
+            </div>
+          </div>
+
+          {/* Filters Grid */}
+          <div className="grid grid-cols-4 gap-4 mb-6">
+            {/* Column 1: Estado y Gestor */}
+            <div className="space-y-4">
+              <div className="p-4 rounded-lg border bg-card">
+                <div className="flex items-center gap-2 mb-3">
+                  <Users className="h-4 w-4 text-primary" />
+                  <h3 className="font-semibold text-sm">Estado</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {statusColors.map((status) => (
+                    <div key={status.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`fs-status-${status.id}`}
+                        checked={filters.statusIds.includes(status.id)}
+                        onCheckedChange={() => handleStatusToggle(status.id)}
+                        className="h-4 w-4"
+                      />
+                      <label
+                        htmlFor={`fs-status-${status.id}`}
+                        className="flex items-center gap-1.5 text-sm cursor-pointer"
+                      >
+                        <div
+                          className="h-2.5 w-2.5 rounded-full shrink-0"
+                          style={{ backgroundColor: status.color_hex }}
+                        />
+                        <span className="truncate">{status.status_name}</span>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-4 rounded-lg border bg-card">
+                <div className="flex items-center gap-2 mb-3">
+                  <Users className="h-4 w-4 text-primary" />
+                  <h3 className="font-semibold text-sm">Gestor</h3>
+                </div>
+                <ScrollArea className="h-40">
+                  <div className="grid grid-cols-2 gap-2 pr-3">
+                    {gestores.map((gestor) => (
+                      <div key={gestor.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`fs-gestor-${gestor.id}`}
+                          checked={filters.gestorIds.includes(gestor.id)}
+                          onCheckedChange={() => handleGestorToggle(gestor.id)}
+                          className="h-4 w-4"
+                        />
+                        <label
+                          htmlFor={`fs-gestor-${gestor.id}`}
+                          className="text-sm cursor-pointer truncate"
+                        >
+                          {gestor.full_name || gestor.email}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
+            </div>
+
+            {/* Column 2: Ubicación */}
+            <div className="space-y-4">
+              <div className="p-4 rounded-lg border bg-card">
+                <div className="flex items-center gap-2 mb-3">
+                  <MapPin className="h-4 w-4 text-primary" />
+                  <h3 className="font-semibold text-sm">Parroquia</h3>
+                </div>
+                <ScrollArea className="h-40">
+                  <div className="grid grid-cols-2 gap-2 pr-3">
+                    {parroquias.map((parroquia) => (
+                      <div key={parroquia} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`fs-parroquia-${parroquia}`}
+                          checked={filters.parroquias.includes(parroquia)}
+                          onCheckedChange={() => handleParroquiaToggle(parroquia)}
+                          className="h-4 w-4"
+                        />
+                        <label
+                          htmlFor={`fs-parroquia-${parroquia}`}
+                          className="text-sm cursor-pointer truncate"
+                        >
+                          {parroquia}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
+
+              <div className="p-4 rounded-lg border bg-card">
+                <div className="flex items-center gap-2 mb-3">
+                  <Tag className="h-4 w-4 text-primary" />
+                  <h3 className="font-semibold text-sm">Sector</h3>
+                </div>
+                <ScrollArea className="h-40">
+                  <div className="grid grid-cols-2 gap-2 pr-3">
+                    {sectors.map((sector) => (
+                      <div key={sector} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`fs-sector-${sector}`}
+                          checked={filters.sectors.includes(sector)}
+                          onCheckedChange={() => handleSectorToggle(sector)}
+                          className="h-4 w-4"
+                        />
+                        <label
+                          htmlFor={`fs-sector-${sector}`}
+                          className="text-sm cursor-pointer truncate"
+                        >
+                          {sector}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
+            </div>
+
+            {/* Column 3: Productos */}
+            <div className="p-4 rounded-lg border bg-card h-fit">
+              <div className="flex items-center gap-2 mb-3">
+                <Package className="h-4 w-4 text-primary" />
+                <h3 className="font-semibold text-sm">Productos</h3>
+              </div>
+              <ScrollArea className="h-64">
+                <div className="grid grid-cols-2 gap-2 pr-3">
+                  {products.map((product) => (
+                    <div key={product.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`fs-product-${product.id}`}
+                        checked={filters.productIds.includes(product.id)}
+                        onCheckedChange={() => handleProductToggle(product.id)}
+                        className="h-4 w-4"
+                      />
+                      <label
+                        htmlFor={`fs-product-${product.id}`}
+                        className="text-sm cursor-pointer truncate"
+                      >
+                        {product.name}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+
+            {/* Column 4: Valores Numéricos */}
+            <div className="p-4 rounded-lg border bg-card h-fit">
+              <div className="flex items-center gap-2 mb-3">
+                <DollarSign className="h-4 w-4 text-primary" />
+                <h3 className="font-semibold text-sm">Valores Numéricos</h3>
+              </div>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">% Vinculación</span>
+                    <span className="text-xs font-medium">
+                      {filters?.vinculacionRange?.min || 0}% - {filters?.vinculacionRange?.max || 100}%
+                    </span>
+                  </div>
+                  <Slider
+                    min={0}
+                    max={100}
+                    step={5}
+                    value={[filters?.vinculacionRange?.min || 0, filters?.vinculacionRange?.max || 100]}
+                    onValueChange={(value) =>
+                      onFiltersChange({
+                        ...filters,
+                        vinculacionRange: { min: value[0], max: value[1] },
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Facturación</span>
+                    <span className="text-xs font-medium">
+                      {((filters?.facturacionRange?.min || 0) / 1000000).toFixed(1)}M - {((filters?.facturacionRange?.max || 10000000) / 1000000).toFixed(1)}M €
+                    </span>
+                  </div>
+                  <Slider
+                    min={0}
+                    max={10000000}
+                    step={100000}
+                    value={[filters?.facturacionRange?.min || 0, filters?.facturacionRange?.max || 10000000]}
+                    onValueChange={(value) =>
+                      onFiltersChange({
+                        ...filters,
+                        facturacionRange: { min: value[0], max: value[1] },
+                      })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">P&L Banco</span>
+                    <span className="text-xs font-medium">
+                      {((filters?.plBancoRange?.min || -1000000) / 1000).toFixed(0)}k - {((filters?.plBancoRange?.max || 1000000) / 1000).toFixed(0)}k €
+                    </span>
+                  </div>
+                  <Slider
+                    min={-1000000}
+                    max={1000000}
+                    step={50000}
+                    value={[filters?.plBancoRange?.min || -1000000, filters?.plBancoRange?.max || 1000000]}
+                    onValueChange={(value) =>
+                      onFiltersChange({
+                        ...filters,
+                        plBancoRange: { min: value[0], max: value[1] },
+                      })
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Results */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-lg">Resultados ({filteredCompanies.length})</h3>
+            </div>
+            <div className="grid grid-cols-5 gap-3">
+              {filteredCompanies.slice(0, 50).map((company) => (
+                <div
+                  key={company.id}
+                  onClick={() => onSelectCompany(company)}
+                  className="p-3 rounded-lg border bg-card hover:bg-accent hover:border-primary/30 cursor-pointer transition-all"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-sm truncate">{company.name}</div>
+                      <div className="text-xs text-muted-foreground truncate">{company.parroquia}</div>
+                    </div>
+                    {company.status && (
+                      <div
+                        className="h-2.5 w-2.5 rounded-full shrink-0 mt-1"
+                        style={{ backgroundColor: company.status.color_hex }}
+                      />
+                    )}
+                  </div>
+                  <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                    {company.vinculacion_entidad_1 != null && (
+                      <Badge variant="outline" className="text-xs">
+                        {company.vinculacion_entidad_1}% vinc.
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            {filteredCompanies.length > 50 && (
+              <p className="text-sm text-muted-foreground text-center mt-4">
+                Mostrando 50 de {filteredCompanies.length} empresas. Usa los filtros para refinar.
+              </p>
+            )}
+          </div>
+        </div>
+      </aside>
+    );
+  }
+
   return (
     <aside 
       className={cn(
