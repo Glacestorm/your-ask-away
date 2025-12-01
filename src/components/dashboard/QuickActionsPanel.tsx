@@ -186,7 +186,7 @@ export const QuickActionsPanel = () => {
   };
 
   const navigateToCompany = (companyId: string) => {
-    navigate(`/map?company=${companyId}`);
+    navigate(`/admin?section=map&company=${companyId}`);
   };
 
   if (loading) {
@@ -370,7 +370,7 @@ export const QuickActionsPanel = () => {
                   variant="ghost"
                   size="sm"
                   className="w-full"
-                  onClick={() => navigate('/map')}
+                  onClick={() => navigate('/admin?section=map')}
                 >
                   Ver todas las visitas
                 </Button>

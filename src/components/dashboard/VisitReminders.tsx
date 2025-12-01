@@ -191,7 +191,7 @@ export const VisitReminders = () => {
       body: 'Tienes una visita programada a Empresa de Prueba en 1 hora',
       requireInteraction: true,
       onClick: () => {
-        window.location.href = '/map';
+        window.location.href = '/admin?section=map';
       },
     });
     toast.success('Notificación de prueba enviada');

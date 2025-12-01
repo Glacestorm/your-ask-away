@@ -9,7 +9,6 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Auth from "./pages/Auth";
 import Home from "./pages/Home";
-import MapView from "./pages/MapView";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
@@ -31,7 +30,7 @@ const App = () => (
                   <Route path="/" element={<Navigate to="/home" replace />} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/home" element={<Home />} />
-                  <Route path="/map" element={<MapView />} />
+                  <Route path="/map" element={<Navigate to="/admin?section=map" replace />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/admin" element={<Admin />} />
                   <Route path="/profile" element={<Profile />} />
