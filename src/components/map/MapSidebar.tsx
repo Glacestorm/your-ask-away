@@ -540,7 +540,7 @@ export function MapSidebar({
             </ScrollArea>
           </TabsContent>
 
-          <TabsContent value="sectors" className="flex-1 mt-0 min-h-0 overflow-y-auto p-2">
+          <TabsContent value="sectors" className="flex-1 flex flex-col mt-0 min-h-0 overflow-y-auto p-2">
             <SectorStats
               companies={filteredCompanies}
               onSectorClick={handleSectorClick}
@@ -555,7 +555,7 @@ export function MapSidebar({
             />
           </TabsContent>
 
-          <TabsContent value="detail" className="flex-1 mt-0 min-h-0 overflow-hidden p-0">
+          <TabsContent value="detail" className="flex-1 flex flex-col mt-0 min-h-0 overflow-hidden p-0">
             {selectedCompany ? (
               <CompanyDetail
                 company={selectedCompany} 

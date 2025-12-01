@@ -27,7 +27,7 @@ export const CompanyDetail = ({ company, onClose, defaultTab = "info" }: Company
   const { t } = useLanguage();
   
   return (
-    <div className="flex flex-col h-full min-h-0">
+    <div className="flex flex-col flex-1 min-h-0">
       {/* Enhanced Header */}
       <div className="border-b bg-card/80 backdrop-blur-sm p-2 shrink-0">
         <div className="flex items-start justify-between gap-2">
