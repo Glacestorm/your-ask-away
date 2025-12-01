@@ -27,9 +27,9 @@ export const CompanyDetail = ({ company, onClose, defaultTab = "info" }: Company
   const { t } = useLanguage();
   
   return (
-    <div className="flex h-full flex-col bg-gradient-to-br from-background to-muted/20">
+    <div className="flex flex-col h-full min-h-0">
       {/* Enhanced Header */}
-      <div className="border-b bg-card/80 backdrop-blur-sm p-4">
+      <div className="border-b bg-card/80 backdrop-blur-sm p-3 shrink-0">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 space-y-2">
             <div className="flex items-start gap-2">
@@ -85,9 +85,9 @@ export const CompanyDetail = ({ company, onClose, defaultTab = "info" }: Company
       </div>
 
       {/* Modern Tabs Navigation */}
-      <Tabs defaultValue={defaultTab} className="flex-1 flex flex-col overflow-hidden">
-        <div className="px-4 pt-3 pb-2 bg-card/50 border-b">
-          <TabsList className="grid grid-cols-4 h-auto p-1 gap-1 bg-muted/50">
+      <Tabs defaultValue={defaultTab} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <div className="px-3 pt-2 pb-1 bg-card/50 border-b shrink-0">
+          <TabsList className="grid grid-cols-4 h-auto p-0.5 gap-0.5 bg-muted/50">
             <TabsTrigger value="info" className="flex flex-col items-center py-2 px-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Building2 className="h-4 w-4 mb-1" />
               <span className="text-[10px] font-medium">Info</span>
@@ -107,9 +107,11 @@ export const CompanyDetail = ({ company, onClose, defaultTab = "info" }: Company
           </TabsList>
         </div>
 
-        <ScrollArea className="flex-1">
-          {/* Info Tab - Redesigned with Cards */}
-          <TabsContent value="info" className="p-3 space-y-3 mt-0">
+        {/* Scrollable Content Area */}
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <ScrollArea className="h-full">
+            {/* Info Tab - Redesigned with Cards */}
+            <TabsContent value="info" className="p-3 space-y-3 mt-0">
             {/* Quick Actions */}
             <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
               <CardContent className="p-3 flex flex-wrap gap-2">
@@ -326,10 +328,10 @@ export const CompanyDetail = ({ company, onClose, defaultTab = "info" }: Company
                 📍 {company.latitude.toFixed(6)}, {company.longitude.toFixed(6)}
               </p>
             </div>
-          </TabsContent>
+            </TabsContent>
 
-          {/* Relations Tab - Banking, TPV, Contacts */}
-          <TabsContent value="relations" className="p-2 mt-0">
+            {/* Relations Tab - Banking, TPV, Contacts */}
+            <TabsContent value="relations" className="p-3 mt-0">
             <div className="max-h-[calc(100vh-250px)] overflow-y-auto">
               <Accordion type="single" collapsible className="space-y-2">
                 {/* Vinculación Bancaria Section */}
@@ -392,8 +394,9 @@ export const CompanyDetail = ({ company, onClose, defaultTab = "info" }: Company
             <VisitSheetsHistory companyId={company.id} />
 
             <VisitsPanel company={company} />
-          </TabsContent>
-        </ScrollArea>
+            </TabsContent>
+          </ScrollArea>
+        </div>
       </Tabs>
     </div>
   );

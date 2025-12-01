@@ -258,7 +258,7 @@ export function MapSidebar({
               onSelectCompany(null);
             }
           }}
-          className="flex-1 flex flex-col"
+          className="flex-1 flex flex-col h-full overflow-hidden"
         >
           <TabsList className="mx-4 mt-4 grid grid-cols-3">
             <TabsTrigger value="companies" className="flex items-center gap-2">
@@ -275,7 +275,7 @@ export function MapSidebar({
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="companies" className="flex-1 flex flex-col mt-0">
+          <TabsContent value="companies" className="flex-1 flex flex-col mt-0 min-h-0 overflow-hidden">
             {/* Search */}
             <div className="border-b p-4">
           <div className="relative">
@@ -540,7 +540,7 @@ export function MapSidebar({
             </ScrollArea>
           </TabsContent>
 
-          <TabsContent value="sectors" className="flex-1 p-4">
+          <TabsContent value="sectors" className="flex-1 mt-0 min-h-0 overflow-y-auto p-4">
             <SectorStats
               companies={filteredCompanies}
               onSectorClick={handleSectorClick}
@@ -555,9 +555,9 @@ export function MapSidebar({
             />
           </TabsContent>
 
-          <TabsContent value="detail" className="flex-1 flex flex-col mt-0 p-0 overflow-hidden">
+          <TabsContent value="detail" className="flex-1 mt-0 min-h-0 overflow-hidden p-0">
             {selectedCompany ? (
-              <CompanyDetail 
+              <CompanyDetail
                 company={selectedCompany} 
                 onClose={() => onSelectCompany(null)}
                 defaultTab={(selectedCompany as any)._openMediaTab ? "media" : "info"}
