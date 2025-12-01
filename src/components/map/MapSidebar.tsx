@@ -260,16 +260,16 @@ export function MapSidebar({
           }}
           className="flex-1 flex flex-col h-full overflow-hidden"
         >
-          <TabsList className="mx-2 my-1 grid grid-cols-3 shrink-0 h-9">
-            <TabsTrigger value="companies" className="flex items-center gap-2">
+          <TabsList className="mx-2 mb-0 mt-0 grid grid-cols-3 shrink-0 h-8 rounded-none border-b">
+            <TabsTrigger value="companies" className="flex items-center gap-2 h-7">
               <Search className="h-4 w-4" />
               <span className="hidden sm:inline">Empresas</span>
             </TabsTrigger>
-            <TabsTrigger value="sectors" className="flex items-center gap-2">
+            <TabsTrigger value="sectors" className="flex items-center gap-2 h-7">
               <TrendingUp className="h-4 w-4" />
               <span className="hidden sm:inline">Sectores</span>
             </TabsTrigger>
-            <TabsTrigger value="detail" className="flex items-center gap-2">
+            <TabsTrigger value="detail" className="flex items-center gap-2 h-7">
               <Building className="h-4 w-4" />
               <span className="hidden sm:inline">Detalle</span>
             </TabsTrigger>
@@ -555,7 +555,7 @@ export function MapSidebar({
             />
           </TabsContent>
 
-          <TabsContent value="detail" className="flex-1 flex flex-col min-h-0 overflow-y-auto">
+          <TabsContent value="detail" className="flex-1 flex flex-col m-0 p-0 min-h-0 overflow-y-auto data-[state=active]:flex">
             {selectedCompany ? (
               <CompanyDetail
                 company={selectedCompany} 
