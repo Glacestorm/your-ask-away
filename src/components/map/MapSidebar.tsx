@@ -277,6 +277,62 @@ export function MapSidebar({
 
   if (!open) return null;
 
+  // Fullscreen mode with selected company - show only company detail
+  if (fullscreen && selectedCompany) {
+    return (
+      <aside 
+        className="fixed top-0 left-0 right-0 bottom-0 w-screen h-screen z-[9999] border-0 bg-card shadow-xl flex flex-col animate-in duration-300"
+        style={{ position: 'fixed', width: '100vw', height: '100vh', top: 0, left: 0 }}
+      >
+        {/* Header for fullscreen detail view */}
+        <div className="flex items-center justify-between border-b bg-muted/30 shrink-0 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <Building className="h-6 w-6 text-primary" />
+            <span className="font-semibold text-lg">{selectedCompany.name}</span>
+            {selectedCompany.status && (
+              <Badge 
+                style={{ backgroundColor: selectedCompany.status.color_hex }}
+                className="text-white"
+              >
+                {selectedCompany.status.status_name}
+              </Badge>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => onSelectCompany(null)}
+              className="px-4"
+            >
+              <ChevronRight className="h-4 w-4 mr-2 rotate-180" />
+              Volver a la lista
+            </Button>
+            {onFullscreenChange && (
+              <Button
+                variant="default"
+                onClick={() => onFullscreenChange(false)}
+                className="px-4"
+              >
+                <MapPin className="h-4 w-4 mr-2" />
+                Volver al Mapa
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Full screen company detail */}
+        <div className="flex-1 overflow-y-auto">
+          <CompanyDetail
+            company={selectedCompany} 
+            onClose={() => onSelectCompany(null)}
+            defaultTab={(selectedCompany as any)._openMediaTab ? "media" : "info"}
+            densityMode="expanded"
+          />
+        </div>
+      </aside>
+    );
+  }
+
   return (
     <aside 
       className={cn(
