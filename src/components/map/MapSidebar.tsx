@@ -555,7 +555,7 @@ export function MapSidebar({
             />
           </TabsContent>
 
-          <TabsContent value="detail" className="flex-1 flex flex-col mt-0 min-h-0 overflow-hidden p-0">
+          <TabsContent value="detail" className="flex-1 flex flex-col min-h-0 overflow-y-auto">
             {selectedCompany ? (
               <CompanyDetail
                 company={selectedCompany} 
