@@ -279,60 +279,73 @@ export function MapSidebar({
 
   return (
     <aside className={cn(
-      "h-full border-l bg-card shadow-xl flex flex-col shrink-0 z-10 animate-in slide-in-from-right duration-300",
-      fullscreen ? "w-full absolute inset-0 border-l-0" : "w-[380px]"
+      "bg-card shadow-xl flex flex-col animate-in duration-300",
+      fullscreen 
+        ? "fixed inset-0 z-50 border-0" 
+        : "w-[380px] h-full border-l shrink-0 z-10 slide-in-from-right"
     )}>
-      {/* Compact Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/30 shrink-0">
-          <div className="flex items-center gap-2">
-            <Building className="h-4 w-4 text-primary" />
-            <span className="text-sm font-semibold">Panel</span>
+      {/* Header - Different style for fullscreen */}
+      <div className={cn(
+        "flex items-center justify-between border-b bg-muted/30 shrink-0",
+        fullscreen ? "px-6 py-4" : "px-3 py-2"
+      )}>
+          <div className="flex items-center gap-3">
+            <Building className={cn("text-primary", fullscreen ? "h-6 w-6" : "h-4 w-4")} />
+            <span className={cn("font-semibold", fullscreen ? "text-lg" : "text-sm")}>
+              {fullscreen ? "Panel de Empresas" : "Panel"}
+            </span>
             {hasActiveFilters && (
-              <Badge variant="default" className="h-5 px-1.5 text-xs">
+              <Badge variant="default" className={cn(fullscreen ? "h-6 px-2" : "h-5 px-1.5 text-xs")}>
                 {getActiveFiltersCount()} filtros
               </Badge>
             )}
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
             {hasActiveFilters && (
               <Button
                 variant="ghost"
-                size="sm"
+                size={fullscreen ? "default" : "sm"}
                 onClick={clearFilters}
-                className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive"
+                className={cn(
+                  "text-muted-foreground hover:text-destructive",
+                  fullscreen ? "px-3" : "h-7 px-2 text-xs"
+                )}
               >
-                <X className="h-3 w-3 mr-1" />
-                Limpiar
+                <X className={cn(fullscreen ? "h-4 w-4" : "h-3 w-3", "mr-1")} />
+                Limpiar filtros
               </Button>
             )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleDensity}
-              className={cn(
-                "h-7 w-7 p-0 transition-all",
-                densityMode === 'compact' && "bg-primary/10 text-primary"
-              )}
-              title={densityMode === 'compact' ? "Expandir" : "Compactar"}
-            >
-              {densityMode === 'compact' ? (
-                <Maximize2 className="h-3.5 w-3.5" />
-              ) : (
-                <Minimize2 className="h-3.5 w-3.5" />
-              )}
-            </Button>
+            {!fullscreen && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleDensity}
+                className={cn(
+                  "h-7 w-7 p-0 transition-all",
+                  densityMode === 'compact' && "bg-primary/10 text-primary"
+                )}
+                title={densityMode === 'compact' ? "Expandir" : "Compactar"}
+              >
+                {densityMode === 'compact' ? (
+                  <Maximize2 className="h-3.5 w-3.5" />
+                ) : (
+                  <Minimize2 className="h-3.5 w-3.5" />
+                )}
+              </Button>
+            )}
             {onFullscreenChange && (
               <Button
                 variant={fullscreen ? "default" : "ghost"}
-                size="sm"
+                size={fullscreen ? "default" : "sm"}
                 onClick={() => onFullscreenChange(!fullscreen)}
-                className="h-7 px-2 text-xs"
-                title={fullscreen ? "Salir de pantalla completa" : "Pantalla completa"}
+                className={cn(
+                  fullscreen ? "px-4" : "h-7 px-2 text-xs"
+                )}
               >
                 {fullscreen ? (
                   <>
-                    <Minimize2 className="h-3.5 w-3.5 mr-1" />
-                    Mapa
+                    <MapPin className="h-4 w-4 mr-2" />
+                    Volver al Mapa
                   </>
                 ) : (
                   <>
@@ -345,7 +358,7 @@ export function MapSidebar({
           </div>
         </div>
 
-        {/* Tabs Navigation - More Prominent */}
+        {/* Tabs Navigation - Hidden in fullscreen */}
         <Tabs 
           value={selectedCompany ? "detail" : "companies"} 
           onValueChange={(value) => {
@@ -355,29 +368,31 @@ export function MapSidebar({
           }}
           className="flex-1 flex flex-col overflow-hidden"
         >
-          <TabsList className="mx-2 mt-2 grid grid-cols-3 h-9 bg-muted shrink-0">
-            <TabsTrigger 
-              value="companies" 
-              className="text-xs font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm"
-            >
-              <Search className="h-3.5 w-3.5 mr-1.5" />
-              Empresas
-            </TabsTrigger>
-            <TabsTrigger 
-              value="sectors" 
-              className="text-xs font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm"
-            >
-              <TrendingUp className="h-3.5 w-3.5 mr-1.5" />
-              Sectores
-            </TabsTrigger>
-            <TabsTrigger 
-              value="detail" 
-              className="text-xs font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm"
-            >
-              <Building className="h-3.5 w-3.5 mr-1.5" />
-              Detalle
-            </TabsTrigger>
-          </TabsList>
+          {!fullscreen && (
+            <TabsList className="mx-2 mt-2 grid grid-cols-3 h-9 bg-muted shrink-0">
+              <TabsTrigger 
+                value="companies" 
+                className="text-xs font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              >
+                <Search className="h-3.5 w-3.5 mr-1.5" />
+                Empresas
+              </TabsTrigger>
+              <TabsTrigger 
+                value="sectors" 
+                className="text-xs font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              >
+                <TrendingUp className="h-3.5 w-3.5 mr-1.5" />
+                Sectores
+              </TabsTrigger>
+              <TabsTrigger 
+                value="detail" 
+                className="text-xs font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm"
+              >
+                <Building className="h-3.5 w-3.5 mr-1.5" />
+                Detalle
+              </TabsTrigger>
+            </TabsList>
+          )}
 
           {/* Companies Tab */}
           <TabsContent value="companies" className="flex-1 flex flex-col mt-0 overflow-hidden">
@@ -403,32 +418,32 @@ export function MapSidebar({
             </div>
 
             {/* Content - Different layout for fullscreen */}
-            <div className="flex-1 overflow-y-auto">
+            <div className={cn("flex-1", fullscreen ? "overflow-hidden flex flex-col" : "overflow-y-auto")}>
               {fullscreen ? (
                 /* Fullscreen Grid Layout */
-                <div className="p-4 space-y-6">
+                <div className="flex-1 p-6 overflow-y-auto">
                   {/* Stats Summary */}
-                  <div className="grid grid-cols-4 gap-3">
-                    <div className="p-3 rounded-lg bg-muted/50 border">
-                      <div className="text-2xl font-bold">{companies.length}</div>
-                      <div className="text-xs text-muted-foreground">Total empresas</div>
+                  <div className="grid grid-cols-4 gap-4 mb-6">
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border">
+                      <div className="text-3xl font-bold">{companies.length}</div>
+                      <div className="text-sm text-muted-foreground">Total empresas</div>
                     </div>
-                    <div className="p-3 rounded-lg bg-muted/50 border">
-                      <div className="text-2xl font-bold">{filteredCompanies.length}</div>
-                      <div className="text-xs text-muted-foreground">Filtradas</div>
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-green-500/10 to-green-500/5 border">
+                      <div className="text-3xl font-bold">{filteredCompanies.length}</div>
+                      <div className="text-sm text-muted-foreground">Filtradas</div>
                     </div>
-                    <div className="p-3 rounded-lg bg-muted/50 border">
-                      <div className="text-2xl font-bold">{sectors.length}</div>
-                      <div className="text-xs text-muted-foreground">Sectores</div>
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-blue-500/10 to-blue-500/5 border">
+                      <div className="text-3xl font-bold">{sectors.length}</div>
+                      <div className="text-sm text-muted-foreground">Sectores</div>
                     </div>
-                    <div className="p-3 rounded-lg bg-muted/50 border">
-                      <div className="text-2xl font-bold">{gestores.length}</div>
-                      <div className="text-xs text-muted-foreground">Gestores</div>
+                    <div className="p-4 rounded-xl bg-gradient-to-br from-amber-500/10 to-amber-500/5 border">
+                      <div className="text-3xl font-bold">{gestores.length}</div>
+                      <div className="text-sm text-muted-foreground">Gestores</div>
                     </div>
                   </div>
 
-                  {/* Filters Grid */}
-                  <div className="grid grid-cols-3 gap-4">
+                  {/* Filters Grid - Horizontal layout for fullscreen */}
+                  <div className="grid grid-cols-4 gap-4">
                     {/* Column 1: Estado y Gestor */}
                     <div className="space-y-4">
                       <div className="p-4 rounded-lg border bg-card">
@@ -552,7 +567,7 @@ export function MapSidebar({
                           <Package className="h-4 w-4 text-primary" />
                           <h3 className="font-semibold text-sm">Productos</h3>
                         </div>
-                        <ScrollArea className="h-32">
+                        <ScrollArea className="h-48">
                           <div className="grid grid-cols-2 gap-2 pr-3">
                             {products.map((product) => (
                               <div key={product.id} className="flex items-center space-x-2">
@@ -573,7 +588,10 @@ export function MapSidebar({
                           </div>
                         </ScrollArea>
                       </div>
+                    </div>
 
+                    {/* Column 4: Valores Numéricos */}
+                    <div className="space-y-4">
                       <div className="p-4 rounded-lg border bg-card">
                         <div className="flex items-center gap-2 mb-3">
                           <DollarSign className="h-4 w-4 text-primary" />
@@ -620,22 +638,42 @@ export function MapSidebar({
                               }
                             />
                           </div>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-muted-foreground">P&L Banco</span>
+                              <span className="text-xs font-medium">
+                                {((filters?.plBancoRange?.min || -1000000) / 1000).toFixed(0)}k - {((filters?.plBancoRange?.max || 1000000) / 1000).toFixed(0)}k €
+                              </span>
+                            </div>
+                            <Slider
+                              min={-1000000}
+                              max={1000000}
+                              step={50000}
+                              value={[filters?.plBancoRange?.min || -1000000, filters?.plBancoRange?.max || 1000000]}
+                              onValueChange={(value) =>
+                                onFiltersChange({
+                                  ...filters,
+                                  plBancoRange: { min: value[0], max: value[1] },
+                                })
+                              }
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Filtered Results */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-semibold">Resultados ({filteredCompanies.length})</h3>
+                  <div className="mt-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-semibold text-lg">Resultados ({filteredCompanies.length})</h3>
                     </div>
-                    <div className="grid grid-cols-4 gap-3">
-                      {filteredCompanies.slice(0, 20).map((company) => (
+                    <div className="grid grid-cols-5 gap-3">
+                      {filteredCompanies.slice(0, 25).map((company) => (
                         <div
                           key={company.id}
                           onClick={() => onSelectCompany(company)}
-                          className="p-3 rounded-lg border bg-card hover:bg-accent cursor-pointer transition-colors"
+                          className="p-3 rounded-lg border bg-card hover:bg-accent hover:border-primary/30 cursor-pointer transition-all"
                         >
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0 flex-1">
@@ -659,9 +697,9 @@ export function MapSidebar({
                         </div>
                       ))}
                     </div>
-                    {filteredCompanies.length > 20 && (
-                      <p className="text-sm text-muted-foreground text-center">
-                        Mostrando 20 de {filteredCompanies.length} empresas. Usa los filtros para refinar.
+                    {filteredCompanies.length > 25 && (
+                      <p className="text-sm text-muted-foreground text-center mt-4">
+                        Mostrando 25 de {filteredCompanies.length} empresas. Usa los filtros para refinar.
                       </p>
                     )}
                   </div>
