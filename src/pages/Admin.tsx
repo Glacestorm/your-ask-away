@@ -148,7 +148,14 @@ const Admin = () => {
       case 'audit':
         return <AuditorDashboard />;
       case 'map':
-        return <MapView />;
+        return (
+          <MapView 
+            canGoBack={canGoBack}
+            canGoForward={canGoForward}
+            onGoBack={handleGoBack}
+            onGoForward={handleGoForward}
+          />
+        );
       case 'visit-sheets':
         return <VisitSheets />;
       case 'shared-calendar':
@@ -315,18 +322,22 @@ const Admin = () => {
         />
         
         <main className="flex-1 overflow-auto bg-background">
-          <div className="p-6 space-y-6 w-full">
-            <GlobalNavHeader 
-              title={t('admin.title')} 
-              subtitle={t('admin.subtitle')}
-              showSidebarTrigger
-              canGoBack={canGoBack}
-              canGoForward={canGoForward}
-              onGoBack={handleGoBack}
-              onGoForward={handleGoForward}
-            />
-            {renderContent()}
-          </div>
+          {activeSection === 'map' ? (
+            renderContent()
+          ) : (
+            <div className="p-6 space-y-6 w-full">
+              <GlobalNavHeader 
+                title={t('admin.title')} 
+                subtitle={t('admin.subtitle')}
+                showSidebarTrigger
+                canGoBack={canGoBack}
+                canGoForward={canGoForward}
+                onGoBack={handleGoBack}
+                onGoForward={handleGoForward}
+              />
+              {renderContent()}
+            </div>
+          )}
         </main>
       </div>
     </SidebarProvider>
