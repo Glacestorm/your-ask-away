@@ -29,26 +29,26 @@ export const CompanyDetail = ({ company, onClose, defaultTab = "info" }: Company
   return (
     <div className="flex flex-col h-full">
       {/* Enhanced Header */}
-      <div className="border-b bg-card/80 backdrop-blur-sm p-1 shrink-0">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 space-y-0.5">
-            <div className="flex items-start gap-2">
-              <div className="p-1.5 rounded-lg bg-primary/10 mt-0.5">
-                <Building2 className="h-4 w-4 text-primary" />
+      <div className="border-b bg-card/80 backdrop-blur-sm px-1.5 py-1 shrink-0">
+        <div className="flex items-start justify-between gap-1.5">
+          <div className="flex-1">
+            <div className="flex items-start gap-1.5">
+              <div className="p-1 rounded-md bg-primary/10">
+                <Building2 className="h-3.5 w-3.5 text-primary" />
               </div>
-              <div className="flex-1">
-                <h2 className="text-base font-bold leading-tight mb-0">{company.name}</h2>
-                <p className="text-xs text-muted-foreground flex items-center gap-1">
-                  <MapPin className="h-3 w-3" />
+              <div className="flex-1 min-w-0">
+                <h2 className="text-sm font-bold leading-tight truncate">{company.name}</h2>
+                <p className="text-[10px] text-muted-foreground flex items-center gap-0.5 truncate">
+                  <MapPin className="h-2.5 w-2.5 flex-shrink-0" />
                   {company.address}
                 </p>
               </div>
             </div>
             
-            <div className="flex flex-wrap gap-1">
+            <div className="flex flex-wrap gap-0.5 mt-1">
               {company.status && (
                 <Badge
-                  className="text-xs font-medium"
+                  className="text-[9px] font-medium py-0 px-1 h-4"
                   style={{
                     backgroundColor: company.status.color_hex + '20',
                     borderColor: company.status.color_hex,
@@ -59,14 +59,14 @@ export const CompanyDetail = ({ company, onClose, defaultTab = "info" }: Company
                 </Badge>
               )}
               {company.parroquia && (
-                <Badge variant="secondary" className="text-xs">
-                  <MapPin className="h-3 w-3 mr-1" />
+                <Badge variant="secondary" className="text-[9px] py-0 px-1 h-4">
+                  <MapPin className="h-2.5 w-2.5 mr-0.5" />
                   {company.parroquia}
                 </Badge>
               )}
               {company.sector && (
-                <Badge variant="outline" className="text-xs">
-                  <Briefcase className="h-3 w-3 mr-1" />
+                <Badge variant="outline" className="text-[9px] py-0 px-1 h-4">
+                  <Briefcase className="h-2.5 w-2.5 mr-0.5" />
                   {company.sector}
                 </Badge>
               )}
@@ -77,32 +77,32 @@ export const CompanyDetail = ({ company, onClose, defaultTab = "info" }: Company
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="shrink-0 hover:bg-destructive/10 hover:text-destructive"
+            className="shrink-0 h-6 w-6 hover:bg-destructive/10 hover:text-destructive"
           >
-            <X className="h-4 w-4" />
+            <X className="h-3 w-3" />
           </Button>
         </div>
       </div>
 
       {/* Modern Tabs Navigation */}
       <Tabs defaultValue={defaultTab} className="flex-1 flex flex-col min-h-0 overflow-hidden">
-        <div className="px-1 py-0 bg-card/50 border-b shrink-0">
-          <TabsList className="grid grid-cols-4 h-auto p-0.5 gap-0.5 bg-muted/50">
-            <TabsTrigger value="info" className="flex flex-col items-center py-1 px-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Building2 className="h-3.5 w-3.5 mb-0.5" />
-              <span className="text-[9px] font-medium">Info</span>
+        <div className="bg-card/50 border-b shrink-0">
+          <TabsList className="grid grid-cols-4 h-auto p-0 gap-0 bg-transparent w-full rounded-none">
+            <TabsTrigger value="info" className="flex flex-col items-center py-0.5 px-1 h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Building2 className="h-3 w-3 mb-0.5" />
+              <span className="text-[8px] font-medium">Info</span>
             </TabsTrigger>
-            <TabsTrigger value="relations" className="flex flex-col items-center py-1 px-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Landmark className="h-3.5 w-3.5 mb-0.5" />
-              <span className="text-[9px] font-medium">Relaciones</span>
+            <TabsTrigger value="relations" className="flex flex-col items-center py-0.5 px-1 h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Landmark className="h-3 w-3 mb-0.5" />
+              <span className="text-[8px] font-medium">Relaciones</span>
             </TabsTrigger>
-            <TabsTrigger value="media" className="flex flex-col items-center py-1 px-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Camera className="h-3.5 w-3.5 mb-0.5" />
-              <span className="text-[9px] font-medium">Multimedia</span>
+            <TabsTrigger value="media" className="flex flex-col items-center py-0.5 px-1 h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Camera className="h-3 w-3 mb-0.5" />
+              <span className="text-[8px] font-medium">Multimedia</span>
             </TabsTrigger>
-            <TabsTrigger value="activity" className="flex flex-col items-center py-1 px-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <History className="h-3.5 w-3.5 mb-0.5" />
-              <span className="text-[9px] font-medium">Actividad</span>
+            <TabsTrigger value="activity" className="flex flex-col items-center py-0.5 px-1 h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <History className="h-3 w-3 mb-0.5" />
+              <span className="text-[8px] font-medium">Actividad</span>
             </TabsTrigger>
           </TabsList>
         </div>
