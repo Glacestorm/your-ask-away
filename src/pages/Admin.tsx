@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
@@ -41,7 +41,24 @@ const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState('director');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeSection, setActiveSection] = useState(() => {
+    return searchParams.get('section') || 'director';
+  });
+
+  // Sync URL with active section
+  useEffect(() => {
+    const sectionFromUrl = searchParams.get('section');
+    if (sectionFromUrl && sectionFromUrl !== activeSection) {
+      setActiveSection(sectionFromUrl);
+    }
+  }, [searchParams]);
+
+  // Update URL when section changes
+  const handleSectionChange = (section: string) => {
+    setActiveSection(section);
+    setSearchParams({ section });
+  };
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -266,7 +283,7 @@ const Admin = () => {
       <div className="min-h-screen flex w-full">
         <AdminSidebar 
           activeSection={activeSection} 
-          onSectionChange={setActiveSection}
+          onSectionChange={handleSectionChange}
           isCommercialDirector={isCommercialDirector}
           isOfficeDirector={isOfficeDirector}
           isCommercialManager={isCommercialManager}
