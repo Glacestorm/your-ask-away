@@ -321,9 +321,11 @@ const Admin = () => {
           isAuditor={isAuditor}
         />
         
-        <main className="flex-1 overflow-auto bg-background">
+        <main className={`flex-1 ${activeSection === 'map' ? 'flex flex-col overflow-hidden' : 'overflow-auto'} bg-background`}>
           {activeSection === 'map' ? (
-            renderContent()
+            <div className="flex-1 flex flex-col h-full">
+              {renderContent()}
+            </div>
           ) : (
             <div className="p-6 space-y-6 w-full">
               <GlobalNavHeader 
