@@ -260,7 +260,7 @@ export function MapSidebar({
           }}
           className="flex-1 flex flex-col h-full overflow-hidden"
         >
-          <TabsList className="mx-4 mt-4 grid grid-cols-3">
+          <TabsList className="mx-3 mt-2 grid grid-cols-3 shrink-0">
             <TabsTrigger value="companies" className="flex items-center gap-2">
               <Search className="h-4 w-4" />
               <span className="hidden sm:inline">Empresas</span>
@@ -277,7 +277,7 @@ export function MapSidebar({
 
           <TabsContent value="companies" className="flex-1 flex flex-col mt-0 min-h-0 overflow-hidden">
             {/* Search */}
-            <div className="border-b p-4">
+            <div className="border-b p-2">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -290,7 +290,7 @@ export function MapSidebar({
         </div>
 
         {/* Filters */}
-        <div className="border-b p-4">
+        <div className="border-b p-2">
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
@@ -320,7 +320,7 @@ export function MapSidebar({
           </div>
 
           {filterExpanded && (
-            <div className="mt-4 space-y-4">
+            <div className="mt-2 space-y-3">
               <div>
                 <Label className="mb-2 text-sm font-medium">Estado</Label>
                 <ScrollArea className="h-32">

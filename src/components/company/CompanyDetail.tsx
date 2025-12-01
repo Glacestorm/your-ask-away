@@ -29,15 +29,15 @@ export const CompanyDetail = ({ company, onClose, defaultTab = "info" }: Company
   return (
     <div className="flex flex-col h-full min-h-0">
       {/* Enhanced Header */}
-      <div className="border-b bg-card/80 backdrop-blur-sm p-3 shrink-0">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 space-y-2">
+      <div className="border-b bg-card/80 backdrop-blur-sm p-2 shrink-0">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 space-y-1">
             <div className="flex items-start gap-2">
-              <div className="p-2 rounded-lg bg-primary/10 mt-1">
-                <Building2 className="h-5 w-5 text-primary" />
+              <div className="p-1.5 rounded-lg bg-primary/10 mt-0.5">
+                <Building2 className="h-4 w-4 text-primary" />
               </div>
               <div className="flex-1">
-                <h2 className="text-lg font-bold leading-tight mb-1">{company.name}</h2>
+                <h2 className="text-base font-bold leading-tight mb-0.5">{company.name}</h2>
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                   <MapPin className="h-3 w-3" />
                   {company.address}
@@ -86,21 +86,21 @@ export const CompanyDetail = ({ company, onClose, defaultTab = "info" }: Company
 
       {/* Modern Tabs Navigation */}
       <Tabs defaultValue={defaultTab} className="flex-1 flex flex-col min-h-0 overflow-hidden">
-        <div className="px-3 pt-2 pb-1 bg-card/50 border-b shrink-0">
+        <div className="px-2 pt-1 pb-0.5 bg-card/50 border-b shrink-0">
           <TabsList className="grid grid-cols-4 h-auto p-0.5 gap-0.5 bg-muted/50">
-            <TabsTrigger value="info" className="flex flex-col items-center py-2 px-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsTrigger value="info" className="flex flex-col items-center py-1.5 px-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Building2 className="h-4 w-4 mb-1" />
               <span className="text-[10px] font-medium">Info</span>
             </TabsTrigger>
-            <TabsTrigger value="relations" className="flex flex-col items-center py-2 px-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsTrigger value="relations" className="flex flex-col items-center py-1.5 px-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Landmark className="h-4 w-4 mb-1" />
               <span className="text-[10px] font-medium">Relaciones</span>
             </TabsTrigger>
-            <TabsTrigger value="media" className="flex flex-col items-center py-2 px-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsTrigger value="media" className="flex flex-col items-center py-1.5 px-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Camera className="h-4 w-4 mb-1" />
               <span className="text-[10px] font-medium">Multimedia</span>
             </TabsTrigger>
-            <TabsTrigger value="activity" className="flex flex-col items-center py-2 px-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsTrigger value="activity" className="flex flex-col items-center py-1.5 px-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <History className="h-4 w-4 mb-1" />
               <span className="text-[10px] font-medium">Actividad</span>
             </TabsTrigger>
@@ -111,7 +111,7 @@ export const CompanyDetail = ({ company, onClose, defaultTab = "info" }: Company
         <div className="flex-1 min-h-0 overflow-hidden">
           <ScrollArea className="h-full">
             {/* Info Tab - Redesigned with Cards */}
-            <TabsContent value="info" className="p-3 space-y-3 mt-0">
+            <TabsContent value="info" className="p-2 space-y-2 mt-0">
             {/* Quick Actions */}
             <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
               <CardContent className="p-3 flex flex-wrap gap-2">
@@ -331,7 +331,7 @@ export const CompanyDetail = ({ company, onClose, defaultTab = "info" }: Company
             </TabsContent>
 
             {/* Relations Tab - Banking, TPV, Contacts */}
-            <TabsContent value="relations" className="p-3 mt-0">
+            <TabsContent value="relations" className="p-2 mt-0">
             <div className="max-h-[calc(100vh-250px)] overflow-y-auto">
               <Accordion type="single" collapsible className="space-y-2">
                 {/* Vinculación Bancaria Section */}
@@ -383,14 +383,14 @@ export const CompanyDetail = ({ company, onClose, defaultTab = "info" }: Company
           </TabsContent>
 
           {/* Media Tab - Photos and Documents */}
-          <TabsContent value="media" className="p-3 space-y-3 mt-0">
+          <TabsContent value="media" className="p-2 space-y-2 mt-0">
             <CompanyPhotosManager companyId={company.id} companyName={company.name} />
 
             <DocumentsManager companyId={company.id} companyName={company.name} />
           </TabsContent>
 
           {/* Activity Tab - Visits */}
-          <TabsContent value="activity" className="p-3 space-y-3 mt-0">
+          <TabsContent value="activity" className="p-2 space-y-2 mt-0">
             <VisitSheetsHistory companyId={company.id} />
 
             <VisitsPanel company={company} />

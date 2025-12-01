@@ -150,9 +150,9 @@ export function SectorStats({
   const selectedMetrics = selectedSectors.map(calculateSectorMetrics);
 
   return (
-    <div className="space-y-4 h-full overflow-y-auto pb-4">
+    <div className="space-y-2 h-full overflow-y-auto pb-2 p-2">
       {/* Header with controls */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-sm font-semibold">Empresas por Sector</h3>
