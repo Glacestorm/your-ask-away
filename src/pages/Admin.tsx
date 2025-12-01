@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useNavigationHistory } from '@/hooks/useNavigationHistory';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Activity } from 'lucide-react';
@@ -42,23 +43,44 @@ const Admin = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [activeSection, setActiveSection] = useState(() => {
-    return searchParams.get('section') || 'director';
-  });
+  const initialSection = searchParams.get('section') || 'director';
+  const [activeSection, setActiveSection] = useState(initialSection);
+  
+  // Navigation history
+  const { canGoBack, canGoForward, goBack, goForward, push } = useNavigationHistory(initialSection);
 
   // Sync URL with active section - always prioritize URL
   useEffect(() => {
     const sectionFromUrl = searchParams.get('section');
-    if (sectionFromUrl) {
+    if (sectionFromUrl && sectionFromUrl !== activeSection) {
       setActiveSection(sectionFromUrl);
+      push(sectionFromUrl);
     }
   }, [searchParams]);
 
   // Update URL when section changes
-  const handleSectionChange = (section: string) => {
+  const handleSectionChange = useCallback((section: string) => {
     setActiveSection(section);
     setSearchParams({ section });
-  };
+    push(section);
+  }, [setSearchParams, push]);
+
+  // Navigation history handlers
+  const handleGoBack = useCallback(() => {
+    const previousSection = goBack();
+    if (previousSection) {
+      setActiveSection(previousSection);
+      setSearchParams({ section: previousSection });
+    }
+  }, [goBack, setSearchParams]);
+
+  const handleGoForward = useCallback(() => {
+    const nextSection = goForward();
+    if (nextSection) {
+      setActiveSection(nextSection);
+      setSearchParams({ section: nextSection });
+    }
+  }, [goForward, setSearchParams]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -298,6 +320,10 @@ const Admin = () => {
               title={t('admin.title')} 
               subtitle={t('admin.subtitle')}
               showSidebarTrigger
+              canGoBack={canGoBack}
+              canGoForward={canGoForward}
+              onGoBack={handleGoBack}
+              onGoForward={handleGoForward}
             />
             {renderContent()}
           </div>
