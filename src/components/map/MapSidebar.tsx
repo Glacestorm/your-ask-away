@@ -274,8 +274,8 @@ export function MapSidebar({
   if (!open) return null;
 
   return (
-    <aside className="absolute right-0 top-0 z-10 h-full w-[380px] border-l bg-card shadow-xl lg:relative animate-in slide-in-from-right duration-300">
-      <div className="h-full flex flex-col overflow-hidden">
+    <aside className="absolute right-0 top-0 bottom-0 z-10 w-[380px] border-l bg-card shadow-xl lg:relative animate-in slide-in-from-right duration-300">
+      <div className="absolute inset-0 flex flex-col">
         {/* Compact Header */}
         <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/30 shrink-0">
           <div className="flex items-center gap-2">
@@ -367,8 +367,8 @@ export function MapSidebar({
             </div>
 
             {/* Scrollable Content */}
-            <ScrollArea className="flex-1">
-              <div className="px-2 pb-2">
+            <div className="flex-1 overflow-y-auto">
+              <div className="px-2 pb-4">
                 <Accordion type="single" collapsible className="w-full space-y-1">
                   {/* Basic Filters */}
                   <AccordionItem value="basic" className="border rounded-lg px-3">
@@ -799,7 +799,7 @@ export function MapSidebar({
                   )}
                 </div>
               </div>
-            </ScrollArea>
+            </div>
           </TabsContent>
 
           {/* Sectors Tab - Full Scroll */}
