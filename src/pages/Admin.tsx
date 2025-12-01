@@ -46,10 +46,10 @@ const Admin = () => {
     return searchParams.get('section') || 'director';
   });
 
-  // Sync URL with active section
+  // Sync URL with active section - always prioritize URL
   useEffect(() => {
     const sectionFromUrl = searchParams.get('section');
-    if (sectionFromUrl && sectionFromUrl !== activeSection) {
+    if (sectionFromUrl) {
       setActiveSection(sectionFromUrl);
     }
   }, [searchParams]);
