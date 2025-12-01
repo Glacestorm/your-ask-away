@@ -16,39 +16,78 @@ import { VisitSheetsHistory } from './VisitSheetsHistory';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 interface CompanyDetailProps {
   company: CompanyWithDetails;
   onClose: () => void;
   defaultTab?: string;
+  densityMode?: 'compact' | 'expanded';
 }
 
-export const CompanyDetail = ({ company, onClose, defaultTab = "info" }: CompanyDetailProps) => {
+export const CompanyDetail = ({ 
+  company, 
+  onClose, 
+  defaultTab = "info",
+  densityMode = 'expanded'
+}: CompanyDetailProps) => {
   const { t } = useLanguage();
   
+  const isCompact = densityMode === 'compact';
+
   return (
     <div className="flex flex-col h-full">
       {/* Enhanced Header */}
-      <div className="border-b bg-card/80 backdrop-blur-sm px-1.5 py-1 shrink-0">
-        <div className="flex items-start justify-between gap-1.5">
+      <div className={cn(
+        "border-b bg-card/80 backdrop-blur-sm shrink-0 transition-all",
+        isCompact ? "px-1.5 py-0.5" : "px-2 py-1.5"
+      )}>
+        <div className={cn(
+          "flex items-start justify-between",
+          isCompact ? "gap-1" : "gap-2"
+        )}>
           <div className="flex-1">
-            <div className="flex items-start gap-1.5">
-              <div className="p-1 rounded-md bg-primary/10">
-                <Building2 className="h-3.5 w-3.5 text-primary" />
+            <div className={cn(
+              "flex items-start",
+              isCompact ? "gap-1.5" : "gap-2"
+            )}>
+              <div className={cn(
+                "rounded-md bg-primary/10",
+                isCompact ? "p-0.5" : "p-1"
+              )}>
+                <Building2 className={cn(
+                  "text-primary",
+                  isCompact ? "h-3 w-3" : "h-4 w-4"
+                )} />
               </div>
               <div className="flex-1 min-w-0">
-                <h2 className="text-sm font-bold leading-tight truncate">{company.name}</h2>
-                <p className="text-[10px] text-muted-foreground flex items-center gap-0.5 truncate">
-                  <MapPin className="h-2.5 w-2.5 flex-shrink-0" />
+                <h2 className={cn(
+                  "font-bold leading-tight truncate",
+                  isCompact ? "text-xs" : "text-sm"
+                )}>{company.name}</h2>
+                <p className={cn(
+                  "text-muted-foreground flex items-center gap-0.5 truncate",
+                  isCompact ? "text-[9px]" : "text-[10px]"
+                )}>
+                  <MapPin className={cn(
+                    "flex-shrink-0",
+                    isCompact ? "h-2 w-2" : "h-2.5 w-2.5"
+                  )} />
                   {company.address}
                 </p>
               </div>
             </div>
             
-            <div className="flex flex-wrap gap-0.5 mt-1">
+            <div className={cn(
+              "flex flex-wrap",
+              isCompact ? "gap-0.5 mt-0.5" : "gap-1 mt-1"
+            )}>
               {company.status && (
                 <Badge
-                  className="text-[9px] font-medium py-0 px-1 h-4"
+                  className={cn(
+                    "font-medium py-0 px-1",
+                    isCompact ? "text-[8px] h-3.5" : "text-[9px] h-4"
+                  )}
                   style={{
                     backgroundColor: company.status.color_hex + '20',
                     borderColor: company.status.color_hex,
@@ -59,14 +98,26 @@ export const CompanyDetail = ({ company, onClose, defaultTab = "info" }: Company
                 </Badge>
               )}
               {company.parroquia && (
-                <Badge variant="secondary" className="text-[9px] py-0 px-1 h-4">
-                  <MapPin className="h-2.5 w-2.5 mr-0.5" />
+                <Badge variant="secondary" className={cn(
+                  "py-0 px-1",
+                  isCompact ? "text-[8px] h-3.5" : "text-[9px] h-4"
+                )}>
+                  <MapPin className={cn(
+                    "mr-0.5",
+                    isCompact ? "h-2 w-2" : "h-2.5 w-2.5"
+                  )} />
                   {company.parroquia}
                 </Badge>
               )}
               {company.sector && (
-                <Badge variant="outline" className="text-[9px] py-0 px-1 h-4">
-                  <Briefcase className="h-2.5 w-2.5 mr-0.5" />
+                <Badge variant="outline" className={cn(
+                  "py-0 px-1",
+                  isCompact ? "text-[8px] h-3.5" : "text-[9px] h-4"
+                )}>
+                  <Briefcase className={cn(
+                    "mr-0.5",
+                    isCompact ? "h-2 w-2" : "h-2.5 w-2.5"
+                  )} />
                   {company.sector}
                 </Badge>
               )}
@@ -77,32 +128,86 @@ export const CompanyDetail = ({ company, onClose, defaultTab = "info" }: Company
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="shrink-0 h-6 w-6 hover:bg-destructive/10 hover:text-destructive"
+            className={cn(
+              "shrink-0 hover:bg-destructive/10 hover:text-destructive",
+              isCompact ? "h-5 w-5" : "h-6 w-6"
+            )}
           >
-            <X className="h-3 w-3" />
+            <X className={isCompact ? "h-2.5 w-2.5" : "h-3 w-3"} />
           </Button>
         </div>
       </div>
 
       {/* Modern Tabs Navigation */}
       <Tabs defaultValue={defaultTab} className="flex-1 flex flex-col min-h-0 overflow-hidden">
-        <div className="bg-card/50 border-b shrink-0">
+        <div className={cn(
+          "bg-card/50 border-b shrink-0 transition-all",
+          isCompact ? "py-0" : "py-0.5"
+        )}>
           <TabsList className="grid grid-cols-4 h-auto p-0 gap-0 bg-transparent w-full rounded-none">
-            <TabsTrigger value="info" className="flex flex-col items-center py-0.5 px-1 h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Building2 className="h-3 w-3 mb-0.5" />
-              <span className="text-[8px] font-medium">Info</span>
+            <TabsTrigger 
+              value="info" 
+              className={cn(
+                "flex flex-col items-center h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all",
+                isCompact ? "py-0.5 px-0.5" : "py-1 px-1"
+              )}
+            >
+              <Building2 className={cn(
+                "mb-0.5",
+                isCompact ? "h-2.5 w-2.5" : "h-3 w-3"
+              )} />
+              <span className={cn(
+                "font-medium",
+                isCompact ? "text-[7px]" : "text-[8px]"
+              )}>Info</span>
             </TabsTrigger>
-            <TabsTrigger value="relations" className="flex flex-col items-center py-0.5 px-1 h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Landmark className="h-3 w-3 mb-0.5" />
-              <span className="text-[8px] font-medium">Relaciones</span>
+            <TabsTrigger 
+              value="relations" 
+              className={cn(
+                "flex flex-col items-center h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all",
+                isCompact ? "py-0.5 px-0.5" : "py-1 px-1"
+              )}
+            >
+              <Landmark className={cn(
+                "mb-0.5",
+                isCompact ? "h-2.5 w-2.5" : "h-3 w-3"
+              )} />
+              <span className={cn(
+                "font-medium",
+                isCompact ? "text-[7px]" : "text-[8px]"
+              )}>Relaciones</span>
             </TabsTrigger>
-            <TabsTrigger value="media" className="flex flex-col items-center py-0.5 px-1 h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Camera className="h-3 w-3 mb-0.5" />
-              <span className="text-[8px] font-medium">Multimedia</span>
+            <TabsTrigger 
+              value="media" 
+              className={cn(
+                "flex flex-col items-center h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all",
+                isCompact ? "py-0.5 px-0.5" : "py-1 px-1"
+              )}
+            >
+              <Camera className={cn(
+                "mb-0.5",
+                isCompact ? "h-2.5 w-2.5" : "h-3 w-3"
+              )} />
+              <span className={cn(
+                "font-medium",
+                isCompact ? "text-[7px]" : "text-[8px]"
+              )}>Multimedia</span>
             </TabsTrigger>
-            <TabsTrigger value="activity" className="flex flex-col items-center py-0.5 px-1 h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <History className="h-3 w-3 mb-0.5" />
-              <span className="text-[8px] font-medium">Actividad</span>
+            <TabsTrigger 
+              value="activity" 
+              className={cn(
+                "flex flex-col items-center h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all",
+                isCompact ? "py-0.5 px-0.5" : "py-1 px-1"
+              )}
+            >
+              <History className={cn(
+                "mb-0.5",
+                isCompact ? "h-2.5 w-2.5" : "h-3 w-3"
+              )} />
+              <span className={cn(
+                "font-medium",
+                isCompact ? "text-[7px]" : "text-[8px]"
+              )}>Actividad</span>
             </TabsTrigger>
           </TabsList>
         </div>
@@ -111,7 +216,10 @@ export const CompanyDetail = ({ company, onClose, defaultTab = "info" }: Company
         <div className="flex-1 min-h-0 overflow-hidden">
           <ScrollArea className="h-full">
             {/* Info Tab - Redesigned with Cards */}
-            <TabsContent value="info" className="p-2 space-y-2 mt-0">
+            <TabsContent value="info" className={cn(
+              "mt-0 transition-all",
+              isCompact ? "p-1 space-y-1" : "p-2 space-y-2"
+            )}>
             {/* Quick Actions */}
             <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
               <CardContent className="p-3 flex flex-wrap gap-2">

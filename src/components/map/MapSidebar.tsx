@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { CompanyWithDetails, MapFilters, StatusColor, Product, Profile } from '@/types/database';
-import { Search, X, Filter, Calendar, History, TrendingUp, Building } from 'lucide-react';
+import { Search, X, Filter, Calendar, History, TrendingUp, Building, Maximize2, Minimize2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
@@ -19,6 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SectorStats } from './SectorStats';
 import { formatCnaeWithDescription } from '@/lib/cnaeDescriptions';
 import { CompanyDetail } from '@/components/company/CompanyDetail';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface MapSidebarProps {
   open: boolean;
@@ -45,6 +46,21 @@ export function MapSidebar({
   const [gestores, setGestores] = useState<Profile[]>([]);
   const [parroquias, setParroquias] = useState<string[]>([]);
   const [cnaes, setCnaes] = useState<string[]>([]);
+  
+  // Density mode: compact (dense) or expanded (spacious)
+  const [densityMode, setDensityMode] = useState<'compact' | 'expanded'>(() => {
+    const saved = localStorage.getItem('map-sidebar-density');
+    return (saved === 'compact' || saved === 'expanded') ? saved : 'expanded';
+  });
+
+  // Persist density preference
+  useEffect(() => {
+    localStorage.setItem('map-sidebar-density', densityMode);
+  }, [densityMode]);
+
+  const toggleDensity = () => {
+    setDensityMode(prev => prev === 'compact' ? 'expanded' : 'compact');
+  };
 
   // Calculate max values for range filters
   const maxTurnover = Math.max(...companies.map(c => c.turnover || 0));
@@ -251,6 +267,42 @@ export function MapSidebar({
       className="absolute left-0 top-0 z-10 h-full w-96 border-r bg-card shadow-lg lg:relative"
     >
       <div className="flex h-full flex-col">
+        {/* Density Control Header */}
+        <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/30 shrink-0">
+          <div className="flex items-center gap-2">
+            <Building className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium">Panel de Empresas</span>
+          </div>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleDensity}
+                  className={cn(
+                    "h-7 w-7 p-0 transition-all",
+                    densityMode === 'compact' && "bg-primary/10 text-primary"
+                  )}
+                >
+                  {densityMode === 'compact' ? (
+                    <Maximize2 className="h-3.5 w-3.5" />
+                  ) : (
+                    <Minimize2 className="h-3.5 w-3.5" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-xs">
+                  {densityMode === 'compact' 
+                    ? 'Cambiar a vista expandida' 
+                    : 'Cambiar a vista compacta'}
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+
         <Tabs 
           value={selectedCompany ? "detail" : "companies"} 
           onValueChange={(value) => {
@@ -260,17 +312,38 @@ export function MapSidebar({
           }}
           className="flex-1 flex flex-col h-full overflow-hidden"
         >
-          <TabsList className="mx-2 mb-0 mt-0 grid grid-cols-3 shrink-0 h-8 rounded-none border-b">
-            <TabsTrigger value="companies" className="flex items-center gap-2 h-7">
-              <Search className="h-4 w-4" />
+          <TabsList className={cn(
+            "mx-2 mb-0 grid grid-cols-3 shrink-0 rounded-none border-b",
+            densityMode === 'compact' ? "mt-0 h-7" : "mt-1 h-9"
+          )}>
+            <TabsTrigger 
+              value="companies" 
+              className={cn(
+                "flex items-center gap-2",
+                densityMode === 'compact' ? "h-6 text-xs" : "h-8 text-sm"
+              )}
+            >
+              <Search className={densityMode === 'compact' ? "h-3.5 w-3.5" : "h-4 w-4"} />
               <span className="hidden sm:inline">Empresas</span>
             </TabsTrigger>
-            <TabsTrigger value="sectors" className="flex items-center gap-2 h-7">
-              <TrendingUp className="h-4 w-4" />
+            <TabsTrigger 
+              value="sectors" 
+              className={cn(
+                "flex items-center gap-2",
+                densityMode === 'compact' ? "h-6 text-xs" : "h-8 text-sm"
+              )}
+            >
+              <TrendingUp className={densityMode === 'compact' ? "h-3.5 w-3.5" : "h-4 w-4"} />
               <span className="hidden sm:inline">Sectores</span>
             </TabsTrigger>
-            <TabsTrigger value="detail" className="flex items-center gap-2 h-7">
-              <Building className="h-4 w-4" />
+            <TabsTrigger 
+              value="detail" 
+              className={cn(
+                "flex items-center gap-2",
+                densityMode === 'compact' ? "h-6 text-xs" : "h-8 text-sm"
+              )}
+            >
+              <Building className={densityMode === 'compact' ? "h-3.5 w-3.5" : "h-4 w-4"} />
               <span className="hidden sm:inline">Detalle</span>
             </TabsTrigger>
           </TabsList>
@@ -561,6 +634,7 @@ export function MapSidebar({
                 company={selectedCompany} 
                 onClose={() => onSelectCompany(null)}
                 defaultTab={(selectedCompany as any)._openMediaTab ? "media" : "info"}
+                densityMode={densityMode}
               />
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground p-8 text-center">
