@@ -36,7 +36,7 @@ export const CompanyDetail = ({
   const isCompact = densityMode === 'compact';
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col flex-1 min-h-0">
       {/* Enhanced Header */}
       <div className={cn(
         "border-b bg-card/80 backdrop-blur-sm shrink-0 transition-all",
