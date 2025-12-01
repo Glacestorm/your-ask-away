@@ -264,7 +264,7 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
         onGoForward={onGoForward}
       />
       
-      <div className="relative flex flex-1 min-h-0 overflow-hidden">
+      <div className="flex flex-1 min-h-0 h-full">
         <MapSidebar
           open={sidebarOpen}
           companies={companies}
