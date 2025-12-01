@@ -847,18 +847,16 @@ export function MapSidebar({
             />
           </TabsContent>
 
-          <TabsContent value="detail" className="flex-1 relative m-0 p-0 min-h-0">
+          <TabsContent value="detail" className="flex-1 flex flex-col m-0 p-0 min-h-0 overflow-hidden">
             {selectedCompany ? (
-              <div className="absolute inset-0 flex flex-col overflow-y-auto">
-                <CompanyDetail
-                  company={selectedCompany} 
-                  onClose={() => onSelectCompany(null)}
-                  defaultTab={(selectedCompany as any)._openMediaTab ? "media" : "info"}
-                  densityMode={densityMode}
-                />
-              </div>
+              <CompanyDetail
+                company={selectedCompany} 
+                onClose={() => onSelectCompany(null)}
+                defaultTab={(selectedCompany as any)._openMediaTab ? "media" : "info"}
+                densityMode={densityMode}
+              />
             ) : (
-              <div className="absolute inset-0 flex items-center justify-center text-muted-foreground p-8 text-center">
+              <div className="flex-1 flex items-center justify-center text-muted-foreground p-8 text-center">
                 <div>
                   <Building className="h-12 w-12 mx-auto mb-3 opacity-30" />
                   <p className="text-sm font-medium">No hay empresa seleccionada</p>
