@@ -226,16 +226,6 @@ export function MapHeader({
             </div>
           </TooltipProvider>
         )}
-
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onToggleSidebar}
-          aria-label="Toggle sidebar"
-          className="hover:bg-accent/50 transition-colors"
-        >
-          <Menu className="h-5 w-5" />
-        </Button>
         
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary-hover shadow-md">
@@ -845,6 +835,26 @@ export function MapHeader({
       </div>
 
       <div className="flex items-center gap-2">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={sidebarOpen ? 'default' : 'outline'}
+                size="sm"
+                onClick={onToggleSidebar}
+                aria-label="Panel de datos"
+                className="h-7 text-xs"
+              >
+                <Menu className="mr-1 h-3 w-3" />
+                Panel
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>{sidebarOpen ? 'Cerrar panel' : 'Abrir panel de datos'}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
         <ThemeSelector />
         <LanguageSelector />
         
