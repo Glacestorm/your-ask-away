@@ -144,16 +144,19 @@ export const CompanyDetail = ({
           "bg-card/50 border-b shrink-0 transition-all",
           isCompact ? "py-0" : "py-0.5"
         )}>
-          <TabsList className="grid grid-cols-4 h-auto p-0 gap-0 bg-transparent w-full rounded-none">
+          <TabsList className="grid grid-cols-4 h-auto p-0 gap-0.5 bg-transparent w-full rounded-none">
             <TabsTrigger 
               value="info" 
               className={cn(
-                "flex flex-col items-center h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all",
+                "flex flex-col items-center h-auto rounded-md transition-all duration-200 ease-out",
+                "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
+                "hover:scale-105 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20",
+                "data-[state=active]:scale-105 data-[state=active]:-translate-y-0.5 data-[state=active]:shadow-lg data-[state=active]:shadow-primary/30",
                 isCompact ? "py-1 px-1" : "py-2 px-2"
               )}
             >
               <Building2 className={cn(
-                "mb-1 drop-shadow-md",
+                "mb-1 drop-shadow-md transition-transform duration-200",
                 isCompact ? "h-4 w-4" : "h-5 w-5"
               )} />
               <span 
@@ -169,12 +172,15 @@ export const CompanyDetail = ({
             <TabsTrigger 
               value="relations" 
               className={cn(
-                "flex flex-col items-center h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all",
+                "flex flex-col items-center h-auto rounded-md transition-all duration-200 ease-out",
+                "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
+                "hover:scale-105 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20",
+                "data-[state=active]:scale-105 data-[state=active]:-translate-y-0.5 data-[state=active]:shadow-lg data-[state=active]:shadow-primary/30",
                 isCompact ? "py-1 px-1" : "py-2 px-2"
               )}
             >
               <Landmark className={cn(
-                "mb-1 drop-shadow-md",
+                "mb-1 drop-shadow-md transition-transform duration-200",
                 isCompact ? "h-4 w-4" : "h-5 w-5"
               )} />
               <span 
@@ -190,12 +196,15 @@ export const CompanyDetail = ({
             <TabsTrigger 
               value="media" 
               className={cn(
-                "flex flex-col items-center h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all",
+                "flex flex-col items-center h-auto rounded-md transition-all duration-200 ease-out",
+                "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
+                "hover:scale-105 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20",
+                "data-[state=active]:scale-105 data-[state=active]:-translate-y-0.5 data-[state=active]:shadow-lg data-[state=active]:shadow-primary/30",
                 isCompact ? "py-1 px-1" : "py-2 px-2"
               )}
             >
               <Camera className={cn(
-                "mb-1 drop-shadow-md",
+                "mb-1 drop-shadow-md transition-transform duration-200",
                 isCompact ? "h-4 w-4" : "h-5 w-5"
               )} />
               <span 
@@ -211,12 +220,15 @@ export const CompanyDetail = ({
             <TabsTrigger 
               value="activity" 
               className={cn(
-                "flex flex-col items-center h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all",
+                "flex flex-col items-center h-auto rounded-md transition-all duration-200 ease-out",
+                "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
+                "hover:scale-105 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/20",
+                "data-[state=active]:scale-105 data-[state=active]:-translate-y-0.5 data-[state=active]:shadow-lg data-[state=active]:shadow-primary/30",
                 isCompact ? "py-1 px-1" : "py-2 px-2"
               )}
             >
               <History className={cn(
-                "mb-1 drop-shadow-md",
+                "mb-1 drop-shadow-md transition-transform duration-200",
                 isCompact ? "h-4 w-4" : "h-5 w-5"
               )} />
               <span 
