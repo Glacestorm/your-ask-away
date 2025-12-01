@@ -27,17 +27,17 @@ export const CompanyDetail = ({ company, onClose, defaultTab = "info" }: Company
   const { t } = useLanguage();
   
   return (
-    <div className="flex flex-col flex-1 min-h-0">
+    <div className="flex flex-col h-full">
       {/* Enhanced Header */}
-      <div className="border-b bg-card/80 backdrop-blur-sm p-2 shrink-0">
+      <div className="border-b bg-card/80 backdrop-blur-sm p-1 shrink-0">
         <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 space-y-1">
+          <div className="flex-1 space-y-0.5">
             <div className="flex items-start gap-2">
               <div className="p-1.5 rounded-lg bg-primary/10 mt-0.5">
                 <Building2 className="h-4 w-4 text-primary" />
               </div>
               <div className="flex-1">
-                <h2 className="text-base font-bold leading-tight mb-0.5">{company.name}</h2>
+                <h2 className="text-base font-bold leading-tight mb-0">{company.name}</h2>
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                   <MapPin className="h-3 w-3" />
                   {company.address}
@@ -86,7 +86,7 @@ export const CompanyDetail = ({ company, onClose, defaultTab = "info" }: Company
 
       {/* Modern Tabs Navigation */}
       <Tabs defaultValue={defaultTab} className="flex-1 flex flex-col min-h-0 overflow-hidden">
-        <div className="px-2 py-0.5 bg-card/50 border-b shrink-0">
+        <div className="px-1 py-0 bg-card/50 border-b shrink-0">
           <TabsList className="grid grid-cols-4 h-auto p-0.5 gap-0.5 bg-muted/50">
             <TabsTrigger value="info" className="flex flex-col items-center py-1 px-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Building2 className="h-3.5 w-3.5 mb-0.5" />
