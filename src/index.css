@@ -303,6 +303,36 @@
       transform: translateY(-6px) scale(0.96);
     }
   }
+
+  /* Marker dragging styles */
+  .marker-dragging {
+    z-index: 10000 !important;
+    transition: transform 0.2s ease, filter 0.2s ease;
+  }
+
+  .marker-dragging::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 20px;
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.3) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: markerShadowPulse 1s ease-in-out infinite;
+  }
+
+  @keyframes markerShadowPulse {
+    0%, 100% {
+      transform: translateX(-50%) scale(1);
+      opacity: 0.5;
+    }
+    50% {
+      transform: translateX(-50%) scale(1.2);
+      opacity: 0.3;
+    }
+  }
 }
 
 /* React Big Calendar custom styles */
