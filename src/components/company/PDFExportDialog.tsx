@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -8,6 +8,8 @@ import { Separator } from '@/components/ui/separator';
 import { FileDown } from 'lucide-react';
 import { CompanyWithDetails } from '@/types/database';
 import { exportCompaniesToPDF, PDFFieldOptions } from './CompanyPrintReport';
+
+const STORAGE_KEY = 'pdf-export-field-preferences';
 
 const defaultFields: PDFFieldOptions = {
   parroquia: true,
@@ -35,6 +37,28 @@ const defaultFields: PDFFieldOptions = {
   status: true,
 };
 
+const loadFieldsFromStorage = (): PDFFieldOptions => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Merge with defaults to ensure all fields exist
+      return { ...defaultFields, ...parsed };
+    }
+  } catch (e) {
+    console.error('Error loading PDF preferences:', e);
+  }
+  return defaultFields;
+};
+
+const saveFieldsToStorage = (fields: PDFFieldOptions) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(fields));
+  } catch (e) {
+    console.error('Error saving PDF preferences:', e);
+  }
+};
+
 interface PDFExportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -43,19 +67,24 @@ interface PDFExportDialogProps {
 }
 
 export function PDFExportDialog({ open, onOpenChange, companies, title }: PDFExportDialogProps) {
-  const [fields, setFields] = useState<PDFFieldOptions>(defaultFields);
+  const [fields, setFields] = useState<PDFFieldOptions>(() => loadFieldsFromStorage());
+
+  // Save to localStorage whenever fields change
+  useEffect(() => {
+    saveFieldsToStorage(fields);
+  }, [fields]);
 
   const toggleField = (field: keyof PDFFieldOptions) => {
     setFields(prev => ({ ...prev, [field]: !prev[field] }));
   };
 
   const selectAll = () => {
-    const allTrue = Object.keys(fields).reduce((acc, key) => ({ ...acc, [key]: true }), {} as PDFFieldOptions);
+    const allTrue = Object.keys(defaultFields).reduce((acc, key) => ({ ...acc, [key]: true }), {} as PDFFieldOptions);
     setFields(allTrue);
   };
 
   const deselectAll = () => {
-    const allFalse = Object.keys(fields).reduce((acc, key) => ({ ...acc, [key]: false }), {} as PDFFieldOptions);
+    const allFalse = Object.keys(defaultFields).reduce((acc, key) => ({ ...acc, [key]: false }), {} as PDFFieldOptions);
     setFields(allFalse);
   };
 
