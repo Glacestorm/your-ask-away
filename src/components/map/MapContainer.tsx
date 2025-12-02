@@ -882,14 +882,15 @@ export function MapContainer({
               if (map.current) {
                 map.current.dragPan.disable();
                 map.current.scrollZoom.disable();
+                map.current.doubleClickZoom.disable();
               }
               // Enable marker dragging
               marker.setDraggable(true);
               el.style.cursor = 'move';
               el.classList.add('marker-dragging');
-              // Visual feedback
-              el.style.transform = 'scale(1.2)';
-              el.style.filter = 'drop-shadow(0 4px 8px rgba(0,0,0,0.4))';
+              // Visual feedback - NO usar transform que interfiere con el arrastre
+              el.style.outline = '3px solid hsl(210 100% 50%)';
+              el.style.outlineOffset = '2px';
               toast.info(`Arrastra ${company.name} a su nueva ubicación`, { duration: 3000 });
             }, 3000); // 3 seconds
           };
@@ -906,6 +907,7 @@ export function MapContainer({
             if (map.current) {
               map.current.dragPan.enable();
               map.current.scrollZoom.enable();
+              map.current.doubleClickZoom.enable();
             }
             
             if (isLongPress && marker.isDraggable()) {
@@ -913,21 +915,23 @@ export function MapContainer({
               marker.setDraggable(false);
               el.style.cursor = 'pointer';
               el.classList.remove('marker-dragging');
-              el.style.transform = '';
-              el.style.filter = '';
+              el.style.outline = '';
+              el.style.outlineOffset = '';
               
               if (onUpdateCompanyLocation) {
+                const savedOriginalLat = originalLat;
+                const savedOriginalLng = originalLng;
+                
                 try {
                   await onUpdateCompanyLocation(company.id, newLngLat.lat, newLngLat.lng);
-                  toast('Ubicación actualizada', {
-                    description: company.name,
+                  toast.success(`Ubicación de ${company.name} actualizada`, {
                     duration: 10000,
                     action: {
-                      label: 'Deshacer',
+                      label: '↩ Deshacer',
                       onClick: async () => {
                         try {
-                          await onUpdateCompanyLocation(company.id, originalLat, originalLng);
-                          toast.success('Ubicación restaurada');
+                          await onUpdateCompanyLocation(company.id, savedOriginalLat, savedOriginalLng);
+                          toast.success('Ubicación restaurada correctamente');
                         } catch (err) {
                           toast.error('Error al restaurar la ubicación');
                         }
