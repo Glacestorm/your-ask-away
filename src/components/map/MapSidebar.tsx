@@ -764,7 +764,8 @@ export function MapSidebar({
 
         {/* Tabs Navigation - Hidden in fullscreen */}
         <Tabs 
-          value={selectedCompany ? "detail" : "companies"} 
+          defaultValue="companies"
+          value={selectedCompany ? "detail" : undefined}
           onValueChange={(value) => {
             if (value !== "detail") {
               onSelectCompany(null);
@@ -773,26 +774,44 @@ export function MapSidebar({
           className="flex-1 flex flex-col overflow-hidden"
         >
           {!fullscreen && (
-            <TabsList className="mx-2 mt-2 grid grid-cols-3 h-9 bg-muted shrink-0">
+            <TabsList className="mx-2 mt-2 grid grid-cols-3 h-10 bg-muted/50 shrink-0 gap-1 p-1">
               <TabsTrigger 
                 value="companies" 
-                className="text-xs font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                className={cn(
+                  "text-sm font-bold tracking-wide rounded-md transition-all duration-200 ease-out",
+                  "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg",
+                  "hover:scale-105 hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/20",
+                  "data-[state=active]:scale-105 data-[state=active]:-translate-y-0.5"
+                )}
+                style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.2)' }}
               >
-                <Search className="h-3.5 w-3.5 mr-1.5" />
+                <Search className="h-4 w-4 mr-1.5 drop-shadow-md transition-transform duration-200" />
                 Empresas
               </TabsTrigger>
               <TabsTrigger 
                 value="sectors" 
-                className="text-xs font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                className={cn(
+                  "text-sm font-bold tracking-wide rounded-md transition-all duration-200 ease-out",
+                  "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg",
+                  "hover:scale-105 hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/20",
+                  "data-[state=active]:scale-105 data-[state=active]:-translate-y-0.5"
+                )}
+                style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.2)' }}
               >
-                <TrendingUp className="h-3.5 w-3.5 mr-1.5" />
+                <TrendingUp className="h-4 w-4 mr-1.5 drop-shadow-md transition-transform duration-200" />
                 Sectores
               </TabsTrigger>
               <TabsTrigger 
                 value="detail" 
-                className="text-xs font-medium data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                className={cn(
+                  "text-sm font-bold tracking-wide rounded-md transition-all duration-200 ease-out",
+                  "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg",
+                  "hover:scale-105 hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/20",
+                  "data-[state=active]:scale-105 data-[state=active]:-translate-y-0.5"
+                )}
+                style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.2)' }}
               >
-                <Building className="h-3.5 w-3.5 mr-1.5" />
+                <Building className="h-4 w-4 mr-1.5 drop-shadow-md transition-transform duration-200" />
                 Detalle
               </TabsTrigger>
             </TabsList>
