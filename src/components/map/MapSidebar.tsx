@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { CompanyWithDetails, MapFilters, StatusColor, Product, Profile } from '@/types/database';
-import { Search, X, Calendar, TrendingUp, Building, Maximize2, Users, MapPin, Package, Tag, DollarSign, ChevronRight, ChevronLeft, ChevronsLeft, ChevronsRight, Printer, FileDown } from 'lucide-react';
+import { Search, X, Calendar, TrendingUp, Building, Maximize2, Users, MapPin, Package, Tag, DollarSign, ChevronRight, ChevronLeft, ChevronsLeft, ChevronsRight, Printer, FileDown, FileSpreadsheet } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
@@ -415,6 +416,45 @@ export function MapSidebar({
     </div>
   );
 
+  // Excel export function
+  const exportToExcel = () => {
+    const exportData = filteredCompanies.map(company => ({
+      'Nombre': company.name,
+      'Dirección': company.address,
+      'Parroquia': company.parroquia,
+      'Teléfono': company.phone || '',
+      'Email': company.email || '',
+      'Sector': company.sector || '',
+      'CNAE': company.cnae || '',
+      'Estado': company.status?.status_name || '',
+      'Gestor': company.gestor?.full_name || '',
+      'Oficina': company.oficina || '',
+      'Tipo Cliente': company.client_type || '',
+      'Facturación': company.turnover || '',
+      'Vinculación Creand (%)': company.vinculacion_entidad_1 || 0,
+      'Vinculación Morabanc (%)': company.vinculacion_entidad_2 || 0,
+      'Vinculación Andbank (%)': company.vinculacion_entidad_3 || 0,
+      'P&L Banco': company.pl_banco || '',
+      'Beneficios': company.beneficios || '',
+      'Empleados': company.employees || '',
+      'Última Visita': company.fecha_ultima_visita ? format(new Date(company.fecha_ultima_visita), 'dd/MM/yyyy') : '',
+      'Observaciones': company.observaciones || '',
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Empresas');
+    
+    // Auto-size columns
+    const maxWidth = 50;
+    const colWidths = Object.keys(exportData[0] || {}).map(key => ({
+      wch: Math.min(Math.max(key.length, ...exportData.map(row => String(row[key as keyof typeof row] || '').length)), maxWidth)
+    }));
+    worksheet['!cols'] = colWidths;
+    
+    XLSX.writeFile(workbook, `empresas_filtradas_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
+  };
+
   // Unified fullscreen mode
   if (fullscreen) {
     // Use fullscreenTab directly - company selection persists across tabs
@@ -497,6 +537,14 @@ export function MapSidebar({
                 >
                   <FileDown className="h-4 w-4" />
                   PDF
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={exportToExcel}
+                  className="h-10 gap-2"
+                >
+                  <FileSpreadsheet className="h-4 w-4" />
+                  Excel
                 </Button>
               </div>
               <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
@@ -950,6 +998,28 @@ export function MapSidebar({
                 <X className={cn(fullscreen ? "h-4 w-4" : "h-3 w-3", "mr-1")} />
                 Limpiar filtros
               </Button>
+            )}
+            {!fullscreen && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setPdfDialogOpen(true)}
+                  className="h-7 w-7 p-0"
+                  title="Exportar a PDF"
+                >
+                  <FileDown className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={exportToExcel}
+                  className="h-7 w-7 p-0"
+                  title="Exportar a Excel"
+                >
+                  <FileSpreadsheet className="h-3.5 w-3.5" />
+                </Button>
+              </>
             )}
             {onFullscreenChange && (
               <Button
