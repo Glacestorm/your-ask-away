@@ -916,6 +916,11 @@ export function MapSidebar({
           companies={filteredCompanies}
           title={`Informe de ${filteredCompanies.length} Empresas Filtradas`}
         />
+        <ExcelExportDialog
+          open={excelDialogOpen}
+          onOpenChange={setExcelDialogOpen}
+          companies={filteredCompanies}
+        />
       </aside>
     );
   }
