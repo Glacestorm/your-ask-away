@@ -8,6 +8,7 @@ import { getSectorIcon, iconToSVGString } from './markerIcons';
 import { formatCnaeWithDescription } from '@/lib/cnaeDescriptions';
 import { getMarkerStyle, MarkerStyle } from './markerStyles';
 import { toast } from 'sonner';
+import { CompanyPhotosDialog } from './CompanyPhotosDialog';
 
 type CompanyPoint = {
   type: 'Feature';
@@ -178,6 +179,12 @@ export function MapContainer({
     companyName: string;
     originalLat: number;
     originalLng: number;
+  } | null>(null);
+
+  // State for photos dialog
+  const [photosDialogCompany, setPhotosDialogCompany] = useState<{
+    id: string;
+    name: string;
   } | null>(null);
 
   // Effect to propagate prop changes to state
@@ -1126,9 +1133,8 @@ export function MapContainer({
                     persistentPopupRef.current.popup.remove();
                     persistentPopupRef.current = null;
                   }
-                  // Pass a flag to indicate we want to open the media tab
-                  const companyWithMediaFlag = { ...company, _openMediaTab: true };
-                  onSelectCompany(companyWithMediaFlag as any);
+                  // Open photos dialog
+                  setPhotosDialogCompany({ id: company.id, name: company.name });
                 });
               }
             }
@@ -1213,7 +1219,8 @@ export function MapContainer({
                   persistentPopup.remove();
                   persistentPopupRef.current = null;
                   isPersistent = false;
-                  // Company is already selected, just keep selection
+                  // Open photos dialog
+                  setPhotosDialogCompany({ id: company.id, name: company.name });
                 });
               }
             }
@@ -1504,6 +1511,14 @@ export function MapContainer({
           </div>
         </div>
       )}
+
+      {/* Photos Dialog */}
+      <CompanyPhotosDialog
+        open={!!photosDialogCompany}
+        onOpenChange={(open) => !open && setPhotosDialogCompany(null)}
+        companyId={photosDialogCompany?.id || null}
+        companyName={photosDialogCompany?.name || null}
+      />
     </div>
   );
 }
