@@ -225,6 +225,24 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
     setShowSearch(false);
   };
 
+  const handleUpdateCompanyLocation = async (companyId: string, lat: number, lng: number) => {
+    const { error } = await supabase
+      .from('companies')
+      .update({ latitude: lat, longitude: lng })
+      .eq('id', companyId);
+
+    if (error) {
+      throw error;
+    }
+
+    // Update local state
+    setCompanies(prev => prev.map(c => 
+      c.id === companyId 
+        ? { ...c, latitude: lat, longitude: lng }
+        : c
+    ));
+  };
+
   return (
     <div className="flex flex-col h-full overflow-hidden bg-background">
       <MapHeader
@@ -310,6 +328,7 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
                   setSidebarOpen(true);
                 }
               }}
+              onUpdateCompanyLocation={handleUpdateCompanyLocation}
               mapStyle={mapStyle}
               view3D={view3D}
               baseLayers={baseLayers}

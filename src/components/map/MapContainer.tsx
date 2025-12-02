@@ -7,6 +7,7 @@ import Supercluster from 'supercluster';
 import { getSectorIcon, iconToSVGString } from './markerIcons';
 import { formatCnaeWithDescription } from '@/lib/cnaeDescriptions';
 import { getMarkerStyle, MarkerStyle } from './markerStyles';
+import { toast } from 'sonner';
 
 type CompanyPoint = {
   type: 'Feature';
@@ -103,6 +104,7 @@ interface MapContainerProps {
   statusColors: StatusColor[];
   filters: MapFilters;
   onSelectCompany: (company: CompanyWithDetails) => void;
+  onUpdateCompanyLocation?: (companyId: string, lat: number, lng: number) => Promise<void>;
   mapStyle?: 'default' | 'satellite';
   view3D?: boolean;
   baseLayers?: {
@@ -136,6 +138,7 @@ export function MapContainer({
   statusColors,
   filters,
   onSelectCompany,
+  onUpdateCompanyLocation,
   mapStyle = 'default',
   view3D = false,
   baseLayers = {
@@ -853,13 +856,78 @@ export function MapContainer({
             showVinculacion && vinculacionPct !== undefined ? vinculacionPct : undefined
           );
 
+          // Create marker with rotation alignment to follow map rotation
           const marker = new maplibregl.Marker({ 
             element: el,
             anchor: 'bottom',
-            offset: [0, 0]
+            offset: [0, 0],
+            rotationAlignment: 'map',
+            pitchAlignment: 'map',
           })
             .setLngLat([longitude, latitude])
             .addTo(map.current!);
+
+          // Long press detection for marker relocation
+          let longPressTimer: NodeJS.Timeout | null = null;
+          let isDragging = false;
+          let isLongPress = false;
+
+          const startLongPress = (e: MouseEvent | TouchEvent) => {
+            e.preventDefault();
+            longPressTimer = setTimeout(() => {
+              isLongPress = true;
+              // Enable dragging
+              marker.setDraggable(true);
+              el.style.cursor = 'move';
+              el.classList.add('marker-dragging');
+              // Visual feedback
+              el.style.transform = 'scale(1.2)';
+              el.style.filter = 'drop-shadow(0 4px 8px rgba(0,0,0,0.4))';
+              toast.info(`Arrastra ${company.name} a su nueva ubicación`, { duration: 3000 });
+            }, 3000); // 3 seconds
+          };
+
+          const cancelLongPress = () => {
+            if (longPressTimer) {
+              clearTimeout(longPressTimer);
+              longPressTimer = null;
+            }
+          };
+
+          const endDrag = async () => {
+            if (isLongPress && marker.isDraggable()) {
+              const newLngLat = marker.getLngLat();
+              marker.setDraggable(false);
+              el.style.cursor = 'pointer';
+              el.classList.remove('marker-dragging');
+              el.style.transform = '';
+              el.style.filter = '';
+              
+              if (onUpdateCompanyLocation) {
+                try {
+                  await onUpdateCompanyLocation(company.id, newLngLat.lat, newLngLat.lng);
+                  toast.success(`Ubicación de ${company.name} actualizada`);
+                } catch (error) {
+                  toast.error('Error al actualizar la ubicación');
+                  // Revert to original position
+                  marker.setLngLat([longitude, latitude]);
+                }
+              }
+              isLongPress = false;
+            }
+          };
+
+          el.addEventListener('mousedown', startLongPress);
+          el.addEventListener('touchstart', startLongPress, { passive: false });
+          el.addEventListener('mouseup', cancelLongPress);
+          el.addEventListener('mouseleave', cancelLongPress);
+          el.addEventListener('touchend', () => {
+            cancelLongPress();
+            endDrag();
+          });
+          el.addEventListener('touchcancel', cancelLongPress);
+
+          marker.on('dragend', endDrag);
 
           // Create hover tooltip with configurable fields
           const hoverPopup = new maplibregl.Popup({
