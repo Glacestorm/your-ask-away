@@ -5,13 +5,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { ThemeSelector } from '@/components/ThemeSelector';
-import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface GlobalNavHeaderProps {
   title?: string;
   subtitle?: string;
-  showSidebarTrigger?: boolean;
   canGoBack?: boolean;
   canGoForward?: boolean;
   onGoBack?: () => void;
@@ -21,7 +19,6 @@ interface GlobalNavHeaderProps {
 export function GlobalNavHeader({ 
   title, 
   subtitle, 
-  showSidebarTrigger = false,
   canGoBack = false,
   canGoForward = false,
   onGoBack,
@@ -33,7 +30,6 @@ export function GlobalNavHeader({
   return (
     <div className="flex items-center justify-between rounded-2xl bg-gradient-to-br from-card via-card to-accent/20 p-4 shadow-lg border border-border/50">
       <div className="flex items-center gap-3">
-        {showSidebarTrigger && <SidebarTrigger />}
         
         {/* Navigation History Buttons */}
         {(onGoBack || onGoForward) && (
