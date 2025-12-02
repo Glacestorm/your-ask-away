@@ -869,16 +869,21 @@ export function MapContainer({
 
           // Long press detection for marker relocation
           let longPressTimer: NodeJS.Timeout | null = null;
-          let isDragging = false;
           let isLongPress = false;
           const originalLng = longitude;
           const originalLat = latitude;
 
           const startLongPress = (e: MouseEvent | TouchEvent) => {
             e.preventDefault();
+            e.stopPropagation();
             longPressTimer = setTimeout(() => {
               isLongPress = true;
-              // Enable dragging
+              // Disable map dragging while marker is being dragged
+              if (map.current) {
+                map.current.dragPan.disable();
+                map.current.scrollZoom.disable();
+              }
+              // Enable marker dragging
               marker.setDraggable(true);
               el.style.cursor = 'move';
               el.classList.add('marker-dragging');
@@ -897,6 +902,12 @@ export function MapContainer({
           };
 
           const endDrag = async () => {
+            // Re-enable map interactions
+            if (map.current) {
+              map.current.dragPan.enable();
+              map.current.scrollZoom.enable();
+            }
+            
             if (isLongPress && marker.isDraggable()) {
               const newLngLat = marker.getLngLat();
               marker.setDraggable(false);
@@ -908,14 +919,14 @@ export function MapContainer({
               if (onUpdateCompanyLocation) {
                 try {
                   await onUpdateCompanyLocation(company.id, newLngLat.lat, newLngLat.lng);
-                  toast.success(`Ubicación de ${company.name} actualizada`, {
-                    duration: 8000,
+                  toast('Ubicación actualizada', {
+                    description: company.name,
+                    duration: 10000,
                     action: {
                       label: 'Deshacer',
                       onClick: async () => {
                         try {
                           await onUpdateCompanyLocation(company.id, originalLat, originalLng);
-                          marker.setLngLat([originalLng, originalLat]);
                           toast.success('Ubicación restaurada');
                         } catch (err) {
                           toast.error('Error al restaurar la ubicación');
@@ -933,8 +944,15 @@ export function MapContainer({
             }
           };
 
-          el.addEventListener('mousedown', startLongPress);
-          el.addEventListener('touchstart', startLongPress, { passive: false });
+          // Prevent map drag when interacting with marker
+          el.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            startLongPress(e);
+          });
+          el.addEventListener('touchstart', (e) => {
+            e.stopPropagation();
+            startLongPress(e);
+          }, { passive: false });
           el.addEventListener('mouseup', cancelLongPress);
           el.addEventListener('mouseleave', cancelLongPress);
           el.addEventListener('touchend', () => {
@@ -942,6 +960,14 @@ export function MapContainer({
             endDrag();
           });
           el.addEventListener('touchcancel', cancelLongPress);
+
+          marker.on('dragstart', () => {
+            // Ensure map interactions are disabled when drag starts
+            if (map.current) {
+              map.current.dragPan.disable();
+              map.current.scrollZoom.disable();
+            }
+          });
 
           marker.on('dragend', endDrag);
 
