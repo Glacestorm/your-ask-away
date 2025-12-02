@@ -331,7 +331,6 @@ const Admin = () => {
               <GlobalNavHeader 
                 title={t('admin.title')} 
                 subtitle={t('admin.subtitle')}
-                showSidebarTrigger
                 canGoBack={canGoBack}
                 canGoForward={canGoForward}
                 onGoBack={handleGoBack}
