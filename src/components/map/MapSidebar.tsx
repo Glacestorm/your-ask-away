@@ -728,11 +728,14 @@ export function MapSidebar({
                   <h3 className="font-semibold text-lg">Resultados ({filteredCompanies.length})</h3>
                 </div>
                 <div className="grid grid-cols-5 gap-3">
-                  {paginatedCompanies.map((company) => (
+                {paginatedCompanies.map((company) => (
                     <div
                       key={company.id}
                       onClick={() => onSelectCompany(company)}
-                      className="p-3 rounded-lg border bg-card hover:bg-accent hover:border-primary/30 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md"
+                      className={cn(
+                        "p-3 rounded-lg border bg-card hover:bg-accent hover:border-primary/30 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md",
+                        selectedCompany?.id === company.id && "ring-2 ring-primary border-primary bg-primary/10 shadow-lg scale-[1.02]"
+                      )}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
@@ -1252,7 +1255,10 @@ export function MapSidebar({
                         <div
                           key={company.id}
                           onClick={() => onSelectCompany(company)}
-                          className="p-3 rounded-lg border bg-card hover:bg-accent hover:border-primary/30 cursor-pointer transition-all"
+                          className={cn(
+                            "p-3 rounded-lg border bg-card hover:bg-accent hover:border-primary/30 cursor-pointer transition-all",
+                            selectedCompany?.id === company.id && "ring-2 ring-primary border-primary bg-primary/10 shadow-lg"
+                          )}
                         >
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0 flex-1">
