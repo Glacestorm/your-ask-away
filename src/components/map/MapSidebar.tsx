@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { CompanyWithDetails, MapFilters, StatusColor, Product, Profile } from '@/types/database';
-import { Search, X, Calendar, TrendingUp, Building, Maximize2, Minimize2, Users, MapPin, Package, Tag, DollarSign, ChevronRight, ChevronLeft, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Search, X, Calendar, TrendingUp, Building, Maximize2, Minimize2, Users, MapPin, Package, Tag, DollarSign, ChevronRight, ChevronLeft, ChevronsLeft, ChevronsRight, Printer } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
@@ -20,6 +20,7 @@ import { formatCnaeWithDescription } from '@/lib/cnaeDescriptions';
 import { CompanyDetail } from '@/components/company/CompanyDetail';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Slider } from '@/components/ui/slider';
+import { printCompaniesReport } from '@/components/company/CompanyPrintReport';
 
 interface MapSidebarProps {
   open: boolean;
@@ -477,16 +478,26 @@ export function MapSidebar({
         {/* Content based on active tab */}
         {activeTab === 'companies' && (
           <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Search */}
+            {/* Search and Print */}
             <div className="shrink-0 px-6 py-4 border-b">
-              <div className="relative max-w-xl">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar empresas..."
-                  value={filters.searchTerm}
-                  onChange={(e) => onFiltersChange({ ...filters, searchTerm: e.target.value })}
-                  className="pl-10 h-10"
-                />
+              <div className="flex items-center gap-4">
+                <div className="relative flex-1 max-w-xl">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar empresas..."
+                    value={filters.searchTerm}
+                    onChange={(e) => onFiltersChange({ ...filters, searchTerm: e.target.value })}
+                    className="pl-10 h-10"
+                  />
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => printCompaniesReport(filteredCompanies, `Informe de ${filteredCompanies.length} Empresas Filtradas`)}
+                  className="h-10 gap-2"
+                >
+                  <Printer className="h-4 w-4" />
+                  Imprimir Informe
+                </Button>
               </div>
               <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
                 <Badge variant="outline">{filteredCompanies.length} empresas</Badge>
