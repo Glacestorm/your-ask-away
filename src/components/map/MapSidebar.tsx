@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { CompanyWithDetails, MapFilters, StatusColor, Product, Profile } from '@/types/database';
-import { Search, X, Calendar, TrendingUp, Building, Maximize2, Minimize2, Users, MapPin, Package, Tag, DollarSign, ChevronRight, ChevronLeft, ChevronsLeft, ChevronsRight, Printer, FileDown } from 'lucide-react';
+import { Search, X, Calendar, TrendingUp, Building, Maximize2, Users, MapPin, Package, Tag, DollarSign, ChevronRight, ChevronLeft, ChevronsLeft, ChevronsRight, Printer, FileDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
@@ -53,20 +53,8 @@ export function MapSidebar({
   const [cnaes, setCnaes] = useState<string[]>([]);
   const [sectors, setSectors] = useState<string[]>([]);
   
-  // Density mode: compact (dense) or expanded (spacious)
-  const [densityMode, setDensityMode] = useState<'compact' | 'expanded'>(() => {
-    const saved = localStorage.getItem('map-sidebar-density');
-    return (saved === 'compact' || saved === 'expanded') ? saved : 'expanded';
-  });
-
-  // Persist density preference
-  useEffect(() => {
-    localStorage.setItem('map-sidebar-density', densityMode);
-  }, [densityMode]);
-
-  const toggleDensity = () => {
-    setDensityMode(prev => prev === 'compact' ? 'expanded' : 'compact');
-  };
+  // Density mode for CompanyDetail - always expanded
+  const densityMode = 'expanded' as const;
 
   // Pagination state for fullscreen company list
   const [currentPage, setCurrentPage] = useState(1);
@@ -961,24 +949,6 @@ export function MapSidebar({
               >
                 <X className={cn(fullscreen ? "h-4 w-4" : "h-3 w-3", "mr-1")} />
                 Limpiar filtros
-              </Button>
-            )}
-            {!fullscreen && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleDensity}
-                className={cn(
-                  "h-7 w-7 p-0 transition-all",
-                  densityMode === 'compact' && "bg-primary/10 text-primary"
-                )}
-                title={densityMode === 'compact' ? "Expandir" : "Compactar"}
-              >
-                {densityMode === 'compact' ? (
-                  <Maximize2 className="h-3.5 w-3.5" />
-                ) : (
-                  <Minimize2 className="h-3.5 w-3.5" />
-                )}
               </Button>
             )}
             {onFullscreenChange && (
