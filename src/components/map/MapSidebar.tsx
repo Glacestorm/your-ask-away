@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { CompanyWithDetails, MapFilters, StatusColor, Product, Profile } from '@/types/database';
-import { Search, X, Calendar, TrendingUp, Building, Maximize2, Minimize2, Users, MapPin, Package, Tag, DollarSign, ChevronRight, ChevronLeft, ChevronsLeft, ChevronsRight, Printer } from 'lucide-react';
+import { Search, X, Calendar, TrendingUp, Building, Maximize2, Minimize2, Users, MapPin, Package, Tag, DollarSign, ChevronRight, ChevronLeft, ChevronsLeft, ChevronsRight, Printer, FileDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
@@ -20,7 +20,7 @@ import { formatCnaeWithDescription } from '@/lib/cnaeDescriptions';
 import { CompanyDetail } from '@/components/company/CompanyDetail';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Slider } from '@/components/ui/slider';
-import { printCompaniesReport } from '@/components/company/CompanyPrintReport';
+import { printCompaniesReport, exportCompaniesToPDF } from '@/components/company/CompanyPrintReport';
 
 interface MapSidebarProps {
   open: boolean;
@@ -496,7 +496,15 @@ export function MapSidebar({
                   className="h-10 gap-2"
                 >
                   <Printer className="h-4 w-4" />
-                  Imprimir Informe
+                  Imprimir
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => exportCompaniesToPDF(filteredCompanies, `Informe de ${filteredCompanies.length} Empresas Filtradas`)}
+                  className="h-10 gap-2"
+                >
+                  <FileDown className="h-4 w-4" />
+                  PDF
                 </Button>
               </div>
               <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">

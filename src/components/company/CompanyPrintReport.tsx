@@ -2,6 +2,8 @@ import { CompanyWithDetails } from '@/types/database';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { formatCnaeWithDescription } from '@/lib/cnaeDescriptions';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface CompanyPrintReportProps {
   companies: CompanyWithDetails[];
@@ -503,4 +505,292 @@ export const printCompaniesReport = (companies: CompanyWithDetails[], title?: st
   printWindow.onload = () => {
     printWindow.print();
   };
+};
+
+export const exportCompaniesToPDF = (companies: CompanyWithDetails[], title?: string) => {
+  type ExtendedCompany = CompanyWithDetails & {
+    facturacion_anual?: number | null;
+    periodo_facturacion?: string | null;
+    ingresos_creand?: number | null;
+    tags?: string[] | null;
+  };
+
+  const extendedCompanies = companies as ExtendedCompany[];
+
+  const formatCurrency = (value: number | null | undefined) => {
+    if (value == null) return '-';
+    return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(value);
+  };
+
+  const formatPercent = (value: number | null | undefined) => {
+    if (value == null) return '-';
+    return `${value.toFixed(1)}%`;
+  };
+
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return 'Sin visitas';
+    return new Date(dateStr).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+
+  const reportTitle = title || 'Informe de Empresas';
+  const generatedDate = new Date().toLocaleString('es-ES', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+
+  const totalFacturacion = extendedCompanies.reduce((sum, c) => sum + (c.facturacion_anual || c.turnover || 0), 0);
+  const avgVinculacion = companies.length > 0 
+    ? companies.reduce((sum, c) => sum + (c.vinculacion_entidad_1 || 0), 0) / companies.length 
+    : 0;
+  const companiesWithVisits = companies.filter(c => c.fecha_ultima_visita).length;
+
+  // Create PDF
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  let y = 15;
+
+  // Header
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.text(reportTitle, 14, y);
+  y += 8;
+  
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(100);
+  doc.text(`Generado el ${generatedDate}`, 14, y);
+  y += 5;
+  doc.text(`Total de empresas: ${companies.length}`, 14, y);
+  y += 10;
+
+  // Stats summary
+  doc.setTextColor(0);
+  doc.setFontSize(9);
+  const statsY = y;
+  const statsWidth = (pageWidth - 28) / 4;
+  
+  const stats = [
+    { label: 'Total Empresas', value: companies.length.toString() },
+    { label: 'Facturación Total', value: formatCurrency(totalFacturacion) },
+    { label: 'Vinculación Media', value: formatPercent(avgVinculacion) },
+    { label: 'Con Visitas', value: companiesWithVisits.toString() }
+  ];
+
+  stats.forEach((stat, i) => {
+    const x = 14 + (i * statsWidth);
+    doc.setDrawColor(200);
+    doc.rect(x, statsY, statsWidth - 2, 15);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text(stat.value, x + (statsWidth - 2) / 2, statsY + 7, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(100);
+    doc.text(stat.label, x + (statsWidth - 2) / 2, statsY + 12, { align: 'center' });
+    doc.setTextColor(0);
+  });
+
+  y = statsY + 20;
+
+  // Companies table
+  const tableData = extendedCompanies.map((company, index) => [
+    `${index + 1}. ${company.name}`,
+    company.parroquia || '-',
+    company.status?.status_name || '-',
+    formatCurrency(company.facturacion_anual || company.turnover),
+    formatPercent(company.vinculacion_entidad_1),
+    company.gestor?.full_name || 'Sin asignar',
+    formatDate(company.fecha_ultima_visita)
+  ]);
+
+  autoTable(doc, {
+    startY: y,
+    head: [['Empresa', 'Parroquia', 'Estado', 'Facturación', 'Vinc. Creand', 'Gestor', 'Última Visita']],
+    body: tableData,
+    styles: {
+      fontSize: 7,
+      cellPadding: 2,
+    },
+    headStyles: {
+      fillColor: [51, 51, 51],
+      textColor: 255,
+      fontStyle: 'bold',
+      fontSize: 7
+    },
+    columnStyles: {
+      0: { cellWidth: 45 },
+      1: { cellWidth: 25 },
+      2: { cellWidth: 20 },
+      3: { cellWidth: 25 },
+      4: { cellWidth: 20 },
+      5: { cellWidth: 30 },
+      6: { cellWidth: 22 }
+    },
+    alternateRowStyles: {
+      fillColor: [248, 248, 248]
+    },
+    margin: { left: 14, right: 14 }
+  });
+
+  // Get final Y position after table
+  const finalY = (doc as any).lastAutoTable.finalY + 10;
+
+  // Detailed company info on new pages
+  extendedCompanies.forEach((company, index) => {
+    doc.addPage();
+    let detailY = 15;
+
+    // Company header
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${index + 1}. ${company.name}`, 14, detailY);
+    detailY += 6;
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100);
+    doc.text(company.address, 14, detailY);
+    detailY += 5;
+
+    if (company.status) {
+      doc.text(`Estado: ${company.status.status_name}`, 14, detailY);
+      detailY += 8;
+    } else {
+      detailY += 3;
+    }
+
+    doc.setTextColor(0);
+
+    // Three columns of info
+    const colWidth = (pageWidth - 42) / 3;
+    const startX = 14;
+
+    // Column 1: Basic Info
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Información Básica', startX, detailY);
+    detailY += 5;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    
+    const basicInfo = [
+      ['Parroquia:', company.parroquia || '-'],
+      ['Sector:', company.sector || '-'],
+      ['CNAE:', company.cnae || '-'],
+      ['CIF/NIF:', company.tax_id || '-'],
+      ['Tipo:', company.client_type === 'cliente' ? 'Cliente' : company.client_type === 'potencial_cliente' ? 'Potencial' : '-'],
+      ['Empleados:', company.employees?.toString() || '-'],
+      ['Teléfono:', company.phone || '-'],
+      ['Email:', company.email || '-']
+    ];
+
+    basicInfo.forEach(([label, value]) => {
+      doc.setTextColor(100);
+      doc.text(label, startX, detailY);
+      doc.setTextColor(0);
+      doc.text(value, startX + 25, detailY);
+      detailY += 4;
+    });
+
+    // Column 2: Financial Info
+    let finY = 15 + 6 + 5 + (company.status ? 8 : 3);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Información Financiera', startX + colWidth + 7, finY);
+    finY += 5;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+
+    const financialInfo = [
+      ['Facturación:', formatCurrency(company.facturacion_anual || company.turnover)],
+      ['Período:', company.periodo_facturacion || '-'],
+      ['Ingresos Creand:', formatCurrency(company.ingresos_creand)],
+      ['P&L Banco:', formatCurrency(company.pl_banco)],
+      ['Beneficios:', formatCurrency(company.beneficios)],
+      ['BP:', company.bp || '-']
+    ];
+
+    financialInfo.forEach(([label, value]) => {
+      doc.setTextColor(100);
+      doc.text(label, startX + colWidth + 7, finY);
+      doc.setTextColor(0);
+      doc.text(value, startX + colWidth + 35, finY);
+      finY += 4;
+    });
+
+    // Column 3: Vinculación
+    let vincY = 15 + 6 + 5 + (company.status ? 8 : 3);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Vinculación', startX + (colWidth * 2) + 14, vincY);
+    vincY += 5;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+
+    const vincInfo = [
+      ['Vinc. Creand:', formatPercent(company.vinculacion_entidad_1)],
+      ['Vinc. Morabanc:', formatPercent(company.vinculacion_entidad_2)],
+      ['Vinc. Andbank:', formatPercent(company.vinculacion_entidad_3)]
+    ];
+
+    vincInfo.forEach(([label, value]) => {
+      doc.setTextColor(100);
+      doc.text(label, startX + (colWidth * 2) + 14, vincY);
+      doc.setTextColor(0);
+      doc.text(value, startX + (colWidth * 2) + 42, vincY);
+      vincY += 4;
+    });
+
+    // Gestor and Visit info
+    const maxY = Math.max(detailY, finY, vincY) + 5;
+    doc.setFontSize(9);
+    doc.setTextColor(100);
+    doc.text('Gestor asignado:', 14, maxY);
+    doc.setTextColor(0);
+    doc.text(company.gestor?.full_name || 'Sin asignar', 50, maxY);
+    
+    doc.setTextColor(100);
+    doc.text('Última visita:', 100, maxY);
+    doc.setTextColor(0);
+    doc.text(formatDate(company.fecha_ultima_visita), 130, maxY);
+
+    // Observations
+    if (company.observaciones) {
+      doc.setTextColor(100);
+      doc.text('Observaciones:', 14, maxY + 6);
+      doc.setTextColor(0);
+      const obsLines = doc.splitTextToSize(company.observaciones, pageWidth - 28);
+      doc.text(obsLines, 14, maxY + 10);
+    }
+
+    // Products
+    if (company.products && company.products.length > 0) {
+      const prodY = company.observaciones ? maxY + 18 : maxY + 6;
+      doc.setTextColor(100);
+      doc.text('Productos contratados:', 14, prodY);
+      doc.setTextColor(0);
+      doc.text(company.products.map(p => p.name).join(', '), 55, prodY);
+    }
+  });
+
+  // Footer on each page
+  const pageCount = doc.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(150);
+    doc.text(
+      `Informe generado automáticamente - Creand Business Management | Página ${i} de ${pageCount}`,
+      pageWidth / 2,
+      doc.internal.pageSize.getHeight() - 10,
+      { align: 'center' }
+    );
+  }
+
+  // Save PDF
+  const filename = `informe_empresas_${format(new Date(), 'yyyy-MM-dd_HH-mm')}.pdf`;
+  doc.save(filename);
 };
