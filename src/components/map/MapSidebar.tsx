@@ -20,7 +20,8 @@ import { formatCnaeWithDescription } from '@/lib/cnaeDescriptions';
 import { CompanyDetail } from '@/components/company/CompanyDetail';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Slider } from '@/components/ui/slider';
-import { printCompaniesReport, exportCompaniesToPDF } from '@/components/company/CompanyPrintReport';
+import { printCompaniesReport } from '@/components/company/CompanyPrintReport';
+import { PDFExportDialog } from '@/components/company/PDFExportDialog';
 
 interface MapSidebarProps {
   open: boolean;
@@ -73,6 +74,9 @@ export function MapSidebar({
   
   // Fullscreen tab state - which tab to show in fullscreen mode
   const [fullscreenTab, setFullscreenTab] = useState<'companies' | 'sectors' | 'detail'>('companies');
+
+  // PDF Export Dialog state
+  const [pdfDialogOpen, setPdfDialogOpen] = useState(false);
 
   // Refs for company elements to enable auto-scroll
   const companyRefs = useRef<Map<string, HTMLElement>>(new Map());
@@ -500,7 +504,7 @@ export function MapSidebar({
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => exportCompaniesToPDF(filteredCompanies, `Informe de ${filteredCompanies.length} Empresas Filtradas`)}
+                  onClick={() => setPdfDialogOpen(true)}
                   className="h-10 gap-2"
                 >
                   <FileDown className="h-4 w-4" />
@@ -1920,6 +1924,13 @@ export function MapSidebar({
             )}
           </TabsContent>
         </Tabs>
+
+      <PDFExportDialog
+        open={pdfDialogOpen}
+        onOpenChange={setPdfDialogOpen}
+        companies={filteredCompanies}
+        title={`Informe de ${filteredCompanies.length} Empresas Filtradas`}
+      />
     </aside>
   );
 }
