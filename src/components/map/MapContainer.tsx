@@ -871,6 +871,8 @@ export function MapContainer({
           let longPressTimer: NodeJS.Timeout | null = null;
           let isDragging = false;
           let isLongPress = false;
+          const originalLng = longitude;
+          const originalLat = latitude;
 
           const startLongPress = (e: MouseEvent | TouchEvent) => {
             e.preventDefault();
@@ -906,11 +908,25 @@ export function MapContainer({
               if (onUpdateCompanyLocation) {
                 try {
                   await onUpdateCompanyLocation(company.id, newLngLat.lat, newLngLat.lng);
-                  toast.success(`Ubicación de ${company.name} actualizada`);
+                  toast.success(`Ubicación de ${company.name} actualizada`, {
+                    duration: 8000,
+                    action: {
+                      label: 'Deshacer',
+                      onClick: async () => {
+                        try {
+                          await onUpdateCompanyLocation(company.id, originalLat, originalLng);
+                          marker.setLngLat([originalLng, originalLat]);
+                          toast.success('Ubicación restaurada');
+                        } catch (err) {
+                          toast.error('Error al restaurar la ubicación');
+                        }
+                      },
+                    },
+                  });
                 } catch (error) {
                   toast.error('Error al actualizar la ubicación');
                   // Revert to original position
-                  marker.setLngLat([longitude, latitude]);
+                  marker.setLngLat([originalLng, originalLat]);
                 }
               }
               isLongPress = false;
