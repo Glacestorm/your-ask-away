@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -72,6 +72,19 @@ export function MapSidebar({
   
   // Fullscreen tab state - which tab to show in fullscreen mode
   const [fullscreenTab, setFullscreenTab] = useState<'companies' | 'sectors' | 'detail'>('companies');
+
+  // Refs for company elements to enable auto-scroll
+  const companyRefs = useRef<Map<string, HTMLElement>>(new Map());
+
+  // Auto-scroll to selected company when it changes
+  useEffect(() => {
+    if (selectedCompany) {
+      const element = companyRefs.current.get(selectedCompany.id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+  }, [selectedCompany]);
 
   // Reset pagination when filters change
   useEffect(() => {
@@ -731,6 +744,10 @@ export function MapSidebar({
                 {paginatedCompanies.map((company) => (
                     <div
                       key={company.id}
+                      ref={(el) => {
+                        if (el) companyRefs.current.set(company.id, el);
+                        else companyRefs.current.delete(company.id);
+                      }}
                       onClick={() => onSelectCompany(company)}
                       className={cn(
                         "p-3 rounded-lg border bg-card hover:bg-accent hover:border-primary/30 cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md",
@@ -1311,6 +1328,10 @@ export function MapSidebar({
                       {filteredCompanies.slice(0, 25).map((company) => (
                         <div
                           key={company.id}
+                          ref={(el) => {
+                            if (el) companyRefs.current.set(company.id, el);
+                            else companyRefs.current.delete(company.id);
+                          }}
                           onClick={() => onSelectCompany(company)}
                           className={cn(
                             "p-3 rounded-lg border bg-card hover:bg-accent hover:border-primary/30 cursor-pointer transition-all",
@@ -1742,6 +1763,10 @@ export function MapSidebar({
                       {filteredCompanies.slice(0, 20).map((company) => (
                         <button
                           key={company.id}
+                          ref={(el) => {
+                            if (el) companyRefs.current.set(company.id, el);
+                            else companyRefs.current.delete(company.id);
+                          }}
                           onClick={() => onSelectCompany(company)}
                           className={cn(
                             'w-full rounded-lg border p-2.5 text-left transition-all hover:bg-accent hover:border-primary/30',
