@@ -911,6 +911,13 @@ export function MapSidebar({
             )}
           </div>
         )}
+        
+        <PDFExportDialog
+          open={pdfDialogOpen}
+          onOpenChange={setPdfDialogOpen}
+          companies={filteredCompanies}
+          title={`Informe de ${filteredCompanies.length} Empresas Filtradas`}
+        />
       </aside>
     );
   }
