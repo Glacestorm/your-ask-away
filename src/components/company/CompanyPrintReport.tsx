@@ -507,7 +507,61 @@ export const printCompaniesReport = (companies: CompanyWithDetails[], title?: st
   };
 };
 
-export const exportCompaniesToPDF = (companies: CompanyWithDetails[], title?: string) => {
+export interface PDFFieldOptions {
+  parroquia: boolean;
+  sector: boolean;
+  cnae: boolean;
+  taxId: boolean;
+  clientType: boolean;
+  employees: boolean;
+  phone: boolean;
+  email: boolean;
+  website: boolean;
+  facturacion: boolean;
+  periodoFacturacion: boolean;
+  ingresosCreand: boolean;
+  plBanco: boolean;
+  beneficios: boolean;
+  bp: boolean;
+  vinculacionCreand: boolean;
+  vinculacionMorabanc: boolean;
+  vinculacionAndbank: boolean;
+  gestor: boolean;
+  ultimaVisita: boolean;
+  observaciones: boolean;
+  productos: boolean;
+  status: boolean;
+}
+
+const defaultPDFFields: PDFFieldOptions = {
+  parroquia: true,
+  sector: true,
+  cnae: true,
+  taxId: true,
+  clientType: true,
+  employees: true,
+  phone: true,
+  email: true,
+  website: false,
+  facturacion: true,
+  periodoFacturacion: false,
+  ingresosCreand: true,
+  plBanco: true,
+  beneficios: true,
+  bp: false,
+  vinculacionCreand: true,
+  vinculacionMorabanc: true,
+  vinculacionAndbank: true,
+  gestor: true,
+  ultimaVisita: true,
+  observaciones: true,
+  productos: true,
+  status: true,
+};
+
+export const exportCompaniesToPDF = (companies: CompanyWithDetails[], title?: string, fieldOptions?: PDFFieldOptions) => {
+  const fields = fieldOptions || defaultPDFFields;
+  
   type ExtendedCompany = CompanyWithDetails & {
     facturacion_anual?: number | null;
     periodo_facturacion?: string | null;
@@ -595,20 +649,31 @@ export const exportCompaniesToPDF = (companies: CompanyWithDetails[], title?: st
 
   y = statsY + 20;
 
-  // Companies table
-  const tableData = extendedCompanies.map((company, index) => [
-    `${index + 1}. ${company.name}`,
-    company.parroquia || '-',
-    company.status?.status_name || '-',
-    formatCurrency(company.facturacion_anual || company.turnover),
-    formatPercent(company.vinculacion_entidad_1),
-    company.gestor?.full_name || 'Sin asignar',
-    formatDate(company.fecha_ultima_visita)
-  ]);
+  // Build dynamic table columns based on selected fields
+  const tableHeaders: string[] = ['Empresa'];
+  const getTableRow = (company: ExtendedCompany, index: number): string[] => {
+    const row: string[] = [`${index + 1}. ${company.name}`];
+    if (fields.parroquia) row.push(company.parroquia || '-');
+    if (fields.status) row.push(company.status?.status_name || '-');
+    if (fields.facturacion) row.push(formatCurrency(company.facturacion_anual || company.turnover));
+    if (fields.vinculacionCreand) row.push(formatPercent(company.vinculacion_entidad_1));
+    if (fields.gestor) row.push(company.gestor?.full_name || 'Sin asignar');
+    if (fields.ultimaVisita) row.push(formatDate(company.fecha_ultima_visita));
+    return row;
+  };
+
+  if (fields.parroquia) tableHeaders.push('Parroquia');
+  if (fields.status) tableHeaders.push('Estado');
+  if (fields.facturacion) tableHeaders.push('Facturación');
+  if (fields.vinculacionCreand) tableHeaders.push('Vinc. Creand');
+  if (fields.gestor) tableHeaders.push('Gestor');
+  if (fields.ultimaVisita) tableHeaders.push('Última Visita');
+
+  const tableData = extendedCompanies.map((company, index) => getTableRow(company, index));
 
   autoTable(doc, {
     startY: y,
-    head: [['Empresa', 'Parroquia', 'Estado', 'Facturación', 'Vinc. Creand', 'Gestor', 'Última Visita']],
+    head: [tableHeaders],
     body: tableData,
     styles: {
       fontSize: 7,
@@ -620,23 +685,11 @@ export const exportCompaniesToPDF = (companies: CompanyWithDetails[], title?: st
       fontStyle: 'bold',
       fontSize: 7
     },
-    columnStyles: {
-      0: { cellWidth: 45 },
-      1: { cellWidth: 25 },
-      2: { cellWidth: 20 },
-      3: { cellWidth: 25 },
-      4: { cellWidth: 20 },
-      5: { cellWidth: 30 },
-      6: { cellWidth: 22 }
-    },
     alternateRowStyles: {
       fillColor: [248, 248, 248]
     },
     margin: { left: 14, right: 14 }
   });
-
-  // Get final Y position after table
-  const finalY = (doc as any).lastAutoTable.finalY + 10;
 
   // Detailed company info on new pages
   extendedCompanies.forEach((company, index) => {
@@ -655,7 +708,7 @@ export const exportCompaniesToPDF = (companies: CompanyWithDetails[], title?: st
     doc.text(company.address, 14, detailY);
     detailY += 5;
 
-    if (company.status) {
+    if (fields.status && company.status) {
       doc.text(`Estado: ${company.status.status_name}`, 14, detailY);
       detailY += 8;
     } else {
@@ -669,110 +722,127 @@ export const exportCompaniesToPDF = (companies: CompanyWithDetails[], title?: st
     const startX = 14;
 
     // Column 1: Basic Info
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Información Básica', startX, detailY);
-    detailY += 5;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    
-    const basicInfo = [
-      ['Parroquia:', company.parroquia || '-'],
-      ['Sector:', company.sector || '-'],
-      ['CNAE:', company.cnae || '-'],
-      ['CIF/NIF:', company.tax_id || '-'],
-      ['Tipo:', company.client_type === 'cliente' ? 'Cliente' : company.client_type === 'potencial_cliente' ? 'Potencial' : '-'],
-      ['Empleados:', company.employees?.toString() || '-'],
-      ['Teléfono:', company.phone || '-'],
-      ['Email:', company.email || '-']
-    ];
+    const basicInfo: [string, string][] = [];
+    if (fields.parroquia) basicInfo.push(['Parroquia:', company.parroquia || '-']);
+    if (fields.sector) basicInfo.push(['Sector:', company.sector || '-']);
+    if (fields.cnae) basicInfo.push(['CNAE:', company.cnae || '-']);
+    if (fields.taxId) basicInfo.push(['CIF/NIF:', company.tax_id || '-']);
+    if (fields.clientType) basicInfo.push(['Tipo:', company.client_type === 'cliente' ? 'Cliente' : company.client_type === 'potencial_cliente' ? 'Potencial' : '-']);
+    if (fields.employees) basicInfo.push(['Empleados:', company.employees?.toString() || '-']);
+    if (fields.phone) basicInfo.push(['Teléfono:', company.phone || '-']);
+    if (fields.email) basicInfo.push(['Email:', company.email || '-']);
+    if (fields.website) basicInfo.push(['Web:', company.website || '-']);
 
-    basicInfo.forEach(([label, value]) => {
-      doc.setTextColor(100);
-      doc.text(label, startX, detailY);
-      doc.setTextColor(0);
-      doc.text(value, startX + 25, detailY);
-      detailY += 4;
-    });
+    if (basicInfo.length > 0) {
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Información Básica', startX, detailY);
+      detailY += 5;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      
+      basicInfo.forEach(([label, value]) => {
+        doc.setTextColor(100);
+        doc.text(label, startX, detailY);
+        doc.setTextColor(0);
+        doc.text(value, startX + 25, detailY);
+        detailY += 4;
+      });
+    }
 
     // Column 2: Financial Info
-    let finY = 15 + 6 + 5 + (company.status ? 8 : 3);
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Información Financiera', startX + colWidth + 7, finY);
-    finY += 5;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
+    const financialInfo: [string, string][] = [];
+    if (fields.facturacion) financialInfo.push(['Facturación:', formatCurrency(company.facturacion_anual || company.turnover)]);
+    if (fields.periodoFacturacion) financialInfo.push(['Período:', company.periodo_facturacion || '-']);
+    if (fields.ingresosCreand) financialInfo.push(['Ingresos Creand:', formatCurrency(company.ingresos_creand)]);
+    if (fields.plBanco) financialInfo.push(['P&L Banco:', formatCurrency(company.pl_banco)]);
+    if (fields.beneficios) financialInfo.push(['Beneficios:', formatCurrency(company.beneficios)]);
+    if (fields.bp) financialInfo.push(['BP:', company.bp || '-']);
 
-    const financialInfo = [
-      ['Facturación:', formatCurrency(company.facturacion_anual || company.turnover)],
-      ['Período:', company.periodo_facturacion || '-'],
-      ['Ingresos Creand:', formatCurrency(company.ingresos_creand)],
-      ['P&L Banco:', formatCurrency(company.pl_banco)],
-      ['Beneficios:', formatCurrency(company.beneficios)],
-      ['BP:', company.bp || '-']
-    ];
+    if (financialInfo.length > 0) {
+      let finY = 15 + 6 + 5 + (fields.status && company.status ? 8 : 3);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Información Financiera', startX + colWidth + 7, finY);
+      finY += 5;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
 
-    financialInfo.forEach(([label, value]) => {
-      doc.setTextColor(100);
-      doc.text(label, startX + colWidth + 7, finY);
-      doc.setTextColor(0);
-      doc.text(value, startX + colWidth + 35, finY);
-      finY += 4;
-    });
+      financialInfo.forEach(([label, value]) => {
+        doc.setTextColor(100);
+        doc.text(label, startX + colWidth + 7, finY);
+        doc.setTextColor(0);
+        doc.text(value, startX + colWidth + 35, finY);
+        finY += 4;
+      });
+    }
 
     // Column 3: Vinculación
-    let vincY = 15 + 6 + 5 + (company.status ? 8 : 3);
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Vinculación', startX + (colWidth * 2) + 14, vincY);
-    vincY += 5;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
+    const vincInfo: [string, string][] = [];
+    if (fields.vinculacionCreand) vincInfo.push(['Vinc. Creand:', formatPercent(company.vinculacion_entidad_1)]);
+    if (fields.vinculacionMorabanc) vincInfo.push(['Vinc. Morabanc:', formatPercent(company.vinculacion_entidad_2)]);
+    if (fields.vinculacionAndbank) vincInfo.push(['Vinc. Andbank:', formatPercent(company.vinculacion_entidad_3)]);
 
-    const vincInfo = [
-      ['Vinc. Creand:', formatPercent(company.vinculacion_entidad_1)],
-      ['Vinc. Morabanc:', formatPercent(company.vinculacion_entidad_2)],
-      ['Vinc. Andbank:', formatPercent(company.vinculacion_entidad_3)]
-    ];
+    if (vincInfo.length > 0) {
+      let vincY = 15 + 6 + 5 + (fields.status && company.status ? 8 : 3);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Vinculación', startX + (colWidth * 2) + 14, vincY);
+      vincY += 5;
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
 
-    vincInfo.forEach(([label, value]) => {
-      doc.setTextColor(100);
-      doc.text(label, startX + (colWidth * 2) + 14, vincY);
-      doc.setTextColor(0);
-      doc.text(value, startX + (colWidth * 2) + 42, vincY);
-      vincY += 4;
-    });
+      vincInfo.forEach(([label, value]) => {
+        doc.setTextColor(100);
+        doc.text(label, startX + (colWidth * 2) + 14, vincY);
+        doc.setTextColor(0);
+        doc.text(value, startX + (colWidth * 2) + 42, vincY);
+        vincY += 4;
+      });
+    }
 
     // Gestor and Visit info
-    const maxY = Math.max(detailY, finY, vincY) + 5;
-    doc.setFontSize(9);
-    doc.setTextColor(100);
-    doc.text('Gestor asignado:', 14, maxY);
-    doc.setTextColor(0);
-    doc.text(company.gestor?.full_name || 'Sin asignar', 50, maxY);
+    const baseY = Math.max(
+      detailY,
+      financialInfo.length > 0 ? 15 + 6 + 5 + (fields.status && company.status ? 8 : 3) + 5 + (financialInfo.length * 4) : 0,
+      vincInfo.length > 0 ? 15 + 6 + 5 + (fields.status && company.status ? 8 : 3) + 5 + (vincInfo.length * 4) : 0
+    ) + 5;
     
-    doc.setTextColor(100);
-    doc.text('Última visita:', 100, maxY);
-    doc.setTextColor(0);
-    doc.text(formatDate(company.fecha_ultima_visita), 130, maxY);
+    let currentY = baseY;
+    doc.setFontSize(9);
+
+    if (fields.gestor) {
+      doc.setTextColor(100);
+      doc.text('Gestor asignado:', 14, currentY);
+      doc.setTextColor(0);
+      doc.text(company.gestor?.full_name || 'Sin asignar', 50, currentY);
+    }
+    
+    if (fields.ultimaVisita) {
+      doc.setTextColor(100);
+      doc.text('Última visita:', 100, currentY);
+      doc.setTextColor(0);
+      doc.text(formatDate(company.fecha_ultima_visita), 130, currentY);
+    }
+
+    if (fields.gestor || fields.ultimaVisita) currentY += 6;
 
     // Observations
-    if (company.observaciones) {
+    if (fields.observaciones && company.observaciones) {
       doc.setTextColor(100);
-      doc.text('Observaciones:', 14, maxY + 6);
+      doc.text('Observaciones:', 14, currentY);
       doc.setTextColor(0);
       const obsLines = doc.splitTextToSize(company.observaciones, pageWidth - 28);
-      doc.text(obsLines, 14, maxY + 10);
+      doc.text(obsLines, 14, currentY + 4);
+      currentY += 4 + (obsLines.length * 4);
     }
 
     // Products
-    if (company.products && company.products.length > 0) {
-      const prodY = company.observaciones ? maxY + 18 : maxY + 6;
+    if (fields.productos && company.products && company.products.length > 0) {
       doc.setTextColor(100);
-      doc.text('Productos contratados:', 14, prodY);
+      doc.text('Productos contratados:', 14, currentY);
       doc.setTextColor(0);
-      doc.text(company.products.map(p => p.name).join(', '), 55, prodY);
+      doc.text(company.products.map(p => p.name).join(', '), 55, currentY);
     }
   });
 
