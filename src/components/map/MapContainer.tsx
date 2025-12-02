@@ -171,6 +171,14 @@ export function MapContainer({
   const [minZoomVinculacion, setMinZoomVinculacion] = useState<number>(minZoomVinculacionProp || 8);
   const [visitCounts, setVisitCounts] = useState<Record<string, number>>({});
   const persistentPopupRef = useRef<{ popup: maplibregl.Popup; companyId: string } | null>(null);
+  
+  // State for undo functionality
+  const [undoInfo, setUndoInfo] = useState<{
+    companyId: string;
+    companyName: string;
+    originalLat: number;
+    originalLng: number;
+  } | null>(null);
 
   // Effect to propagate prop changes to state
   useEffect(() => {
@@ -867,113 +875,141 @@ export function MapContainer({
             .setLngLat([longitude, latitude])
             .addTo(map.current!);
 
-          // Long press detection for marker relocation
+          // Manual drag implementation for precise control
           let longPressTimer: NodeJS.Timeout | null = null;
-          let isLongPress = false;
+          let isDragMode = false;
+          let isDragging = false;
           const originalLng = longitude;
           const originalLat = latitude;
+          let startX = 0;
+          let startY = 0;
+          let startLngLat = { lng: longitude, lat: latitude };
 
-          const startLongPress = (e: MouseEvent | TouchEvent) => {
-            e.preventDefault();
-            e.stopPropagation();
-            longPressTimer = setTimeout(() => {
-              isLongPress = true;
-              // Disable map dragging while marker is being dragged
-              if (map.current) {
-                map.current.dragPan.disable();
-                map.current.scrollZoom.disable();
-                map.current.doubleClickZoom.disable();
-              }
-              // Enable marker dragging
-              marker.setDraggable(true);
-              el.style.cursor = 'move';
-              el.classList.add('marker-dragging');
-              // Visual feedback - NO usar transform que interfiere con el arrastre
-              el.style.outline = '3px solid hsl(210 100% 50%)';
-              el.style.outlineOffset = '2px';
-              toast.info(`Arrastra ${company.name} a su nueva ubicación`, { duration: 3000 });
-            }, 3000); // 3 seconds
-          };
-
-          const cancelLongPress = () => {
-            if (longPressTimer) {
-              clearTimeout(longPressTimer);
-              longPressTimer = null;
+          const activateDragMode = () => {
+            isDragMode = true;
+            // Disable map interactions
+            if (map.current) {
+              map.current.dragPan.disable();
+              map.current.scrollZoom.disable();
+              map.current.doubleClickZoom.disable();
             }
+            el.style.cursor = 'grab';
+            el.classList.add('marker-dragging');
+            el.style.outline = '3px solid hsl(210 100% 50%)';
+            el.style.outlineOffset = '2px';
+            toast.info(`Ahora puedes arrastrar ${company.name}`, { duration: 3000 });
           };
 
-          const endDrag = async () => {
+          const deactivateDragMode = () => {
+            isDragMode = false;
+            isDragging = false;
+            el.style.cursor = 'pointer';
+            el.classList.remove('marker-dragging');
+            el.style.outline = '';
+            el.style.outlineOffset = '';
             // Re-enable map interactions
             if (map.current) {
               map.current.dragPan.enable();
               map.current.scrollZoom.enable();
               map.current.doubleClickZoom.enable();
             }
-            
-            if (isLongPress && marker.isDraggable()) {
-              const newLngLat = marker.getLngLat();
-              marker.setDraggable(false);
-              el.style.cursor = 'pointer';
-              el.classList.remove('marker-dragging');
-              el.style.outline = '';
-              el.style.outlineOffset = '';
-              
-              if (onUpdateCompanyLocation) {
-                const savedOriginalLat = originalLat;
-                const savedOriginalLng = originalLng;
-                
-                try {
-                  await onUpdateCompanyLocation(company.id, newLngLat.lat, newLngLat.lng);
-                  toast.success(`Ubicación de ${company.name} actualizada`, {
-                    duration: 10000,
-                    action: {
-                      label: '↩ Deshacer',
-                      onClick: async () => {
-                        try {
-                          await onUpdateCompanyLocation(company.id, savedOriginalLat, savedOriginalLng);
-                          toast.success('Ubicación restaurada correctamente');
-                        } catch (err) {
-                          toast.error('Error al restaurar la ubicación');
-                        }
-                      },
-                    },
-                  });
-                } catch (error) {
-                  toast.error('Error al actualizar la ubicación');
-                  // Revert to original position
-                  marker.setLngLat([originalLng, originalLat]);
-                }
-              }
-              isLongPress = false;
+          };
+
+          const handlePointerDown = (e: PointerEvent) => {
+            if (!isDragMode) {
+              // Start long press timer
+              longPressTimer = setTimeout(() => {
+                activateDragMode();
+              }, 3000);
+            } else {
+              // Start dragging
+              isDragging = true;
+              el.style.cursor = 'grabbing';
+              startX = e.clientX;
+              startY = e.clientY;
+              startLngLat = marker.getLngLat();
+              el.setPointerCapture(e.pointerId);
+              e.preventDefault();
+              e.stopPropagation();
             }
           };
 
-          // Prevent map drag when interacting with marker
-          el.addEventListener('mousedown', (e) => {
+          const handlePointerMove = (e: PointerEvent) => {
+            if (!isDragging || !map.current) return;
+            
+            e.preventDefault();
             e.stopPropagation();
-            startLongPress(e);
-          });
-          el.addEventListener('touchstart', (e) => {
-            e.stopPropagation();
-            startLongPress(e);
-          }, { passive: false });
-          el.addEventListener('mouseup', cancelLongPress);
-          el.addEventListener('mouseleave', cancelLongPress);
-          el.addEventListener('touchend', () => {
-            cancelLongPress();
-            endDrag();
-          });
-          el.addEventListener('touchcancel', cancelLongPress);
+            
+            // Calculate pixel offset
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            
+            // Convert pixel offset to lng/lat offset
+            const startPoint = map.current.project([startLngLat.lng, startLngLat.lat]);
+            const newPoint = { x: startPoint.x + dx, y: startPoint.y + dy };
+            const newLngLat = map.current.unproject([newPoint.x, newPoint.y]);
+            
+            marker.setLngLat([newLngLat.lng, newLngLat.lat]);
+          };
 
-          marker.on('dragstart', () => {
-            // Ensure map interactions are disabled when drag starts
-            if (map.current) {
-              map.current.dragPan.disable();
-              map.current.scrollZoom.disable();
+          const handlePointerUp = async (e: PointerEvent) => {
+            // Clear long press timer
+            if (longPressTimer) {
+              clearTimeout(longPressTimer);
+              longPressTimer = null;
+            }
+            
+            if (isDragging) {
+              el.releasePointerCapture(e.pointerId);
+              
+              const newLngLat = marker.getLngLat();
+              
+              // Check if position actually changed
+              const hasMoved = Math.abs(newLngLat.lng - originalLng) > 0.00001 || 
+                               Math.abs(newLngLat.lat - originalLat) > 0.00001;
+              
+              if (hasMoved && onUpdateCompanyLocation) {
+                try {
+                  await onUpdateCompanyLocation(company.id, newLngLat.lat, newLngLat.lng);
+                  setUndoInfo({
+                    companyId: company.id,
+                    companyName: company.name,
+                    originalLat: originalLat,
+                    originalLng: originalLng,
+                  });
+                  toast.success(`Ubicación de ${company.name} actualizada`);
+                  setTimeout(() => setUndoInfo(null), 15000);
+                } catch (error) {
+                  toast.error('Error al actualizar la ubicación');
+                  marker.setLngLat([originalLng, originalLat]);
+                }
+              }
+              
+              deactivateDragMode();
+            }
+          };
+
+          const handlePointerCancel = () => {
+            if (longPressTimer) {
+              clearTimeout(longPressTimer);
+              longPressTimer = null;
+            }
+            if (isDragging) {
+              marker.setLngLat([startLngLat.lng, startLngLat.lat]);
+              deactivateDragMode();
+            }
+          };
+
+          el.addEventListener('pointerdown', handlePointerDown);
+          el.addEventListener('pointermove', handlePointerMove);
+          el.addEventListener('pointerup', handlePointerUp);
+          el.addEventListener('pointercancel', handlePointerCancel);
+          el.addEventListener('pointerleave', () => {
+            if (longPressTimer) {
+              clearTimeout(longPressTimer);
+              longPressTimer = null;
             }
           });
-
-          marker.on('dragend', endDrag);
 
           // Create hover tooltip with configurable fields
           const hoverPopup = new maplibregl.Popup({
@@ -1423,8 +1459,52 @@ export function MapContainer({
     };
   }, [searchLocation, mapLoaded, onSearchLocationClear]);
 
+  const handleUndo = async () => {
+    if (!undoInfo || !onUpdateCompanyLocation) return;
+    
+    try {
+      await onUpdateCompanyLocation(undoInfo.companyId, undoInfo.originalLat, undoInfo.originalLng);
+      toast.success('Ubicación restaurada correctamente');
+      setUndoInfo(null);
+    } catch (err) {
+      toast.error('Error al restaurar la ubicación');
+    }
+  };
+
   return (
-    <div ref={mapContainer} className="h-full w-full" />
+    <div className="relative h-full w-full">
+      <div ref={mapContainer} className="h-full w-full" />
+      
+      {/* Floating Undo Button */}
+      {undoInfo && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[9999] animate-in slide-in-from-top-4 fade-in duration-300">
+          <div className="flex items-center gap-3 bg-card border border-border rounded-lg shadow-lg px-4 py-3">
+            <span className="text-sm text-foreground">
+              Ubicación de <strong>{undoInfo.companyName}</strong> actualizada
+            </span>
+            <button
+              onClick={handleUndo}
+              className="flex items-center gap-1.5 bg-primary text-primary-foreground px-3 py-1.5 rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <path d="M3 3v5h5"/>
+              </svg>
+              Deshacer
+            </button>
+            <button
+              onClick={() => setUndoInfo(null)}
+              className="text-muted-foreground hover:text-foreground transition-colors p-1"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 6 6 18"/>
+                <path d="m6 6 12 12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
