@@ -295,43 +295,69 @@ export function MapSidebar({
 
   // Tab navigation component for fullscreen mode
   const FullscreenTabNav = () => (
-    <div className="flex items-center gap-2 px-6 py-3 border-b bg-muted/20">
-      <Button
-        variant={fullscreenTab === 'companies' ? 'default' : 'outline'}
-        onClick={() => { setFullscreenTab('companies'); onSelectCompany(null); }}
-        className={cn(
-          "font-bold tracking-wide transition-all duration-200",
-          "hover:scale-105 hover:-translate-y-0.5 hover:shadow-lg"
-        )}
-        style={{ textShadow: fullscreenTab === 'companies' ? '1px 1px 2px rgba(0,0,0,0.2)' : 'none' }}
-      >
-        <Search className="h-4 w-4 mr-2 drop-shadow-md" />
-        Empresas
-      </Button>
-      <Button
-        variant={fullscreenTab === 'sectors' ? 'default' : 'outline'}
-        onClick={() => { setFullscreenTab('sectors'); onSelectCompany(null); }}
-        className={cn(
-          "font-bold tracking-wide transition-all duration-200",
-          "hover:scale-105 hover:-translate-y-0.5 hover:shadow-lg"
-        )}
-        style={{ textShadow: fullscreenTab === 'sectors' ? '1px 1px 2px rgba(0,0,0,0.2)' : 'none' }}
-      >
-        <TrendingUp className="h-4 w-4 mr-2 drop-shadow-md" />
-        Sectores
-      </Button>
-      <Button
-        variant={fullscreenTab === 'detail' || selectedCompany ? 'default' : 'outline'}
-        onClick={() => setFullscreenTab('detail')}
-        className={cn(
-          "font-bold tracking-wide transition-all duration-200",
-          "hover:scale-105 hover:-translate-y-0.5 hover:shadow-lg"
-        )}
-        style={{ textShadow: (fullscreenTab === 'detail' || selectedCompany) ? '1px 1px 2px rgba(0,0,0,0.2)' : 'none' }}
-      >
-        <Building className="h-4 w-4 mr-2 drop-shadow-md" />
-        Detalle
-      </Button>
+    <div className="flex items-center justify-between gap-2 px-6 py-3 border-b bg-muted/20">
+      <div className="flex items-center gap-2">
+        <Button
+          variant={fullscreenTab === 'companies' ? 'default' : 'outline'}
+          onClick={() => setFullscreenTab('companies')}
+          className={cn(
+            "font-bold tracking-wide transition-all duration-200",
+            "hover:scale-105 hover:-translate-y-0.5 hover:shadow-lg"
+          )}
+          style={{ textShadow: fullscreenTab === 'companies' ? '1px 1px 2px rgba(0,0,0,0.2)' : 'none' }}
+        >
+          <Search className="h-4 w-4 mr-2 drop-shadow-md" />
+          Empresas
+        </Button>
+        <Button
+          variant={fullscreenTab === 'sectors' ? 'default' : 'outline'}
+          onClick={() => setFullscreenTab('sectors')}
+          className={cn(
+            "font-bold tracking-wide transition-all duration-200",
+            "hover:scale-105 hover:-translate-y-0.5 hover:shadow-lg"
+          )}
+          style={{ textShadow: fullscreenTab === 'sectors' ? '1px 1px 2px rgba(0,0,0,0.2)' : 'none' }}
+        >
+          <TrendingUp className="h-4 w-4 mr-2 drop-shadow-md" />
+          Sectores
+        </Button>
+        <Button
+          variant={fullscreenTab === 'detail' ? 'default' : 'outline'}
+          onClick={() => setFullscreenTab('detail')}
+          className={cn(
+            "font-bold tracking-wide transition-all duration-200",
+            "hover:scale-105 hover:-translate-y-0.5 hover:shadow-lg"
+          )}
+          style={{ textShadow: fullscreenTab === 'detail' ? '1px 1px 2px rgba(0,0,0,0.2)' : 'none' }}
+        >
+          <Building className="h-4 w-4 mr-2 drop-shadow-md" />
+          Detalle
+        </Button>
+      </div>
+      
+      {/* Selected company indicator with clear button */}
+      {selectedCompany && (
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-lg border border-primary/20">
+          <Building className="h-4 w-4 text-primary" />
+          <span className="text-sm font-medium truncate max-w-[200px]">{selectedCompany.name}</span>
+          {selectedCompany.status && (
+            <Badge 
+              style={{ backgroundColor: selectedCompany.status.color_hex }}
+              className="text-white text-xs"
+            >
+              {selectedCompany.status.status_name}
+            </Badge>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onSelectCompany(null)}
+            className="h-6 w-6 p-0 hover:bg-destructive/20 hover:text-destructive"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 
@@ -385,8 +411,8 @@ export function MapSidebar({
 
   // Unified fullscreen mode
   if (fullscreen) {
-    // If company is selected, force detail tab
-    const activeTab = selectedCompany ? 'detail' : fullscreenTab;
+    // Use fullscreenTab directly - company selection persists across tabs
+    const activeTab = fullscreenTab;
     
     return (
       <aside 
@@ -400,19 +426,11 @@ export function MapSidebar({
             <span className="font-semibold text-lg">
               {activeTab === 'companies' && 'Panel de Empresas'}
               {activeTab === 'sectors' && 'Análisis de Sectores'}
-              {activeTab === 'detail' && (selectedCompany ? selectedCompany.name : 'Detalle de Empresa')}
+              {activeTab === 'detail' && 'Detalle de Empresa'}
             </span>
             {activeTab === 'companies' && hasActiveFilters && (
               <Badge variant="default" className="h-6 px-2">
                 {getActiveFiltersCount()} filtros
-              </Badge>
-            )}
-            {selectedCompany?.status && (
-              <Badge 
-                style={{ backgroundColor: selectedCompany.status.color_hex }}
-                className="text-white"
-              >
-                {selectedCompany.status.status_name}
               </Badge>
             )}
           </div>
@@ -425,16 +443,6 @@ export function MapSidebar({
               >
                 <X className="h-4 w-4 mr-1" />
                 Limpiar filtros
-              </Button>
-            )}
-            {selectedCompany && (
-              <Button
-                variant="outline"
-                onClick={() => onSelectCompany(null)}
-                className="px-4"
-              >
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                Volver a la lista
               </Button>
             )}
             {onFullscreenChange && (
@@ -894,56 +902,75 @@ export function MapSidebar({
         {/* Tabs Navigation - Hidden in fullscreen */}
         <Tabs 
           defaultValue="companies"
-          value={selectedCompany ? "detail" : undefined}
-          onValueChange={(value) => {
-            if (value !== "detail") {
-              onSelectCompany(null);
-            }
-          }}
           className="flex-1 flex flex-col overflow-hidden"
         >
           {!fullscreen && (
-            <TabsList className="mx-2 mt-2 grid grid-cols-3 h-10 bg-muted/50 shrink-0 gap-1 p-1">
-              <TabsTrigger 
-                value="companies" 
-                className={cn(
-                  "text-sm font-bold tracking-wide rounded-md transition-all duration-200 ease-out",
-                  "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg",
-                  "hover:scale-105 hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/20",
-                  "data-[state=active]:scale-105 data-[state=active]:-translate-y-0.5"
-                )}
-                style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.2)' }}
-              >
-                <Search className="h-4 w-4 mr-1.5 drop-shadow-md transition-transform duration-200" />
-                Empresas
-              </TabsTrigger>
-              <TabsTrigger 
-                value="sectors" 
-                className={cn(
-                  "text-sm font-bold tracking-wide rounded-md transition-all duration-200 ease-out",
-                  "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg",
-                  "hover:scale-105 hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/20",
-                  "data-[state=active]:scale-105 data-[state=active]:-translate-y-0.5"
-                )}
-                style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.2)' }}
-              >
-                <TrendingUp className="h-4 w-4 mr-1.5 drop-shadow-md transition-transform duration-200" />
-                Sectores
-              </TabsTrigger>
-              <TabsTrigger 
-                value="detail" 
-                className={cn(
-                  "text-sm font-bold tracking-wide rounded-md transition-all duration-200 ease-out",
-                  "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg",
-                  "hover:scale-105 hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/20",
-                  "data-[state=active]:scale-105 data-[state=active]:-translate-y-0.5"
-                )}
-                style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.2)' }}
-              >
-                <Building className="h-4 w-4 mr-1.5 drop-shadow-md transition-transform duration-200" />
-                Detalle
-              </TabsTrigger>
-            </TabsList>
+            <>
+              <TabsList className="mx-2 mt-2 grid grid-cols-3 h-10 bg-muted/50 shrink-0 gap-1 p-1">
+                <TabsTrigger 
+                  value="companies" 
+                  className={cn(
+                    "text-sm font-bold tracking-wide rounded-md transition-all duration-200 ease-out",
+                    "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg",
+                    "hover:scale-105 hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/20",
+                    "data-[state=active]:scale-105 data-[state=active]:-translate-y-0.5"
+                  )}
+                  style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.2)' }}
+                >
+                  <Search className="h-4 w-4 mr-1.5 drop-shadow-md transition-transform duration-200" />
+                  Empresas
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="sectors" 
+                  className={cn(
+                    "text-sm font-bold tracking-wide rounded-md transition-all duration-200 ease-out",
+                    "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg",
+                    "hover:scale-105 hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/20",
+                    "data-[state=active]:scale-105 data-[state=active]:-translate-y-0.5"
+                  )}
+                  style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.2)' }}
+                >
+                  <TrendingUp className="h-4 w-4 mr-1.5 drop-shadow-md transition-transform duration-200" />
+                  Sectores
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="detail" 
+                  className={cn(
+                    "text-sm font-bold tracking-wide rounded-md transition-all duration-200 ease-out",
+                    "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg",
+                    "hover:scale-105 hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/20",
+                    "data-[state=active]:scale-105 data-[state=active]:-translate-y-0.5"
+                  )}
+                  style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.2)' }}
+                >
+                  <Building className="h-4 w-4 mr-1.5 drop-shadow-md transition-transform duration-200" />
+                  Detalle
+                </TabsTrigger>
+              </TabsList>
+              
+              {/* Selected company indicator with clear button - visible in all tabs */}
+              {selectedCompany && (
+                <div className="mx-2 mt-2 flex items-center gap-2 px-2 py-1.5 bg-primary/10 rounded-lg border border-primary/20">
+                  <Building className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span className="text-xs font-medium truncate flex-1">{selectedCompany.name}</span>
+                  {selectedCompany.status && (
+                    <div
+                      className="h-2 w-2 rounded-full shrink-0"
+                      style={{ backgroundColor: selectedCompany.status.color_hex }}
+                    />
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onSelectCompany(null)}
+                    className="h-5 w-5 p-0 hover:bg-destructive/20 hover:text-destructive shrink-0"
+                    title="Limpiar selección"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              )}
+            </>
           )}
 
           {/* Companies Tab */}
