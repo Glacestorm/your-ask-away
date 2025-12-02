@@ -175,15 +175,15 @@ export function MapHeader({
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => navigate('/admin')}
-                aria-label="Menú Principal"
+                onClick={() => navigate('/home')}
+                aria-label="Panell de Control"
                 className="hover:bg-accent/50 transition-colors"
               >
                 <Home className="h-5 w-5" />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
-              <p>Menú Principal</p>
+              <p>Panell de Control</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
