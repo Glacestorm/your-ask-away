@@ -77,7 +77,7 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
   
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const visitsPerPage = 10;
+  const [visitsPerPage, setVisitsPerPage] = useState(10);
 
   const effectiveGestorId = gestorId || user?.id;
 
@@ -489,9 +489,21 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
                     <ChevronLeft className="h-4 w-4 mr-1" />
                     Anterior
                   </Button>
-                  <span className="text-sm text-muted-foreground">
-                    Pàgina {currentPage} de {totalPages}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">
+                      Pàgina {currentPage} de {totalPages}
+                    </span>
+                    <Select value={String(visitsPerPage)} onValueChange={(v) => { setVisitsPerPage(Number(v)); setCurrentPage(1); }}>
+                      <SelectTrigger className="w-[70px] h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="10">10</SelectItem>
+                        <SelectItem value="25">25</SelectItem>
+                        <SelectItem value="50">50</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <Button
                     variant="outline"
                     size="sm"
