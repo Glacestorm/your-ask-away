@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts';
-import { Activity, Target, Building2, Package, Filter, X, GitCompare, TrendingUp, Award, BarChart3 } from 'lucide-react';
+import { Activity, Target, Building2, Package, X, GitCompare, TrendingUp, Award, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -116,23 +116,15 @@ export function GestorOverviewSection({
         ← Tornar al panell
       </Button>
 
-      {/* Filtros Compactos */}
-      <Card className="border-muted/50">
+      {/* Filtros Compactos - Full Width */}
+      <Card className="border-muted/50 w-full">
         <CardContent className="py-4">
-          <div className="flex flex-wrap items-center gap-4">
-            {/* Icono y título compacto */}
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Filter className="h-4 w-4" />
-              <span className="text-sm font-medium">Filtres</span>
-            </div>
-
-            {/* Selector de fechas */}
-            <div className="flex-1 min-w-[200px]">
-              <DateRangeFilter 
-                dateRange={dateRange} 
-                onDateRangeChange={setDateRange}
-              />
-            </div>
+          <div className="space-y-4">
+            {/* Selector de fechas - Full width */}
+            <DateRangeFilter 
+              dateRange={dateRange} 
+              onDateRangeChange={setDateRange}
+            />
 
             {/* Comparación de períodos */}
             <div className="flex items-center gap-2">
