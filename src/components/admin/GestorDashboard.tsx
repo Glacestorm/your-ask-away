@@ -483,7 +483,8 @@ export function GestorDashboard({
       description: 'Mètriques clau, gràfics d\'evolució i anàlisi de rendiment',
       icon: BarChart3,
       color: 'hsl(var(--chart-1))',
-      stats: { value: stats.totalVisits, label: 'Visites totals' }
+      stats: { value: stats.totalVisits, label: 'Visites totals' },
+      tooltip: 'Consulta els teus KPIs principals, gràfics d\'evolució mensual, distribució de resultats de visites, productes més oferts i empreses amb major vinculació. Inclou filtres avançats i comparació de períodes.'
     },
     {
       id: 'visits' as ActiveSection,
@@ -491,7 +492,8 @@ export function GestorDashboard({
       description: 'Crear, editar i consultar les teves visites',
       icon: CalendarDays,
       color: 'hsl(var(--chart-2))',
-      stats: { value: `${stats.successRate}%`, label: 'Taxa èxit' }
+      stats: { value: `${stats.successRate}%`, label: 'Taxa èxit' },
+      tooltip: 'Crea noves visites, edita les existents i consulta l\'historial complet. Registra productes oferts, notes i resultats de cada visita comercial.'
     },
     {
       id: 'goals' as ActiveSection,
@@ -499,7 +501,8 @@ export function GestorDashboard({
       description: 'Seguiment dels teus objectius personals',
       icon: Target,
       color: 'hsl(var(--chart-3))',
-      stats: { value: stats.totalCompanies, label: 'Empreses' }
+      stats: { value: stats.totalCompanies, label: 'Empreses' },
+      tooltip: 'Visualitza i fes seguiment dels objectius assignats pel teu responsable. Controla el progrés en temps real de visites, empreses, productes i vinculació.'
     },
     {
       id: 'history' as ActiveSection,
@@ -507,7 +510,8 @@ export function GestorDashboard({
       description: 'Anàlisi detallat i benchmarking del teu rendiment',
       icon: TrendingUp,
       color: 'hsl(var(--chart-4))',
-      stats: { value: stats.totalProducts, label: 'Productes' }
+      stats: { value: stats.totalProducts, label: 'Productes' },
+      tooltip: 'Analitza el teu rendiment històric, compara\'t amb la mitjana d\'oficina i d\'equip, i accedeix als plans d\'acció generats amb IA per millorar les teves mètriques.'
     }
   ];
 
@@ -716,6 +720,7 @@ export function GestorDashboard({
                     color={card.color}
                     onClick={() => handleSectionChange(card.id)}
                     stats={card.stats}
+                    tooltip={card.tooltip}
                   />
                 </div>
               ))}
