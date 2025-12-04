@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.send-goal-achievement-email]
 verify_jwt = false
+
+[functions.check-goals-at-risk]
+verify_jwt = false
