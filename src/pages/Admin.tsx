@@ -36,6 +36,7 @@ import { AuditorDashboard } from '@/components/admin/AuditorDashboard';
 import { AlertsManager } from '@/components/dashboard/AlertsManager';
 import { NotificationPreferences } from '@/components/dashboard/NotificationPreferences';
 import { SharedVisitsCalendar } from '@/components/admin/SharedVisitsCalendar';
+import { BulkGoalsAssignment } from '@/components/admin/BulkGoalsAssignment';
 import MapView from './MapView';
 
 const Admin = () => {
@@ -125,6 +126,7 @@ const Admin = () => {
       case 'import-history': return 'Historial d\'Importacions';
       case 'alerts': return 'Gestió d\'Alertes';
       case 'notifications': return 'Preferències de Notificacions';
+      case 'bulk-goals': return 'Assignació Massiva d\'Objectius';
       default: return '';
     }
   };
@@ -337,6 +339,27 @@ const Admin = () => {
               </p>
             </div>
             <NotificationPreferences />
+          </div>
+        );
+      case 'bulk-goals':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager && !isOfficeDirector) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return (
+          <div className="rounded-lg border bg-card p-6">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold">Assignació Massiva d'Objectius</h2>
+              <p className="text-sm text-muted-foreground">
+                Assigna objectius a múltiples gestors simultàniament
+              </p>
+            </div>
+            <BulkGoalsAssignment />
           </div>
         );
       default:
