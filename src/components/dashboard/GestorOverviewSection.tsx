@@ -116,83 +116,82 @@ export function GestorOverviewSection({
         ← Tornar al panell
       </Button>
 
-      {/* Filtros */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Filter className="h-5 w-5" />
-                {t('gestor.dashboard.filters')}
-              </CardTitle>
-              <CardDescription>{t('gestor.dashboard.filtersDesc')}</CardDescription>
+      {/* Filtros Compactos */}
+      <Card className="border-muted/50">
+        <CardContent className="py-4">
+          <div className="flex flex-wrap items-center gap-4">
+            {/* Icono y título compacto */}
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Filter className="h-4 w-4" />
+              <span className="text-sm font-medium">Filtres</span>
             </div>
+
+            {/* Selector de fechas */}
+            <div className="flex-1 min-w-[200px]">
+              <DateRangeFilter 
+                dateRange={dateRange} 
+                onDateRangeChange={setDateRange}
+              />
+            </div>
+
+            {/* Comparación de períodos */}
+            <div className="flex items-center gap-2">
+              <GitCompare className="h-4 w-4 text-muted-foreground" />
+              <Select value={comparisonPeriod} onValueChange={setComparisonPeriod}>
+                <SelectTrigger className="w-[180px] h-9">
+                  <SelectValue placeholder="Comparar amb..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{t('gestor.dashboard.noComparison')}</SelectItem>
+                  <SelectItem value="previous_month">{t('gestor.dashboard.previousPeriod')}</SelectItem>
+                  <SelectItem value="same_last_year">{t('gestor.dashboard.sameLastYear')}</SelectItem>
+                  <SelectItem value="previous_6_months">{t('gestor.dashboard.previous6Months')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Botones de acción */}
             <div className="flex items-center gap-2">
               {hasActiveFilters && (
-                <Button variant="ghost" size="sm" onClick={clearFilters}>
-                  <X className="h-4 w-4 mr-2" />
-                  {t('gestor.dashboard.clearFilters')}
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="h-9 text-xs">
+                  <X className="h-3 w-3 mr-1" />
+                  Netejar
                 </Button>
               )}
               <Button
-                variant="outline"
+                variant={showFilters ? "secondary" : "outline"}
                 size="sm"
                 onClick={() => setShowFilters(!showFilters)}
+                className="h-9 text-xs"
               >
-                {showFilters ? t('gestor.dashboard.hideFilters') : t('gestor.dashboard.showFilters')}
+                {showFilters ? "Menys filtres" : "Més filtres"}
               </Button>
             </div>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label>{t('gestor.dashboard.dateRange')}</Label>
-            <DateRangeFilter 
-              dateRange={dateRange} 
-              onDateRangeChange={setDateRange}
-            />
-          </div>
 
-          <div className="space-y-2 border-t pt-4">
-            <Label className="flex items-center gap-2">
-              <GitCompare className="h-4 w-4" />
-              {t('gestor.dashboard.periodComparison')}
-            </Label>
-            <Select value={comparisonPeriod} onValueChange={setComparisonPeriod}>
-              <SelectTrigger>
-                <SelectValue placeholder={t('gestor.dashboard.selectComparison')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">{t('gestor.dashboard.noComparison')}</SelectItem>
-                <SelectItem value="previous_month">{t('gestor.dashboard.previousPeriod')}</SelectItem>
-                <SelectItem value="same_last_year">{t('gestor.dashboard.sameLastYear')}</SelectItem>
-                <SelectItem value="previous_6_months">{t('gestor.dashboard.previous6Months')}</SelectItem>
-              </SelectContent>
-            </Select>
-            {showComparison && comparisonDateRange && (
-              <p className="text-xs text-muted-foreground">
-                {t('gestor.dashboard.comparingWith')}: {format(comparisonDateRange.from!, 'dd/MM/yyyy')} - {format(comparisonDateRange.to!, 'dd/MM/yyyy')}
-              </p>
-            )}
-          </div>
+          {/* Info de comparación */}
+          {showComparison && comparisonDateRange && (
+            <p className="text-xs text-muted-foreground mt-2 pl-6">
+              Comparant amb: {format(comparisonDateRange.from!, 'dd/MM/yyyy')} - {format(comparisonDateRange.to!, 'dd/MM/yyyy')}
+            </p>
+          )}
 
+          {/* Filtros avanzados expandibles */}
           {showFilters && (
-            <>
+            <div className="mt-4 pt-4 border-t grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label>{t('gestor.dashboard.filterByProducts')}</Label>
-                <ScrollArea className="h-32 border rounded-md p-3">
-                  <div className="space-y-2">
+                <Label className="text-xs font-medium">Productes</Label>
+                <ScrollArea className="h-24 border rounded-md p-2">
+                  <div className="grid grid-cols-2 gap-1">
                     {availableProducts.map(product => (
-                      <div key={product} className="flex items-center space-x-2">
+                      <div key={product} className="flex items-center space-x-1.5">
                         <Checkbox
                           id={`product-${product}`}
                           checked={selectedProducts.includes(product)}
                           onCheckedChange={() => toggleProductFilter(product)}
+                          className="h-3.5 w-3.5"
                         />
-                        <label
-                          htmlFor={`product-${product}`}
-                          className="text-sm cursor-pointer"
-                        >
+                        <label htmlFor={`product-${product}`} className="text-xs cursor-pointer truncate">
                           {product}
                         </label>
                       </div>
@@ -200,14 +199,11 @@ export function GestorOverviewSection({
                   </div>
                 </ScrollArea>
                 {selectedProducts.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
+                  <div className="flex flex-wrap gap-1">
                     {selectedProducts.map(product => (
-                      <Badge key={product} variant="secondary" className="text-xs">
+                      <Badge key={product} variant="secondary" className="text-xs h-5 px-1.5">
                         {product}
-                        <X
-                          className="h-3 w-3 ml-1 cursor-pointer"
-                          onClick={() => toggleProductFilter(product)}
-                        />
+                        <X className="h-2.5 w-2.5 ml-1 cursor-pointer" onClick={() => toggleProductFilter(product)} />
                       </Badge>
                     ))}
                   </div>
@@ -215,34 +211,31 @@ export function GestorOverviewSection({
               </div>
 
               <div className="space-y-2">
-                <Label>{t('gestor.dashboard.vinculacionRange')}</Label>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">{t('gestor.dashboard.minVinculacion')}</Label>
-                    <Input
-                      type="number"
-                      min={0}
-                      max={100}
-                      value={minVinculacion}
-                      onChange={(e) => setMinVinculacion(Math.max(0, Math.min(100, Number(e.target.value))))}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">{t('gestor.dashboard.maxVinculacion')}</Label>
-                    <Input
-                      type="number"
-                      min={0}
-                      max={100}
-                      value={maxVinculacion}
-                      onChange={(e) => setMaxVinculacion(Math.max(0, Math.min(100, Number(e.target.value))))}
-                    />
-                  </div>
+                <Label className="text-xs font-medium">Rang de Vinculació</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={minVinculacion}
+                    onChange={(e) => setMinVinculacion(Math.max(0, Math.min(100, Number(e.target.value))))}
+                    className="h-8 w-20 text-sm"
+                    placeholder="Min"
+                  />
+                  <span className="text-muted-foreground">—</span>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={maxVinculacion}
+                    onChange={(e) => setMaxVinculacion(Math.max(0, Math.min(100, Number(e.target.value))))}
+                    className="h-8 w-20 text-sm"
+                    placeholder="Max"
+                  />
+                  <span className="text-xs text-muted-foreground">%</span>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  {t('gestor.dashboard.vinculacionRangeDesc')}: {minVinculacion}% - {maxVinculacion}%
-                </p>
               </div>
-            </>
+            </div>
           )}
         </CardContent>
       </Card>
