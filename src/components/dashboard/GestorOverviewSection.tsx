@@ -112,10 +112,6 @@ export function GestorOverviewSection({
 
   return (
     <div className="space-y-8">
-      <Button variant="ghost" onClick={onBack} className="mb-4 hover:translate-x-[-4px] transition-transform">
-        ← Tornar al panell
-      </Button>
-
       {/* Filtros Compactos - Full Width */}
       <Card className="border-muted/50 w-full">
         <CardContent className="py-4">
