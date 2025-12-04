@@ -414,6 +414,25 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
                 )}
               </div>
               
+              {/* Statistics summary */}
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="outline" className="text-xs">
+                  Total: {filteredRecentVisits.length}
+                </Badge>
+                <Badge variant="outline" className="text-xs bg-green-500/10 text-green-600 border-green-500/30">
+                  Exitoses: {filteredRecentVisits.filter(v => v.result === 'exitosa').length}
+                </Badge>
+                <Badge variant="outline" className="text-xs bg-yellow-500/10 text-yellow-600 border-yellow-500/30">
+                  Pendents: {filteredRecentVisits.filter(v => v.result === 'pendiente').length}
+                </Badge>
+                <Badge variant="outline" className="text-xs bg-red-500/10 text-red-600 border-red-500/30">
+                  Fallides: {filteredRecentVisits.filter(v => v.result === 'fallida').length}
+                </Badge>
+                <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-600 border-blue-500/30">
+                  Reprog.: {filteredRecentVisits.filter(v => v.result === 'reprogramada').length}
+                </Badge>
+              </div>
+              
               {/* Results count */}
               <p className="text-sm text-muted-foreground">
                 {totalFilteredVisits === 0 
