@@ -111,8 +111,8 @@ export function GestorOverviewSection({
   const { t } = useLanguage();
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      <Button variant="ghost" onClick={onBack} className="mb-4">
+    <div className="space-y-8">
+      <Button variant="ghost" onClick={onBack} className="mb-4 hover:translate-x-[-4px] transition-transform">
         ← Tornar al panell
       </Button>
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -18,6 +18,7 @@ import { PersonalGoalsTracker } from '@/components/dashboard/PersonalGoalsTracke
 import { PersonalGoalsHistory } from '@/components/dashboard/PersonalGoalsHistory';
 import { QuickVisitManager } from '@/components/dashboard/QuickVisitManager';
 import { GestorDashboardCard } from '@/components/dashboard/GestorDashboardCard';
+import { cn } from '@/lib/utils';
 import { GestorOverviewSection } from '@/components/dashboard/GestorOverviewSection';
 
 interface GestorStats {
@@ -78,10 +79,28 @@ export function GestorDashboard({
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState<ActiveSection>('home');
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [transitionDirection, setTransitionDirection] = useState<'in' | 'out'>('in');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
     const today = new Date();
     return { from: subMonths(today, 6), to: today };
   });
+
+  const handleSectionChange = (newSection: ActiveSection) => {
+    if (newSection === activeSection) return;
+    
+    setIsTransitioning(true);
+    setTransitionDirection('out');
+    
+    setTimeout(() => {
+      setActiveSection(newSection);
+      setTransitionDirection('in');
+      
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 300);
+    }, 200);
+  };
   const [stats, setStats] = useState<GestorStats>({
     totalVisits: 0,
     successRate: 0,
@@ -513,13 +532,13 @@ export function GestorDashboard({
             setMinVinculacion={setMinVinculacion}
             maxVinculacion={maxVinculacion}
             setMaxVinculacion={setMaxVinculacion}
-            onBack={() => setActiveSection('home')}
+            onBack={() => handleSectionChange('home')}
           />
         );
       case 'visits':
         return (
-          <div className="animate-fade-in">
-            <Button variant="ghost" onClick={() => setActiveSection('home')} className="mb-4">
+          <div>
+            <Button variant="ghost" onClick={() => handleSectionChange('home')} className="mb-4">
               ← Tornar al panell
             </Button>
             <QuickVisitManager gestorId={user?.id} />
@@ -527,8 +546,8 @@ export function GestorDashboard({
         );
       case 'goals':
         return (
-          <div className="animate-fade-in">
-            <Button variant="ghost" onClick={() => setActiveSection('home')} className="mb-4">
+          <div>
+            <Button variant="ghost" onClick={() => handleSectionChange('home')} className="mb-4">
               ← Tornar al panell
             </Button>
             <PersonalGoalsTracker />
@@ -536,8 +555,8 @@ export function GestorDashboard({
         );
       case 'history':
         return (
-          <div className="animate-fade-in">
-            <Button variant="ghost" onClick={() => setActiveSection('home')} className="mb-4">
+          <div>
+            <Button variant="ghost" onClick={() => handleSectionChange('home')} className="mb-4">
               ← Tornar al panell
             </Button>
             <PersonalGoalsHistory />
@@ -618,74 +637,88 @@ export function GestorDashboard({
       </div>
 
       {/* Main Content */}
-      {activeSection === 'home' ? (
-        <div className="space-y-8 animate-fade-in">
-          {/* 3D Cards Grid */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {cards.map((card) => (
-              <GestorDashboardCard
-                key={card.id}
-                title={card.title}
-                description={card.description}
-                icon={card.icon}
-                color={card.color}
-                onClick={() => setActiveSection(card.id)}
-                stats={card.stats}
-              />
-            ))}
-          </div>
+      <div 
+        className={cn(
+          "transition-all duration-300 ease-out",
+          transitionDirection === 'out' && "opacity-0 translate-y-4 scale-[0.98]",
+          transitionDirection === 'in' && !isTransitioning && "opacity-100 translate-y-0 scale-100",
+          transitionDirection === 'in' && isTransitioning && "opacity-0 -translate-y-4 scale-[0.98]"
+        )}
+      >
+        {activeSection === 'home' ? (
+          <div className="space-y-8">
+            {/* 3D Cards Grid */}
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {cards.map((card, index) => (
+                <div 
+                  key={card.id}
+                  className="animate-fade-in"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <GestorDashboardCard
+                    title={card.title}
+                    description={card.description}
+                    icon={card.icon}
+                    color={card.color}
+                    onClick={() => handleSectionChange(card.id)}
+                    stats={card.stats}
+                  />
+                </div>
+              ))}
+            </div>
 
-          {/* Quick Stats Summary */}
-          <div className="grid gap-4 md:grid-cols-4">
-            <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-              <CardContent className="p-4 flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20">
-                  <Activity className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats.totalVisits}</p>
-                  <p className="text-sm text-muted-foreground">Visites totals</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-gradient-to-br from-chart-2/5 to-chart-2/10 border-chart-2/20">
-              <CardContent className="p-4 flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-chart-2/20">
-                  <Target className="h-6 w-6 text-chart-2" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats.successRate}%</p>
-                  <p className="text-sm text-muted-foreground">Taxa d'èxit</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-gradient-to-br from-chart-3/5 to-chart-3/10 border-chart-3/20">
-              <CardContent className="p-4 flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-chart-3/20">
-                  <Building2 className="h-6 w-6 text-chart-3" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats.totalCompanies}</p>
-                  <p className="text-sm text-muted-foreground">Empreses</p>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-gradient-to-br from-chart-4/5 to-chart-4/10 border-chart-4/20">
-              <CardContent className="p-4 flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-chart-4/20">
-                  <Package className="h-6 w-6 text-chart-4" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats.totalProducts}</p>
-                  <p className="text-sm text-muted-foreground">Productes</p>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Quick Stats Summary */}
+            <div className="grid gap-4 md:grid-cols-4">
+              <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20">
+                    <Activity className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{stats.totalVisits}</p>
+                    <p className="text-sm text-muted-foreground">Visites totals</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="bg-gradient-to-br from-chart-2/5 to-chart-2/10 border-chart-2/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-chart-2/20">
+                    <Target className="h-6 w-6 text-chart-2" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{stats.successRate}%</p>
+                    <p className="text-sm text-muted-foreground">Taxa d'èxit</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="bg-gradient-to-br from-chart-3/5 to-chart-3/10 border-chart-3/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-chart-3/20">
+                    <Building2 className="h-6 w-6 text-chart-3" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{stats.totalCompanies}</p>
+                    <p className="text-sm text-muted-foreground">Empreses</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="bg-gradient-to-br from-chart-4/5 to-chart-4/10 border-chart-4/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg">
+                <CardContent className="p-4 flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-chart-4/20">
+                    <Package className="h-6 w-6 text-chart-4" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{stats.totalProducts}</p>
+                    <p className="text-sm text-muted-foreground">Productes</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
-        </div>
-      ) : (
-        renderContent()
-      )}
+        ) : (
+          renderContent()
+        )}
+      </div>
     </div>
   );
 }
