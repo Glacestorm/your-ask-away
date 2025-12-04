@@ -189,6 +189,92 @@ export function PersonalGoalsTracker() {
               : 0;
             current = avgVinculacion;
             break;
+
+          case 'new_clients':
+            const { count: newClientsCount } = await supabase
+              .from('companies')
+              .select('*', { count: 'exact', head: true })
+              .eq('gestor_id', user?.id)
+              .gte('created_at', goal.period_start)
+              .lte('created_at', goal.period_end);
+            current = newClientsCount || 0;
+            break;
+
+          case 'visit_sheets':
+            const { count: sheetsCount } = await supabase
+              .from('visit_sheets')
+              .select('*', { count: 'exact', head: true })
+              .eq('gestor_id', user?.id)
+              .gte('fecha', goal.period_start)
+              .lte('fecha', goal.period_end);
+            current = sheetsCount || 0;
+            break;
+
+          case 'tpv_volume':
+            const { data: tpvData } = await supabase
+              .from('company_tpv_terminals')
+              .select('monthly_volume, companies!inner(gestor_id)')
+              .eq('companies.gestor_id', user?.id)
+              .eq('status', 'active');
+            const totalTpvVolume = tpvData?.reduce((sum, t) => sum + (Number(t.monthly_volume) || 0), 0) || 0;
+            current = totalTpvVolume;
+            break;
+
+          case 'conversion_rate':
+            const { count: totalVisitsForRate } = await supabase
+              .from('visits')
+              .select('*', { count: 'exact', head: true })
+              .eq('gestor_id', user?.id)
+              .gte('visit_date', goal.period_start)
+              .lte('visit_date', goal.period_end);
+            const { count: successfulForRate } = await supabase
+              .from('visits')
+              .select('*', { count: 'exact', head: true })
+              .eq('gestor_id', user?.id)
+              .eq('result', 'Exitosa')
+              .gte('visit_date', goal.period_start)
+              .lte('visit_date', goal.period_end);
+            current = totalVisitsForRate && totalVisitsForRate > 0 
+              ? ((successfulForRate || 0) / totalVisitsForRate) * 100 
+              : 0;
+            break;
+
+          case 'client_facturacion':
+            const { data: facturacionData } = await supabase
+              .from('companies')
+              .select('facturacion_anual')
+              .eq('gestor_id', user?.id)
+              .not('facturacion_anual', 'is', null);
+            const totalFacturacion = facturacionData?.reduce((sum, c) => sum + (Number(c.facturacion_anual) || 0), 0) || 0;
+            current = totalFacturacion;
+            break;
+
+          case 'products_per_client':
+            const { data: clientsProducts } = await supabase
+              .from('company_products')
+              .select('company_id, companies!inner(gestor_id)')
+              .eq('companies.gestor_id', user?.id)
+              .eq('active', true);
+            const { count: totalClients } = await supabase
+              .from('companies')
+              .select('*', { count: 'exact', head: true })
+              .eq('gestor_id', user?.id);
+            const avgProducts = totalClients && totalClients > 0 
+              ? (clientsProducts?.length || 0) / totalClients 
+              : 0;
+            current = avgProducts;
+            break;
+
+          case 'follow_ups':
+            const { count: followUpsCount } = await supabase
+              .from('visit_sheets')
+              .select('*', { count: 'exact', head: true })
+              .eq('gestor_id', user?.id)
+              .gte('fecha', goal.period_start)
+              .lte('fecha', goal.period_end)
+              .or('proxima_llamada.not.is.null,proxima_cita.not.is.null');
+            current = followUpsCount || 0;
+            break;
         }
 
         const percentage = goal.target_value > 0 
@@ -289,11 +375,19 @@ export function PersonalGoalsTracker() {
       case 'successful_visits':
         return <Target className="h-5 w-5 text-primary" />;
       case 'companies':
+      case 'new_clients':
         return <Users className="h-5 w-5 text-primary" />;
       case 'products_offered':
+      case 'products_per_client':
         return <Package className="h-5 w-5 text-primary" />;
       case 'average_vinculacion':
+      case 'conversion_rate':
+      case 'tpv_volume':
+      case 'client_facturacion':
         return <TrendingUp className="h-5 w-5 text-primary" />;
+      case 'visit_sheets':
+      case 'follow_ups':
+        return <Calendar className="h-5 w-5 text-primary" />;
       default:
         return <Target className="h-5 w-5 text-primary" />;
     }
@@ -304,8 +398,14 @@ export function PersonalGoalsTracker() {
   };
 
   const formatValue = (metricType: string, value: number) => {
-    if (metricType === 'average_vinculacion') {
+    if (metricType === 'average_vinculacion' || metricType === 'conversion_rate') {
       return `${value.toFixed(1)}%`;
+    }
+    if (metricType === 'tpv_volume' || metricType === 'client_facturacion') {
+      return `${value.toLocaleString('es-ES', { maximumFractionDigits: 0 })}€`;
+    }
+    if (metricType === 'products_per_client') {
+      return value.toFixed(1);
     }
     return value.toLocaleString('es-ES');
   };
@@ -379,6 +479,13 @@ export function PersonalGoalsTracker() {
                       <SelectItem value="companies">{t('gestor.dashboard.goals.metrics.companies')}</SelectItem>
                       <SelectItem value="products_offered">{t('gestor.dashboard.goals.metrics.products_offered')}</SelectItem>
                       <SelectItem value="average_vinculacion">{t('gestor.dashboard.goals.metrics.average_vinculacion')}</SelectItem>
+                      <SelectItem value="new_clients">{t('gestor.dashboard.goals.metrics.new_clients')}</SelectItem>
+                      <SelectItem value="visit_sheets">{t('gestor.dashboard.goals.metrics.visit_sheets')}</SelectItem>
+                      <SelectItem value="tpv_volume">{t('gestor.dashboard.goals.metrics.tpv_volume')}</SelectItem>
+                      <SelectItem value="conversion_rate">{t('gestor.dashboard.goals.metrics.conversion_rate')}</SelectItem>
+                      <SelectItem value="client_facturacion">{t('gestor.dashboard.goals.metrics.client_facturacion')}</SelectItem>
+                      <SelectItem value="products_per_client">{t('gestor.dashboard.goals.metrics.products_per_client')}</SelectItem>
+                      <SelectItem value="follow_ups">{t('gestor.dashboard.goals.metrics.follow_ups')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -391,7 +498,7 @@ export function PersonalGoalsTracker() {
                     onChange={(e) => setFormData({ ...formData, target_value: Number(e.target.value) })}
                     required
                     min="0"
-                    step={formData.metric_type === 'average_vinculacion' ? '0.1' : '1'}
+                    step={['average_vinculacion', 'conversion_rate', 'products_per_client'].includes(formData.metric_type) ? '0.1' : '1'}
                   />
                 </div>
 
