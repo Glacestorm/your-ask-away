@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,10 +10,11 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Target, Plus, TrendingUp, Users, Package, Calendar, Edit, Trash2 } from 'lucide-react';
+import { Loader2, Target, Plus, TrendingUp, Users, Package, Calendar, Edit, Trash2, PartyPopper } from 'lucide-react';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { format } from 'date-fns';
+import { useCelebration } from '@/hooks/useCelebration';
 
 interface PersonalGoal {
   id: string;
@@ -40,6 +41,9 @@ export function PersonalGoalsTracker() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState<PersonalGoal | null>(null);
+  const [newlyCompletedGoals, setNewlyCompletedGoals] = useState<string[]>([]);
+  const { celebrateGoalAchievement, hasBeenCelebrated } = useCelebration();
+  const previousProgressRef = useRef<Record<string, GoalProgress>>({});
   
   const [formData, setFormData] = useState({
     metric_type: 'visits',
@@ -63,6 +67,51 @@ export function PersonalGoalsTracker() {
       calculateProgress();
     }
   }, [goals]);
+
+  // Check for newly completed goals and trigger celebration
+  useEffect(() => {
+    if (Object.keys(progress).length === 0) return;
+
+    const newlyCompleted: string[] = [];
+    
+    for (const goalId of Object.keys(progress)) {
+      const currentProgress = progress[goalId];
+      const previousProgress = previousProgressRef.current[goalId];
+      
+      // Check if goal just reached 100% (wasn't 100% before or is new)
+      if (currentProgress.percentage >= 100) {
+        const wasNotCompletedBefore = !previousProgress || previousProgress.percentage < 100;
+        const notCelebratedYet = !hasBeenCelebrated(goalId);
+        
+        if (wasNotCompletedBefore && notCelebratedYet) {
+          const wasCelebrated = celebrateGoalAchievement(goalId);
+          if (wasCelebrated) {
+            newlyCompleted.push(goalId);
+            // Find goal details for toast
+            const goal = goals.find(g => g.id === goalId);
+            if (goal) {
+              toast.success(
+                `🎉 Objectiu assolit: ${getMetricLabel(goal.metric_type)}!`,
+                {
+                  description: `Has completat el ${currentProgress.percentage.toFixed(0)}% del teu objectiu`,
+                  duration: 5000,
+                }
+              );
+            }
+          }
+        }
+      }
+    }
+
+    if (newlyCompleted.length > 0) {
+      setNewlyCompletedGoals(newlyCompleted);
+      // Clear the highlight after animation
+      setTimeout(() => setNewlyCompletedGoals([]), 3000);
+    }
+
+    // Update previous progress ref
+    previousProgressRef.current = { ...progress };
+  }, [progress, goals, celebrateGoalAchievement, hasBeenCelebrated]);
 
   const setupRealtimeSubscription = () => {
     const channel = supabase
@@ -577,14 +626,44 @@ export function PersonalGoalsTracker() {
               const goalProgress = progress[goal.id] || { current: 0, percentage: 0 };
               const statusVariant = getStatusVariant(goalProgress.percentage);
               const statusLabel = getStatusLabel(goalProgress.percentage);
+              const isNewlyCompleted = newlyCompletedGoals.includes(goal.id);
+              const isCompleted = goalProgress.percentage >= 100;
 
               return (
-                <div key={goal.id} className="space-y-3 p-4 border rounded-lg">
+                <div 
+                  key={goal.id} 
+                  className={`space-y-3 p-4 border rounded-lg transition-all duration-500 ${
+                    isNewlyCompleted 
+                      ? 'ring-2 ring-green-500 bg-green-500/10 animate-pulse' 
+                      : isCompleted 
+                        ? 'border-green-500/50 bg-green-500/5' 
+                        : ''
+                  }`}
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      {getMetricIcon(goal.metric_type)}
+                      {isCompleted ? (
+                        <div className="relative">
+                          <PartyPopper className="h-5 w-5 text-green-500" />
+                          {isNewlyCompleted && (
+                            <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        getMetricIcon(goal.metric_type)
+                      )}
                       <div>
-                        <div className="font-semibold">{getMetricLabel(goal.metric_type)}</div>
+                        <div className="font-semibold flex items-center gap-2">
+                          {getMetricLabel(goal.metric_type)}
+                          {isNewlyCompleted && (
+                            <span className="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full animate-bounce">
+                              🎉 Nou!
+                            </span>
+                          )}
+                        </div>
                         <div className="text-sm text-muted-foreground">
                           {goal.description || t('gestor.dashboard.goals.defaultDescription')}
                         </div>
@@ -620,13 +699,18 @@ export function PersonalGoalsTracker() {
                         {formatValue(goal.metric_type, goalProgress.current)} / {formatValue(goal.metric_type, goal.target_value)}
                       </span>
                     </div>
-                    <Progress value={goalProgress.percentage} className="h-2" />
+                    <Progress 
+                      value={goalProgress.percentage} 
+                      className={`h-2 ${isCompleted ? '[&>div]:bg-green-500' : ''}`} 
+                    />
                     <div className="flex items-center justify-between text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
                         {format(new Date(goal.period_start), 'dd/MM/yyyy')} - {format(new Date(goal.period_end), 'dd/MM/yyyy')}
                       </span>
-                      <span className="font-semibold">{goalProgress.percentage.toFixed(1)}%</span>
+                      <span className={`font-semibold ${isCompleted ? 'text-green-500' : ''}`}>
+                        {goalProgress.percentage.toFixed(1)}%
+                      </span>
                     </div>
                   </div>
                 </div>
