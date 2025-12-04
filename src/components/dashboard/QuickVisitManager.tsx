@@ -81,6 +81,9 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
 
   const effectiveGestorId = gestorId || user?.id;
 
+  // Get selected company object
+  const selectedCompanyData = companies.find(c => c.id === selectedCompany);
+
   useEffect(() => {
     if (isOpen) {
       loadCompanies();
@@ -239,6 +242,13 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
 
   // Filter recent visits
   const filteredRecentVisits = recentVisits.filter(visit => {
+    // Filter by company search
+    if (companySearch && showRecentVisits) {
+      const companyName = visit.companies?.name?.toLowerCase() || '';
+      if (!companyName.includes(companySearch.toLowerCase())) {
+        return false;
+      }
+    }
     // Filter by result
     if (filterResult !== 'all' && visit.result !== filterResult) {
       return false;
@@ -258,9 +268,10 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
     setFilterResult('all');
     setFilterDateFrom(undefined);
     setFilterDateTo(undefined);
+    setCompanySearch('');
   };
 
-  const hasActiveFilters = filterResult !== 'all' || filterDateFrom || filterDateTo;
+  const hasActiveFilters = filterResult !== 'all' || filterDateFrom || filterDateTo || (companySearch && showRecentVisits);
 
   // Pagination calculations
   const totalFilteredVisits = filteredRecentVisits.length;
@@ -307,15 +318,37 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
             </DialogDescription>
           </DialogHeader>
 
+          {/* Selected company chip in header */}
+          {selectedCompanyData && (
+            <div className="flex items-center gap-2 p-2 bg-primary/10 rounded-lg border border-primary/20">
+              <Building2 className="h-4 w-4 text-primary" />
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-sm truncate">{selectedCompanyData.name}</p>
+                <p className="text-xs text-muted-foreground truncate">{selectedCompanyData.address}</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 shrink-0"
+                onClick={() => setSelectedCompany('')}
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+          )}
+
           {/* Toggle between form and recent visits */}
           <div className="flex gap-2 mb-4">
             <Button 
               variant={!showRecentVisits ? "default" : "outline"} 
               size="sm"
-              onClick={() => { setShowRecentVisits(false); resetForm(); }}
+              onClick={() => { 
+                setShowRecentVisits(false); 
+                if (!isEditing) resetForm(); 
+              }}
             >
               <Plus className="h-4 w-4 mr-1" />
-              Nova
+              {isEditing ? 'Editar' : 'Nova'}
             </Button>
             <Button 
               variant={showRecentVisits ? "default" : "outline"} 
@@ -329,6 +362,19 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
 
           {showRecentVisits ? (
             <div className="space-y-3">
+              {/* Company filter for recent visits */}
+              <div className="space-y-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Filtra per empresa..."
+                    value={companySearch}
+                    onChange={(e) => setCompanySearch(e.target.value)}
+                    className="pl-9 h-9"
+                  />
+                </div>
+              </div>
+
               {/* Filters */}
               <div className="flex flex-wrap items-center gap-2 p-3 bg-muted/50 rounded-lg">
                 <Filter className="h-4 w-4 text-muted-foreground" />
