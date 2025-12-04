@@ -327,10 +327,8 @@ const Admin = () => {
               {renderContent()}
             </div>
           ) : (
-            <div className="p-6 space-y-6 w-full">
+          <div className="p-6 space-y-6 w-full">
               <GlobalNavHeader 
-                title={t('admin.title')} 
-                subtitle={t('admin.subtitle')}
                 canGoBack={canGoBack}
                 canGoForward={canGoForward}
                 onGoBack={handleGoBack}
