@@ -20,6 +20,14 @@ import { QuickVisitManager } from '@/components/dashboard/QuickVisitManager';
 import { GestorDashboardCard } from '@/components/dashboard/GestorDashboardCard';
 import { cn } from '@/lib/utils';
 import { GestorOverviewSection } from '@/components/dashboard/GestorOverviewSection';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 
 interface GestorStats {
   totalVisits: number;
@@ -567,8 +575,16 @@ export function GestorDashboard({
     }
   };
 
+  const sectionLabels: Record<ActiveSection, string> = {
+    home: 'Panell Principal',
+    overview: 'Visió General',
+    visits: 'Gestió de Visites',
+    goals: 'Objectius',
+    history: 'Historial'
+  };
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-6">
@@ -635,6 +651,44 @@ export function GestorDashboard({
           <LanguageSelector />
         </div>
       </div>
+
+      {/* Breadcrumb Navigation */}
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            {activeSection === 'home' ? (
+              <BreadcrumbPage className="flex items-center gap-2">
+                <Home className="h-4 w-4" />
+                El Meu Dashboard
+              </BreadcrumbPage>
+            ) : (
+              <BreadcrumbLink 
+                onClick={() => handleSectionChange('home')}
+                className="flex items-center gap-2 cursor-pointer hover:text-primary transition-colors"
+              >
+                <Home className="h-4 w-4" />
+                El Meu Dashboard
+              </BreadcrumbLink>
+            )}
+          </BreadcrumbItem>
+          {activeSection !== 'home' && (
+            <>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage className="flex items-center gap-2 font-medium">
+                  {cards.find(c => c.id === activeSection)?.icon && 
+                    (() => {
+                      const IconComp = cards.find(c => c.id === activeSection)?.icon;
+                      return IconComp ? <IconComp className="h-4 w-4" /> : null;
+                    })()
+                  }
+                  {sectionLabels[activeSection]}
+                </BreadcrumbPage>
+              </BreadcrumbItem>
+            </>
+          )}
+        </BreadcrumbList>
+      </Breadcrumb>
 
       {/* Main Content */}
       <div 
