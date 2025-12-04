@@ -14,3 +14,9 @@ verify_jwt = false
 
 [functions.send-visit-calendar-invite]
 verify_jwt = false
+
+[functions.check-goal-achievements]
+verify_jwt = false
+
+[functions.send-goal-achievement-email]
+verify_jwt = false
