@@ -1,6 +1,12 @@
 import { ReactNode, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { LucideIcon } from 'lucide-react';
+import { LucideIcon, Info } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface GestorDashboardCardProps {
   title: string;
@@ -13,6 +19,7 @@ interface GestorDashboardCardProps {
     value: string | number;
     label: string;
   };
+  tooltip?: string;
 }
 
 export function GestorDashboardCard({
@@ -22,7 +29,8 @@ export function GestorDashboardCard({
   color,
   onClick,
   isActive = false,
-  stats
+  stats,
+  tooltip
 }: GestorDashboardCardProps) {
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
@@ -86,6 +94,34 @@ export function GestorDashboardCard({
             background: `radial-gradient(circle at 50% 0%, ${color}20, transparent 70%)`,
           }}
         />
+
+        {/* Tooltip info icon */}
+        {tooltip && (
+          <TooltipProvider delayDuration={200}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={(e) => e.stopPropagation()}
+                  className={cn(
+                    "absolute top-3 right-3 z-20 p-1.5 rounded-full transition-all duration-200",
+                    "bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground",
+                    "opacity-0 group-hover:opacity-100",
+                    isHovered && "opacity-100"
+                  )}
+                >
+                  <Info className="h-4 w-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent 
+                side="top" 
+                className="max-w-xs text-sm p-3 bg-popover border shadow-lg"
+                sideOffset={8}
+              >
+                <p>{tooltip}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
 
         {/* Content */}
         <div className="relative z-10 h-full flex flex-col justify-between" style={{ transform: 'translateZ(30px)' }}>
