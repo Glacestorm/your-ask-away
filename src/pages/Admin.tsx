@@ -97,6 +97,38 @@ const Admin = () => {
     );
   }
 
+  const getSectionTitle = () => {
+    switch (activeSection) {
+      case 'director': return 'Director de Negoci';
+      case 'office-director': return "Director d'Oficina";
+      case 'commercial-manager': return 'Responsable Comercial';
+      case 'commercial-manager-audit': return 'Auditoria Comercial';
+      case 'gestor-dashboard': return 'Gestor Empresa / Retail';
+      case 'audit': return 'Auditor';
+      case 'map': return 'Mapa';
+      case 'visit-sheets': return 'Fitxes de Visita';
+      case 'shared-calendar': return 'Calendari de Visites';
+      case 'health': return 'Estat del Sistema';
+      case 'visits': return 'Mètriques de Visites';
+      case 'products-metrics': return 'Mètriques de Productes';
+      case 'gestores': return 'Mètriques de Gestors';
+      case 'vinculacion': return 'Mètriques de Vinculació';
+      case 'tpv': return 'Gestió TPV';
+      case 'tpv-goals': return 'Objectius TPV';
+      case 'companies': return 'Gestió d\'Empreses';
+      case 'products': return 'Gestió de Productes';
+      case 'users': return 'Gestió d\'Usuaris';
+      case 'templates': return 'Plantilles de Correu';
+      case 'colors': return 'Colors d\'Estat';
+      case 'concepts': return 'Conceptes';
+      case 'map-config': return 'Configuració del Mapa';
+      case 'import-history': return 'Historial d\'Importacions';
+      case 'alerts': return 'Gestió d\'Alertes';
+      case 'notifications': return 'Preferències de Notificacions';
+      default: return '';
+    }
+  };
+
   const renderContent = () => {
     switch (activeSection) {
       case 'director':
@@ -329,6 +361,7 @@ const Admin = () => {
           ) : (
           <div className="p-6 space-y-6 w-full">
               <GlobalNavHeader 
+                title={getSectionTitle()}
                 canGoBack={canGoBack}
                 canGoForward={canGoForward}
                 onGoBack={handleGoBack}
