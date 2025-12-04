@@ -14,7 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, CalendarIcon, Edit, Trash2, Eye, Building2, Search } from 'lucide-react';
+import { Plus, CalendarIcon, Edit, Trash2, Eye, Building2, Search, Filter, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { ca, es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -69,6 +69,11 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
   const [companySearch, setCompanySearch] = useState('');
   const [recentVisits, setRecentVisits] = useState<Visit[]>([]);
   const [showRecentVisits, setShowRecentVisits] = useState(false);
+  
+  // Filters for recent visits
+  const [filterResult, setFilterResult] = useState<string>('all');
+  const [filterDateFrom, setFilterDateFrom] = useState<Date | undefined>(undefined);
+  const [filterDateTo, setFilterDateTo] = useState<Date | undefined>(undefined);
 
   const effectiveGestorId = gestorId || user?.id;
 
@@ -227,6 +232,31 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
     { value: 'reprogramada', label: 'Reprogramada' },
   ];
 
+  // Filter recent visits
+  const filteredRecentVisits = recentVisits.filter(visit => {
+    // Filter by result
+    if (filterResult !== 'all' && visit.result !== filterResult) {
+      return false;
+    }
+    // Filter by date from
+    if (filterDateFrom && new Date(visit.visit_date) < filterDateFrom) {
+      return false;
+    }
+    // Filter by date to
+    if (filterDateTo && new Date(visit.visit_date) > filterDateTo) {
+      return false;
+    }
+    return true;
+  });
+
+  const clearFilters = () => {
+    setFilterResult('all');
+    setFilterDateFrom(undefined);
+    setFilterDateTo(undefined);
+  };
+
+  const hasActiveFilters = filterResult !== 'all' || filterDateFrom || filterDateTo;
+
   const toggleProduct = (productName: string) => {
     setSelectedProducts(prev => 
       prev.includes(productName)
@@ -282,14 +312,109 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
           </div>
 
           {showRecentVisits ? (
-            <ScrollArea className="h-[400px] pr-4">
-              <div className="space-y-2">
-                {recentVisits.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">
-                    No hi ha visites recents
-                  </p>
-                ) : (
-                  recentVisits.map((visit) => (
+            <div className="space-y-3">
+              {/* Filters */}
+              <div className="flex flex-wrap items-center gap-2 p-3 bg-muted/50 rounded-lg">
+                <Filter className="h-4 w-4 text-muted-foreground" />
+                
+                {/* Result filter */}
+                <Select value={filterResult} onValueChange={setFilterResult}>
+                  <SelectTrigger className="w-[140px] h-8">
+                    <SelectValue placeholder="Resultat" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tots els resultats</SelectItem>
+                    {resultOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                {/* Date from filter */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={cn(
+                        "h-8 w-[120px] justify-start text-left font-normal",
+                        !filterDateFrom && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-1 h-3 w-3" />
+                      {filterDateFrom ? format(filterDateFrom, "dd/MM/yy") : "Des de"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={filterDateFrom}
+                      onSelect={setFilterDateFrom}
+                      locale={ca}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                
+                {/* Date to filter */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={cn(
+                        "h-8 w-[120px] justify-start text-left font-normal",
+                        !filterDateTo && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-1 h-3 w-3" />
+                      {filterDateTo ? format(filterDateTo, "dd/MM/yy") : "Fins a"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={filterDateTo}
+                      onSelect={setFilterDateTo}
+                      locale={ca}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                
+                {/* Clear filters */}
+                {hasActiveFilters && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2"
+                    onClick={clearFilters}
+                  >
+                    <X className="h-3 w-3 mr-1" />
+                    Netejar
+                  </Button>
+                )}
+              </div>
+              
+              {/* Results count */}
+              {hasActiveFilters && (
+                <p className="text-sm text-muted-foreground">
+                  {filteredRecentVisits.length} de {recentVisits.length} visites
+                </p>
+              )}
+              
+              <ScrollArea className="h-[320px] pr-4">
+                <div className="space-y-2">
+                  {filteredRecentVisits.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-8">
+                      {recentVisits.length === 0 
+                        ? 'No hi ha visites recents' 
+                        : 'Cap visita coincideix amb els filtres'}
+                    </p>
+                  ) : (
+                    filteredRecentVisits.map((visit) => (
                     <div 
                       key={visit.id} 
                       className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
@@ -330,10 +455,11 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
                         </Button>
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
-            </ScrollArea>
+                    ))
+                  )}
+                </div>
+              </ScrollArea>
+            </div>
           ) : (
             <ScrollArea className="h-[400px] pr-4">
               <div className="space-y-4">
