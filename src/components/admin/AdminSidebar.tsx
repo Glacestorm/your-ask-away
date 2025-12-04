@@ -595,6 +595,16 @@ export function AdminSidebar({
                         </SidebarMenuItem>
                         <SidebarMenuItem>
                           <SidebarMenuButton 
+                            onClick={() => onSectionChange('goals-progress')} 
+                            isActive={isActive('goals-progress')}
+                            className="rounded-lg hover:bg-accent/50 transition-all group"
+                          >
+                            <Target className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
+                            <span className="text-sm transition-all duration-300 group-hover:translate-x-1">Seguiment d'Objectius</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                          <SidebarMenuButton 
                             onClick={() => onSectionChange('concepts')} 
                             isActive={isActive('concepts')}
                             className="rounded-lg hover:bg-accent/50 transition-all group"
