@@ -13,6 +13,7 @@ import { subMonths, format } from 'date-fns';
 import { MetricsExplorer } from '@/components/admin/MetricsExplorer';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { QuickVisitManager } from '@/components/dashboard/QuickVisitManager';
 
 // Panel del Director de Oficina con vista filtrada por su oficina
 
@@ -385,6 +386,9 @@ export function OfficeDirectorDashboard() {
           <MetricsExplorer />
         </TabsContent>
       </Tabs>
+
+      {/* Quick Visit Manager FAB */}
+      <QuickVisitManager />
     </div>
   );
 }
