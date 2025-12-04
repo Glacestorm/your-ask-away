@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { TrendingUp, Activity, BarChart3, Package, Users, Target, CreditCard, Building2, Settings, Database, Mail, Palette, BookOpen, Map, ChevronRight, FileText, Briefcase, History, Bell, UserCog, CalendarDays, Home, User, AlertTriangle } from 'lucide-react';
+import { TrendingUp, Activity, BarChart3, Package, Users, Target, CreditCard, Building2, Settings, Database, Mail, Palette, BookOpen, Map, ChevronRight, FileText, Briefcase, History, Bell, UserCog, CalendarDays, Home, User, AlertTriangle, LayoutDashboard } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -272,6 +272,26 @@ export function AdminSidebar({
                   </div>
                   <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
                     Alertas de Objetivos
+                  </span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
+            {(isCommercialDirector || isOfficeDirector || isSuperAdmin || isCommercialManager) && (
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => onSectionChange('goals-kpi')}
+                  isActive={isActive('goals-kpi')}
+                  className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
+                  tooltip={!open ? {
+                    children: 'Dashboard KPI',
+                    className: "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
+                  } : undefined}
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-purple-500/50 group-hover:rotate-3">
+                    <LayoutDashboard className="h-5 w-5 text-white transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3" />
+                  </div>
+                  <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
+                    Dashboard KPI
                   </span>
                 </SidebarMenuButton>
               </SidebarMenuItem>

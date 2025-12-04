@@ -39,6 +39,7 @@ import { SharedVisitsCalendar } from '@/components/admin/SharedVisitsCalendar';
 import { BulkGoalsAssignment } from '@/components/admin/BulkGoalsAssignment';
 import GoalsProgressTracker from '@/components/admin/GoalsProgressTracker';
 import { DirectorAlertsPanel } from '@/components/admin/DirectorAlertsPanel';
+import GoalsKPIDashboard from '@/components/admin/GoalsKPIDashboard';
 import MapView from './MapView';
 
 const Admin = () => {
@@ -131,6 +132,7 @@ const Admin = () => {
       case 'bulk-goals': return 'Assignació Massiva d\'Objectius';
       case 'goals-progress': return 'Seguiment d\'Objectius';
       case 'director-alerts': return 'Alertes d\'Objectius en Risc';
+      case 'goals-kpi': return 'Dashboard KPI d\'Objectius';
       default: return '';
     }
   };
@@ -398,6 +400,27 @@ const Admin = () => {
           );
         }
         return <DirectorAlertsPanel />;
+      case 'goals-kpi':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager && !isOfficeDirector) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return (
+          <div className="rounded-lg border bg-card p-6">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold">Dashboard KPI d'Objectius</h2>
+              <p className="text-sm text-muted-foreground">
+                Resum visual dels indicadors clau de rendiment de tots els objectius actius
+              </p>
+            </div>
+            <GoalsKPIDashboard />
+          </div>
+        );
       default:
         return null;
     }
