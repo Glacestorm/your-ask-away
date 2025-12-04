@@ -14,7 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, CalendarIcon, Edit, Trash2, Eye, Building2, Search, Filter, X } from 'lucide-react';
+import { Plus, CalendarIcon, Edit, Trash2, Eye, Building2, Search, Filter, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { ca, es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -74,6 +74,10 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
   const [filterResult, setFilterResult] = useState<string>('all');
   const [filterDateFrom, setFilterDateFrom] = useState<Date | undefined>(undefined);
   const [filterDateTo, setFilterDateTo] = useState<Date | undefined>(undefined);
+  
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const visitsPerPage = 10;
 
   const effectiveGestorId = gestorId || user?.id;
 
@@ -113,7 +117,7 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
       .from('visits')
       .select('*, companies(name)')
       .order('visit_date', { ascending: false })
-      .limit(10);
+      .limit(100);
     
     if (effectiveGestorId) {
       query.eq('gestor_id', effectiveGestorId);
@@ -123,6 +127,7 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
     
     if (!error && data) {
       setRecentVisits(data);
+      setCurrentPage(1);
     }
   };
 
@@ -256,6 +261,17 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
   };
 
   const hasActiveFilters = filterResult !== 'all' || filterDateFrom || filterDateTo;
+
+  // Pagination calculations
+  const totalFilteredVisits = filteredRecentVisits.length;
+  const totalPages = Math.ceil(totalFilteredVisits / visitsPerPage);
+  const startIndex = (currentPage - 1) * visitsPerPage;
+  const paginatedVisits = filteredRecentVisits.slice(startIndex, startIndex + visitsPerPage);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterResult, filterDateFrom, filterDateTo]);
 
   const toggleProduct = (productName: string) => {
     setSelectedProducts(prev => 
@@ -399,22 +415,23 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
               </div>
               
               {/* Results count */}
-              {hasActiveFilters && (
-                <p className="text-sm text-muted-foreground">
-                  {filteredRecentVisits.length} de {recentVisits.length} visites
-                </p>
-              )}
+              <p className="text-sm text-muted-foreground">
+                {totalFilteredVisits === 0 
+                  ? 'Cap visita' 
+                  : `${startIndex + 1}-${Math.min(startIndex + visitsPerPage, totalFilteredVisits)} de ${totalFilteredVisits} visites`}
+                {hasActiveFilters && ` (filtrat de ${recentVisits.length})`}
+              </p>
               
-              <ScrollArea className="h-[320px] pr-4">
+              <ScrollArea className="h-[280px] pr-4">
                 <div className="space-y-2">
-                  {filteredRecentVisits.length === 0 ? (
+                  {paginatedVisits.length === 0 ? (
                     <p className="text-muted-foreground text-center py-8">
                       {recentVisits.length === 0 
                         ? 'No hi ha visites recents' 
                         : 'Cap visita coincideix amb els filtres'}
                     </p>
                   ) : (
-                    filteredRecentVisits.map((visit) => (
+                    paginatedVisits.map((visit) => (
                     <div 
                       key={visit.id} 
                       className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
@@ -459,6 +476,33 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
                   )}
                 </div>
               </ScrollArea>
+              
+              {/* Pagination controls */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between pt-2 border-t">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    Anterior
+                  </Button>
+                  <span className="text-sm text-muted-foreground">
+                    Pàgina {currentPage} de {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Següent
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+              )}
             </div>
           ) : (
             <ScrollArea className="h-[400px] pr-4">
