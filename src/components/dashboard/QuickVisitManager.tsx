@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,8 +14,9 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { Plus, CalendarIcon, Edit, Trash2, Eye, Building2, Search, Filter, X, ChevronLeft, ChevronRight, Save } from 'lucide-react';
+import { Plus, CalendarIcon, Edit, Trash2, Eye, Building2, Search, Filter, X, ChevronLeft, ChevronRight, Save, Package, FileText, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { ca, es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -33,7 +35,16 @@ interface Visit {
   notes: string | null;
   result: string | null;
   productos_ofrecidos: string[] | null;
-  companies?: { name: string };
+  pactos_realizados: string | null;
+  porcentaje_vinculacion: number | null;
+  companies?: { 
+    name: string;
+    address?: string;
+    phone?: string;
+    email?: string;
+    sector?: string;
+    vinculacion_entidad_1?: number;
+  };
 }
 
 interface Product {
@@ -77,6 +88,10 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [visitsPerPage, setVisitsPerPage] = useState(10);
+  
+  // Detail view
+  const [detailVisit, setDetailVisit] = useState<Visit | null>(null);
+  const [showDetail, setShowDetail] = useState(false);
 
   const effectiveGestorId = gestorId || user?.id;
 
@@ -115,7 +130,7 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
   const loadRecentVisits = async () => {
     const query = supabase
       .from('visits')
-      .select('*, companies(name)')
+      .select('*, companies(name, address, phone, email, sector, vinculacion_entidad_1)')
       .order('visit_date', { ascending: false })
       .limit(100);
     
@@ -506,7 +521,17 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
                         variant="ghost"
                         size="icon"
                         className="h-9 w-9"
+                        onClick={() => { setDetailVisit(visit); setShowDetail(true); }}
+                        title="Veure detall"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-9 w-9"
                         onClick={() => handleEditVisit(visit)}
+                        title="Editar"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -516,6 +541,7 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
                         className="h-9 w-9 text-destructive hover:text-destructive"
                         onClick={() => handleDeleteVisit(visit.id)}
                         disabled={loading}
+                        title="Eliminar"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -703,6 +729,169 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
           </CardContent>
         </Card>
       )}
+
+      {/* Detail Dialog */}
+      <Dialog open={showDetail} onOpenChange={setShowDetail}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              Detall de la Visita
+            </DialogTitle>
+            <DialogDescription>
+              Informació completa de la visita comercial
+            </DialogDescription>
+          </DialogHeader>
+
+          {detailVisit && (
+            <div className="space-y-6">
+              {/* Company Info */}
+              <Card className="bg-primary/5 border-primary/20">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <Building2 className="h-6 w-6 text-primary mt-0.5" />
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg">{detailVisit.companies?.name || 'Empresa desconeguda'}</h3>
+                      {detailVisit.companies?.address && (
+                        <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+                          <MapPin className="h-3 w-3" />
+                          {detailVisit.companies.address}
+                        </p>
+                      )}
+                      <div className="flex flex-wrap gap-4 mt-2 text-sm">
+                        {detailVisit.companies?.phone && (
+                          <span>📞 {detailVisit.companies.phone}</span>
+                        )}
+                        {detailVisit.companies?.email && (
+                          <span>✉️ {detailVisit.companies.email}</span>
+                        )}
+                        {detailVisit.companies?.sector && (
+                          <Badge variant="secondary">{detailVisit.companies.sector}</Badge>
+                        )}
+                      </div>
+                      {detailVisit.companies?.vinculacion_entidad_1 !== undefined && (
+                        <div className="mt-2">
+                          <Badge className="bg-green-500/20 text-green-700 border-green-500/30">
+                            Vinculació Creand: {detailVisit.companies.vinculacion_entidad_1}%
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Visit Details */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground text-xs uppercase">Data de la visita</Label>
+                  <p className="font-medium flex items-center gap-2">
+                    <CalendarIcon className="h-4 w-4 text-primary" />
+                    {format(new Date(detailVisit.visit_date), 'EEEE, d MMMM yyyy', { locale: ca })}
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground text-xs uppercase">Resultat</Label>
+                  <div>
+                    {detailVisit.result ? (
+                      <Badge 
+                        variant="outline" 
+                        className={cn(
+                          detailVisit.result === 'exitosa' && 'bg-green-500/10 text-green-600 border-green-500/30',
+                          detailVisit.result === 'pendiente' && 'bg-yellow-500/10 text-yellow-600 border-yellow-500/30',
+                          detailVisit.result === 'fallida' && 'bg-red-500/10 text-red-600 border-red-500/30',
+                          detailVisit.result === 'reprogramada' && 'bg-blue-500/10 text-blue-600 border-blue-500/30',
+                        )}
+                      >
+                        {detailVisit.result.charAt(0).toUpperCase() + detailVisit.result.slice(1)}
+                      </Badge>
+                    ) : (
+                      <span className="text-muted-foreground">No especificat</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Products */}
+              <div className="space-y-2">
+                <Label className="text-muted-foreground text-xs uppercase flex items-center gap-1">
+                  <Package className="h-3 w-3" />
+                  Productes Oferts
+                </Label>
+                {detailVisit.productos_ofrecidos && detailVisit.productos_ofrecidos.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {detailVisit.productos_ofrecidos.map((product, index) => (
+                      <Badge key={index} variant="secondary">
+                        {product}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-sm">Cap producte registrat</p>
+                )}
+              </div>
+
+              {/* Notes */}
+              <div className="space-y-2">
+                <Label className="text-muted-foreground text-xs uppercase flex items-center gap-1">
+                  <FileText className="h-3 w-3" />
+                  Notes
+                </Label>
+                {detailVisit.notes ? (
+                  <Card className="bg-muted/50">
+                    <CardContent className="p-3">
+                      <p className="text-sm whitespace-pre-wrap">{detailVisit.notes}</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <p className="text-muted-foreground text-sm">Sense notes</p>
+                )}
+              </div>
+
+              {/* Pactos */}
+              {detailVisit.pactos_realizados && (
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground text-xs uppercase">Pactes Realitzats</Label>
+                  <Card className="bg-muted/50">
+                    <CardContent className="p-3">
+                      <p className="text-sm whitespace-pre-wrap">{detailVisit.pactos_realizados}</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* Porcentaje vinculacion */}
+              {detailVisit.porcentaje_vinculacion !== null && detailVisit.porcentaje_vinculacion !== undefined && (
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground text-xs uppercase">Percentatge Vinculació</Label>
+                  <Badge variant="outline" className="text-lg px-3 py-1">
+                    {detailVisit.porcentaje_vinculacion}%
+                  </Badge>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex items-center justify-end gap-2 pt-4 border-t">
+                <Button variant="outline" onClick={() => setShowDetail(false)}>
+                  Tancar
+                </Button>
+                <Button 
+                  onClick={() => { 
+                    setShowDetail(false); 
+                    handleEditVisit(detailVisit); 
+                  }}
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Editar
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
