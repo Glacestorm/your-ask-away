@@ -1505,6 +1505,14 @@ export type Database = {
         Returns: boolean
       }
       is_admin_or_superadmin: { Args: { _user_id: string }; Returns: boolean }
+      is_visit_gestor: {
+        Args: { _user_id: string; _visit_id: string }
+        Returns: boolean
+      }
+      is_visit_participant: {
+        Args: { _user_id: string; _visit_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role:
