@@ -24,6 +24,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PersonalGoalsTracker } from '@/components/dashboard/PersonalGoalsTracker';
 import { PersonalGoalsHistory } from '@/components/dashboard/PersonalGoalsHistory';
+import { QuickVisitManager } from '@/components/dashboard/QuickVisitManager';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 
@@ -1033,6 +1034,9 @@ export function GestorDashboard({
         <PersonalGoalsHistory />
       </TabsContent>
     </Tabs>
+
+      {/* Quick Visit Manager FAB */}
+      <QuickVisitManager gestorId={user?.id} />
     </div>
   );
 }

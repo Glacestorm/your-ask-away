@@ -12,6 +12,7 @@ import { DateRange } from 'react-day-picker';
 import { subMonths, format } from 'date-fns';
 import { MetricsExplorer } from '@/components/admin/MetricsExplorer';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { QuickVisitManager } from '@/components/dashboard/QuickVisitManager';
 
 // Panel del Director con vista general y explorador de métricas
 
@@ -468,6 +469,9 @@ export function CommercialDirectorDashboard() {
           <MetricsExplorer />
         </TabsContent>
       </Tabs>
+
+      {/* Quick Visit Manager FAB */}
+      <QuickVisitManager />
     </div>
   );
 }
