@@ -360,13 +360,15 @@ const Admin = () => {
             </div>
           ) : (
           <div className="p-6 space-y-6 w-full">
-              <GlobalNavHeader 
-                title={getSectionTitle()}
-                canGoBack={canGoBack}
-                canGoForward={canGoForward}
-                onGoBack={handleGoBack}
-                onGoForward={handleGoForward}
-              />
+              {activeSection !== 'gestor-dashboard' && (
+                <GlobalNavHeader 
+                  title={getSectionTitle()}
+                  canGoBack={canGoBack}
+                  canGoForward={canGoForward}
+                  onGoBack={handleGoBack}
+                  onGoForward={handleGoForward}
+                />
+              )}
               {renderContent()}
             </div>
           )}
