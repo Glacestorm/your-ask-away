@@ -10,8 +10,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Target, Users, TrendingUp, TrendingDown, Search, Building2, Calendar, Trophy, AlertTriangle, CheckCircle2, Clock, Loader2 } from 'lucide-react';
-import { format, isWithinInterval, parseISO } from 'date-fns';
+import { Target, Users, TrendingUp, TrendingDown, Search, Building2, Calendar, Trophy, AlertTriangle, CheckCircle2, Clock, Loader2, LineChart } from 'lucide-react';
+import { LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
+import { format, isWithinInterval, parseISO, subMonths, startOfMonth, endOfMonth, eachMonthOfInterval } from 'date-fns';
+import { ca } from 'date-fns/locale';
 
 interface GestorGoalProgress {
   gestor_id: string;
@@ -43,6 +45,23 @@ interface GestorSummary {
   average_progress: number;
 }
 
+interface EvolutionDataPoint {
+  month: string;
+  monthLabel: string;
+  [key: string]: number | string;
+}
+
+const CHART_COLORS = [
+  'hsl(var(--primary))',
+  'hsl(142, 76%, 36%)',
+  'hsl(217, 91%, 60%)',
+  'hsl(48, 96%, 53%)',
+  'hsl(280, 87%, 65%)',
+  'hsl(346, 87%, 55%)',
+  'hsl(173, 80%, 40%)',
+  'hsl(24, 95%, 53%)',
+];
+
 const GoalsProgressTracker = () => {
   const { user, isOfficeDirector } = useAuth();
   const { t } = useLanguage();
@@ -54,6 +73,9 @@ const GoalsProgressTracker = () => {
   const [selectedMetric, setSelectedMetric] = useState<string>('all');
   const [oficinas, setOficinas] = useState<string[]>([]);
   const [userOficina, setUserOficina] = useState<string | null>(null);
+  const [evolutionData, setEvolutionData] = useState<EvolutionDataPoint[]>([]);
+  const [selectedGestorForEvolution, setSelectedGestorForEvolution] = useState<string>('all');
+  const [loadingEvolution, setLoadingEvolution] = useState(false);
 
   const metricTypes = [
     'total_visits', 'successful_visits', 'assigned_companies', 'products_offered',
@@ -399,6 +421,66 @@ const GoalsProgressTracker = () => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
+  // Generate evolution data for last 6 months
+  const generateEvolutionData = async () => {
+    setLoadingEvolution(true);
+    try {
+      const now = new Date();
+      const months = eachMonthOfInterval({
+        start: subMonths(startOfMonth(now), 5),
+        end: startOfMonth(now)
+      });
+
+      const gestorsToAnalyze = selectedGestorForEvolution === 'all' 
+        ? filteredSummaries.slice(0, 8) // Limit to 8 gestors for readability
+        : filteredSummaries.filter(g => g.gestor_id === selectedGestorForEvolution);
+
+      const evolutionPoints: EvolutionDataPoint[] = [];
+
+      for (const month of months) {
+        const monthStart = startOfMonth(month);
+        const monthEnd = endOfMonth(month);
+        const monthLabel = format(month, 'MMM yyyy', { locale: ca });
+        const monthKey = format(month, 'yyyy-MM');
+
+        const dataPoint: EvolutionDataPoint = {
+          month: monthKey,
+          monthLabel
+        };
+
+        for (const gestor of gestorsToAnalyze) {
+          // Calculate average progress for this gestor in this month
+          const gestorGoals = goalsProgress.filter(g => 
+            g.gestor_id === gestor.gestor_id &&
+            parseISO(g.period_start) <= monthEnd &&
+            parseISO(g.period_end) >= monthStart
+          );
+
+          if (gestorGoals.length > 0) {
+            const avgProgress = gestorGoals.reduce((acc, g) => acc + g.progress_percentage, 0) / gestorGoals.length;
+            dataPoint[gestor.gestor_name] = Math.round(avgProgress * 10) / 10;
+          } else {
+            dataPoint[gestor.gestor_name] = 0;
+          }
+        }
+
+        evolutionPoints.push(dataPoint);
+      }
+
+      setEvolutionData(evolutionPoints);
+    } catch (error) {
+      console.error('Error generating evolution data:', error);
+    } finally {
+      setLoadingEvolution(false);
+    }
+  };
+
+  useEffect(() => {
+    if (gestorSummaries.length > 0 && goalsProgress.length > 0) {
+      generateEvolutionData();
+    }
+  }, [gestorSummaries, goalsProgress, selectedGestorForEvolution, selectedOficina]);
+
   // Filter data
   const filteredGoals = goalsProgress.filter(goal => {
     const matchesSearch = goal.gestor_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -548,6 +630,10 @@ const GoalsProgressTracker = () => {
           <TabsTrigger value="ranking" className="gap-2">
             <Trophy className="w-4 h-4" />
             Rànking
+          </TabsTrigger>
+          <TabsTrigger value="evolution" className="gap-2">
+            <LineChart className="w-4 h-4" />
+            Evolució
           </TabsTrigger>
         </TabsList>
 
@@ -724,6 +810,156 @@ const GoalsProgressTracker = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Evolution Tab */}
+        <TabsContent value="evolution">
+          <div className="space-y-4">
+            {/* Gestor selector for evolution */}
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-4">
+                  <Select value={selectedGestorForEvolution} onValueChange={setSelectedGestorForEvolution}>
+                    <SelectTrigger className="w-[280px]">
+                      <Users className="w-4 h-4 mr-2" />
+                      <SelectValue placeholder="Selecciona gestor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tots els gestors (màx. 8)</SelectItem>
+                      {filteredSummaries.map(summary => (
+                        <SelectItem key={summary.gestor_id} value={summary.gestor_id}>
+                          {summary.gestor_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <span className="text-sm text-muted-foreground">
+                    Evolució dels últims 6 mesos
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Evolution Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <LineChart className="w-5 h-5" />
+                  Evolució del Progrés d'Objectius
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loadingEvolution ? (
+                  <div className="flex items-center justify-center h-[400px]">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                  </div>
+                ) : evolutionData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={400}>
+                    <AreaChart data={evolutionData}>
+                      <defs>
+                        {filteredSummaries.slice(0, 8).map((summary, index) => (
+                          <linearGradient key={summary.gestor_id} id={`gradient-${index}`} x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor={CHART_COLORS[index % CHART_COLORS.length]} stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor={CHART_COLORS[index % CHART_COLORS.length]} stopOpacity={0}/>
+                          </linearGradient>
+                        ))}
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis 
+                        dataKey="monthLabel" 
+                        tick={{ fontSize: 12 }}
+                        className="text-muted-foreground"
+                      />
+                      <YAxis 
+                        domain={[0, 100]}
+                        tick={{ fontSize: 12 }}
+                        tickFormatter={(value) => `${value}%`}
+                        className="text-muted-foreground"
+                      />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'hsl(var(--card))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px'
+                        }}
+                        formatter={(value: number) => [`${value.toFixed(1)}%`, '']}
+                      />
+                      <Legend />
+                      {(selectedGestorForEvolution === 'all' 
+                        ? filteredSummaries.slice(0, 8) 
+                        : filteredSummaries.filter(g => g.gestor_id === selectedGestorForEvolution)
+                      ).map((summary, index) => (
+                        <Area
+                          key={summary.gestor_id}
+                          type="monotone"
+                          dataKey={summary.gestor_name}
+                          stroke={CHART_COLORS[index % CHART_COLORS.length]}
+                          fill={`url(#gradient-${index})`}
+                          strokeWidth={2}
+                          dot={{ r: 4, fill: CHART_COLORS[index % CHART_COLORS.length] }}
+                          activeDot={{ r: 6 }}
+                        />
+                      ))}
+                    </AreaChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-[400px] text-muted-foreground">
+                    No hi ha dades d'evolució disponibles
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Individual Gestor Cards with mini charts */}
+            {selectedGestorForEvolution === 'all' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {filteredSummaries.slice(0, 8).map((summary, index) => {
+                  const gestorData = evolutionData.map(d => ({
+                    month: d.monthLabel,
+                    value: d[summary.gestor_name] as number || 0
+                  }));
+                  const latestValue = gestorData[gestorData.length - 1]?.value || 0;
+                  const previousValue = gestorData[gestorData.length - 2]?.value || 0;
+                  const trend = latestValue - previousValue;
+
+                  return (
+                    <Card key={summary.gestor_id} className="overflow-hidden">
+                      <CardContent className="p-4">
+                        <div className="flex items-center gap-3 mb-3">
+                          <Avatar className="w-8 h-8">
+                            <AvatarImage src={summary.avatar_url || undefined} />
+                            <AvatarFallback className="text-xs">{getInitials(summary.gestor_name)}</AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm truncate">{summary.gestor_name}</p>
+                            <p className="text-xs text-muted-foreground truncate">{summary.gestor_oficina || '-'}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-2xl font-bold">{latestValue.toFixed(0)}%</span>
+                          <div className={`flex items-center text-sm ${trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {trend >= 0 ? <TrendingUp className="w-4 h-4 mr-1" /> : <TrendingDown className="w-4 h-4 mr-1" />}
+                            {Math.abs(trend).toFixed(1)}%
+                          </div>
+                        </div>
+                        <ResponsiveContainer width="100%" height={60}>
+                          <RechartsLineChart data={gestorData}>
+                            <Line 
+                              type="monotone" 
+                              dataKey="value" 
+                              stroke={CHART_COLORS[index % CHART_COLORS.length]}
+                              strokeWidth={2}
+                              dot={false}
+                            />
+                          </RechartsLineChart>
+                        </ResponsiveContainer>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </TabsContent>
       </Tabs>
     </div>
