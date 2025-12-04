@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts';
-import { Activity, Target, Building2, Package, Filter, X, GitCompare, TrendingUp, Award, BarChart3, Users } from 'lucide-react';
+import { Activity, Target, Building2, Package, Filter, X, GitCompare, TrendingUp, Award, BarChart3, Users, Home } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ThemeSelector } from '@/components/ThemeSelector';
+import { LanguageSelector } from '@/components/LanguageSelector';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
@@ -64,6 +68,7 @@ interface TopCompany {
 export function GestorDashboard() {
   const { t } = useLanguage();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
     const today = new Date();
@@ -459,18 +464,47 @@ export function GestorDashboard() {
 
   return (
     <div className="space-y-8">
-      {/* Encabezado con identidad del gestor */}
+      {/* Encabezado con identidad del gestor y controles de navegación */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">El Meu Dashboard</h1>
-          <p className="text-muted-foreground mt-1">
-            Vista exclusiva de les meves mètriques i objectius personals
-          </p>
+        <div className="flex items-center gap-6">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">El Meu Dashboard</h1>
+            <p className="text-muted-foreground mt-1">
+              Vista exclusiva de les meves mètriques i objectius personals
+            </p>
+          </div>
+          <Badge variant="outline" className="h-9 px-4 text-sm">
+            <Users className="h-4 w-4 mr-2" />
+            Gestor Empresa / Retail
+          </Badge>
         </div>
-        <Badge variant="outline" className="h-9 px-4 text-sm">
-          <Users className="h-4 w-4 mr-2" />
-          Gestor Personal
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/home')}
+            className="hover:bg-accent/50 transition-colors rounded-xl h-9 w-9"
+            title="Inicio"
+          >
+            <Home className="h-5 w-5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/profile')}
+            className="hover:bg-accent/50 transition-colors rounded-xl h-9 w-9"
+            title="Mi Perfil"
+          >
+            <Avatar className="h-7 w-7">
+              <AvatarImage src={user?.user_metadata?.avatar_url} />
+              <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                {user?.email?.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </Button>
+          <ThemeSelector />
+          <LanguageSelector />
+        </div>
       </div>
 
     <Tabs defaultValue="overview" className="space-y-6">
