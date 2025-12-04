@@ -28,6 +28,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
+import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 
 interface GestorStats {
   totalVisits: number;
@@ -728,48 +729,140 @@ export function GestorDashboard({
 
             {/* Quick Stats Summary */}
             <div className="grid gap-4 md:grid-cols-4">
-              <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg">
-                <CardContent className="p-4 flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20">
-                    <Activity className="h-6 w-6 text-primary" />
+              <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg overflow-hidden">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20">
+                      <Activity className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-2xl font-bold">{stats.totalVisits}</p>
+                      <p className="text-sm text-muted-foreground">Visites totals</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stats.totalVisits}</p>
-                    <p className="text-sm text-muted-foreground">Visites totals</p>
-                  </div>
+                  {monthlyData.length > 0 && (
+                    <div className="mt-3 h-12 -mx-2">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={monthlyData}>
+                          <defs>
+                            <linearGradient id="sparkVisits" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.4} />
+                              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <Area 
+                            type="monotone" 
+                            dataKey="visits" 
+                            stroke="hsl(var(--primary))" 
+                            strokeWidth={2}
+                            fill="url(#sparkVisits)" 
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
-              <Card className="bg-gradient-to-br from-chart-2/5 to-chart-2/10 border-chart-2/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg">
-                <CardContent className="p-4 flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-chart-2/20">
-                    <Target className="h-6 w-6 text-chart-2" />
+              <Card className="bg-gradient-to-br from-chart-2/5 to-chart-2/10 border-chart-2/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg overflow-hidden">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-chart-2/20">
+                      <Target className="h-6 w-6 text-chart-2" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-2xl font-bold">{stats.successRate}%</p>
+                      <p className="text-sm text-muted-foreground">Taxa d'èxit</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stats.successRate}%</p>
-                    <p className="text-sm text-muted-foreground">Taxa d'èxit</p>
-                  </div>
+                  {monthlyData.length > 0 && (
+                    <div className="mt-3 h-12 -mx-2">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={monthlyData.map(d => ({ ...d, rate: d.visits > 0 ? Math.round((d.successful / d.visits) * 100) : 0 }))}>
+                          <defs>
+                            <linearGradient id="sparkRate" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="hsl(var(--chart-2))" stopOpacity={0.4} />
+                              <stop offset="100%" stopColor="hsl(var(--chart-2))" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <Area 
+                            type="monotone" 
+                            dataKey="rate" 
+                            stroke="hsl(var(--chart-2))" 
+                            strokeWidth={2}
+                            fill="url(#sparkRate)" 
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
-              <Card className="bg-gradient-to-br from-chart-3/5 to-chart-3/10 border-chart-3/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg">
-                <CardContent className="p-4 flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-chart-3/20">
-                    <Building2 className="h-6 w-6 text-chart-3" />
+              <Card className="bg-gradient-to-br from-chart-3/5 to-chart-3/10 border-chart-3/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg overflow-hidden">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-chart-3/20">
+                      <Building2 className="h-6 w-6 text-chart-3" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-2xl font-bold">{stats.totalCompanies}</p>
+                      <p className="text-sm text-muted-foreground">Empreses</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stats.totalCompanies}</p>
-                    <p className="text-sm text-muted-foreground">Empreses</p>
-                  </div>
+                  {monthlyData.length > 0 && (
+                    <div className="mt-3 h-12 -mx-2">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={monthlyData}>
+                          <defs>
+                            <linearGradient id="sparkSuccessful" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="hsl(var(--chart-3))" stopOpacity={0.4} />
+                              <stop offset="100%" stopColor="hsl(var(--chart-3))" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <Area 
+                            type="monotone" 
+                            dataKey="successful" 
+                            stroke="hsl(var(--chart-3))" 
+                            strokeWidth={2}
+                            fill="url(#sparkSuccessful)" 
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
-              <Card className="bg-gradient-to-br from-chart-4/5 to-chart-4/10 border-chart-4/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg">
-                <CardContent className="p-4 flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-chart-4/20">
-                    <Package className="h-6 w-6 text-chart-4" />
+              <Card className="bg-gradient-to-br from-chart-4/5 to-chart-4/10 border-chart-4/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg overflow-hidden">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-chart-4/20">
+                      <Package className="h-6 w-6 text-chart-4" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-2xl font-bold">{stats.totalProducts}</p>
+                      <p className="text-sm text-muted-foreground">Productes</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stats.totalProducts}</p>
-                    <p className="text-sm text-muted-foreground">Productes</p>
-                  </div>
+                  {monthlyData.length > 0 && (
+                    <div className="mt-3 h-12 -mx-2">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={monthlyData}>
+                          <defs>
+                            <linearGradient id="sparkProducts" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="hsl(var(--chart-4))" stopOpacity={0.4} />
+                              <stop offset="100%" stopColor="hsl(var(--chart-4))" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <Area 
+                            type="monotone" 
+                            dataKey="visits" 
+                            stroke="hsl(var(--chart-4))" 
+                            strokeWidth={2}
+                            fill="url(#sparkProducts)" 
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
