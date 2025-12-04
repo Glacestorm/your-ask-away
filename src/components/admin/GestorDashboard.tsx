@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts';
-import { Activity, Target, Building2, Package, Filter, X, GitCompare, TrendingUp, Award, BarChart3, Users, Home } from 'lucide-react';
+import { Activity, Target, Building2, Package, Filter, X, GitCompare, TrendingUp, Award, BarChart3, Users, Home, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ThemeSelector } from '@/components/ThemeSelector';
 import { LanguageSelector } from '@/components/LanguageSelector';
@@ -65,7 +65,19 @@ interface TopCompany {
   vinculacion: number;
 }
 
-export function GestorDashboard() {
+interface GestorDashboardProps {
+  canGoBack?: boolean;
+  canGoForward?: boolean;
+  onGoBack?: () => void;
+  onGoForward?: () => void;
+}
+
+export function GestorDashboard({ 
+  canGoBack = false,
+  canGoForward = false,
+  onGoBack,
+  onGoForward
+}: GestorDashboardProps) {
   const { t } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -479,6 +491,31 @@ export function GestorDashboard() {
           </Badge>
         </div>
         <div className="flex items-center gap-2">
+          {/* Navigation History Buttons */}
+          {(onGoBack || onGoForward) && (
+            <div className="flex items-center gap-1 mr-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onGoBack}
+                disabled={!canGoBack}
+                className="h-8 w-8 rounded-lg hover:bg-accent/50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                title="Enrere"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onGoForward}
+                disabled={!canGoForward}
+                className="h-8 w-8 rounded-lg hover:bg-accent/50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                title="Endavant"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
           <Button
             variant="ghost"
             size="icon"

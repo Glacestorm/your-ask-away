@@ -176,7 +176,12 @@ const Admin = () => {
         }
         return <CommercialManagerAudit />;
       case 'gestor-dashboard':
-        return <GestorDashboard />;
+        return <GestorDashboard 
+          canGoBack={canGoBack}
+          canGoForward={canGoForward}
+          onGoBack={handleGoBack}
+          onGoForward={handleGoForward}
+        />;
       case 'audit':
         return <AuditorDashboard />;
       case 'map':
