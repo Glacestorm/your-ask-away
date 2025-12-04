@@ -38,6 +38,7 @@ import { NotificationPreferences } from '@/components/dashboard/NotificationPref
 import { SharedVisitsCalendar } from '@/components/admin/SharedVisitsCalendar';
 import { BulkGoalsAssignment } from '@/components/admin/BulkGoalsAssignment';
 import GoalsProgressTracker from '@/components/admin/GoalsProgressTracker';
+import { DirectorAlertsPanel } from '@/components/admin/DirectorAlertsPanel';
 import MapView from './MapView';
 
 const Admin = () => {
@@ -129,6 +130,7 @@ const Admin = () => {
       case 'notifications': return 'Preferències de Notificacions';
       case 'bulk-goals': return 'Assignació Massiva d\'Objectius';
       case 'goals-progress': return 'Seguiment d\'Objectius';
+      case 'director-alerts': return 'Alertes d\'Objectius en Risc';
       default: return '';
     }
   };
@@ -385,6 +387,17 @@ const Admin = () => {
             <GoalsProgressTracker />
           </div>
         );
+      case 'director-alerts':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager && !isOfficeDirector) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <DirectorAlertsPanel />;
       default:
         return null;
     }
