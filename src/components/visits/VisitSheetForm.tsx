@@ -139,6 +139,26 @@ export function VisitSheetForm({ visitId, companyId, open, onOpenChange, onSaved
         setTelefonoContacto(data.phone || '');
         setEmailContacto(data.email || '');
         setTipoCliente(data.client_type === 'cliente' ? 'Empresa' : 'Particular');
+        
+        // Auto-completar datos financieros de la empresa
+        if (data.facturacion_anual) setFacturacionAnual(data.facturacion_anual.toString());
+        if (data.turnover) setFacturacionAnual(data.turnover.toString());
+        if (data.employees) setTipoCliente(data.employees > 50 ? 'Gran Empresa' : data.employees > 10 ? 'Empresa' : 'Pyme');
+      }
+
+      // Obtener contacto principal
+      const { data: contacts } = await supabase
+        .from('company_contacts')
+        .select('*')
+        .eq('company_id', companyId)
+        .eq('is_primary', true)
+        .maybeSingle();
+
+      if (contacts) {
+        setPersonaContacto(contacts.contact_name || '');
+        setCargoContacto(contacts.position || '');
+        if (contacts.phone) setTelefonoContacto(contacts.phone);
+        if (contacts.email) setEmailContacto(contacts.email);
       }
     } catch (error) {
       console.error('Error fetching company:', error);
