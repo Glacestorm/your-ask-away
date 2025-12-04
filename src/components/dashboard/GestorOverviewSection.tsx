@@ -115,12 +115,14 @@ export function GestorOverviewSection({
       {/* Filtros Compactos - Full Width */}
       <Card className="border-muted/50 w-full">
         <CardContent className="py-4">
-          <div className="space-y-4">
-            {/* Selector de fechas - Full width */}
-            <DateRangeFilter 
-              dateRange={dateRange} 
-              onDateRangeChange={setDateRange}
-            />
+          <div className="flex flex-wrap items-start gap-4">
+            {/* Selector de fechas */}
+            <div className="flex-1 min-w-[300px]">
+              <DateRangeFilter 
+                dateRange={dateRange} 
+                onDateRangeChange={setDateRange}
+              />
+            </div>
 
             {/* Comparación de períodos */}
             <div className="flex items-center gap-2">
