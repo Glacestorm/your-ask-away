@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts';
-import { Activity, Target, Building2, Package, Filter, X, GitCompare, TrendingUp, Award, BarChart3, Users, Home, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Activity, Target, Building2, Package, Filter, X, GitCompare, TrendingUp, Award, BarChart3, Users, Home, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ThemeSelector } from '@/components/ThemeSelector';
 import { LanguageSelector } from '@/components/LanguageSelector';
@@ -546,10 +546,14 @@ export function GestorDashboard({
       </div>
 
     <Tabs defaultValue="overview" className="space-y-6">
-      <TabsList className="grid w-full grid-cols-3">
+      <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="overview" className="gap-2">
           <BarChart3 className="h-4 w-4" />
           {t('gestor.dashboard.tabs.overview')}
+        </TabsTrigger>
+        <TabsTrigger value="visits" className="gap-2">
+          <CalendarDays className="h-4 w-4" />
+          Visites
         </TabsTrigger>
         <TabsTrigger value="goals" className="gap-2">
           <Target className="h-4 w-4" />
@@ -560,6 +564,10 @@ export function GestorDashboard({
           {t('gestor.dashboard.tabs.history')}
         </TabsTrigger>
       </TabsList>
+
+      <TabsContent value="visits" className="space-y-6">
+        <QuickVisitManager gestorId={user?.id} />
+      </TabsContent>
 
       <TabsContent value="overview" className="space-y-6">
         <div className="space-y-8">
