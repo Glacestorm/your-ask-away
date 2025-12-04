@@ -2,31 +2,23 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts';
-import { Activity, Target, Building2, Package, Filter, X, GitCompare, TrendingUp, Award, BarChart3, Users, Home, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Activity, Target, Building2, Package, Users, Home, ChevronLeft, ChevronRight, CalendarDays, BarChart3, TrendingUp } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ThemeSelector } from '@/components/ThemeSelector';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { DateRangeFilter } from '@/components/dashboard/DateRangeFilter';
 import { DateRange } from 'react-day-picker';
-import { subMonths, format, subYears, startOfMonth, endOfMonth, differenceInMonths } from 'date-fns';
+import { subMonths, format, subYears, differenceInMonths } from 'date-fns';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PersonalGoalsTracker } from '@/components/dashboard/PersonalGoalsTracker';
 import { PersonalGoalsHistory } from '@/components/dashboard/PersonalGoalsHistory';
 import { QuickVisitManager } from '@/components/dashboard/QuickVisitManager';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
+import { GestorDashboardCard } from '@/components/dashboard/GestorDashboardCard';
+import { GestorOverviewSection } from '@/components/dashboard/GestorOverviewSection';
 
 interface GestorStats {
   totalVisits: number;
@@ -73,6 +65,8 @@ interface GestorDashboardProps {
   onGoForward?: () => void;
 }
 
+type ActiveSection = 'home' | 'overview' | 'visits' | 'goals' | 'history';
+
 export function GestorDashboard({ 
   canGoBack = false,
   canGoForward = false,
@@ -83,6 +77,7 @@ export function GestorDashboard({
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState<ActiveSection>('home');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
     const today = new Date();
     return { from: subMonths(today, 6), to: today };
@@ -209,7 +204,6 @@ export function GestorDashboard({
       const fromDate = format(dateRange!.from!, 'yyyy-MM-dd');
       const toDate = format(dateRange!.to!, 'yyyy-MM-dd');
 
-      // Obtener visitas del gestor en el período
       const { data: allVisits, error: visitsError } = await supabase
         .from('visits')
         .select('*, companies(name, vinculacion_entidad_1)')
@@ -220,10 +214,8 @@ export function GestorDashboard({
 
       if (visitsError) throw visitsError;
 
-      // Aplicar filtros adicionales
       let visits = allVisits || [];
 
-      // Filtrar por productos seleccionados
       if (selectedProducts.length > 0) {
         visits = visits.filter(visit => {
           if (!visit.productos_ofrecidos || !Array.isArray(visit.productos_ofrecidos)) return false;
@@ -231,7 +223,6 @@ export function GestorDashboard({
         });
       }
 
-      // Filtrar por rango de vinculación
       visits = visits.filter(visit => {
         const vinculacion = visit.companies?.vinculacion_entidad_1 || 0;
         return vinculacion >= minVinculacion && vinculacion <= maxVinculacion;
@@ -241,13 +232,11 @@ export function GestorDashboard({
       const successfulVisits = visits?.filter(v => v.result === 'Exitosa').length || 0;
       const successRate = totalVisits > 0 ? Math.round((successfulVisits / totalVisits) * 100) : 0;
 
-      // Obtener empresas asignadas
       const { count: companiesCount } = await supabase
         .from('companies')
         .select('*', { count: 'exact', head: true })
         .eq('gestor_id', user.id);
 
-      // Obtener productos únicos ofrecidos
       const uniqueProducts = new Set<string>();
       visits?.forEach(visit => {
         if (visit.productos_ofrecidos && Array.isArray(visit.productos_ofrecidos)) {
@@ -262,7 +251,6 @@ export function GestorDashboard({
         totalProducts: uniqueProducts.size
       });
 
-      // Agrupar visitas por mes
       const monthlyMap = new Map<string, { visits: number; successful: number }>();
       
       let current = new Date(dateRange!.from!);
@@ -294,7 +282,6 @@ export function GestorDashboard({
 
       setMonthlyData(monthlyDataArray);
 
-      // Últimas 10 visitas
       const recentVisitsData: RecentVisit[] = (visits?.slice(0, 10) || []).map(v => ({
         id: v.id,
         visit_date: v.visit_date,
@@ -305,7 +292,6 @@ export function GestorDashboard({
 
       setRecentVisits(recentVisitsData);
 
-      // Distribución de visitas por resultado
       const resultsMap = new Map<string, number>();
       visits?.forEach(visit => {
         const result = visit.result || 'Sin resultado';
@@ -317,7 +303,6 @@ export function GestorDashboard({
       }));
       setResultDistribution(resultDistData);
 
-      // Productos más ofrecidos
       const productsMap = new Map<string, number>();
       visits?.forEach(visit => {
         if (visit.productos_ofrecidos && Array.isArray(visit.productos_ofrecidos)) {
@@ -332,7 +317,6 @@ export function GestorDashboard({
         .slice(0, 10);
       setTopProducts(topProductsData);
 
-      // Empresas con mayor vinculación (aplicar filtro de rango)
       const { data: allCompanies, error: companiesError } = await supabase
         .from('companies')
         .select('name, vinculacion_entidad_1, vinculacion_entidad_2, vinculacion_entidad_3')
@@ -350,7 +334,6 @@ export function GestorDashboard({
       }));
       setTopCompanies(topCompaniesData);
 
-      // Obtener datos de comparación si está habilitado
       if (showComparison && comparisonDateRange?.from && comparisonDateRange?.to) {
         await fetchComparisonData();
       }
@@ -370,7 +353,6 @@ export function GestorDashboard({
       const fromDate = format(comparisonDateRange.from, 'yyyy-MM-dd');
       const toDate = format(comparisonDateRange.to, 'yyyy-MM-dd');
 
-      // Obtener visitas del período de comparación
       const { data: allCompVisits, error: compVisitsError } = await supabase
         .from('visits')
         .select('*, companies(name, vinculacion_entidad_1)')
@@ -381,7 +363,6 @@ export function GestorDashboard({
 
       if (compVisitsError) throw compVisitsError;
 
-      // Aplicar los mismos filtros
       let compVisits = allCompVisits || [];
 
       if (selectedProducts.length > 0) {
@@ -400,7 +381,6 @@ export function GestorDashboard({
       const successfulCompVisits = compVisits?.filter(v => v.result === 'Exitosa').length || 0;
       const compSuccessRate = totalCompVisits > 0 ? Math.round((successfulCompVisits / totalCompVisits) * 100) : 0;
 
-      // Productos únicos del período de comparación
       const compUniqueProducts = new Set<string>();
       compVisits?.forEach(visit => {
         if (visit.productos_ofrecidos && Array.isArray(visit.productos_ofrecidos)) {
@@ -411,11 +391,10 @@ export function GestorDashboard({
       setComparisonStats({
         totalVisits: totalCompVisits,
         successRate: compSuccessRate,
-        totalCompanies: stats.totalCompanies, // Same companies
+        totalCompanies: stats.totalCompanies,
         totalProducts: compUniqueProducts.size
       });
 
-      // Agrupar visitas de comparación por mes para el gráfico
       const compMonthlyMap = new Map<string, { visits: number; successful: number }>();
       
       let current = new Date(comparisonDateRange.from);
@@ -439,7 +418,6 @@ export function GestorDashboard({
         }
       });
 
-      // Combinar datos mensuales con datos de comparación
       setMonthlyData(prev => {
         const compArray = Array.from(compMonthlyMap.entries());
         return prev.map((item, index) => ({
@@ -461,23 +439,118 @@ export function GestorDashboard({
         <div className="grid gap-4 md:grid-cols-4">
           {[1, 2, 3, 4].map(i => (
             <Card key={i}>
-              <CardHeader>
-                <Skeleton className="h-4 w-24" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-8 w-16" />
+              <CardContent className="p-6">
+                <Skeleton className="h-48 w-full" />
               </CardContent>
             </Card>
           ))}
         </div>
-        <Skeleton className="h-96 w-full" />
       </div>
     );
   }
 
+  const cards = [
+    {
+      id: 'overview' as ActiveSection,
+      title: 'Visió General',
+      description: 'Mètriques clau, gràfics d\'evolució i anàlisi de rendiment',
+      icon: BarChart3,
+      color: 'hsl(var(--chart-1))',
+      stats: { value: stats.totalVisits, label: 'Visites totals' }
+    },
+    {
+      id: 'visits' as ActiveSection,
+      title: 'Gestió de Visites',
+      description: 'Crear, editar i consultar les teves visites',
+      icon: CalendarDays,
+      color: 'hsl(var(--chart-2))',
+      stats: { value: `${stats.successRate}%`, label: 'Taxa èxit' }
+    },
+    {
+      id: 'goals' as ActiveSection,
+      title: 'Objectius',
+      description: 'Seguiment dels teus objectius personals',
+      icon: Target,
+      color: 'hsl(var(--chart-3))',
+      stats: { value: stats.totalCompanies, label: 'Empreses' }
+    },
+    {
+      id: 'history' as ActiveSection,
+      title: 'Historial',
+      description: 'Anàlisi detallat i benchmarking del teu rendiment',
+      icon: TrendingUp,
+      color: 'hsl(var(--chart-4))',
+      stats: { value: stats.totalProducts, label: 'Productes' }
+    }
+  ];
+
+  const renderContent = () => {
+    switch (activeSection) {
+      case 'overview':
+        return (
+          <GestorOverviewSection
+            stats={stats}
+            comparisonStats={comparisonStats}
+            monthlyData={monthlyData}
+            recentVisits={recentVisits}
+            resultDistribution={resultDistribution}
+            topProducts={topProducts}
+            topCompanies={topCompanies}
+            dateRange={dateRange}
+            setDateRange={setDateRange}
+            comparisonPeriod={comparisonPeriod}
+            setComparisonPeriod={setComparisonPeriod}
+            comparisonDateRange={comparisonDateRange}
+            showComparison={showComparison}
+            showFilters={showFilters}
+            setShowFilters={setShowFilters}
+            hasActiveFilters={hasActiveFilters}
+            clearFilters={clearFilters}
+            availableProducts={availableProducts}
+            selectedProducts={selectedProducts}
+            toggleProductFilter={toggleProductFilter}
+            minVinculacion={minVinculacion}
+            setMinVinculacion={setMinVinculacion}
+            maxVinculacion={maxVinculacion}
+            setMaxVinculacion={setMaxVinculacion}
+            onBack={() => setActiveSection('home')}
+          />
+        );
+      case 'visits':
+        return (
+          <div className="animate-fade-in">
+            <Button variant="ghost" onClick={() => setActiveSection('home')} className="mb-4">
+              ← Tornar al panell
+            </Button>
+            <QuickVisitManager gestorId={user?.id} />
+          </div>
+        );
+      case 'goals':
+        return (
+          <div className="animate-fade-in">
+            <Button variant="ghost" onClick={() => setActiveSection('home')} className="mb-4">
+              ← Tornar al panell
+            </Button>
+            <PersonalGoalsTracker />
+          </div>
+        );
+      case 'history':
+        return (
+          <div className="animate-fade-in">
+            <Button variant="ghost" onClick={() => setActiveSection('home')} className="mb-4">
+              ← Tornar al panell
+            </Button>
+            <PersonalGoalsHistory />
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="space-y-8">
-      {/* Encabezado con identidad del gestor y controles de navegación */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-6">
           <div>
@@ -492,7 +565,6 @@ export function GestorDashboard({
           </Badge>
         </div>
         <div className="flex items-center gap-2">
-          {/* Navigation History Buttons */}
           {(onGoBack || onGoForward) && (
             <div className="flex items-center gap-1 mr-1">
               <Button
@@ -545,506 +617,75 @@ export function GestorDashboard({
         </div>
       </div>
 
-    <Tabs defaultValue="overview" className="space-y-6">
-      <TabsList className="grid w-full grid-cols-4">
-        <TabsTrigger value="overview" className="gap-2">
-          <BarChart3 className="h-4 w-4" />
-          {t('gestor.dashboard.tabs.overview')}
-        </TabsTrigger>
-        <TabsTrigger value="visits" className="gap-2">
-          <CalendarDays className="h-4 w-4" />
-          Visites
-        </TabsTrigger>
-        <TabsTrigger value="goals" className="gap-2">
-          <Target className="h-4 w-4" />
-          {t('gestor.dashboard.tabs.goals')}
-        </TabsTrigger>
-        <TabsTrigger value="history" className="gap-2">
-          <TrendingUp className="h-4 w-4" />
-          {t('gestor.dashboard.tabs.history')}
-        </TabsTrigger>
-      </TabsList>
-
-      <TabsContent value="visits" className="space-y-6">
-        <QuickVisitManager gestorId={user?.id} />
-      </TabsContent>
-
-      <TabsContent value="overview" className="space-y-6">
-        <div className="space-y-8">
-
-      {/* Filtros */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Filter className="h-5 w-5" />
-                {t('gestor.dashboard.filters')}
-              </CardTitle>
-              <CardDescription>{t('gestor.dashboard.filtersDesc')}</CardDescription>
-            </div>
-            <div className="flex items-center gap-2">
-              {hasActiveFilters && (
-                <Button variant="ghost" size="sm" onClick={clearFilters}>
-                  <X className="h-4 w-4 mr-2" />
-                  {t('gestor.dashboard.clearFilters')}
-                </Button>
-              )}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowFilters(!showFilters)}
-              >
-                {showFilters ? t('gestor.dashboard.hideFilters') : t('gestor.dashboard.showFilters')}
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Filtro de fecha */}
-          <div>
-            <Label>{t('gestor.dashboard.dateRange')}</Label>
-            <DateRangeFilter 
-              dateRange={dateRange} 
-              onDateRangeChange={setDateRange}
-            />
+      {/* Main Content */}
+      {activeSection === 'home' ? (
+        <div className="space-y-8 animate-fade-in">
+          {/* 3D Cards Grid */}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {cards.map((card) => (
+              <GestorDashboardCard
+                key={card.id}
+                title={card.title}
+                description={card.description}
+                icon={card.icon}
+                color={card.color}
+                onClick={() => setActiveSection(card.id)}
+                stats={card.stats}
+              />
+            ))}
           </div>
 
-          {/* Comparación de períodos */}
-          <div className="space-y-2 border-t pt-4">
-            <Label className="flex items-center gap-2">
-              <GitCompare className="h-4 w-4" />
-              {t('gestor.dashboard.periodComparison')}
-            </Label>
-            <Select value={comparisonPeriod} onValueChange={setComparisonPeriod}>
-              <SelectTrigger>
-                <SelectValue placeholder={t('gestor.dashboard.selectComparison')} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">{t('gestor.dashboard.noComparison')}</SelectItem>
-                <SelectItem value="previous_month">{t('gestor.dashboard.previousPeriod')}</SelectItem>
-                <SelectItem value="same_last_year">{t('gestor.dashboard.sameLastYear')}</SelectItem>
-                <SelectItem value="previous_6_months">{t('gestor.dashboard.previous6Months')}</SelectItem>
-              </SelectContent>
-            </Select>
-            {showComparison && comparisonDateRange && (
-              <p className="text-xs text-muted-foreground">
-                {t('gestor.dashboard.comparingWith')}: {format(comparisonDateRange.from!, 'dd/MM/yyyy')} - {format(comparisonDateRange.to!, 'dd/MM/yyyy')}
-              </p>
-            )}
-          </div>
-
-          {showFilters && (
-            <>
-              {/* Filtro de productos */}
-              <div className="space-y-2">
-                <Label>{t('gestor.dashboard.filterByProducts')}</Label>
-                <ScrollArea className="h-32 border rounded-md p-3">
-                  <div className="space-y-2">
-                    {availableProducts.map(product => (
-                      <div key={product} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`product-${product}`}
-                          checked={selectedProducts.includes(product)}
-                          onCheckedChange={() => toggleProductFilter(product)}
-                        />
-                        <label
-                          htmlFor={`product-${product}`}
-                          className="text-sm cursor-pointer"
-                        >
-                          {product}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-                {selectedProducts.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {selectedProducts.map(product => (
-                      <Badge key={product} variant="secondary" className="text-xs">
-                        {product}
-                        <X
-                          className="h-3 w-3 ml-1 cursor-pointer"
-                          onClick={() => toggleProductFilter(product)}
-                        />
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Filtro de rango de vinculación */}
-              <div className="space-y-2">
-                <Label>{t('gestor.dashboard.vinculacionRange')}</Label>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">{t('gestor.dashboard.minVinculacion')}</Label>
-                    <Input
-                      type="number"
-                      min={0}
-                      max={100}
-                      value={minVinculacion}
-                      onChange={(e) => setMinVinculacion(Math.max(0, Math.min(100, Number(e.target.value))))}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-muted-foreground">{t('gestor.dashboard.maxVinculacion')}</Label>
-                    <Input
-                      type="number"
-                      min={0}
-                      max={100}
-                      value={maxVinculacion}
-                      onChange={(e) => setMaxVinculacion(Math.max(0, Math.min(100, Number(e.target.value))))}
-                    />
-                  </div>
+          {/* Quick Stats Summary */}
+          <div className="grid gap-4 md:grid-cols-4">
+            <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20">
+                  <Activity className="h-6 w-6 text-primary" />
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  {t('gestor.dashboard.vinculacionRangeDesc')}: {minVinculacion}% - {maxVinculacion}%
-                </p>
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* SECCIÓN 1: MÈTRIQUES CLAU (KPIs Principals) */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-            <Award className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold">Mètriques Clau</h2>
-            <p className="text-sm text-muted-foreground">Indicadors principals del meu rendiment</p>
-          </div>
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="border-2">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('gestor.dashboard.totalVisits')}</CardTitle>
-              <Activity className="h-5 w-5 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-primary">{stats.totalVisits}</div>
-              {showComparison && (
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="text-xs text-muted-foreground">
-                    vs {comparisonStats.totalVisits}
-                  </span>
-                  {stats.totalVisits > comparisonStats.totalVisits ? (
-                    <Badge variant="default" className="bg-green-500/10 text-green-600 border-green-500/20">
-                      ↑ {stats.totalVisits - comparisonStats.totalVisits}
-                    </Badge>
-                  ) : stats.totalVisits < comparisonStats.totalVisits ? (
-                    <Badge variant="default" className="bg-red-500/10 text-red-600 border-red-500/20">
-                      ↓ {comparisonStats.totalVisits - stats.totalVisits}
-                    </Badge>
-                  ) : null}
+                <div>
+                  <p className="text-2xl font-bold">{stats.totalVisits}</p>
+                  <p className="text-sm text-muted-foreground">Visites totals</p>
                 </div>
-              )}
-              <p className="text-xs text-muted-foreground mt-1">
-                {t('gestor.dashboard.visitsDesc')}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 border-primary/20 bg-primary/5">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('gestor.dashboard.successRate')}</CardTitle>
-              <Target className="h-5 w-5 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-primary">{stats.successRate}%</div>
-              {showComparison && (
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="text-xs text-muted-foreground">
-                    vs {comparisonStats.successRate}%
-                  </span>
-                  {stats.successRate > comparisonStats.successRate ? (
-                    <Badge variant="default" className="bg-green-500/10 text-green-600 border-green-500/20">
-                      ↑ {stats.successRate - comparisonStats.successRate}%
-                    </Badge>
-                  ) : stats.successRate < comparisonStats.successRate ? (
-                    <Badge variant="default" className="bg-red-500/10 text-red-600 border-red-500/20">
-                      ↓ {comparisonStats.successRate - stats.successRate}%
-                    </Badge>
-                  ) : null}
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-chart-2/5 to-chart-2/10 border-chart-2/20">
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-chart-2/20">
+                  <Target className="h-6 w-6 text-chart-2" />
                 </div>
-              )}
-              <p className="text-xs text-muted-foreground mt-1">{t('gestor.dashboard.successDesc')}</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('gestor.dashboard.companies')}</CardTitle>
-              <Building2 className="h-5 w-5 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-primary">{stats.totalCompanies}</div>
-              <p className="text-xs text-muted-foreground mt-1">{t('gestor.dashboard.companiesDesc')}</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('gestor.dashboard.products')}</CardTitle>
-              <Package className="h-5 w-5 text-primary" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-primary">{stats.totalProducts}</div>
-              {showComparison && (
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="text-xs text-muted-foreground">
-                    vs {comparisonStats.totalProducts}
-                  </span>
+                <div>
+                  <p className="text-2xl font-bold">{stats.successRate}%</p>
+                  <p className="text-sm text-muted-foreground">Taxa d'èxit</p>
                 </div>
-              )}
-              <p className="text-xs text-muted-foreground mt-1">{t('gestor.dashboard.productsDesc')}</p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      <Separator className="my-8" />
-
-      {/* SECCIÓN 2: EVOLUCIÓ TEMPORAL */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-chart-2/10">
-            <TrendingUp className="h-5 w-5 text-chart-2" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold">Evolució Temporal</h2>
-            <p className="text-sm text-muted-foreground">Rendiment al llarg del temps</p>
-          </div>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('gestor.dashboard.monthlyEvolution')}</CardTitle>
-            <CardDescription>{t('gestor.dashboard.monthlyEvolutionDesc')}</CardDescription>
-          </CardHeader>
-          <CardContent>
-          {monthlyData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="visits" 
-                  stroke="hsl(var(--chart-1))" 
-                  strokeWidth={2}
-                  name={t('gestor.dashboard.currentPeriod') + ' - ' + t('gestor.dashboard.totalVisits')}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="successful" 
-                  stroke="hsl(var(--chart-2))" 
-                  strokeWidth={2}
-                  name={t('gestor.dashboard.currentPeriod') + ' - ' + t('gestor.dashboard.successfulVisits')}
-                />
-                {showComparison && (
-                  <>
-                    <Line 
-                      type="monotone" 
-                      dataKey="comparisonVisits" 
-                      stroke="hsl(var(--chart-3))" 
-                      strokeWidth={2}
-                      strokeDasharray="5 5"
-                      name={t('gestor.dashboard.comparisonPeriod') + ' - ' + t('gestor.dashboard.totalVisits')}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="comparisonSuccessful" 
-                      stroke="hsl(var(--chart-4))" 
-                      strokeWidth={2}
-                      strokeDasharray="5 5"
-                      name={t('gestor.dashboard.comparisonPeriod') + ' - ' + t('gestor.dashboard.successfulVisits')}
-                    />
-                  </>
-                )}
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex h-[300px] items-center justify-center text-muted-foreground">
-              {t('director.noData')}
-            </div>
-          )}
-        </CardContent>
-        </Card>
-      </div>
-
-      <Separator className="my-8" />
-
-      {/* SECCIÓN 3: ANÀLISI DE RENDIMENT */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-chart-3/10">
-            <BarChart3 className="h-5 w-5 text-chart-3" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold">Anàlisi de Rendiment</h2>
-            <p className="text-sm text-muted-foreground">Detall dels meus resultats i empreses</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-chart-3/5 to-chart-3/10 border-chart-3/20">
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-chart-3/20">
+                  <Building2 className="h-6 w-6 text-chart-3" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{stats.totalCompanies}</p>
+                  <p className="text-sm text-muted-foreground">Empreses</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-gradient-to-br from-chart-4/5 to-chart-4/10 border-chart-4/20">
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-chart-4/20">
+                  <Package className="h-6 w-6 text-chart-4" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{stats.totalProducts}</p>
+                  <p className="text-sm text-muted-foreground">Productes</p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Distribución de visitas por resultado */}
-          <Card>
-        <CardHeader>
-          <CardTitle>{t('gestor.dashboard.resultDistribution')}</CardTitle>
-          <CardDescription>{t('gestor.dashboard.resultDistributionDesc')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {resultDistribution.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={resultDistribution}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="result" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="count" fill="hsl(var(--chart-1))" name={t('gestor.dashboard.visits')} />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex h-[300px] items-center justify-center text-muted-foreground">
-              {t('director.noData')}
-            </div>
-          )}
-          </CardContent>
-        </Card>
-        </div>
-
-        {/* Productos más ofrecidos - ancho completo */}
-        <Card>
-        <CardHeader>
-          <CardTitle>{t('gestor.dashboard.topProducts')}</CardTitle>
-          <CardDescription>{t('gestor.dashboard.topProductsDesc')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {topProducts.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={topProducts} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" />
-                <YAxis dataKey="product" type="category" width={120} />
-                <Tooltip />
-                <Bar dataKey="count" fill="hsl(var(--chart-2))" name={t('gestor.dashboard.timesOffered')} />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex h-[300px] items-center justify-center text-muted-foreground">
-              {t('director.noData')}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Empresas con mayor vinculación */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('gestor.dashboard.topCompanies')}</CardTitle>
-          <CardDescription>{t('gestor.dashboard.topCompaniesDesc')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {topCompanies.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={topCompanies} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" />
-                <YAxis dataKey="name" type="category" width={150} />
-                <Tooltip />
-                <Bar dataKey="vinculacion" fill="hsl(var(--chart-3))" name={t('gestor.dashboard.vinculacion')} />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex h-[300px] items-center justify-center text-muted-foreground">
-              {t('director.noData')}
-            </div>
-          )}
-          </CardContent>
-        </Card>
-      </div>
-
-      <Separator className="my-8" />
-
-      {/* SECCIÓN 4: ACTIVITAT RECENT */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-chart-1/10">
-            <Activity className="h-5 w-5 text-chart-1" />
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold">Activitat Recent</h2>
-            <p className="text-sm text-muted-foreground">Les meves últimes visites</p>
-          </div>
-        </div>
-
-        <Card>
-        <CardHeader>
-          <CardTitle>{t('gestor.dashboard.recentVisits')}</CardTitle>
-          <CardDescription>{t('gestor.dashboard.recentVisitsDesc')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('gestor.dashboard.date')}</TableHead>
-                <TableHead>{t('gestor.dashboard.company')}</TableHead>
-                <TableHead>{t('gestor.dashboard.result')}</TableHead>
-                <TableHead>{t('gestor.dashboard.notes')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recentVisits.length > 0 ? (
-                recentVisits.map((visit) => (
-                  <TableRow key={visit.id}>
-                    <TableCell>{format(new Date(visit.visit_date), 'dd/MM/yyyy')}</TableCell>
-                    <TableCell className="font-medium">{visit.company_name}</TableCell>
-                    <TableCell>
-                      <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
-                        visit.result === 'Exitosa' 
-                          ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400' 
-                          : 'bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400'
-                      }`}>
-                        {visit.result}
-                      </span>
-                    </TableCell>
-                    <TableCell className="max-w-xs truncate">{visit.notes}</TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground">
-                    {t('director.noData')}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-        </Card>
-      </div>
-        </div>
-      </TabsContent>
-
-      <TabsContent value="goals">
-        <PersonalGoalsTracker />
-      </TabsContent>
-
-      <TabsContent value="history">
-        <PersonalGoalsHistory />
-      </TabsContent>
-    </Tabs>
-
-      {/* Quick Visit Manager FAB */}
-      <QuickVisitManager gestorId={user?.id} />
+      ) : (
+        renderContent()
+      )}
     </div>
   );
 }
