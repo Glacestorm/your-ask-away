@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { Filter, CalendarDays } from 'lucide-react';
+import { CalendarDays } from 'lucide-react';
 import { format, subMonths, subDays, startOfYear, endOfYear } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { DateRange } from 'react-day-picker';
@@ -54,121 +53,102 @@ export function DateRangeFilter({ dateRange, onDateRangeChange }: DateRangeFilte
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Filter className="h-5 w-5" />
-          {t('dateFilter.title')}
-        </CardTitle>
-        <CardDescription>
-          {t('dateFilter.subtitle')}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-col gap-4">
-          {/* Quick Filters */}
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={selectedPeriod === 'last7days' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setPredefinedPeriod('last7days')}
-            >
-              {t('dateFilter.last7days')}
-            </Button>
-            <Button
-              variant={selectedPeriod === 'lastMonth' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setPredefinedPeriod('lastMonth')}
-            >
-              {t('dateFilter.lastMonth')}
-            </Button>
-            <Button
-              variant={selectedPeriod === 'last3months' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setPredefinedPeriod('last3months')}
-            >
-              {t('dateFilter.last3months')}
-            </Button>
-            <Button
-              variant={selectedPeriod === 'last6months' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setPredefinedPeriod('last6months')}
-            >
-              {t('dateFilter.last6months')}
-            </Button>
-            <Button
-              variant={selectedPeriod === 'thisYear' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setPredefinedPeriod('thisYear')}
-            >
-              {t('dateFilter.thisYear')}
-            </Button>
-            <Button
-              variant={selectedPeriod === 'lastYear' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setPredefinedPeriod('lastYear')}
-            >
-              {t('dateFilter.lastYear')}
-            </Button>
-          </div>
+    <div className="space-y-3">
+      {/* Quick Filters */}
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant={selectedPeriod === 'last7days' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setPredefinedPeriod('last7days')}
+        >
+          {t('dateFilter.last7days')}
+        </Button>
+        <Button
+          variant={selectedPeriod === 'lastMonth' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setPredefinedPeriod('lastMonth')}
+        >
+          {t('dateFilter.lastMonth')}
+        </Button>
+        <Button
+          variant={selectedPeriod === 'last3months' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setPredefinedPeriod('last3months')}
+        >
+          {t('dateFilter.last3months')}
+        </Button>
+        <Button
+          variant={selectedPeriod === 'last6months' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setPredefinedPeriod('last6months')}
+        >
+          {t('dateFilter.last6months')}
+        </Button>
+        <Button
+          variant={selectedPeriod === 'thisYear' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setPredefinedPeriod('thisYear')}
+        >
+          {t('dateFilter.thisYear')}
+        </Button>
+        <Button
+          variant={selectedPeriod === 'lastYear' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setPredefinedPeriod('lastYear')}
+        >
+          {t('dateFilter.lastYear')}
+        </Button>
+      </div>
 
-          {/* Custom Date Range Picker */}
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <Popover modal={true}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    'w-full sm:w-auto justify-start text-left font-normal',
-                    !dateRange && 'text-muted-foreground'
-                  )}
-                >
-                  <CalendarDays className="mr-2 h-4 w-4" />
-                  {dateRange?.from ? (
-                    dateRange.to ? (
-                      <>
-                        {format(dateRange.from, 'dd/MM/yyyy')} -{' '}
-                        {format(dateRange.to, 'dd/MM/yyyy')}
-                      </>
-                    ) : (
-                      format(dateRange.from, 'dd/MM/yyyy')
-                    )
-                  ) : (
-                    <span>{t('dateFilter.customRange')}</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent 
-                className="w-auto p-0 z-[100] bg-background border shadow-lg" 
-                align="start"
-                side="bottom"
-                sideOffset={10}
-                avoidCollisions={true}
-                collisionPadding={20}
-              >
-                <Calendar
-                  initialFocus
-                  mode="range"
-                  defaultMonth={dateRange?.from}
-                  selected={dateRange}
-                  onSelect={(range) => {
-                    onDateRangeChange(range);
-                    setSelectedPeriod('custom');
-                  }}
-                  numberOfMonths={2}
-                  className={cn('p-3 pointer-events-auto bg-background')}
-                />
-              </PopoverContent>
-            </Popover>
-            
-            {dateRange?.from && dateRange?.to && (
-              <div className="text-sm text-muted-foreground">
-                📊 Datos: {format(dateRange.from, 'dd/MM/yyyy')} - {format(dateRange.to, 'dd/MM/yyyy')}
-              </div>
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+      {/* Custom Date Range Picker */}
+      <div className="flex items-center gap-3">
+        <Popover modal={true}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className={cn(
+                'justify-start text-left font-normal',
+                !dateRange && 'text-muted-foreground'
+              )}
+            >
+              <CalendarDays className="mr-2 h-4 w-4" />
+              {dateRange?.from ? (
+                dateRange.to ? (
+                  <>
+                    {format(dateRange.from, 'dd/MM/yyyy')} -{' '}
+                    {format(dateRange.to, 'dd/MM/yyyy')}
+                  </>
+                ) : (
+                  format(dateRange.from, 'dd/MM/yyyy')
+                )
+              ) : (
+                <span>{t('dateFilter.customRange')}</span>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent 
+            className="w-auto p-0 z-[100] bg-background border shadow-lg" 
+            align="start"
+            side="bottom"
+            sideOffset={10}
+            avoidCollisions={true}
+            collisionPadding={20}
+          >
+            <Calendar
+              initialFocus
+              mode="range"
+              defaultMonth={dateRange?.from}
+              selected={dateRange}
+              onSelect={(range) => {
+                onDateRangeChange(range);
+                setSelectedPeriod('custom');
+              }}
+              numberOfMonths={2}
+              className={cn('p-3 pointer-events-auto bg-background')}
+            />
+          </PopoverContent>
+        </Popover>
+      </div>
+    </div>
   );
 }
