@@ -54,7 +54,7 @@ const menuOptions: MenuOption[] = [
     roles: ['superadmin', 'responsable_comercial']
   },
   {
-    title: 'El Meu Dashboard',
+    title: 'Gestor Empresa / Retail',
     description: 'Dashboard personal del gestor',
     icon: Users,
     path: '/admin?section=gestor-dashboard',
