@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { MapContainer } from '@/components/map/MapContainer';
 import { MapSidebar } from '@/components/map/MapSidebar';
@@ -22,6 +22,7 @@ interface MapViewProps {
 const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProps) => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   
   const [companies, setCompanies] = useState<CompanyWithDetails[]>([]);
   const [statusColors, setStatusColors] = useState<StatusColor[]>([]);
@@ -92,6 +93,22 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
       fetchData();
     }
   }, [user]);
+
+  // Handle company parameter from URL
+  useEffect(() => {
+    const companyId = searchParams.get('company');
+    if (companyId && companies.length > 0) {
+      const company = companies.find(c => c.id === companyId);
+      if (company) {
+        setSelectedCompany(company);
+        setSidebarOpen(true);
+        // Clear the company parameter from URL after selection
+        const newParams = new URLSearchParams(searchParams);
+        newParams.delete('company');
+        setSearchParams(newParams, { replace: true });
+      }
+    }
+  }, [searchParams, companies]);
 
   const fetchData = async () => {
     try {

@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Map, Building2, MapPin, TrendingUp } from 'lucide-react';
+import { Map, Building2, MapPin, TrendingUp, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useEffect, useState } from 'react';
@@ -123,20 +123,27 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
             <div className="space-y-1.5">
               <p className="text-xs font-medium text-muted-foreground">Top empreses per vinculació:</p>
               {companies.map((company) => (
-                <div 
+                <button 
                   key={company.id}
-                  className="flex items-center justify-between py-1.5 px-2 rounded-md bg-muted/50 hover:bg-muted transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/admin?section=map&company=${company.id}`);
+                  }}
+                  className="w-full flex items-center justify-between py-1.5 px-2 rounded-md bg-muted/50 hover:bg-primary/10 hover:border-primary/30 border border-transparent transition-all group cursor-pointer text-left"
                 >
                   <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <MapPin className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                    <span className="text-xs truncate">{company.name}</span>
+                    <MapPin className="h-3 w-3 text-muted-foreground group-hover:text-primary flex-shrink-0 transition-colors" />
+                    <span className="text-xs truncate group-hover:text-primary transition-colors">{company.name}</span>
                   </div>
-                  {company.vinculacion_entidad_1 !== null && (
-                    <span className="text-xs font-medium text-primary ml-2">
-                      {company.vinculacion_entidad_1}%
-                    </span>
-                  )}
-                </div>
+                  <div className="flex items-center gap-1.5">
+                    {company.vinculacion_entidad_1 !== null && (
+                      <span className="text-xs font-medium text-primary">
+                        {company.vinculacion_entidad_1}%
+                      </span>
+                    )}
+                    <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                </button>
               ))}
             </div>
           ) : (
