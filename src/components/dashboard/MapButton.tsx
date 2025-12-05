@@ -76,30 +76,35 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
   const [monthlyVisits, setMonthlyVisits] = useState<MonthlyVisits[]>([]);
   const [showYoY, setShowYoY] = useState(true);
   const [chartViewMode, setChartViewMode] = useState<'chart' | 'table'>('chart');
+  const [monthRange, setMonthRange] = useState<3 | 6 | 12>(6);
 
   useEffect(() => {
     if (user?.id) {
       fetchCompanyPreview();
-      fetchMonthlyVisits();
     }
   }, [user?.id]);
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchMonthlyVisits();
+    }
+  }, [user?.id, monthRange]);
 
   const fetchMonthlyVisits = async () => {
     if (!user?.id) return;
     try {
-      const sixMonthsAgo = startOfMonth(subMonths(new Date(), 5));
-      const eighteenMonthsAgo = startOfMonth(subMonths(new Date(), 17)); // For last year comparison
+      const monthsAgo = startOfMonth(subMonths(new Date(), monthRange - 1));
+      const dataStartDate = startOfMonth(subMonths(new Date(), monthRange + 11)); // For last year comparison
       
       const { data } = await supabase
         .from('visits')
         .select('visit_date')
         .eq('gestor_id', user.id)
-        .gte('visit_date', format(eighteenMonthsAgo, 'yyyy-MM-dd'));
+        .gte('visit_date', format(dataStartDate, 'yyyy-MM-dd'));
 
       if (data) {
-        // Generate last 6 months with YoY comparison
         const months: MonthlyVisits[] = [];
-        for (let i = 5; i >= 0; i--) {
+        for (let i = monthRange - 1; i >= 0; i--) {
           const monthDate = subMonths(new Date(), i);
           const monthStart = startOfMonth(monthDate);
           const monthEnd = endOfMonth(monthDate);
@@ -479,9 +484,10 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
               : currentMonth > 0 ? 100 : 0;
             const isPositive = monthChange >= 0;
             
-            // Calculate trend line points for 6 months (SVG coordinates)
+            // Calculate trend line points (SVG coordinates)
+            const barCount = monthlyVisits.length + 1; // +1 for prediction
             const trendPoints = monthlyVisits.map((m, i) => {
-              const x = (i / 6) * 100; // 6 bars total (including prediction)
+              const x = (i / barCount) * 100;
               const y = 100 - ((m.count / maxCount) * 80);
               return `${x},${y}`;
             }).join(' ');
@@ -490,11 +496,11 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
             const areaPoints = [
               '0,100', // bottom left
               ...monthlyVisits.map((m, i) => {
-                const x = (i / 6) * 100;
+                const x = (i / barCount) * 100;
                 const y = 100 - ((m.count / maxCount) * 80);
                 return `${x},${y}`;
               }),
-              `${((monthlyVisits.length - 1) / 6) * 100},100` // bottom right
+              `${((monthlyVisits.length - 1) / barCount) * 100},100` // bottom right
             ].join(' ');
             
             // Calculate best and worst YoY months
@@ -514,7 +520,7 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     <BarChart3 className="h-3 w-3 text-muted-foreground" />
-                    <p className="text-[10px] text-muted-foreground">Evolució visites (6 mesos):</p>
+                    <p className="text-[10px] text-muted-foreground">Evolució visites ({monthRange} mesos):</p>
                   </div>
                   <div className="flex items-center gap-1">
                     {/* Chart/Table Toggle */}
@@ -565,6 +571,25 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                         </Tooltip>
                       </TooltipProvider>
                     )}
+                    {/* Month Range Selector */}
+                    <div className="flex items-center gap-0.5 bg-muted/50 rounded p-0.5">
+                      {([3, 6, 12] as const).map((range) => (
+                        <button
+                          key={range}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setMonthRange(range);
+                          }}
+                          className={`px-1.5 py-0.5 rounded text-[9px] font-medium transition-all ${
+                            monthRange === range
+                              ? 'bg-primary text-primary-foreground'
+                              : 'text-muted-foreground hover:text-foreground'
+                          }`}
+                        >
+                          {range}m
+                        </button>
+                      ))}
+                    </div>
                     {/* Month comparison indicator */}
                     <div className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-medium ${
                       isPositive 
@@ -623,7 +648,7 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                         />
                         {/* Trend line dots */}
                         {monthlyVisits.map((m, i) => {
-                          const x = (i / 6) * 100;
+                          const x = (i / barCount) * 100;
                           const y = 100 - ((m.count / maxCount) * 80);
                           return (
                             <circle
@@ -846,7 +871,7 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                           </span>
                         )}
                         {(yoyChange === null || !showYoY) && (
-                          <span>Mitjana: {Math.round(totalThisYear / 6)}/mes</span>
+                          <span>Mitjana: {Math.round(totalThisYear / monthlyVisits.length)}/mes</span>
                         )}
                       </div>
                     </div>
@@ -933,7 +958,7 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                           <span className="text-muted-foreground/60">({totalLastYear} ant.)</span>
                         )}
                       </div>
-                      <span>Mitjana: {Math.round(totalThisYear / 6)}/mes</span>
+                      <span>Mitjana: {Math.round(totalThisYear / monthlyVisits.length)}/mes</span>
                     </div>
                   </div>
                 )}
