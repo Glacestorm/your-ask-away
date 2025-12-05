@@ -433,7 +433,18 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
 
           {/* Mini visits evolution chart */}
           {monthlyVisits.length > 0 && (() => {
-            const maxCount = Math.max(...monthlyVisits.map(m => m.count), 1);
+            // Calculate prediction using linear regression
+            const n = monthlyVisits.length;
+            const sumX = monthlyVisits.reduce((sum, _, i) => sum + i, 0);
+            const sumY = monthlyVisits.reduce((sum, m) => sum + m.count, 0);
+            const sumXY = monthlyVisits.reduce((sum, m, i) => sum + i * m.count, 0);
+            const sumX2 = monthlyVisits.reduce((sum, _, i) => sum + i * i, 0);
+            const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+            const intercept = (sumY - slope * sumX) / n;
+            const predictedCount = Math.max(0, Math.round(slope * n + intercept));
+            
+            const allCounts = [...monthlyVisits.map(m => m.count), predictedCount];
+            const maxCount = Math.max(...allCounts, 1);
             const currentMonth = monthlyVisits[monthlyVisits.length - 1]?.count || 0;
             const previousMonth = monthlyVisits[monthlyVisits.length - 2]?.count || 0;
             const monthChange = previousMonth > 0 
@@ -441,12 +452,23 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
               : currentMonth > 0 ? 100 : 0;
             const isPositive = monthChange >= 0;
             
-            // Calculate trend line points (SVG coordinates)
+            // Calculate trend line points for 6 months (SVG coordinates)
             const trendPoints = monthlyVisits.map((m, i) => {
-              const x = (i / (monthlyVisits.length - 1)) * 100;
-              const y = 100 - ((m.count / maxCount) * 85);
+              const x = (i / 6) * 100; // 6 bars total (including prediction)
+              const y = 100 - ((m.count / maxCount) * 80);
               return `${x},${y}`;
             }).join(' ');
+            
+            // Area polygon points (closed path for gradient fill)
+            const areaPoints = [
+              '0,100', // bottom left
+              ...monthlyVisits.map((m, i) => {
+                const x = (i / 6) * 100;
+                const y = 100 - ((m.count / maxCount) * 80);
+                return `${x},${y}`;
+              }),
+              `${((monthlyVisits.length - 1) / 6) * 100},100` // bottom right
+            ].join(' ');
             
             return (
               <div className="space-y-1.5">
@@ -469,13 +491,30 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                     <span>{isPositive ? '+' : ''}{monthChange}%</span>
                   </div>
                 </div>
-                <div className="relative flex items-end gap-1 h-12">
-                  {/* Trend line SVG overlay */}
+                <div className="relative flex items-end gap-1 h-14">
+                  {/* Trend line SVG overlay with gradient area */}
                   <svg 
                     className="absolute inset-0 w-full h-full pointer-events-none z-10"
                     viewBox="0 0 100 100"
                     preserveAspectRatio="none"
                   >
+                    <defs>
+                      <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
+                        <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.02" />
+                      </linearGradient>
+                    </defs>
+                    {/* Gradient area fill */}
+                    <polygon
+                      points={areaPoints}
+                      fill="url(#areaGradient)"
+                      className="transition-all duration-700"
+                      style={{
+                        opacity: chartVisible ? 1 : 0,
+                        transitionDelay: '300ms'
+                      }}
+                    />
+                    {/* Trend line */}
                     <polyline
                       points={trendPoints}
                       fill="none"
@@ -492,8 +531,8 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                     />
                     {/* Trend line dots */}
                     {monthlyVisits.map((m, i) => {
-                      const x = (i / (monthlyVisits.length - 1)) * 100;
-                      const y = 100 - ((m.count / maxCount) * 85);
+                      const x = (i / 6) * 100;
+                      const y = 100 - ((m.count / maxCount) * 80);
                       return (
                         <circle
                           key={i}
@@ -552,6 +591,36 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                       </TooltipProvider>
                     );
                   })}
+                  {/* Prediction bar */}
+                  <TooltipProvider delayDuration={100}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex-1 flex flex-col items-center gap-0.5 h-full">
+                          <div className="flex-1 w-full flex items-end">
+                            <div 
+                              className="w-full rounded-t transition-all duration-500 ease-out cursor-pointer border-2 border-dashed border-primary/50 bg-primary/10 hover:bg-primary/20"
+                              style={{ 
+                                height: chartVisible ? `${Math.max((predictedCount / maxCount) * 100, 8)}%` : '0%',
+                                transitionDelay: `${monthlyVisits.length * 80}ms`,
+                                minHeight: '4px'
+                              }}
+                            />
+                          </div>
+                          <span className="text-[8px] text-primary/70 font-medium">Pred.</span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-xs">
+                        <p className="font-medium text-primary">Predicció proper mes</p>
+                        <p className="font-medium">{predictedCount} visites</p>
+                        <p className="text-[10px] text-muted-foreground">Basat en tendència actual</p>
+                        {currentMonth > 0 && (
+                          <p className={`text-[10px] ${predictedCount >= currentMonth ? 'text-green-500' : 'text-red-500'}`}>
+                            {predictedCount >= currentMonth ? '+' : ''}{Math.round(((predictedCount - currentMonth) / currentMonth) * 100)}% vs actual
+                          </p>
+                        )}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
                 <div className="flex justify-between text-[9px] text-muted-foreground">
                   <span>Total: {monthlyVisits.reduce((sum, m) => sum + m.count, 0)}</span>
