@@ -1486,12 +1486,15 @@ export type Database = {
           persona_contacto: string | null
           potencial_anual_estimado: number | null
           probabilidad_cierre: number | null
+          productos_actuales: Json | null
+          productos_ofrecidos: Json | null
           productos_servicios: Json | null
           propuesta_valor: Json | null
           proxima_cita: string | null
           proxima_llamada: string | null
           renovaciones: string | null
           responsable_seguimiento: string | null
+          resultado_oferta: string | null
           revision_cartera: string | null
           riesgos_cumplimiento: Json | null
           situacion_laboral: string | null
@@ -1500,6 +1503,10 @@ export type Database = {
           tipo_visita: string | null
           tpv_volumen_mensual: number | null
           updated_at: string
+          validated_at: string | null
+          validated_by: string | null
+          validation_notes: string | null
+          validation_status: string | null
           visit_id: string
         }
         Insert: {
@@ -1531,12 +1538,15 @@ export type Database = {
           persona_contacto?: string | null
           potencial_anual_estimado?: number | null
           probabilidad_cierre?: number | null
+          productos_actuales?: Json | null
+          productos_ofrecidos?: Json | null
           productos_servicios?: Json | null
           propuesta_valor?: Json | null
           proxima_cita?: string | null
           proxima_llamada?: string | null
           renovaciones?: string | null
           responsable_seguimiento?: string | null
+          resultado_oferta?: string | null
           revision_cartera?: string | null
           riesgos_cumplimiento?: Json | null
           situacion_laboral?: string | null
@@ -1545,6 +1555,10 @@ export type Database = {
           tipo_visita?: string | null
           tpv_volumen_mensual?: number | null
           updated_at?: string
+          validated_at?: string | null
+          validated_by?: string | null
+          validation_notes?: string | null
+          validation_status?: string | null
           visit_id: string
         }
         Update: {
@@ -1576,12 +1590,15 @@ export type Database = {
           persona_contacto?: string | null
           potencial_anual_estimado?: number | null
           probabilidad_cierre?: number | null
+          productos_actuales?: Json | null
+          productos_ofrecidos?: Json | null
           productos_servicios?: Json | null
           propuesta_valor?: Json | null
           proxima_cita?: string | null
           proxima_llamada?: string | null
           renovaciones?: string | null
           responsable_seguimiento?: string | null
+          resultado_oferta?: string | null
           revision_cartera?: string | null
           riesgos_cumplimiento?: Json | null
           situacion_laboral?: string | null
@@ -1590,6 +1607,10 @@ export type Database = {
           tipo_visita?: string | null
           tpv_volumen_mensual?: number | null
           updated_at?: string
+          validated_at?: string | null
+          validated_by?: string | null
+          validation_notes?: string | null
+          validation_status?: string | null
           visit_id?: string
         }
         Relationships: [
@@ -1610,6 +1631,13 @@ export type Database = {
           {
             foreignKeyName: "visit_sheets_responsable_seguimiento_fkey"
             columns: ["responsable_seguimiento"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visit_sheets_validated_by_fkey"
+            columns: ["validated_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

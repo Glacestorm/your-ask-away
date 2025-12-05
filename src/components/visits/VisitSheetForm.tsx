@@ -13,11 +13,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar as CalendarIcon, Save, FileText } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Calendar as CalendarIcon, Save, FileText, Package, PackagePlus, CheckCircle2, XCircle, Clock, AlertTriangle, Send } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+
+interface Product {
+  id: string;
+  name: string;
+  category: string | null;
+}
 
 interface VisitSheetFormProps {
   visitId: string;
@@ -116,12 +124,36 @@ export function VisitSheetForm({ visitId, companyId, open, onOpenChange, onSaved
   const [renovaciones, setRenovaciones] = useState<Date | undefined>();
   const [actualizacionKyc, setActualizacionKyc] = useState<Date | undefined>();
 
+  // === NUEVOS CAMPOS: Productos y Validación ===
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [productosActuales, setProductosActuales] = useState<string[]>([]); // IDs de productos que el cliente ya tiene
+  const [productosOfrecidos, setProductosOfrecidos] = useState<string[]>([]); // IDs de productos ofrecidos en esta visita
+  const [resultadoOferta, setResultadoOferta] = useState<string>('');
+  const [validationStatus, setValidationStatus] = useState<string>('draft');
+  const [validationNotes, setValidationNotes] = useState<string>('');
+
   useEffect(() => {
     if (open && companyId) {
       fetchCompanyData();
       fetchExistingSheet();
+      fetchAllProducts();
+      fetchCurrentProducts();
     }
   }, [open, companyId]);
+
+  const fetchAllProducts = async () => {
+    const { data } = await supabase.from('products').select('id, name, category').eq('active', true).order('name');
+    if (data) setAllProducts(data);
+  };
+
+  const fetchCurrentProducts = async () => {
+    const { data } = await supabase
+      .from('company_products')
+      .select('product_id')
+      .eq('company_id', companyId)
+      .eq('active', true);
+    if (data) setProductosActuales(data.map(p => p.product_id));
+  };
 
   const fetchCompanyData = async () => {
     try {
@@ -203,7 +235,150 @@ export function VisitSheetForm({ visitId, companyId, open, onOpenChange, onSaved
     if (data.propuesta_valor) setPropuestaValor(data.propuesta_valor);
     if (data.probabilidad_cierre) setProbabilidadCierre(data.probabilidad_cierre);
     if (data.nivel_vinculacion_recomendado) setNivelVinculacionRecomendado(data.nivel_vinculacion_recomendado);
-    // ... cargar más campos según necesidad
+    // Cargar nuevos campos de productos y validación
+    if (data.productos_ofrecidos && Array.isArray(data.productos_ofrecidos)) {
+      setProductosOfrecidos(data.productos_ofrecidos);
+    }
+    if (data.resultado_oferta) setResultadoOferta(data.resultado_oferta);
+    if (data.validation_status) setValidationStatus(data.validation_status);
+    if (data.validation_notes) setValidationNotes(data.validation_notes);
+  };
+
+  // Verificar si se puede cerrar la ficha
+  const canCloseSheet = () => {
+    // Si hay productos ofrecidos, se requiere un resultado
+    if (productosOfrecidos.length > 0 && !resultadoOferta) {
+      return false;
+    }
+    return true;
+  };
+
+  // Enviar para validación
+  const handleSubmitForValidation = async () => {
+    if (!user || !company) return;
+    
+    if (!canCloseSheet()) {
+      toast.error('Debe indicar el resultado de la oferta antes de enviar a validación');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await handleSaveInternal('pending_validation');
+      
+      // Notify responsable comercial
+      const { data: gestorProfile } = await supabase
+        .from('profiles')
+        .select('full_name, email')
+        .eq('id', user.id)
+        .single();
+
+      const productNames = allProducts
+        .filter(p => productosOfrecidos.includes(p.id))
+        .map(p => ({ name: p.name, category: p.category }));
+
+      await supabase.functions.invoke('notify-visit-validation', {
+        body: {
+          visitSheetId: existingSheet?.id || 'new',
+          companyName: company.name,
+          gestorName: gestorProfile?.full_name || gestorProfile?.email || 'Gestor',
+          gestorEmail: gestorProfile?.email || '',
+          productosOfrecidos: productNames,
+          fecha: format(fecha, 'yyyy-MM-dd'),
+          probabilidadCierre,
+          potencialAnual: potencialAnualEstimado ? parseFloat(potencialAnualEstimado) : null,
+        },
+      });
+
+      toast.success('Ficha enviada a validación. El Responsable Comercial será notificado.');
+      onOpenChange(false);
+      if (onSaved) onSaved();
+    } catch (error: any) {
+      console.error('Error submitting for validation:', error);
+      toast.error('Error al enviar a validación');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveInternal = async (status: string = validationStatus) => {
+    if (!user || !company) return;
+
+    const acciones = [];
+    if (accion1) acciones.push({ accion: accion1, fecha: fechaAccion1 ? format(fechaAccion1, 'yyyy-MM-dd') : null });
+    if (accion2) acciones.push({ accion: accion2, fecha: fechaAccion2 ? format(fechaAccion2, 'yyyy-MM-dd') : null });
+
+    const sheetData = {
+      visit_id: visitId,
+      company_id: companyId,
+      gestor_id: user.id,
+      fecha: format(fecha, 'yyyy-MM-dd'),
+      hora: hora || null,
+      duracion: duracion || null,
+      canal,
+      tipo_visita: tipoVisita,
+      tipo_cliente: tipoCliente,
+      persona_contacto: personaContacto || null,
+      cargo_contacto: cargoContacto || null,
+      telefono_contacto: telefonoContacto || null,
+      email_contacto: emailContacto || null,
+      diagnostico_inicial: diagnosticoInicial,
+      facturacion_anual: facturacionAnual ? parseFloat(facturacionAnual) : null,
+      ebitda_estimado: ebitdaEstimado ? parseFloat(ebitdaEstimado) : null,
+      endeudamiento_total: endeudamientoTotal ? parseFloat(endeudamientoTotal) : null,
+      liquidez_disponible: liquidezDisponible ? parseFloat(liquidezDisponible) : null,
+      tpv_volumen_mensual: tpvVolumenMensual ? parseFloat(tpvVolumenMensual) : null,
+      ingresos_netos_mensuales: ingresosNetosMensuales ? parseFloat(ingresosNetosMensuales) : null,
+      ahorro_inversion_disponible: ahorroInversionDisponible ? parseFloat(ahorroInversionDisponible) : null,
+      endeudamiento_particular: endeudamientoParticular ? parseFloat(endeudamientoParticular) : null,
+      situacion_laboral: situacionLaboral || null,
+      necesidades_detectadas: necesidadesDetectadas,
+      propuesta_valor: propuestaValor,
+      productos_servicios: {
+        prestamo_personal: prestamoPersonal || null,
+        prestamo_empresa: prestamoEmpresa || null,
+        inversion_importe: inversionImporte || null,
+        tpv_volumen_previsto: tpvVolumenPrevisto || null,
+      },
+      riesgos_cumplimiento: {
+        checks: riesgosCumplimiento,
+        nivel_riesgo: nivelRiesgo,
+        senales_revisar: senalesRevisar || null,
+      },
+      notas_gestor: notasGestor || null,
+      acciones_acordadas: acciones,
+      documentacion_pendiente: documentacionPendiente || null,
+      proxima_cita: proximaCita ? format(proximaCita, 'yyyy-MM-dd') : null,
+      potencial_anual_estimado: potencialAnualEstimado ? parseFloat(potencialAnualEstimado) : null,
+      probabilidad_cierre: probabilidadCierre,
+      nivel_vinculacion_recomendado: nivelVinculacionRecomendado,
+      oportunidades_futuras: oportunidadesFuturas || null,
+      proxima_llamada: proximaLlamada ? format(proximaLlamada, 'yyyy-MM-dd') : null,
+      revision_cartera: revisionCartera ? format(revisionCartera, 'yyyy-MM-dd') : null,
+      renovaciones: renovaciones ? format(renovaciones, 'yyyy-MM-dd') : null,
+      actualizacion_kyc: actualizacionKyc ? format(actualizacionKyc, 'yyyy-MM-dd') : null,
+      // Nuevos campos
+      productos_actuales: productosActuales,
+      productos_ofrecidos: productosOfrecidos,
+      resultado_oferta: resultadoOferta || null,
+      validation_status: status,
+    };
+
+    if (existingSheet) {
+      const { error } = await supabase
+        .from('visit_sheets')
+        .update(sheetData)
+        .eq('id', existingSheet.id);
+      if (error) throw error;
+    } else {
+      const { data: insertedSheet, error } = await supabase
+        .from('visit_sheets')
+        .insert(sheetData)
+        .select()
+        .single();
+      if (error) throw error;
+      setExistingSheet(insertedSheet);
+    }
   };
 
   const handleSave = async () => {
@@ -211,105 +386,31 @@ export function VisitSheetForm({ visitId, companyId, open, onOpenChange, onSaved
 
     try {
       setLoading(true);
+      await handleSaveInternal(validationStatus);
+      toast.success(existingSheet ? 'Ficha de visita actualizada correctamente' : 'Ficha de visita guardada correctamente');
 
-      const acciones = [];
-      if (accion1) acciones.push({ accion: accion1, fecha: fechaAccion1 ? format(fechaAccion1, 'yyyy-MM-dd') : null });
-      if (accion2) acciones.push({ accion: accion2, fecha: fechaAccion2 ? format(fechaAccion2, 'yyyy-MM-dd') : null });
+      // Send critical opportunity email if probability >= 90%
+      if (probabilidadCierre >= 90 && !existingSheet) {
+        try {
+          const { data: gestorProfile } = await supabase
+            .from('profiles')
+            .select('full_name, email')
+            .eq('id', user?.id)
+            .single();
 
-      const sheetData = {
-        visit_id: visitId,
-        company_id: companyId,
-        gestor_id: user.id,
-        fecha: format(fecha, 'yyyy-MM-dd'),
-        hora: hora || null,
-        duracion: duracion || null,
-        canal,
-        tipo_visita: tipoVisita,
-        tipo_cliente: tipoCliente,
-        persona_contacto: personaContacto || null,
-        cargo_contacto: cargoContacto || null,
-        telefono_contacto: telefonoContacto || null,
-        email_contacto: emailContacto || null,
-        diagnostico_inicial: diagnosticoInicial,
-        facturacion_anual: facturacionAnual ? parseFloat(facturacionAnual) : null,
-        ebitda_estimado: ebitdaEstimado ? parseFloat(ebitdaEstimado) : null,
-        endeudamiento_total: endeudamientoTotal ? parseFloat(endeudamientoTotal) : null,
-        liquidez_disponible: liquidezDisponible ? parseFloat(liquidezDisponible) : null,
-        tpv_volumen_mensual: tpvVolumenMensual ? parseFloat(tpvVolumenMensual) : null,
-        ingresos_netos_mensuales: ingresosNetosMensuales ? parseFloat(ingresosNetosMensuales) : null,
-        ahorro_inversion_disponible: ahorroInversionDisponible ? parseFloat(ahorroInversionDisponible) : null,
-        endeudamiento_particular: endeudamientoParticular ? parseFloat(endeudamientoParticular) : null,
-        situacion_laboral: situacionLaboral || null,
-        necesidades_detectadas: necesidadesDetectadas,
-        propuesta_valor: propuestaValor,
-        productos_servicios: {
-          prestamo_personal: prestamoPersonal || null,
-          prestamo_empresa: prestamoEmpresa || null,
-          inversion_importe: inversionImporte || null,
-          tpv_volumen_previsto: tpvVolumenPrevisto || null,
-        },
-        riesgos_cumplimiento: {
-          checks: riesgosCumplimiento,
-          nivel_riesgo: nivelRiesgo,
-          senales_revisar: senalesRevisar || null,
-        },
-        notas_gestor: notasGestor || null,
-        acciones_acordadas: acciones,
-        documentacion_pendiente: documentacionPendiente || null,
-        proxima_cita: proximaCita ? format(proximaCita, 'yyyy-MM-dd') : null,
-        potencial_anual_estimado: potencialAnualEstimado ? parseFloat(potencialAnualEstimado) : null,
-        probabilidad_cierre: probabilidadCierre,
-        nivel_vinculacion_recomendado: nivelVinculacionRecomendado,
-        oportunidades_futuras: oportunidadesFuturas || null,
-        proxima_llamada: proximaLlamada ? format(proximaLlamada, 'yyyy-MM-dd') : null,
-        revision_cartera: revisionCartera ? format(revisionCartera, 'yyyy-MM-dd') : null,
-        renovaciones: renovaciones ? format(renovaciones, 'yyyy-MM-dd') : null,
-        actualizacion_kyc: actualizacionKyc ? format(actualizacionKyc, 'yyyy-MM-dd') : null,
-      };
-
-      if (existingSheet) {
-        const { error } = await supabase
-          .from('visit_sheets')
-          .update(sheetData)
-          .eq('id', existingSheet.id);
-
-        if (error) throw error;
-        toast.success('Ficha de visita actualizada correctamente');
-      } else {
-        const { data: insertedSheet, error } = await supabase
-          .from('visit_sheets')
-          .insert(sheetData)
-          .select()
-          .single();
-
-        if (error) throw error;
-        toast.success('Ficha de visita creada correctamente');
-
-        // Send critical opportunity email if probability >= 90%
-        if (probabilidadCierre >= 90) {
-          try {
-            const { data: gestorProfile } = await supabase
-              .from('profiles')
-              .select('full_name, email')
-              .eq('id', user?.id)
-              .single();
-
-            await supabase.functions.invoke('send-critical-opportunity-email', {
-              body: {
-                visitSheetId: insertedSheet.id,
-                companyName: company?.name || 'Empresa',
-                gestorName: gestorProfile?.full_name || gestorProfile?.email || 'Gestor',
-                gestorEmail: gestorProfile?.email || '',
-                probabilidadCierre,
-                potencialAnual: potencialAnualEstimado ? parseFloat(potencialAnualEstimado) : null,
-                fecha: format(fecha, 'yyyy-MM-dd'),
-              },
-            });
-            console.log('Critical opportunity email sent');
-          } catch (emailError) {
-            console.error('Error sending critical opportunity email:', emailError);
-            // Don't fail the main operation if email fails
-          }
+          await supabase.functions.invoke('send-critical-opportunity-email', {
+            body: {
+              visitSheetId: existingSheet?.id || 'new',
+              companyName: company?.name || 'Empresa',
+              gestorName: gestorProfile?.full_name || gestorProfile?.email || 'Gestor',
+              gestorEmail: gestorProfile?.email || '',
+              probabilidadCierre,
+              potencialAnual: potencialAnualEstimado ? parseFloat(potencialAnualEstimado) : null,
+              fecha: format(fecha, 'yyyy-MM-dd'),
+            },
+          });
+        } catch (emailError) {
+          console.error('Error sending critical opportunity email:', emailError);
         }
       }
 
@@ -730,6 +831,151 @@ export function VisitSheetForm({ visitId, companyId, open, onOpenChange, onSaved
 
             {/* Tab 4: Productos */}
             <TabsContent value="productos" className="space-y-4">
+              {/* Productos Actuales del Cliente */}
+              <Card className="border-green-500/30 bg-green-500/5">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Package className="h-5 w-5 text-green-600" />
+                    Productos Actuales del Cliente
+                    <Badge variant="outline" className="ml-auto bg-green-100 text-green-700">
+                      {productosActuales.length} contratados
+                    </Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {productosActuales.length === 0 ? (
+                    <p className="text-sm text-muted-foreground italic">El cliente no tiene productos contratados actualmente.</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {allProducts.filter(p => productosActuales.includes(p.id)).map(product => (
+                        <Badge key={product.id} className="bg-green-600 text-white">
+                          <CheckCircle2 className="h-3 w-3 mr-1" />
+                          {product.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Productos Ofrecidos en Esta Visita */}
+              <Card className="border-blue-500/30 bg-blue-500/5">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <PackagePlus className="h-5 w-5 text-blue-600" />
+                    Productos Ofrecidos en Esta Visita
+                    <Badge variant="outline" className="ml-auto bg-blue-100 text-blue-700">
+                      {productosOfrecidos.length} ofrecidos
+                    </Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Seleccione los productos que ha ofrecido al cliente durante esta visita:
+                  </p>
+                  <ScrollArea className="h-[200px] border rounded-lg p-3">
+                    <div className="space-y-2">
+                      {allProducts.filter(p => !productosActuales.includes(p.id)).map(product => (
+                        <div key={product.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`prod-${product.id}`}
+                            checked={productosOfrecidos.includes(product.id)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setProductosOfrecidos([...productosOfrecidos, product.id]);
+                              } else {
+                                setProductosOfrecidos(productosOfrecidos.filter(id => id !== product.id));
+                              }
+                            }}
+                          />
+                          <label htmlFor={`prod-${product.id}`} className="text-sm cursor-pointer flex-1">
+                            {product.name}
+                            {product.category && (
+                              <span className="text-muted-foreground ml-2">({product.category})</span>
+                            )}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+
+                  {/* Resultado de la Oferta */}
+                  {productosOfrecidos.length > 0 && (
+                    <div className="space-y-3 pt-3 border-t">
+                      <Label className="flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4 text-amber-500" />
+                        Resultado de la Oferta *
+                      </Label>
+                      <Select value={resultadoOferta} onValueChange={setResultadoOferta}>
+                        <SelectTrigger className={cn(!resultadoOferta && "border-amber-500")}>
+                          <SelectValue placeholder="Seleccione el resultado de la oferta..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pendiente">
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-4 w-4 text-amber-500" />
+                              Pendiente de decisión
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="aceptado">
+                            <div className="flex items-center gap-2">
+                              <CheckCircle2 className="h-4 w-4 text-green-500" />
+                              Aceptado / Contratado
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="parcial">
+                            <div className="flex items-center gap-2">
+                              <CheckCircle2 className="h-4 w-4 text-blue-500" />
+                              Parcialmente aceptado
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="rechazado">
+                            <div className="flex items-center gap-2">
+                              <XCircle className="h-4 w-4 text-red-500" />
+                              Rechazado
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {!resultadoOferta && (
+                        <Alert className="border-amber-500 bg-amber-500/10">
+                          <AlertTriangle className="h-4 w-4" />
+                          <AlertDescription>
+                            Debe indicar el resultado de la oferta para poder enviar la ficha a validación.
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Estado de Validación */}
+              {existingSheet && (
+                <Card className={cn(
+                  "border-2",
+                  validationStatus === 'approved' && "border-green-500 bg-green-500/5",
+                  validationStatus === 'rejected' && "border-red-500 bg-red-500/5",
+                  validationStatus === 'pending_validation' && "border-amber-500 bg-amber-500/5",
+                  validationStatus === 'draft' && "border-muted"
+                )}>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      Estado de Validación
+                      {validationStatus === 'draft' && <Badge variant="secondary">Borrador</Badge>}
+                      {validationStatus === 'pending_validation' && <Badge className="bg-amber-500">Pendiente de Validación</Badge>}
+                      {validationStatus === 'approved' && <Badge className="bg-green-500">Aprobado</Badge>}
+                      {validationStatus === 'rejected' && <Badge variant="destructive">Rechazado</Badge>}
+                    </CardTitle>
+                  </CardHeader>
+                  {validationNotes && (
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground">{validationNotes}</p>
+                    </CardContent>
+                  )}
+                </Card>
+              )}
+
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">6. Propuesta de Valor</CardTitle>
@@ -1142,14 +1388,46 @@ export function VisitSheetForm({ visitId, companyId, open, onOpenChange, onSaved
           </Tabs>
         </ScrollArea>
 
-        <div className="flex justify-end gap-2 pt-4 border-t">
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
-            Cancelar
-          </Button>
-          <Button onClick={handleSave} disabled={loading}>
-            <Save className="mr-2 h-4 w-4" />
-            {loading ? 'Guardando...' : existingSheet ? 'Actualizar Ficha' : 'Guardar Ficha'}
-          </Button>
+        <div className="flex justify-between gap-2 pt-4 border-t">
+          <div className="flex items-center gap-2">
+            {validationStatus === 'pending_validation' && (
+              <Badge className="bg-amber-500">
+                <Clock className="h-3 w-3 mr-1" />
+                Pendiente de Validación
+              </Badge>
+            )}
+            {validationStatus === 'approved' && (
+              <Badge className="bg-green-500">
+                <CheckCircle2 className="h-3 w-3 mr-1" />
+                Validado
+              </Badge>
+            )}
+            {validationStatus === 'rejected' && (
+              <Badge variant="destructive">
+                <XCircle className="h-3 w-3 mr-1" />
+                Rechazado
+              </Badge>
+            )}
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSave} disabled={loading} variant="secondary">
+              <Save className="mr-2 h-4 w-4" />
+              {loading ? 'Guardando...' : 'Guardar Borrador'}
+            </Button>
+            {productosOfrecidos.length > 0 && validationStatus === 'draft' && (
+              <Button 
+                onClick={handleSubmitForValidation} 
+                disabled={loading || !canCloseSheet()}
+                className="bg-primary"
+              >
+                <Send className="mr-2 h-4 w-4" />
+                Enviar a Validación
+              </Button>
+            )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>
