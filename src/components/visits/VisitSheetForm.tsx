@@ -276,12 +276,41 @@ export function VisitSheetForm({ visitId, companyId, open, onOpenChange, onSaved
         if (error) throw error;
         toast.success('Ficha de visita actualizada correctamente');
       } else {
-        const { error } = await supabase
+        const { data: insertedSheet, error } = await supabase
           .from('visit_sheets')
-          .insert(sheetData);
+          .insert(sheetData)
+          .select()
+          .single();
 
         if (error) throw error;
         toast.success('Ficha de visita creada correctamente');
+
+        // Send critical opportunity email if probability >= 90%
+        if (probabilidadCierre >= 90) {
+          try {
+            const { data: gestorProfile } = await supabase
+              .from('profiles')
+              .select('full_name, email')
+              .eq('id', user?.id)
+              .single();
+
+            await supabase.functions.invoke('send-critical-opportunity-email', {
+              body: {
+                visitSheetId: insertedSheet.id,
+                companyName: company?.name || 'Empresa',
+                gestorName: gestorProfile?.full_name || gestorProfile?.email || 'Gestor',
+                gestorEmail: gestorProfile?.email || '',
+                probabilidadCierre,
+                potencialAnual: potencialAnualEstimado ? parseFloat(potencialAnualEstimado) : null,
+                fecha: format(fecha, 'yyyy-MM-dd'),
+              },
+            });
+            console.log('Critical opportunity email sent');
+          } catch (emailError) {
+            console.error('Error sending critical opportunity email:', emailError);
+            // Don't fail the main operation if email fails
+          }
+        }
       }
 
       onOpenChange(false);
