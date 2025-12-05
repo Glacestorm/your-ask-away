@@ -247,23 +247,65 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
   }, [user]);
 
   useEffect(() => {
-    if (selectedCompanyId && !isEditMode) {
-      const company = companies.find(c => c.id === selectedCompanyId);
-      if (company) {
-        setSelectedCompany(company);
-        setFormData(prev => ({
-          ...prev,
-          bp: company.bp || '',
-          nombreRazonSocial: company.name,
-          nifCif: company.tax_id || '',
-          telefonoLaboral: company.phone || '',
-          emailLaboral: company.email || '',
-        }));
+    const loadCompanyData = async () => {
+      if (selectedCompanyId && !isEditMode) {
+        const company = companies.find(c => c.id === selectedCompanyId);
+        if (company) {
+          setSelectedCompany(company);
+          setFormData(prev => ({
+            ...prev,
+            bp: company.bp || '',
+            nombreRazonSocial: company.name,
+            nifCif: company.tax_id || '',
+            telefonoLaboral: company.phone || '',
+            emailLaboral: company.email || '',
+          }));
+        }
+
+        // Load existing bank affiliations for this company
+        const { data: affiliations } = await supabase
+          .from('company_bank_affiliations')
+          .select('bank_name, affiliation_percentage')
+          .eq('company_id', selectedCompanyId)
+          .eq('active', true);
+
+        if (affiliations && affiliations.length > 0) {
+          const newVinculacion = { anbank: '', morabanc: '', creand: '', comentarios: '' };
+          affiliations.forEach(aff => {
+            const bankLower = aff.bank_name.toLowerCase();
+            if (bankLower.includes('andbank')) {
+              newVinculacion.anbank = String(aff.affiliation_percentage || 0);
+            } else if (bankLower.includes('morabanc')) {
+              newVinculacion.morabanc = String(aff.affiliation_percentage || 0);
+            } else if (bankLower.includes('creand')) {
+              newVinculacion.creand = String(aff.affiliation_percentage || 0);
+            }
+          });
+          setVinculacion(prev => ({ ...prev, ...newVinculacion }));
+        } else {
+          // Also check companies table vinculacion_entidad fields
+          const { data: companyData } = await supabase
+            .from('companies')
+            .select('vinculacion_entidad_1, vinculacion_entidad_2, vinculacion_entidad_3')
+            .eq('id', selectedCompanyId)
+            .maybeSingle();
+
+          if (companyData) {
+            setVinculacion(prev => ({
+              ...prev,
+              anbank: companyData.vinculacion_entidad_1 ? String(companyData.vinculacion_entidad_1) : '',
+              morabanc: companyData.vinculacion_entidad_2 ? String(companyData.vinculacion_entidad_2) : '',
+              creand: companyData.vinculacion_entidad_3 ? String(companyData.vinculacion_entidad_3) : '',
+            }));
+          }
+        }
+      } else if (selectedCompanyId && isEditMode) {
+        const company = companies.find(c => c.id === selectedCompanyId);
+        if (company) setSelectedCompany(company);
       }
-    } else if (selectedCompanyId && isEditMode) {
-      const company = companies.find(c => c.id === selectedCompanyId);
-      if (company) setSelectedCompany(company);
-    }
+    };
+
+    loadCompanyData();
   }, [selectedCompanyId, companies, isEditMode]);
 
   const loadCompanies = async () => {
