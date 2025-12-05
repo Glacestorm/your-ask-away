@@ -176,6 +176,7 @@ export function MapContainer({
   const [minZoomVinculacion, setMinZoomVinculacion] = useState<number>(minZoomVinculacionProp || 8);
   const [visitCounts, setVisitCounts] = useState<Record<string, number>>({});
   const persistentPopupRef = useRef<{ popup: maplibregl.Popup; companyId: string } | null>(null);
+  const [focusedMarkerId, setFocusedMarkerId] = useState<string | null>(null);
   
   // State for undo functionality
   const [undoInfo, setUndoInfo] = useState<{
@@ -210,6 +211,9 @@ export function MapContainer({
     if (focusCompanyId && map.current && mapLoaded) {
       const company = companies.find(c => c.id === focusCompanyId);
       if (company && company.latitude && company.longitude) {
+        // Set the focused marker ID to trigger pulse animation
+        setFocusedMarkerId(focusCompanyId);
+        
         map.current.flyTo({
           center: [company.longitude, company.latitude],
           zoom: 16,
@@ -217,6 +221,12 @@ export function MapContainer({
           essential: true,
           pitch: view3D ? 60 : 0,
         });
+        
+        // Remove pulse after 5 seconds
+        setTimeout(() => {
+          setFocusedMarkerId(null);
+        }, 5000);
+        
         // Notify parent that focus has been handled
         if (onFocusCompanyHandled) {
           onFocusCompanyHandled();
@@ -872,6 +882,11 @@ export function MapContainer({
           el.style.position = 'relative';
           el.style.zIndex = '1000';
           
+          // Add pulse animation if this is the focused marker
+          if (focusedMarkerId === company.id) {
+            el.classList.add('marker-pulse-focus');
+          }
+          
           const color = getMarkerColor();
           const vinculacionInfo = vinculacionData[company.id];
           const vinculacionPct = vinculacionInfo?.percentage;
@@ -1280,7 +1295,7 @@ export function MapContainer({
       map.current?.off('zoomend', updateMarkers);
       map.current?.off('click', handleMapClick);
     };
-  }, [companies, filters, mapLoaded, statusColors, onSelectCompany, baseLayers.markers, tooltipConfig, vinculacionData, minZoomVinculacion, colorMode, visitCounts]);
+  }, [companies, filters, mapLoaded, statusColors, onSelectCompany, baseLayers.markers, tooltipConfig, vinculacionData, minZoomVinculacion, colorMode, visitCounts, focusedMarkerId]);
 
   // Update building opacity and height multiplier
   useEffect(() => {

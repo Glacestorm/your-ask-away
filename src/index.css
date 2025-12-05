@@ -423,3 +423,26 @@
   font-weight: 700;
   color: hsl(var(--primary));
 }
+
+/* ========================================
+   MAP MARKER PULSE ANIMATION (Focus)
+   ======================================== */
+@keyframes marker-pulse {
+  0% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 hsl(var(--primary)));
+  }
+  50% {
+    transform: scale(1.15);
+    filter: drop-shadow(0 0 20px hsl(var(--primary)));
+  }
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0 hsl(var(--primary)));
+  }
+}
+
+.marker-pulse-focus {
+  animation: marker-pulse 1s ease-in-out infinite;
+  z-index: 9999 !important;
+}
