@@ -1225,13 +1225,28 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
                 <AccordionContent className="pb-4">
                   <div className="space-y-4">
                     {vinculacionLoaded && (
-                      <div className="flex items-center gap-2 p-2 rounded-md bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 text-sm">
-                        <RefreshCw className="h-4 w-4" />
-                        <span>
-                          {vinculacionLoaded === 'affiliations' 
-                            ? "Dades de vinculació carregades des de les afiliacions bancàries de l'empresa"
-                            : "Dades de vinculació carregades des del registre de l'empresa"}
-                        </span>
+                      <div className="flex items-center justify-between gap-2 p-2 rounded-md bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 text-sm">
+                        <div className="flex items-center gap-2">
+                          <RefreshCw className="h-4 w-4" />
+                          <span>
+                            {vinculacionLoaded === 'affiliations' 
+                              ? "Dades de vinculació carregades des de les afiliacions bancàries de l'empresa"
+                              : "Dades de vinculació carregades des del registre de l'empresa"}
+                          </span>
+                        </div>
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="sm"
+                          className="h-7 px-2 text-blue-700 hover:text-blue-900 hover:bg-blue-100 dark:text-blue-300 dark:hover:text-blue-100 dark:hover:bg-blue-900"
+                          onClick={() => {
+                            setVinculacion({ anbank: '', morabanc: '', creand: '', comentarios: '' });
+                            setVinculacionLoaded(null);
+                          }}
+                        >
+                          <X className="h-3 w-3 mr-1" />
+                          Resetejar
+                        </Button>
                       </div>
                     )}
                     <div className="grid grid-cols-3 gap-4">
