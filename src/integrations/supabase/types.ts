@@ -120,6 +120,9 @@ export type Database = {
           last_checked: string | null
           metric_type: string
           period_type: string
+          target_gestor_id: string | null
+          target_office: string | null
+          target_type: string | null
           threshold_value: number
           updated_at: string | null
         }
@@ -133,6 +136,9 @@ export type Database = {
           last_checked?: string | null
           metric_type: string
           period_type: string
+          target_gestor_id?: string | null
+          target_office?: string | null
+          target_type?: string | null
           threshold_value: number
           updated_at?: string | null
         }
@@ -146,10 +152,21 @@ export type Database = {
           last_checked?: string | null
           metric_type?: string
           period_type?: string
+          target_gestor_id?: string | null
+          target_office?: string | null
+          target_type?: string | null
           threshold_value?: number
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "alerts_target_gestor_id_fkey"
+            columns: ["target_gestor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       audit_logs: {
         Row: {

@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Bell, Plus, Trash2, Edit, Loader2 } from 'lucide-react';
+import { Bell, Plus, Trash2, Edit, Loader2, Globe, Building, User } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Alert {
@@ -22,11 +22,22 @@ interface Alert {
   active: boolean;
   last_checked: string | null;
   created_at: string;
+  target_type: string | null;
+  target_office: string | null;
+  target_gestor_id: string | null;
+}
+
+interface Profile {
+  id: string;
+  full_name: string | null;
+  oficina: string | null;
 }
 
 export const AlertsManager = () => {
   const { user } = useAuth();
   const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [gestores, setGestores] = useState<Profile[]>([]);
+  const [offices, setOffices] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAlert, setEditingAlert] = useState<Alert | null>(null);
@@ -37,10 +48,14 @@ export const AlertsManager = () => {
     threshold_value: 0,
     period_type: 'daily',
     active: true,
+    target_type: 'global',
+    target_office: '',
+    target_gestor_id: '',
   });
 
   useEffect(() => {
     fetchAlerts();
+    fetchGestoresAndOffices();
   }, []);
 
   const fetchAlerts = async () => {
@@ -61,14 +76,42 @@ export const AlertsManager = () => {
     }
   };
 
+  const fetchGestoresAndOffices = async () => {
+    try {
+      const { data: profiles, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, oficina')
+        .order('full_name');
+
+      if (error) throw error;
+
+      setGestores(profiles || []);
+      
+      const uniqueOffices = [...new Set(
+        (profiles || [])
+          .map(p => p.oficina)
+          .filter((o): o is string => o != null && o !== '')
+      )].sort();
+      setOffices(uniqueOffices);
+    } catch (error) {
+      console.error('Error fetching gestores:', error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
+      const dataToSave = {
+        ...formData,
+        target_office: formData.target_type === 'office' ? formData.target_office : null,
+        target_gestor_id: formData.target_type === 'gestor' ? formData.target_gestor_id : null,
+      };
+
       if (editingAlert) {
         const { error } = await supabase
           .from('alerts')
-          .update(formData)
+          .update(dataToSave)
           .eq('id', editingAlert.id);
 
         if (error) throw error;
@@ -76,7 +119,7 @@ export const AlertsManager = () => {
       } else {
         const { error } = await supabase
           .from('alerts')
-          .insert([{ ...formData, created_by: user?.id }]);
+          .insert([{ ...dataToSave, created_by: user?.id }]);
 
         if (error) throw error;
         toast.success('Alerta creada correctamente');
@@ -130,6 +173,9 @@ export const AlertsManager = () => {
       threshold_value: alert.threshold_value,
       period_type: alert.period_type,
       active: alert.active,
+      target_type: alert.target_type || 'global',
+      target_office: alert.target_office || '',
+      target_gestor_id: alert.target_gestor_id || '',
     });
     setIsDialogOpen(true);
   };
@@ -143,6 +189,9 @@ export const AlertsManager = () => {
       threshold_value: 0,
       period_type: 'daily',
       active: true,
+      target_type: 'global',
+      target_office: '',
+      target_gestor_id: '',
     });
   };
 
@@ -178,6 +227,25 @@ export const AlertsManager = () => {
       monthly: 'Mensual',
     };
     return labels[period] || period;
+  };
+
+  const getTargetLabel = (alert: Alert) => {
+    if (alert.target_type === 'office' && alert.target_office) {
+      return `Oficina: ${alert.target_office}`;
+    }
+    if (alert.target_type === 'gestor' && alert.target_gestor_id) {
+      const gestor = gestores.find(g => g.id === alert.target_gestor_id);
+      return `Gestor: ${gestor?.full_name || 'Desconocido'}`;
+    }
+    return 'Global';
+  };
+
+  const getTargetIcon = (targetType: string | null) => {
+    switch (targetType) {
+      case 'office': return <Building className="h-3 w-3" />;
+      case 'gestor': return <User className="h-3 w-3" />;
+      default: return <Globe className="h-3 w-3" />;
+    }
   };
 
   const checkAlertsNow = async () => {
@@ -222,124 +290,201 @@ export const AlertsManager = () => {
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
                 Nueva Alerta
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>{editingAlert ? 'Editar Alerta' : 'Crear Nueva Alerta'}</DialogTitle>
-              <DialogDescription>
-                Define las condiciones para recibir notificaciones automáticas
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="alert_name">Nombre de la Alerta</Label>
-                <Input
-                  id="alert_name"
-                  value={formData.alert_name}
-                  onChange={(e) => setFormData({ ...formData, alert_name: e.target.value })}
-                  placeholder="Ej: Visitas por debajo del objetivo"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[550px]">
+              <DialogHeader>
+                <DialogTitle>{editingAlert ? 'Editar Alerta' : 'Crear Nueva Alerta'}</DialogTitle>
+                <DialogDescription>
+                  Define las condiciones para recibir notificaciones automáticas
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="metric_type">Métrica</Label>
-                  <Select
-                    value={formData.metric_type}
-                    onValueChange={(value) => setFormData({ ...formData, metric_type: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="visits">Visitas Totales</SelectItem>
-                      <SelectItem value="success_rate">Tasa de Éxito (%)</SelectItem>
-                      <SelectItem value="vinculacion">Vinculación Promedio (%)</SelectItem>
-                      <SelectItem value="engagement">Engagement (%)</SelectItem>
-                      <SelectItem value="products">Productos Ofrecidos</SelectItem>
-                      <SelectItem value="tpv_volume">Volumen TPV (€)</SelectItem>
-                      <SelectItem value="facturacion">Facturación Total (€)</SelectItem>
-                      <SelectItem value="visit_sheets">Fichas de Visita</SelectItem>
-                      <SelectItem value="new_clients">Nuevos Clientes</SelectItem>
-                      <SelectItem value="avg_visits_per_gestor">Visitas/Gestor Promedio</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="period_type">Período</Label>
-                  <Select
-                    value={formData.period_type}
-                    onValueChange={(value) => setFormData({ ...formData, period_type: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="daily">Diario</SelectItem>
-                      <SelectItem value="weekly">Semanal</SelectItem>
-                      <SelectItem value="monthly">Mensual</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="condition_type">Condición</Label>
-                  <Select
-                    value={formData.condition_type}
-                    onValueChange={(value) => setFormData({ ...formData, condition_type: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="below">Por debajo de</SelectItem>
-                      <SelectItem value="above">Por encima de</SelectItem>
-                      <SelectItem value="equals">Igual a</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="threshold_value">Umbral</Label>
+                  <Label htmlFor="alert_name">Nombre de la Alerta</Label>
                   <Input
-                    id="threshold_value"
-                    type="number"
-                    step="0.01"
-                    value={formData.threshold_value}
-                    onChange={(e) => setFormData({ ...formData, threshold_value: parseFloat(e.target.value) })}
+                    id="alert_name"
+                    value={formData.alert_name}
+                    onChange={(e) => setFormData({ ...formData, alert_name: e.target.value })}
+                    placeholder="Ej: Visitas por debajo del objetivo"
                     required
                   />
                 </div>
-              </div>
 
-              <div className="flex items-center justify-between">
-                <Label htmlFor="active">Alerta Activa</Label>
-                <Switch
-                  id="active"
-                  checked={formData.active}
-                  onCheckedChange={(checked) => setFormData({ ...formData, active: checked })}
-                />
-              </div>
+                {/* Target Type Selection */}
+                <div className="space-y-2">
+                  <Label>Ámbito de la Alerta</Label>
+                  <Select
+                    value={formData.target_type}
+                    onValueChange={(value) => setFormData({ ...formData, target_type: value, target_office: '', target_gestor_id: '' })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="global">
+                        <div className="flex items-center gap-2">
+                          <Globe className="h-4 w-4" />
+                          Global (Toda la organización)
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="office">
+                        <div className="flex items-center gap-2">
+                          <Building className="h-4 w-4" />
+                          Por Oficina
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="gestor">
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4" />
+                          Por Gestor
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => {
-                  setIsDialogOpen(false);
-                  resetForm();
-                }}>
-                  Cancelar
-                </Button>
-                <Button type="submit">
-                  {editingAlert ? 'Actualizar' : 'Crear'} Alerta
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
+                {/* Office Selection */}
+                {formData.target_type === 'office' && (
+                  <div className="space-y-2">
+                    <Label>Oficina</Label>
+                    <Select
+                      value={formData.target_office}
+                      onValueChange={(value) => setFormData({ ...formData, target_office: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar oficina" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {offices.map((office) => (
+                          <SelectItem key={office} value={office}>
+                            {office}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {/* Gestor Selection */}
+                {formData.target_type === 'gestor' && (
+                  <div className="space-y-2">
+                    <Label>Gestor</Label>
+                    <Select
+                      value={formData.target_gestor_id}
+                      onValueChange={(value) => setFormData({ ...formData, target_gestor_id: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar gestor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {gestores.map((gestor) => (
+                          <SelectItem key={gestor.id} value={gestor.id}>
+                            {gestor.full_name || gestor.id} {gestor.oficina && `(${gestor.oficina})`}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="metric_type">Métrica</Label>
+                    <Select
+                      value={formData.metric_type}
+                      onValueChange={(value) => setFormData({ ...formData, metric_type: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="visits">Visitas Totales</SelectItem>
+                        <SelectItem value="success_rate">Tasa de Éxito (%)</SelectItem>
+                        <SelectItem value="vinculacion">Vinculación Promedio (%)</SelectItem>
+                        <SelectItem value="engagement">Engagement (%)</SelectItem>
+                        <SelectItem value="products">Productos Ofrecidos</SelectItem>
+                        <SelectItem value="tpv_volume">Volumen TPV (€)</SelectItem>
+                        <SelectItem value="facturacion">Facturación Total (€)</SelectItem>
+                        <SelectItem value="visit_sheets">Fichas de Visita</SelectItem>
+                        <SelectItem value="new_clients">Nuevos Clientes</SelectItem>
+                        <SelectItem value="avg_visits_per_gestor">Visitas/Gestor Promedio</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="period_type">Período</Label>
+                    <Select
+                      value={formData.period_type}
+                      onValueChange={(value) => setFormData({ ...formData, period_type: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="daily">Diario</SelectItem>
+                        <SelectItem value="weekly">Semanal</SelectItem>
+                        <SelectItem value="monthly">Mensual</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="condition_type">Condición</Label>
+                    <Select
+                      value={formData.condition_type}
+                      onValueChange={(value) => setFormData({ ...formData, condition_type: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="below">Por debajo de</SelectItem>
+                        <SelectItem value="above">Por encima de</SelectItem>
+                        <SelectItem value="equals">Igual a</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="threshold_value">Umbral</Label>
+                    <Input
+                      id="threshold_value"
+                      type="number"
+                      step="0.01"
+                      value={formData.threshold_value}
+                      onChange={(e) => setFormData({ ...formData, threshold_value: parseFloat(e.target.value) })}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="active">Alerta Activa</Label>
+                  <Switch
+                    id="active"
+                    checked={formData.active}
+                    onCheckedChange={(checked) => setFormData({ ...formData, active: checked })}
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button type="button" variant="outline" onClick={() => {
+                    setIsDialogOpen(false);
+                    resetForm();
+                  }}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit">
+                    {editingAlert ? 'Actualizar' : 'Crear'} Alerta
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -356,10 +501,14 @@ export const AlertsManager = () => {
             <Card key={alert.id} className="p-4">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <h4 className="font-semibold">{alert.alert_name}</h4>
                     <Badge variant={alert.active ? 'default' : 'secondary'}>
                       {alert.active ? 'Activa' : 'Inactiva'}
+                    </Badge>
+                    <Badge variant="outline" className="flex items-center gap-1">
+                      {getTargetIcon(alert.target_type)}
+                      {getTargetLabel(alert)}
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
