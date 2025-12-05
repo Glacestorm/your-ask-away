@@ -3,6 +3,7 @@ import { Map, Building2, MapPin, TrendingUp, TrendingDown, ExternalLink, Calenda
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -370,11 +371,13 @@ export function MapDashboardCard({ onNavigateToMap }: MapDashboardCardProps) {
   const bestMonth = yoyChanges.length > 0 ? yoyChanges.reduce((best, curr) => (curr.change || 0) > (best.change || 0) ? curr : best) : null;
   const worstMonth = yoyChanges.length > 0 ? yoyChanges.reduce((worst, curr) => (curr.change || 0) < (worst.change || 0) ? curr : worst) : null;
 
-  // Collapsed card view with compact stats
-  if (!isExpanded) {
-    const cardColor = 'hsl(var(--chart-5))';
-    const totalVisitsThisMonth = monthlyVisits.length > 0 ? monthlyVisits[monthlyVisits.length - 1]?.count || 0 : 0;
-    return (
+  const cardColor = 'hsl(var(--chart-5))';
+  const totalVisitsThisMonth = monthlyVisits.length > 0 ? monthlyVisits[monthlyVisits.length - 1]?.count || 0 : 0;
+  
+  // Always render collapsed card + Dialog
+  return (
+    <>
+      {/* Collapsed card view with compact stats */}
       <div
         className="perspective-1000"
         style={{ perspective: '1000px' }}
@@ -482,52 +485,44 @@ export function MapDashboardCard({ onNavigateToMap }: MapDashboardCardProps) {
           />
         </div>
       </div>
-    );
-  }
 
-  // Expanded view
-  return (
-    <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 animate-in fade-in slide-in-from-bottom-4 duration-300">
-      <CardContent className="p-4 space-y-3">
-        {/* Header with close button */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-md">
-              <Map className="h-5 w-5 text-primary-foreground" />
+      {/* Dialog for expanded view */}
+      <Dialog open={isExpanded} onOpenChange={setIsExpanded}>
+        <DialogContent className="max-w-3xl max-h-[85vh] p-0 gap-0 overflow-hidden">
+          <DialogHeader className="px-6 py-4 border-b border-border/50 bg-gradient-to-r from-primary/10 to-transparent">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-md">
+                <Map className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <div>
+                <DialogTitle className="text-lg">Mapa d'Empreses</DialogTitle>
+                <DialogDescription>
+                </DialogDescription>
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold text-base">Mapa d'Empreses</h3>
-              <p className="text-xs text-muted-foreground">
-                Visualitza les teves empreses assignades
-              </p>
+          </DialogHeader>
+          
+          <div className="p-6 space-y-4 overflow-y-auto max-h-[calc(85vh-80px)]">
+            {/* Stats row */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
+                <Building2 className="h-4 w-4 text-primary" />
+                <div>
+                  <span className="text-xs text-muted-foreground">Total empreses</span>
+                  <p className="font-semibold text-lg">{totalCount}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
+                <TrendingUp className="h-4 w-4 text-green-500" />
+                <div>
+                  <span className="text-xs text-muted-foreground">Vinculació mitjana</span>
+                  <p className="font-semibold text-lg">{avgVinculacion.toFixed(0)}%</p>
+                </div>
+              </div>
             </div>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive"
-            onClick={handleClose}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
 
-        {/* Stats row */}
-        <div className="flex items-center justify-between text-xs bg-background/50 rounded-md p-2">
-          <div className="flex items-center gap-1.5">
-            <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-muted-foreground">Total empreses:</span>
-            <span className="font-semibold">{totalCount}</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-muted-foreground">Vinc. mitjana:</span>
-            <span className="font-semibold">{avgVinculacion}%</span>
-          </div>
-        </div>
-
-        {/* Distribution chart */}
-        {companies.length > 0 && (
+            {/* Distribution chart */}
+            {companies.length > 0 && (
           <div className="space-y-1.5" ref={chartRef}>
             <p className="text-[10px] text-muted-foreground font-medium">Distribució per vinculació:</p>
             <div className="flex h-5 w-full rounded-full overflow-hidden bg-muted">
@@ -1117,16 +1112,18 @@ export function MapDashboardCard({ onNavigateToMap }: MapDashboardCardProps) {
         )}
 
         {/* CTA */}
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="w-full mt-2 text-xs bg-primary/10 hover:bg-primary/20"
-          onClick={handleClick}
-        >
-          <Map className="h-3.5 w-3.5 mr-1.5" />
-          Obrir Mapa
-        </Button>
-      </CardContent>
-    </Card>
+            <Button 
+              variant="default" 
+              size="default" 
+              className="w-full mt-4"
+              onClick={handleClick}
+            >
+              <Map className="h-4 w-4 mr-2" />
+              Obrir Mapa Complet
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
