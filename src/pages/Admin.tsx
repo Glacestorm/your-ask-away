@@ -43,6 +43,7 @@ import GoalsKPIDashboard from '@/components/admin/GoalsKPIDashboard';
 import { KPIReportHistory } from '@/components/admin/KPIReportHistory';
 import { AlertHistoryViewer } from '@/components/admin/AlertHistoryViewer';
 import { VisitSheetsGestorComparison } from '@/components/admin/VisitSheetsGestorComparison';
+import VisitSheetValidationPanel from '@/components/admin/VisitSheetValidationPanel';
 import MapView from './MapView';
 
 const Admin = () => {
@@ -114,6 +115,7 @@ const Admin = () => {
       case 'audit': return 'Auditor';
       case 'map': return 'Mapa';
       case 'visit-sheets': return 'Fitxes de Visita';
+      case 'visit-validation': return 'Validació de Fitxes';
       case 'shared-calendar': return 'Calendari de Visites';
       case 'health': return 'Estat del Sistema';
       case 'visits': return 'Mètriques de Visites';
@@ -209,6 +211,17 @@ const Admin = () => {
         );
       case 'visit-sheets':
         return <VisitSheets />;
+      case 'visit-validation':
+        if (!isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <VisitSheetValidationPanel />;
       case 'shared-calendar':
         return (
           <div className="rounded-lg border bg-card p-6">

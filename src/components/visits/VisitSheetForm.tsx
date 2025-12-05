@@ -15,7 +15,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Calendar as CalendarIcon, Save, FileText, Package, PackagePlus, CheckCircle2, XCircle, Clock, AlertTriangle, Send } from 'lucide-react';
+import { Calendar as CalendarIcon, Save, FileText, Package, PackagePlus, CheckCircle2, XCircle, Clock, AlertTriangle, Send, User, History } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -25,6 +25,14 @@ interface Product {
   id: string;
   name: string;
   category: string | null;
+}
+
+interface ValidationHistoryData {
+  validated_at: string | null;
+  validated_by: string | null;
+  validation_status: string | null;
+  validation_notes: string | null;
+  validator_name?: string | null;
 }
 
 interface VisitSheetFormProps {
@@ -131,6 +139,7 @@ export function VisitSheetForm({ visitId, companyId, open, onOpenChange, onSaved
   const [resultadoOferta, setResultadoOferta] = useState<string>('');
   const [validationStatus, setValidationStatus] = useState<string>('draft');
   const [validationNotes, setValidationNotes] = useState<string>('');
+  const [validationHistory, setValidationHistory] = useState<ValidationHistoryData | null>(null);
 
   useEffect(() => {
     if (open && companyId) {
@@ -242,6 +251,29 @@ export function VisitSheetForm({ visitId, companyId, open, onOpenChange, onSaved
     if (data.resultado_oferta) setResultadoOferta(data.resultado_oferta);
     if (data.validation_status) setValidationStatus(data.validation_status);
     if (data.validation_notes) setValidationNotes(data.validation_notes);
+    
+    // Load validation history if validated
+    if (data.validated_at && data.validated_by) {
+      fetchValidationHistory(data);
+    }
+  };
+
+  const fetchValidationHistory = async (sheetData: any) => {
+    if (!sheetData.validated_by) return;
+    
+    const { data: validatorProfile } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', sheetData.validated_by)
+      .single();
+
+    setValidationHistory({
+      validated_at: sheetData.validated_at,
+      validated_by: sheetData.validated_by,
+      validation_status: sheetData.validation_status,
+      validation_notes: sheetData.validation_notes,
+      validator_name: validatorProfile?.full_name || 'Desconocido'
+    });
   };
 
   // Verificar si se puede cerrar la ficha
@@ -1388,45 +1420,87 @@ export function VisitSheetForm({ visitId, companyId, open, onOpenChange, onSaved
           </Tabs>
         </ScrollArea>
 
-        <div className="flex justify-between gap-2 pt-4 border-t">
-          <div className="flex items-center gap-2">
-            {validationStatus === 'pending_validation' && (
-              <Badge className="bg-amber-500">
-                <Clock className="h-3 w-3 mr-1" />
-                Pendiente de Validación
-              </Badge>
-            )}
-            {validationStatus === 'approved' && (
-              <Badge className="bg-green-500">
-                <CheckCircle2 className="h-3 w-3 mr-1" />
-                Validado
-              </Badge>
-            )}
-            {validationStatus === 'rejected' && (
-              <Badge variant="destructive">
-                <XCircle className="h-3 w-3 mr-1" />
-                Rechazado
-              </Badge>
-            )}
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSave} disabled={loading} variant="secondary">
-              <Save className="mr-2 h-4 w-4" />
-              {loading ? 'Guardando...' : 'Guardar Borrador'}
-            </Button>
-            {productosOfrecidos.length > 0 && validationStatus === 'draft' && (
-              <Button 
-                onClick={handleSubmitForValidation} 
-                disabled={loading || !canCloseSheet()}
-                className="bg-primary"
-              >
-                <Send className="mr-2 h-4 w-4" />
-                Enviar a Validación
+        <div className="flex flex-col gap-4 pt-4 border-t">
+          {/* Validation History */}
+          {validationHistory && (
+            <Card className="bg-muted/50">
+              <CardHeader className="py-2 px-4">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <History className="h-4 w-4" />
+                  Historial de Validación
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="py-2 px-4 space-y-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <User className="h-3 w-3 text-muted-foreground" />
+                  <span className="text-muted-foreground">Validado por:</span>
+                  <span className="font-medium">{validationHistory.validator_name}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <CalendarIcon className="h-3 w-3 text-muted-foreground" />
+                  <span className="text-muted-foreground">Fecha:</span>
+                  <span className="font-medium">
+                    {validationHistory.validated_at ? format(new Date(validationHistory.validated_at), "dd/MM/yyyy HH:mm", { locale: es }) : '-'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-muted-foreground">Resultado:</span>
+                  {validationHistory.validation_status === 'approved' ? (
+                    <Badge className="bg-green-500"><CheckCircle2 className="h-3 w-3 mr-1" />Aprobada</Badge>
+                  ) : (
+                    <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" />Rechazada</Badge>
+                  )}
+                </div>
+                {validationHistory.validation_notes && (
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">Notas:</span>
+                    <p className="mt-1 bg-background p-2 rounded text-sm">{validationHistory.validation_notes}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          <div className="flex justify-between gap-2">
+            <div className="flex items-center gap-2">
+              {validationStatus === 'pending_validation' && (
+                <Badge className="bg-amber-500">
+                  <Clock className="h-3 w-3 mr-1" />
+                  Pendiente de Validación
+                </Badge>
+              )}
+              {validationStatus === 'approved' && (
+                <Badge className="bg-green-500">
+                  <CheckCircle2 className="h-3 w-3 mr-1" />
+                  Validado
+                </Badge>
+              )}
+              {validationStatus === 'rejected' && (
+                <Badge variant="destructive">
+                  <XCircle className="h-3 w-3 mr-1" />
+                  Rechazado
+                </Badge>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+                Cancelar
               </Button>
-            )}
+              <Button onClick={handleSave} disabled={loading} variant="secondary">
+                <Save className="mr-2 h-4 w-4" />
+                {loading ? 'Guardando...' : 'Guardar Borrador'}
+              </Button>
+              {productosOfrecidos.length > 0 && validationStatus === 'draft' && (
+                <Button 
+                  onClick={handleSubmitForValidation} 
+                  disabled={loading || !canCloseSheet()}
+                  className="bg-primary"
+                >
+                  <Send className="mr-2 h-4 w-4" />
+                  Enviar a Validación
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </DialogContent>
