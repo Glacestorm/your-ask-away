@@ -16,7 +16,18 @@ interface CompanyPreview {
   sector?: string | null;
   cnae?: string | null;
   fecha_ultima_visita?: string | null;
+  visit_count?: number;
 }
+
+const getDateColorClass = (dateStr: string | null | undefined): string => {
+  if (!dateStr) return 'text-muted-foreground';
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+  if (diffDays <= 30) return 'text-green-600 dark:text-green-400';
+  if (diffDays <= 90) return 'text-yellow-600 dark:text-yellow-400';
+  return 'text-red-600 dark:text-red-400';
+};
 
 interface MapButtonProps {
   onNavigateToMap?: () => void;
@@ -56,17 +67,24 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
         .limit(5);
 
       if (data && data.length > 0) {
-        // Fetch photos for these companies
         const companyIds = data.map(c => c.id);
-        const { data: photos } = await supabase
-          .from('company_photos')
-          .select('company_id, photo_url')
-          .in('company_id', companyIds)
-          .order('created_at', { ascending: false });
+        
+        // Fetch photos and visits in parallel
+        const [photosResult, visitsResult] = await Promise.all([
+          supabase
+            .from('company_photos')
+            .select('company_id, photo_url')
+            .in('company_id', companyIds)
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('visits')
+            .select('company_id')
+            .in('company_id', companyIds)
+        ]);
 
-        // Map photos to companies (get most recent photo and count per company)
+        // Map photos to companies
         const photoMap: Record<string, { url: string; count: number }> = {};
-        photos?.forEach(p => {
+        photosResult.data?.forEach(p => {
           if (!photoMap[p.company_id]) {
             photoMap[p.company_id] = { url: p.photo_url, count: 1 };
           } else {
@@ -74,16 +92,23 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
           }
         });
 
-        const companiesWithPhotos = data.map(c => ({
+        // Count visits per company
+        const visitCountMap: Record<string, number> = {};
+        visitsResult.data?.forEach(v => {
+          visitCountMap[v.company_id] = (visitCountMap[v.company_id] || 0) + 1;
+        });
+
+        const companiesWithData = data.map(c => ({
           ...c,
           photo_url: photoMap[c.id]?.url || null,
           photo_count: photoMap[c.id]?.count || 0,
           sector: c.sector,
           cnae: c.cnae,
           fecha_ultima_visita: c.fecha_ultima_visita,
+          visit_count: visitCountMap[c.id] || 0,
         }));
 
-        setCompanies(companiesWithPhotos);
+        setCompanies(companiesWithData);
       } else {
         setCompanies([]);
       }
@@ -197,12 +222,17 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                           <span className="truncate">{company.parroquia}</span>
                         )}
                       </div>
-                      {company.fecha_ultima_visita && (
-                        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                          <Calendar className="h-2.5 w-2.5" />
+                      <div className={`flex items-center gap-1 text-[10px] ${getDateColorClass(company.fecha_ultima_visita)}`}>
+                        <Calendar className="h-2.5 w-2.5" />
+                        {company.fecha_ultima_visita ? (
                           <span>{new Date(company.fecha_ultima_visita).toLocaleDateString('ca-ES', { day: '2-digit', month: 'short' })}</span>
-                        </div>
-                      )}
+                        ) : (
+                          <span className="text-muted-foreground">Sense visites</span>
+                        )}
+                        {company.visit_count !== undefined && company.visit_count > 0 && (
+                          <span className="text-muted-foreground">({company.visit_count})</span>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5">
