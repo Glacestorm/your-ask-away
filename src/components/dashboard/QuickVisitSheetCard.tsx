@@ -16,7 +16,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { 
   FileText, X, Building2, User, CreditCard, Landmark, Shield, TrendingUp, BarChart3,
-  Target, Save, ChevronRight, AlertCircle, Calendar, Edit2
+  Target, Save, ChevronRight, AlertCircle, Calendar, Edit2, RefreshCw
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
@@ -79,6 +79,7 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
   const [visitSheetsCount, setVisitSheetsCount] = useState(0);
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [vinculacionLoaded, setVinculacionLoaded] = useState<'affiliations' | 'company' | null>(null);
   const [isEditMode, setIsEditMode] = useState(!!editSheet);
   const [editVisitId, setEditVisitId] = useState<string | null>(editSheet?.visit_id || null);
   const [editSheetId, setEditSheetId] = useState<string | null>(editSheet?.id || null);
@@ -269,6 +270,9 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
           .eq('company_id', selectedCompanyId)
           .eq('active', true);
 
+        // Reset vinculacion loaded state
+        setVinculacionLoaded(null);
+
         if (affiliations && affiliations.length > 0) {
           const newVinculacion = { anbank: '', morabanc: '', creand: '', comentarios: '' };
           affiliations.forEach(aff => {
@@ -282,6 +286,7 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
             }
           });
           setVinculacion(prev => ({ ...prev, ...newVinculacion }));
+          setVinculacionLoaded('affiliations');
         } else {
           // Also check companies table vinculacion_entidad fields
           const { data: companyData } = await supabase
@@ -290,13 +295,14 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
             .eq('id', selectedCompanyId)
             .maybeSingle();
 
-          if (companyData) {
+          if (companyData && (companyData.vinculacion_entidad_1 || companyData.vinculacion_entidad_2 || companyData.vinculacion_entidad_3)) {
             setVinculacion(prev => ({
               ...prev,
               anbank: companyData.vinculacion_entidad_1 ? String(companyData.vinculacion_entidad_1) : '',
               morabanc: companyData.vinculacion_entidad_2 ? String(companyData.vinculacion_entidad_2) : '',
               creand: companyData.vinculacion_entidad_3 ? String(companyData.vinculacion_entidad_3) : '',
             }));
+            setVinculacionLoaded('company');
           }
         }
       } else if (selectedCompanyId && isEditMode) {
@@ -1208,10 +1214,26 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
                   <div className="flex items-center gap-3">
                     <BarChart3 className="h-5 w-5 text-pink-500" />
                     <span className="font-semibold">6. Grado de Vinculación</span>
+                    {vinculacionLoaded && (
+                      <Badge variant="outline" className="ml-2 text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800">
+                        <RefreshCw className="h-3 w-3 mr-1" />
+                        Dades carregades
+                      </Badge>
+                    )}
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="pb-4">
                   <div className="space-y-4">
+                    {vinculacionLoaded && (
+                      <div className="flex items-center gap-2 p-2 rounded-md bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 text-sm">
+                        <RefreshCw className="h-4 w-4" />
+                        <span>
+                          {vinculacionLoaded === 'affiliations' 
+                            ? "Dades de vinculació carregades des de les afiliacions bancàries de l'empresa"
+                            : "Dades de vinculació carregades des del registre de l'empresa"}
+                        </span>
+                      </div>
+                    )}
                     <div className="grid grid-cols-3 gap-4">
                       <div className="space-y-2">
                         <Label>Andbank (%)</Label>
