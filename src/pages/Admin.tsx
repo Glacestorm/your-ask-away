@@ -44,6 +44,7 @@ import { KPIReportHistory } from '@/components/admin/KPIReportHistory';
 import { AlertHistoryViewer } from '@/components/admin/AlertHistoryViewer';
 import { VisitSheetsGestorComparison } from '@/components/admin/VisitSheetsGestorComparison';
 import VisitSheetValidationPanel from '@/components/admin/VisitSheetValidationPanel';
+import ContractedProductsReport from '@/components/admin/ContractedProductsReport';
 import MapView from './MapView';
 
 const Admin = () => {
@@ -222,6 +223,12 @@ const Admin = () => {
           );
         }
         return <VisitSheetValidationPanel />;
+      case 'contracted-products':
+        return (
+          <div className="rounded-lg border bg-card p-6">
+            <ContractedProductsReport />
+          </div>
+        );
       case 'shared-calendar':
         return (
           <div className="rounded-lg border bg-card p-6">
