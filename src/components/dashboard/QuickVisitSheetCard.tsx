@@ -18,7 +18,8 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { 
   FileText, X, Building2, User, CreditCard, Landmark, Shield, TrendingUp, BarChart3,
-  Target, Save, ChevronRight, AlertCircle, Calendar, Edit2, RefreshCw, Download
+  Target, Save, ChevronRight, AlertCircle, Calendar, Edit2, RefreshCw, Download,
+  ZoomIn, ZoomOut, RotateCcw, Printer, ChevronLeft, ChevronDown, Maximize2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
@@ -89,6 +90,9 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
   const [showPdfPreview, setShowPdfPreview] = useState(false);
   const [pdfDoc, setPdfDoc] = useState<jsPDF | null>(null);
+  const [pdfZoom, setPdfZoom] = useState(100);
+  const [pdfPage, setPdfPage] = useState(1);
+  const [pdfTotalPages, setPdfTotalPages] = useState(1);
 
   // Datos Generales
   const [formData, setFormData] = useState({
@@ -871,6 +875,9 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
     const url = URL.createObjectURL(pdfBlob);
     setPdfPreviewUrl(url);
     setPdfDoc(doc);
+    setPdfTotalPages(doc.getNumberOfPages());
+    setPdfPage(1);
+    setPdfZoom(100);
     setShowPdfPreview(true);
   };
 
@@ -882,6 +889,29 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
     }
   };
 
+  const handlePrintPDF = () => {
+    if (pdfPreviewUrl) {
+      const printWindow = window.open(pdfPreviewUrl, '_blank');
+      if (printWindow) {
+        printWindow.addEventListener('load', () => {
+          printWindow.print();
+        });
+      }
+    }
+  };
+
+  const handleZoomIn = () => {
+    setPdfZoom(prev => Math.min(prev + 25, 200));
+  };
+
+  const handleZoomOut = () => {
+    setPdfZoom(prev => Math.max(prev - 25, 50));
+  };
+
+  const handleResetZoom = () => {
+    setPdfZoom(100);
+  };
+
   const handleClosePdfPreview = () => {
     if (pdfPreviewUrl) {
       URL.revokeObjectURL(pdfPreviewUrl);
@@ -889,6 +919,8 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
     setPdfPreviewUrl(null);
     setPdfDoc(null);
     setShowPdfPreview(false);
+    setPdfZoom(100);
+    setPdfPage(1);
   };
 
   // Error message component
@@ -1707,8 +1739,9 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
 
       {/* PDF Preview Dialog */}
       <Dialog open={showPdfPreview} onOpenChange={setShowPdfPreview}>
-        <DialogContent className="max-w-5xl h-[90vh] p-0 gap-0 dark:bg-card dark:border-border/50">
-          <DialogHeader className="p-4 pb-0 border-b border-border/30 bg-gradient-to-r from-blue-500/10 via-blue-500/5 to-transparent dark:from-blue-500/20 dark:via-blue-500/10">
+        <DialogContent className="max-w-6xl h-[95vh] p-0 gap-0 dark:bg-card dark:border-border/50">
+          {/* Header */}
+          <DialogHeader className="p-4 pb-3 border-b border-border/30 bg-gradient-to-r from-blue-500/10 via-blue-500/5 to-transparent dark:from-blue-500/20 dark:via-blue-500/10">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-xl bg-blue-500/20 dark:bg-blue-500/30">
@@ -1719,39 +1752,152 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
                     Vista Previa del PDF
                   </DialogTitle>
                   <DialogDescription className="text-sm dark:text-muted-foreground">
-                    Revisa el documento antes de descargarlo
+                    {formData.nombreRazonSocial || 'Ficha de Visita'} • {pdfTotalPages} página{pdfTotalPages > 1 ? 's' : ''}
                   </DialogDescription>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleClosePdfPreview}
-                  className="gap-2"
-                >
-                  <X className="h-4 w-4" />
-                  Cerrar
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={handleDownloadPDF}
-                  className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  <Download className="h-4 w-4" />
-                  Descargar PDF
-                </Button>
-              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleClosePdfPreview}
+                className="h-8 w-8 rounded-full"
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
           </DialogHeader>
-          <div className="flex-1 p-4 overflow-hidden bg-muted/30 dark:bg-muted/10">
+
+          {/* Toolbar */}
+          <div className="flex items-center justify-between px-4 py-2 border-b border-border/20 bg-muted/20 dark:bg-muted/10">
+            {/* Zoom Controls */}
+            <div className="flex items-center gap-1">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleZoomOut}
+                      disabled={pdfZoom <= 50}
+                      className="h-8 w-8"
+                    >
+                      <ZoomOut className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Reducir zoom</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-background/50 border border-border/30 min-w-[80px] justify-center">
+                <span className="text-sm font-medium">{pdfZoom}%</span>
+              </div>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleZoomIn}
+                      disabled={pdfZoom >= 200}
+                      className="h-8 w-8"
+                    >
+                      <ZoomIn className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Aumentar zoom</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleResetZoom}
+                      className="h-8 w-8"
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Restablecer zoom</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <div className="w-px h-6 bg-border/50 mx-2" />
+
+              {/* Page indicator */}
+              <div className="flex items-center gap-2 px-3 py-1 rounded-md bg-background/50 border border-border/30">
+                <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
+                  {pdfTotalPages} página{pdfTotalPages > 1 ? 's' : ''}
+                </span>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handlePrintPDF}
+                      className="gap-2 text-purple-600 border-purple-200 hover:bg-purple-50 hover:border-purple-300 dark:text-purple-400 dark:border-purple-800 dark:hover:bg-purple-950/50"
+                    >
+                      <Printer className="h-4 w-4" />
+                      Imprimir
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Imprimir documento directamente</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <Button
+                size="sm"
+                onClick={handleDownloadPDF}
+                className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Download className="h-4 w-4" />
+                Descargar
+              </Button>
+            </div>
+          </div>
+
+          {/* PDF Viewer */}
+          <div className="flex-1 overflow-auto bg-muted/30 dark:bg-muted/10 p-4">
             {pdfPreviewUrl && (
-              <iframe
-                src={pdfPreviewUrl}
-                className="w-full h-full rounded-lg border border-border/50 bg-white shadow-inner"
-                title="Vista previa del PDF"
-              />
+              <div 
+                className="flex justify-center min-h-full"
+                style={{ 
+                  transform: `scale(${pdfZoom / 100})`,
+                  transformOrigin: 'top center',
+                  transition: 'transform 0.2s ease-out'
+                }}
+              >
+                <iframe
+                  src={`${pdfPreviewUrl}#toolbar=0&navpanes=0&scrollbar=1`}
+                  className="w-full max-w-4xl rounded-lg border border-border/50 bg-white shadow-lg"
+                  style={{ height: `${Math.max(600, 800 * (pdfZoom / 100))}px` }}
+                  title="Vista previa del PDF"
+                />
+              </div>
             )}
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between px-4 py-2 border-t border-border/20 bg-muted/10 dark:bg-muted/5">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Calendar className="h-3.5 w-3.5" />
+              <span>Generado: {format(new Date(), 'dd/MM/yyyy HH:mm')}</span>
+            </div>
+            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+              <span>Usa la rueda del ratón para desplazarte</span>
+              <span>•</span>
+              <span>Ctrl + P para imprimir</span>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
