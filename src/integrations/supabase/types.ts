@@ -1415,6 +1415,47 @@ export type Database = {
         }
         Relationships: []
       }
+      visit_sheet_audit: {
+        Row: {
+          action: string
+          changed_fields: string[] | null
+          created_at: string
+          id: string
+          new_data: Json | null
+          old_data: Json | null
+          user_id: string | null
+          visit_sheet_id: string
+        }
+        Insert: {
+          action: string
+          changed_fields?: string[] | null
+          created_at?: string
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          user_id?: string | null
+          visit_sheet_id: string
+        }
+        Update: {
+          action?: string
+          changed_fields?: string[] | null
+          created_at?: string
+          id?: string
+          new_data?: Json | null
+          old_data?: Json | null
+          user_id?: string | null
+          visit_sheet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visit_sheet_audit_visit_sheet_id_fkey"
+            columns: ["visit_sheet_id"]
+            isOneToOne: false
+            referencedRelation: "visit_sheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       visit_sheets: {
         Row: {
           acciones_acordadas: Json | null
