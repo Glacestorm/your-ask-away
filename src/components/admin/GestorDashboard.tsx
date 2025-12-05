@@ -19,6 +19,7 @@ import { PersonalGoalsHistory } from '@/components/dashboard/PersonalGoalsHistor
 import { QuickVisitManager } from '@/components/dashboard/QuickVisitManager';
 import { MapButton } from '@/components/dashboard/MapButton';
 import { GestorDashboardCard } from '@/components/dashboard/GestorDashboardCard';
+import { MapDashboardCard } from '@/components/dashboard/MapDashboardCard';
 import { cn } from '@/lib/utils';
 import { GestorOverviewSection } from '@/components/dashboard/GestorOverviewSection';
 import {
@@ -728,6 +729,9 @@ export function GestorDashboard({
                 </div>
               ))}
             </div>
+
+            {/* Mapa Card */}
+            <MapDashboardCard />
 
             {/* Quick Stats Summary */}
             <div className="grid gap-4 md:grid-cols-4">
