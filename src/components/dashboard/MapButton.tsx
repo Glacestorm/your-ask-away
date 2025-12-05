@@ -1,12 +1,20 @@
 import { useNavigate } from 'react-router-dom';
-import { Map, Building2, MapPin, TrendingUp, ExternalLink, Calendar, ArrowUpDown, Plus } from 'lucide-react';
+import { Map, Building2, MapPin, TrendingUp, ExternalLink, Calendar, ArrowUpDown, Plus, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Progress } from '@/components/ui/progress';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
+import { ca } from 'date-fns/locale';
+
+interface MonthlyVisits {
+  month: string;
+  shortMonth: string;
+  count: number;
+}
 
 const getVinculacionColor = (value: number): string => {
   if (value >= 70) return 'bg-green-500';
@@ -64,12 +72,51 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
   const [vinculacionFilter, setVinculacionFilter] = useState<VinculacionFilter>('all');
   const [chartVisible, setChartVisible] = useState(false);
   const chartRef = useRef<HTMLDivElement>(null);
+  const [monthlyVisits, setMonthlyVisits] = useState<MonthlyVisits[]>([]);
 
   useEffect(() => {
     if (user?.id) {
       fetchCompanyPreview();
+      fetchMonthlyVisits();
     }
   }, [user?.id]);
+
+  const fetchMonthlyVisits = async () => {
+    if (!user?.id) return;
+    try {
+      const sixMonthsAgo = startOfMonth(subMonths(new Date(), 5));
+      
+      const { data } = await supabase
+        .from('visits')
+        .select('visit_date')
+        .eq('gestor_id', user.id)
+        .gte('visit_date', format(sixMonthsAgo, 'yyyy-MM-dd'));
+
+      if (data) {
+        // Generate last 6 months
+        const months: MonthlyVisits[] = [];
+        for (let i = 5; i >= 0; i--) {
+          const monthDate = subMonths(new Date(), i);
+          const monthStart = startOfMonth(monthDate);
+          const monthEnd = endOfMonth(monthDate);
+          
+          const count = data.filter(v => {
+            const visitDate = new Date(v.visit_date);
+            return visitDate >= monthStart && visitDate <= monthEnd;
+          }).length;
+
+          months.push({
+            month: format(monthDate, 'MMMM', { locale: ca }),
+            shortMonth: format(monthDate, 'MMM', { locale: ca }).substring(0, 3),
+            count,
+          });
+        }
+        setMonthlyVisits(months);
+      }
+    } catch (error) {
+      console.error('Error fetching monthly visits:', error);
+    }
+  };
 
   const fetchCompanyPreview = async () => {
     if (!user?.id) return;
@@ -381,6 +428,50 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Mini visits evolution chart */}
+          {monthlyVisits.length > 0 && (
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-1.5">
+                <BarChart3 className="h-3 w-3 text-muted-foreground" />
+                <p className="text-[10px] text-muted-foreground">Evolució visites (6 mesos):</p>
+              </div>
+              <div className="flex items-end gap-1 h-10">
+                {monthlyVisits.map((month, idx) => {
+                  const maxCount = Math.max(...monthlyVisits.map(m => m.count), 1);
+                  const heightPercent = (month.count / maxCount) * 100;
+                  return (
+                    <TooltipProvider key={month.month} delayDuration={100}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex-1 flex flex-col items-center gap-0.5">
+                            <div 
+                              className="w-full bg-primary/70 rounded-t transition-all duration-500 ease-out hover:bg-primary cursor-pointer"
+                              style={{ 
+                                height: chartVisible ? `${Math.max(heightPercent, 8)}%` : '0%',
+                                transitionDelay: `${idx * 80}ms`,
+                                minHeight: month.count > 0 ? '4px' : '2px',
+                                opacity: month.count > 0 ? 1 : 0.3
+                              }}
+                            />
+                            <span className="text-[8px] text-muted-foreground">{month.shortMonth}</span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="text-xs">
+                          <p className="capitalize">{month.month}</p>
+                          <p className="font-medium">{month.count} visites</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  );
+                })}
+              </div>
+              <div className="flex justify-between text-[9px] text-muted-foreground">
+                <span>Total: {monthlyVisits.reduce((sum, m) => sum + m.count, 0)}</span>
+                <span>Mitjana: {Math.round(monthlyVisits.reduce((sum, m) => sum + m.count, 0) / 6)}/mes</span>
+              </div>
             </div>
           )}
 
