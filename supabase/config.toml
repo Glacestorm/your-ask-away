@@ -35,3 +35,6 @@ verify_jwt = false
 
 [functions.escalate-alerts]
 verify_jwt = false
+
+[functions.send-critical-opportunity-email]
+verify_jwt = false
