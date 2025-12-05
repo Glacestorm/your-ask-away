@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Map, Building2, MapPin, TrendingUp, TrendingDown, ExternalLink, Calendar, ArrowUpDown, Plus, BarChart3, Eye, EyeOff, Award, AlertTriangle } from 'lucide-react';
+import { Map, Building2, MapPin, TrendingUp, TrendingDown, ExternalLink, Calendar, ArrowUpDown, Plus, BarChart3, Eye, EyeOff, Award, AlertTriangle, Table, LayoutGrid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Progress } from '@/components/ui/progress';
@@ -75,6 +75,7 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
   const chartRef = useRef<HTMLDivElement>(null);
   const [monthlyVisits, setMonthlyVisits] = useState<MonthlyVisits[]>([]);
   const [showYoY, setShowYoY] = useState(true);
+  const [chartViewMode, setChartViewMode] = useState<'chart' | 'table'>('chart');
 
   useEffect(() => {
     if (user?.id) {
@@ -516,8 +517,31 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                     <p className="text-[10px] text-muted-foreground">Evolució visites (6 mesos):</p>
                   </div>
                   <div className="flex items-center gap-1">
+                    {/* Chart/Table Toggle */}
+                    <TooltipProvider delayDuration={100}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setChartViewMode(chartViewMode === 'chart' ? 'table' : 'chart');
+                            }}
+                            className={`p-1 rounded transition-all ${
+                              chartViewMode === 'table'
+                                ? 'bg-primary/20 text-primary' 
+                                : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                            }`}
+                          >
+                            {chartViewMode === 'chart' ? <Table className="h-3 w-3" /> : <LayoutGrid className="h-3 w-3" />}
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="text-xs">
+                          {chartViewMode === 'chart' ? 'Veure taula' : 'Veure gràfic'}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                     {/* YoY Toggle */}
-                    {hasLastYearData && (
+                    {hasLastYearData && chartViewMode === 'chart' && (
                       <TooltipProvider delayDuration={100}>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -556,273 +580,363 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                     </div>
                   </div>
                 </div>
-                <div className="relative flex items-end gap-1 h-14">
-                  {/* Trend line SVG overlay with gradient area */}
-                  <svg 
-                    className="absolute inset-0 w-full h-full pointer-events-none z-10"
-                    viewBox="0 0 100 100"
-                    preserveAspectRatio="none"
-                  >
-                    <defs>
-                      <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
-                        <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.02" />
-                      </linearGradient>
-                    </defs>
-                    {/* Gradient area fill */}
-                    <polygon
-                      points={areaPoints}
-                      fill="url(#areaGradient)"
-                      className="transition-all duration-700"
-                      style={{
-                        opacity: chartVisible ? 1 : 0,
-                        transitionDelay: '300ms'
-                      }}
-                    />
-                    {/* Trend line */}
-                    <polyline
-                      points={trendPoints}
-                      fill="none"
-                      stroke="hsl(var(--primary))"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="transition-all duration-700"
-                      style={{
-                        strokeDasharray: chartVisible ? '0' : '500',
-                        strokeDashoffset: chartVisible ? '0' : '500',
-                        transitionDelay: '400ms'
-                      }}
-                    />
-                    {/* Trend line dots */}
-                    {monthlyVisits.map((m, i) => {
-                      const x = (i / 6) * 100;
-                      const y = 100 - ((m.count / maxCount) * 80);
-                      return (
-                        <circle
-                          key={i}
-                          cx={x}
-                          cy={y}
-                          r="2.5"
-                          fill="hsl(var(--background))"
-                          stroke="hsl(var(--primary))"
-                          strokeWidth="1.5"
-                          className="transition-all duration-500"
+                {/* Chart View */}
+                {chartViewMode === 'chart' && (
+                  <>
+                    <div className="relative flex items-end gap-1 h-14">
+                      {/* Trend line SVG overlay with gradient area */}
+                      <svg 
+                        className="absolute inset-0 w-full h-full pointer-events-none z-10"
+                        viewBox="0 0 100 100"
+                        preserveAspectRatio="none"
+                      >
+                        <defs>
+                          <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
+                            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.02" />
+                          </linearGradient>
+                        </defs>
+                        {/* Gradient area fill */}
+                        <polygon
+                          points={areaPoints}
+                          fill="url(#areaGradient)"
+                          className="transition-all duration-700"
                           style={{
                             opacity: chartVisible ? 1 : 0,
-                            transitionDelay: `${500 + i * 80}ms`
+                            transitionDelay: '300ms'
                           }}
                         />
-                      );
-                    })}
-                  </svg>
-                  {/* Bars with YoY comparison */}
-                  {monthlyVisits.map((month, idx) => {
-                    const heightPercent = (month.count / maxCount) * 100;
-                    const lastYearHeightPercent = ((month.lastYearCount || 0) / maxCount) * 100;
-                    const yoyMonthChange = (month.lastYearCount || 0) > 0 
-                      ? Math.round(((month.count - (month.lastYearCount || 0)) / (month.lastYearCount || 0)) * 100)
-                      : null;
-                    const isBestMonth = bestMonth?.idx === idx;
-                    const isWorstMonth = worstMonth?.idx === idx && worstMonth?.change !== bestMonth?.change;
-                    
-                    return (
-                      <TooltipProvider key={month.month} delayDuration={100}>
+                        {/* Trend line */}
+                        <polyline
+                          points={trendPoints}
+                          fill="none"
+                          stroke="hsl(var(--primary))"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="transition-all duration-700"
+                          style={{
+                            strokeDasharray: chartVisible ? '0' : '500',
+                            strokeDashoffset: chartVisible ? '0' : '500',
+                            transitionDelay: '400ms'
+                          }}
+                        />
+                        {/* Trend line dots */}
+                        {monthlyVisits.map((m, i) => {
+                          const x = (i / 6) * 100;
+                          const y = 100 - ((m.count / maxCount) * 80);
+                          return (
+                            <circle
+                              key={i}
+                              cx={x}
+                              cy={y}
+                              r="2.5"
+                              fill="hsl(var(--background))"
+                              stroke="hsl(var(--primary))"
+                              strokeWidth="1.5"
+                              className="transition-all duration-500"
+                              style={{
+                                opacity: chartVisible ? 1 : 0,
+                                transitionDelay: `${500 + i * 80}ms`
+                              }}
+                            />
+                          );
+                        })}
+                      </svg>
+                      {/* Bars with YoY comparison */}
+                      {monthlyVisits.map((month, idx) => {
+                        const heightPercent = (month.count / maxCount) * 100;
+                        const lastYearHeightPercent = ((month.lastYearCount || 0) / maxCount) * 100;
+                        const yoyMonthChange = (month.lastYearCount || 0) > 0 
+                          ? Math.round(((month.count - (month.lastYearCount || 0)) / (month.lastYearCount || 0)) * 100)
+                          : null;
+                        const isBestMonth = bestMonth?.idx === idx;
+                        const isWorstMonth = worstMonth?.idx === idx && worstMonth?.change !== bestMonth?.change;
+                        
+                        return (
+                          <TooltipProvider key={month.month} delayDuration={100}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className={`flex-1 flex flex-col items-center gap-0.5 h-full relative ${
+                                  isBestMonth ? 'z-20' : isWorstMonth ? 'z-20' : ''
+                                }`}>
+                                  {/* Best/Worst indicator */}
+                                  {showYoY && isBestMonth && yoyChanges.length > 1 && (
+                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                                      <Award className="h-3 w-3 text-green-500 animate-[pulse_2s_ease-in-out_infinite]" />
+                                    </div>
+                                  )}
+                                  {showYoY && isWorstMonth && yoyChanges.length > 1 && (
+                                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                                      <AlertTriangle className="h-3 w-3 text-red-500 animate-[pulse_2s_ease-in-out_infinite]" />
+                                    </div>
+                                  )}
+                                  <div className="flex-1 w-full flex items-end gap-[1px]">
+                                    {/* Last year bar (behind) */}
+                                    {hasLastYearData && showYoY && (
+                                      <div 
+                                        className="w-1/2 bg-muted-foreground/20 rounded-t transition-all duration-500 ease-out"
+                                        style={{ 
+                                          height: chartVisible ? `${Math.max(lastYearHeightPercent, 4)}%` : '0%',
+                                          transitionDelay: `${idx * 80}ms`,
+                                          minHeight: (month.lastYearCount || 0) > 0 ? '2px' : '1px',
+                                          opacity: (month.lastYearCount || 0) > 0 ? 0.6 : 0.2
+                                        }}
+                                      />
+                                    )}
+                                    {/* Current year bar */}
+                                    <div 
+                                      className={`${hasLastYearData && showYoY ? 'w-1/2' : 'w-full'} rounded-t transition-all duration-500 ease-out hover:bg-primary/50 cursor-pointer ${
+                                        isBestMonth && showYoY
+                                          ? 'bg-green-500/40 ring-1 ring-green-500/50' 
+                                          : isWorstMonth && showYoY
+                                            ? 'bg-red-500/30 ring-1 ring-red-500/50'
+                                            : 'bg-primary/30'
+                                      }`}
+                                      style={{ 
+                                        height: chartVisible ? `${Math.max(heightPercent, 8)}%` : '0%',
+                                        transitionDelay: `${idx * 80}ms`,
+                                        minHeight: month.count > 0 ? '4px' : '2px',
+                                        opacity: month.count > 0 ? 1 : 0.3
+                                      }}
+                                    />
+                                  </div>
+                                  <span className={`text-[8px] ${
+                                    isBestMonth && showYoY 
+                                      ? 'text-green-600 dark:text-green-400 font-medium' 
+                                      : isWorstMonth && showYoY
+                                        ? 'text-red-600 dark:text-red-400 font-medium'
+                                        : 'text-muted-foreground'
+                                  }`}>{month.shortMonth}</span>
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="text-xs">
+                                <div className="flex items-center gap-1.5">
+                                  <p className="capitalize font-medium">{month.month}</p>
+                                  {isBestMonth && showYoY && yoyChanges.length > 1 && (
+                                    <span className="px-1 py-0.5 rounded text-[9px] bg-green-500/20 text-green-600 dark:text-green-400">Millor</span>
+                                  )}
+                                  {isWorstMonth && showYoY && yoyChanges.length > 1 && (
+                                    <span className="px-1 py-0.5 rounded text-[9px] bg-red-500/20 text-red-600 dark:text-red-400">Pitjor</span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <div className="flex items-center gap-1">
+                                    <span className="w-2 h-2 rounded-sm bg-primary/50" />
+                                    <span>{month.count} visites</span>
+                                  </div>
+                                </div>
+                                {hasLastYearData && showYoY && (
+                                  <div className="flex items-center gap-1 mt-0.5 text-muted-foreground">
+                                    <span className="w-2 h-2 rounded-sm bg-muted-foreground/30" />
+                                    <span>{month.lastYearCount || 0} any ant.</span>
+                                  </div>
+                                )}
+                                {yoyMonthChange !== null && showYoY && (
+                                  <p className={`text-[10px] mt-1 font-medium ${yoyMonthChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                    {yoyMonthChange >= 0 ? '+' : ''}{yoyMonthChange}% vs any anterior
+                                  </p>
+                                )}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        );
+                      })}
+                      {/* Prediction bar with confidence interval */}
+                      <TooltipProvider delayDuration={100}>
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <div className={`flex-1 flex flex-col items-center gap-0.5 h-full relative ${
-                              isBestMonth ? 'z-20' : isWorstMonth ? 'z-20' : ''
-                            }`}>
-                              {/* Best/Worst indicator */}
-                              {showYoY && isBestMonth && yoyChanges.length > 1 && (
-                                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                                  <Award className="h-3 w-3 text-green-500 animate-[pulse_2s_ease-in-out_infinite]" />
-                                </div>
-                              )}
-                              {showYoY && isWorstMonth && yoyChanges.length > 1 && (
-                                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                                  <AlertTriangle className="h-3 w-3 text-red-500 animate-[pulse_2s_ease-in-out_infinite]" />
-                                </div>
-                              )}
-                              <div className="flex-1 w-full flex items-end gap-[1px]">
-                                {/* Last year bar (behind) */}
-                                {hasLastYearData && showYoY && (
-                                  <div 
-                                    className="w-1/2 bg-muted-foreground/20 rounded-t transition-all duration-500 ease-out"
-                                    style={{ 
-                                      height: chartVisible ? `${Math.max(lastYearHeightPercent, 4)}%` : '0%',
-                                      transitionDelay: `${idx * 80}ms`,
-                                      minHeight: (month.lastYearCount || 0) > 0 ? '2px' : '1px',
-                                      opacity: (month.lastYearCount || 0) > 0 ? 0.6 : 0.2
-                                    }}
-                                  />
-                                )}
-                                {/* Current year bar */}
+                            <div className="flex-1 flex flex-col items-center gap-0.5 h-full relative">
+                              <div className="flex-1 w-full flex items-end relative">
+                                {/* Confidence interval error bars */}
                                 <div 
-                                  className={`${hasLastYearData && showYoY ? 'w-1/2' : 'w-full'} rounded-t transition-all duration-500 ease-out hover:bg-primary/50 cursor-pointer ${
-                                    isBestMonth && showYoY
-                                      ? 'bg-green-500/40 ring-1 ring-green-500/50' 
-                                      : isWorstMonth && showYoY
-                                        ? 'bg-red-500/30 ring-1 ring-red-500/50'
-                                        : 'bg-primary/30'
-                                  }`}
+                                  className="absolute left-1/2 -translate-x-1/2 w-0.5 bg-primary/30 rounded transition-all duration-500"
+                                  style={{
+                                    bottom: `${Math.max((predictionMin / maxCount) * 100, 2)}%`,
+                                    height: chartVisible ? `${((predictionMax - predictionMin) / maxCount) * 100}%` : '0%',
+                                    transitionDelay: `${(monthlyVisits.length + 1) * 80}ms`
+                                  }}
+                                />
+                                {/* Top error bar cap */}
+                                <div 
+                                  className="absolute left-1/2 -translate-x-1/2 w-2 h-0.5 bg-primary/40 rounded transition-all duration-500"
+                                  style={{
+                                    bottom: chartVisible ? `${(predictionMax / maxCount) * 100}%` : '0%',
+                                    opacity: chartVisible ? 1 : 0,
+                                    transitionDelay: `${(monthlyVisits.length + 1) * 80}ms`
+                                  }}
+                                />
+                                {/* Bottom error bar cap */}
+                                <div 
+                                  className="absolute left-1/2 -translate-x-1/2 w-2 h-0.5 bg-primary/40 rounded transition-all duration-500"
+                                  style={{
+                                    bottom: chartVisible ? `${(predictionMin / maxCount) * 100}%` : '0%',
+                                    opacity: chartVisible ? 1 : 0,
+                                    transitionDelay: `${(monthlyVisits.length + 1) * 80}ms`
+                                  }}
+                                />
+                                {/* Main prediction bar with pulse animation */}
+                                <div 
+                                  className="w-full rounded-t cursor-pointer border-2 border-dashed border-primary/50 bg-primary/10 hover:bg-primary/20 animate-[pulse_2s_ease-in-out_infinite]"
                                   style={{ 
-                                    height: chartVisible ? `${Math.max(heightPercent, 8)}%` : '0%',
-                                    transitionDelay: `${idx * 80}ms`,
-                                    minHeight: month.count > 0 ? '4px' : '2px',
-                                    opacity: month.count > 0 ? 1 : 0.3
+                                    height: chartVisible ? `${Math.max((predictedCount / maxCount) * 100, 8)}%` : '0%',
+                                    transitionDelay: `${monthlyVisits.length * 80}ms`,
+                                    minHeight: '4px',
+                                    animation: chartVisible ? 'pulse 2s ease-in-out infinite' : 'none',
+                                    boxShadow: chartVisible ? '0 0 8px hsl(var(--primary) / 0.3)' : 'none'
                                   }}
                                 />
                               </div>
-                              <span className={`text-[8px] ${
-                                isBestMonth && showYoY 
-                                  ? 'text-green-600 dark:text-green-400 font-medium' 
-                                  : isWorstMonth && showYoY
-                                    ? 'text-red-600 dark:text-red-400 font-medium'
-                                    : 'text-muted-foreground'
-                              }`}>{month.shortMonth}</span>
+                              <span className="text-[8px] text-primary/70 font-medium">Pred.</span>
                             </div>
                           </TooltipTrigger>
                           <TooltipContent side="top" className="text-xs">
-                            <div className="flex items-center gap-1.5">
-                              <p className="capitalize font-medium">{month.month}</p>
-                              {isBestMonth && showYoY && yoyChanges.length > 1 && (
-                                <span className="px-1 py-0.5 rounded text-[9px] bg-green-500/20 text-green-600 dark:text-green-400">Millor</span>
-                              )}
-                              {isWorstMonth && showYoY && yoyChanges.length > 1 && (
-                                <span className="px-1 py-0.5 rounded text-[9px] bg-red-500/20 text-red-600 dark:text-red-400">Pitjor</span>
-                              )}
+                            <p className="font-medium text-primary">Predicció proper mes</p>
+                            <p className="font-medium">{predictedCount} visites</p>
+                            <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                              <span>Interval:</span>
+                              <span className="font-medium">{predictionMin} - {predictionMax}</span>
                             </div>
-                            <div className="flex items-center gap-2 mt-1">
-                              <div className="flex items-center gap-1">
-                                <span className="w-2 h-2 rounded-sm bg-primary/50" />
-                                <span>{month.count} visites</span>
-                              </div>
-                            </div>
-                            {hasLastYearData && showYoY && (
-                              <div className="flex items-center gap-1 mt-0.5 text-muted-foreground">
-                                <span className="w-2 h-2 rounded-sm bg-muted-foreground/30" />
-                                <span>{month.lastYearCount || 0} any ant.</span>
-                              </div>
-                            )}
-                            {yoyMonthChange !== null && showYoY && (
-                              <p className={`text-[10px] mt-1 font-medium ${yoyMonthChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                {yoyMonthChange >= 0 ? '+' : ''}{yoyMonthChange}% vs any anterior
+                            <p className="text-[10px] text-muted-foreground">Basat en tendència actual</p>
+                            {currentMonth > 0 && (
+                              <p className={`text-[10px] ${predictedCount >= currentMonth ? 'text-green-500' : 'text-red-500'}`}>
+                                {predictedCount >= currentMonth ? '+' : ''}{Math.round(((predictedCount - currentMonth) / currentMonth) * 100)}% vs actual
                               </p>
                             )}
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
-                    );
-                  })}
-                  {/* Prediction bar with confidence interval */}
-                  <TooltipProvider delayDuration={100}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="flex-1 flex flex-col items-center gap-0.5 h-full relative">
-                          <div className="flex-1 w-full flex items-end relative">
-                            {/* Confidence interval error bars */}
-                            <div 
-                              className="absolute left-1/2 -translate-x-1/2 w-0.5 bg-primary/30 rounded transition-all duration-500"
-                              style={{
-                                bottom: `${Math.max((predictionMin / maxCount) * 100, 2)}%`,
-                                height: chartVisible ? `${((predictionMax - predictionMin) / maxCount) * 100}%` : '0%',
-                                transitionDelay: `${(monthlyVisits.length + 1) * 80}ms`
-                              }}
-                            />
-                            {/* Top error bar cap */}
-                            <div 
-                              className="absolute left-1/2 -translate-x-1/2 w-2 h-0.5 bg-primary/40 rounded transition-all duration-500"
-                              style={{
-                                bottom: chartVisible ? `${(predictionMax / maxCount) * 100}%` : '0%',
-                                opacity: chartVisible ? 1 : 0,
-                                transitionDelay: `${(monthlyVisits.length + 1) * 80}ms`
-                              }}
-                            />
-                            {/* Bottom error bar cap */}
-                            <div 
-                              className="absolute left-1/2 -translate-x-1/2 w-2 h-0.5 bg-primary/40 rounded transition-all duration-500"
-                              style={{
-                                bottom: chartVisible ? `${(predictionMin / maxCount) * 100}%` : '0%',
-                                opacity: chartVisible ? 1 : 0,
-                                transitionDelay: `${(monthlyVisits.length + 1) * 80}ms`
-                              }}
-                            />
-                            {/* Main prediction bar with pulse animation */}
-                            <div 
-                              className="w-full rounded-t cursor-pointer border-2 border-dashed border-primary/50 bg-primary/10 hover:bg-primary/20 animate-[pulse_2s_ease-in-out_infinite]"
-                              style={{ 
-                                height: chartVisible ? `${Math.max((predictedCount / maxCount) * 100, 8)}%` : '0%',
-                                transitionDelay: `${monthlyVisits.length * 80}ms`,
-                                minHeight: '4px',
-                                animation: chartVisible ? 'pulse 2s ease-in-out infinite' : 'none',
-                                boxShadow: chartVisible ? '0 0 8px hsl(var(--primary) / 0.3)' : 'none'
-                              }}
-                            />
-                          </div>
-                          <span className="text-[8px] text-primary/70 font-medium">Pred.</span>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="text-xs">
-                        <p className="font-medium text-primary">Predicció proper mes</p>
-                        <p className="font-medium">{predictedCount} visites</p>
-                        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                          <span>Interval:</span>
-                          <span className="font-medium">{predictionMin} - {predictionMax}</span>
-                        </div>
-                        <p className="text-[10px] text-muted-foreground">Basat en tendència actual</p>
-                        {currentMonth > 0 && (
-                          <p className={`text-[10px] ${predictedCount >= currentMonth ? 'text-green-500' : 'text-red-500'}`}>
-                            {predictedCount >= currentMonth ? '+' : ''}{Math.round(((predictedCount - currentMonth) / currentMonth) * 100)}% vs actual
-                          </p>
-                        )}
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-                <div className="flex flex-col gap-1">
-                  {/* Legend */}
-                  {hasLastYearData && showYoY && (
-                    <div className="flex items-center gap-3 text-[9px]">
-                      <div className="flex items-center gap-1">
-                        <span className="w-2 h-2 rounded-sm bg-primary/50" />
-                        <span className="text-muted-foreground">Actual</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <span className="w-2 h-2 rounded-sm bg-muted-foreground/30" />
-                        <span className="text-muted-foreground">Any ant.</span>
-                      </div>
-                      {yoyChanges.length > 1 && (
-                        <>
-                          <div className="flex items-center gap-1">
-                            <Award className="h-2.5 w-2.5 text-green-500" />
-                            <span className="text-green-600 dark:text-green-400">Millor</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <AlertTriangle className="h-2.5 w-2.5 text-red-500" />
-                            <span className="text-red-600 dark:text-red-400">Pitjor</span>
-                          </div>
-                        </>
-                      )}
                     </div>
-                  )}
-                  <div className="flex justify-between items-center text-[9px] text-muted-foreground">
-                    <div className="flex gap-2">
-                      <span>Total: {totalThisYear}</span>
+                    <div className="flex flex-col gap-1">
+                      {/* Legend */}
                       {hasLastYearData && showYoY && (
-                        <span className="text-muted-foreground/60">({totalLastYear} ant.)</span>
+                        <div className="flex items-center gap-3 text-[9px]">
+                          <div className="flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-sm bg-primary/50" />
+                            <span className="text-muted-foreground">Actual</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-sm bg-muted-foreground/30" />
+                            <span className="text-muted-foreground">Any ant.</span>
+                          </div>
+                          {yoyChanges.length > 1 && (
+                            <>
+                              <div className="flex items-center gap-1">
+                                <Award className="h-2.5 w-2.5 text-green-500" />
+                                <span className="text-green-600 dark:text-green-400">Millor</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <AlertTriangle className="h-2.5 w-2.5 text-red-500" />
+                                <span className="text-red-600 dark:text-red-400">Pitjor</span>
+                              </div>
+                            </>
+                          )}
+                        </div>
                       )}
+                      <div className="flex justify-between items-center text-[9px] text-muted-foreground">
+                        <div className="flex gap-2">
+                          <span>Total: {totalThisYear}</span>
+                          {hasLastYearData && showYoY && (
+                            <span className="text-muted-foreground/60">({totalLastYear} ant.)</span>
+                          )}
+                        </div>
+                        {yoyChange !== null && showYoY && (
+                          <span className={`font-medium ${yoyChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                            {yoyChange >= 0 ? '+' : ''}{yoyChange}% vs any ant.
+                          </span>
+                        )}
+                        {(yoyChange === null || !showYoY) && (
+                          <span>Mitjana: {Math.round(totalThisYear / 6)}/mes</span>
+                        )}
+                      </div>
                     </div>
-                    {yoyChange !== null && showYoY && (
-                      <span className={`font-medium ${yoyChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                        {yoyChange >= 0 ? '+' : ''}{yoyChange}% vs any ant.
-                      </span>
-                    )}
-                    {(yoyChange === null || !showYoY) && (
+                  </>
+                )}
+
+                {/* Table View */}
+                {chartViewMode === 'table' && (
+                  <div className="space-y-1">
+                    <div className="overflow-hidden rounded-md border border-border/50">
+                      <table className="w-full text-[9px]">
+                        <thead>
+                          <tr className="bg-muted/50">
+                            <th className="px-1.5 py-1 text-left font-medium text-muted-foreground">Mes</th>
+                            <th className="px-1.5 py-1 text-right font-medium text-muted-foreground">Visites</th>
+                            {hasLastYearData && <th className="px-1.5 py-1 text-right font-medium text-muted-foreground">Ant.</th>}
+                            {hasLastYearData && <th className="px-1.5 py-1 text-right font-medium text-muted-foreground">Δ%</th>}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {monthlyVisits.map((month, idx) => {
+                            const yoyMonthChange = (month.lastYearCount || 0) > 0 
+                              ? Math.round(((month.count - (month.lastYearCount || 0)) / (month.lastYearCount || 0)) * 100)
+                              : null;
+                            const isBestMonth = bestMonth?.idx === idx;
+                            const isWorstMonth = worstMonth?.idx === idx && worstMonth?.change !== bestMonth?.change;
+                            
+                            return (
+                              <tr 
+                                key={month.month}
+                                className={`border-t border-border/30 transition-colors ${
+                                  isBestMonth ? 'bg-green-500/10' : isWorstMonth ? 'bg-red-500/10' : 'hover:bg-muted/30'
+                                }`}
+                              >
+                                <td className="px-1.5 py-1 capitalize flex items-center gap-1">
+                                  {month.shortMonth}
+                                  {isBestMonth && <Award className="h-2.5 w-2.5 text-green-500" />}
+                                  {isWorstMonth && <AlertTriangle className="h-2.5 w-2.5 text-red-500" />}
+                                </td>
+                                <td className="px-1.5 py-1 text-right font-medium">{month.count}</td>
+                                {hasLastYearData && (
+                                  <td className="px-1.5 py-1 text-right text-muted-foreground">{month.lastYearCount || 0}</td>
+                                )}
+                                {hasLastYearData && (
+                                  <td className={`px-1.5 py-1 text-right font-medium ${
+                                    yoyMonthChange === null 
+                                      ? 'text-muted-foreground' 
+                                      : yoyMonthChange >= 0 
+                                        ? 'text-green-600 dark:text-green-400' 
+                                        : 'text-red-600 dark:text-red-400'
+                                  }`}>
+                                    {yoyMonthChange !== null ? `${yoyMonthChange >= 0 ? '+' : ''}${yoyMonthChange}%` : '-'}
+                                  </td>
+                                )}
+                              </tr>
+                            );
+                          })}
+                          {/* Prediction row */}
+                          <tr className="border-t border-primary/30 bg-primary/5">
+                            <td className="px-1.5 py-1 text-primary/70 font-medium">Pred.</td>
+                            <td className="px-1.5 py-1 text-right font-medium text-primary/70">{predictedCount}</td>
+                            {hasLastYearData && <td className="px-1.5 py-1 text-right text-muted-foreground">-</td>}
+                            {hasLastYearData && (
+                              <td className={`px-1.5 py-1 text-right font-medium ${
+                                currentMonth > 0 
+                                  ? predictedCount >= currentMonth 
+                                    ? 'text-green-600 dark:text-green-400' 
+                                    : 'text-red-600 dark:text-red-400'
+                                  : 'text-muted-foreground'
+                              }`}>
+                                {currentMonth > 0 
+                                  ? `${predictedCount >= currentMonth ? '+' : ''}${Math.round(((predictedCount - currentMonth) / currentMonth) * 100)}%`
+                                  : '-'}
+                              </td>
+                            )}
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="flex justify-between items-center text-[9px] text-muted-foreground">
+                      <div className="flex gap-2">
+                        <span>Total: {totalThisYear}</span>
+                        {hasLastYearData && (
+                          <span className="text-muted-foreground/60">({totalLastYear} ant.)</span>
+                        )}
+                      </div>
                       <span>Mitjana: {Math.round(totalThisYear / 6)}/mes</span>
-                    )}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             );
           })()}
