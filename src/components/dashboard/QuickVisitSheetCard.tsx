@@ -86,6 +86,9 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
   const [isEditMode, setIsEditMode] = useState(!!editSheet);
   const [editVisitId, setEditVisitId] = useState<string | null>(editSheet?.visit_id || null);
   const [editSheetId, setEditSheetId] = useState<string | null>(editSheet?.id || null);
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
+  const [pdfDoc, setPdfDoc] = useState<jsPDF | null>(null);
 
   // Datos Generales
   const [formData, setFormData] = useState({
@@ -649,7 +652,7 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
     }
   };
 
-  const handleExportPDF = () => {
+  const generatePdfDocument = () => {
     const doc = new jsPDF('p', 'mm', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth();
     const margin = 15;
@@ -859,10 +862,33 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
       doc.text(`Generado: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, margin, doc.internal.pageSize.getHeight() - 6);
     }
 
-    // Save PDF
-    const filename = `ficha_visita_${formData.nombreRazonSocial.replace(/\s+/g, '_') || 'sin_empresa'}_${format(formData.fechaInicio, 'yyyyMMdd')}.pdf`;
-    doc.save(filename);
-    toast.success('PDF exportado correctamente');
+    return doc;
+  };
+
+  const handlePreviewPDF = () => {
+    const doc = generatePdfDocument();
+    const pdfBlob = doc.output('blob');
+    const url = URL.createObjectURL(pdfBlob);
+    setPdfPreviewUrl(url);
+    setPdfDoc(doc);
+    setShowPdfPreview(true);
+  };
+
+  const handleDownloadPDF = () => {
+    if (pdfDoc) {
+      const filename = `ficha_visita_${formData.nombreRazonSocial.replace(/\s+/g, '_') || 'sin_empresa'}_${format(formData.fechaInicio, 'yyyyMMdd')}.pdf`;
+      pdfDoc.save(filename);
+      toast.success('PDF descargado correctamente');
+    }
+  };
+
+  const handleClosePdfPreview = () => {
+    if (pdfPreviewUrl) {
+      URL.revokeObjectURL(pdfPreviewUrl);
+    }
+    setPdfPreviewUrl(null);
+    setPdfDoc(null);
+    setShowPdfPreview(false);
   };
 
   // Error message component
@@ -1652,15 +1678,15 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
                   <TooltipTrigger asChild>
                     <Button 
                       variant="outline" 
-                      onClick={handleExportPDF}
+                      onClick={handlePreviewPDF}
                       className="gap-2 text-blue-600 border-blue-200 hover:bg-blue-50 hover:border-blue-300 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-950/50"
                     >
-                      <Download className="h-4 w-4" />
-                      Exportar PDF
+                      <FileText className="h-4 w-4" />
+                      Vista previa PDF
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Descargar ficha de visita en formato PDF</p>
+                    <p>Previsualizar ficha de visita antes de descargar</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -1676,6 +1702,57 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
             </div>
           </div>
         </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* PDF Preview Dialog */}
+      <Dialog open={showPdfPreview} onOpenChange={setShowPdfPreview}>
+        <DialogContent className="max-w-5xl h-[90vh] p-0 gap-0 dark:bg-card dark:border-border/50">
+          <DialogHeader className="p-4 pb-0 border-b border-border/30 bg-gradient-to-r from-blue-500/10 via-blue-500/5 to-transparent dark:from-blue-500/20 dark:via-blue-500/10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-xl bg-blue-500/20 dark:bg-blue-500/30">
+                  <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <DialogTitle className="text-lg font-semibold dark:text-foreground">
+                    Vista Previa del PDF
+                  </DialogTitle>
+                  <DialogDescription className="text-sm dark:text-muted-foreground">
+                    Revisa el documento antes de descargarlo
+                  </DialogDescription>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleClosePdfPreview}
+                  className="gap-2"
+                >
+                  <X className="h-4 w-4" />
+                  Cerrar
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleDownloadPDF}
+                  className="gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  <Download className="h-4 w-4" />
+                  Descargar PDF
+                </Button>
+              </div>
+            </div>
+          </DialogHeader>
+          <div className="flex-1 p-4 overflow-hidden bg-muted/30 dark:bg-muted/10">
+            {pdfPreviewUrl && (
+              <iframe
+                src={pdfPreviewUrl}
+                className="w-full h-full rounded-lg border border-border/50 bg-white shadow-inner"
+                title="Vista previa del PDF"
+              />
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </>
