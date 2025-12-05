@@ -12,11 +12,29 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Calendar as CalendarIcon, Filter, FileText, User, Clock, Eye, X, Search, ChevronDown, Package, TrendingUp } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Calendar as CalendarIcon, Filter, FileText, User, Clock, Eye, X, Search, ChevronDown, Package, TrendingUp, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import * as XLSX from 'xlsx';
+
+// Lista de productos disponibles para filtrar
+const AVAILABLE_PRODUCTS = [
+  { key: 'prestamo', label: 'Préstamo' },
+  { key: 'hipoteca', label: 'Hipoteca' },
+  { key: 'cuenta_corriente', label: 'Cuenta Corriente' },
+  { key: 'tpv', label: 'TPV' },
+  { key: 'inversion', label: 'Inversión' },
+  { key: 'seguros', label: 'Seguros' },
+  { key: 'leasing', label: 'Leasing' },
+  { key: 'renting', label: 'Renting' },
+  { key: 'factoring', label: 'Factoring' },
+  { key: 'confirming', label: 'Confirming' },
+  { key: 'tarjetas', label: 'Tarjetas' },
+  { key: 'depositos', label: 'Depósitos' },
+];
 
 interface VisitSheetsHistoryProps {
   companyId: string;
@@ -59,6 +77,7 @@ export function VisitSheetsHistory({ companyId, defaultOpen = true }: VisitSheet
   const [selectedGestor, setSelectedGestor] = useState<string>('all');
   const [selectedTipoVisita, setSelectedTipoVisita] = useState<string>('all');
   const [selectedProbability, setSelectedProbability] = useState<string>('all');
+  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const [gestores, setGestores] = useState<Array<{ id: string; name: string }>>([]);
 
   useEffect(() => {
@@ -67,7 +86,7 @@ export function VisitSheetsHistory({ companyId, defaultOpen = true }: VisitSheet
 
   useEffect(() => {
     applyFilters();
-  }, [sheets, searchTerm, startDate, endDate, selectedGestor, selectedTipoVisita, selectedProbability]);
+  }, [sheets, searchTerm, startDate, endDate, selectedGestor, selectedTipoVisita, selectedProbability, selectedProducts]);
 
   const fetchVisitSheets = async () => {
     try {
@@ -177,7 +196,29 @@ export function VisitSheetsHistory({ companyId, defaultOpen = true }: VisitSheet
       });
     }
 
+    // Filtro por productos específicos
+    if (selectedProducts.length > 0) {
+      filtered = filtered.filter((sheet) => {
+        // Buscar en productos_servicios
+        const productsStr = JSON.stringify(sheet.productos_servicios || {}).toLowerCase();
+        const propuestaStr = JSON.stringify(sheet.propuesta_valor || []).toLowerCase();
+        
+        return selectedProducts.some((product) => {
+          const productLower = product.toLowerCase();
+          return productsStr.includes(productLower) || propuestaStr.includes(productLower);
+        });
+      });
+    }
+
     setFilteredSheets(filtered);
+  };
+
+  const toggleProduct = (productKey: string) => {
+    setSelectedProducts((prev) =>
+      prev.includes(productKey)
+        ? prev.filter((p) => p !== productKey)
+        : [...prev, productKey]
+    );
   };
 
   const viewSheetDetails = async (sheetId: string) => {
@@ -205,6 +246,54 @@ export function VisitSheetsHistory({ companyId, defaultOpen = true }: VisitSheet
     setSelectedGestor('all');
     setSelectedTipoVisita('all');
     setSelectedProbability('all');
+    setSelectedProducts([]);
+  };
+
+  const exportToExcel = () => {
+    if (filteredSheets.length === 0) {
+      toast.error('No hay datos para exportar');
+      return;
+    }
+
+    const exportData = filteredSheets.map((sheet) => ({
+      'Fecha': format(new Date(sheet.fecha), 'dd/MM/yyyy', { locale: es }),
+      'Hora': sheet.hora || '',
+      'Duración (min)': sheet.duracion || '',
+      'Canal': sheet.canal || '',
+      'Tipo Visita': sheet.tipo_visita || '',
+      'Gestor': sheet.gestor?.full_name || sheet.gestor?.email || '',
+      'Probabilidad Cierre (%)': sheet.probabilidad_cierre || '',
+      'Potencial Anual (€)': sheet.potencial_anual_estimado || '',
+      'Productos/Servicios': sheet.productos_servicios ? JSON.stringify(sheet.productos_servicios) : '',
+      'Propuesta Valor': sheet.propuesta_valor ? (Array.isArray(sheet.propuesta_valor) ? sheet.propuesta_valor.join(', ') : JSON.stringify(sheet.propuesta_valor)) : '',
+      'Notas': sheet.notas_gestor || '',
+      'Fecha Creación': format(new Date(sheet.created_at), 'dd/MM/yyyy HH:mm', { locale: es }),
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Fichas de Visita');
+
+    // Ajustar anchos de columnas
+    const colWidths = [
+      { wch: 12 }, // Fecha
+      { wch: 8 },  // Hora
+      { wch: 12 }, // Duración
+      { wch: 12 }, // Canal
+      { wch: 15 }, // Tipo Visita
+      { wch: 25 }, // Gestor
+      { wch: 18 }, // Probabilidad
+      { wch: 15 }, // Potencial
+      { wch: 40 }, // Productos
+      { wch: 40 }, // Propuesta
+      { wch: 50 }, // Notas
+      { wch: 16 }, // Fecha Creación
+    ];
+    worksheet['!cols'] = colWidths;
+
+    const fileName = `fichas_visita_${format(new Date(), 'yyyyMMdd_HHmm')}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+    toast.success('Exportación completada');
   };
 
   if (loading) {
@@ -220,12 +309,25 @@ export function VisitSheetsHistory({ companyId, defaultOpen = true }: VisitSheet
       <Card>
         <CollapsibleTrigger asChild>
           <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors pb-3">
-            <CardTitle className="text-sm flex items-center justify-between">
+          <CardTitle className="text-sm flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 Historial de Fichas de Visita
               </div>
               <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 text-xs"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    exportToExcel();
+                  }}
+                  disabled={filteredSheets.length === 0}
+                >
+                  <Download className="h-3 w-3 mr-1" />
+                  Excel
+                </Button>
                 <Badge variant="secondary" className="text-xs">
                   {filteredSheets.length} fichas
                 </Badge>
@@ -366,6 +468,45 @@ export function VisitSheetsHistory({ companyId, defaultOpen = true }: VisitSheet
                         <SelectItem value="baja">Baja (&lt;50%)</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  {/* Filtro por productos */}
+                  <div className="space-y-2 col-span-2">
+                    <Label className="text-xs flex items-center gap-1">
+                      <Package className="h-3 w-3" />
+                      Productos Ofrecidos
+                    </Label>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {AVAILABLE_PRODUCTS.map((product) => (
+                        <div key={product.key} className="flex items-center space-x-1.5">
+                          <Checkbox
+                            id={`product-${product.key}`}
+                            checked={selectedProducts.includes(product.key)}
+                            onCheckedChange={() => toggleProduct(product.key)}
+                            className="h-3 w-3"
+                          />
+                          <label
+                            htmlFor={`product-${product.key}`}
+                            className="text-[10px] leading-none cursor-pointer"
+                          >
+                            {product.label}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                    {selectedProducts.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {selectedProducts.map((p) => (
+                          <Badge key={p} variant="secondary" className="text-[10px] h-5">
+                            {AVAILABLE_PRODUCTS.find((ap) => ap.key === p)?.label}
+                            <X
+                              className="h-2.5 w-2.5 ml-1 cursor-pointer"
+                              onClick={() => toggleProduct(p)}
+                            />
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 
