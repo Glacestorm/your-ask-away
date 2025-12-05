@@ -443,7 +443,15 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
             const intercept = (sumY - slope * sumX) / n;
             const predictedCount = Math.max(0, Math.round(slope * n + intercept));
             
-            const allCounts = [...monthlyVisits.map(m => m.count), predictedCount];
+            // Calculate confidence interval (standard error)
+            const meanY = sumY / n;
+            const variance = monthlyVisits.reduce((sum, m) => sum + Math.pow(m.count - meanY, 2), 0) / (n - 1);
+            const stdDev = Math.sqrt(variance);
+            const confidenceMargin = Math.round(stdDev * 1.2); // ~80% confidence
+            const predictionMin = Math.max(0, predictedCount - confidenceMargin);
+            const predictionMax = predictedCount + confidenceMargin;
+            
+            const allCounts = [...monthlyVisits.map(m => m.count), predictionMax];
             const maxCount = Math.max(...allCounts, 1);
             const currentMonth = monthlyVisits[monthlyVisits.length - 1]?.count || 0;
             const previousMonth = monthlyVisits[monthlyVisits.length - 2]?.count || 0;
@@ -591,18 +599,48 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                       </TooltipProvider>
                     );
                   })}
-                  {/* Prediction bar */}
+                  {/* Prediction bar with confidence interval */}
                   <TooltipProvider delayDuration={100}>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <div className="flex-1 flex flex-col items-center gap-0.5 h-full">
-                          <div className="flex-1 w-full flex items-end">
+                        <div className="flex-1 flex flex-col items-center gap-0.5 h-full relative">
+                          <div className="flex-1 w-full flex items-end relative">
+                            {/* Confidence interval error bars */}
                             <div 
-                              className="w-full rounded-t transition-all duration-500 ease-out cursor-pointer border-2 border-dashed border-primary/50 bg-primary/10 hover:bg-primary/20"
+                              className="absolute left-1/2 -translate-x-1/2 w-0.5 bg-primary/30 rounded transition-all duration-500"
+                              style={{
+                                bottom: `${Math.max((predictionMin / maxCount) * 100, 2)}%`,
+                                height: chartVisible ? `${((predictionMax - predictionMin) / maxCount) * 100}%` : '0%',
+                                transitionDelay: `${(monthlyVisits.length + 1) * 80}ms`
+                              }}
+                            />
+                            {/* Top error bar cap */}
+                            <div 
+                              className="absolute left-1/2 -translate-x-1/2 w-2 h-0.5 bg-primary/40 rounded transition-all duration-500"
+                              style={{
+                                bottom: chartVisible ? `${(predictionMax / maxCount) * 100}%` : '0%',
+                                opacity: chartVisible ? 1 : 0,
+                                transitionDelay: `${(monthlyVisits.length + 1) * 80}ms`
+                              }}
+                            />
+                            {/* Bottom error bar cap */}
+                            <div 
+                              className="absolute left-1/2 -translate-x-1/2 w-2 h-0.5 bg-primary/40 rounded transition-all duration-500"
+                              style={{
+                                bottom: chartVisible ? `${(predictionMin / maxCount) * 100}%` : '0%',
+                                opacity: chartVisible ? 1 : 0,
+                                transitionDelay: `${(monthlyVisits.length + 1) * 80}ms`
+                              }}
+                            />
+                            {/* Main prediction bar with pulse animation */}
+                            <div 
+                              className="w-full rounded-t cursor-pointer border-2 border-dashed border-primary/50 bg-primary/10 hover:bg-primary/20 animate-[pulse_2s_ease-in-out_infinite]"
                               style={{ 
                                 height: chartVisible ? `${Math.max((predictedCount / maxCount) * 100, 8)}%` : '0%',
                                 transitionDelay: `${monthlyVisits.length * 80}ms`,
-                                minHeight: '4px'
+                                minHeight: '4px',
+                                animation: chartVisible ? 'pulse 2s ease-in-out infinite' : 'none',
+                                boxShadow: chartVisible ? '0 0 8px hsl(var(--primary) / 0.3)' : 'none'
                               }}
                             />
                           </div>
@@ -612,6 +650,10 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                       <TooltipContent side="top" className="text-xs">
                         <p className="font-medium text-primary">Predicció proper mes</p>
                         <p className="font-medium">{predictedCount} visites</p>
+                        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                          <span>Interval:</span>
+                          <span className="font-medium">{predictionMin} - {predictionMax}</span>
+                        </div>
                         <p className="text-[10px] text-muted-foreground">Basat en tendència actual</p>
                         {currentMonth > 0 && (
                           <p className={`text-[10px] ${predictedCount >= currentMonth ? 'text-green-500' : 'text-red-500'}`}>
