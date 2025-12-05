@@ -27,6 +27,7 @@ interface CompanyPreview {
   cnae?: string | null;
   fecha_ultima_visita?: string | null;
   visit_count?: number;
+  facturacion_anual?: number | null;
 }
 
 const getDateColorClass = (dateStr: string | null | undefined): string => {
@@ -85,7 +86,7 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
       // Get companies (fetch more to allow client-side sorting)
       const { data } = await supabase
         .from('companies')
-        .select('id, name, parroquia, vinculacion_entidad_1, sector, cnae, fecha_ultima_visita')
+        .select('id, name, parroquia, vinculacion_entidad_1, sector, cnae, fecha_ultima_visita, facturacion_anual')
         .eq('gestor_id', user.id)
         .limit(20);
 
@@ -129,6 +130,7 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
           cnae: c.cnae,
           fecha_ultima_visita: c.fecha_ultima_visita,
           visit_count: visitCountMap[c.id] || 0,
+          facturacion_anual: c.facturacion_anual,
         }));
 
         setCompanies(companiesWithData);
@@ -331,6 +333,54 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                   {Math.round((vinculacionCounts.low / companies.length) * 100)}%
                 </span>
               </div>
+
+              {/* Filtered companies summary */}
+              {vinculacionFilter !== 'all' && filteredCompanies.length > 0 && (
+                <div className="mt-2 p-2 rounded-md bg-primary/5 border border-primary/20 space-y-1">
+                  <p className="text-[10px] font-medium text-primary">
+                    Resum ({vinculacionFilter === 'high' ? 'Alta' : vinculacionFilter === 'medium' ? 'Mitjana' : 'Baixa'}):
+                  </p>
+                  <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[10px]">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Empreses:</span>
+                      <span className="font-medium">{filteredCompanies.length}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Vinc. mitjana:</span>
+                      <span className="font-medium">
+                        {Math.round(filteredCompanies.reduce((sum, c) => sum + (c.vinculacion_entidad_1 || 0), 0) / filteredCompanies.length)}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Facturació:</span>
+                      <span className="font-medium">
+                        {(() => {
+                          const total = filteredCompanies.reduce((sum, c) => sum + (c.facturacion_anual || 0), 0);
+                          if (total >= 1000000) return `${(total / 1000000).toFixed(1)}M€`;
+                          if (total >= 1000) return `${(total / 1000).toFixed(0)}K€`;
+                          return `${total.toFixed(0)}€`;
+                        })()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Últ. visita:</span>
+                      <span className="font-medium">
+                        {(() => {
+                          const withDates = filteredCompanies.filter(c => c.fecha_ultima_visita);
+                          if (withDates.length === 0) return 'N/A';
+                          const avgDays = Math.round(
+                            withDates.reduce((sum, c) => {
+                              const days = Math.floor((Date.now() - new Date(c.fecha_ultima_visita!).getTime()) / (1000 * 60 * 60 * 24));
+                              return sum + days;
+                            }, 0) / withDates.length
+                          );
+                          return `~${avgDays}d`;
+                        })()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
