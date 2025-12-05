@@ -89,6 +89,7 @@ export function GestorDashboard({
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [userCargo, setUserCargo] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<ActiveSection>('home');
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [transitionDirection, setTransitionDirection] = useState<'in' | 'out'>('in');
@@ -145,8 +146,25 @@ export function GestorDashboard({
   useEffect(() => {
     if (user) {
       loadAvailableProducts();
+      fetchUserCargo();
     }
   }, [user]);
+
+  const fetchUserCargo = async () => {
+    if (!user) return;
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('cargo')
+        .eq('id', user.id)
+        .single();
+      if (data?.cargo) {
+        setUserCargo(data.cargo);
+      }
+    } catch (error) {
+      console.error('Error fetching user cargo:', error);
+    }
+  };
 
   useEffect(() => {
     if (user && dateRange?.from && dateRange?.to) {
@@ -600,7 +618,7 @@ export function GestorDashboard({
               <h1 className="text-3xl font-bold tracking-tight">El Meu Panell</h1>
               <Badge variant="outline" className="h-7 px-3 text-sm">
                 <Users className="h-4 w-4 mr-2" />
-                Gestor Empresa / Retail
+                {userCargo || 'Gestor'}
               </Badge>
             </div>
             <p className="text-muted-foreground mt-1">
