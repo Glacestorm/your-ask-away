@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Map, Building2, MapPin, TrendingUp, ExternalLink, Calendar, ArrowUpDown, Plus, BarChart3 } from 'lucide-react';
+import { Map, Building2, MapPin, TrendingUp, TrendingDown, ExternalLink, Calendar, ArrowUpDown, Plus, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Progress } from '@/components/ui/progress';
@@ -432,48 +432,134 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
           )}
 
           {/* Mini visits evolution chart */}
-          {monthlyVisits.length > 0 && (
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5">
-                <BarChart3 className="h-3 w-3 text-muted-foreground" />
-                <p className="text-[10px] text-muted-foreground">Evolució visites (6 mesos):</p>
+          {monthlyVisits.length > 0 && (() => {
+            const maxCount = Math.max(...monthlyVisits.map(m => m.count), 1);
+            const currentMonth = monthlyVisits[monthlyVisits.length - 1]?.count || 0;
+            const previousMonth = monthlyVisits[monthlyVisits.length - 2]?.count || 0;
+            const monthChange = previousMonth > 0 
+              ? Math.round(((currentMonth - previousMonth) / previousMonth) * 100)
+              : currentMonth > 0 ? 100 : 0;
+            const isPositive = monthChange >= 0;
+            
+            // Calculate trend line points (SVG coordinates)
+            const trendPoints = monthlyVisits.map((m, i) => {
+              const x = (i / (monthlyVisits.length - 1)) * 100;
+              const y = 100 - ((m.count / maxCount) * 85);
+              return `${x},${y}`;
+            }).join(' ');
+            
+            return (
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <BarChart3 className="h-3 w-3 text-muted-foreground" />
+                    <p className="text-[10px] text-muted-foreground">Evolució visites (6 mesos):</p>
+                  </div>
+                  {/* Month comparison indicator */}
+                  <div className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-medium ${
+                    isPositive 
+                      ? 'bg-green-500/10 text-green-600 dark:text-green-400' 
+                      : 'bg-red-500/10 text-red-600 dark:text-red-400'
+                  }`}>
+                    {isPositive ? (
+                      <TrendingUp className="h-2.5 w-2.5" />
+                    ) : (
+                      <TrendingDown className="h-2.5 w-2.5" />
+                    )}
+                    <span>{isPositive ? '+' : ''}{monthChange}%</span>
+                  </div>
+                </div>
+                <div className="relative flex items-end gap-1 h-12">
+                  {/* Trend line SVG overlay */}
+                  <svg 
+                    className="absolute inset-0 w-full h-full pointer-events-none z-10"
+                    viewBox="0 0 100 100"
+                    preserveAspectRatio="none"
+                  >
+                    <polyline
+                      points={trendPoints}
+                      fill="none"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="transition-all duration-700"
+                      style={{
+                        strokeDasharray: chartVisible ? '0' : '500',
+                        strokeDashoffset: chartVisible ? '0' : '500',
+                        transitionDelay: '400ms'
+                      }}
+                    />
+                    {/* Trend line dots */}
+                    {monthlyVisits.map((m, i) => {
+                      const x = (i / (monthlyVisits.length - 1)) * 100;
+                      const y = 100 - ((m.count / maxCount) * 85);
+                      return (
+                        <circle
+                          key={i}
+                          cx={x}
+                          cy={y}
+                          r="2.5"
+                          fill="hsl(var(--background))"
+                          stroke="hsl(var(--primary))"
+                          strokeWidth="1.5"
+                          className="transition-all duration-500"
+                          style={{
+                            opacity: chartVisible ? 1 : 0,
+                            transitionDelay: `${500 + i * 80}ms`
+                          }}
+                        />
+                      );
+                    })}
+                  </svg>
+                  {/* Bars */}
+                  {monthlyVisits.map((month, idx) => {
+                    const heightPercent = (month.count / maxCount) * 100;
+                    return (
+                      <TooltipProvider key={month.month} delayDuration={100}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex-1 flex flex-col items-center gap-0.5 h-full">
+                              <div className="flex-1 w-full flex items-end">
+                                <div 
+                                  className="w-full bg-primary/30 rounded-t transition-all duration-500 ease-out hover:bg-primary/50 cursor-pointer"
+                                  style={{ 
+                                    height: chartVisible ? `${Math.max(heightPercent, 8)}%` : '0%',
+                                    transitionDelay: `${idx * 80}ms`,
+                                    minHeight: month.count > 0 ? '4px' : '2px',
+                                    opacity: month.count > 0 ? 1 : 0.3
+                                  }}
+                                />
+                              </div>
+                              <span className="text-[8px] text-muted-foreground">{month.shortMonth}</span>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="text-xs">
+                            <p className="capitalize">{month.month}</p>
+                            <p className="font-medium">{month.count} visites</p>
+                            {idx > 0 && (() => {
+                              const prev = monthlyVisits[idx - 1].count;
+                              if (prev === 0) return null;
+                              const change = Math.round(((month.count - prev) / prev) * 100);
+                              return (
+                                <p className={`text-[10px] ${change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                  {change >= 0 ? '+' : ''}{change}% vs anterior
+                                </p>
+                              );
+                            })()}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    );
+                  })}
+                </div>
+                <div className="flex justify-between text-[9px] text-muted-foreground">
+                  <span>Total: {monthlyVisits.reduce((sum, m) => sum + m.count, 0)}</span>
+                  <span>Mitjana: {Math.round(monthlyVisits.reduce((sum, m) => sum + m.count, 0) / 6)}/mes</span>
+                </div>
               </div>
-              <div className="flex items-end gap-1 h-10">
-                {monthlyVisits.map((month, idx) => {
-                  const maxCount = Math.max(...monthlyVisits.map(m => m.count), 1);
-                  const heightPercent = (month.count / maxCount) * 100;
-                  return (
-                    <TooltipProvider key={month.month} delayDuration={100}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="flex-1 flex flex-col items-center gap-0.5">
-                            <div 
-                              className="w-full bg-primary/70 rounded-t transition-all duration-500 ease-out hover:bg-primary cursor-pointer"
-                              style={{ 
-                                height: chartVisible ? `${Math.max(heightPercent, 8)}%` : '0%',
-                                transitionDelay: `${idx * 80}ms`,
-                                minHeight: month.count > 0 ? '4px' : '2px',
-                                opacity: month.count > 0 ? 1 : 0.3
-                              }}
-                            />
-                            <span className="text-[8px] text-muted-foreground">{month.shortMonth}</span>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="text-xs">
-                          <p className="capitalize">{month.month}</p>
-                          <p className="font-medium">{month.count} visites</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  );
-                })}
-              </div>
-              <div className="flex justify-between text-[9px] text-muted-foreground">
-                <span>Total: {monthlyVisits.reduce((sum, m) => sum + m.count, 0)}</span>
-                <span>Mitjana: {Math.round(monthlyVisits.reduce((sum, m) => sum + m.count, 0) / 6)}/mes</span>
-              </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Vinculación filter */}
           <div className="flex items-center gap-1 flex-wrap">
