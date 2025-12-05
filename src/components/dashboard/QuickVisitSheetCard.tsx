@@ -665,44 +665,91 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
     </Label>
   );
 
-  // Collapsed card view
+  // Collapsed card view with compact stats
   if (!isExpanded) {
+    const cardColor = 'hsl(var(--chart-2))';
     return (
-      <Card
-        className={cn(
-          "cursor-pointer transition-all duration-300 hover:shadow-xl border-border/50 bg-gradient-to-br from-card to-card/80",
-          className
-        )}
-        style={{
-          transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${isHovered ? 1.02 : 1})`,
-          transition: 'transform 0.3s ease-out',
-        }}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        onMouseEnter={() => setIsHovered(true)}
-        onClick={() => setIsExpanded(true)}
+      <div
+        className="perspective-1000"
+        style={{ perspective: '1000px' }}
       >
-        <CardContent className="p-6">
-          <div className="flex items-start gap-4">
-            <div className="p-3 rounded-xl bg-amber-500/10 text-amber-500">
-              <FileText className="h-8 w-8" />
+        <div
+          onClick={() => setIsExpanded(true)}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          onMouseEnter={() => setIsHovered(true)}
+          className={cn(
+            "relative cursor-pointer rounded-2xl p-6 h-48 transition-all duration-300 ease-out",
+            "border-2 shadow-lg hover:shadow-2xl",
+            "bg-gradient-to-br from-card via-card to-card/80",
+            "transform-gpu will-change-transform",
+            isHovered && "scale-[1.02]",
+            className
+          )}
+          style={{
+            transform: `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
+            transformStyle: 'preserve-3d',
+          }}
+        >
+          {/* Glow effect */}
+          <div 
+            className={cn(
+              "absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-300",
+              isHovered && "opacity-100"
+            )}
+            style={{
+              background: `radial-gradient(circle at 50% 0%, ${cardColor}20, transparent 70%)`,
+            }}
+          />
+
+          {/* Content */}
+          <div className="relative z-10 h-full flex flex-col justify-between" style={{ transform: 'translateZ(30px)' }}>
+            <div className="flex items-start justify-between">
+              <div
+                className={cn(
+                  "flex h-14 w-14 items-center justify-center rounded-xl transition-transform duration-300",
+                  isHovered && "scale-110"
+                )}
+                style={{ backgroundColor: `${cardColor}20` }}
+              >
+                <FileText className="h-7 w-7" style={{ color: cardColor }} />
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-foreground">{visitSheetsCount}</div>
+                <div className="text-xs text-muted-foreground">Fitxes</div>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-lg text-foreground mb-1">Ficha de Visita</h3>
-              <p className="text-sm text-muted-foreground line-clamp-2">
-                Formulario completo para registro de visitas comerciales bancarias
+
+            {/* Compact stats row */}
+            <div className="flex items-center gap-3 text-xs">
+              <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-background/50">
+                <Building2 className="h-3 w-3 text-muted-foreground" />
+                <span className="text-muted-foreground">{companies.length}</span>
+              </div>
+              <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-background/50">
+                <Calendar className="h-3 w-3 text-muted-foreground" />
+                <span className="text-muted-foreground">{format(new Date(), 'dd/MM')}</span>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold text-foreground mb-1">Ficha de Visita</h3>
+              <p className="text-sm text-muted-foreground line-clamp-1">
+                Formulari de visites comercials
               </p>
             </div>
-            <ChevronRight className="h-5 w-5 text-muted-foreground mt-1" />
           </div>
-          <div className="mt-4 flex items-center gap-4">
-            <Badge variant="secondary" className="bg-amber-500/10 text-amber-600">
-              {visitSheetsCount} fichas
-            </Badge>
-            <span className="text-xs text-muted-foreground">Clic para abrir formulario</span>
-          </div>
-        </CardContent>
-      </Card>
+
+          {/* Bottom gradient line */}
+          <div 
+            className={cn(
+              "absolute bottom-0 left-0 right-0 h-1 rounded-b-2xl transition-all duration-300",
+              isHovered ? "opacity-100" : "opacity-50"
+            )}
+            style={{ backgroundColor: cardColor }}
+          />
+        </div>
+      </div>
     );
   }
 
