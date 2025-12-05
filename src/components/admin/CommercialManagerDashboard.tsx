@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Activity, Target, Building2, Users } from 'lucide-react';
+import { Activity, Target, Building2, Users, Clock, CheckCircle, XCircle, BarChart3 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
@@ -24,6 +24,14 @@ interface BasicStats {
   avgSuccessRate: number;
   totalCompanies: number;
   activeGestores: number;
+}
+
+interface ValidationMetrics {
+  avgValidationTimeHours: number;
+  approvalRate: number;
+  totalValidated: number;
+  approved: number;
+  rejected: number;
 }
 
 interface GestorRanking {
@@ -52,8 +60,15 @@ export function CommercialManagerDashboard() {
     totalCompanies: 0,
     activeGestores: 0
   });
-  const [gestorRanking, setGestorRanking] = useState<GestorRanking[]>([]);
+const [gestorRanking, setGestorRanking] = useState<GestorRanking[]>([]);
   const [gestorDetails, setGestorDetails] = useState<GestorDetail[]>([]);
+  const [validationMetrics, setValidationMetrics] = useState<ValidationMetrics>({
+    avgValidationTimeHours: 0,
+    approvalRate: 0,
+    totalValidated: 0,
+    approved: 0,
+    rejected: 0
+  });
 
   useEffect(() => {
     if (dateRange?.from && dateRange?.to) {
@@ -107,6 +122,54 @@ export function CommercialManagerDashboard() {
         totalCompanies: companiesCount || 0,
         activeGestores: gestoresCount || 0
       });
+
+      // Fetch validation metrics
+      const { data: validatedSheets } = await supabase
+        .from('visit_sheets')
+        .select('created_at, validated_at, validation_status')
+        .not('validation_status', 'is', null)
+        .gte('validated_at', dateRange.from.toISOString())
+        .lte('validated_at', dateRange.to.toISOString());
+
+      if (validatedSheets && validatedSheets.length > 0) {
+        const approved = validatedSheets.filter(s => s.validation_status === 'approved').length;
+        const rejected = validatedSheets.filter(s => s.validation_status === 'rejected').length;
+        const totalValidated = approved + rejected;
+        
+        // Calculate average validation time in hours
+        let totalHours = 0;
+        let validCount = 0;
+        validatedSheets.forEach(s => {
+          if (s.created_at && s.validated_at) {
+            const created = new Date(s.created_at).getTime();
+            const validated = new Date(s.validated_at).getTime();
+            const hours = (validated - created) / (1000 * 60 * 60);
+            if (hours >= 0 && hours < 720) { // Max 30 days
+              totalHours += hours;
+              validCount++;
+            }
+          }
+        });
+        
+        const avgValidationTimeHours = validCount > 0 ? Math.round(totalHours / validCount * 10) / 10 : 0;
+        const approvalRate = totalValidated > 0 ? Math.round((approved / totalValidated) * 100) : 0;
+        
+        setValidationMetrics({
+          avgValidationTimeHours,
+          approvalRate,
+          totalValidated,
+          approved,
+          rejected
+        });
+      } else {
+        setValidationMetrics({
+          avgValidationTimeHours: 0,
+          approvalRate: 0,
+          totalValidated: 0,
+          approved: 0,
+          rejected: 0
+        });
+      }
 
       // Obtener datos de gestores
       const { data: profiles } = await supabase
@@ -270,6 +333,45 @@ export function CommercialManagerDashboard() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Métricas de Validación */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <BarChart3 className="h-4 w-4" />
+                Métricas de Validación de Fichas
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div className="text-center p-3 bg-muted/50 rounded-lg">
+                  <Clock className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
+                  <div className="text-2xl font-bold">{validationMetrics.avgValidationTimeHours}h</div>
+                  <p className="text-xs text-muted-foreground">Tiempo medio validación</p>
+                </div>
+                <div className="text-center p-3 bg-muted/50 rounded-lg">
+                  <Target className="h-5 w-5 mx-auto mb-1 text-primary" />
+                  <div className="text-2xl font-bold">{validationMetrics.approvalRate}%</div>
+                  <p className="text-xs text-muted-foreground">Ratio aprobación</p>
+                </div>
+                <div className="text-center p-3 bg-muted/50 rounded-lg">
+                  <CheckCircle className="h-5 w-5 mx-auto mb-1 text-green-500" />
+                  <div className="text-2xl font-bold text-green-600">{validationMetrics.approved}</div>
+                  <p className="text-xs text-muted-foreground">Aprobadas</p>
+                </div>
+                <div className="text-center p-3 bg-muted/50 rounded-lg">
+                  <XCircle className="h-5 w-5 mx-auto mb-1 text-red-500" />
+                  <div className="text-2xl font-bold text-red-600">{validationMetrics.rejected}</div>
+                  <p className="text-xs text-muted-foreground">Rechazadas</p>
+                </div>
+                <div className="text-center p-3 bg-muted/50 rounded-lg">
+                  <Activity className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
+                  <div className="text-2xl font-bold">{validationMetrics.totalValidated}</div>
+                  <p className="text-xs text-muted-foreground">Total validadas</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Ficha de Visita y Mapa Cards */}
           <div className="grid gap-6 md:grid-cols-2">

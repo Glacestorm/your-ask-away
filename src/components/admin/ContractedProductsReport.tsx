@@ -10,7 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Package, Building2, User, Calendar as CalendarIcon, Download, Filter, CheckCircle, TrendingUp } from 'lucide-react';
+import { Package, Building2, User, Calendar as CalendarIcon, Download, Filter, CheckCircle, TrendingUp, Trophy, Medal } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import { es, ca } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
@@ -34,6 +34,13 @@ interface ProductStats {
   count: number;
 }
 
+interface GestorProductRanking {
+  gestor_id: string;
+  gestor_name: string;
+  products_count: number;
+  companies_count: number;
+}
+
 export default function ContractedProductsReport() {
   const { language } = useLanguage();
   const [products, setProducts] = useState<ContractedProduct[]>([]);
@@ -45,6 +52,7 @@ export default function ContractedProductsReport() {
   const [gestores, setGestores] = useState<{ id: string; name: string }[]>([]);
   const [productList, setProductList] = useState<{ id: string; name: string }[]>([]);
   const [stats, setStats] = useState<ProductStats[]>([]);
+  const [gestorRanking, setGestorRanking] = useState<GestorProductRanking[]>([]);
 
   const dateLocale = language === 'ca' ? ca : es;
 
@@ -176,6 +184,28 @@ export default function ContractedProductsReport() {
       .sort((a, b) => b.count - a.count);
     
     setStats(statsArray);
+
+    // Calculate gestor ranking
+    const gestorProductMap: Record<string, { products: number; companies: Set<string>; name: string }> = {};
+    enrichedProducts.forEach(p => {
+      if (!gestorProductMap[p.gestor_id]) {
+        gestorProductMap[p.gestor_id] = { products: 0, companies: new Set(), name: p.gestor_name };
+      }
+      gestorProductMap[p.gestor_id].products += 1;
+      gestorProductMap[p.gestor_id].companies.add(p.company_id);
+    });
+    
+    const rankingArray: GestorProductRanking[] = Object.entries(gestorProductMap)
+      .map(([gestor_id, data]) => ({
+        gestor_id,
+        gestor_name: data.name,
+        products_count: data.products,
+        companies_count: data.companies.size
+      }))
+      .sort((a, b) => b.products_count - a.products_count)
+      .slice(0, 10);
+    
+    setGestorRanking(rankingArray);
     setLoading(false);
   };
 
@@ -351,6 +381,49 @@ export default function ContractedProductsReport() {
                 <Badge key={s.product_name} variant="secondary" className="text-sm py-1 px-3">
                   {s.product_name}: <span className="font-bold ml-1">{s.count}</span>
                 </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Gestor Ranking */}
+      {gestorRanking.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-amber-500" />
+              Ranking de Gestores por Productos Contratados
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {gestorRanking.map((g, index) => (
+                <div 
+                  key={g.gestor_id} 
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
+                      index === 0 ? 'bg-amber-500 text-white' :
+                      index === 1 ? 'bg-gray-400 text-white' :
+                      index === 2 ? 'bg-amber-700 text-white' :
+                      'bg-muted-foreground/20 text-muted-foreground'
+                    }`}>
+                      {index < 3 ? <Medal className="w-4 h-4" /> : index + 1}
+                    </div>
+                    <div>
+                      <p className="font-medium">{g.gestor_name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {g.companies_count} empresa{g.companies_count !== 1 ? 's' : ''}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xl font-bold text-primary">{g.products_count}</p>
+                    <p className="text-xs text-muted-foreground">productos</p>
+                  </div>
+                </div>
               ))}
             </div>
           </CardContent>
