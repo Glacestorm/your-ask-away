@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,12 +13,14 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Calendar as CalendarIcon, Filter, FileText, User, Clock, Eye, X, Search, ChevronDown, Package, TrendingUp, Download } from 'lucide-react';
-import { format } from 'date-fns';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Calendar as CalendarIcon, Filter, FileText, User, Clock, Eye, X, Search, ChevronDown, Package, TrendingUp, Download, BarChart3, List } from 'lucide-react';
+import { format, parseISO, startOfMonth } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 // Lista de productos disponibles para filtrar
 const AVAILABLE_PRODUCTS = [
@@ -296,6 +298,60 @@ export function VisitSheetsHistory({ companyId, defaultOpen = true }: VisitSheet
     toast.success('Exportación completada');
   };
 
+  // Calculate chart data for monthly evolution and products
+  const chartData = useMemo(() => {
+    const monthlyData: { [key: string]: { month: string; fichas: number; products: { [key: string]: number } } } = {};
+    const productCounts: { [key: string]: number } = {};
+
+    filteredSheets.forEach((sheet) => {
+      const monthKey = format(startOfMonth(parseISO(sheet.fecha)), 'yyyy-MM');
+      const monthLabel = format(parseISO(sheet.fecha), 'MMM yyyy', { locale: es });
+
+      if (!monthlyData[monthKey]) {
+        monthlyData[monthKey] = { month: monthLabel, fichas: 0, products: {} };
+      }
+      monthlyData[monthKey].fichas++;
+
+      // Count products
+      const extractProducts = (data: any): string[] => {
+        if (!data) return [];
+        if (Array.isArray(data)) return data.map(String);
+        if (typeof data === 'object') {
+          return Object.keys(data).filter(k => data[k]);
+        }
+        return [];
+      };
+
+      const sheetProducts = [
+        ...extractProducts(sheet.productos_servicios),
+        ...extractProducts(sheet.propuesta_valor),
+      ];
+
+      sheetProducts.forEach((product) => {
+        const productLower = product.toLowerCase();
+        AVAILABLE_PRODUCTS.forEach((ap) => {
+          if (productLower.includes(ap.key)) {
+            productCounts[ap.label] = (productCounts[ap.label] || 0) + 1;
+            monthlyData[monthKey].products[ap.label] = (monthlyData[monthKey].products[ap.label] || 0) + 1;
+          }
+        });
+      });
+    });
+
+    const monthlyArray = Object.entries(monthlyData)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([, data]) => data);
+
+    const topProducts = Object.entries(productCounts)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 6)
+      .map(([name, value]) => ({ name, value }));
+
+    return { monthlyArray, topProducts };
+  }, [filteredSheets]);
+
+  const CHART_COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))', 'hsl(var(--muted-foreground))'];
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -519,87 +575,179 @@ export function VisitSheetsHistory({ companyId, defaultOpen = true }: VisitSheet
 
             <Separator />
 
-            {/* Lista de fichas */}
-            <ScrollArea className="h-[400px]">
-              <div className="space-y-2 pr-4">
-                {filteredSheets.length === 0 ? (
-                  <div className="p-8 text-center">
-                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-50" />
-                    <p className="text-sm text-muted-foreground">
-                      {sheets.length === 0
-                        ? 'No hay fichas de visita registradas'
-                        : 'No se encontraron fichas con los filtros aplicados'}
-                    </p>
-                  </div>
-                ) : (
-                  filteredSheets.map((sheet) => (
-                    <Card key={sheet.id} className="hover:border-primary/50 transition-colors cursor-pointer" onClick={() => viewSheetDetails(sheet.id)}>
-                      <CardContent className="p-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1 space-y-1.5">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <Badge variant="outline" className="text-xs">
-                                <CalendarIcon className="h-3 w-3 mr-1" />
-                                {format(new Date(sheet.fecha), 'dd MMM yyyy', { locale: es })}
-                              </Badge>
-                              {sheet.hora && (
-                                <Badge variant="secondary" className="text-xs">
-                                  <Clock className="h-3 w-3 mr-1" />
-                                  {sheet.hora}
-                                </Badge>
-                              )}
-                              {sheet.tipo_visita && (
-                                <Badge className="text-xs">{sheet.tipo_visita}</Badge>
-                              )}
-                            </div>
+            {/* Tabs para lista y gráficos */}
+            <Tabs defaultValue="list" className="w-full">
+              <TabsList className="w-full grid grid-cols-2">
+                <TabsTrigger value="list" className="text-xs">
+                  <List className="h-3 w-3 mr-1" />
+                  Lista
+                </TabsTrigger>
+                <TabsTrigger value="charts" className="text-xs">
+                  <BarChart3 className="h-3 w-3 mr-1" />
+                  Gráficos
+                </TabsTrigger>
+              </TabsList>
 
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <User className="h-3 w-3" />
-                              <span>{sheet.gestor?.full_name || sheet.gestor?.email}</span>
-                            </div>
-
-                            {/* Probabilidad y potencial */}
-                            {(sheet.probabilidad_cierre || sheet.potencial_anual_estimado) && (
-                              <div className="flex items-center gap-2 text-xs">
-                                {sheet.probabilidad_cierre && (
-                                  <Badge variant={sheet.probabilidad_cierre >= 75 ? "default" : sheet.probabilidad_cierre >= 50 ? "secondary" : "outline"} className="text-xs">
-                                    <TrendingUp className="h-3 w-3 mr-1" />
-                                    {sheet.probabilidad_cierre}%
+              <TabsContent value="list" className="mt-3">
+                {/* Lista de fichas */}
+                <ScrollArea className="h-[400px]">
+                  <div className="space-y-2 pr-4">
+                    {filteredSheets.length === 0 ? (
+                      <div className="p-8 text-center">
+                        <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-50" />
+                        <p className="text-sm text-muted-foreground">
+                          {sheets.length === 0
+                            ? 'No hay fichas de visita registradas'
+                            : 'No se encontraron fichas con los filtros aplicados'}
+                        </p>
+                      </div>
+                    ) : (
+                      filteredSheets.map((sheet) => (
+                        <Card key={sheet.id} className="hover:border-primary/50 transition-colors cursor-pointer" onClick={() => viewSheetDetails(sheet.id)}>
+                          <CardContent className="p-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 space-y-1.5">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <Badge variant="outline" className="text-xs">
+                                    <CalendarIcon className="h-3 w-3 mr-1" />
+                                    {format(new Date(sheet.fecha), 'dd MMM yyyy', { locale: es })}
                                   </Badge>
+                                  {sheet.hora && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      <Clock className="h-3 w-3 mr-1" />
+                                      {sheet.hora}
+                                    </Badge>
+                                  )}
+                                  {sheet.tipo_visita && (
+                                    <Badge className="text-xs">{sheet.tipo_visita}</Badge>
+                                  )}
+                                </div>
+
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                  <User className="h-3 w-3" />
+                                  <span>{sheet.gestor?.full_name || sheet.gestor?.email}</span>
+                                </div>
+
+                                {/* Probabilidad y potencial */}
+                                {(sheet.probabilidad_cierre || sheet.potencial_anual_estimado) && (
+                                  <div className="flex items-center gap-2 text-xs">
+                                    {sheet.probabilidad_cierre && (
+                                      <Badge variant={sheet.probabilidad_cierre >= 75 ? "default" : sheet.probabilidad_cierre >= 50 ? "secondary" : "outline"} className="text-xs">
+                                        <TrendingUp className="h-3 w-3 mr-1" />
+                                        {sheet.probabilidad_cierre}%
+                                      </Badge>
+                                    )}
+                                    {sheet.potencial_anual_estimado && (
+                                      <span className="text-muted-foreground">
+                                        €{sheet.potencial_anual_estimado.toLocaleString()}
+                                      </span>
+                                    )}
+                                  </div>
                                 )}
-                                {sheet.potencial_anual_estimado && (
-                                  <span className="text-muted-foreground">
-                                    €{sheet.potencial_anual_estimado.toLocaleString()}
-                                  </span>
+
+                                {sheet.notas_gestor && (
+                                  <p className="text-xs text-muted-foreground line-clamp-1">
+                                    {sheet.notas_gestor}
+                                  </p>
                                 )}
                               </div>
-                            )}
 
-                            {sheet.notas_gestor && (
-                              <p className="text-xs text-muted-foreground line-clamp-1">
-                                {sheet.notas_gestor}
-                              </p>
-                            )}
-                          </div>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-7 w-7"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  viewSheetDetails(sheet.id);
+                                }}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))
+                    )}
+                  </div>
+                </ScrollArea>
+              </TabsContent>
 
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              viewSheetDetails(sheet.id);
-                            }}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
+              <TabsContent value="charts" className="mt-3 space-y-4">
+                {filteredSheets.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-50" />
+                    <p className="text-sm text-muted-foreground">No hay datos para mostrar gráficos</p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Evolución mensual */}
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-medium flex items-center gap-1.5">
+                        <CalendarIcon className="h-3 w-3" />
+                        Evolución Mensual de Fichas
+                      </h4>
+                      <div className="h-[180px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={chartData.monthlyArray}>
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                            <XAxis dataKey="month" tick={{ fontSize: 10 }} className="text-muted-foreground" />
+                            <YAxis tick={{ fontSize: 10 }} className="text-muted-foreground" allowDecimals={false} />
+                            <Tooltip
+                              contentStyle={{ fontSize: 11, background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+                              labelStyle={{ fontWeight: 600 }}
+                            />
+                            <Bar dataKey="fichas" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Fichas" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    {/* Productos más ofrecidos */}
+                    {chartData.topProducts.length > 0 && (
+                      <div className="space-y-2">
+                        <h4 className="text-xs font-medium flex items-center gap-1.5">
+                          <Package className="h-3 w-3" />
+                          Productos Más Ofrecidos
+                        </h4>
+                        <div className="h-[180px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={chartData.topProducts}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={40}
+                                outerRadius={70}
+                                paddingAngle={2}
+                                dataKey="value"
+                                label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                                labelLine={false}
+                              >
+                                {chartData.topProducts.map((_, index) => (
+                                  <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                                ))}
+                              </Pie>
+                              <Tooltip
+                                contentStyle={{ fontSize: 11, background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+                                formatter={(value: number) => [`${value} fichas`, 'Cantidad']}
+                              />
+                            </PieChart>
+                          </ResponsiveContainer>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))
+                        <div className="flex flex-wrap gap-1.5 justify-center">
+                          {chartData.topProducts.map((product, index) => (
+                            <Badge key={product.name} variant="outline" className="text-[10px]">
+                              <span className="w-2 h-2 rounded-full mr-1" style={{ background: CHART_COLORS[index % CHART_COLORS.length] }} />
+                              {product.name}: {product.value}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
-              </div>
-            </ScrollArea>
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </CollapsibleContent>
       </Card>
