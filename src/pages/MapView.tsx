@@ -56,6 +56,7 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
   });
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState<CompanyWithDetails | null>(null);
+  const [focusCompanyId, setFocusCompanyId] = useState<string | null>(null);
   const [mapStyle, setMapStyle] = useState<'default' | 'satellite'>('default');
   const [view3D, setView3D] = useState(false);
   const [baseLayers, setBaseLayers] = useState<MapBaseLayers>({
@@ -102,6 +103,8 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
       if (company) {
         setSelectedCompany(company);
         setSidebarOpen(true);
+        // Trigger flyTo animation
+        setFocusCompanyId(companyId);
         // Clear the company parameter from URL after selection
         const newParams = new URLSearchParams(searchParams);
         newParams.delete('company');
@@ -360,6 +363,8 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
                 setMinZoomVinculacion(zoom);
                 localStorage.setItem('minZoomVinculacion', zoom.toString());
               }}
+              focusCompanyId={focusCompanyId}
+              onFocusCompanyHandled={() => setFocusCompanyId(null)}
             />
           </div>
         )}
