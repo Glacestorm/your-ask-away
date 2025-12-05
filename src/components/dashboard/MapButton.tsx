@@ -639,31 +639,46 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                   <span className="text-[9px] text-muted-foreground">Resultat:</span>
                   <div className="flex items-center gap-0.5 bg-muted/50 rounded p-0.5">
                     {([
-                      { value: 'all' as const, label: 'Tot', dot: '', activeBg: 'bg-primary', inactiveBg: 'bg-muted/80' },
-                      { value: 'exitosa' as const, label: 'Exitosa', dot: 'bg-green-500', activeBg: 'bg-green-500', inactiveBg: 'bg-green-500/15 hover:bg-green-500/25' },
-                      { value: 'pendiente' as const, label: 'Pendent', dot: 'bg-yellow-500', activeBg: 'bg-yellow-500', inactiveBg: 'bg-yellow-500/15 hover:bg-yellow-500/25' },
-                      { value: 'fallida' as const, label: 'Fallida', dot: 'bg-red-500', activeBg: 'bg-red-500', inactiveBg: 'bg-red-500/15 hover:bg-red-500/25' },
-                      { value: 'reagendada' as const, label: 'Reagend.', dot: 'bg-blue-500', activeBg: 'bg-blue-500', inactiveBg: 'bg-blue-500/15 hover:bg-blue-500/25' },
-                    ]).map((filter) => (
-                      <button
-                        key={filter.value}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setResultFilter(filter.value);
-                        }}
-                        className={`px-1.5 py-0.5 rounded text-[9px] font-medium transition-all flex items-center gap-1 ${
-                          resultFilter === filter.value
-                            ? `${filter.activeBg} text-white`
-                            : `${filter.inactiveBg} text-foreground/70`
-                        }`}
-                      >
-                        {filter.dot && resultFilter !== filter.value && <span className={`h-1.5 w-1.5 rounded-full ${filter.dot}`} />}
-                        {filter.label}
-                        <span className={`text-[8px] ${resultFilter === filter.value ? 'opacity-80' : 'opacity-60'}`}>
-                          ({resultCounts[filter.value] || 0})
-                        </span>
-                      </button>
-                    ))}
+                      { value: 'all' as const, label: 'Tot', dot: '', activeBg: 'bg-primary', inactiveBg: 'bg-muted/80', barColor: 'bg-primary' },
+                      { value: 'exitosa' as const, label: 'Exitosa', dot: 'bg-green-500', activeBg: 'bg-green-500', inactiveBg: 'bg-green-500/15 hover:bg-green-500/25', barColor: 'bg-green-500' },
+                      { value: 'pendiente' as const, label: 'Pendent', dot: 'bg-yellow-500', activeBg: 'bg-yellow-500', inactiveBg: 'bg-yellow-500/15 hover:bg-yellow-500/25', barColor: 'bg-yellow-500' },
+                      { value: 'fallida' as const, label: 'Fallida', dot: 'bg-red-500', activeBg: 'bg-red-500', inactiveBg: 'bg-red-500/15 hover:bg-red-500/25', barColor: 'bg-red-500' },
+                      { value: 'reagendada' as const, label: 'Reagend.', dot: 'bg-blue-500', activeBg: 'bg-blue-500', inactiveBg: 'bg-blue-500/15 hover:bg-blue-500/25', barColor: 'bg-blue-500' },
+                    ]).map((filter) => {
+                      const total = resultCounts.all || 1;
+                      const count = resultCounts[filter.value] || 0;
+                      const percentage = filter.value === 'all' ? 100 : Math.round((count / total) * 100);
+                      return (
+                        <button
+                          key={filter.value}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setResultFilter(filter.value);
+                          }}
+                          className={`px-1.5 py-0.5 rounded text-[9px] font-medium transition-all flex flex-col items-center gap-0.5 min-w-[42px] ${
+                            resultFilter === filter.value
+                              ? `${filter.activeBg} text-white`
+                              : `${filter.inactiveBg} text-foreground/70`
+                          }`}
+                        >
+                          <div className="flex items-center gap-1">
+                            {filter.dot && resultFilter !== filter.value && <span className={`h-1.5 w-1.5 rounded-full ${filter.dot}`} />}
+                            {filter.label}
+                            <span className={`text-[8px] ${resultFilter === filter.value ? 'opacity-80' : 'opacity-60'}`}>
+                              ({count})
+                            </span>
+                          </div>
+                          {filter.value !== 'all' && (
+                            <div className="w-full h-1 bg-black/10 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full ${resultFilter === filter.value ? 'bg-white/50' : filter.barColor} transition-all`}
+                                style={{ width: `${percentage}%` }}
+                              />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
                 {/* Chart View */}
