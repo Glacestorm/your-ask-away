@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,9 +7,12 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { History, Search, User, Calendar, FileText, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { History, Search, User, Calendar as CalendarIcon, FileText, Eye, ChevronLeft, ChevronRight, Building2, Filter, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 interface AuditRecord {
   id: string;
@@ -25,10 +28,22 @@ interface AuditRecord {
     email: string;
   };
   visit_sheet?: {
+    gestor_id?: string;
     company?: {
       name: string;
     };
   };
+}
+
+interface Profile {
+  id: string;
+  full_name: string | null;
+  email: string;
+}
+
+interface Company {
+  id: string;
+  name: string;
 }
 
 const FIELD_LABELS: Record<string, string> = {
@@ -64,9 +79,39 @@ export const VisitSheetAuditViewer = () => {
   const [totalCount, setTotalCount] = useState(0);
   const pageSize = 20;
 
+  // Advanced filters
+  const [gestores, setGestores] = useState<Profile[]>([]);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [selectedGestor, setSelectedGestor] = useState<string>('all');
+  const [selectedCompany, setSelectedCompany] = useState<string>('all');
+  const [startDate, setStartDate] = useState<Date | undefined>();
+  const [endDate, setEndDate] = useState<Date | undefined>();
+
+  useEffect(() => {
+    fetchFiltersData();
+  }, []);
+
   useEffect(() => {
     fetchAuditRecords();
-  }, [page, filterAction]);
+  }, [page, filterAction, selectedGestor, selectedCompany, startDate, endDate]);
+
+  const fetchFiltersData = async () => {
+    // Fetch gestores
+    const { data: gestoresData } = await supabase
+      .from('profiles')
+      .select('id, full_name, email')
+      .order('full_name');
+    
+    if (gestoresData) setGestores(gestoresData);
+
+    // Fetch companies
+    const { data: companiesData } = await supabase
+      .from('companies')
+      .select('id, name')
+      .order('name');
+    
+    if (companiesData) setCompanies(companiesData);
+  };
 
   const fetchAuditRecords = async () => {
     setLoading(true);
@@ -76,17 +121,28 @@ export const VisitSheetAuditViewer = () => {
         .select(`
           *,
           visit_sheet:visit_sheets(
+            gestor_id,
+            company_id,
             company:companies(name)
           )
         `, { count: 'exact' })
-        .order('created_at', { ascending: false })
-        .range((page - 1) * pageSize, page * pageSize - 1);
+        .order('created_at', { ascending: false });
 
       if (filterAction !== 'all') {
         query = query.eq('action', filterAction);
       }
 
-      const { data, error, count } = await query;
+      if (startDate) {
+        query = query.gte('created_at', startDate.toISOString());
+      }
+
+      if (endDate) {
+        const endOfDay = new Date(endDate);
+        endOfDay.setHours(23, 59, 59, 999);
+        query = query.lte('created_at', endOfDay.toISOString());
+      }
+
+      const { data, error, count } = await query.range((page - 1) * pageSize, page * pageSize - 1);
 
       if (error) throw error;
 
@@ -106,10 +162,20 @@ export const VisitSheetAuditViewer = () => {
         }, {} as Record<string, any>);
       }
 
-      const enrichedData = (data || []).map(record => ({
+      let enrichedData = (data || []).map(record => ({
         ...record,
         user_profile: record.user_id ? profiles[record.user_id] : null
       }));
+
+      // Apply gestor filter (client-side due to nested structure)
+      if (selectedGestor !== 'all') {
+        enrichedData = enrichedData.filter(r => r.visit_sheet?.gestor_id === selectedGestor);
+      }
+
+      // Apply company filter (client-side due to nested structure)
+      if (selectedCompany !== 'all') {
+        enrichedData = enrichedData.filter(r => r.visit_sheet?.company_id === selectedCompany);
+      }
 
       setAuditRecords(enrichedData);
       setTotalCount(count || 0);
@@ -119,6 +185,18 @@ export const VisitSheetAuditViewer = () => {
       setLoading(false);
     }
   };
+
+  const clearFilters = () => {
+    setFilterAction('all');
+    setSelectedGestor('all');
+    setSelectedCompany('all');
+    setStartDate(undefined);
+    setEndDate(undefined);
+    setSearchTerm('');
+    setPage(1);
+  };
+
+  const hasActiveFilters = filterAction !== 'all' || selectedGestor !== 'all' || selectedCompany !== 'all' || startDate || endDate || searchTerm;
 
   const filteredRecords = auditRecords.filter(record => {
     if (!searchTerm) return true;
@@ -179,7 +257,7 @@ export const VisitSheetAuditViewer = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Filters */}
+          {/* Basic Filters */}
           <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -190,7 +268,7 @@ export const VisitSheetAuditViewer = () => {
                 className="pl-9"
               />
             </div>
-            <Select value={filterAction} onValueChange={setFilterAction}>
+            <Select value={filterAction} onValueChange={(v) => { setFilterAction(v); setPage(1); }}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Filtrar por acción" />
               </SelectTrigger>
@@ -201,6 +279,92 @@ export const VisitSheetAuditViewer = () => {
                 <SelectItem value="DELETE">Eliminaciones</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Advanced Filters */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4 p-3 bg-muted/50 rounded-lg">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
+              <span className="text-sm font-medium text-muted-foreground">Filtros:</span>
+            </div>
+            
+            {/* Gestor Filter */}
+            <Select value={selectedGestor} onValueChange={(v) => { setSelectedGestor(v); setPage(1); }}>
+              <SelectTrigger>
+                <User className="h-4 w-4 mr-2 text-muted-foreground" />
+                <SelectValue placeholder="Filtrar por gestor" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los gestores</SelectItem>
+                {gestores.map(g => (
+                  <SelectItem key={g.id} value={g.id}>
+                    {g.full_name || g.email}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Company Filter */}
+            <Select value={selectedCompany} onValueChange={(v) => { setSelectedCompany(v); setPage(1); }}>
+              <SelectTrigger>
+                <Building2 className="h-4 w-4 mr-2 text-muted-foreground" />
+                <SelectValue placeholder="Filtrar por empresa" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las empresas</SelectItem>
+                {companies.map(c => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Date Range */}
+            <div className="flex gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className={cn("flex-1 justify-start text-left font-normal", !startDate && "text-muted-foreground")}>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {startDate ? format(startDate, "dd/MM/yy") : "Desde"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={startDate}
+                    onSelect={(d) => { setStartDate(d); setPage(1); }}
+                    initialFocus
+                    locale={es}
+                  />
+                </PopoverContent>
+              </Popover>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className={cn("flex-1 justify-start text-left font-normal", !endDate && "text-muted-foreground")}>
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {endDate ? format(endDate, "dd/MM/yy") : "Hasta"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={endDate}
+                    onSelect={(d) => { setEndDate(d); setPage(1); }}
+                    initialFocus
+                    locale={es}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            {/* Clear Filters */}
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" onClick={clearFilters} className="col-span-full sm:col-span-1">
+                <X className="h-4 w-4 mr-1" />
+                Limpiar filtros
+              </Button>
+            )}
           </div>
 
           {/* Stats */}
