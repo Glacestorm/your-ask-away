@@ -3,7 +3,7 @@ import { Map, Building2, MapPin, TrendingUp, ExternalLink, Calendar, ArrowUpDown
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { Progress } from '@/components/ui/progress';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -61,6 +61,8 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
   const [loading, setLoading] = useState(false);
   const [sortMode, setSortMode] = useState<SortMode>('vinculacion');
   const [vinculacionFilter, setVinculacionFilter] = useState<VinculacionFilter>('all');
+  const [chartVisible, setChartVisible] = useState(false);
+  const chartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (user?.id) {
@@ -223,7 +225,11 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
 
           {/* Mini distribution chart */}
           {companies.length > 0 && (
-            <div className="space-y-1.5">
+            <div 
+              className="space-y-1.5"
+              ref={chartRef}
+              onMouseEnter={() => setChartVisible(true)}
+            >
               <p className="text-[10px] text-muted-foreground">Distribució per vinculació:</p>
               <div className="flex h-4 w-full rounded-full overflow-hidden bg-muted">
                 {vinculacionCounts.high > 0 && (
@@ -231,8 +237,17 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div 
-                          className="bg-green-500 h-full transition-all cursor-pointer hover:brightness-110"
-                          style={{ width: `${(vinculacionCounts.high / companies.length) * 100}%` }}
+                          className={`bg-green-500 h-full cursor-pointer hover:brightness-110 transition-all duration-500 ease-out ${
+                            vinculacionFilter === 'high' ? 'ring-2 ring-primary ring-offset-1' : ''
+                          }`}
+                          style={{ 
+                            width: chartVisible ? `${(vinculacionCounts.high / companies.length) * 100}%` : '0%',
+                            transitionDelay: '0ms'
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setVinculacionFilter(prev => prev === 'high' ? 'all' : 'high');
+                          }}
                         />
                       </TooltipTrigger>
                       <TooltipContent side="top" className="text-xs">
@@ -240,6 +255,7 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                           <span className="h-2 w-2 rounded-full bg-green-500" />
                           <span>Alta (≥70%): <strong>{vinculacionCounts.high}</strong> empreses</span>
                         </div>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">Clic per filtrar</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -249,8 +265,17 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div 
-                          className="bg-yellow-500 h-full transition-all cursor-pointer hover:brightness-110"
-                          style={{ width: `${(vinculacionCounts.medium / companies.length) * 100}%` }}
+                          className={`bg-yellow-500 h-full cursor-pointer hover:brightness-110 transition-all duration-500 ease-out ${
+                            vinculacionFilter === 'medium' ? 'ring-2 ring-primary ring-offset-1' : ''
+                          }`}
+                          style={{ 
+                            width: chartVisible ? `${(vinculacionCounts.medium / companies.length) * 100}%` : '0%',
+                            transitionDelay: '150ms'
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setVinculacionFilter(prev => prev === 'medium' ? 'all' : 'medium');
+                          }}
                         />
                       </TooltipTrigger>
                       <TooltipContent side="top" className="text-xs">
@@ -258,6 +283,7 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                           <span className="h-2 w-2 rounded-full bg-yellow-500" />
                           <span>Mitjana (40-69%): <strong>{vinculacionCounts.medium}</strong> empreses</span>
                         </div>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">Clic per filtrar</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
@@ -267,8 +293,17 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div 
-                          className="bg-red-500 h-full transition-all cursor-pointer hover:brightness-110"
-                          style={{ width: `${(vinculacionCounts.low / companies.length) * 100}%` }}
+                          className={`bg-red-500 h-full cursor-pointer hover:brightness-110 transition-all duration-500 ease-out ${
+                            vinculacionFilter === 'low' ? 'ring-2 ring-primary ring-offset-1' : ''
+                          }`}
+                          style={{ 
+                            width: chartVisible ? `${(vinculacionCounts.low / companies.length) * 100}%` : '0%',
+                            transitionDelay: '300ms'
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setVinculacionFilter(prev => prev === 'low' ? 'all' : 'low');
+                          }}
                         />
                       </TooltipTrigger>
                       <TooltipContent side="top" className="text-xs">
@@ -276,6 +311,7 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                           <span className="h-2 w-2 rounded-full bg-red-500" />
                           <span>Baixa (&lt;40%): <strong>{vinculacionCounts.low}</strong> empreses</span>
                         </div>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">Clic per filtrar</p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
