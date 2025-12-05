@@ -334,6 +334,66 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
     setIsHovered(false);
   };
 
+  // Sync bank affiliations with company_bank_affiliations table
+  const syncBankAffiliations = async (companyId: string) => {
+    const vinculacionSum = parseInt(vinculacion.anbank || '0') + 
+                           parseInt(vinculacion.morabanc || '0') + 
+                           parseInt(vinculacion.creand || '0');
+    
+    // Only sync if we have valid vinculación data (sum = 100%)
+    if (vinculacionSum !== 100) return;
+
+    const banks = [
+      { name: 'Andbank', percentage: parseInt(vinculacion.anbank || '0') },
+      { name: 'Morabanc', percentage: parseInt(vinculacion.morabanc || '0') },
+      { name: 'Creand', percentage: parseInt(vinculacion.creand || '0'), isPrimary: true },
+    ];
+
+    try {
+      // Delete existing affiliations for this company
+      await supabase
+        .from('company_bank_affiliations')
+        .delete()
+        .eq('company_id', companyId);
+
+      // Insert new affiliations
+      const affiliationsToInsert = banks
+        .filter(bank => bank.percentage > 0)
+        .map((bank, index) => ({
+          company_id: companyId,
+          bank_name: bank.name,
+          affiliation_percentage: bank.percentage,
+          is_primary: bank.isPrimary || false,
+          active: true,
+          priority_order: index,
+        }));
+
+      if (affiliationsToInsert.length > 0) {
+        const { error } = await supabase
+          .from('company_bank_affiliations')
+          .insert(affiliationsToInsert);
+
+        if (error) {
+          console.error('Error syncing bank affiliations:', error);
+        }
+      }
+
+      // Also update company vinculacion fields
+      await supabase
+        .from('companies')
+        .update({
+          vinculacion_entidad_1: parseInt(vinculacion.anbank || '0') || null,
+          vinculacion_entidad_2: parseInt(vinculacion.morabanc || '0') || null,
+          vinculacion_entidad_3: parseInt(vinculacion.creand || '0') || null,
+          vinculacion_modo: 'manual',
+        })
+        .eq('id', companyId);
+
+    } catch (error) {
+      console.error('Error syncing bank affiliations:', error);
+    }
+  };
+
   const handleSave = async () => {
     if (!user) {
       toast.error('Usuario no autenticado');
@@ -350,6 +410,8 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
 
     setSaving(true);
     try {
+      const targetCompanyId = isEditMode ? editSheet?.company_id : selectedCompanyId;
+
       if (isEditMode && editVisitId && editSheetId) {
         // Update existing sheet
         const { error: sheetError } = await supabase
@@ -388,6 +450,11 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
             notes: observaciones.notasReunion,
           })
           .eq('id', editVisitId);
+
+        // Sync bank affiliations
+        if (targetCompanyId) {
+          await syncBankAffiliations(targetCompanyId);
+        }
 
         toast.success('Ficha de visita actualizada correctamente');
         if (onEditComplete) onEditComplete();
@@ -436,6 +503,9 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
           });
 
         if (sheetError) throw sheetError;
+
+        // Sync bank affiliations
+        await syncBankAffiliations(selectedCompanyId);
 
         toast.success('Ficha de visita guardada correctamente');
       }
