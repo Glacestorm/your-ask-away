@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { PersonalGoalsTracker } from '@/components/dashboard/PersonalGoalsTracker';
 import { PersonalGoalsHistory } from '@/components/dashboard/PersonalGoalsHistory';
 import { QuickVisitManager } from '@/components/dashboard/QuickVisitManager';
+import { MapButton } from '@/components/dashboard/MapButton';
 import { GestorDashboardCard } from '@/components/dashboard/GestorDashboardCard';
 import { cn } from '@/lib/utils';
 import { GestorOverviewSection } from '@/components/dashboard/GestorOverviewSection';
@@ -599,6 +600,7 @@ export function GestorDashboard({
               Vista exclusiva de les meves mètriques i objectius personals
             </p>
           </div>
+          <MapButton />
           <Badge variant="outline" className="h-9 px-4 text-sm">
             <Users className="h-4 w-4 mr-2" />
             Gestor Empresa / Retail
