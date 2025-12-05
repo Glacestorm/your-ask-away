@@ -426,20 +426,43 @@ export function MapDashboardCard({ onNavigateToMap }: MapDashboardCardProps) {
             </div>
 
             {/* Compact stats row */}
-            <div className="flex items-center gap-3 text-xs">
-              <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-background/50">
-                <TrendingUp className="h-3 w-3 text-green-500" />
-                <span className="text-muted-foreground">{avgVinculacion.toFixed(0)}%</span>
+            <TooltipProvider delayDuration={200}>
+              <div className="flex items-center gap-3 text-xs">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-background/50 cursor-help">
+                      <TrendingUp className="h-3 w-3 text-green-500" />
+                      <span className="text-muted-foreground">{avgVinculacion.toFixed(0)}%</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="text-xs">
+                    <p>Vinculació mitjana de totes les empreses</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-background/50 cursor-help">
+                      <Calendar className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-muted-foreground">{totalVisitsThisMonth} vis.</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="text-xs">
+                    <p>Visites realitzades aquest mes</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-background/50 cursor-help">
+                      <Award className="h-3 w-3 text-amber-500" />
+                      <span className="text-muted-foreground">{resultCounts.exitosa}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="text-xs">
+                    <p>Visites exitoses totals</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
-              <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-background/50">
-                <Calendar className="h-3 w-3 text-muted-foreground" />
-                <span className="text-muted-foreground">{totalVisitsThisMonth} vis.</span>
-              </div>
-              <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-background/50">
-                <Award className="h-3 w-3 text-amber-500" />
-                <span className="text-muted-foreground">{resultCounts.exitosa}</span>
-              </div>
-            </div>
+            </TooltipProvider>
 
             <div>
               <h3 className="text-lg font-semibold text-foreground mb-1">Mapa</h3>

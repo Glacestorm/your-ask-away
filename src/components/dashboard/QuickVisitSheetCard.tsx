@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { 
@@ -721,16 +722,32 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
             </div>
 
             {/* Compact stats row */}
-            <div className="flex items-center gap-3 text-xs">
-              <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-background/50">
-                <Building2 className="h-3 w-3 text-muted-foreground" />
-                <span className="text-muted-foreground">{companies.length}</span>
+            <TooltipProvider delayDuration={200}>
+              <div className="flex items-center gap-3 text-xs">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-background/50 cursor-help">
+                      <Building2 className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-muted-foreground">{companies.length}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="text-xs">
+                    <p>Empreses disponibles per seleccionar</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-background/50 cursor-help">
+                      <Calendar className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-muted-foreground">{format(new Date(), 'dd/MM')}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="text-xs">
+                    <p>Data actual per noves fitxes</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
-              <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-background/50">
-                <Calendar className="h-3 w-3 text-muted-foreground" />
-                <span className="text-muted-foreground">{format(new Date(), 'dd/MM')}</span>
-              </div>
-            </div>
+            </TooltipProvider>
 
             <div>
               <h3 className="text-lg font-semibold text-foreground mb-1">Ficha de Visita</h3>
