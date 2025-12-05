@@ -133,7 +133,12 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                 >
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     <MapPin className="h-3 w-3 text-muted-foreground group-hover:text-primary flex-shrink-0 transition-colors" />
-                    <span className="text-xs truncate group-hover:text-primary transition-colors">{company.name}</span>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-xs truncate group-hover:text-primary transition-colors">{company.name}</span>
+                      {company.parroquia && (
+                        <span className="text-[10px] text-muted-foreground truncate">{company.parroquia}</span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center gap-1.5">
                     {company.vinculacion_entidad_1 !== null && (

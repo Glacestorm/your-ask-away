@@ -125,6 +125,8 @@ interface MapContainerProps {
   markerStyle?: MarkerStyle;
   minZoomVinculacion?: number;
   onMinZoomVinculacionChange?: (zoom: number) => void;
+  focusCompanyId?: string | null;
+  onFocusCompanyHandled?: () => void;
 }
 
 interface TooltipConfig {
@@ -155,6 +157,8 @@ export function MapContainer({
   markerStyle = 'classic',
   minZoomVinculacion: minZoomVinculacionProp,
   onMinZoomVinculacionChange,
+  focusCompanyId,
+  onFocusCompanyHandled,
 }: MapContainerProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
@@ -200,6 +204,26 @@ export function MapContainer({
       onMinZoomVinculacionChange(minZoomVinculacion);
     }
   }, [minZoomVinculacion, onMinZoomVinculacionChange]);
+
+  // Effect to handle flyTo when focusCompanyId changes
+  useEffect(() => {
+    if (focusCompanyId && map.current && mapLoaded) {
+      const company = companies.find(c => c.id === focusCompanyId);
+      if (company && company.latitude && company.longitude) {
+        map.current.flyTo({
+          center: [company.longitude, company.latitude],
+          zoom: 16,
+          duration: 2000,
+          essential: true,
+          pitch: view3D ? 60 : 0,
+        });
+        // Notify parent that focus has been handled
+        if (onFocusCompanyHandled) {
+          onFocusCompanyHandled();
+        }
+      }
+    }
+  }, [focusCompanyId, companies, mapLoaded, view3D, onFocusCompanyHandled]);
 
   // Fetch tooltip configuration
   useEffect(() => {
