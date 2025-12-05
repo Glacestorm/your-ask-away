@@ -52,6 +52,15 @@ interface MonthlyData {
   rejected: number;
 }
 
+interface OfficeComparison {
+  oficina: string;
+  products: number;
+  validations: number;
+  approved: number;
+  rejected: number;
+  approvalRate: number;
+}
+
 export default function ContractedProductsReport() {
   const { language } = useLanguage();
   const [products, setProducts] = useState<ContractedProduct[]>([]);
@@ -69,6 +78,7 @@ export default function ContractedProductsReport() {
   const [stats, setStats] = useState<ProductStats[]>([]);
   const [gestorRanking, setGestorRanking] = useState<GestorProductRanking[]>([]);
   const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
+  const [officeComparison, setOfficeComparison] = useState<OfficeComparison[]>([]);
 
   const dateLocale = language === 'ca' ? ca : es;
 
@@ -81,6 +91,7 @@ export default function ContractedProductsReport() {
   useEffect(() => {
     fetchContractedProducts();
     fetchMonthlyEvolution();
+    fetchOfficeComparison();
   }, [dateFrom, dateTo, selectedGestor, selectedProduct, selectedOficina, selectedCategory]);
 
   const fetchGestores = async () => {
@@ -195,6 +206,66 @@ export default function ContractedProductsReport() {
     }
 
     setMonthlyData(monthlyStats);
+  };
+
+  const fetchOfficeComparison = async () => {
+    // Get all products with company office info
+    const { data: allProducts } = await supabase
+      .from('company_products')
+      .select(`
+        id, contract_date,
+        company:companies(oficina)
+      `)
+      .gte('contract_date', format(dateFrom, 'yyyy-MM-dd'))
+      .lte('contract_date', format(dateTo, 'yyyy-MM-dd'))
+      .eq('active', true);
+
+    // Get all validations with company office info
+    const { data: allValidations } = await supabase
+      .from('visit_sheets')
+      .select(`
+        id, validation_status,
+        company:companies(oficina)
+      `)
+      .not('validation_status', 'is', null)
+      .gte('validated_at', dateFrom.toISOString())
+      .lte('validated_at', dateTo.toISOString());
+
+    // Aggregate by office
+    const officeData: Record<string, { products: number; validations: number; approved: number; rejected: number }> = {};
+
+    for (const p of allProducts || []) {
+      const company = p.company as unknown as { oficina: string } | null;
+      const oficina = company?.oficina || 'Sin oficina';
+      if (!officeData[oficina]) {
+        officeData[oficina] = { products: 0, validations: 0, approved: 0, rejected: 0 };
+      }
+      officeData[oficina].products++;
+    }
+
+    for (const v of allValidations || []) {
+      const company = v.company as unknown as { oficina: string } | null;
+      const oficina = company?.oficina || 'Sin oficina';
+      if (!officeData[oficina]) {
+        officeData[oficina] = { products: 0, validations: 0, approved: 0, rejected: 0 };
+      }
+      officeData[oficina].validations++;
+      if (v.validation_status === 'approved') {
+        officeData[oficina].approved++;
+      } else if (v.validation_status === 'rejected') {
+        officeData[oficina].rejected++;
+      }
+    }
+
+    const comparison: OfficeComparison[] = Object.entries(officeData)
+      .map(([oficina, data]) => ({
+        oficina,
+        ...data,
+        approvalRate: data.validations > 0 ? Math.round((data.approved / data.validations) * 100) : 0
+      }))
+      .sort((a, b) => b.products - a.products);
+
+    setOfficeComparison(comparison);
   };
 
   const fetchContractedProducts = async () => {
@@ -569,6 +640,115 @@ export default function ContractedProductsReport() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Office Comparison */}
+      {officeComparison.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Building className="w-4 h-4 text-blue-500" />
+                Productos Contratados por Oficina
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[280px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={officeComparison} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis type="number" className="text-xs" />
+                    <YAxis dataKey="oficina" type="category" className="text-xs" width={100} />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }} 
+                    />
+                    <Bar dataKey="products" fill="hsl(var(--primary))" name="Productos" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                Ratio de Aprobación por Oficina
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[280px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={officeComparison} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis type="number" domain={[0, 100]} unit="%" className="text-xs" />
+                    <YAxis dataKey="oficina" type="category" className="text-xs" width={100} />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }}
+                      formatter={(value: number) => [`${value}%`, 'Aprobación']}
+                    />
+                    <Bar dataKey="approvalRate" fill="hsl(142, 76%, 36%)" name="Aprobación %" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Office Stats Table */}
+      {officeComparison.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Building2 className="w-4 h-4" />
+              Comparativa Detallada por Oficina
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Oficina</TableHead>
+                  <TableHead className="text-right">Productos</TableHead>
+                  <TableHead className="text-right">Validaciones</TableHead>
+                  <TableHead className="text-right">Aprobadas</TableHead>
+                  <TableHead className="text-right">Rechazadas</TableHead>
+                  <TableHead className="text-right">Ratio Aprobación</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {officeComparison.map((o, index) => (
+                  <TableRow key={o.oficina}>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        {index === 0 && <Trophy className="w-4 h-4 text-amber-500" />}
+                        {o.oficina}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right font-bold text-primary">{o.products}</TableCell>
+                    <TableCell className="text-right">{o.validations}</TableCell>
+                    <TableCell className="text-right text-green-600">{o.approved}</TableCell>
+                    <TableCell className="text-right text-red-500">{o.rejected}</TableCell>
+                    <TableCell className="text-right">
+                      <Badge variant={o.approvalRate >= 70 ? 'default' : o.approvalRate >= 50 ? 'secondary' : 'destructive'}>
+                        {o.approvalRate}%
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Product Stats */}
       {stats.length > 0 && (
