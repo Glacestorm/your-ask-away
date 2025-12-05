@@ -4,16 +4,16 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Package, Building2, User, Calendar as CalendarIcon, Download, Filter, CheckCircle, TrendingUp, Trophy, Medal } from 'lucide-react';
-import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
+import { Package, Building2, User, Calendar as CalendarIcon, Download, Filter, CheckCircle, TrendingUp, Trophy, Medal, Building, Tag } from 'lucide-react';
+import { format, startOfMonth, endOfMonth, subMonths, eachMonthOfInterval, parseISO } from 'date-fns';
 import { es, ca } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
 
 interface ContractedProduct {
   id: string;
@@ -22,8 +22,10 @@ interface ContractedProduct {
   contract_date: string;
   company_name: string;
   product_name: string;
+  product_category: string;
   gestor_name: string;
   gestor_id: string;
+  oficina: string;
   validated_by_name: string;
   validated_at: string;
   visit_sheet_id: string;
@@ -41,29 +43,45 @@ interface GestorProductRanking {
   companies_count: number;
 }
 
+interface MonthlyData {
+  month: string;
+  monthLabel: string;
+  products: number;
+  validations: number;
+  approved: number;
+  rejected: number;
+}
+
 export default function ContractedProductsReport() {
   const { language } = useLanguage();
   const [products, setProducts] = useState<ContractedProduct[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dateFrom, setDateFrom] = useState<Date>(startOfMonth(subMonths(new Date(), 1)));
+  const [dateFrom, setDateFrom] = useState<Date>(startOfMonth(subMonths(new Date(), 5)));
   const [dateTo, setDateTo] = useState<Date>(endOfMonth(new Date()));
   const [selectedGestor, setSelectedGestor] = useState<string>('all');
   const [selectedProduct, setSelectedProduct] = useState<string>('all');
+  const [selectedOficina, setSelectedOficina] = useState<string>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [gestores, setGestores] = useState<{ id: string; name: string }[]>([]);
-  const [productList, setProductList] = useState<{ id: string; name: string }[]>([]);
+  const [productList, setProductList] = useState<{ id: string; name: string; category: string }[]>([]);
+  const [oficinas, setOficinas] = useState<string[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [stats, setStats] = useState<ProductStats[]>([]);
   const [gestorRanking, setGestorRanking] = useState<GestorProductRanking[]>([]);
+  const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
 
   const dateLocale = language === 'ca' ? ca : es;
 
   useEffect(() => {
     fetchGestores();
     fetchProductList();
+    fetchOficinas();
   }, []);
 
   useEffect(() => {
     fetchContractedProducts();
-  }, [dateFrom, dateTo, selectedGestor, selectedProduct]);
+    fetchMonthlyEvolution();
+  }, [dateFrom, dateTo, selectedGestor, selectedProduct, selectedOficina, selectedCategory]);
 
   const fetchGestores = async () => {
     const { data } = await supabase
@@ -78,24 +96,116 @@ export default function ContractedProductsReport() {
   const fetchProductList = async () => {
     const { data } = await supabase
       .from('products')
-      .select('id, name')
+      .select('id, name, category')
       .eq('active', true)
       .order('name');
     if (data) {
-      setProductList(data);
+      setProductList(data.map(p => ({ id: p.id, name: p.name, category: p.category || 'Sin categoría' })));
+      const uniqueCategories = [...new Set(data.map(p => p.category).filter(Boolean))];
+      setCategories(uniqueCategories as string[]);
     }
+  };
+
+  const fetchOficinas = async () => {
+    const { data } = await supabase
+      .from('companies')
+      .select('oficina')
+      .not('oficina', 'is', null);
+    if (data) {
+      const uniqueOficinas = [...new Set(data.map(c => c.oficina).filter(Boolean))];
+      setOficinas(uniqueOficinas as string[]);
+    }
+  };
+
+  const fetchMonthlyEvolution = async () => {
+    const months = eachMonthOfInterval({ start: dateFrom, end: dateTo });
+    const monthlyStats: MonthlyData[] = [];
+
+    for (const month of months) {
+      const monthStart = startOfMonth(month);
+      const monthEnd = endOfMonth(month);
+
+      // Fetch products for this month
+      let productsQuery = supabase
+        .from('company_products')
+        .select(`
+          id, contract_date, product_id,
+          company:companies(oficina, gestor_id),
+          product:products(category)
+        `)
+        .gte('contract_date', format(monthStart, 'yyyy-MM-dd'))
+        .lte('contract_date', format(monthEnd, 'yyyy-MM-dd'))
+        .eq('active', true);
+
+      const { data: monthProducts } = await productsQuery;
+
+      // Apply filters
+      let filteredProducts = monthProducts || [];
+      if (selectedOficina !== 'all') {
+        filteredProducts = filteredProducts.filter(p => {
+          const company = p.company as { oficina: string; gestor_id: string } | null;
+          return company?.oficina === selectedOficina;
+        });
+      }
+      if (selectedGestor !== 'all') {
+        filteredProducts = filteredProducts.filter(p => {
+          const company = p.company as { oficina: string; gestor_id: string } | null;
+          return company?.gestor_id === selectedGestor;
+        });
+      }
+      if (selectedCategory !== 'all') {
+        filteredProducts = filteredProducts.filter(p => {
+          const product = p.product as { category: string } | null;
+          return product?.category === selectedCategory;
+        });
+      }
+
+      // Fetch validations for this month
+      let validationsQuery = supabase
+        .from('visit_sheets')
+        .select('id, validation_status, validated_at, company:companies(oficina), gestor_id')
+        .not('validation_status', 'is', null)
+        .gte('validated_at', monthStart.toISOString())
+        .lte('validated_at', monthEnd.toISOString());
+
+      const { data: monthValidations } = await validationsQuery;
+
+      let filteredValidations = monthValidations || [];
+      if (selectedOficina !== 'all') {
+        filteredValidations = filteredValidations.filter(v => {
+          const company = v.company as { oficina: string } | null;
+          return company?.oficina === selectedOficina;
+        });
+      }
+      if (selectedGestor !== 'all') {
+        filteredValidations = filteredValidations.filter(v => v.gestor_id === selectedGestor);
+      }
+
+      const approved = filteredValidations.filter(v => v.validation_status === 'approved').length;
+      const rejected = filteredValidations.filter(v => v.validation_status === 'rejected').length;
+
+      monthlyStats.push({
+        month: format(month, 'yyyy-MM'),
+        monthLabel: format(month, 'MMM yyyy', { locale: dateLocale }),
+        products: filteredProducts.length,
+        validations: filteredValidations.length,
+        approved,
+        rejected
+      });
+    }
+
+    setMonthlyData(monthlyStats);
   };
 
   const fetchContractedProducts = async () => {
     setLoading(true);
     
-    // Get company_products added via validation (contract_date within range)
     let query = supabase
       .from('company_products')
       .select(`
         id, company_id, product_id, contract_date,
-        company:companies(name, gestor_id),
-        product:products(name)
+        company:companies(name, gestor_id, oficina),
+        product:products(name, category)
       `)
       .gte('contract_date', format(dateFrom, 'yyyy-MM-dd'))
       .lte('contract_date', format(dateTo, 'yyyy-MM-dd'))
@@ -110,7 +220,6 @@ export default function ContractedProductsReport() {
       return;
     }
 
-    // Get visit sheets with validation info for these dates
     const { data: visitSheets } = await supabase
       .from('visit_sheets')
       .select(`
@@ -123,23 +232,26 @@ export default function ContractedProductsReport() {
       .gte('validated_at', dateFrom.toISOString())
       .lte('validated_at', dateTo.toISOString());
 
-    // Map company_products to visit sheets for validation info
     const enrichedProducts: ContractedProduct[] = [];
     
     for (const cp of companyProducts || []) {
-      const company = cp.company as { name: string; gestor_id: string } | null;
-      const product = cp.product as { name: string } | null;
+      const company = cp.company as { name: string; gestor_id: string; oficina: string } | null;
+      const product = cp.product as { name: string; category: string } | null;
       
       if (!company || !product) continue;
 
-      // Find matching visit sheet
+      // Apply oficina filter
+      if (selectedOficina !== 'all' && company.oficina !== selectedOficina) continue;
+      
+      // Apply category filter
+      if (selectedCategory !== 'all' && product.category !== selectedCategory) continue;
+
       const matchingSheet = visitSheets?.find(vs => 
         vs.company_id === cp.company_id && 
         Array.isArray(vs.productos_ofrecidos) &&
         (vs.productos_ofrecidos as string[]).includes(product.name)
       );
 
-      // Get gestor info
       let gestorName = 'Sin gestor';
       if (company.gestor_id) {
         const { data: gestorData } = await supabase
@@ -150,10 +262,7 @@ export default function ContractedProductsReport() {
         gestorName = gestorData?.full_name || 'Sin gestor';
       }
 
-      // Filter by gestor if selected
       if (selectedGestor !== 'all' && company.gestor_id !== selectedGestor) continue;
-      
-      // Filter by product if selected
       if (selectedProduct !== 'all' && cp.product_id !== selectedProduct) continue;
 
       enrichedProducts.push({
@@ -163,8 +272,10 @@ export default function ContractedProductsReport() {
         contract_date: cp.contract_date || '',
         company_name: company.name,
         product_name: product.name,
+        product_category: product.category || 'Sin categoría',
         gestor_name: gestorName,
         gestor_id: company.gestor_id || '',
+        oficina: company.oficina || 'Sin oficina',
         validated_by_name: (matchingSheet?.validator as { full_name: string } | null)?.full_name || 'Sistema',
         validated_at: matchingSheet?.validated_at || cp.contract_date || '',
         visit_sheet_id: matchingSheet?.id || ''
@@ -173,7 +284,6 @@ export default function ContractedProductsReport() {
 
     setProducts(enrichedProducts);
 
-    // Calculate stats
     const productCounts: Record<string, number> = {};
     enrichedProducts.forEach(p => {
       productCounts[p.product_name] = (productCounts[p.product_name] || 0) + 1;
@@ -185,7 +295,6 @@ export default function ContractedProductsReport() {
     
     setStats(statsArray);
 
-    // Calculate gestor ranking
     const gestorProductMap: Record<string, { products: number; companies: Set<string>; name: string }> = {};
     enrichedProducts.forEach(p => {
       if (!gestorProductMap[p.gestor_id]) {
@@ -213,7 +322,9 @@ export default function ContractedProductsReport() {
     const exportData = products.map(p => ({
       'Fecha Contratación': p.contract_date ? format(new Date(p.contract_date), 'dd/MM/yyyy') : '',
       'Empresa': p.company_name,
+      'Oficina': p.oficina,
       'Producto': p.product_name,
+      'Categoría': p.product_category,
       'Gestor': p.gestor_name,
       'Validado por': p.validated_by_name,
       'Fecha Validación': p.validated_at ? format(new Date(p.validated_at), 'dd/MM/yyyy HH:mm') : ''
@@ -295,21 +406,21 @@ export default function ContractedProductsReport() {
         </Card>
       </div>
 
-      {/* Filters */}
+      {/* Advanced Filters */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base flex items-center gap-2">
             <Filter className="w-4 h-4" />
-            Filtros
+            Filtros Avanzados
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Desde:</span>
+              <span className="text-sm text-muted-foreground whitespace-nowrap">Desde:</span>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="w-[140px]">
+                  <Button variant="outline" size="sm" className="w-full">
                     <CalendarIcon className="w-4 h-4 mr-2" />
                     {format(dateFrom, 'dd/MM/yyyy')}
                   </Button>
@@ -320,15 +431,16 @@ export default function ContractedProductsReport() {
                     selected={dateFrom}
                     onSelect={(date) => date && setDateFrom(date)}
                     locale={dateLocale}
+                    className="pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Hasta:</span>
+              <span className="text-sm text-muted-foreground whitespace-nowrap">Hasta:</span>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="w-[140px]">
+                  <Button variant="outline" size="sm" className="w-full">
                     <CalendarIcon className="w-4 h-4 mr-2" />
                     {format(dateTo, 'dd/MM/yyyy')}
                   </Button>
@@ -339,12 +451,38 @@ export default function ContractedProductsReport() {
                     selected={dateTo}
                     onSelect={(date) => date && setDateTo(date)}
                     locale={dateLocale}
+                    className="pointer-events-auto"
                   />
                 </PopoverContent>
               </Popover>
             </div>
+            <Select value={selectedOficina} onValueChange={setSelectedOficina}>
+              <SelectTrigger>
+                <Building className="w-4 h-4 mr-2" />
+                <SelectValue placeholder="Todas las oficinas" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las oficinas</SelectItem>
+                {oficinas.map(o => (
+                  <SelectItem key={o} value={o}>{o}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger>
+                <Tag className="w-4 h-4 mr-2" />
+                <SelectValue placeholder="Todas las categorías" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las categorías</SelectItem>
+                {categories.map(c => (
+                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Select value={selectedGestor} onValueChange={setSelectedGestor}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger>
+                <User className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="Todos los gestores" />
               </SelectTrigger>
               <SelectContent>
@@ -355,7 +493,8 @@ export default function ContractedProductsReport() {
               </SelectContent>
             </Select>
             <Select value={selectedProduct} onValueChange={setSelectedProduct}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger>
+                <Package className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="Todos los productos" />
               </SelectTrigger>
               <SelectContent>
@@ -368,6 +507,68 @@ export default function ContractedProductsReport() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Monthly Evolution Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-primary" />
+              Evolución Mensual de Productos Contratados
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[250px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={monthlyData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="monthLabel" className="text-xs" />
+                  <YAxis className="text-xs" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))', 
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px'
+                    }} 
+                  />
+                  <Bar dataKey="products" fill="hsl(var(--primary))" name="Productos" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-500" />
+              Evolución Mensual de Validaciones
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[250px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={monthlyData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="monthLabel" className="text-xs" />
+                  <YAxis className="text-xs" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))', 
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px'
+                    }} 
+                  />
+                  <Legend />
+                  <Line type="monotone" dataKey="approved" stroke="hsl(142, 76%, 36%)" strokeWidth={2} name="Aprobadas" dot={{ r: 4 }} />
+                  <Line type="monotone" dataKey="rejected" stroke="hsl(0, 84%, 60%)" strokeWidth={2} name="Rechazadas" dot={{ r: 4 }} />
+                  <Line type="monotone" dataKey="validations" stroke="hsl(var(--primary))" strokeWidth={2} name="Total" strokeDasharray="5 5" dot={{ r: 3 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Product Stats */}
       {stats.length > 0 && (
@@ -450,7 +651,9 @@ export default function ContractedProductsReport() {
                   <TableRow>
                     <TableHead>Fecha</TableHead>
                     <TableHead>Empresa</TableHead>
+                    <TableHead>Oficina</TableHead>
                     <TableHead>Producto</TableHead>
+                    <TableHead>Categoría</TableHead>
                     <TableHead>Gestor</TableHead>
                     <TableHead>Validado por</TableHead>
                   </TableRow>
@@ -462,10 +665,16 @@ export default function ContractedProductsReport() {
                         {p.contract_date ? format(new Date(p.contract_date), 'dd/MM/yyyy') : '-'}
                       </TableCell>
                       <TableCell className="font-medium">{p.company_name}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{p.oficina}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className="font-normal">
                           <Package className="w-3 h-3 mr-1" />
                           {p.product_name}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="font-normal text-xs">
+                          {p.product_category}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">{p.gestor_name}</TableCell>
