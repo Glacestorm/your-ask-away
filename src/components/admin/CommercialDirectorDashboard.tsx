@@ -15,6 +15,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { QuickVisitManager } from '@/components/dashboard/QuickVisitManager';
 import { MapButton } from '@/components/dashboard/MapButton';
 import { MapDashboardCard } from '@/components/dashboard/MapDashboardCard';
+import { QuickVisitSheetCard } from '@/components/dashboard/QuickVisitSheetCard';
 
 // Panel del Director con vista general y explorador de métricas
 
@@ -274,6 +275,9 @@ export function CommercialDirectorDashboard() {
 
           {/* Mapa Card */}
           <MapDashboardCard />
+
+          {/* Ficha de Visita Card */}
+          <QuickVisitSheetCard />
 
           {/* Gráfico de Ranking */}
           <Card>
