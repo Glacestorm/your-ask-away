@@ -648,35 +648,43 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                       const total = resultCounts.all || 1;
                       const count = resultCounts[filter.value] || 0;
                       const percentage = filter.value === 'all' ? 100 : Math.round((count / total) * 100);
+                      const exactPercentage = filter.value === 'all' ? 100 : ((count / total) * 100).toFixed(1);
                       return (
-                        <button
-                          key={filter.value}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setResultFilter(filter.value);
-                          }}
-                          className={`px-1.5 py-0.5 rounded text-[9px] font-medium transition-all flex flex-col items-center gap-0.5 min-w-[42px] ${
-                            resultFilter === filter.value
-                              ? `${filter.activeBg} text-white`
-                              : `${filter.inactiveBg} text-foreground/70`
-                          }`}
-                        >
-                          <div className="flex items-center gap-1">
-                            {filter.dot && resultFilter !== filter.value && <span className={`h-1.5 w-1.5 rounded-full ${filter.dot}`} />}
-                            {filter.label}
-                            <span className={`text-[8px] ${resultFilter === filter.value ? 'opacity-80' : 'opacity-60'}`}>
-                              ({count})
-                            </span>
-                          </div>
-                          {filter.value !== 'all' && (
-                            <div className="w-full h-1 bg-black/10 rounded-full overflow-hidden">
-                              <div 
-                                className={`h-full ${resultFilter === filter.value ? 'bg-white/50' : filter.barColor} transition-all`}
-                                style={{ width: `${percentage}%` }}
-                              />
-                            </div>
-                          )}
-                        </button>
+                        <Tooltip key={filter.value}>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setResultFilter(filter.value);
+                              }}
+                              className={`px-1.5 py-0.5 rounded text-[9px] font-medium transition-all flex flex-col items-center gap-0.5 min-w-[42px] ${
+                                resultFilter === filter.value
+                                  ? `${filter.activeBg} text-white`
+                                  : `${filter.inactiveBg} text-foreground/70`
+                              }`}
+                            >
+                              <div className="flex items-center gap-1">
+                                {filter.dot && resultFilter !== filter.value && <span className={`h-1.5 w-1.5 rounded-full ${filter.dot}`} />}
+                                {filter.label}
+                                <span className={`text-[8px] ${resultFilter === filter.value ? 'opacity-80' : 'opacity-60'}`}>
+                                  ({count})
+                                </span>
+                              </div>
+                              {filter.value !== 'all' && (
+                                <div className="w-full h-1 bg-black/10 rounded-full overflow-hidden">
+                                  <div 
+                                    className={`h-full ${resultFilter === filter.value ? 'bg-white/50' : filter.barColor} transition-all`}
+                                    style={{ width: `${percentage}%` }}
+                                  />
+                                </div>
+                              )}
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" className="text-xs">
+                            <p className="font-medium">{filter.label}</p>
+                            <p>{count} visites ({exactPercentage}% del total)</p>
+                          </TooltipContent>
+                        </Tooltip>
                       );
                     })}
                   </div>
