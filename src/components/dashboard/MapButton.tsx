@@ -10,6 +10,8 @@ import { toast } from 'sonner';
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { ca } from 'date-fns/locale';
 
+type ResultFilter = 'all' | 'exitosa' | 'pendiente' | 'fallida' | 'reagendada';
+
 interface MonthlyVisits {
   month: string;
   shortMonth: string;
@@ -77,6 +79,7 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
   const [showYoY, setShowYoY] = useState(true);
   const [chartViewMode, setChartViewMode] = useState<'chart' | 'table'>('chart');
   const [monthRange, setMonthRange] = useState<3 | 6 | 12>(6);
+  const [resultFilter, setResultFilter] = useState<ResultFilter>('all');
 
   useEffect(() => {
     if (user?.id) {
@@ -88,7 +91,7 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
     if (user?.id) {
       fetchMonthlyVisits();
     }
-  }, [user?.id, monthRange]);
+  }, [user?.id, monthRange, resultFilter]);
 
   const fetchMonthlyVisits = async () => {
     if (!user?.id) return;
@@ -96,11 +99,18 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
       const monthsAgo = startOfMonth(subMonths(new Date(), monthRange - 1));
       const dataStartDate = startOfMonth(subMonths(new Date(), monthRange + 11)); // For last year comparison
       
-      const { data } = await supabase
+      let query = supabase
         .from('visits')
-        .select('visit_date')
+        .select('visit_date, result')
         .eq('gestor_id', user.id)
         .gte('visit_date', format(dataStartDate, 'yyyy-MM-dd'));
+      
+      // Apply result filter
+      if (resultFilter !== 'all') {
+        query = query.eq('result', resultFilter);
+      }
+
+      const { data } = await query;
 
       if (data) {
         const months: MonthlyVisits[] = [];
@@ -603,6 +613,35 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                       )}
                       <span>{isPositive ? '+' : ''}{monthChange}%</span>
                     </div>
+                  </div>
+                </div>
+                {/* Result Filter */}
+                <div className="flex items-center gap-1 flex-wrap">
+                  <span className="text-[9px] text-muted-foreground">Resultat:</span>
+                  <div className="flex items-center gap-0.5 bg-muted/50 rounded p-0.5">
+                    {([
+                      { value: 'all' as const, label: 'Tot', color: '' },
+                      { value: 'exitosa' as const, label: 'Exitosa', color: 'bg-green-500' },
+                      { value: 'pendiente' as const, label: 'Pendent', color: 'bg-yellow-500' },
+                      { value: 'fallida' as const, label: 'Fallida', color: 'bg-red-500' },
+                      { value: 'reagendada' as const, label: 'Reagend.', color: 'bg-blue-500' },
+                    ]).map((filter) => (
+                      <button
+                        key={filter.value}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setResultFilter(filter.value);
+                        }}
+                        className={`px-1.5 py-0.5 rounded text-[9px] font-medium transition-all flex items-center gap-1 ${
+                          resultFilter === filter.value
+                            ? 'bg-primary text-primary-foreground'
+                            : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        {filter.color && <span className={`h-1.5 w-1.5 rounded-full ${filter.color}`} />}
+                        {filter.label}
+                      </button>
+                    ))}
                   </div>
                 </div>
                 {/* Chart View */}
