@@ -28,7 +28,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    console.log('Starting alert check...');
+    console.log('Starting KPI alert check...');
 
     // Get all active alerts
     const { data: alerts, error: alertsError } = await supabaseClient
@@ -47,29 +47,22 @@ serve(async (req) => {
 
     console.log(`Found ${alerts.length} active alerts`);
 
-    // Get all admin users to notify via email
-    const { data: adminUsers, error: adminError } = await supabaseClient
+    // Get directors to notify
+    const { data: directors, error: directorsError } = await supabaseClient
       .from('user_roles')
-      .select('user_id, profiles(id, email)')
-      .in('role', ['admin', 'superadmin']);
+      .select('user_id, profiles(id, email, full_name)')
+      .in('role', ['superadmin', 'director_comercial', 'director_oficina', 'responsable_comercial']);
 
-    if (adminError) throw adminError;
+    if (directorsError) throw directorsError;
 
-    const adminEmails = adminUsers
-      ?.map(u => u.profiles?.email)
+    const directorEmails = directors
+      ?.map(d => d.profiles?.email)
       .filter((email): email is string => email != null) || [];
 
-    // Get all profiles for notifications
-    const { data: profiles, error: profilesError } = await supabaseClient
-      .from('profiles')
-      .select('id');
-
-    if (profilesError) throw profilesError;
-
-    const notificationsToCreate = [];
+    const notificationsToCreate: any[] = [];
 
     for (const alert of alerts as Alert[]) {
-      console.log(`Checking alert: ${alert.alert_name}`);
+      console.log(`Checking alert: ${alert.alert_name} (${alert.metric_type})`);
       
       // Calculate date range based on period
       const now = new Date();
@@ -77,61 +70,135 @@ serve(async (req) => {
       
       switch (alert.period_type) {
         case 'daily':
-          startDate = new Date(now.setHours(0, 0, 0, 0));
+          startDate = new Date(now);
+          startDate.setHours(0, 0, 0, 0);
           break;
         case 'weekly':
-          startDate = new Date(now.setDate(now.getDate() - 7));
+          startDate = new Date(now);
+          startDate.setDate(now.getDate() - 7);
           break;
         case 'monthly':
-          startDate = new Date(now.setMonth(now.getMonth() - 1));
+          startDate = new Date(now);
+          startDate.setMonth(now.getMonth() - 1);
           break;
         default:
-          startDate = new Date(now.setDate(now.getDate() - 1));
+          startDate = new Date(now);
+          startDate.setDate(now.getDate() - 1);
       }
 
-      // Fetch visits data for the period
-      const { data: visits, error: visitsError } = await supabaseClient
-        .from('visits')
-        .select('*')
-        .gte('visit_date', startDate.toISOString().split('T')[0]);
-
-      if (visitsError) {
-        console.error('Error fetching visits:', visitsError);
-        continue;
-      }
-
-      if (!visits || visits.length === 0) {
-        console.log(`No visits found for period ${alert.period_type}`);
-        continue;
-      }
-
-      // Calculate metric value
+      const startDateStr = startDate.toISOString().split('T')[0];
+      
+      // Calculate metric value based on type
       let metricValue = 0;
       
       switch (alert.metric_type) {
-        case 'visits':
-          metricValue = visits.length;
+        case 'visits': {
+          const { data: visits } = await supabaseClient
+            .from('visits')
+            .select('id')
+            .gte('visit_date', startDateStr);
+          metricValue = visits?.length || 0;
           break;
-        case 'success_rate':
-          const successfulVisits = visits.filter(v => v.result === 'exitosa').length;
-          metricValue = (successfulVisits / visits.length) * 100;
-          break;
-        case 'vinculacion':
-          const vinculacionVisits = visits.filter(v => v.porcentaje_vinculacion != null);
-          if (vinculacionVisits.length > 0) {
-            const totalVinculacion = vinculacionVisits.reduce((sum, v) => sum + (v.porcentaje_vinculacion || 0), 0);
-            metricValue = totalVinculacion / vinculacionVisits.length;
+        }
+        
+        case 'success_rate': {
+          const { data: visits } = await supabaseClient
+            .from('visits')
+            .select('result')
+            .gte('visit_date', startDateStr);
+          if (visits && visits.length > 0) {
+            const successful = visits.filter(v => v.result === 'exitosa').length;
+            metricValue = (successful / visits.length) * 100;
           }
           break;
-        case 'engagement':
-          // Calculate engagement as visits with notes or follow-ups
-          const engagedVisits = visits.filter(v => v.notes || v.pactos_realizados).length;
-          metricValue = (engagedVisits / visits.length) * 100;
+        }
+        
+        case 'vinculacion': {
+          const { data: visits } = await supabaseClient
+            .from('visits')
+            .select('porcentaje_vinculacion')
+            .gte('visit_date', startDateStr)
+            .not('porcentaje_vinculacion', 'is', null);
+          if (visits && visits.length > 0) {
+            const total = visits.reduce((sum, v) => sum + (v.porcentaje_vinculacion || 0), 0);
+            metricValue = total / visits.length;
+          }
           break;
-        case 'products':
-          // Count total products offered
-          metricValue = visits.reduce((sum, v) => sum + (v.productos_ofrecidos?.length || 0), 0);
+        }
+        
+        case 'engagement': {
+          const { data: visits } = await supabaseClient
+            .from('visits')
+            .select('notes, pactos_realizados')
+            .gte('visit_date', startDateStr);
+          if (visits && visits.length > 0) {
+            const engaged = visits.filter(v => v.notes || v.pactos_realizados).length;
+            metricValue = (engaged / visits.length) * 100;
+          }
           break;
+        }
+        
+        case 'products': {
+          const { data: visits } = await supabaseClient
+            .from('visits')
+            .select('productos_ofrecidos')
+            .gte('visit_date', startDateStr);
+          if (visits) {
+            metricValue = visits.reduce((sum, v) => sum + (v.productos_ofrecidos?.length || 0), 0);
+          }
+          break;
+        }
+        
+        case 'tpv_volume': {
+          const { data: tpvTerminals } = await supabaseClient
+            .from('company_tpv_terminals')
+            .select('monthly_volume')
+            .eq('status', 'active');
+          if (tpvTerminals) {
+            metricValue = tpvTerminals.reduce((sum, t) => sum + (t.monthly_volume || 0), 0);
+          }
+          break;
+        }
+        
+        case 'facturacion': {
+          const { data: companies } = await supabaseClient
+            .from('companies')
+            .select('facturacion_anual');
+          if (companies) {
+            metricValue = companies.reduce((sum, c) => sum + (c.facturacion_anual || 0), 0);
+          }
+          break;
+        }
+        
+        case 'visit_sheets': {
+          const { data: sheets } = await supabaseClient
+            .from('visit_sheets')
+            .select('id')
+            .gte('fecha', startDateStr);
+          metricValue = sheets?.length || 0;
+          break;
+        }
+        
+        case 'new_clients': {
+          const { data: companies } = await supabaseClient
+            .from('companies')
+            .select('id')
+            .gte('created_at', startDate.toISOString());
+          metricValue = companies?.length || 0;
+          break;
+        }
+        
+        case 'avg_visits_per_gestor': {
+          const { data: visits } = await supabaseClient
+            .from('visits')
+            .select('gestor_id')
+            .gte('visit_date', startDateStr);
+          if (visits && visits.length > 0) {
+            const uniqueGestors = new Set(visits.map(v => v.gestor_id)).size;
+            metricValue = uniqueGestors > 0 ? visits.length / uniqueGestors : 0;
+          }
+          break;
+        }
       }
 
       console.log(`Metric ${alert.metric_type}: ${metricValue}, Threshold: ${alert.threshold_value}`);
@@ -156,9 +223,11 @@ serve(async (req) => {
         
         // Determine severity
         const difference = Math.abs(metricValue - alert.threshold_value);
-        const percentageDiff = (difference / alert.threshold_value) * 100;
-        let severity: 'info' | 'warning' | 'critical';
+        const percentageDiff = alert.threshold_value > 0 
+          ? (difference / alert.threshold_value) * 100 
+          : 100;
         
+        let severity: string;
         if (percentageDiff > 30) {
           severity = 'critical';
         } else if (percentageDiff > 15) {
@@ -167,44 +236,39 @@ serve(async (req) => {
           severity = 'info';
         }
 
-        // Get user preferences for this alert type
-        const { data: userPreferences, error: prefsError } = await supabaseClient
-          .from('notification_preferences')
-          .select('user_id, email_enabled, in_app_enabled, min_severity')
-          .eq('alert_type', alert.metric_type);
+        const metricLabels: Record<string, string> = {
+          visits: 'Visitas Totales',
+          success_rate: 'Tasa de Éxito',
+          vinculacion: 'Vinculación Promedio',
+          engagement: 'Engagement',
+          products: 'Productos Ofrecidos',
+          tpv_volume: 'Volumen TPV',
+          facturacion: 'Facturación Total',
+          visit_sheets: 'Fichas de Visita',
+          new_clients: 'Nuevos Clientes',
+          avg_visits_per_gestor: 'Visitas por Gestor',
+        };
 
-        if (prefsError) {
-          console.error('Error fetching preferences:', prefsError);
-        }
+        const conditionLabels: Record<string, string> = {
+          below: 'por debajo del',
+          above: 'por encima del',
+          equals: 'igual al',
+        };
 
-        const severityLevel: Record<string, number> = { info: 0, warning: 1, critical: 2 };
-        const prefsMap = new Map(
-          userPreferences?.map(p => [
-            p.user_id, 
-            {
-              email: p.email_enabled && severityLevel[severity] >= (severityLevel[p.min_severity] || 0),
-              inApp: p.in_app_enabled && severityLevel[severity] >= (severityLevel[p.min_severity] || 0)
-            }
-          ]) || []
-        );
+        const message = `${metricLabels[alert.metric_type] || alert.metric_type} está ${conditionLabels[alert.condition_type]} umbral (${alert.threshold_value}). Valor actual: ${metricValue.toFixed(2)}`;
 
-        // Create notifications based on user preferences
-        for (const profile of profiles || []) {
-          const userPrefs = prefsMap.get(profile.id);
-          const shouldNotify = !userPrefs || userPrefs.inApp;
-
-          if (shouldNotify) {
-            notificationsToCreate.push({
-              alert_id: alert.id,
-              user_id: profile.id,
-              title: alert.alert_name,
-              message: `La métrica ${alert.metric_type} está ${alert.condition_type === 'below' ? 'por debajo' : 'por encima'} del umbral establecido (${alert.threshold_value}). Valor actual: ${metricValue.toFixed(2)}`,
-              severity,
-              metric_value: metricValue,
-              threshold_value: alert.threshold_value,
-              is_read: false,
-            });
-          }
+        // Create notifications for directors
+        for (const director of directors || []) {
+          notificationsToCreate.push({
+            alert_id: alert.id,
+            user_id: director.user_id,
+            title: `⚠️ Alerta KPI: ${alert.alert_name}`,
+            message,
+            severity,
+            metric_value: metricValue,
+            threshold_value: alert.threshold_value,
+            is_read: false,
+          });
         }
 
         // Update last_checked timestamp
@@ -225,70 +289,48 @@ serve(async (req) => {
       
       console.log(`Created ${notificationsToCreate.length} notifications`);
 
-      // Send email notifications for critical alerts
+      // Send email for critical alerts
       const criticalNotifications = notificationsToCreate.filter(n => n.severity === 'critical');
       
-      if (criticalNotifications.length > 0 && adminEmails.length > 0) {
-        console.log(`Sending ${criticalNotifications.length} critical alert emails to ${adminEmails.length} admins`);
+      if (criticalNotifications.length > 0 && directorEmails.length > 0) {
+        console.log(`Sending critical alert emails to ${directorEmails.length} directors`);
         
-        // Get email preferences for admin users
-        const { data: adminPrefs } = await supabaseClient
-          .from('notification_preferences')
-          .select('user_id, email_enabled, min_severity')
-          .in('user_id', adminUsers?.map(u => u.user_id) || []);
+        const uniqueAlerts = new Map<string, typeof notificationsToCreate[0]>();
+        criticalNotifications.forEach(notif => {
+          if (!uniqueAlerts.has(notif.alert_id)) {
+            uniqueAlerts.set(notif.alert_id, notif);
+          }
+        });
 
-        const emailEnabledAdmins = new Set(
-          adminPrefs?.filter(p => p.email_enabled && p.min_severity !== 'critical')
-            .map(p => p.user_id) || adminUsers?.map(u => u.user_id) || []
-        );
-
-        const filteredAdminEmails = adminUsers
-          ?.filter(u => emailEnabledAdmins.has(u.user_id))
-          .map(u => u.profiles?.email)
-          .filter((email): email is string => email != null) || [];
-
-        if (filteredAdminEmails.length === 0) {
-          console.log('No admins have email notifications enabled for critical alerts');
-        } else {
-          // Group notifications by alert to avoid sending duplicate emails
-          const uniqueAlerts = new Map<string, typeof notificationsToCreate[0]>();
-          criticalNotifications.forEach(notif => {
-            if (!uniqueAlerts.has(notif.alert_id)) {
-              uniqueAlerts.set(notif.alert_id, notif);
-            }
-          });
-
-          // Send one email per unique critical alert
-          for (const notification of uniqueAlerts.values()) {
-            try {
-              const emailResponse = await fetch(
-                `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-alert-email`,
-                {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
-                  },
-                  body: JSON.stringify({
-                    to: filteredAdminEmails,
-                    alertName: notification.title,
-                    metricType: 'Métrica',
-                    metricValue: notification.metric_value,
-                    thresholdValue: notification.threshold_value,
-                    severity: notification.severity,
-                    message: notification.message,
-                  }),
-                }
-              );
-
-              if (!emailResponse.ok) {
-                console.error('Failed to send email:', await emailResponse.text());
-              } else {
-                console.log('Email sent successfully for alert:', notification.title);
+        for (const notification of uniqueAlerts.values()) {
+          try {
+            const emailResponse = await fetch(
+              `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-alert-email`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+                },
+                body: JSON.stringify({
+                  to: directorEmails,
+                  alertName: notification.title,
+                  metricType: notification.title,
+                  metricValue: notification.metric_value,
+                  thresholdValue: notification.threshold_value,
+                  severity: notification.severity,
+                  message: notification.message,
+                }),
               }
-            } catch (emailError) {
-              console.error('Error sending email:', emailError);
+            );
+
+            if (!emailResponse.ok) {
+              console.error('Failed to send email:', await emailResponse.text());
+            } else {
+              console.log('Email sent successfully for alert:', notification.title);
             }
+          } catch (emailError) {
+            console.error('Error sending email:', emailError);
           }
         }
       }

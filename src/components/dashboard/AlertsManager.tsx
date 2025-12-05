@@ -148,11 +148,16 @@ export const AlertsManager = () => {
 
   const getMetricLabel = (metric: string) => {
     const labels: { [key: string]: string } = {
-      visits: 'Visitas',
-      success_rate: 'Tasa de Éxito',
-      vinculacion: 'Vinculación',
-      engagement: 'Engagement',
-      products: 'Productos',
+      visits: 'Visitas Totales',
+      success_rate: 'Tasa de Éxito (%)',
+      vinculacion: 'Vinculación Promedio (%)',
+      engagement: 'Engagement (%)',
+      products: 'Productos Ofrecidos',
+      tpv_volume: 'Volumen TPV (€)',
+      facturacion: 'Facturación Total (€)',
+      visit_sheets: 'Fichas de Visita',
+      new_clients: 'Nuevos Clientes',
+      avg_visits_per_gestor: 'Visitas/Gestor Promedio',
     };
     return labels[metric] || metric;
   };
@@ -175,6 +180,19 @@ export const AlertsManager = () => {
     return labels[period] || period;
   };
 
+  const checkAlertsNow = async () => {
+    try {
+      toast.info('Verificando alertas...');
+      const { error } = await supabase.functions.invoke('check-alerts');
+      if (error) throw error;
+      toast.success('Alertas verificadas correctamente');
+      fetchAlerts();
+    } catch (error) {
+      console.error('Error checking alerts:', error);
+      toast.error('Error al verificar alertas');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -186,19 +204,24 @@ export const AlertsManager = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
           <Bell className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold">Gestión de Alertas</h3>
+          <h3 className="text-lg font-semibold">Alertas Automáticas de KPIs</h3>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={(open) => {
-          setIsDialogOpen(open);
-          if (!open) resetForm();
-        }}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Nueva Alerta
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={checkAlertsNow}>
+            <Bell className="h-4 w-4 mr-2" />
+            Verificar Ahora
+          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) resetForm();
+          }}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                Nueva Alerta
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px]">
@@ -231,11 +254,16 @@ export const AlertsManager = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="visits">Visitas</SelectItem>
-                      <SelectItem value="success_rate">Tasa de Éxito</SelectItem>
-                      <SelectItem value="vinculacion">Vinculación</SelectItem>
-                      <SelectItem value="engagement">Engagement</SelectItem>
-                      <SelectItem value="products">Productos</SelectItem>
+                      <SelectItem value="visits">Visitas Totales</SelectItem>
+                      <SelectItem value="success_rate">Tasa de Éxito (%)</SelectItem>
+                      <SelectItem value="vinculacion">Vinculación Promedio (%)</SelectItem>
+                      <SelectItem value="engagement">Engagement (%)</SelectItem>
+                      <SelectItem value="products">Productos Ofrecidos</SelectItem>
+                      <SelectItem value="tpv_volume">Volumen TPV (€)</SelectItem>
+                      <SelectItem value="facturacion">Facturación Total (€)</SelectItem>
+                      <SelectItem value="visit_sheets">Fichas de Visita</SelectItem>
+                      <SelectItem value="new_clients">Nuevos Clientes</SelectItem>
+                      <SelectItem value="avg_visits_per_gestor">Visitas/Gestor Promedio</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -312,6 +340,7 @@ export const AlertsManager = () => {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Alerts List */}
