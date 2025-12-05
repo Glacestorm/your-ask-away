@@ -225,27 +225,60 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
           {companies.length > 0 && (
             <div className="space-y-1.5">
               <p className="text-[10px] text-muted-foreground">Distribució per vinculació:</p>
-              <div className="flex h-3 w-full rounded-full overflow-hidden bg-muted">
+              <div className="flex h-4 w-full rounded-full overflow-hidden bg-muted">
                 {vinculacionCounts.high > 0 && (
-                  <div 
-                    className="bg-green-500 h-full transition-all"
-                    style={{ width: `${(vinculacionCounts.high / companies.length) * 100}%` }}
-                    title={`Alta: ${vinculacionCounts.high}`}
-                  />
+                  <TooltipProvider delayDuration={100}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div 
+                          className="bg-green-500 h-full transition-all cursor-pointer hover:brightness-110"
+                          style={{ width: `${(vinculacionCounts.high / companies.length) * 100}%` }}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-xs">
+                        <div className="flex items-center gap-1.5">
+                          <span className="h-2 w-2 rounded-full bg-green-500" />
+                          <span>Alta (≥70%): <strong>{vinculacionCounts.high}</strong> empreses</span>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
                 {vinculacionCounts.medium > 0 && (
-                  <div 
-                    className="bg-yellow-500 h-full transition-all"
-                    style={{ width: `${(vinculacionCounts.medium / companies.length) * 100}%` }}
-                    title={`Mitjana: ${vinculacionCounts.medium}`}
-                  />
+                  <TooltipProvider delayDuration={100}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div 
+                          className="bg-yellow-500 h-full transition-all cursor-pointer hover:brightness-110"
+                          style={{ width: `${(vinculacionCounts.medium / companies.length) * 100}%` }}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-xs">
+                        <div className="flex items-center gap-1.5">
+                          <span className="h-2 w-2 rounded-full bg-yellow-500" />
+                          <span>Mitjana (40-69%): <strong>{vinculacionCounts.medium}</strong> empreses</span>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
                 {vinculacionCounts.low > 0 && (
-                  <div 
-                    className="bg-red-500 h-full transition-all"
-                    style={{ width: `${(vinculacionCounts.low / companies.length) * 100}%` }}
-                    title={`Baixa: ${vinculacionCounts.low}`}
-                  />
+                  <TooltipProvider delayDuration={100}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div 
+                          className="bg-red-500 h-full transition-all cursor-pointer hover:brightness-110"
+                          style={{ width: `${(vinculacionCounts.low / companies.length) * 100}%` }}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-xs">
+                        <div className="flex items-center gap-1.5">
+                          <span className="h-2 w-2 rounded-full bg-red-500" />
+                          <span>Baixa (&lt;40%): <strong>{vinculacionCounts.low}</strong> empreses</span>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
               </div>
               <div className="flex justify-between text-[9px] text-muted-foreground">
