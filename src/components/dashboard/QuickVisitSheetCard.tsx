@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
 import { 
   FileText, X, Building2, User, CreditCard, Landmark, Shield, TrendingUp, BarChart3,
   Target, Save, ChevronRight, AlertCircle, Calendar, Edit2, RefreshCw, Download,
-  ZoomIn, ZoomOut, RotateCcw, Printer, ChevronLeft, ChevronDown, Maximize2
+  ZoomIn, ZoomOut, RotateCcw, Printer, ChevronLeft, ChevronDown, Maximize2, Minimize2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
@@ -93,6 +93,7 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
   const [pdfZoom, setPdfZoom] = useState(100);
   const [pdfPage, setPdfPage] = useState(1);
   const [pdfTotalPages, setPdfTotalPages] = useState(1);
+  const [isPdfFullscreen, setIsPdfFullscreen] = useState(false);
 
   // Datos Generales
   const [formData, setFormData] = useState({
@@ -921,6 +922,11 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
     setShowPdfPreview(false);
     setPdfZoom(100);
     setPdfPage(1);
+    setIsPdfFullscreen(false);
+  };
+
+  const handleToggleFullscreen = () => {
+    setIsPdfFullscreen(prev => !prev);
   };
 
   // Error message component
@@ -1739,7 +1745,12 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
 
       {/* PDF Preview Dialog */}
       <Dialog open={showPdfPreview} onOpenChange={setShowPdfPreview}>
-        <DialogContent className="max-w-6xl h-[95vh] p-0 gap-0 dark:bg-card dark:border-border/50">
+        <DialogContent className={cn(
+          "p-0 gap-0 dark:bg-card dark:border-border/50 transition-all duration-300",
+          isPdfFullscreen 
+            ? "max-w-[100vw] w-[100vw] h-[100vh] rounded-none" 
+            : "max-w-6xl h-[95vh]"
+        )}>
           {/* Header */}
           <DialogHeader className="p-4 pb-3 border-b border-border/30 bg-gradient-to-r from-blue-500/10 via-blue-500/5 to-transparent dark:from-blue-500/20 dark:via-blue-500/10">
             <div className="flex items-center justify-between">
@@ -1756,14 +1767,37 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
                   </DialogDescription>
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleClosePdfPreview}
-                className="h-8 w-8 rounded-full"
-              >
-                <X className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-1">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleToggleFullscreen}
+                        className="h-8 w-8 rounded-full"
+                      >
+                        {isPdfFullscreen ? (
+                          <Minimize2 className="h-4 w-4" />
+                        ) : (
+                          <Maximize2 className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {isPdfFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleClosePdfPreview}
+                  className="h-8 w-8 rounded-full"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </DialogHeader>
 
@@ -1897,6 +1931,8 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
               <span>Usa la rueda del ratón para desplazarte</span>
               <span>•</span>
               <span>Ctrl + P para imprimir</span>
+              <span>•</span>
+              <span>{isPdfFullscreen ? 'Esc para salir' : 'Clic en ⛶ para pantalla completa'}</span>
             </div>
           </div>
         </DialogContent>
