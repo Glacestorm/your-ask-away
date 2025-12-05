@@ -42,7 +42,6 @@ import { DirectorAlertsPanel } from '@/components/admin/DirectorAlertsPanel';
 import GoalsKPIDashboard from '@/components/admin/GoalsKPIDashboard';
 import { KPIReportHistory } from '@/components/admin/KPIReportHistory';
 import { AlertHistoryViewer } from '@/components/admin/AlertHistoryViewer';
-import { VisitSheetAuditViewer } from '@/components/admin/VisitSheetAuditViewer';
 import { VisitSheetsGestorComparison } from '@/components/admin/VisitSheetsGestorComparison';
 import MapView from './MapView';
 
@@ -139,7 +138,6 @@ const Admin = () => {
       case 'goals-kpi': return 'Dashboard KPI d\'Objectius';
       case 'kpi-report-history': return 'Historial d\'Informes KPI';
       case 'alert-history': return 'Historial d\'Alertes';
-      case 'visit-sheet-audit': return 'Auditoría de Fichas de Visita';
       case 'gestor-comparison': return 'Comparativa de Gestores';
       default: return '';
     }
@@ -451,17 +449,6 @@ const Admin = () => {
           );
         }
         return <AlertHistoryViewer />;
-      case 'visit-sheet-audit':
-        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager && !isOfficeDirector) {
-          return (
-            <Card>
-              <CardContent className="p-6">
-                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
-              </CardContent>
-            </Card>
-          );
-        }
-        return <VisitSheetAuditViewer />;
       case 'gestor-comparison':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager && !isOfficeDirector) {
           return (

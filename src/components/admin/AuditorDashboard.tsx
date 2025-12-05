@@ -22,8 +22,10 @@ import {
   Loader2,
   Search,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ClipboardList
 } from 'lucide-react';
+import { VisitSheetAuditViewer } from './VisitSheetAuditViewer';
 import { 
   BarChart, 
   Bar, 
@@ -500,7 +502,7 @@ export function AuditorDashboard() {
 
       {/* Charts and Detailed Info */}
       <Tabs defaultValue="timeline" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="timeline">
             <TrendingUp className="h-4 w-4 mr-2" />
             Evolució
@@ -524,6 +526,10 @@ export function AuditorDashboard() {
           <TabsTrigger value="full-logs">
             <FileText className="h-4 w-4 mr-2" />
             Logs Complets
+          </TabsTrigger>
+          <TabsTrigger value="visit-sheets">
+            <ClipboardList className="h-4 w-4 mr-2" />
+            Fitxes Visita
           </TabsTrigger>
         </TabsList>
 
@@ -959,6 +965,20 @@ export function AuditorDashboard() {
                   </Button>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="visit-sheets" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ClipboardList className="h-5 w-5" />
+                Auditoría de Fichas de Visita
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <VisitSheetAuditViewer />
             </CardContent>
           </Card>
         </TabsContent>
