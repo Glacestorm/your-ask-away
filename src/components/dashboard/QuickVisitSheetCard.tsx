@@ -13,6 +13,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { 
@@ -666,10 +667,12 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
     </Label>
   );
 
-  // Collapsed card view with compact stats
-  if (!isExpanded) {
-    const cardColor = 'hsl(var(--chart-2))';
-    return (
+  const cardColor = 'hsl(var(--chart-2))';
+  
+  // Always render collapsed card + Dialog
+  return (
+    <>
+      {/* Collapsed card view with compact stats */}
       <div
         className="perspective-1000"
         style={{ perspective: '1000px' }}
@@ -767,39 +770,28 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
           />
         </div>
       </div>
-    );
-  }
 
-  // Expanded form view
-  return (
-    <Card className={cn("border-border/50 bg-card", className)}>
-      <CardHeader className="pb-4 border-b border-border/50">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500">
-              {isEditMode ? <Edit2 className="h-5 w-5" /> : <FileText className="h-5 w-5" />}
+      {/* Dialog for expanded form */}
+      <Dialog open={isExpanded} onOpenChange={setIsExpanded}>
+        <DialogContent className="max-w-4xl max-h-[90vh] p-0 gap-0">
+          <DialogHeader className="px-6 py-4 border-b border-border/50 bg-gradient-to-r from-amber-500/10 to-transparent">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-amber-500/20 text-amber-500">
+                {isEditMode ? <Edit2 className="h-5 w-5" /> : <FileText className="h-5 w-5" />}
+              </div>
+              <div>
+                <DialogTitle className="text-xl">
+                  {isEditMode ? 'Editar Ficha de Visita' : 'Nova Fitxa de Visita Comercial'}
+                </DialogTitle>
+                <DialogDescription className="mt-1">
+                  {isEditMode ? 'Modificar registre existent' : 'Registre complet de visita bancària'}
+                </DialogDescription>
+              </div>
             </div>
-            <div>
-              <CardTitle className="text-xl">
-                {isEditMode ? 'Editar Ficha de Visita' : 'Nueva Ficha de Visita Comercial'}
-              </CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
-                {isEditMode ? 'Modificar registro existente' : 'Registro completo de visita bancaria'}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-xs">
-              <span className="text-destructive mr-1">*</span> Campos obligatorios
+            <Badge variant="outline" className="absolute top-4 right-12 text-xs">
+              <span className="text-destructive mr-1">*</span> Camps obligatoris
             </Badge>
-            <Button variant="ghost" size="icon" onClick={handleClose}>
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-
-      <CardContent className="p-0">
+          </DialogHeader>
         <ScrollArea className="h-[600px]">
           <div className="p-6 space-y-6">
             {/* Company Selection */}
@@ -1443,12 +1435,13 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
               </Button>
               <Button onClick={handleSave} disabled={saving} className="gap-2">
                 <Save className="h-4 w-4" />
-                {saving ? 'Guardando...' : (isEditMode ? 'Actualizar Ficha' : 'Guardar Ficha')}
+                {saving ? 'Guardant...' : (isEditMode ? 'Actualitzar Fitxa' : 'Guardar Fitxa')}
               </Button>
             </div>
           </div>
         </ScrollArea>
-      </CardContent>
-    </Card>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
