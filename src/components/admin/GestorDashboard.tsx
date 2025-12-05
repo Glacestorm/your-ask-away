@@ -751,11 +751,11 @@ export function GestorDashboard({
               ))}
             </div>
 
-            {/* Mapa Card */}
-            <MapDashboardCard />
-
             {/* Ficha de Visita Card */}
             <QuickVisitSheetCard />
+
+            {/* Mapa Card */}
+            <MapDashboardCard />
 
             {/* Quick Stats Summary */}
             <div className="grid gap-4 md:grid-cols-4">
