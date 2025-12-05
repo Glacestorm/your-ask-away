@@ -80,6 +80,7 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
   const [chartViewMode, setChartViewMode] = useState<'chart' | 'table'>('chart');
   const [monthRange, setMonthRange] = useState<3 | 6 | 12>(6);
   const [resultFilter, setResultFilter] = useState<ResultFilter>('all');
+  const [resultCounts, setResultCounts] = useState<Record<string, number>>({ all: 0, exitosa: 0, pendiente: 0, fallida: 0, reagendada: 0 });
 
   useEffect(() => {
     if (user?.id) {
@@ -98,6 +99,24 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
     try {
       const monthsAgo = startOfMonth(subMonths(new Date(), monthRange - 1));
       const dataStartDate = startOfMonth(subMonths(new Date(), monthRange + 11)); // For last year comparison
+      
+      // Fetch all visits to calculate counts
+      const { data: allVisits } = await supabase
+        .from('visits')
+        .select('visit_date, result')
+        .eq('gestor_id', user.id)
+        .gte('visit_date', format(monthsAgo, 'yyyy-MM-dd'));
+      
+      // Calculate counts by result
+      if (allVisits) {
+        const counts: Record<string, number> = { all: allVisits.length, exitosa: 0, pendiente: 0, fallida: 0, reagendada: 0 };
+        allVisits.forEach(v => {
+          if (v.result && counts[v.result] !== undefined) {
+            counts[v.result]++;
+          }
+        });
+        setResultCounts(counts);
+      }
       
       let query = supabase
         .from('visits')
@@ -640,6 +659,9 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                       >
                         {filter.color && <span className={`h-1.5 w-1.5 rounded-full ${filter.color}`} />}
                         {filter.label}
+                        <span className={`text-[8px] ${resultFilter === filter.value ? 'opacity-80' : 'opacity-60'}`}>
+                          ({resultCounts[filter.value] || 0})
+                        </span>
                       </button>
                     ))}
                   </div>
