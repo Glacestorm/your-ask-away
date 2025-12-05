@@ -14,6 +14,7 @@ interface MonthlyVisits {
   month: string;
   shortMonth: string;
   count: number;
+  lastYearCount?: number;
 }
 
 const getVinculacionColor = (value: number): string => {
@@ -85,30 +86,42 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
     if (!user?.id) return;
     try {
       const sixMonthsAgo = startOfMonth(subMonths(new Date(), 5));
+      const eighteenMonthsAgo = startOfMonth(subMonths(new Date(), 17)); // For last year comparison
       
       const { data } = await supabase
         .from('visits')
         .select('visit_date')
         .eq('gestor_id', user.id)
-        .gte('visit_date', format(sixMonthsAgo, 'yyyy-MM-dd'));
+        .gte('visit_date', format(eighteenMonthsAgo, 'yyyy-MM-dd'));
 
       if (data) {
-        // Generate last 6 months
+        // Generate last 6 months with YoY comparison
         const months: MonthlyVisits[] = [];
         for (let i = 5; i >= 0; i--) {
           const monthDate = subMonths(new Date(), i);
           const monthStart = startOfMonth(monthDate);
           const monthEnd = endOfMonth(monthDate);
           
+          // Same month last year
+          const lastYearMonthDate = subMonths(monthDate, 12);
+          const lastYearMonthStart = startOfMonth(lastYearMonthDate);
+          const lastYearMonthEnd = endOfMonth(lastYearMonthDate);
+          
           const count = data.filter(v => {
             const visitDate = new Date(v.visit_date);
             return visitDate >= monthStart && visitDate <= monthEnd;
+          }).length;
+
+          const lastYearCount = data.filter(v => {
+            const visitDate = new Date(v.visit_date);
+            return visitDate >= lastYearMonthStart && visitDate <= lastYearMonthEnd;
           }).length;
 
           months.push({
             month: format(monthDate, 'MMMM', { locale: ca }),
             shortMonth: format(monthDate, 'MMM', { locale: ca }).substring(0, 3),
             count,
+            lastYearCount,
           });
         }
         setMonthlyVisits(months);
@@ -451,8 +464,12 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
             const predictionMin = Math.max(0, predictedCount - confidenceMargin);
             const predictionMax = predictedCount + confidenceMargin;
             
-            const allCounts = [...monthlyVisits.map(m => m.count), predictionMax];
+            const allCounts = [...monthlyVisits.map(m => m.count), ...monthlyVisits.map(m => m.lastYearCount || 0), predictionMax];
             const maxCount = Math.max(...allCounts, 1);
+            const hasLastYearData = monthlyVisits.some(m => (m.lastYearCount || 0) > 0);
+            const totalLastYear = monthlyVisits.reduce((sum, m) => sum + (m.lastYearCount || 0), 0);
+            const totalThisYear = monthlyVisits.reduce((sum, m) => sum + m.count, 0);
+            const yoyChange = totalLastYear > 0 ? Math.round(((totalThisYear - totalLastYear) / totalLastYear) * 100) : null;
             const currentMonth = monthlyVisits[monthlyVisits.length - 1]?.count || 0;
             const previousMonth = monthlyVisits[monthlyVisits.length - 2]?.count || 0;
             const monthChange = previousMonth > 0 
@@ -559,17 +576,34 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                       );
                     })}
                   </svg>
-                  {/* Bars */}
+                  {/* Bars with YoY comparison */}
                   {monthlyVisits.map((month, idx) => {
                     const heightPercent = (month.count / maxCount) * 100;
+                    const lastYearHeightPercent = ((month.lastYearCount || 0) / maxCount) * 100;
+                    const yoyMonthChange = (month.lastYearCount || 0) > 0 
+                      ? Math.round(((month.count - (month.lastYearCount || 0)) / (month.lastYearCount || 0)) * 100)
+                      : null;
                     return (
                       <TooltipProvider key={month.month} delayDuration={100}>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <div className="flex-1 flex flex-col items-center gap-0.5 h-full">
-                              <div className="flex-1 w-full flex items-end">
+                              <div className="flex-1 w-full flex items-end gap-[1px]">
+                                {/* Last year bar (behind) */}
+                                {hasLastYearData && (
+                                  <div 
+                                    className="w-1/2 bg-muted-foreground/20 rounded-t transition-all duration-500 ease-out"
+                                    style={{ 
+                                      height: chartVisible ? `${Math.max(lastYearHeightPercent, 4)}%` : '0%',
+                                      transitionDelay: `${idx * 80}ms`,
+                                      minHeight: (month.lastYearCount || 0) > 0 ? '2px' : '1px',
+                                      opacity: (month.lastYearCount || 0) > 0 ? 0.6 : 0.2
+                                    }}
+                                  />
+                                )}
+                                {/* Current year bar */}
                                 <div 
-                                  className="w-full bg-primary/30 rounded-t transition-all duration-500 ease-out hover:bg-primary/50 cursor-pointer"
+                                  className={`${hasLastYearData ? 'w-1/2' : 'w-full'} bg-primary/30 rounded-t transition-all duration-500 ease-out hover:bg-primary/50 cursor-pointer`}
                                   style={{ 
                                     height: chartVisible ? `${Math.max(heightPercent, 8)}%` : '0%',
                                     transitionDelay: `${idx * 80}ms`,
@@ -582,18 +616,24 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                             </div>
                           </TooltipTrigger>
                           <TooltipContent side="top" className="text-xs">
-                            <p className="capitalize">{month.month}</p>
-                            <p className="font-medium">{month.count} visites</p>
-                            {idx > 0 && (() => {
-                              const prev = monthlyVisits[idx - 1].count;
-                              if (prev === 0) return null;
-                              const change = Math.round(((month.count - prev) / prev) * 100);
-                              return (
-                                <p className={`text-[10px] ${change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                                  {change >= 0 ? '+' : ''}{change}% vs anterior
-                                </p>
-                              );
-                            })()}
+                            <p className="capitalize font-medium">{month.month}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <div className="flex items-center gap-1">
+                                <span className="w-2 h-2 rounded-sm bg-primary/50" />
+                                <span>{month.count} visites</span>
+                              </div>
+                            </div>
+                            {hasLastYearData && (
+                              <div className="flex items-center gap-1 mt-0.5 text-muted-foreground">
+                                <span className="w-2 h-2 rounded-sm bg-muted-foreground/30" />
+                                <span>{month.lastYearCount || 0} any ant.</span>
+                              </div>
+                            )}
+                            {yoyMonthChange !== null && (
+                              <p className={`text-[10px] mt-1 font-medium ${yoyMonthChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                {yoyMonthChange >= 0 ? '+' : ''}{yoyMonthChange}% vs any anterior
+                              </p>
+                            )}
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -664,9 +704,36 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                     </Tooltip>
                   </TooltipProvider>
                 </div>
-                <div className="flex justify-between text-[9px] text-muted-foreground">
-                  <span>Total: {monthlyVisits.reduce((sum, m) => sum + m.count, 0)}</span>
-                  <span>Mitjana: {Math.round(monthlyVisits.reduce((sum, m) => sum + m.count, 0) / 6)}/mes</span>
+                <div className="flex flex-col gap-1">
+                  {/* Legend */}
+                  {hasLastYearData && (
+                    <div className="flex items-center gap-3 text-[9px]">
+                      <div className="flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-sm bg-primary/50" />
+                        <span className="text-muted-foreground">Actual</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-sm bg-muted-foreground/30" />
+                        <span className="text-muted-foreground">Any ant.</span>
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center text-[9px] text-muted-foreground">
+                    <div className="flex gap-2">
+                      <span>Total: {totalThisYear}</span>
+                      {hasLastYearData && (
+                        <span className="text-muted-foreground/60">({totalLastYear} ant.)</span>
+                      )}
+                    </div>
+                    {yoyChange !== null && (
+                      <span className={`font-medium ${yoyChange >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        {yoyChange >= 0 ? '+' : ''}{yoyChange}% vs any ant.
+                      </span>
+                    )}
+                    {yoyChange === null && (
+                      <span>Mitjana: {Math.round(totalThisYear / 6)}/mes</span>
+                    )}
+                  </div>
                 </div>
               </div>
             );
