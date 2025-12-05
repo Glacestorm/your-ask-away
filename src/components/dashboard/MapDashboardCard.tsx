@@ -370,9 +370,10 @@ export function MapDashboardCard({ onNavigateToMap }: MapDashboardCardProps) {
   const bestMonth = yoyChanges.length > 0 ? yoyChanges.reduce((best, curr) => (curr.change || 0) > (best.change || 0) ? curr : best) : null;
   const worstMonth = yoyChanges.length > 0 ? yoyChanges.reduce((worst, curr) => (curr.change || 0) < (worst.change || 0) ? curr : worst) : null;
 
-  // Collapsed card view (like GestorDashboardCard)
+  // Collapsed card view with compact stats
   if (!isExpanded) {
     const cardColor = 'hsl(var(--chart-5))';
+    const totalVisitsThisMonth = monthlyVisits.length > 0 ? monthlyVisits[monthlyVisits.length - 1]?.count || 0 : 0;
     return (
       <div
         className="perspective-1000"
@@ -424,10 +425,26 @@ export function MapDashboardCard({ onNavigateToMap }: MapDashboardCardProps) {
               </div>
             </div>
 
+            {/* Compact stats row */}
+            <div className="flex items-center gap-3 text-xs">
+              <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-background/50">
+                <TrendingUp className="h-3 w-3 text-green-500" />
+                <span className="text-muted-foreground">{avgVinculacion.toFixed(0)}%</span>
+              </div>
+              <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-background/50">
+                <Calendar className="h-3 w-3 text-muted-foreground" />
+                <span className="text-muted-foreground">{totalVisitsThisMonth} vis.</span>
+              </div>
+              <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-background/50">
+                <Award className="h-3 w-3 text-amber-500" />
+                <span className="text-muted-foreground">{resultCounts.exitosa}</span>
+              </div>
+            </div>
+
             <div>
               <h3 className="text-lg font-semibold text-foreground mb-1">Mapa</h3>
-              <p className="text-sm text-muted-foreground line-clamp-2">
-                Empreses, visites i vinculació...
+              <p className="text-sm text-muted-foreground line-clamp-1">
+                Empreses, visites i vinculació
               </p>
             </div>
           </div>
