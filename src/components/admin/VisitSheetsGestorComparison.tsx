@@ -17,9 +17,11 @@ import {
   FileText,
   BarChart3,
   Trophy,
-  Percent
+  Percent,
+  Building2,
+  LineChart as LineChartIcon
 } from 'lucide-react';
-import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
+import { format, subMonths, startOfMonth, endOfMonth, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -41,19 +43,28 @@ interface GestorMetrics {
   conversionRate: number;
 }
 
+interface MonthlyData {
+  month: string;
+  [gestorName: string]: number | string;
+}
+
 interface Profile {
   id: string;
   full_name: string | null;
   email: string;
+  oficina: string | null;
 }
 
 export function VisitSheetsGestorComparison() {
   const [gestores, setGestores] = useState<Profile[]>([]);
   const [selectedGestores, setSelectedGestores] = useState<string[]>([]);
   const [metrics, setMetrics] = useState<GestorMetrics[]>([]);
+  const [monthlyEvolution, setMonthlyEvolution] = useState<MonthlyData[]>([]);
   const [loading, setLoading] = useState(false);
-  const [startDate, setStartDate] = useState<Date>(startOfMonth(subMonths(new Date(), 3)));
+  const [startDate, setStartDate] = useState<Date>(startOfMonth(subMonths(new Date(), 6)));
   const [endDate, setEndDate] = useState<Date>(endOfMonth(new Date()));
+  const [selectedOffice, setSelectedOffice] = useState<string>('all');
+  const [offices, setOffices] = useState<string[]>([]);
 
   useEffect(() => {
     fetchGestores();
@@ -62,8 +73,10 @@ export function VisitSheetsGestorComparison() {
   useEffect(() => {
     if (selectedGestores.length > 0) {
       fetchMetrics();
+      fetchMonthlyEvolution();
     } else {
       setMetrics([]);
+      setMonthlyEvolution([]);
     }
   }, [selectedGestores, startDate, endDate]);
 
@@ -71,14 +84,71 @@ export function VisitSheetsGestorComparison() {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, full_name, email')
+        .select('id, full_name, email, oficina')
         .order('full_name');
 
       if (error) throw error;
       setGestores(data || []);
+      
+      // Extract unique offices
+      const uniqueOffices = [...new Set((data || []).map(g => g.oficina).filter(Boolean))] as string[];
+      setOffices(uniqueOffices.sort());
     } catch (error: any) {
       console.error('Error fetching gestores:', error);
       toast.error('Error al cargar gestores');
+    }
+  };
+
+  const filteredGestores = useMemo(() => {
+    if (selectedOffice === 'all') return gestores;
+    return gestores.filter(g => g.oficina === selectedOffice);
+  }, [gestores, selectedOffice]);
+
+  const fetchMonthlyEvolution = async () => {
+    if (selectedGestores.length === 0) return;
+
+    try {
+      const { data: sheets, error } = await supabase
+        .from('visit_sheets')
+        .select('fecha, gestor_id')
+        .in('gestor_id', selectedGestores)
+        .gte('fecha', format(startDate, 'yyyy-MM-dd'))
+        .lte('fecha', format(endDate, 'yyyy-MM-dd'));
+
+      if (error) throw error;
+
+      // Group by month and gestor
+      const monthlyMap = new Map<string, Map<string, number>>();
+      
+      sheets?.forEach(sheet => {
+        const monthKey = format(parseISO(sheet.fecha), 'yyyy-MM');
+        if (!monthlyMap.has(monthKey)) {
+          monthlyMap.set(monthKey, new Map());
+        }
+        const gestorCount = monthlyMap.get(monthKey)!;
+        const current = gestorCount.get(sheet.gestor_id) || 0;
+        gestorCount.set(sheet.gestor_id, current + 1);
+      });
+
+      // Convert to array format for chart
+      const evolutionData: MonthlyData[] = [];
+      const sortedMonths = Array.from(monthlyMap.keys()).sort();
+      
+      sortedMonths.forEach(month => {
+        const monthData: MonthlyData = { 
+          month: format(parseISO(month + '-01'), 'MMM yy', { locale: es }) 
+        };
+        selectedGestores.forEach(gestorId => {
+          const gestor = gestores.find(g => g.id === gestorId);
+          const gestorName = gestor?.full_name?.split(' ')[0] || gestor?.email?.split('@')[0] || 'Sin nombre';
+          monthData[gestorName] = monthlyMap.get(month)?.get(gestorId) || 0;
+        });
+        evolutionData.push(monthData);
+      });
+
+      setMonthlyEvolution(evolutionData);
+    } catch (error: any) {
+      console.error('Error fetching monthly evolution:', error);
     }
   };
 
@@ -201,12 +271,33 @@ export function VisitSheetsGestorComparison() {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Filtros */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Filtro por oficina */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium flex items-center gap-1">
+                <Building2 className="h-3 w-3" />
+                Filtrar por Oficina
+              </Label>
+              <Select value={selectedOffice} onValueChange={setSelectedOffice}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Todas las oficinas" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las oficinas</SelectItem>
+                  {offices.map((office) => (
+                    <SelectItem key={office} value={office}>
+                      {office}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Selector de gestores */}
-            <div className="space-y-2 md:col-span-1">
+            <div className="space-y-2">
               <Label className="text-sm font-medium">Seleccionar Gestores (máx. 5)</Label>
               <ScrollArea className="h-48 border rounded-md p-2">
-                {gestores.map((gestor) => (
+                {filteredGestores.map((gestor) => (
                   <div
                     key={gestor.id}
                     className="flex items-center space-x-2 py-1.5 px-1 hover:bg-muted/50 rounded"
@@ -222,6 +313,9 @@ export function VisitSheetsGestorComparison() {
                       className="text-sm cursor-pointer flex-1"
                     >
                       {gestor.full_name || gestor.email}
+                      {gestor.oficina && (
+                        <span className="text-xs text-muted-foreground ml-1">({gestor.oficina})</span>
+                      )}
                     </label>
                   </div>
                 ))}
@@ -402,6 +496,49 @@ export function VisitSheetsGestorComparison() {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Monthly Evolution Chart */}
+              {monthlyEvolution.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <LineChartIcon className="h-4 w-4" />
+                      Evolución Mensual de Fichas de Visita
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={monthlyEvolution}>
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                        <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: 'hsl(var(--background))', 
+                            border: '1px solid hsl(var(--border))' 
+                          }} 
+                        />
+                        <Legend />
+                        {selectedGestores.map((gestorId, idx) => {
+                          const gestor = gestores.find(g => g.id === gestorId);
+                          const gestorName = gestor?.full_name?.split(' ')[0] || gestor?.email?.split('@')[0] || 'Sin nombre';
+                          return (
+                            <Line
+                              key={gestorId}
+                              type="monotone"
+                              dataKey={gestorName}
+                              stroke={COLORS[idx % COLORS.length]}
+                              strokeWidth={2}
+                              dot={{ fill: COLORS[idx % COLORS.length], strokeWidth: 2 }}
+                              activeDot={{ r: 6 }}
+                            />
+                          );
+                        })}
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Detailed Table */}
               <Card>
