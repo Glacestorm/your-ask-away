@@ -11,6 +11,7 @@ interface CompanyPreview {
   name: string;
   parroquia: string;
   vinculacion_entidad_1: number | null;
+  photo_url?: string | null;
 }
 
 interface MapButtonProps {
@@ -50,7 +51,32 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
         .order('vinculacion_entidad_1', { ascending: false, nullsFirst: false })
         .limit(5);
 
-      setCompanies(data || []);
+      if (data && data.length > 0) {
+        // Fetch photos for these companies
+        const companyIds = data.map(c => c.id);
+        const { data: photos } = await supabase
+          .from('company_photos')
+          .select('company_id, photo_url')
+          .in('company_id', companyIds)
+          .order('created_at', { ascending: false });
+
+        // Map photos to companies (get most recent photo per company)
+        const photoMap: Record<string, string> = {};
+        photos?.forEach(p => {
+          if (!photoMap[p.company_id]) {
+            photoMap[p.company_id] = p.photo_url;
+          }
+        });
+
+        const companiesWithPhotos = data.map(c => ({
+          ...c,
+          photo_url: photoMap[c.id] || null,
+        }));
+
+        setCompanies(companiesWithPhotos);
+      } else {
+        setCompanies([]);
+      }
     } catch (error) {
       console.error('Error fetching companies preview:', error);
     } finally {
@@ -132,7 +158,19 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                   className="w-full flex items-center justify-between py-1.5 px-2 rounded-md bg-muted/50 hover:bg-primary/10 hover:border-primary/30 border border-transparent transition-all group cursor-pointer text-left"
                 >
                   <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <MapPin className="h-3 w-3 text-muted-foreground group-hover:text-primary flex-shrink-0 transition-colors" />
+                    {company.photo_url ? (
+                      <div className="h-8 w-8 rounded-md overflow-hidden flex-shrink-0 border border-border/50 group-hover:border-primary/50 transition-colors">
+                        <img 
+                          src={company.photo_url} 
+                          alt={company.name}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="h-8 w-8 rounded-md bg-muted flex items-center justify-center flex-shrink-0 border border-border/50 group-hover:border-primary/50 transition-colors">
+                        <MapPin className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+                      </div>
+                    )}
                     <div className="flex flex-col min-w-0">
                       <span className="text-xs truncate group-hover:text-primary transition-colors">{company.name}</span>
                       {company.parroquia && (
