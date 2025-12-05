@@ -749,13 +749,17 @@ export function GestorDashboard({
                   />
                 </div>
               ))}
+              
+              {/* Ficha de Visita Card */}
+              <div className="animate-fade-in" style={{ animationDelay: `${cards.length * 100}ms` }}>
+                <QuickVisitSheetCard />
+              </div>
+
+              {/* Mapa Card */}
+              <div className="animate-fade-in" style={{ animationDelay: `${(cards.length + 1) * 100}ms` }}>
+                <MapDashboardCard />
+              </div>
             </div>
-
-            {/* Ficha de Visita Card */}
-            <QuickVisitSheetCard />
-
-            {/* Mapa Card */}
-            <MapDashboardCard />
 
             {/* Quick Stats Summary */}
             <div className="grid gap-4 md:grid-cols-4">
