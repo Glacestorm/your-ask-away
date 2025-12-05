@@ -18,11 +18,12 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { 
   FileText, X, Building2, User, CreditCard, Landmark, Shield, TrendingUp, BarChart3,
-  Target, Save, ChevronRight, AlertCircle, Calendar, Edit2, RefreshCw
+  Target, Save, ChevronRight, AlertCircle, Calendar, Edit2, RefreshCw, Download
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import jsPDF from 'jspdf';
 
 interface Company {
   id: string;
@@ -646,6 +647,222 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
       resetForm();
       onEditComplete();
     }
+  };
+
+  const handleExportPDF = () => {
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 15;
+    let y = 20;
+
+    // Helper functions
+    const addHeader = () => {
+      doc.setFillColor(13, 71, 161);
+      doc.rect(0, 0, pageWidth, 35, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(20);
+      doc.setFont('helvetica', 'bold');
+      doc.text('FICHA DE VISITA COMERCIAL', pageWidth / 2, 18, { align: 'center' });
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Fecha: ${format(formData.fechaInicio, 'dd/MM/yyyy')}`, pageWidth / 2, 28, { align: 'center' });
+      y = 45;
+    };
+
+    const addSection = (title: string) => {
+      if (y > 260) {
+        doc.addPage();
+        y = 20;
+      }
+      doc.setFillColor(240, 240, 240);
+      doc.rect(margin, y - 5, pageWidth - margin * 2, 8, 'F');
+      doc.setTextColor(13, 71, 161);
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text(title, margin + 2, y);
+      y += 8;
+      doc.setTextColor(50, 50, 50);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+    };
+
+    const addField = (label: string, value: string | number | undefined | null, inline = false) => {
+      if (y > 275) {
+        doc.addPage();
+        y = 20;
+      }
+      const displayValue = value?.toString() || '-';
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(80, 80, 80);
+      doc.text(`${label}:`, margin, y);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(30, 30, 30);
+      const labelWidth = doc.getTextWidth(`${label}: `);
+      doc.text(displayValue, margin + labelWidth + 2, y);
+      if (!inline) y += 6;
+    };
+
+    const addTwoColumns = (label1: string, value1: string | undefined, label2: string, value2: string | undefined) => {
+      if (y > 275) {
+        doc.addPage();
+        y = 20;
+      }
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(80, 80, 80);
+      doc.text(`${label1}:`, margin, y);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(30, 30, 30);
+      doc.text(value1 || '-', margin + 35, y);
+      
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(80, 80, 80);
+      doc.text(`${label2}:`, pageWidth / 2, y);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(30, 30, 30);
+      doc.text(value2 || '-', pageWidth / 2 + 35, y);
+      y += 6;
+    };
+
+    // Generate PDF
+    addHeader();
+
+    // Client Data Section
+    addSection('DATOS DEL CLIENTE');
+    addTwoColumns('BP', formData.bp, 'NIF/CIF', formData.nifCif);
+    addField('Razón Social', formData.nombreRazonSocial);
+    addTwoColumns('Tipo Cliente', formData.tipoCliente === 'empresa' ? 'Empresa' : 'Particular', 
+                  'Estado', formData.esClientePotencial === 'cliente' ? 'Cliente' : 'Potencial');
+    y += 4;
+
+    // Contact Data Section
+    addSection('DATOS DE CONTACTO');
+    addTwoColumns('Persona Contacto', formData.personaContacto, 'Cargo', formData.cargoContacto);
+    addTwoColumns('Teléfono', formData.telefonoLaboral, 'Email', formData.emailLaboral);
+    y += 4;
+
+    // Visit Data Section
+    addSection('DATOS DE LA VISITA');
+    addTwoColumns('Tipo Visita', formData.tipoVisita === 'tpv' ? 'TPV' : 'Visita 360°',
+                  'Solicitada por', formData.visitaSolicitadaPor === 'gestor' ? 'Gestor' : 'Responsable');
+    addTwoColumns('Fecha', format(formData.fechaInicio, 'dd/MM/yyyy'),
+                  'Próxima Cita', observaciones.proximaCita ? format(observaciones.proximaCita, 'dd/MM/yyyy') : '-');
+    y += 4;
+
+    // TPV Products Section
+    addSection('PRODUCTOS TPV');
+    const tpvProducts = [
+      { name: 'TPV Ordinario', data: productosTPV.tpvOrdinario },
+      { name: 'TPV Mail', data: productosTPV.tpvMail },
+      { name: 'TPV Virtual', data: productosTPV.tpvVirtual },
+      { name: 'TPV Money', data: productosTPV.tpvMoney },
+      { name: 'TPV Bizum', data: productosTPV.tpvBizum },
+    ];
+    tpvProducts.forEach(product => {
+      if (product.data.ofrecido || product.data.pedido || product.data.importe) {
+        addTwoColumns(
+          product.name, 
+          `${product.data.ofrecido ? '✓ Ofrecido' : ''} ${product.data.pedido ? '✓ Pedido' : ''}`.trim() || '-',
+          'Importe', product.data.importe ? `${product.data.importe}€` : '-'
+        );
+      }
+    });
+    y += 4;
+
+    // Standard Products Section
+    addSection('PRODUCTOS ESTÁNDAR');
+    const standardProducts = [
+      { name: 'Crédit Ràpid', data: productosEstandar.creditRapid },
+      { name: 'Préstamo Personal', data: productosEstandar.prestamoPersonal },
+      { name: 'Préstamo Hipotecario', data: productosEstandar.prestamoHipotecario },
+      { name: 'Póliza', data: productosEstandar.poliza },
+      { name: 'Descuento Comercial', data: productosEstandar.descuentoComercial },
+      { name: 'Aval', data: productosEstandar.aval },
+      { name: 'Mercat', data: productosEstandar.mercat },
+      { name: 'Acciones', data: productosEstandar.acciones },
+      { name: 'Renta Fija', data: productosEstandar.rentaFija },
+    ];
+    standardProducts.forEach(product => {
+      if (product.data.ofrecido || product.data.pedido || product.data.importe) {
+        addTwoColumns(
+          product.name,
+          `${product.data.ofrecido ? '✓ Ofrecido' : ''} ${product.data.pedido ? '✓ Pedido' : ''}`.trim() || '-',
+          'Importe', product.data.importe ? `${product.data.importe}€` : '-'
+        );
+      }
+    });
+    y += 4;
+
+    // Services Section
+    addSection('SERVICIOS');
+    addTwoColumns('Banca Online', servicios.bancaOnline.ofrecido ? '✓ Ofrecido' : '-',
+                  'Nóminas', servicios.nominas.ofrecido ? '✓ Ofrecido' : '-');
+    if (servicios.seguroVida.tipo || servicios.seguroVida.importe) {
+      addTwoColumns('Seguro Vida', servicios.seguroVida.tipo || '-', 
+                    'Importe', servicios.seguroVida.importe ? `${servicios.seguroVida.importe}€` : '-');
+    }
+    y += 4;
+
+    // Bank Affiliation Section
+    addSection('VINCULACIÓN BANCARIA');
+    addField('Andbank', vinculacion.anbank ? `${vinculacion.anbank}%` : '-');
+    addField('Morabanc', vinculacion.morabanc ? `${vinculacion.morabanc}%` : '-');
+    addField('Creand', vinculacion.creand ? `${vinculacion.creand}%` : '-');
+    if (vinculacion.comentarios) {
+      addField('Comentarios', vinculacion.comentarios);
+    }
+    y += 4;
+
+    // Financial Data Section
+    if (datosFinancieros.facturacion2024 || datosFinancieros.facturacion2025 || datosFinancieros.beneficios2024) {
+      addSection('DATOS FINANCIEROS');
+      if (datosFinancieros.facturacion2024) addField('Facturación 2024', `${datosFinancieros.facturacion2024}€`);
+      if (datosFinancieros.facturacion2025) addField('Facturación 2025', `${datosFinancieros.facturacion2025}€`);
+      if (datosFinancieros.beneficios2024) addField('Beneficios 2024', `${datosFinancieros.beneficios2024}€`);
+      if (datosFinancieros.beneficios2025) addField('Beneficios 2025', `${datosFinancieros.beneficios2025}€`);
+      y += 4;
+    }
+
+    // Evaluation Section
+    addSection('EVALUACIÓN Y SEGUIMIENTO');
+    addTwoColumns('Necesidad Principal', observaciones.necesidadPrincipal,
+                  'Producto Ofrecido', observaciones.productoOfrecido);
+    addTwoColumns('Probabilidad Cierre', observaciones.gradoConsecucion ? `${observaciones.gradoConsecucion}%` : '-',
+                  'Potencial Anual', observaciones.importePropuesto ? `${observaciones.importePropuesto}€` : '-');
+    y += 4;
+
+    // Notes Section
+    if (observaciones.observacionesGestor || observaciones.notasReunion) {
+      addSection('OBSERVACIONES');
+      if (observaciones.observacionesGestor) {
+        doc.setFontSize(9);
+        const splitNotes = doc.splitTextToSize(observaciones.observacionesGestor, pageWidth - margin * 2);
+        doc.text(splitNotes, margin, y);
+        y += splitNotes.length * 4 + 4;
+      }
+      if (observaciones.notasReunion) {
+        addField('Notas Reunión', '');
+        const splitMeetingNotes = doc.splitTextToSize(observaciones.notasReunion, pageWidth - margin * 2);
+        doc.text(splitMeetingNotes, margin, y);
+        y += splitMeetingNotes.length * 4;
+      }
+    }
+
+    // Footer
+    const totalPages = doc.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFillColor(240, 240, 240);
+      doc.rect(0, doc.internal.pageSize.getHeight() - 15, pageWidth, 15, 'F');
+      doc.setFontSize(8);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Página ${i} de ${totalPages}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 6, { align: 'center' });
+      doc.text(`Generado: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, margin, doc.internal.pageSize.getHeight() - 6);
+    }
+
+    // Save PDF
+    const filename = `ficha_visita_${formData.nombreRazonSocial.replace(/\s+/g, '_') || 'sin_empresa'}_${format(formData.fechaInicio, 'yyyyMMdd')}.pdf`;
+    doc.save(filename);
+    toast.success('PDF exportado correctamente');
   };
 
   // Error message component
@@ -1428,15 +1645,34 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
               </AccordionItem>
             </Accordion>
 
-            {/* Save Button */}
-            <div className="flex justify-end gap-3 pt-4 border-t border-border/50 dark:border-border/30">
-              <Button variant="outline" onClick={handleClose} className="dark:bg-background/50 dark:hover:bg-muted/80">
-                Cancelar
-              </Button>
-              <Button onClick={handleSave} disabled={saving} className="gap-2 dark:shadow-sm dark:shadow-primary/20">
-                <Save className="h-4 w-4" />
-                {saving ? 'Guardant...' : (isEditMode ? 'Actualitzar Fitxa' : 'Guardar Fitxa')}
-              </Button>
+            {/* Action Buttons */}
+            <div className="flex justify-between gap-3 pt-4 border-t border-border/50 dark:border-border/30">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      onClick={handleExportPDF}
+                      className="gap-2 text-blue-600 border-blue-200 hover:bg-blue-50 hover:border-blue-300 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-950/50"
+                    >
+                      <Download className="h-4 w-4" />
+                      Exportar PDF
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Descargar ficha de visita en formato PDF</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={handleClose} className="dark:bg-background/50 dark:hover:bg-muted/80">
+                  Cancelar
+                </Button>
+                <Button onClick={handleSave} disabled={saving} className="gap-2 dark:shadow-sm dark:shadow-primary/20">
+                  <Save className="h-4 w-4" />
+                  {saving ? 'Guardant...' : (isEditMode ? 'Actualitzar Fitxa' : 'Guardar Fitxa')}
+                </Button>
+              </div>
             </div>
           </div>
         </ScrollArea>
