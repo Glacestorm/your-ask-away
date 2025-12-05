@@ -450,6 +450,25 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Weekly KPI report sent to ${successCount}/${results.length} directors`);
 
+    // Save report to history
+    const { error: historyError } = await supabase
+      .from("kpi_report_history")
+      .insert({
+        report_date: new Date().toISOString().split("T")[0],
+        report_type: "weekly",
+        stats: stats,
+        html_content: htmlContent,
+        recipients: profiles.map((p) => ({ email: p.email, name: p.full_name })),
+        sent_count: successCount,
+        total_recipients: results.length,
+      });
+
+    if (historyError) {
+      console.error("Failed to save report history:", historyError);
+    } else {
+      console.log("Report saved to history");
+    }
+
     return new Response(
       JSON.stringify({
         message: "Weekly KPI report sent",

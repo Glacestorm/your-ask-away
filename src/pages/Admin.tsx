@@ -40,6 +40,7 @@ import { BulkGoalsAssignment } from '@/components/admin/BulkGoalsAssignment';
 import GoalsProgressTracker from '@/components/admin/GoalsProgressTracker';
 import { DirectorAlertsPanel } from '@/components/admin/DirectorAlertsPanel';
 import GoalsKPIDashboard from '@/components/admin/GoalsKPIDashboard';
+import { KPIReportHistory } from '@/components/admin/KPIReportHistory';
 import MapView from './MapView';
 
 const Admin = () => {
@@ -133,6 +134,7 @@ const Admin = () => {
       case 'goals-progress': return 'Seguiment d\'Objectius';
       case 'director-alerts': return 'Alertes d\'Objectius en Risc';
       case 'goals-kpi': return 'Dashboard KPI d\'Objectius';
+      case 'kpi-report-history': return 'Historial d\'Informes KPI';
       default: return '';
     }
   };
@@ -421,6 +423,17 @@ const Admin = () => {
             <GoalsKPIDashboard />
           </div>
         );
+      case 'kpi-report-history':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager && !isOfficeDirector) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <KPIReportHistory />;
       default:
         return null;
     }

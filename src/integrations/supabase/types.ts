@@ -930,6 +930,42 @@ export type Database = {
         }
         Relationships: []
       }
+      kpi_report_history: {
+        Row: {
+          created_at: string
+          html_content: string
+          id: string
+          recipients: Json
+          report_date: string
+          report_type: string
+          sent_count: number
+          stats: Json
+          total_recipients: number
+        }
+        Insert: {
+          created_at?: string
+          html_content: string
+          id?: string
+          recipients?: Json
+          report_date: string
+          report_type?: string
+          sent_count?: number
+          stats: Json
+          total_recipients?: number
+        }
+        Update: {
+          created_at?: string
+          html_content?: string
+          id?: string
+          recipients?: Json
+          report_date?: string
+          report_type?: string
+          sent_count?: number
+          stats?: Json
+          total_recipients?: number
+        }
+        Relationships: []
+      }
       map_color_mode: {
         Row: {
           created_at: string | null
