@@ -221,6 +221,50 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
             </div>
           </div>
 
+          {/* Mini distribution chart */}
+          {companies.length > 0 && (
+            <div className="space-y-1.5">
+              <p className="text-[10px] text-muted-foreground">Distribució per vinculació:</p>
+              <div className="flex h-3 w-full rounded-full overflow-hidden bg-muted">
+                {vinculacionCounts.high > 0 && (
+                  <div 
+                    className="bg-green-500 h-full transition-all"
+                    style={{ width: `${(vinculacionCounts.high / companies.length) * 100}%` }}
+                    title={`Alta: ${vinculacionCounts.high}`}
+                  />
+                )}
+                {vinculacionCounts.medium > 0 && (
+                  <div 
+                    className="bg-yellow-500 h-full transition-all"
+                    style={{ width: `${(vinculacionCounts.medium / companies.length) * 100}%` }}
+                    title={`Mitjana: ${vinculacionCounts.medium}`}
+                  />
+                )}
+                {vinculacionCounts.low > 0 && (
+                  <div 
+                    className="bg-red-500 h-full transition-all"
+                    style={{ width: `${(vinculacionCounts.low / companies.length) * 100}%` }}
+                    title={`Baixa: ${vinculacionCounts.low}`}
+                  />
+                )}
+              </div>
+              <div className="flex justify-between text-[9px] text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <span className="h-2 w-2 rounded-full bg-green-500" />
+                  {Math.round((vinculacionCounts.high / companies.length) * 100)}%
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="h-2 w-2 rounded-full bg-yellow-500" />
+                  {Math.round((vinculacionCounts.medium / companies.length) * 100)}%
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="h-2 w-2 rounded-full bg-red-500" />
+                  {Math.round((vinculacionCounts.low / companies.length) * 100)}%
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Vinculación filter */}
           <div className="flex items-center gap-1 flex-wrap">
             {[
