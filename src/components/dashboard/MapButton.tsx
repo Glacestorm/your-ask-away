@@ -1,10 +1,12 @@
 import { useNavigate } from 'react-router-dom';
-import { Map, Building2, MapPin, TrendingUp, ExternalLink, Calendar } from 'lucide-react';
+import { Map, Building2, MapPin, TrendingUp, ExternalLink, Calendar, ArrowUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+
+type SortMode = 'vinculacion' | 'lastVisit';
 
 interface CompanyPreview {
   id: string;
@@ -29,6 +31,16 @@ const getDateColorClass = (dateStr: string | null | undefined): string => {
   return 'text-red-600 dark:text-red-400';
 };
 
+const getDaysAgo = (dateStr: string | null | undefined): string => {
+  if (!dateStr) return 'Mai visitada';
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return 'Avui';
+  if (diffDays === 1) return 'Ahir';
+  return `Fa ${diffDays} dies`;
+};
+
 interface MapButtonProps {
   onNavigateToMap?: () => void;
 }
@@ -39,6 +51,7 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
   const [companies, setCompanies] = useState<CompanyPreview[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [sortMode, setSortMode] = useState<SortMode>('vinculacion');
 
   useEffect(() => {
     if (user?.id) {
@@ -58,13 +71,12 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
 
       setTotalCount(count || 0);
 
-      // Get top 5 companies by vinculacion
+      // Get companies (fetch more to allow client-side sorting)
       const { data } = await supabase
         .from('companies')
         .select('id, name, parroquia, vinculacion_entidad_1, sector, cnae, fecha_ultima_visita')
         .eq('gestor_id', user.id)
-        .order('vinculacion_entidad_1', { ascending: false, nullsFirst: false })
-        .limit(5);
+        .limit(20);
 
       if (data && data.length > 0) {
         const companyIds = data.map(c => c.id);
@@ -131,6 +143,16 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
     ? Math.round(companies.reduce((sum, c) => sum + (c.vinculacion_entidad_1 || 0), 0) / companies.length)
     : 0;
 
+  const sortedCompanies = [...companies].sort((a, b) => {
+    if (sortMode === 'vinculacion') {
+      return (b.vinculacion_entidad_1 || 0) - (a.vinculacion_entidad_1 || 0);
+    } else {
+      const dateA = a.fecha_ultima_visita ? new Date(a.fecha_ultima_visita).getTime() : 0;
+      const dateB = b.fecha_ultima_visita ? new Date(b.fecha_ultima_visita).getTime() : 0;
+      return dateB - dateA;
+    }
+  }).slice(0, 5);
+
   return (
     <Tooltip delayDuration={300}>
       <TooltipTrigger asChild>
@@ -182,8 +204,22 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
             </div>
           ) : companies.length > 0 ? (
             <div className="space-y-1.5">
-              <p className="text-xs font-medium text-muted-foreground">Top empreses per vinculació:</p>
-              {companies.map((company) => (
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium text-muted-foreground">
+                  Top empreses per {sortMode === 'vinculacion' ? 'vinculació' : 'última visita'}:
+                </p>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSortMode(prev => prev === 'vinculacion' ? 'lastVisit' : 'vinculacion');
+                  }}
+                  className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors"
+                >
+                  <ArrowUpDown className="h-3 w-3" />
+                  <span>{sortMode === 'vinculacion' ? 'Visita' : 'Vinc.'}</span>
+                </button>
+              </div>
+              {sortedCompanies.map((company) => (
                 <button 
                   key={company.id}
                   onClick={(e) => {
@@ -222,17 +258,26 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                           <span className="truncate">{company.parroquia}</span>
                         )}
                       </div>
-                      <div className={`flex items-center gap-1 text-[10px] ${getDateColorClass(company.fecha_ultima_visita)}`}>
-                        <Calendar className="h-2.5 w-2.5" />
-                        {company.fecha_ultima_visita ? (
-                          <span>{new Date(company.fecha_ultima_visita).toLocaleDateString('ca-ES', { day: '2-digit', month: 'short' })}</span>
-                        ) : (
-                          <span className="text-muted-foreground">Sense visites</span>
-                        )}
-                        {company.visit_count !== undefined && company.visit_count > 0 && (
-                          <span className="text-muted-foreground">({company.visit_count})</span>
-                        )}
-                      </div>
+                      <TooltipProvider delayDuration={200}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className={`flex items-center gap-1 text-[10px] cursor-help ${getDateColorClass(company.fecha_ultima_visita)}`}>
+                              <Calendar className="h-2.5 w-2.5" />
+                              {company.fecha_ultima_visita ? (
+                                <span>{new Date(company.fecha_ultima_visita).toLocaleDateString('ca-ES', { day: '2-digit', month: 'short' })}</span>
+                              ) : (
+                                <span className="text-muted-foreground">Sense visites</span>
+                              )}
+                              {company.visit_count !== undefined && company.visit_count > 0 && (
+                                <span className="text-muted-foreground">({company.visit_count})</span>
+                              )}
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="text-xs">
+                            {getDaysAgo(company.fecha_ultima_visita)}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5">
