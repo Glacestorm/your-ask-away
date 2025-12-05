@@ -123,6 +123,7 @@ export const AlertHistoryViewer = () => {
   const stats = {
     totalAlerts: alertHistory?.length || 0,
     resolvedAlerts: alertHistory?.filter(a => a.resolved_at).length || 0,
+    autoResolvedAlerts: alertHistory?.filter(a => a.notes?.includes('Auto-resuelto')).length || 0,
     pendingAlerts: alertHistory?.filter(a => !a.resolved_at).length || 0,
     escalatedAlerts: alertHistory?.filter(a => (a.escalation_level || 0) > 0).length || 0,
     criticalAlerts: alertHistory?.filter(a => {
@@ -392,7 +393,7 @@ export const AlertHistoryViewer = () => {
       </Card>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -449,6 +450,18 @@ export const AlertHistoryViewer = () => {
                 <p className="text-3xl font-bold text-green-500">{stats.resolvedAlerts}</p>
               </div>
               <CheckCircle2 className="h-8 w-8 text-green-500 opacity-50" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Auto-resueltas</p>
+                <p className="text-3xl font-bold text-emerald-500">{stats.autoResolvedAlerts}</p>
+              </div>
+              <RefreshCw className="h-8 w-8 text-emerald-500 opacity-50" />
             </div>
           </CardContent>
         </Card>
@@ -681,7 +694,18 @@ export const AlertHistoryViewer = () => {
                           </TableCell>
                           <TableCell>
                             {alert.resolved_at ? (
-                              <Badge className="bg-green-500 text-white">Resuelto</Badge>
+                              <div className="flex flex-col gap-1">
+                                {alert.notes?.includes('Auto-resuelto') ? (
+                                  <Badge className="bg-emerald-500 text-white">Auto-resuelto</Badge>
+                                ) : (
+                                  <Badge className="bg-green-500 text-white">Resuelto</Badge>
+                                )}
+                                {alert.notes && (
+                                  <p className="text-xs text-muted-foreground max-w-[150px] truncate" title={alert.notes}>
+                                    {alert.notes}
+                                  </p>
+                                )}
+                              </div>
                             ) : (
                               <Badge variant="secondary">Pendiente</Badge>
                             )}
