@@ -63,6 +63,7 @@ interface ValidationErrors {
   fechaInicio?: string;
   personaContacto?: string;
   tipoVisita?: string;
+  vinculacion?: string;
 }
 
 export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: QuickVisitSheetCardProps) {
@@ -296,6 +297,16 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
     if (!formData.personaContacto.trim()) {
       newErrors.personaContacto = 'La persona de contacto es obligatoria';
     }
+
+    // Validar que la suma de vinculación sea exactamente 100% si hay algún valor
+    const vinculacionSum = parseInt(vinculacion.anbank || '0') + 
+                           parseInt(vinculacion.morabanc || '0') + 
+                           parseInt(vinculacion.creand || '0');
+    const hasVinculacionData = vinculacion.anbank || vinculacion.morabanc || vinculacion.creand;
+    
+    if (hasVinculacionData && vinculacionSum !== 100) {
+      newErrors.vinculacion = `La suma de porcentajes debe ser exactamente 100% (actual: ${vinculacionSum}%)`;
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -330,7 +341,7 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
     }
 
     // Mark all fields as touched
-    setTouched({ company: true, fechaInicio: true, personaContacto: true });
+    setTouched({ company: true, fechaInicio: true, personaContacto: true, vinculacion: true });
 
     if (!validateForm()) {
       toast.error('Por favor, completa los campos obligatorios');
@@ -1103,12 +1114,29 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
                         <Input type="number" min="0" max="100" value={vinculacion.creand} onChange={e => setVinculacion(p => ({ ...p, creand: e.target.value }))} />
                       </div>
                     </div>
-                    {(parseInt(vinculacion.anbank || '0') + parseInt(vinculacion.morabanc || '0') + parseInt(vinculacion.creand || '0')) !== 100 && 
-                     (vinculacion.anbank || vinculacion.morabanc || vinculacion.creand) && (
-                      <div className="flex items-center gap-2 text-amber-600 text-sm">
-                        <AlertCircle className="h-4 w-4" />
-                        <span>La suma de porcentajes debe ser 100%</span>
-                      </div>
+                    {(() => {
+                      const sum = parseInt(vinculacion.anbank || '0') + parseInt(vinculacion.morabanc || '0') + parseInt(vinculacion.creand || '0');
+                      const hasData = vinculacion.anbank || vinculacion.morabanc || vinculacion.creand;
+                      if (!hasData) return null;
+                      
+                      if (sum === 100) {
+                        return (
+                          <div className="flex items-center gap-2 text-green-600 text-sm font-medium">
+                            <span className="h-4 w-4 rounded-full bg-green-500 flex items-center justify-center text-white text-xs">✓</span>
+                            <span>Suma correcta: {sum}%</span>
+                          </div>
+                        );
+                      }
+                      
+                      return (
+                        <div className="flex items-center gap-2 text-destructive text-sm font-medium">
+                          <AlertCircle className="h-4 w-4" />
+                          <span>La suma debe ser exactamente 100% (actual: {sum}%)</span>
+                        </div>
+                      );
+                    })()}
+                    {errors.vinculacion && touched.vinculacion && (
+                      <p className="text-destructive text-xs mt-1">{errors.vinculacion}</p>
                     )}
                     <div className="space-y-2">
                       <Label>Comentarios</Label>
