@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Map, Building2, MapPin, TrendingUp, TrendingDown, ExternalLink, Calendar, ArrowUpDown, Plus, BarChart3, Eye, EyeOff, Award, AlertTriangle, Table, LayoutGrid } from 'lucide-react';
+import { Map, Building2, MapPin, TrendingUp, TrendingDown, ExternalLink, Calendar, ArrowUpDown, Plus, BarChart3, Eye, EyeOff, Award, AlertTriangle, Table, LayoutGrid, ChevronDown, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { ca } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 type ResultFilter = 'all' | 'exitosa' | 'pendiente' | 'fallida' | 'reagendada';
 type SortMode = 'vinculacion' | 'lastVisit';
@@ -75,6 +76,54 @@ export function MapDashboardCard({ onNavigateToMap }: MapDashboardCardProps) {
   const [monthRange, setMonthRange] = useState<3 | 6 | 12>(6);
   const [resultFilter, setResultFilter] = useState<ResultFilter>('all');
   const [resultCounts, setResultCounts] = useState<Record<string, number>>({ all: 0, exitosa: 0, pendiente: 0, fallida: 0, reagendada: 0 });
+  
+  // Card state
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [rotateX, setRotateX] = useState(0);
+  const [rotateY, setRotateY] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isExpanded) return;
+    const card = e.currentTarget;
+    const rect = card.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const mouseX = e.clientX - centerX;
+    const mouseY = e.clientY - centerY;
+    
+    const rotateXValue = (mouseY / (rect.height / 2)) * -15;
+    const rotateYValue = (mouseX / (rect.width / 2)) * 15;
+    
+    setRotateX(rotateXValue);
+    setRotateY(rotateYValue);
+  };
+
+  const handleMouseLeave = () => {
+    setRotateX(0);
+    setRotateY(0);
+    setIsHovered(false);
+  };
+
+  const handleMouseEnter = () => {
+    if (!isExpanded) {
+      setIsHovered(true);
+    }
+  };
+
+  const handleCardClick = () => {
+    if (!isExpanded) {
+      setIsExpanded(true);
+      setRotateX(0);
+      setRotateY(0);
+      setIsHovered(false);
+    }
+  };
+
+  const handleClose = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsExpanded(false);
+  };
 
   useEffect(() => {
     if (user?.id) {
@@ -321,10 +370,86 @@ export function MapDashboardCard({ onNavigateToMap }: MapDashboardCardProps) {
   const bestMonth = yoyChanges.length > 0 ? yoyChanges.reduce((best, curr) => (curr.change || 0) > (best.change || 0) ? curr : best) : null;
   const worstMonth = yoyChanges.length > 0 ? yoyChanges.reduce((worst, curr) => (curr.change || 0) < (worst.change || 0) ? curr : worst) : null;
 
+  // Collapsed card view (like GestorDashboardCard)
+  if (!isExpanded) {
+    const cardColor = 'hsl(var(--chart-5))';
+    return (
+      <div
+        className="perspective-1000"
+        style={{ perspective: '1000px' }}
+      >
+        <div
+          onClick={handleCardClick}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          onMouseEnter={handleMouseEnter}
+          className={cn(
+            "relative cursor-pointer rounded-2xl p-6 h-48 transition-all duration-300 ease-out",
+            "border-2 shadow-lg hover:shadow-2xl",
+            "bg-gradient-to-br from-card via-card to-card/80",
+            "transform-gpu will-change-transform",
+            isHovered && "scale-[1.02]"
+          )}
+          style={{
+            transform: `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
+            transformStyle: 'preserve-3d',
+          }}
+        >
+          {/* Glow effect */}
+          <div 
+            className={cn(
+              "absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-300",
+              isHovered && "opacity-100"
+            )}
+            style={{
+              background: `radial-gradient(circle at 50% 0%, ${cardColor}20, transparent 70%)`,
+            }}
+          />
+
+          {/* Content */}
+          <div className="relative z-10 h-full flex flex-col justify-between" style={{ transform: 'translateZ(30px)' }}>
+            <div className="flex items-start justify-between">
+              <div
+                className={cn(
+                  "flex h-14 w-14 items-center justify-center rounded-xl transition-transform duration-300",
+                  isHovered && "scale-110"
+                )}
+                style={{ backgroundColor: `${cardColor}20` }}
+              >
+                <Map className="h-7 w-7" style={{ color: cardColor }} />
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-foreground">{totalCount}</div>
+                <div className="text-xs text-muted-foreground">Empreses</div>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-semibold text-foreground mb-1">Mapa</h3>
+              <p className="text-sm text-muted-foreground line-clamp-2">
+                Empreses, visites i vinculació...
+              </p>
+            </div>
+          </div>
+
+          {/* Bottom gradient line */}
+          <div 
+            className={cn(
+              "absolute bottom-0 left-0 right-0 h-1 rounded-b-2xl transition-all duration-300",
+              isHovered ? "opacity-100" : "opacity-50"
+            )}
+            style={{ backgroundColor: cardColor }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Expanded view
   return (
-    <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+    <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 animate-in fade-in slide-in-from-bottom-4 duration-300">
       <CardContent className="p-4 space-y-3">
-        {/* Header */}
+        {/* Header with close button */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-md">
@@ -337,6 +462,14 @@ export function MapDashboardCard({ onNavigateToMap }: MapDashboardCardProps) {
               </p>
             </div>
           </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive"
+            onClick={handleClose}
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </div>
 
         {/* Stats row */}
