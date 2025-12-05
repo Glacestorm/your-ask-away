@@ -10,14 +10,17 @@ const corsHeaders = {
 };
 
 interface ValidationRequest {
-  visitSheetId: string;
+  visitSheetId?: string;
   companyName: string;
   gestorName: string;
   gestorEmail: string;
   productosOfrecidos: any[];
   fecha: string;
-  probabilidadCierre: number;
-  potencialAnual: number | null;
+  probabilidadCierre?: number;
+  potencialAnual?: number | null;
+  type?: 'pending' | 'validation_result';
+  approved?: boolean;
+  validationNotes?: string;
 }
 
 serve(async (req: Request): Promise<Response> => {
@@ -30,6 +33,7 @@ serve(async (req: Request): Promise<Response> => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    const requestData: ValidationRequest = await req.json();
     const {
       visitSheetId,
       companyName,
@@ -39,9 +43,104 @@ serve(async (req: Request): Promise<Response> => {
       fecha,
       probabilidadCierre,
       potencialAnual,
-    }: ValidationRequest = await req.json();
+      type = 'pending',
+      approved,
+      validationNotes,
+    } = requestData;
 
-    console.log("Processing validation notification for visit sheet:", visitSheetId);
+    console.log("Processing validation notification, type:", type);
+
+    // Handle validation result notification to gestor
+    if (type === 'validation_result' && gestorEmail) {
+      console.log("Sending validation result email to gestor:", gestorEmail);
+      
+      const productosHtml = productosOfrecidos.length > 0
+        ? productosOfrecidos.map((p: any) => `<li>${p.name || p}</li>`).join("")
+        : "<li>Sin productos especificados</li>";
+
+      const statusColor = approved ? '#22c55e' : '#ef4444';
+      const statusText = approved ? 'APROBADA' : 'RECHAZADA';
+      const statusEmoji = approved ? '✅' : '❌';
+
+      const emailHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: ${statusColor}; color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center; }
+            .content { background: #f8f9fa; padding: 20px; border-radius: 0 0 8px 8px; }
+            .status-badge { display: inline-block; padding: 8px 20px; border-radius: 20px; font-weight: bold; background: ${statusColor}; color: white; }
+            .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #dee2e6; }
+            .products-list { background: white; padding: 15px; border-radius: 8px; margin: 15px 0; }
+            .notes { background: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #ffc107; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1 style="margin: 0;">${statusEmoji} Ficha de Visita ${statusText}</h1>
+            </div>
+            <div class="content">
+              <p>Hola ${gestorName},</p>
+              <p>Tu ficha de visita ha sido revisada por el Responsable Comercial:</p>
+              
+              <div style="text-align: center; margin: 20px 0;">
+                <span class="status-badge">${statusText}</span>
+              </div>
+
+              <div class="info-row">
+                <strong>Empresa:</strong>
+                <span>${companyName}</span>
+              </div>
+              <div class="info-row">
+                <strong>Fecha de visita:</strong>
+                <span>${fecha}</span>
+              </div>
+              
+              <div class="products-list">
+                <h3 style="margin-top: 0;">📦 Productos Ofrecidos:</h3>
+                <ul>${productosHtml}</ul>
+              </div>
+
+              ${approved && productosOfrecidos.length > 0 ? `
+              <div style="background: #d4edda; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #28a745;">
+                <strong>✅ Los productos han sido añadidos automáticamente al cliente.</strong>
+              </div>
+              ` : ''}
+
+              ${validationNotes ? `
+              <div class="notes">
+                <strong>📝 Notas del validador:</strong>
+                <p style="margin-bottom: 0;">${validationNotes}</p>
+              </div>
+              ` : ''}
+
+              <p style="margin-top: 20px;">Puedes acceder a la plataforma para ver más detalles.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+      const emailResponse = await resend.emails.send({
+        from: "Creand <onboarding@resend.dev>",
+        to: [gestorEmail],
+        subject: `${statusEmoji} Tu Ficha de Visita ha sido ${statusText} - ${companyName}`,
+        html: emailHtml,
+      });
+
+      console.log("Gestor notification email sent:", emailResponse);
+
+      return new Response(
+        JSON.stringify({ success: true, type: 'validation_result' }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Handle pending validation notification to responsable_comercial
+    console.log("Processing pending validation notification for visit sheet:", visitSheetId);
 
     // Get all responsable_comercial users
     const { data: responsables, error: rolesError } = await supabase
@@ -92,7 +191,7 @@ serve(async (req: Request): Promise<Response> => {
         title: "Ficha de Visita Pendiente de Validación",
         message: `${gestorName} ha completado una ficha de visita para ${companyName} con productos ofrecidos. Requiere su validación.`,
         severity: "info",
-        metric_value: probabilidadCierre,
+        metric_value: probabilidadCierre || 0,
         threshold_value: 0,
       });
     }
@@ -140,7 +239,7 @@ serve(async (req: Request): Promise<Response> => {
             </div>
             <div class="info-row">
               <strong>Probabilidad de cierre:</strong>
-              <span>${probabilidadCierre}%</span>
+              <span>${probabilidadCierre || 0}%</span>
             </div>
             ${potencialAnual ? `
             <div class="info-row">

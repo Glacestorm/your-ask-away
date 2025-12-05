@@ -162,13 +162,31 @@ export default function VisitSheetValidationPanel() {
         }
       }
 
-      // Notify gestor
+      // Notify gestor in-app
       await supabase.from('notifications').insert({
         user_id: selectedSheet.gestor_id,
         title: approved ? 'Ficha de Visita Aprobada' : 'Ficha de Visita Rechazada',
         message: `Tu ficha de visita para ${selectedSheet.company?.name || 'empresa'} ha sido ${approved ? 'aprobada' : 'rechazada'}. ${validationNotes ? `Notas: ${validationNotes}` : ''}`,
         severity: approved ? 'info' : 'warning'
       });
+
+      // Send email notification to gestor
+      try {
+        await supabase.functions.invoke('notify-visit-validation', {
+          body: {
+            type: 'validation_result',
+            gestorEmail: selectedSheet.gestor?.email,
+            gestorName: selectedSheet.gestor?.full_name || 'Gestor',
+            companyName: selectedSheet.company?.name || 'Empresa',
+            approved,
+            validationNotes,
+            productosOfrecidos: Array.isArray(selectedSheet.productos_ofrecidos) ? selectedSheet.productos_ofrecidos : [],
+            fecha: selectedSheet.fecha
+          }
+        });
+      } catch (emailError) {
+        console.error('Error sending email notification:', emailError);
+      }
 
       toast.success(approved ? 'Ficha aprobada correctamente' : 'Ficha rechazada');
       setSelectedSheet(null);
