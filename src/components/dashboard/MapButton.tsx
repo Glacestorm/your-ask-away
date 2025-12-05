@@ -152,6 +152,13 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
     ? Math.round(companies.reduce((sum, c) => sum + (c.vinculacion_entidad_1 || 0), 0) / companies.length)
     : 0;
 
+  const vinculacionCounts = {
+    all: companies.length,
+    high: companies.filter(c => (c.vinculacion_entidad_1 || 0) >= 70).length,
+    medium: companies.filter(c => (c.vinculacion_entidad_1 || 0) >= 40 && (c.vinculacion_entidad_1 || 0) < 70).length,
+    low: companies.filter(c => (c.vinculacion_entidad_1 || 0) < 40).length,
+  };
+
   const filteredCompanies = companies.filter(c => {
     const vinc = c.vinculacion_entidad_1 || 0;
     if (vinculacionFilter === 'high') return vinc >= 70;
@@ -215,7 +222,7 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
           </div>
 
           {/* Vinculación filter */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 flex-wrap">
             {[
               { key: 'all', label: 'Totes', color: '' },
               { key: 'high', label: 'Alta', color: 'bg-green-500' },
@@ -228,7 +235,7 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                   e.stopPropagation();
                   setVinculacionFilter(filter.key as VinculacionFilter);
                 }}
-                className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] transition-all ${
+                className={`flex items-center gap-1 px-1.5 py-1 rounded-md text-[10px] transition-all ${
                   vinculacionFilter === filter.key
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-muted/50 text-muted-foreground hover:bg-muted'
@@ -237,7 +244,14 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                 {filter.color && (
                   <span className={`h-2 w-2 rounded-full ${filter.color}`} />
                 )}
-                {filter.label}
+                <span>{filter.label}</span>
+                <span className={`text-[9px] px-1 rounded ${
+                  vinculacionFilter === filter.key
+                    ? 'bg-primary-foreground/20'
+                    : 'bg-muted'
+                }`}>
+                  {vinculacionCounts[filter.key as keyof typeof vinculacionCounts]}
+                </span>
               </button>
             ))}
           </div>
