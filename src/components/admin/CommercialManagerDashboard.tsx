@@ -14,6 +14,7 @@ import { MetricsExplorer } from '@/components/admin/MetricsExplorer';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { QuickVisitManager } from '@/components/dashboard/QuickVisitManager';
 import { MapButton } from '@/components/dashboard/MapButton';
+import { MapDashboardCard } from '@/components/dashboard/MapDashboardCard';
 
 // Panel del Responsable Comercial con vista general y explorador de métricas
 
@@ -268,6 +269,9 @@ export function CommercialManagerDashboard() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Mapa Card */}
+          <MapDashboardCard />
 
           {/* Gráfico de Ranking */}
           <Card>

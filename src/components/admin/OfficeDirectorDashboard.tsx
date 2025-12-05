@@ -15,6 +15,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { QuickVisitManager } from '@/components/dashboard/QuickVisitManager';
 import { MapButton } from '@/components/dashboard/MapButton';
+import { MapDashboardCard } from '@/components/dashboard/MapDashboardCard';
 
 // Panel del Director de Oficina con vista filtrada por su oficina
 
@@ -316,6 +317,9 @@ export function OfficeDirectorDashboard() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Mapa Card */}
+          <MapDashboardCard />
 
           {/* Gráfico de Ranking */}
           <Card>
