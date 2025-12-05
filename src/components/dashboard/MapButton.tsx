@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Map, Building2, MapPin, TrendingUp, ExternalLink } from 'lucide-react';
+import { Map, Building2, MapPin, TrendingUp, ExternalLink, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useEffect, useState } from 'react';
@@ -12,6 +12,7 @@ interface CompanyPreview {
   parroquia: string;
   vinculacion_entidad_1: number | null;
   photo_url?: string | null;
+  photo_count?: number;
 }
 
 interface MapButtonProps {
@@ -60,17 +61,20 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
           .in('company_id', companyIds)
           .order('created_at', { ascending: false });
 
-        // Map photos to companies (get most recent photo per company)
-        const photoMap: Record<string, string> = {};
+        // Map photos to companies (get most recent photo and count per company)
+        const photoMap: Record<string, { url: string; count: number }> = {};
         photos?.forEach(p => {
           if (!photoMap[p.company_id]) {
-            photoMap[p.company_id] = p.photo_url;
+            photoMap[p.company_id] = { url: p.photo_url, count: 1 };
+          } else {
+            photoMap[p.company_id].count += 1;
           }
         });
 
         const companiesWithPhotos = data.map(c => ({
           ...c,
-          photo_url: photoMap[c.id] || null,
+          photo_url: photoMap[c.id]?.url || null,
+          photo_count: photoMap[c.id]?.count || 0,
         }));
 
         setCompanies(companiesWithPhotos);
@@ -159,12 +163,17 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                 >
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     {company.photo_url ? (
-                      <div className="h-8 w-8 rounded-md overflow-hidden flex-shrink-0 border border-border/50 group-hover:border-primary/50 transition-colors">
+                      <div className="h-8 w-8 rounded-md overflow-hidden flex-shrink-0 border border-border/50 group-hover:border-primary/50 transition-all relative">
                         <img 
                           src={company.photo_url} 
                           alt={company.name}
-                          className="h-full w-full object-cover"
+                          className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-110"
                         />
+                        {company.photo_count && company.photo_count > 1 && (
+                          <div className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-primary text-[9px] font-medium text-primary-foreground flex items-center justify-center">
+                            {company.photo_count}
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className="h-8 w-8 rounded-md bg-muted flex items-center justify-center flex-shrink-0 border border-border/50 group-hover:border-primary/50 transition-colors">
