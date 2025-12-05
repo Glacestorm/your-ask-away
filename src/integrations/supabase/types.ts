@@ -109,6 +109,79 @@ export type Database = {
         }
         Relationships: []
       }
+      alert_history: {
+        Row: {
+          alert_id: string
+          alert_name: string
+          condition_type: string
+          id: string
+          metric_type: string
+          metric_value: number
+          notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          target_gestor_id: string | null
+          target_office: string | null
+          target_type: string | null
+          threshold_value: number
+          triggered_at: string
+        }
+        Insert: {
+          alert_id: string
+          alert_name: string
+          condition_type: string
+          id?: string
+          metric_type: string
+          metric_value: number
+          notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          target_gestor_id?: string | null
+          target_office?: string | null
+          target_type?: string | null
+          threshold_value: number
+          triggered_at?: string
+        }
+        Update: {
+          alert_id?: string
+          alert_name?: string
+          condition_type?: string
+          id?: string
+          metric_type?: string
+          metric_value?: number
+          notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          target_gestor_id?: string | null
+          target_office?: string | null
+          target_type?: string | null
+          threshold_value?: number
+          triggered_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alert_history_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "alerts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alert_history_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alert_history_target_gestor_id_fkey"
+            columns: ["target_gestor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alerts: {
         Row: {
           active: boolean | null

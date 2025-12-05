@@ -41,6 +41,7 @@ import GoalsProgressTracker from '@/components/admin/GoalsProgressTracker';
 import { DirectorAlertsPanel } from '@/components/admin/DirectorAlertsPanel';
 import GoalsKPIDashboard from '@/components/admin/GoalsKPIDashboard';
 import { KPIReportHistory } from '@/components/admin/KPIReportHistory';
+import { AlertHistoryViewer } from '@/components/admin/AlertHistoryViewer';
 import MapView from './MapView';
 
 const Admin = () => {
@@ -135,6 +136,7 @@ const Admin = () => {
       case 'director-alerts': return 'Alertes d\'Objectius en Risc';
       case 'goals-kpi': return 'Dashboard KPI d\'Objectius';
       case 'kpi-report-history': return 'Historial d\'Informes KPI';
+      case 'alert-history': return 'Historial d\'Alertes';
       default: return '';
     }
   };
@@ -434,6 +436,17 @@ const Admin = () => {
           );
         }
         return <KPIReportHistory />;
+      case 'alert-history':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager && !isOfficeDirector) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <AlertHistoryViewer />;
       default:
         return null;
     }

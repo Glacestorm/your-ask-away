@@ -305,6 +305,27 @@ serve(async (req) => {
       if (shouldAlert) {
         console.log(`Alert triggered: ${alert.alert_name}`);
         
+        // Log to alert_history
+        const { error: historyError } = await supabaseClient
+          .from('alert_history')
+          .insert({
+            alert_id: alert.id,
+            alert_name: alert.alert_name,
+            metric_type: alert.metric_type,
+            metric_value: metricValue,
+            threshold_value: alert.threshold_value,
+            condition_type: alert.condition_type,
+            target_type: targetType,
+            target_office: alert.target_office,
+            target_gestor_id: alert.target_gestor_id,
+          });
+        
+        if (historyError) {
+          console.error('Error logging alert history:', historyError);
+        } else {
+          console.log('Alert logged to history');
+        }
+        
         // Determine severity
         const difference = Math.abs(metricValue - alert.threshold_value);
         const percentageDiff = alert.threshold_value > 0 
