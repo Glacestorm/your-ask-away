@@ -9,17 +9,20 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { format, subDays, startOfMonth, endOfMonth, subMonths } from 'date-fns';
+import { format, subDays, startOfMonth, endOfMonth, subMonths, formatDistanceToNow } from 'date-fns';
 import { es, ca, enUS, fr } from 'date-fns/locale';
 import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
   BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts';
 import { 
   History, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2, Clock,
-  Download, Filter, RefreshCw, Calendar
+  Download, Filter, RefreshCw, Calendar, ArrowUpCircle, Check
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface AlertHistoryRecord {
   id: string;
@@ -36,6 +39,8 @@ interface AlertHistoryRecord {
   resolved_at: string | null;
   resolved_by: string | null;
   notes: string | null;
+  escalation_level: number | null;
+  escalated_at: string | null;
 }
 
 const metricLabels: Record<string, string> = {
@@ -55,6 +60,7 @@ const COLORS = ['hsl(var(--primary))', 'hsl(var(--destructive))', 'hsl(var(--war
 
 export const AlertHistoryViewer = () => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d' | 'custom'>('30d');
   const [startDate, setStartDate] = useState(format(subDays(new Date(), 30), 'yyyy-MM-dd'));
   const [endDate, setEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
@@ -118,11 +124,56 @@ export const AlertHistoryViewer = () => {
     totalAlerts: alertHistory?.length || 0,
     resolvedAlerts: alertHistory?.filter(a => a.resolved_at).length || 0,
     pendingAlerts: alertHistory?.filter(a => !a.resolved_at).length || 0,
+    escalatedAlerts: alertHistory?.filter(a => (a.escalation_level || 0) > 0).length || 0,
     criticalAlerts: alertHistory?.filter(a => {
       const diff = Math.abs(a.metric_value - a.threshold_value);
       const pct = a.threshold_value > 0 ? (diff / a.threshold_value) * 100 : 100;
       return pct > 30;
     }).length || 0,
+  };
+
+  const handleResolveAlert = async (alertId: string) => {
+    try {
+      const { error } = await supabase
+        .from('alert_history')
+        .update({
+          resolved_at: new Date().toISOString(),
+          resolved_by: user?.id,
+        })
+        .eq('id', alertId);
+
+      if (error) throw error;
+      toast.success('Alerta marcada como resuelta');
+      refetch();
+    } catch (error) {
+      console.error('Error resolving alert:', error);
+      toast.error('Error al resolver la alerta');
+    }
+  };
+
+  const handleEscalateNow = async () => {
+    try {
+      toast.info('Ejecutando escalado de alertas...');
+      const { error } = await supabase.functions.invoke('escalate-alerts');
+      if (error) throw error;
+      toast.success('Escalado ejecutado correctamente');
+      refetch();
+    } catch (error) {
+      console.error('Error escalating alerts:', error);
+      toast.error('Error al ejecutar el escalado');
+    }
+  };
+
+  const getEscalationBadge = (level: number | null) => {
+    if (!level || level === 0) return null;
+    const colors = ['bg-amber-500', 'bg-orange-500', 'bg-red-500'];
+    const labels = ['Nivel 1', 'Nivel 2', 'Nivel 3'];
+    return (
+      <Badge className={`${colors[Math.min(level - 1, 2)]} text-white flex items-center gap-1`}>
+        <ArrowUpCircle className="h-3 w-3" />
+        {labels[Math.min(level - 1, 2)]}
+      </Badge>
+    );
   };
 
   // Prepare data for trend chart (alerts per day)
@@ -245,10 +296,14 @@ export const AlertHistoryViewer = () => {
             <p className="text-muted-foreground text-sm">Registro histórico y tendencias de alertas KPI</p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button variant="outline" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Actualizar
+          </Button>
+          <Button variant="outline" onClick={handleEscalateNow}>
+            <ArrowUpCircle className="h-4 w-4 mr-2" />
+            Ejecutar Escalado
           </Button>
           <Button variant="outline" onClick={handleExport}>
             <Download className="h-4 w-4 mr-2" />
@@ -337,7 +392,7 @@ export const AlertHistoryViewer = () => {
       </Card>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -358,6 +413,18 @@ export const AlertHistoryViewer = () => {
                 <p className="text-3xl font-bold text-destructive">{stats.criticalAlerts}</p>
               </div>
               <TrendingDown className="h-8 w-8 text-destructive opacity-50" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Escaladas</p>
+                <p className="text-3xl font-bold text-orange-500">{stats.escalatedAlerts}</p>
+              </div>
+              <ArrowUpCircle className="h-8 w-8 text-orange-500 opacity-50" />
             </div>
           </CardContent>
         </Card>
@@ -421,7 +488,7 @@ export const AlertHistoryViewer = () => {
                       tickFormatter={(value) => format(new Date(value), 'dd/MM', { locale: getDateLocale() })}
                     />
                     <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip 
+                    <RechartsTooltip 
                       labelFormatter={(value) => format(new Date(value), 'dd MMM yyyy', { locale: getDateLocale() })}
                       contentStyle={{ 
                         backgroundColor: 'hsl(var(--card))', 
@@ -466,7 +533,7 @@ export const AlertHistoryViewer = () => {
                         width={120}
                         tick={{ fontSize: 11 }}
                       />
-                      <Tooltip 
+                      <RechartsTooltip 
                         contentStyle={{ 
                           backgroundColor: 'hsl(var(--card))', 
                           border: '1px solid hsl(var(--border))',
@@ -506,7 +573,7 @@ export const AlertHistoryViewer = () => {
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip 
+                      <RechartsTooltip 
                         contentStyle={{ 
                           backgroundColor: 'hsl(var(--card))', 
                           border: '1px solid hsl(var(--border))',
@@ -540,7 +607,7 @@ export const AlertHistoryViewer = () => {
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                     <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                     <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip 
+                    <RechartsTooltip 
                       contentStyle={{ 
                         backgroundColor: 'hsl(var(--card))', 
                         border: '1px solid hsl(var(--border))',
@@ -580,8 +647,9 @@ export const AlertHistoryViewer = () => {
                         <TableHead className="text-right">Valor</TableHead>
                         <TableHead className="text-right">Umbral</TableHead>
                         <TableHead>Severidad</TableHead>
-                        <TableHead>Objetivo</TableHead>
+                        <TableHead>Escalado</TableHead>
                         <TableHead>Estado</TableHead>
+                        <TableHead>Acciones</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -604,15 +672,38 @@ export const AlertHistoryViewer = () => {
                           </TableCell>
                           <TableCell>{getSeverityBadge(alert)}</TableCell>
                           <TableCell>
-                            <Badge variant="outline" className="capitalize">
-                              {alert.target_type || 'global'}
-                            </Badge>
+                            {getEscalationBadge(alert.escalation_level)}
+                            {alert.escalated_at && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {formatDistanceToNow(new Date(alert.escalated_at), { addSuffix: true, locale: getDateLocale() })}
+                              </p>
+                            )}
                           </TableCell>
                           <TableCell>
                             {alert.resolved_at ? (
                               <Badge className="bg-green-500 text-white">Resuelto</Badge>
                             ) : (
                               <Badge variant="secondary">Pendiente</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {!alert.resolved_at && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => handleResolveAlert(alert.id)}
+                                    >
+                                      <Check className="h-4 w-4 text-green-500" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Marcar como resuelta</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                             )}
                           </TableCell>
                         </TableRow>

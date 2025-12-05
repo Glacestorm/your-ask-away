@@ -114,6 +114,9 @@ export type Database = {
           alert_id: string
           alert_name: string
           condition_type: string
+          escalated_at: string | null
+          escalation_level: number | null
+          escalation_notified_to: Json | null
           id: string
           metric_type: string
           metric_value: number
@@ -130,6 +133,9 @@ export type Database = {
           alert_id: string
           alert_name: string
           condition_type: string
+          escalated_at?: string | null
+          escalation_level?: number | null
+          escalation_notified_to?: Json | null
           id?: string
           metric_type: string
           metric_value: number
@@ -146,6 +152,9 @@ export type Database = {
           alert_id?: string
           alert_name?: string
           condition_type?: string
+          escalated_at?: string | null
+          escalation_level?: number | null
+          escalation_notified_to?: Json | null
           id?: string
           metric_type?: string
           metric_value?: number
@@ -189,8 +198,11 @@ export type Database = {
           condition_type: string
           created_at: string | null
           created_by: string | null
+          escalation_enabled: boolean | null
+          escalation_hours: number | null
           id: string
           last_checked: string | null
+          max_escalation_level: number | null
           metric_type: string
           period_type: string
           target_gestor_id: string | null
@@ -205,8 +217,11 @@ export type Database = {
           condition_type: string
           created_at?: string | null
           created_by?: string | null
+          escalation_enabled?: boolean | null
+          escalation_hours?: number | null
           id?: string
           last_checked?: string | null
+          max_escalation_level?: number | null
           metric_type: string
           period_type: string
           target_gestor_id?: string | null
@@ -221,8 +236,11 @@ export type Database = {
           condition_type?: string
           created_at?: string | null
           created_by?: string | null
+          escalation_enabled?: boolean | null
+          escalation_hours?: number | null
           id?: string
           last_checked?: string | null
+          max_escalation_level?: number | null
           metric_type?: string
           period_type?: string
           target_gestor_id?: string | null

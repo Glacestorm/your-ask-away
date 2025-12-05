@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Bell, Plus, Trash2, Edit, Loader2, Globe, Building, User } from 'lucide-react';
+import { Bell, Plus, Trash2, Edit, Loader2, Globe, Building, User, ArrowUpCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Alert {
@@ -25,6 +25,9 @@ interface Alert {
   target_type: string | null;
   target_office: string | null;
   target_gestor_id: string | null;
+  escalation_enabled: boolean | null;
+  escalation_hours: number | null;
+  max_escalation_level: number | null;
 }
 
 interface Profile {
@@ -51,6 +54,9 @@ export const AlertsManager = () => {
     target_type: 'global',
     target_office: '',
     target_gestor_id: '',
+    escalation_enabled: false,
+    escalation_hours: 24,
+    max_escalation_level: 3,
   });
 
   useEffect(() => {
@@ -176,6 +182,9 @@ export const AlertsManager = () => {
       target_type: alert.target_type || 'global',
       target_office: alert.target_office || '',
       target_gestor_id: alert.target_gestor_id || '',
+      escalation_enabled: alert.escalation_enabled || false,
+      escalation_hours: alert.escalation_hours || 24,
+      max_escalation_level: alert.max_escalation_level || 3,
     });
     setIsDialogOpen(true);
   };
@@ -192,6 +201,9 @@ export const AlertsManager = () => {
       target_type: 'global',
       target_office: '',
       target_gestor_id: '',
+      escalation_enabled: false,
+      escalation_hours: 24,
+      max_escalation_level: 3,
     });
   };
 
@@ -471,6 +483,55 @@ export const AlertsManager = () => {
                   />
                 </div>
 
+                {/* Escalation Settings */}
+                <div className="border-t pt-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label htmlFor="escalation_enabled">Escalado Automático</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Escalar si no se resuelve a tiempo
+                      </p>
+                    </div>
+                    <Switch
+                      id="escalation_enabled"
+                      checked={formData.escalation_enabled}
+                      onCheckedChange={(checked) => setFormData({ ...formData, escalation_enabled: checked })}
+                    />
+                  </div>
+
+                  {formData.escalation_enabled && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="escalation_hours">Horas para escalar</Label>
+                        <Input
+                          id="escalation_hours"
+                          type="number"
+                          min="1"
+                          max="168"
+                          value={formData.escalation_hours}
+                          onChange={(e) => setFormData({ ...formData, escalation_hours: parseInt(e.target.value) || 24 })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="max_escalation_level">Nivel máximo</Label>
+                        <Select
+                          value={formData.max_escalation_level.toString()}
+                          onValueChange={(value) => setFormData({ ...formData, max_escalation_level: parseInt(value) })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1">Nivel 1 (Director Oficina)</SelectItem>
+                            <SelectItem value="2">Nivel 2 (Resp. Comercial)</SelectItem>
+                            <SelectItem value="3">Nivel 3 (Director Comercial)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex justify-end gap-2">
                   <Button type="button" variant="outline" onClick={() => {
                     setIsDialogOpen(false);
@@ -510,6 +571,12 @@ export const AlertsManager = () => {
                       {getTargetIcon(alert.target_type)}
                       {getTargetLabel(alert)}
                     </Badge>
+                    {alert.escalation_enabled && (
+                      <Badge variant="outline" className="flex items-center gap-1 bg-amber-500/10 text-amber-600 border-amber-500/30">
+                        <ArrowUpCircle className="h-3 w-3" />
+                        Escalado {alert.escalation_hours}h
+                      </Badge>
+                    )}
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {getMetricLabel(alert.metric_type)} {getConditionLabel(alert.condition_type)}{' '}
