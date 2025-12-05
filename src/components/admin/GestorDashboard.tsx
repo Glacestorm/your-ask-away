@@ -596,16 +596,18 @@ export function GestorDashboard({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-6">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">El Meu Dashboard</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold tracking-tight">El Meu Panell</h1>
+              <Badge variant="outline" className="h-7 px-3 text-sm">
+                <Users className="h-4 w-4 mr-2" />
+                Gestor Empresa / Retail
+              </Badge>
+            </div>
             <p className="text-muted-foreground mt-1">
               Vista exclusiva de les meves mètriques i objectius personals
             </p>
           </div>
           <MapButton />
-          <Badge variant="outline" className="h-9 px-4 text-sm">
-            <Users className="h-4 w-4 mr-2" />
-            Gestor Empresa / Retail
-          </Badge>
         </div>
         <div className="flex items-center gap-2">
           {(onGoBack || onGoForward) && (
@@ -667,7 +669,7 @@ export function GestorDashboard({
             {activeSection === 'home' ? (
               <BreadcrumbPage className="flex items-center gap-2">
                 <Home className="h-4 w-4" />
-                El Meu Dashboard
+                El Meu Panell
               </BreadcrumbPage>
             ) : (
               <BreadcrumbLink 
@@ -675,7 +677,7 @@ export function GestorDashboard({
                 className="flex items-center gap-2 cursor-pointer hover:text-primary transition-colors"
               >
                 <Home className="h-4 w-4" />
-                El Meu Dashboard
+                El Meu Panell
               </BreadcrumbLink>
             )}
           </BreadcrumbItem>
