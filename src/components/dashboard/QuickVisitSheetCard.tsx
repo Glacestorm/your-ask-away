@@ -11,14 +11,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { 
-  FileText, X, Building2, User, Phone, Mail, Calendar, 
-  CreditCard, Landmark, Shield, TrendingUp, BarChart3,
-  Target, MessageSquare, Save, ChevronRight
+  FileText, X, Building2, User, CreditCard, Landmark, Shield, TrendingUp, BarChart3,
+  Target, Save, ChevronRight, AlertCircle, Calendar, Edit2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
@@ -34,13 +32,42 @@ interface Company {
   bp: string | null;
 }
 
-interface QuickVisitSheetCardProps {
-  className?: string;
+interface VisitSheetData {
+  id: string;
+  visit_id: string;
+  company_id: string;
+  gestor_id: string;
+  fecha: string;
+  tipo_cliente?: string;
+  tipo_visita?: string;
+  persona_contacto?: string;
+  cargo_contacto?: string;
+  telefono_contacto?: string;
+  email_contacto?: string;
+  notas_gestor?: string;
+  probabilidad_cierre?: number;
+  potencial_anual_estimado?: number;
+  proxima_cita?: string;
+  productos_servicios?: any;
+  diagnostico_inicial?: any[];
 }
 
-export function QuickVisitSheetCard({ className }: QuickVisitSheetCardProps) {
+interface QuickVisitSheetCardProps {
+  className?: string;
+  editSheet?: VisitSheetData | null;
+  onEditComplete?: () => void;
+}
+
+interface ValidationErrors {
+  company?: string;
+  fechaInicio?: string;
+  personaContacto?: string;
+  tipoVisita?: string;
+}
+
+export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: QuickVisitSheetCardProps) {
   const { user } = useAuth();
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(!!editSheet);
   const [isHovered, setIsHovered] = useState(false);
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
@@ -49,6 +76,11 @@ export function QuickVisitSheetCard({ className }: QuickVisitSheetCardProps) {
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [saving, setSaving] = useState(false);
   const [visitSheetsCount, setVisitSheetsCount] = useState(0);
+  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [isEditMode, setIsEditMode] = useState(!!editSheet);
+  const [editVisitId, setEditVisitId] = useState<string | null>(editSheet?.visit_id || null);
+  const [editSheetId, setEditSheetId] = useState<string | null>(editSheet?.id || null);
 
   // Datos Generales
   const [formData, setFormData] = useState({
@@ -151,6 +183,61 @@ export function QuickVisitSheetCard({ className }: QuickVisitSheetCardProps) {
     importePropuesto: '',
   });
 
+  // Load edit data when provided
+  useEffect(() => {
+    if (editSheet) {
+      setIsExpanded(true);
+      setIsEditMode(true);
+      setEditVisitId(editSheet.visit_id);
+      setEditSheetId(editSheet.id);
+      setSelectedCompanyId(editSheet.company_id);
+      
+      // Load form data from editSheet
+      setFormData(prev => ({
+        ...prev,
+        fechaInicio: editSheet.fecha ? new Date(editSheet.fecha) : new Date(),
+        tipoCliente: editSheet.tipo_cliente === 'Empresa' ? 'empresa' : 'personal',
+        tipoVisita: editSheet.tipo_visita === 'TPV' ? 'tpv' : 'visita_360',
+        personaContacto: editSheet.persona_contacto || '',
+        cargoContacto: editSheet.cargo_contacto || '',
+        telefonoLaboral: editSheet.telefono_contacto || '',
+        emailLaboral: editSheet.email_contacto || '',
+      }));
+      
+      setObservaciones(prev => ({
+        ...prev,
+        observacionesGestor: editSheet.notas_gestor || '',
+        gradoConsecucion: editSheet.probabilidad_cierre?.toString() || '',
+        importePropuesto: editSheet.potencial_anual_estimado?.toString() || '',
+        proximaCita: editSheet.proxima_cita ? new Date(editSheet.proxima_cita) : undefined,
+      }));
+
+      // Load products if available
+      if (editSheet.productos_servicios) {
+        if (editSheet.productos_servicios.tpv) {
+          setProductosTPV(editSheet.productos_servicios.tpv);
+        }
+        if (editSheet.productos_servicios.estandar) {
+          setProductosEstandar(editSheet.productos_servicios.estandar);
+        }
+        if (editSheet.productos_servicios.servicios) {
+          setServicios(editSheet.productos_servicios.servicios);
+        }
+      }
+
+      // Load diagnostico
+      if (editSheet.diagnostico_inicial && Array.isArray(editSheet.diagnostico_inicial)) {
+        const necesidad = editSheet.diagnostico_inicial.find((d: any) => d.label === 'Necesidad Principal');
+        const producto = editSheet.diagnostico_inicial.find((d: any) => d.label === 'Producto Ofrecido');
+        setObservaciones(prev => ({
+          ...prev,
+          necesidadPrincipal: necesidad?.value || '',
+          productoOfrecido: producto?.value || '',
+        }));
+      }
+    }
+  }, [editSheet]);
+
   useEffect(() => {
     if (user) {
       loadCompanies();
@@ -159,7 +246,7 @@ export function QuickVisitSheetCard({ className }: QuickVisitSheetCardProps) {
   }, [user]);
 
   useEffect(() => {
-    if (selectedCompanyId) {
+    if (selectedCompanyId && !isEditMode) {
       const company = companies.find(c => c.id === selectedCompanyId);
       if (company) {
         setSelectedCompany(company);
@@ -172,8 +259,11 @@ export function QuickVisitSheetCard({ className }: QuickVisitSheetCardProps) {
           emailLaboral: company.email || '',
         }));
       }
+    } else if (selectedCompanyId && isEditMode) {
+      const company = companies.find(c => c.id === selectedCompanyId);
+      if (company) setSelectedCompany(company);
     }
-  }, [selectedCompanyId, companies]);
+  }, [selectedCompanyId, companies, isEditMode]);
 
   const loadCompanies = async () => {
     const { data } = await supabase
@@ -190,6 +280,30 @@ export function QuickVisitSheetCard({ className }: QuickVisitSheetCardProps) {
       .select('*', { count: 'exact', head: true })
       .eq('gestor_id', user.id);
     setVisitSheetsCount(count || 0);
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: ValidationErrors = {};
+    
+    if (!selectedCompanyId) {
+      newErrors.company = 'Selecciona una empresa';
+    }
+    
+    if (!formData.fechaInicio) {
+      newErrors.fechaInicio = 'La fecha es obligatoria';
+    }
+    
+    if (!formData.personaContacto.trim()) {
+      newErrors.personaContacto = 'La persona de contacto es obligatoria';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleBlur = (field: string) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+    validateForm();
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -210,60 +324,111 @@ export function QuickVisitSheetCard({ className }: QuickVisitSheetCardProps) {
   };
 
   const handleSave = async () => {
-    if (!user || !selectedCompanyId) {
-      toast.error('Selecciona una empresa');
+    if (!user) {
+      toast.error('Usuario no autenticado');
+      return;
+    }
+
+    // Mark all fields as touched
+    setTouched({ company: true, fechaInicio: true, personaContacto: true });
+
+    if (!validateForm()) {
+      toast.error('Por favor, completa los campos obligatorios');
       return;
     }
 
     setSaving(true);
     try {
-      // First create a visit record
-      const { data: visitData, error: visitError } = await supabase
-        .from('visits')
-        .insert({
-          company_id: selectedCompanyId,
-          gestor_id: user.id,
-          visit_date: format(formData.fechaInicio, 'yyyy-MM-dd'),
-          result: 'Pendiente',
-          notes: observaciones.notasReunion,
-        })
-        .select()
-        .single();
+      if (isEditMode && editVisitId && editSheetId) {
+        // Update existing sheet
+        const { error: sheetError } = await supabase
+          .from('visit_sheets')
+          .update({
+            fecha: format(formData.fechaInicio, 'yyyy-MM-dd'),
+            tipo_cliente: formData.tipoCliente === 'empresa' ? 'Empresa' : 'Particular',
+            tipo_visita: formData.tipoVisita === 'tpv' ? 'TPV' : 'Visita 360°',
+            persona_contacto: formData.personaContacto,
+            cargo_contacto: formData.cargoContacto,
+            telefono_contacto: formData.telefonoLaboral,
+            email_contacto: formData.emailLaboral,
+            notas_gestor: observaciones.observacionesGestor,
+            probabilidad_cierre: parseInt(observaciones.gradoConsecucion) || null,
+            potencial_anual_estimado: parseFloat(observaciones.importePropuesto) || null,
+            proxima_cita: observaciones.proximaCita ? format(observaciones.proximaCita, 'yyyy-MM-dd') : null,
+            productos_servicios: {
+              tpv: productosTPV,
+              estandar: productosEstandar,
+              servicios: servicios,
+            },
+            diagnostico_inicial: [
+              { label: 'Necesidad Principal', value: observaciones.necesidadPrincipal },
+              { label: 'Producto Ofrecido', value: observaciones.productoOfrecido },
+            ],
+          })
+          .eq('id', editSheetId);
 
-      if (visitError) throw visitError;
+        if (sheetError) throw sheetError;
 
-      // Then create the visit sheet
-      const { error: sheetError } = await supabase
-        .from('visit_sheets')
-        .insert({
-          visit_id: visitData.id,
-          company_id: selectedCompanyId,
-          gestor_id: user.id,
-          fecha: format(formData.fechaInicio, 'yyyy-MM-dd'),
-          tipo_cliente: formData.tipoCliente === 'empresa' ? 'Empresa' : 'Particular',
-          tipo_visita: formData.tipoVisita === 'tpv' ? 'TPV' : 'Visita 360°',
-          persona_contacto: formData.personaContacto,
-          cargo_contacto: formData.cargoContacto,
-          telefono_contacto: formData.telefonoLaboral,
-          email_contacto: formData.emailLaboral,
-          notas_gestor: observaciones.observacionesGestor,
-          probabilidad_cierre: parseInt(observaciones.gradoConsecucion) || null,
-          potencial_anual_estimado: parseFloat(observaciones.importePropuesto) || null,
-          proxima_cita: observaciones.proximaCita ? format(observaciones.proximaCita, 'yyyy-MM-dd') : null,
-          productos_servicios: {
-            tpv: productosTPV,
-            estandar: productosEstandar,
-            servicios: servicios,
-          },
-          diagnostico_inicial: [
-            { label: 'Necesidad Principal', value: observaciones.necesidadPrincipal },
-            { label: 'Producto Ofrecido', value: observaciones.productoOfrecido },
-          ],
-        });
+        // Update visit
+        await supabase
+          .from('visits')
+          .update({
+            visit_date: format(formData.fechaInicio, 'yyyy-MM-dd'),
+            notes: observaciones.notasReunion,
+          })
+          .eq('id', editVisitId);
 
-      if (sheetError) throw sheetError;
+        toast.success('Ficha de visita actualizada correctamente');
+        if (onEditComplete) onEditComplete();
+      } else {
+        // Create new visit and sheet
+        const { data: visitData, error: visitError } = await supabase
+          .from('visits')
+          .insert({
+            company_id: selectedCompanyId,
+            gestor_id: user.id,
+            visit_date: format(formData.fechaInicio, 'yyyy-MM-dd'),
+            result: 'Pendiente',
+            notes: observaciones.notasReunion,
+          })
+          .select()
+          .single();
 
-      toast.success('Ficha de visita guardada correctamente');
+        if (visitError) throw visitError;
+
+        const { error: sheetError } = await supabase
+          .from('visit_sheets')
+          .insert({
+            visit_id: visitData.id,
+            company_id: selectedCompanyId,
+            gestor_id: user.id,
+            fecha: format(formData.fechaInicio, 'yyyy-MM-dd'),
+            tipo_cliente: formData.tipoCliente === 'empresa' ? 'Empresa' : 'Particular',
+            tipo_visita: formData.tipoVisita === 'tpv' ? 'TPV' : 'Visita 360°',
+            persona_contacto: formData.personaContacto,
+            cargo_contacto: formData.cargoContacto,
+            telefono_contacto: formData.telefonoLaboral,
+            email_contacto: formData.emailLaboral,
+            notas_gestor: observaciones.observacionesGestor,
+            probabilidad_cierre: parseInt(observaciones.gradoConsecucion) || null,
+            potencial_anual_estimado: parseFloat(observaciones.importePropuesto) || null,
+            proxima_cita: observaciones.proximaCita ? format(observaciones.proximaCita, 'yyyy-MM-dd') : null,
+            productos_servicios: {
+              tpv: productosTPV,
+              estandar: productosEstandar,
+              servicios: servicios,
+            },
+            diagnostico_inicial: [
+              { label: 'Necesidad Principal', value: observaciones.necesidadPrincipal },
+              { label: 'Producto Ofrecido', value: observaciones.productoOfrecido },
+            ],
+          });
+
+        if (sheetError) throw sheetError;
+
+        toast.success('Ficha de visita guardada correctamente');
+      }
+
       resetForm();
       loadVisitSheetsCount();
       setIsExpanded(false);
@@ -278,6 +443,11 @@ export function QuickVisitSheetCard({ className }: QuickVisitSheetCardProps) {
   const resetForm = () => {
     setSelectedCompanyId('');
     setSelectedCompany(null);
+    setErrors({});
+    setTouched({});
+    setIsEditMode(false);
+    setEditVisitId(null);
+    setEditSheetId(null);
     setFormData({
       bp: '',
       fechaInicio: new Date(),
@@ -306,7 +476,65 @@ export function QuickVisitSheetCard({ className }: QuickVisitSheetCardProps) {
       productoOfrecido: '',
       importePropuesto: '',
     });
+    setProductosTPV({
+      tpvOrdinario: { entidad: '', importe: '', pedido: false, ofrecido: false },
+      tpvMail: { entidad: '', importe: '', pedido: false, ofrecido: false, contraprestacion: 'ninguna', contraImporte: '' },
+      tpvVirtual: { entidad: '', importe: '', pedido: false, ofrecido: false, contraprestacion: 'ninguna', contraImporte: '' },
+      tpvMoney: { entidad: '', importe: '', pedido: false, ofrecido: false, contraprestacion: 'ninguna', contraImporte: '' },
+      tpvBizum: { entidad: '', importe: '', pedido: false, ofrecido: false },
+    });
+    setProductosEstandar({
+      creditRapid: { entidad: '', importe: '', pedido: false, ofrecido: false },
+      prestamoPersonal: { entidad: '', importe: '', pedido: false, ofrecido: false },
+      prestamoHipotecario: { entidad: '', importe: '', pedido: false, ofrecido: false },
+      poliza: { entidad: '', importe: '', pedido: false, ofrecido: false },
+      descuentoComercial: { entidad: '', importe: '', pedido: false, ofrecido: false },
+      aval: { entidad: '', importe: '', pedido: false, ofrecido: false },
+      mercat: { entidad: '', importe: '', pedido: false, ofrecido: false },
+      acciones: { entidad: '', importe: '', pedido: false, ofrecido: false },
+      rentaFija: { entidad: '', importe: '', pedido: false, ofrecido: false },
+    });
+    setServicios({
+      bancaOnline: { pedido: false, ofrecido: false },
+      nominas: { pedido: false, ofrecido: false },
+      seguroVida: { tipo: '', importe: '' },
+      seguroSalud: {
+        piam: { tipo: '' },
+        creandSalutPlus: { tipo: '' },
+        creandSalut: { tipo: '' },
+      },
+      planJubilacion: '',
+      planPension: '',
+      apiEmpresas: { pedido: false, ofrecido: false, contactoInformatico: '', contactoContable: '' },
+    });
   };
+
+  const handleClose = () => {
+    setIsExpanded(false);
+    if (isEditMode && onEditComplete) {
+      resetForm();
+      onEditComplete();
+    }
+  };
+
+  // Error message component
+  const ErrorMessage = ({ error }: { error?: string }) => {
+    if (!error) return null;
+    return (
+      <div className="flex items-center gap-1 text-destructive text-xs mt-1">
+        <AlertCircle className="h-3 w-3" />
+        <span>{error}</span>
+      </div>
+    );
+  };
+
+  // Required field label
+  const RequiredLabel = ({ children }: { children: React.ReactNode }) => (
+    <Label className="flex items-center gap-1">
+      {children}
+      <span className="text-destructive">*</span>
+    </Label>
+  );
 
   // Collapsed card view
   if (!isExpanded) {
@@ -356,16 +584,25 @@ export function QuickVisitSheetCard({ className }: QuickVisitSheetCardProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500">
-              <FileText className="h-5 w-5" />
+              {isEditMode ? <Edit2 className="h-5 w-5" /> : <FileText className="h-5 w-5" />}
             </div>
             <div>
-              <CardTitle className="text-xl">Ficha de Visita Comercial</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">Registro completo de visita bancaria</p>
+              <CardTitle className="text-xl">
+                {isEditMode ? 'Editar Ficha de Visita' : 'Nueva Ficha de Visita Comercial'}
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                {isEditMode ? 'Modificar registro existente' : 'Registro completo de visita bancaria'}
+              </p>
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={() => setIsExpanded(false)}>
-            <X className="h-5 w-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-xs">
+              <span className="text-destructive mr-1">*</span> Campos obligatorios
+            </Badge>
+            <Button variant="ghost" size="icon" onClick={handleClose}>
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
       </CardHeader>
 
@@ -374,12 +611,19 @@ export function QuickVisitSheetCard({ className }: QuickVisitSheetCardProps) {
           <div className="p-6 space-y-6">
             {/* Company Selection */}
             <div className="space-y-3">
-              <Label className="text-base font-semibold flex items-center gap-2">
-                <Building2 className="h-4 w-4 text-primary" />
+              <RequiredLabel>
+                <Building2 className="h-4 w-4 text-primary mr-1" />
                 Seleccionar Empresa
-              </Label>
-              <Select value={selectedCompanyId} onValueChange={setSelectedCompanyId}>
-                <SelectTrigger>
+              </RequiredLabel>
+              <Select 
+                value={selectedCompanyId} 
+                onValueChange={(v) => {
+                  setSelectedCompanyId(v);
+                  setTouched(prev => ({ ...prev, company: true }));
+                }}
+                disabled={isEditMode}
+              >
+                <SelectTrigger className={cn(touched.company && errors.company && "border-destructive")}>
                   <SelectValue placeholder="Buscar empresa..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -388,6 +632,7 @@ export function QuickVisitSheetCard({ className }: QuickVisitSheetCardProps) {
                   ))}
                 </SelectContent>
               </Select>
+              {touched.company && <ErrorMessage error={errors.company} />}
             </div>
 
             <Accordion type="multiple" defaultValue={["datos-generales"]} className="space-y-3">
@@ -397,6 +642,9 @@ export function QuickVisitSheetCard({ className }: QuickVisitSheetCardProps) {
                   <div className="flex items-center gap-3">
                     <User className="h-5 w-5 text-blue-500" />
                     <span className="font-semibold">1. Datos Generales</span>
+                    {(touched.personaContacto && errors.personaContacto) && (
+                      <Badge variant="destructive" className="ml-2 text-xs">Campos incompletos</Badge>
+                    )}
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="pb-4">
@@ -411,10 +659,16 @@ export function QuickVisitSheetCard({ className }: QuickVisitSheetCardProps) {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>Fecha Inicio Visita</Label>
+                      <RequiredLabel>Fecha Inicio Visita</RequiredLabel>
                       <Popover>
                         <PopoverTrigger asChild>
-                          <Button variant="outline" className="w-full justify-start">
+                          <Button 
+                            variant="outline" 
+                            className={cn(
+                              "w-full justify-start",
+                              touched.fechaInicio && errors.fechaInicio && "border-destructive"
+                            )}
+                          >
                             <Calendar className="mr-2 h-4 w-4" />
                             {format(formData.fechaInicio, 'dd/MM/yyyy')}
                           </Button>
@@ -423,11 +677,17 @@ export function QuickVisitSheetCard({ className }: QuickVisitSheetCardProps) {
                           <CalendarComponent
                             mode="single"
                             selected={formData.fechaInicio}
-                            onSelect={d => d && setFormData(p => ({ ...p, fechaInicio: d }))}
+                            onSelect={d => {
+                              if (d) {
+                                setFormData(p => ({ ...p, fechaInicio: d }));
+                                setTouched(prev => ({ ...prev, fechaInicio: true }));
+                              }
+                            }}
                             className="pointer-events-auto"
                           />
                         </PopoverContent>
                       </Popover>
+                      {touched.fechaInicio && <ErrorMessage error={errors.fechaInicio} />}
                     </div>
                     <div className="space-y-2">
                       <Label>Tipo de Cliente</Label>
@@ -542,11 +802,15 @@ export function QuickVisitSheetCard({ className }: QuickVisitSheetCardProps) {
                       </RadioGroup>
                     </div>
                     <div className="space-y-2">
-                      <Label>Persona de Contacto</Label>
+                      <RequiredLabel>Persona de Contacto</RequiredLabel>
                       <Input 
                         value={formData.personaContacto} 
                         onChange={e => setFormData(p => ({ ...p, personaContacto: e.target.value }))}
+                        onBlur={() => handleBlur('personaContacto')}
+                        className={cn(touched.personaContacto && errors.personaContacto && "border-destructive")}
+                        placeholder="Nombre de la persona de contacto"
                       />
+                      {touched.personaContacto && <ErrorMessage error={errors.personaContacto} />}
                     </div>
                     <div className="space-y-2">
                       <Label>Cargo del Contacto</Label>
@@ -709,195 +973,118 @@ export function QuickVisitSheetCard({ className }: QuickVisitSheetCardProps) {
                         </div>
                       </div>
                     </div>
-                    
-                    <Separator />
-                    
-                    <div className="space-y-3">
-                      <div className="font-medium">Seguros Vida</div>
-                      <div className="grid grid-cols-2 gap-4">
+                    <div className="p-3 rounded-lg bg-muted/50 space-y-3">
+                      <div className="font-medium text-sm">Seguro de Vida</div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <Select value={servicios.seguroVida.tipo} onValueChange={v => setServicios(p => ({ ...p, seguroVida: { ...p.seguroVida, tipo: v }}))}>
+                          <SelectTrigger><SelectValue placeholder="Tipo" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="individual">Individual</SelectItem>
+                            <SelectItem value="familiar">Familiar</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Input placeholder="Importe (€)" value={servicios.seguroVida.importe} onChange={e => setServicios(p => ({ ...p, seguroVida: { ...p.seguroVida, importe: e.target.value }}))} />
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-lg bg-muted/50 space-y-3">
+                      <div className="font-medium text-sm">Seguros de Salud</div>
+                      <div className="grid grid-cols-3 gap-3">
                         <div className="space-y-2">
-                          <Label>Tipo Producto</Label>
-                          <Input value={servicios.seguroVida.tipo} onChange={e => setServicios(p => ({ ...p, seguroVida: { ...p.seguroVida, tipo: e.target.value }}))} placeholder="Tipo de seguro" />
+                          <Label className="text-xs">PIAM</Label>
+                          <Select value={servicios.seguroSalud.piam.tipo} onValueChange={v => setServicios(p => ({ ...p, seguroSalud: { ...p.seguroSalud, piam: { tipo: v as any }}}))}>
+                            <SelectTrigger><SelectValue placeholder="Tipo" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="individual">Individual</SelectItem>
+                              <SelectItem value="familiar">Familiar</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                         <div className="space-y-2">
-                          <Label>Importe (€)</Label>
-                          <Input type="number" value={servicios.seguroVida.importe} onChange={e => setServicios(p => ({ ...p, seguroVida: { ...p.seguroVida, importe: e.target.value }}))} />
+                          <Label className="text-xs">Creand Salut Plus</Label>
+                          <Select value={servicios.seguroSalud.creandSalutPlus.tipo} onValueChange={v => setServicios(p => ({ ...p, seguroSalud: { ...p.seguroSalud, creandSalutPlus: { tipo: v as any }}}))}>
+                            <SelectTrigger><SelectValue placeholder="Tipo" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="individual">Individual</SelectItem>
+                              <SelectItem value="familiar">Familiar</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs">Creand Salut</Label>
+                          <Select value={servicios.seguroSalud.creandSalut.tipo} onValueChange={v => setServicios(p => ({ ...p, seguroSalud: { ...p.seguroSalud, creandSalut: { tipo: v as any }}}))}>
+                            <SelectTrigger><SelectValue placeholder="Tipo" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="individual">Individual</SelectItem>
+                              <SelectItem value="familiar">Familiar</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                       </div>
                     </div>
-
-                    <div className="space-y-3">
-                      <div className="font-medium">Seguros Salud</div>
-                      <div className="grid grid-cols-3 gap-4">
-                        {['piam', 'creandSalutPlus', 'creandSalut'].map(seg => (
-                          <div key={seg} className="p-3 rounded-lg bg-muted/50">
-                            <div className="text-sm font-medium mb-2">{seg === 'piam' ? 'PIAM' : seg === 'creandSalutPlus' ? 'Creand Salut Plus' : 'Creand Salut'}</div>
-                            <RadioGroup value={(servicios.seguroSalud as any)[seg].tipo} onValueChange={v => setServicios(p => ({ ...p, seguroSalud: { ...p.seguroSalud, [seg]: { tipo: v }}}))}>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="individual" id={`${seg}-ind`} />
-                                <Label htmlFor={`${seg}-ind`} className="text-xs">Individual</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="familiar" id={`${seg}-fam`} />
-                                <Label htmlFor={`${seg}-fam`} className="text-xs">Familiar</Label>
-                              </div>
-                            </RadioGroup>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label>Plan Jubilación (€/mes)</Label>
-                        <Input type="number" value={servicios.planJubilacion} onChange={e => setServicios(p => ({ ...p, planJubilacion: e.target.value }))} />
+                        <Label>Plan de Jubilación</Label>
+                        <Input value={servicios.planJubilacion} onChange={e => setServicios(p => ({ ...p, planJubilacion: e.target.value }))} placeholder="Importe (€)" />
                       </div>
                       <div className="space-y-2">
-                        <Label>Plan Pensión (€/mes)</Label>
-                        <Input type="number" value={servicios.planPension} onChange={e => setServicios(p => ({ ...p, planPension: e.target.value }))} />
-                      </div>
-                    </div>
-
-                    <div className="p-3 rounded-lg bg-muted/50 space-y-3">
-                      <div className="font-medium text-sm">API Empresas</div>
-                      <div className="flex gap-4 mb-2">
-                        <div className="flex items-center space-x-2">
-                          <Checkbox checked={servicios.apiEmpresas.pedido} onCheckedChange={c => setServicios(p => ({ ...p, apiEmpresas: { ...p.apiEmpresas, pedido: !!c }}))} />
-                          <Label className="text-xs">Pedido</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox checked={servicios.apiEmpresas.ofrecido} onCheckedChange={c => setServicios(p => ({ ...p, apiEmpresas: { ...p.apiEmpresas, ofrecido: !!c }}))} />
-                          <Label className="text-xs">Ofrecido</Label>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <Input placeholder="Contacto Informático" value={servicios.apiEmpresas.contactoInformatico} onChange={e => setServicios(p => ({ ...p, apiEmpresas: { ...p.apiEmpresas, contactoInformatico: e.target.value }}))} />
-                        <Input placeholder="Contacto Contable" value={servicios.apiEmpresas.contactoContable} onChange={e => setServicios(p => ({ ...p, apiEmpresas: { ...p.apiEmpresas, contactoContable: e.target.value }}))} />
+                        <Label>Plan de Pensiones</Label>
+                        <Input value={servicios.planPension} onChange={e => setServicios(p => ({ ...p, planPension: e.target.value }))} placeholder="Importe (€)" />
                       </div>
                     </div>
                   </div>
                 </AccordionContent>
               </AccordionItem>
 
-              {/* 5. Pasivo y Capital */}
-              <AccordionItem value="pasivo-capital" className="border rounded-lg px-4">
-                <AccordionTrigger className="hover:no-underline py-4">
-                  <div className="flex items-center gap-3">
-                    <BarChart3 className="h-5 w-5 text-indigo-500" />
-                    <span className="font-semibold">5. Pasivo y Capital por Entidad</span>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="pb-4">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label>Tesorería (€)</Label>
-                      <Input type="number" value={pasivoCapital.tesoreria} onChange={e => setPasivoCapital(p => ({ ...p, tesoreria: e.target.value }))} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Plazo (€)</Label>
-                      <Input type="number" value={pasivoCapital.plazo} onChange={e => setPasivoCapital(p => ({ ...p, plazo: e.target.value }))} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Vencimiento Plazo</Label>
-                      <Input value={pasivoCapital.plazoVencimiento} onChange={e => setPasivoCapital(p => ({ ...p, plazoVencimiento: e.target.value }))} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Mercat (€)</Label>
-                      <Input type="number" value={pasivoCapital.mercat} onChange={e => setPasivoCapital(p => ({ ...p, mercat: e.target.value }))} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Acciones (€)</Label>
-                      <Input type="number" value={pasivoCapital.acciones} onChange={e => setPasivoCapital(p => ({ ...p, acciones: e.target.value }))} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Renta Fija (€)</Label>
-                      <Input type="number" value={pasivoCapital.rentaFija} onChange={e => setPasivoCapital(p => ({ ...p, rentaFija: e.target.value }))} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Capital Andbank (€)</Label>
-                      <Input type="number" value={pasivoCapital.capitalAnbank} onChange={e => setPasivoCapital(p => ({ ...p, capitalAnbank: e.target.value }))} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Capital Morabanc (€)</Label>
-                      <Input type="number" value={pasivoCapital.capitalMorabanc} onChange={e => setPasivoCapital(p => ({ ...p, capitalMorabanc: e.target.value }))} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Capital Creand (€)</Label>
-                      <Input type="number" value={pasivoCapital.capitalCreand} onChange={e => setPasivoCapital(p => ({ ...p, capitalCreand: e.target.value }))} />
-                    </div>
-                  </div>
-                  <div className="mt-4 space-y-2">
-                    <Label>Transferir Capital a Creand</Label>
-                    <RadioGroup value={pasivoCapital.transferenciaCapital} onValueChange={v => setPasivoCapital(p => ({ ...p, transferenciaCapital: v as any }))} className="flex gap-4">
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="cheque" id="trans-cheque" />
-                        <Label htmlFor="trans-cheque">Cheque</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="transferencia" id="trans-transferencia" />
-                        <Label htmlFor="trans-transferencia">Transferencia</Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              {/* 6. Datos Financieros */}
+              {/* 5. Datos Financieros */}
               <AccordionItem value="datos-financieros" className="border rounded-lg px-4">
                 <AccordionTrigger className="hover:no-underline py-4">
                   <div className="flex items-center gap-3">
-                    <TrendingUp className="h-5 w-5 text-emerald-500" />
-                    <span className="font-semibold">6. Datos Financieros (MTR/P&L/TPV/EEFF)</span>
+                    <TrendingUp className="h-5 w-5 text-orange-500" />
+                    <span className="font-semibold">5. Datos Financieros (MTR/P&L/TPV)</span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="pb-4">
                   <div className="space-y-4">
-                    <div className="grid grid-cols-4 gap-4">
-                      <div className="font-medium text-sm col-span-1"></div>
-                      <div className="font-medium text-sm text-center">2023</div>
-                      <div className="font-medium text-sm text-center">2024</div>
-                      <div className="font-medium text-sm text-center">2025</div>
+                    <div className="grid grid-cols-4 gap-3">
+                      <Label className="font-medium">MTR</Label>
+                      <Input placeholder="2023" value={datosFinancieros.mtr2023} onChange={e => setDatosFinancieros(p => ({ ...p, mtr2023: e.target.value }))} />
+                      <Input placeholder="2024" value={datosFinancieros.mtr2024} onChange={e => setDatosFinancieros(p => ({ ...p, mtr2024: e.target.value }))} />
+                      <Input placeholder="2025" value={datosFinancieros.mtr2025} onChange={e => setDatosFinancieros(p => ({ ...p, mtr2025: e.target.value }))} />
                     </div>
-                    {[
-                      { label: 'MTR (€)', keys: ['mtr2023', 'mtr2024', 'mtr2025'] },
-                      { label: 'P&L (€)', keys: ['pl2023', 'pl2024', 'pl2025'] },
-                      { label: 'TPV (€)', keys: ['tpv2023', 'tpv2024', 'tpv2025'] },
-                      { label: 'Facturación (€)', keys: ['facturacion2023', 'facturacion2024', 'facturacion2025'] },
-                      { label: 'Beneficios (€)', keys: ['beneficios2023', 'beneficios2024', 'beneficios2025'] },
-                    ].map(row => (
-                      <div key={row.label} className="grid grid-cols-4 gap-4 items-center">
-                        <Label className="text-sm">{row.label}</Label>
-                        {row.keys.map(k => (
-                          <Input 
-                            key={k}
-                            type="number" 
-                            value={(datosFinancieros as any)[k]} 
-                            onChange={e => setDatosFinancieros(p => ({ ...p, [k]: e.target.value }))}
-                            className="text-center"
-                          />
-                        ))}
-                      </div>
-                    ))}
-                    <div className="grid grid-cols-2 gap-4 mt-4">
-                      <div className="space-y-2">
-                        <Label>EEFF 2024 (resumen)</Label>
-                        <Textarea value={datosFinancieros.eeff2024} onChange={e => setDatosFinancieros(p => ({ ...p, eeff2024: e.target.value }))} rows={2} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>EEFF 2025 (resumen)</Label>
-                        <Textarea value={datosFinancieros.eeff2025} onChange={e => setDatosFinancieros(p => ({ ...p, eeff2025: e.target.value }))} rows={2} />
-                      </div>
+                    <div className="grid grid-cols-4 gap-3">
+                      <Label className="font-medium">P&L</Label>
+                      <Input placeholder="2023" value={datosFinancieros.pl2023} onChange={e => setDatosFinancieros(p => ({ ...p, pl2023: e.target.value }))} />
+                      <Input placeholder="2024" value={datosFinancieros.pl2024} onChange={e => setDatosFinancieros(p => ({ ...p, pl2024: e.target.value }))} />
+                      <Input placeholder="2025" value={datosFinancieros.pl2025} onChange={e => setDatosFinancieros(p => ({ ...p, pl2025: e.target.value }))} />
+                    </div>
+                    <div className="grid grid-cols-4 gap-3">
+                      <Label className="font-medium">TPV</Label>
+                      <Input placeholder="2023" value={datosFinancieros.tpv2023} onChange={e => setDatosFinancieros(p => ({ ...p, tpv2023: e.target.value }))} />
+                      <Input placeholder="2024" value={datosFinancieros.tpv2024} onChange={e => setDatosFinancieros(p => ({ ...p, tpv2024: e.target.value }))} />
+                      <Input placeholder="2025" value={datosFinancieros.tpv2025} onChange={e => setDatosFinancieros(p => ({ ...p, tpv2025: e.target.value }))} />
+                    </div>
+                    <div className="grid grid-cols-4 gap-3">
+                      <Label className="font-medium">Facturación</Label>
+                      <Input placeholder="2023" value={datosFinancieros.facturacion2023} onChange={e => setDatosFinancieros(p => ({ ...p, facturacion2023: e.target.value }))} />
+                      <Input placeholder="2024" value={datosFinancieros.facturacion2024} onChange={e => setDatosFinancieros(p => ({ ...p, facturacion2024: e.target.value }))} />
+                      <Input placeholder="2025" value={datosFinancieros.facturacion2025} onChange={e => setDatosFinancieros(p => ({ ...p, facturacion2025: e.target.value }))} />
+                    </div>
+                    <div className="grid grid-cols-4 gap-3">
+                      <Label className="font-medium">Beneficios</Label>
+                      <Input placeholder="2023" value={datosFinancieros.beneficios2023} onChange={e => setDatosFinancieros(p => ({ ...p, beneficios2023: e.target.value }))} />
+                      <Input placeholder="2024" value={datosFinancieros.beneficios2024} onChange={e => setDatosFinancieros(p => ({ ...p, beneficios2024: e.target.value }))} />
+                      <Input placeholder="2025" value={datosFinancieros.beneficios2025} onChange={e => setDatosFinancieros(p => ({ ...p, beneficios2025: e.target.value }))} />
                     </div>
                   </div>
                 </AccordionContent>
               </AccordionItem>
 
-              {/* 7. Grado de Vinculación */}
+              {/* 6. Vinculación */}
               <AccordionItem value="vinculacion" className="border rounded-lg px-4">
                 <AccordionTrigger className="hover:no-underline py-4">
                   <div className="flex items-center gap-3">
-                    <Target className="h-5 w-5 text-orange-500" />
-                    <span className="font-semibold">7. Grado de Vinculación</span>
+                    <BarChart3 className="h-5 w-5 text-pink-500" />
+                    <span className="font-semibold">6. Grado de Vinculación</span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="pb-4">
@@ -916,45 +1103,42 @@ export function QuickVisitSheetCard({ className }: QuickVisitSheetCardProps) {
                         <Input type="number" min="0" max="100" value={vinculacion.creand} onChange={e => setVinculacion(p => ({ ...p, creand: e.target.value }))} />
                       </div>
                     </div>
-                    <div className="p-3 rounded-lg bg-muted/50">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">Total</span>
-                        <Badge variant={
-                          (parseInt(vinculacion.anbank || '0') + parseInt(vinculacion.morabanc || '0') + parseInt(vinculacion.creand || '0')) === 100 
-                            ? 'default' 
-                            : 'destructive'
-                        }>
-                          {parseInt(vinculacion.anbank || '0') + parseInt(vinculacion.morabanc || '0') + parseInt(vinculacion.creand || '0')}%
-                        </Badge>
+                    {(parseInt(vinculacion.anbank || '0') + parseInt(vinculacion.morabanc || '0') + parseInt(vinculacion.creand || '0')) !== 100 && 
+                     (vinculacion.anbank || vinculacion.morabanc || vinculacion.creand) && (
+                      <div className="flex items-center gap-2 text-amber-600 text-sm">
+                        <AlertCircle className="h-4 w-4" />
+                        <span>La suma de porcentajes debe ser 100%</span>
                       </div>
-                    </div>
+                    )}
                     <div className="space-y-2">
-                      <Label>Comentarios sobre Vinculación</Label>
+                      <Label>Comentarios</Label>
                       <Textarea value={vinculacion.comentarios} onChange={e => setVinculacion(p => ({ ...p, comentarios: e.target.value }))} rows={3} />
                     </div>
                   </div>
                 </AccordionContent>
               </AccordionItem>
 
-              {/* 8. Observaciones y Éxito */}
+              {/* 7. Observaciones y Éxito */}
               <AccordionItem value="observaciones" className="border rounded-lg px-4">
                 <AccordionTrigger className="hover:no-underline py-4">
                   <div className="flex items-center gap-3">
-                    <MessageSquare className="h-5 w-5 text-pink-500" />
-                    <span className="font-semibold">8. Observaciones y Grado de Éxito</span>
+                    <Target className="h-5 w-5 text-red-500" />
+                    <span className="font-semibold">7. Observaciones y Grado de Éxito</span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="pb-4">
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label>Necesidad Principal</Label>
+                        <Label>Necesidad Principal Detectada</Label>
                         <Input value={observaciones.necesidadPrincipal} onChange={e => setObservaciones(p => ({ ...p, necesidadPrincipal: e.target.value }))} />
                       </div>
                       <div className="space-y-2">
                         <Label>Producto Ofrecido</Label>
                         <Input value={observaciones.productoOfrecido} onChange={e => setObservaciones(p => ({ ...p, productoOfrecido: e.target.value }))} />
                       </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label>Importe Propuesto (€)</Label>
                         <Input type="number" value={observaciones.importePropuesto} onChange={e => setObservaciones(p => ({ ...p, importePropuesto: e.target.value }))} />
@@ -979,27 +1163,32 @@ export function QuickVisitSheetCard({ className }: QuickVisitSheetCardProps) {
                         </Popover>
                       </div>
                     </div>
+                    <div className="space-y-2">
+                      <Label>Notas de la Reunión</Label>
+                      <Textarea value={observaciones.notasReunion} onChange={e => setObservaciones(p => ({ ...p, notasReunion: e.target.value }))} rows={3} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Observaciones del Gestor</Label>
+                      <Textarea value={observaciones.observacionesGestor} onChange={e => setObservaciones(p => ({ ...p, observacionesGestor: e.target.value }))} rows={3} />
+                    </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label>Grado de Consecución (%)</Label>
                         <Input type="number" min="0" max="100" value={observaciones.gradoConsecucion} onChange={e => setObservaciones(p => ({ ...p, gradoConsecucion: e.target.value }))} />
                       </div>
                       <div className="space-y-2">
-                        <Label>Grado de Éxito (1-10)</Label>
-                        <Input type="number" min="1" max="10" value={observaciones.gradoExito} onChange={e => setObservaciones(p => ({ ...p, gradoExito: e.target.value }))} />
+                        <Label>Grado de Éxito</Label>
+                        <Select value={observaciones.gradoExito} onValueChange={v => setObservaciones(p => ({ ...p, gradoExito: v }))}>
+                          <SelectTrigger><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="muy_alto">Muy Alto</SelectItem>
+                            <SelectItem value="alto">Alto</SelectItem>
+                            <SelectItem value="medio">Medio</SelectItem>
+                            <SelectItem value="bajo">Bajo</SelectItem>
+                            <SelectItem value="muy_bajo">Muy Bajo</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Observaciones del Gestor</Label>
-                      <Textarea value={observaciones.observacionesGestor} onChange={e => setObservaciones(p => ({ ...p, observacionesGestor: e.target.value }))} rows={4} placeholder="Observaciones extensas..." />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Notas de la Reunión</Label>
-                      <Textarea value={observaciones.notasReunion} onChange={e => setObservaciones(p => ({ ...p, notasReunion: e.target.value }))} rows={4} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Criterios Observados</Label>
-                      <Textarea value={observaciones.criteriosObservados} onChange={e => setObservaciones(p => ({ ...p, criteriosObservados: e.target.value }))} rows={2} />
                     </div>
                   </div>
                 </AccordionContent>
@@ -1008,12 +1197,12 @@ export function QuickVisitSheetCard({ className }: QuickVisitSheetCardProps) {
 
             {/* Save Button */}
             <div className="flex justify-end gap-3 pt-4 border-t border-border/50">
-              <Button variant="outline" onClick={() => setIsExpanded(false)}>
+              <Button variant="outline" onClick={handleClose}>
                 Cancelar
               </Button>
-              <Button onClick={handleSave} disabled={saving || !selectedCompanyId}>
-                <Save className="mr-2 h-4 w-4" />
-                {saving ? 'Guardando...' : 'Guardar Ficha'}
+              <Button onClick={handleSave} disabled={saving} className="gap-2">
+                <Save className="h-4 w-4" />
+                {saving ? 'Guardando...' : (isEditMode ? 'Actualizar Ficha' : 'Guardar Ficha')}
               </Button>
             </div>
           </div>
