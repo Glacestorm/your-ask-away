@@ -428,7 +428,216 @@ serve(async (req) => {
       }
     }
 
-    // Create all notifications
+    // ========== AUTO-RESOLVE UNRESOLVED ALERTS ==========
+    console.log('Checking for alerts to auto-resolve...');
+    
+    const { data: unresolvedAlerts, error: unresolvedError } = await supabaseClient
+      .from('alert_history')
+      .select('*, alerts!alert_history_alert_id_fkey(*)')
+      .is('resolved_at', null);
+    
+    if (unresolvedError) {
+      console.error('Error fetching unresolved alerts:', unresolvedError);
+    }
+    
+    let autoResolvedCount = 0;
+    
+    if (unresolvedAlerts && unresolvedAlerts.length > 0) {
+      console.log(`Found ${unresolvedAlerts.length} unresolved alerts to check`);
+      
+      for (const historyRecord of unresolvedAlerts) {
+        const alertConfig = historyRecord.alerts;
+        if (!alertConfig) continue;
+        
+        // Recalculate metric value for this alert
+        const targetType = historyRecord.target_type || 'global';
+        
+        // Calculate date range based on period
+        const now = new Date();
+        let startDate: Date;
+        
+        switch (alertConfig.period_type) {
+          case 'daily':
+            startDate = new Date(now);
+            startDate.setHours(0, 0, 0, 0);
+            break;
+          case 'weekly':
+            startDate = new Date(now);
+            startDate.setDate(now.getDate() - 7);
+            break;
+          case 'monthly':
+            startDate = new Date(now);
+            startDate.setMonth(now.getMonth() - 1);
+            break;
+          default:
+            startDate = new Date(now);
+            startDate.setDate(now.getDate() - 1);
+        }
+        
+        const startDateStr = startDate.toISOString().split('T')[0];
+        
+        // Get gestor IDs based on target type
+        let gestorIds: string[] | null = null;
+        if (targetType === 'gestor' && historyRecord.target_gestor_id) {
+          gestorIds = [historyRecord.target_gestor_id];
+        } else if (targetType === 'office' && historyRecord.target_office) {
+          const { data: officeGestors } = await supabaseClient
+            .from('profiles')
+            .select('id')
+            .eq('oficina', historyRecord.target_office);
+          gestorIds = officeGestors?.map(g => g.id) || [];
+        }
+        
+        // Calculate current metric value
+        let currentValue = 0;
+        
+        switch (historyRecord.metric_type) {
+          case 'visits': {
+            let query = supabaseClient.from('visits').select('id').gte('visit_date', startDateStr);
+            if (gestorIds) query = query.in('gestor_id', gestorIds);
+            const { data } = await query;
+            currentValue = data?.length || 0;
+            break;
+          }
+          case 'success_rate': {
+            let query = supabaseClient.from('visits').select('result').gte('visit_date', startDateStr);
+            if (gestorIds) query = query.in('gestor_id', gestorIds);
+            const { data } = await query;
+            if (data && data.length > 0) {
+              const successful = data.filter(v => v.result === 'exitosa').length;
+              currentValue = (successful / data.length) * 100;
+            }
+            break;
+          }
+          case 'vinculacion': {
+            let query = supabaseClient.from('visits').select('porcentaje_vinculacion').gte('visit_date', startDateStr).not('porcentaje_vinculacion', 'is', null);
+            if (gestorIds) query = query.in('gestor_id', gestorIds);
+            const { data } = await query;
+            if (data && data.length > 0) {
+              currentValue = data.reduce((sum, v) => sum + (v.porcentaje_vinculacion || 0), 0) / data.length;
+            }
+            break;
+          }
+          case 'tpv_volume': {
+            const { data } = await supabaseClient.from('company_tpv_terminals').select('monthly_volume, companies!fk_company_tpv(gestor_id)').eq('status', 'active');
+            if (data) {
+              const filtered = gestorIds ? data.filter((t: any) => gestorIds.includes(t.companies?.gestor_id)) : data;
+              currentValue = filtered.reduce((sum: number, t: any) => sum + (t.monthly_volume || 0), 0);
+            }
+            break;
+          }
+          case 'facturacion': {
+            let query = supabaseClient.from('companies').select('facturacion_anual');
+            if (gestorIds) query = query.in('gestor_id', gestorIds);
+            const { data } = await query;
+            if (data) currentValue = data.reduce((sum, c) => sum + (c.facturacion_anual || 0), 0);
+            break;
+          }
+          case 'visit_sheets': {
+            let query = supabaseClient.from('visit_sheets').select('id').gte('fecha', startDateStr);
+            if (gestorIds) query = query.in('gestor_id', gestorIds);
+            const { data } = await query;
+            currentValue = data?.length || 0;
+            break;
+          }
+          case 'new_clients': {
+            let query = supabaseClient.from('companies').select('id').gte('created_at', startDate.toISOString());
+            if (gestorIds) query = query.in('gestor_id', gestorIds);
+            const { data } = await query;
+            currentValue = data?.length || 0;
+            break;
+          }
+          case 'products': {
+            let query = supabaseClient.from('visits').select('productos_ofrecidos').gte('visit_date', startDateStr);
+            if (gestorIds) query = query.in('gestor_id', gestorIds);
+            const { data } = await query;
+            if (data) currentValue = data.reduce((sum, v) => sum + (v.productos_ofrecidos?.length || 0), 0);
+            break;
+          }
+          case 'avg_visits_per_gestor': {
+            let query = supabaseClient.from('visits').select('gestor_id').gte('visit_date', startDateStr);
+            if (gestorIds) query = query.in('gestor_id', gestorIds);
+            const { data } = await query;
+            if (data && data.length > 0) {
+              const uniqueGestors = new Set(data.map(v => v.gestor_id)).size;
+              currentValue = uniqueGestors > 0 ? data.length / uniqueGestors : 0;
+            }
+            break;
+          }
+        }
+        
+        // Check if condition is NO LONGER met (alert should be resolved)
+        let shouldResolve = false;
+        
+        switch (historyRecord.condition_type) {
+          case 'below':
+            shouldResolve = currentValue >= historyRecord.threshold_value;
+            break;
+          case 'above':
+            shouldResolve = currentValue <= historyRecord.threshold_value;
+            break;
+          case 'equals':
+            shouldResolve = Math.abs(currentValue - historyRecord.threshold_value) >= 0.01;
+            break;
+        }
+        
+        if (shouldResolve) {
+          console.log(`Auto-resolving alert: ${historyRecord.alert_name} (value: ${currentValue}, threshold: ${historyRecord.threshold_value})`);
+          
+          // Update alert_history to mark as resolved
+          const { error: resolveError } = await supabaseClient
+            .from('alert_history')
+            .update({
+              resolved_at: new Date().toISOString(),
+              notes: `Auto-resuelto: Valor actual (${currentValue.toFixed(2)}) volvió dentro del umbral (${historyRecord.threshold_value})`
+            })
+            .eq('id', historyRecord.id);
+          
+          if (resolveError) {
+            console.error('Error auto-resolving alert:', resolveError);
+          } else {
+            autoResolvedCount++;
+            
+            // Create resolution notification
+            let targetInfo = '';
+            if (targetType === 'office' && historyRecord.target_office) {
+              targetInfo = ` [Oficina: ${historyRecord.target_office}]`;
+            } else if (targetType === 'gestor' && historyRecord.target_gestor_id) {
+              const gestor = profilesMap.get(historyRecord.target_gestor_id);
+              targetInfo = ` [Gestor: ${gestor?.full_name || 'Desconocido'}]`;
+            }
+            
+            // Notify relevant users about resolution
+            const resolveNotifyUsers: string[] = [];
+            
+            if (targetType === 'gestor' && historyRecord.target_gestor_id) {
+              resolveNotifyUsers.push(historyRecord.target_gestor_id);
+            }
+            
+            directors?.forEach(d => resolveNotifyUsers.push(d.user_id));
+            
+            const uniqueResolveUsers = [...new Set(resolveNotifyUsers)];
+            
+            for (const userId of uniqueResolveUsers) {
+              notificationsToCreate.push({
+                alert_id: alertConfig.id,
+                user_id: userId,
+                title: `✅ Alerta Resuelta: ${historyRecord.alert_name}`,
+                message: `${historyRecord.alert_name}${targetInfo} ha sido auto-resuelta. Valor actual: ${currentValue.toFixed(2)} (umbral: ${historyRecord.threshold_value})`,
+                severity: 'info',
+                metric_value: currentValue,
+                threshold_value: historyRecord.threshold_value,
+                is_read: false,
+              });
+            }
+          }
+        }
+      }
+    }
+    
+    console.log(`Auto-resolved ${autoResolvedCount} alerts`);
+    
+    // ========== CREATE ALL NOTIFICATIONS ==========
     if (notificationsToCreate.length > 0) {
       const { error: notificationsError } = await supabaseClient
         .from('notifications')
@@ -498,6 +707,7 @@ serve(async (req) => {
         success: true,
         alerts_checked: alerts.length,
         notifications_created: notificationsToCreate.length,
+        auto_resolved: autoResolvedCount,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
