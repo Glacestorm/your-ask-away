@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Map, Building2, MapPin, TrendingUp, ExternalLink, Camera } from 'lucide-react';
+import { Map, Building2, MapPin, TrendingUp, ExternalLink, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useEffect, useState } from 'react';
@@ -15,6 +15,7 @@ interface CompanyPreview {
   photo_count?: number;
   sector?: string | null;
   cnae?: string | null;
+  fecha_ultima_visita?: string | null;
 }
 
 interface MapButtonProps {
@@ -49,7 +50,7 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
       // Get top 5 companies by vinculacion
       const { data } = await supabase
         .from('companies')
-        .select('id, name, parroquia, vinculacion_entidad_1, sector, cnae')
+        .select('id, name, parroquia, vinculacion_entidad_1, sector, cnae, fecha_ultima_visita')
         .eq('gestor_id', user.id)
         .order('vinculacion_entidad_1', { ascending: false, nullsFirst: false })
         .limit(5);
@@ -79,6 +80,7 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
           photo_count: photoMap[c.id]?.count || 0,
           sector: c.sector,
           cnae: c.cnae,
+          fecha_ultima_visita: c.fecha_ultima_visita,
         }));
 
         setCompanies(companiesWithPhotos);
@@ -195,6 +197,12 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                           <span className="truncate">{company.parroquia}</span>
                         )}
                       </div>
+                      {company.fecha_ultima_visita && (
+                        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                          <Calendar className="h-2.5 w-2.5" />
+                          <span>{new Date(company.fecha_ultima_visita).toLocaleDateString('ca-ES', { day: '2-digit', month: 'short' })}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5">
