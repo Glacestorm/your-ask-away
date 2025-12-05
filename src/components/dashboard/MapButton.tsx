@@ -1,11 +1,18 @@
 import { useNavigate } from 'react-router-dom';
-import { Map, Building2, MapPin, TrendingUp, ExternalLink, Calendar, ArrowUpDown } from 'lucide-react';
+import { Map, Building2, MapPin, TrendingUp, ExternalLink, Calendar, ArrowUpDown, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { Progress } from '@/components/ui/progress';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
+const getVinculacionColor = (value: number): string => {
+  if (value >= 70) return 'bg-green-500';
+  if (value >= 40) return 'bg-yellow-500';
+  return 'bg-red-500';
+};
 type SortMode = 'vinculacion' | 'lastVisit';
 
 interface CompanyPreview {
@@ -220,15 +227,11 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                 </button>
               </div>
               {sortedCompanies.map((company) => (
-                <button 
+                <div 
                   key={company.id}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/admin?section=map&company=${company.id}`);
-                  }}
-                  className="w-full flex items-center justify-between py-1.5 px-2 rounded-md bg-muted/50 hover:bg-primary/10 hover:border-primary/30 border border-transparent transition-all group cursor-pointer text-left"
+                  className="w-full py-1.5 px-2 rounded-md bg-muted/50 hover:bg-primary/10 hover:border-primary/30 border border-transparent transition-all group"
                 >
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
                     {company.photo_url ? (
                       <div className="h-8 w-8 rounded-md overflow-hidden flex-shrink-0 border border-border/50 group-hover:border-primary/50 transition-all relative">
                         <img 
@@ -247,8 +250,16 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                         <MapPin className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
                       </div>
                     )}
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-xs truncate group-hover:text-primary transition-colors">{company.name}</span>
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/admin?section=map&company=${company.id}`);
+                        }}
+                        className="text-xs truncate group-hover:text-primary transition-colors text-left"
+                      >
+                        {company.name}
+                      </button>
                       <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                         {(company.sector || company.cnae) && (
                           <span className="truncate max-w-[80px]">{company.sector || company.cnae}</span>
@@ -279,16 +290,62 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                         </Tooltip>
                       </TooltipProvider>
                     </div>
+                    <div className="flex items-center gap-1">
+                      <TooltipProvider delayDuration={200}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                if (!user?.id) return;
+                                try {
+                                  const { error } = await supabase.from('visits').insert({
+                                    company_id: company.id,
+                                    gestor_id: user.id,
+                                    visit_date: new Date().toISOString().split('T')[0],
+                                    result: 'pending'
+                                  });
+                                  if (error) throw error;
+                                  toast.success(`Visita creada per ${company.name}`);
+                                  fetchCompanyPreview();
+                                } catch (err) {
+                                  toast.error('Error creant la visita');
+                                }
+                              }}
+                              className="h-6 w-6 rounded-md bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-colors"
+                            >
+                              <Plus className="h-3.5 w-3.5 text-primary" />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" className="text-xs">
+                            Crear visita ràpida
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/admin?section=map&company=${company.id}`);
+                        }}
+                        className="h-6 w-6 rounded-md hover:bg-muted flex items-center justify-center"
+                      >
+                        <ExternalLink className="h-3 w-3 text-muted-foreground" />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    {company.vinculacion_entidad_1 !== null && (
-                      <span className="text-xs font-medium text-primary">
-                        {company.vinculacion_entidad_1}%
-                      </span>
-                    )}
-                    <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                  {/* Vinculación progress bar */}
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full rounded-full transition-all ${getVinculacionColor(company.vinculacion_entidad_1 || 0)}`}
+                        style={{ width: `${company.vinculacion_entidad_1 || 0}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] font-medium text-muted-foreground w-8 text-right">
+                      {company.vinculacion_entidad_1 || 0}%
+                    </span>
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           ) : (
