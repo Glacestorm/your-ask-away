@@ -14,6 +14,7 @@ const getVinculacionColor = (value: number): string => {
   return 'bg-red-500';
 };
 type SortMode = 'vinculacion' | 'lastVisit';
+type VinculacionFilter = 'all' | 'high' | 'medium' | 'low';
 
 interface CompanyPreview {
   id: string;
@@ -59,6 +60,7 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [sortMode, setSortMode] = useState<SortMode>('vinculacion');
+  const [vinculacionFilter, setVinculacionFilter] = useState<VinculacionFilter>('all');
 
   useEffect(() => {
     if (user?.id) {
@@ -150,7 +152,15 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
     ? Math.round(companies.reduce((sum, c) => sum + (c.vinculacion_entidad_1 || 0), 0) / companies.length)
     : 0;
 
-  const sortedCompanies = [...companies].sort((a, b) => {
+  const filteredCompanies = companies.filter(c => {
+    const vinc = c.vinculacion_entidad_1 || 0;
+    if (vinculacionFilter === 'high') return vinc >= 70;
+    if (vinculacionFilter === 'medium') return vinc >= 40 && vinc < 70;
+    if (vinculacionFilter === 'low') return vinc < 40;
+    return true;
+  });
+
+  const sortedCompanies = [...filteredCompanies].sort((a, b) => {
     if (sortMode === 'vinculacion') {
       return (b.vinculacion_entidad_1 || 0) - (a.vinculacion_entidad_1 || 0);
     } else {
@@ -202,6 +212,34 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
               <span className="text-muted-foreground">Vinc. mitjana:</span>
               <span className="font-semibold">{avgVinculacion}%</span>
             </div>
+          </div>
+
+          {/* Vinculación filter */}
+          <div className="flex items-center gap-1">
+            {[
+              { key: 'all', label: 'Totes', color: '' },
+              { key: 'high', label: 'Alta', color: 'bg-green-500' },
+              { key: 'medium', label: 'Mitjana', color: 'bg-yellow-500' },
+              { key: 'low', label: 'Baixa', color: 'bg-red-500' },
+            ].map((filter) => (
+              <button
+                key={filter.key}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setVinculacionFilter(filter.key as VinculacionFilter);
+                }}
+                className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] transition-all ${
+                  vinculacionFilter === filter.key
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                }`}
+              >
+                {filter.color && (
+                  <span className={`h-2 w-2 rounded-full ${filter.color}`} />
+                )}
+                {filter.label}
+              </button>
+            ))}
           </div>
 
           {/* Companies preview */}
