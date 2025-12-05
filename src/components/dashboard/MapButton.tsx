@@ -13,6 +13,8 @@ interface CompanyPreview {
   vinculacion_entidad_1: number | null;
   photo_url?: string | null;
   photo_count?: number;
+  sector?: string | null;
+  cnae?: string | null;
 }
 
 interface MapButtonProps {
@@ -47,7 +49,7 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
       // Get top 5 companies by vinculacion
       const { data } = await supabase
         .from('companies')
-        .select('id, name, parroquia, vinculacion_entidad_1')
+        .select('id, name, parroquia, vinculacion_entidad_1, sector, cnae')
         .eq('gestor_id', user.id)
         .order('vinculacion_entidad_1', { ascending: false, nullsFirst: false })
         .limit(5);
@@ -75,6 +77,8 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
           ...c,
           photo_url: photoMap[c.id]?.url || null,
           photo_count: photoMap[c.id]?.count || 0,
+          sector: c.sector,
+          cnae: c.cnae,
         }));
 
         setCompanies(companiesWithPhotos);
@@ -182,9 +186,15 @@ export function MapButton({ onNavigateToMap }: MapButtonProps) {
                     )}
                     <div className="flex flex-col min-w-0">
                       <span className="text-xs truncate group-hover:text-primary transition-colors">{company.name}</span>
-                      {company.parroquia && (
-                        <span className="text-[10px] text-muted-foreground truncate">{company.parroquia}</span>
-                      )}
+                      <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                        {(company.sector || company.cnae) && (
+                          <span className="truncate max-w-[80px]">{company.sector || company.cnae}</span>
+                        )}
+                        {(company.sector || company.cnae) && company.parroquia && <span>·</span>}
+                        {company.parroquia && (
+                          <span className="truncate">{company.parroquia}</span>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5">
