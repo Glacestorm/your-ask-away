@@ -271,11 +271,11 @@ export function CommercialManagerDashboard() {
             </Card>
           </div>
 
-          {/* Ficha de Visita Card */}
-          <QuickVisitSheetCard />
-
-          {/* Mapa Card */}
-          <MapDashboardCard />
+          {/* Ficha de Visita y Mapa Cards */}
+          <div className="grid gap-6 md:grid-cols-2">
+            <QuickVisitSheetCard />
+            <MapDashboardCard />
+          </div>
 
           {/* Gráfico de Ranking */}
           <Card>
