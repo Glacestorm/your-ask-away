@@ -26,3 +26,9 @@ verify_jwt = false
 
 [functions.send-weekly-kpi-report]
 verify_jwt = false
+
+[functions.send-daily-kpi-report]
+verify_jwt = false
+
+[functions.send-monthly-kpi-report]
+verify_jwt = false
