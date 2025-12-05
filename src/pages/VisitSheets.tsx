@@ -12,11 +12,12 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import { CalendarIcon, FileText, Search, Filter, Loader2, Save, CheckCircle2, AlertCircle } from 'lucide-react';
+import { CalendarIcon, FileText, Search, Filter, Loader2, Save, CheckCircle2, AlertCircle, Edit2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
 import { visitSheetUpdateSchema } from '@/lib/validations';
+import { QuickVisitSheetCard } from '@/components/dashboard/QuickVisitSheetCard';
 
 interface VisitSheet {
   id: string;
@@ -55,6 +56,8 @@ export default function VisitSheets() {
   const [gestores, setGestores] = useState<Array<{ id: string; full_name: string }>>([]);
   const [companies, setCompanies] = useState<Array<{ id: string; name: string }>>([]);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [editingSheet, setEditingSheet] = useState<any | null>(null);
+  const [showEditForm, setShowEditForm] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -520,24 +523,39 @@ export default function VisitSheets() {
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
               <span>Detalles de la Ficha de Visita</span>
-              {saveStatus === 'saving' && (
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  Guardando...
-                </Badge>
-              )}
-              {saveStatus === 'saved' && (
-                <Badge variant="default" className="flex items-center gap-1 bg-green-500">
-                  <CheckCircle2 className="h-3 w-3" />
-                  Guardado
-                </Badge>
-              )}
-              {saveStatus === 'error' && (
-                <Badge variant="destructive" className="flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
-                  Error
-                </Badge>
-              )}
+              <div className="flex items-center gap-2">
+                {saveStatus === 'saving' && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Guardando...
+                  </Badge>
+                )}
+                {saveStatus === 'saved' && (
+                  <Badge variant="default" className="flex items-center gap-1 bg-green-500">
+                    <CheckCircle2 className="h-3 w-3" />
+                    Guardado
+                  </Badge>
+                )}
+                {saveStatus === 'error' && (
+                  <Badge variant="destructive" className="flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    Error
+                  </Badge>
+                )}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-2"
+                  onClick={() => {
+                    setEditingSheet(selectedSheet);
+                    setShowEditForm(true);
+                    setShowDetails(false);
+                  }}
+                >
+                  <Edit2 className="h-4 w-4" />
+                  Editar ficha completa
+                </Button>
+              </div>
             </DialogTitle>
           </DialogHeader>
           
@@ -669,6 +687,40 @@ export default function VisitSheets() {
                 </div>
               </div>
             </ScrollArea>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog para editar ficha completa */}
+      <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
+        <DialogContent className="max-w-5xl max-h-[95vh] p-0">
+          {editingSheet && (
+            <QuickVisitSheetCard 
+              editSheet={{
+                id: editingSheet.id,
+                visit_id: editingSheet.visit_id,
+                company_id: editingSheet.company_id,
+                gestor_id: editingSheet.gestor_id,
+                fecha: editingSheet.fecha,
+                tipo_cliente: editingSheet.tipo_cliente,
+                tipo_visita: editingSheet.tipo_visita,
+                persona_contacto: editingSheet.persona_contacto,
+                cargo_contacto: editingSheet.cargo_contacto,
+                telefono_contacto: editingSheet.telefono_contacto,
+                email_contacto: editingSheet.email_contacto,
+                notas_gestor: editingSheet.notas_gestor,
+                probabilidad_cierre: editingSheet.probabilidad_cierre,
+                potencial_anual_estimado: editingSheet.potencial_anual_estimado,
+                proxima_cita: editingSheet.proxima_cita,
+                productos_servicios: editingSheet.productos_servicios,
+                diagnostico_inicial: editingSheet.diagnostico_inicial,
+              }}
+              onEditComplete={() => {
+                setShowEditForm(false);
+                setEditingSheet(null);
+                fetchSheets();
+              }}
+            />
           )}
         </DialogContent>
       </Dialog>
