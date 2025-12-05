@@ -20,6 +20,7 @@ import { QuickVisitManager } from '@/components/dashboard/QuickVisitManager';
 import { MapButton } from '@/components/dashboard/MapButton';
 import { GestorDashboardCard } from '@/components/dashboard/GestorDashboardCard';
 import { MapDashboardCard } from '@/components/dashboard/MapDashboardCard';
+import { QuickVisitSheetCard } from '@/components/dashboard/QuickVisitSheetCard';
 import { cn } from '@/lib/utils';
 import { GestorOverviewSection } from '@/components/dashboard/GestorOverviewSection';
 import {
@@ -752,6 +753,9 @@ export function GestorDashboard({
 
             {/* Mapa Card */}
             <MapDashboardCard />
+
+            {/* Ficha de Visita Card */}
+            <QuickVisitSheetCard />
 
             {/* Quick Stats Summary */}
             <div className="grid gap-4 md:grid-cols-4">
