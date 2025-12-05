@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
 import { 
   FileText, X, Building2, User, CreditCard, Landmark, Shield, TrendingUp, BarChart3,
   Target, Save, ChevronRight, AlertCircle, Calendar, Edit2, RefreshCw, Download,
-  ZoomIn, ZoomOut, RotateCcw, Printer, ChevronLeft, ChevronDown, Maximize2, Minimize2
+  ZoomIn, ZoomOut, RotateCcw, Printer, ChevronLeft, ChevronDown, Maximize2, Minimize2, Search
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
@@ -79,6 +79,7 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
   const [companies, setCompanies] = useState<Company[]>([]);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>('');
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+  const [companySearch, setCompanySearch] = useState('');
   const [saving, setSaving] = useState(false);
   const [visitSheetsCount, setVisitSheetsCount] = useState(0);
   const [errors, setErrors] = useState<ValidationErrors>({});
@@ -318,7 +319,10 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
         }
       } else if (selectedCompanyId && isEditMode) {
         const company = companies.find(c => c.id === selectedCompanyId);
-        if (company) setSelectedCompany(company);
+        if (company) {
+          setSelectedCompany(company);
+          setCompanySearch(company.name);
+        }
       }
     };
 
@@ -583,6 +587,7 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
   const resetForm = () => {
     setSelectedCompanyId('');
     setSelectedCompany(null);
+    setCompanySearch('');
     setErrors({});
     setTouched({});
     setIsEditMode(false);
@@ -1075,29 +1080,109 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
           </DialogHeader>
         <ScrollArea className="h-[600px] dark:bg-background/30">
           <div className="p-6 space-y-6">
-            {/* Company Selection */}
+            {/* Company Selection with Search */}
             <div className="space-y-3 p-4 rounded-lg bg-muted/30 dark:bg-muted/20 dark:border dark:border-border/30">
               <RequiredLabel>
                 <Building2 className="h-4 w-4 text-primary mr-1" />
                 Seleccionar Empresa
               </RequiredLabel>
-              <Select 
-                value={selectedCompanyId} 
-                onValueChange={(v) => {
-                  setSelectedCompanyId(v);
-                  setTouched(prev => ({ ...prev, company: true }));
-                }}
-                disabled={isEditMode}
-              >
-                <SelectTrigger className={cn("dark:bg-background/50 dark:border-border/50", touched.company && errors.company && "border-destructive")}>
-                  <SelectValue placeholder="Buscar empresa..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {companies.map(c => (
-                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              
+              {/* Search Input */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por nombre, BP o sector..."
+                  value={companySearch}
+                  onChange={(e) => setCompanySearch(e.target.value)}
+                  className="pl-9 dark:bg-background/50 dark:border-border/50"
+                  disabled={isEditMode}
+                />
+              </div>
+              
+              {/* Company List */}
+              {!isEditMode && companySearch.length > 0 && (
+                <ScrollArea className="h-48 border rounded-md dark:border-border/50 dark:bg-background/30">
+                  <div className="p-2 space-y-1">
+                    {companies
+                      .filter(c => {
+                        const search = companySearch.toLowerCase();
+                        return (
+                          c.name.toLowerCase().includes(search) ||
+                          (c.bp && c.bp.toLowerCase().includes(search)) ||
+                          (c.sector && c.sector.toLowerCase().includes(search)) ||
+                          (c.tax_id && c.tax_id.toLowerCase().includes(search))
+                        );
+                      })
+                      .slice(0, 50)
+                      .map(c => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedCompanyId(c.id);
+                            setCompanySearch(c.name);
+                            setTouched(prev => ({ ...prev, company: true }));
+                          }}
+                          className={cn(
+                            "w-full text-left px-3 py-2 rounded-md text-sm transition-colors",
+                            "hover:bg-accent/50 dark:hover:bg-accent/30",
+                            selectedCompanyId === c.id && "bg-primary/10 border border-primary/30"
+                          )}
+                        >
+                          <div className="font-medium text-foreground">{c.name}</div>
+                          <div className="flex gap-3 text-xs text-muted-foreground mt-0.5">
+                            {c.bp && <span>BP: {c.bp}</span>}
+                            {c.sector && <span>Sector: {c.sector}</span>}
+                            {c.tax_id && <span>NIF: {c.tax_id}</span>}
+                          </div>
+                        </button>
+                      ))}
+                    {companies.filter(c => {
+                      const search = companySearch.toLowerCase();
+                      return (
+                        c.name.toLowerCase().includes(search) ||
+                        (c.bp && c.bp.toLowerCase().includes(search)) ||
+                        (c.sector && c.sector.toLowerCase().includes(search)) ||
+                        (c.tax_id && c.tax_id.toLowerCase().includes(search))
+                      );
+                    }).length === 0 && (
+                      <div className="text-center py-4 text-muted-foreground text-sm">
+                        No se encontraron empresas
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
+              )}
+              
+              {/* Selected Company Display */}
+              {selectedCompanyId && selectedCompany && (
+                <div className="p-3 rounded-md bg-primary/5 border border-primary/20 dark:bg-primary/10 dark:border-primary/30">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium text-foreground">{selectedCompany.name}</div>
+                      <div className="flex gap-3 text-xs text-muted-foreground mt-0.5">
+                        {selectedCompany.bp && <span>BP: {selectedCompany.bp}</span>}
+                        {selectedCompany.sector && <span>Sector: {selectedCompany.sector}</span>}
+                      </div>
+                    </div>
+                    {!isEditMode && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedCompanyId('');
+                          setSelectedCompany(null);
+                          setCompanySearch('');
+                        }}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+              
               {touched.company && <ErrorMessage error={errors.company} />}
             </div>
 
