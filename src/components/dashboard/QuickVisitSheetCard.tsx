@@ -661,7 +661,7 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
 
   // Required field label
   const RequiredLabel = ({ children }: { children: React.ReactNode }) => (
-    <Label className="flex items-center gap-1">
+    <Label className="flex items-center gap-1 text-foreground dark:text-foreground">
       {children}
       <span className="text-destructive">*</span>
     </Label>
@@ -773,29 +773,29 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
 
       {/* Dialog for expanded form */}
       <Dialog open={isExpanded} onOpenChange={setIsExpanded}>
-        <DialogContent className="max-w-4xl max-h-[90vh] p-0 gap-0">
-          <DialogHeader className="px-6 py-4 border-b border-border/50 bg-gradient-to-r from-amber-500/10 to-transparent">
+        <DialogContent className="max-w-4xl max-h-[90vh] p-0 gap-0 dark:bg-gradient-to-b dark:from-card dark:to-background">
+          <DialogHeader className="px-6 py-4 border-b border-border/50 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent dark:from-amber-500/20 dark:via-amber-500/10 dark:to-transparent">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-amber-500/20 text-amber-500">
+              <div className="p-2 rounded-lg bg-amber-500/20 text-amber-500 dark:bg-amber-500/30 dark:text-amber-400 shadow-sm dark:shadow-amber-500/10">
                 {isEditMode ? <Edit2 className="h-5 w-5" /> : <FileText className="h-5 w-5" />}
               </div>
               <div>
-                <DialogTitle className="text-xl">
+                <DialogTitle className="text-xl dark:text-foreground">
                   {isEditMode ? 'Editar Ficha de Visita' : 'Nova Fitxa de Visita Comercial'}
                 </DialogTitle>
-                <DialogDescription className="mt-1">
+                <DialogDescription className="mt-1 dark:text-muted-foreground">
                   {isEditMode ? 'Modificar registre existent' : 'Registre complet de visita bancària'}
                 </DialogDescription>
               </div>
             </div>
-            <Badge variant="outline" className="absolute top-4 right-12 text-xs">
+            <Badge variant="outline" className="absolute top-4 right-12 text-xs dark:border-border/50 dark:bg-background/50">
               <span className="text-destructive mr-1">*</span> Camps obligatoris
             </Badge>
           </DialogHeader>
-        <ScrollArea className="h-[600px]">
+        <ScrollArea className="h-[600px] dark:bg-background/30">
           <div className="p-6 space-y-6">
             {/* Company Selection */}
-            <div className="space-y-3">
+            <div className="space-y-3 p-4 rounded-lg bg-muted/30 dark:bg-muted/20 dark:border dark:border-border/30">
               <RequiredLabel>
                 <Building2 className="h-4 w-4 text-primary mr-1" />
                 Seleccionar Empresa
@@ -808,7 +808,7 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
                 }}
                 disabled={isEditMode}
               >
-                <SelectTrigger className={cn(touched.company && errors.company && "border-destructive")}>
+                <SelectTrigger className={cn("dark:bg-background/50 dark:border-border/50", touched.company && errors.company && "border-destructive")}>
                   <SelectValue placeholder="Buscar empresa..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -822,11 +822,11 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
 
             <Accordion type="multiple" defaultValue={["datos-generales"]} className="space-y-3">
               {/* 1. Datos Generales */}
-              <AccordionItem value="datos-generales" className="border rounded-lg px-4">
+              <AccordionItem value="datos-generales" className="border rounded-lg px-4 dark:border-border/50 dark:bg-card/50">
                 <AccordionTrigger className="hover:no-underline py-4">
                   <div className="flex items-center gap-3">
-                    <User className="h-5 w-5 text-blue-500" />
-                    <span className="font-semibold">1. Datos Generales</span>
+                    <User className="h-5 w-5 text-blue-500 dark:text-blue-400" />
+                    <span className="font-semibold text-foreground">1. Datos Generales</span>
                     {(touched.personaContacto && errors.personaContacto) && (
                       <Badge variant="destructive" className="ml-2 text-xs">Campos incompletos</Badge>
                     )}
@@ -1009,11 +1009,11 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
               </AccordionItem>
 
               {/* 2. Productos TPV */}
-              <AccordionItem value="productos-tpv" className="border rounded-lg px-4">
+              <AccordionItem value="productos-tpv" className="border rounded-lg px-4 dark:border-border/50 dark:bg-card/50">
                 <AccordionTrigger className="hover:no-underline py-4">
                   <div className="flex items-center gap-3">
-                    <CreditCard className="h-5 w-5 text-green-500" />
-                    <span className="font-semibold">2. Productos TPV</span>
+                    <CreditCard className="h-5 w-5 text-green-500 dark:text-green-400" />
+                    <span className="font-semibold text-foreground">2. Productos TPV</span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="pb-4">
@@ -1063,11 +1063,11 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
               </AccordionItem>
 
               {/* 3. Productos Estándar */}
-              <AccordionItem value="productos-estandar" className="border rounded-lg px-4">
+              <AccordionItem value="productos-estandar" className="border rounded-lg px-4 dark:border-border/50 dark:bg-card/50">
                 <AccordionTrigger className="hover:no-underline py-4">
                   <div className="flex items-center gap-3">
-                    <Landmark className="h-5 w-5 text-purple-500" />
-                    <span className="font-semibold">3. Productos Estándar (Activo/Pasivo)</span>
+                    <Landmark className="h-5 w-5 text-purple-500 dark:text-purple-400" />
+                    <span className="font-semibold text-foreground">3. Productos Estándar (Activo/Pasivo)</span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="pb-4">
@@ -1121,11 +1121,11 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
               </AccordionItem>
 
               {/* 4. Servicios */}
-              <AccordionItem value="servicios" className="border rounded-lg px-4">
+              <AccordionItem value="servicios" className="border rounded-lg px-4 dark:border-border/50 dark:bg-card/50">
                 <AccordionTrigger className="hover:no-underline py-4">
                   <div className="flex items-center gap-3">
-                    <Shield className="h-5 w-5 text-cyan-500" />
-                    <span className="font-semibold">4. Banca Online, Nóminas, Seguros y Planes</span>
+                    <Shield className="h-5 w-5 text-cyan-500 dark:text-cyan-400" />
+                    <span className="font-semibold text-foreground">4. Banca Online, Nóminas, Seguros y Planes</span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="pb-4">
@@ -1221,11 +1221,11 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
               </AccordionItem>
 
               {/* 5. Datos Financieros */}
-              <AccordionItem value="datos-financieros" className="border rounded-lg px-4">
+              <AccordionItem value="datos-financieros" className="border rounded-lg px-4 dark:border-border/50 dark:bg-card/50">
                 <AccordionTrigger className="hover:no-underline py-4">
                   <div className="flex items-center gap-3">
-                    <TrendingUp className="h-5 w-5 text-orange-500" />
-                    <span className="font-semibold">5. Datos Financieros (MTR/P&L/TPV)</span>
+                    <TrendingUp className="h-5 w-5 text-orange-500 dark:text-orange-400" />
+                    <span className="font-semibold text-foreground">5. Datos Financieros (MTR/P&L/TPV)</span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="pb-4">
@@ -1265,11 +1265,11 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
               </AccordionItem>
 
               {/* 6. Vinculación */}
-              <AccordionItem value="vinculacion" className="border rounded-lg px-4">
+              <AccordionItem value="vinculacion" className="border rounded-lg px-4 dark:border-border/50 dark:bg-card/50">
                 <AccordionTrigger className="hover:no-underline py-4">
                   <div className="flex items-center gap-3">
-                    <BarChart3 className="h-5 w-5 text-pink-500" />
-                    <span className="font-semibold">6. Grado de Vinculación</span>
+                    <BarChart3 className="h-5 w-5 text-pink-500 dark:text-pink-400" />
+                    <span className="font-semibold text-foreground">6. Grado de Vinculación</span>
                     {vinculacionLoaded && (
                       <Badge variant="outline" className="ml-2 text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800">
                         <RefreshCw className="h-3 w-3 mr-1" />
@@ -1352,11 +1352,11 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
               </AccordionItem>
 
               {/* 7. Observaciones y Éxito */}
-              <AccordionItem value="observaciones" className="border rounded-lg px-4">
+              <AccordionItem value="observaciones" className="border rounded-lg px-4 dark:border-border/50 dark:bg-card/50">
                 <AccordionTrigger className="hover:no-underline py-4">
                   <div className="flex items-center gap-3">
-                    <Target className="h-5 w-5 text-red-500" />
-                    <span className="font-semibold">7. Observaciones y Grado de Éxito</span>
+                    <Target className="h-5 w-5 text-red-500 dark:text-red-400" />
+                    <span className="font-semibold text-foreground">7. Observaciones y Grado de Éxito</span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="pb-4">
@@ -1429,11 +1429,11 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
             </Accordion>
 
             {/* Save Button */}
-            <div className="flex justify-end gap-3 pt-4 border-t border-border/50">
-              <Button variant="outline" onClick={handleClose}>
+            <div className="flex justify-end gap-3 pt-4 border-t border-border/50 dark:border-border/30">
+              <Button variant="outline" onClick={handleClose} className="dark:bg-background/50 dark:hover:bg-muted/80">
                 Cancelar
               </Button>
-              <Button onClick={handleSave} disabled={saving} className="gap-2">
+              <Button onClick={handleSave} disabled={saving} className="gap-2 dark:shadow-sm dark:shadow-primary/20">
                 <Save className="h-4 w-4" />
                 {saving ? 'Guardant...' : (isEditMode ? 'Actualitzar Fitxa' : 'Guardar Fitxa')}
               </Button>

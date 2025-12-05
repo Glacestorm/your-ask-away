@@ -488,15 +488,16 @@ export function MapDashboardCard({ onNavigateToMap }: MapDashboardCardProps) {
 
       {/* Dialog for expanded view */}
       <Dialog open={isExpanded} onOpenChange={setIsExpanded}>
-        <DialogContent className="max-w-3xl max-h-[85vh] p-0 gap-0 overflow-hidden">
-          <DialogHeader className="px-6 py-4 border-b border-border/50 bg-gradient-to-r from-primary/10 to-transparent">
+        <DialogContent className="max-w-3xl max-h-[85vh] p-0 gap-0 overflow-hidden dark:bg-gradient-to-b dark:from-card dark:to-background">
+          <DialogHeader className="px-6 py-4 border-b border-border/50 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent dark:from-primary/20 dark:via-primary/10 dark:to-transparent">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-md">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-md dark:shadow-primary/20">
                 <Map className="h-5 w-5 text-primary-foreground" />
               </div>
               <div>
-                <DialogTitle className="text-lg">Mapa d'Empreses</DialogTitle>
-                <DialogDescription>
+                <DialogTitle className="text-lg dark:text-foreground">Mapa d'Empreses</DialogTitle>
+                <DialogDescription className="dark:text-muted-foreground">
+                  Visualitza les teves empreses i vinculacions
                 </DialogDescription>
               </div>
             </div>
@@ -505,18 +506,18 @@ export function MapDashboardCard({ onNavigateToMap }: MapDashboardCardProps) {
           <div className="p-6 space-y-4 overflow-y-auto max-h-[calc(85vh-80px)]">
             {/* Stats row */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 dark:bg-muted/30 dark:border dark:border-border/30">
                 <Building2 className="h-4 w-4 text-primary" />
                 <div>
                   <span className="text-xs text-muted-foreground">Total empreses</span>
-                  <p className="font-semibold text-lg">{totalCount}</p>
+                  <p className="font-semibold text-lg text-foreground">{totalCount}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
-                <TrendingUp className="h-4 w-4 text-green-500" />
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 dark:bg-muted/30 dark:border dark:border-border/30">
+                <TrendingUp className="h-4 w-4 text-green-500 dark:text-green-400" />
                 <div>
                   <span className="text-xs text-muted-foreground">Vinculació mitjana</span>
-                  <p className="font-semibold text-lg">{avgVinculacion.toFixed(0)}%</p>
+                  <p className="font-semibold text-lg text-foreground">{avgVinculacion.toFixed(0)}%</p>
                 </div>
               </div>
             </div>
@@ -525,14 +526,14 @@ export function MapDashboardCard({ onNavigateToMap }: MapDashboardCardProps) {
             {companies.length > 0 && (
           <div className="space-y-1.5" ref={chartRef}>
             <p className="text-[10px] text-muted-foreground font-medium">Distribució per vinculació:</p>
-            <div className="flex h-5 w-full rounded-full overflow-hidden bg-muted">
+            <div className="flex h-5 w-full rounded-full overflow-hidden bg-muted dark:bg-muted/50">
               <TooltipProvider delayDuration={100}>
                 {vinculacionCounts.high > 0 && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div 
-                        className={`bg-green-500 h-full cursor-pointer hover:brightness-110 transition-all duration-500 ease-out ${
-                          vinculacionFilter === 'high' ? 'ring-2 ring-primary ring-offset-1' : ''
+                        className={`bg-green-500 dark:bg-green-600 h-full cursor-pointer hover:brightness-110 transition-all duration-500 ease-out ${
+                          vinculacionFilter === 'high' ? 'ring-2 ring-primary ring-offset-1 dark:ring-offset-background' : ''
                         }`}
                         style={{ 
                           width: chartVisible ? `${(vinculacionCounts.high / companies.length) * 100}%` : '0%',
@@ -553,8 +554,8 @@ export function MapDashboardCard({ onNavigateToMap }: MapDashboardCardProps) {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div 
-                        className={`bg-yellow-500 h-full cursor-pointer hover:brightness-110 transition-all duration-500 ease-out ${
-                          vinculacionFilter === 'medium' ? 'ring-2 ring-primary ring-offset-1' : ''
+                        className={`bg-yellow-500 dark:bg-yellow-600 h-full cursor-pointer hover:brightness-110 transition-all duration-500 ease-out ${
+                          vinculacionFilter === 'medium' ? 'ring-2 ring-primary ring-offset-1 dark:ring-offset-background' : ''
                         }`}
                         style={{ 
                           width: chartVisible ? `${(vinculacionCounts.medium / companies.length) * 100}%` : '0%',
@@ -575,8 +576,8 @@ export function MapDashboardCard({ onNavigateToMap }: MapDashboardCardProps) {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div 
-                        className={`bg-red-500 h-full cursor-pointer hover:brightness-110 transition-all duration-500 ease-out ${
-                          vinculacionFilter === 'low' ? 'ring-2 ring-primary ring-offset-1' : ''
+                        className={`bg-red-500 dark:bg-red-600 h-full cursor-pointer hover:brightness-110 transition-all duration-500 ease-out ${
+                          vinculacionFilter === 'low' ? 'ring-2 ring-primary ring-offset-1 dark:ring-offset-background' : ''
                         }`}
                         style={{ 
                           width: chartVisible ? `${(vinculacionCounts.low / companies.length) * 100}%` : '0%',
@@ -877,10 +878,10 @@ export function MapDashboardCard({ onNavigateToMap }: MapDashboardCardProps) {
             {/* Table View */}
             {chartViewMode === 'table' && (
               <div className="space-y-1">
-                <div className="overflow-hidden rounded-md border border-border/50">
+                <div className="overflow-hidden rounded-md border border-border/50 dark:border-border/30">
                   <table className="w-full text-[9px]">
                     <thead>
-                      <tr className="bg-muted/50">
+                      <tr className="bg-muted/50 dark:bg-muted/30">
                         <th className="px-1.5 py-1 text-left font-medium text-muted-foreground">Mes</th>
                         <th className="px-1.5 py-1 text-right font-medium text-muted-foreground">Visites</th>
                         {hasLastYearData && <th className="px-1.5 py-1 text-right font-medium text-muted-foreground">Ant.</th>}
@@ -987,11 +988,11 @@ export function MapDashboardCard({ onNavigateToMap }: MapDashboardCardProps) {
             {sortedCompanies.map((company) => (
               <div 
                 key={company.id}
-                className="w-full py-1.5 px-2 rounded-md bg-muted/50 hover:bg-primary/10 hover:border-primary/30 border border-transparent transition-all group"
+                className="w-full py-1.5 px-2 rounded-md bg-muted/50 dark:bg-muted/30 hover:bg-primary/10 dark:hover:bg-primary/20 hover:border-primary/30 dark:hover:border-primary/40 border border-transparent dark:border-border/20 transition-all group"
               >
                 <div className="flex items-center gap-2">
                   {company.photo_url ? (
-                    <div className="h-8 w-8 rounded-md overflow-hidden flex-shrink-0 border border-border/50 group-hover:border-primary/50 transition-all relative">
+                    <div className="h-8 w-8 rounded-md overflow-hidden flex-shrink-0 border border-border/50 dark:border-border/30 group-hover:border-primary/50 transition-all relative">
                       <img 
                         src={company.photo_url} 
                         alt={company.name}
@@ -1004,7 +1005,7 @@ export function MapDashboardCard({ onNavigateToMap }: MapDashboardCardProps) {
                       )}
                     </div>
                   ) : (
-                    <div className="h-8 w-8 rounded-md bg-muted flex items-center justify-center flex-shrink-0 border border-border/50 group-hover:border-primary/50 transition-colors">
+                    <div className="h-8 w-8 rounded-md bg-muted dark:bg-muted/50 flex items-center justify-center flex-shrink-0 border border-border/50 dark:border-border/30 group-hover:border-primary/50 transition-colors">
                       <MapPin className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
                     </div>
                   )}
@@ -1115,7 +1116,7 @@ export function MapDashboardCard({ onNavigateToMap }: MapDashboardCardProps) {
             <Button 
               variant="default" 
               size="default" 
-              className="w-full mt-4"
+              className="w-full mt-4 dark:shadow-sm dark:shadow-primary/20"
               onClick={handleClick}
             >
               <Map className="h-4 w-4 mr-2" />
