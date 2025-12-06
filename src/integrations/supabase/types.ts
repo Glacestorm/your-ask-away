@@ -2032,6 +2032,251 @@ export type Database = {
         }
         Relationships: []
       }
+      provisional_balance_sheets: {
+        Row: {
+          cash_equivalents: number | null
+          created_at: string
+          current_year_result: number | null
+          deferred_tax_assets: number | null
+          deferred_tax_liabilities: number | null
+          id: string
+          intangible_assets: number | null
+          inventory: number | null
+          long_term_debts: number | null
+          long_term_financial_investments: number | null
+          long_term_provisions: number | null
+          other_creditors: number | null
+          provisional_statement_id: string
+          real_estate_investments: number | null
+          reserves: number | null
+          retained_earnings: number | null
+          share_capital: number | null
+          share_premium: number | null
+          short_term_debts: number | null
+          short_term_financial_investments: number | null
+          short_term_provisions: number | null
+          tangible_assets: number | null
+          trade_payables: number | null
+          trade_receivables: number | null
+          updated_at: string
+        }
+        Insert: {
+          cash_equivalents?: number | null
+          created_at?: string
+          current_year_result?: number | null
+          deferred_tax_assets?: number | null
+          deferred_tax_liabilities?: number | null
+          id?: string
+          intangible_assets?: number | null
+          inventory?: number | null
+          long_term_debts?: number | null
+          long_term_financial_investments?: number | null
+          long_term_provisions?: number | null
+          other_creditors?: number | null
+          provisional_statement_id: string
+          real_estate_investments?: number | null
+          reserves?: number | null
+          retained_earnings?: number | null
+          share_capital?: number | null
+          share_premium?: number | null
+          short_term_debts?: number | null
+          short_term_financial_investments?: number | null
+          short_term_provisions?: number | null
+          tangible_assets?: number | null
+          trade_payables?: number | null
+          trade_receivables?: number | null
+          updated_at?: string
+        }
+        Update: {
+          cash_equivalents?: number | null
+          created_at?: string
+          current_year_result?: number | null
+          deferred_tax_assets?: number | null
+          deferred_tax_liabilities?: number | null
+          id?: string
+          intangible_assets?: number | null
+          inventory?: number | null
+          long_term_debts?: number | null
+          long_term_financial_investments?: number | null
+          long_term_provisions?: number | null
+          other_creditors?: number | null
+          provisional_statement_id?: string
+          real_estate_investments?: number | null
+          reserves?: number | null
+          retained_earnings?: number | null
+          share_capital?: number | null
+          share_premium?: number | null
+          short_term_debts?: number | null
+          short_term_financial_investments?: number | null
+          short_term_provisions?: number | null
+          tangible_assets?: number | null
+          trade_payables?: number | null
+          trade_receivables?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provisional_balance_sheets_provisional_statement_id_fkey"
+            columns: ["provisional_statement_id"]
+            isOneToOne: true
+            referencedRelation: "provisional_financial_statements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provisional_financial_statements: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          fiscal_year: number
+          id: string
+          is_approved: boolean
+          period_number: number
+          period_type: Database["public"]["Enums"]["provisional_period_type"]
+          source: Database["public"]["Enums"]["financial_data_source"]
+          statement_type: Database["public"]["Enums"]["financial_statement_type"]
+          status: Database["public"]["Enums"]["financial_statement_status"]
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          fiscal_year: number
+          id?: string
+          is_approved?: boolean
+          period_number?: number
+          period_type?: Database["public"]["Enums"]["provisional_period_type"]
+          source?: Database["public"]["Enums"]["financial_data_source"]
+          statement_type?: Database["public"]["Enums"]["financial_statement_type"]
+          status?: Database["public"]["Enums"]["financial_statement_status"]
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          fiscal_year?: number
+          id?: string
+          is_approved?: boolean
+          period_number?: number
+          period_type?: Database["public"]["Enums"]["provisional_period_type"]
+          source?: Database["public"]["Enums"]["financial_data_source"]
+          statement_type?: Database["public"]["Enums"]["financial_statement_type"]
+          status?: Database["public"]["Enums"]["financial_statement_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provisional_financial_statements_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provisional_financial_statements_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provisional_financial_statements_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provisional_income_statements: {
+        Row: {
+          capitalized_work: number | null
+          corporate_tax: number | null
+          created_at: string
+          depreciation: number | null
+          exchange_differences: number | null
+          financial_expenses: number | null
+          financial_income: number | null
+          id: string
+          impairment_financial_instruments: number | null
+          impairment_trade_operations: number | null
+          inventory_variation: number | null
+          net_turnover: number | null
+          operating_grants: number | null
+          other_financial_results: number | null
+          other_operating_expenses: number | null
+          other_operating_income: number | null
+          other_operating_results: number | null
+          personnel_expenses: number | null
+          provisional_statement_id: string
+          supplies: number | null
+          updated_at: string
+        }
+        Insert: {
+          capitalized_work?: number | null
+          corporate_tax?: number | null
+          created_at?: string
+          depreciation?: number | null
+          exchange_differences?: number | null
+          financial_expenses?: number | null
+          financial_income?: number | null
+          id?: string
+          impairment_financial_instruments?: number | null
+          impairment_trade_operations?: number | null
+          inventory_variation?: number | null
+          net_turnover?: number | null
+          operating_grants?: number | null
+          other_financial_results?: number | null
+          other_operating_expenses?: number | null
+          other_operating_income?: number | null
+          other_operating_results?: number | null
+          personnel_expenses?: number | null
+          provisional_statement_id: string
+          supplies?: number | null
+          updated_at?: string
+        }
+        Update: {
+          capitalized_work?: number | null
+          corporate_tax?: number | null
+          created_at?: string
+          depreciation?: number | null
+          exchange_differences?: number | null
+          financial_expenses?: number | null
+          financial_income?: number | null
+          id?: string
+          impairment_financial_instruments?: number | null
+          impairment_trade_operations?: number | null
+          inventory_variation?: number | null
+          net_turnover?: number | null
+          operating_grants?: number | null
+          other_financial_results?: number | null
+          other_operating_expenses?: number | null
+          other_operating_income?: number | null
+          other_operating_results?: number | null
+          personnel_expenses?: number | null
+          provisional_statement_id?: string
+          supplies?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provisional_income_statements_provisional_statement_id_fkey"
+            columns: ["provisional_statement_id"]
+            isOneToOne: true
+            referencedRelation: "provisional_financial_statements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       status_colors: {
         Row: {
           color_hex: string
@@ -2470,6 +2715,7 @@ export type Database = {
       financial_data_source: "manual" | "pdf_import"
       financial_statement_status: "draft" | "submitted" | "approved"
       financial_statement_type: "normal" | "abreujat" | "simplificat"
+      provisional_period_type: "quarterly" | "semiannual" | "annual"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2609,6 +2855,7 @@ export const Constants = {
       financial_data_source: ["manual", "pdf_import"],
       financial_statement_status: ["draft", "submitted", "approved"],
       financial_statement_type: ["normal", "abreujat", "simplificat"],
+      provisional_period_type: ["quarterly", "semiannual", "annual"],
     },
   },
 } as const

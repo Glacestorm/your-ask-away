@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { FileUp, Plus, CheckCircle, Clock, FileText, Wallet, RefreshCcw, Archive, Building2, CreditCard, Pyramid, TrendingUp, Target, ClipboardCheck, FileBarChart } from 'lucide-react';
+import { FileUp, Plus, CheckCircle, Clock, FileText, Wallet, RefreshCcw, Archive, Building2, CreditCard, Pyramid, TrendingUp, Target, ClipboardCheck, FileBarChart, CalendarClock } from 'lucide-react';
 import BalanceSheetForm from './BalanceSheetForm';
 import IncomeStatementForm from './IncomeStatementForm';
 import CashFlowForm from './CashFlowForm';
@@ -26,6 +26,7 @@ import { ProfitabilityTab } from './ProfitabilityTab';
 import { ValuationTab } from './ValuationTab';
 import { AuditTab } from './AuditTab';
 import { ReportsTab } from './ReportsTab';
+import { ProvisionalStatementsManager } from './ProvisionalStatementsManager';
 
 interface Company {
   id: string;
@@ -422,6 +423,10 @@ const AccountingManager = () => {
               <FileBarChart className="w-3 h-3 mr-1" />
               Informes
             </TabsTrigger>
+            <TabsTrigger value="provisional" className="text-xs px-2 py-1.5">
+              <CalendarClock className="w-3 h-3 mr-1" />
+              Previsional
+            </TabsTrigger>
             <TabsTrigger value="history" className="text-xs px-2 py-1.5">Historial</TabsTrigger>
           </TabsList>
           
@@ -513,6 +518,13 @@ const AccountingManager = () => {
             />
           </TabsContent>
           
+          <TabsContent value="provisional">
+            <ProvisionalStatementsManager 
+              companyId={selectedCompany.id}
+              companyName={selectedCompany.name}
+            />
+          </TabsContent>
+
           <TabsContent value="history">
             <FinancialStatementsHistory 
               companyId={selectedCompany.id}
