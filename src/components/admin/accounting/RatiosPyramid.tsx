@@ -84,6 +84,18 @@ const RatiosPyramid: React.FC<RatiosPyramidProps> = ({ companyId, companyName })
     const currentAssets = (balance?.inventory || 0) + (balance?.trade_receivables || 0) + (balance?.cash_equivalents || 0);
     const addedValue = netTurnover - supplies;
 
+    const fixedAssets = (balance?.tangible_assets || 0) + (balance?.intangible_assets || 0);
+    const longTermDebts = (balance?.long_term_debts || 0) + (balance?.long_term_group_debts || 0);
+    const shortTermDebts = (balance?.short_term_debts || 0) + (balance?.trade_payables || 0) + (balance?.other_creditors || 0);
+    const totalDebts = longTermDebts + shortTermDebts;
+    const cashFlow = netResult + depreciation;
+    const shareCapital = balance?.share_capital || 0;
+    const operatingResult = ebit;
+    const financialResult = -financialExpenses;
+    const realizable = balance?.trade_receivables || 0;
+    const available = balance?.cash_equivalents || 0;
+    const workingCapitalNeeds = currentAssets - shortTermDebts;
+
     switch (ratioNum) {
       case 1: return equity !== 0 ? (netResult / equity) * 100 : 0;
       case 2: return netTurnover !== 0 ? (netResult / netTurnover) * 100 : 0;
@@ -100,6 +112,31 @@ const RatiosPyramid: React.FC<RatiosPyramidProps> = ({ companyId, companyName })
       case 13: return addedValue !== 0 ? ((addedValue - (income?.inventory_variation || 0)) / addedValue) * 100 : 0;
       case 14: return grossMargin !== 0 ? (supplies / grossMargin) * 100 : 0;
       case 15: return netTurnover !== 0 ? (otherExpenses / netTurnover) * 100 : 0;
+      case 16: return netTurnover !== 0 ? (otherExpenses / netTurnover) * 100 : 0;
+      case 17: return netTurnover !== 0 ? (depreciation / netTurnover) * 100 : 0;
+      case 18: return employees !== 0 ? (personnelExpenses / employees) : 0;
+      case 19: return employees !== 0 ? (netTurnover / employees) : 0;
+      case 20: return ebit !== 0 ? (financialExpenses / ebit) * 100 : 0;
+      case 21: return netTurnover !== 0 ? (cashFlow / netTurnover) * 100 : 0;
+      case 22: return longTermDebts !== 0 ? (cashFlow / longTermDebts) * 100 : 0;
+      case 23: return netResult !== 0 ? 0 : 0; // Dividendo no disponible
+      case 24: return shareCapital !== 0 ? 0 : 0; // Dividendo no disponible
+      case 25: return fixedAssets !== 0 ? (netTurnover / fixedAssets) * 100 : 0;
+      case 26: return currentAssets !== 0 ? (netTurnover / currentAssets) * 100 : 0;
+      case 27: return netTurnover !== 0 ? (fixedAssets / netTurnover) * 100 : 0;
+      case 28: return 0; // Requiere datos del ejercicio anterior
+      case 29: return sectorSales !== 0 ? (netTurnover / sectorSales) * 100 : 0;
+      case 30: return sectorSales !== 0 ? (netResult / sectorSales) * 100 : 0;
+      case 31: return netTurnover !== 0 ? (addedValue / netTurnover) * 100 : 0;
+      case 32: return totalAssets !== 0 ? (addedValue / totalAssets) * 100 : 0;
+      case 33: return totalAssets !== 0 ? (operatingResult / totalAssets) * 100 : 0;
+      case 34: return totalAssets !== 0 ? (financialResult / totalAssets) * 100 : 0;
+      case 35: return totalAssets !== 0 ? (resultBeforeTax / totalAssets) * 100 : 0;
+      case 36: return netTurnover !== 0 ? (workingCapitalNeeds / netTurnover) * 100 : 0;
+      case 37: return totalDebts !== 0 ? (totalAssets / totalDebts) * 100 : 0;
+      case 38: return shortTermDebts !== 0 ? (sectorSales / shortTermDebts) * 100 : 0;
+      case 39: return shortTermDebts !== 0 ? ((available + realizable) / shortTermDebts) * 100 : 0;
+      case 40: return shortTermDebts !== 0 ? (available / shortTermDebts) * 100 : 0;
       default: return 0;
     }
   };
@@ -120,6 +157,31 @@ const RatiosPyramid: React.FC<RatiosPyramidProps> = ({ companyId, companyName })
     { num: 13, formula: 'Incremento Valor Añadido / Valor Añadido' },
     { num: 14, formula: 'Consumos de Explotación / Margen Bruto' },
     { num: 15, formula: 'Gastos de Publicidad / Ventas' },
+    { num: 16, formula: 'Otros Gastos Comerciales / Ventas' },
+    { num: 17, formula: 'Amortizaciones / Ventas' },
+    { num: 18, formula: 'Gastos Personal / Nº de empleados' },
+    { num: 19, formula: 'Ventas / Nº de empleados' },
+    { num: 20, formula: 'Gastos Financieros / B.A.I.I.' },
+    { num: 21, formula: 'Cash Flow / Ventas' },
+    { num: 22, formula: 'Cash Flow / Préstamos' },
+    { num: 23, formula: 'Dividendo / Bº Neto' },
+    { num: 24, formula: 'Dividendo / Capital social' },
+    { num: 25, formula: 'Ventas / Activo Fijo' },
+    { num: 26, formula: 'Ventas / Activo Circulante' },
+    { num: 27, formula: 'Inversiones / Ventas' },
+    { num: 28, formula: 'Ventas Ej. Actual / Ventas Ej. Anterior' },
+    { num: 29, formula: 'Ventas / Ventas Sector' },
+    { num: 30, formula: 'Beneficio / Ventas Sector' },
+    { num: 31, formula: 'Valor Añadido / Ventas' },
+    { num: 32, formula: 'Valor Añadido / Activo' },
+    { num: 33, formula: 'Resultado Explotación / Activo' },
+    { num: 34, formula: 'Resultado Financiero / Activo' },
+    { num: 35, formula: 'Resultado Antes Impuestos / Activo' },
+    { num: 36, formula: 'Necesidades Fondo Maniobra / Ventas' },
+    { num: 37, formula: 'Activo real / Deudas' },
+    { num: 38, formula: 'Ventas Sector / Exigible c/p' },
+    { num: 39, formula: 'Disponible + Realizable / Exigible c/p' },
+    { num: 40, formula: 'Disponible / Exigible c/p' },
   ];
 
   const formatValue = (value: number): string => {
@@ -364,45 +426,47 @@ const RatiosPyramid: React.FC<RatiosPyramidProps> = ({ companyId, companyName })
         </div>
 
         {/* Right Side - Ratios Table and Chart */}
-        <div className="w-[500px] bg-[#2d2d44] p-3 border-l border-gray-700 overflow-y-auto">
-          {/* Ratios Table */}
-          <div className="overflow-x-auto mb-4">
-            <table className="w-full text-xs border-collapse">
-              <thead>
-                <tr className="bg-amber-800">
-                  <th className="border border-amber-900 p-1 text-center w-12">Gráfico</th>
-                  <th className="border border-amber-900 p-1 text-center w-12">Nº Ratio</th>
-                  <th className="border border-amber-900 p-1 text-left">Fórmula del Ratio</th>
-                  {years.slice(0, 4).map(year => (
-                    <th key={year} className="border border-amber-900 p-1 text-center w-20">Diciembre-{year}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {ratioDefinitions.map((ratio, idx) => (
-                  <tr key={ratio.num} className={idx % 2 === 0 ? 'bg-gray-700' : 'bg-gray-800'}>
-                    <td className="border border-gray-600 p-1 text-center">
-                      <input 
-                        type="checkbox"
-                        checked={selectedRatios.includes(ratio.num)}
-                        onChange={() => toggleRatioSelection(ratio.num)}
-                        className="w-3 h-3"
-                      />
-                    </td>
-                    <td className="border border-gray-600 p-1 text-center text-amber-400">{ratio.num}</td>
-                    <td className="border border-gray-600 p-1 text-gray-300">{ratio.formula}</td>
-                    {years.slice(0, 4).map(year => {
-                      const value = calculateRatio(getYearData(year), ratio.num);
-                      return (
-                        <td key={year} className={`border border-gray-600 p-1 text-center ${value < 0 ? 'text-red-400' : 'text-green-400'}`}>
-                          {formatValue(value)}
-                        </td>
-                      );
-                    })}
+        <div className="w-[550px] bg-[#2d2d44] p-3 border-l border-gray-700 flex flex-col">
+          {/* Ratios Table with scroll */}
+          <div className="mb-4 flex-1 min-h-0">
+            <div className="h-[400px] overflow-y-auto overflow-x-auto border border-gray-600 rounded">
+              <table className="w-full text-xs border-collapse min-w-[600px]">
+                <thead className="sticky top-0 z-10">
+                  <tr className="bg-amber-800">
+                    <th className="border border-amber-900 p-1 text-center w-10 bg-amber-800">Gráfico</th>
+                    <th className="border border-amber-900 p-1 text-center w-10 bg-amber-800">Nº Ratio</th>
+                    <th className="border border-amber-900 p-1 text-left min-w-[200px] bg-amber-800">Fórmula del Ratio</th>
+                    {years.map(year => (
+                      <th key={year} className="border border-amber-900 p-1 text-center w-20 bg-amber-800 whitespace-nowrap">Dic-{year}</th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {ratioDefinitions.map((ratio, idx) => (
+                    <tr key={ratio.num} className={idx % 2 === 0 ? 'bg-gray-700' : 'bg-gray-800'}>
+                      <td className="border border-gray-600 p-1 text-center">
+                        <input 
+                          type="checkbox"
+                          checked={selectedRatios.includes(ratio.num)}
+                          onChange={() => toggleRatioSelection(ratio.num)}
+                          className="w-3 h-3"
+                        />
+                      </td>
+                      <td className="border border-gray-600 p-1 text-center text-amber-400">{ratio.num}</td>
+                      <td className="border border-gray-600 p-1 text-gray-300 whitespace-nowrap">{ratio.formula}</td>
+                      {years.map(year => {
+                        const value = calculateRatio(getYearData(year), ratio.num);
+                        return (
+                          <td key={year} className={`border border-gray-600 p-1 text-center whitespace-nowrap ${value < 0 ? 'text-red-400' : 'text-green-400'}`}>
+                            {formatValue(value)}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {/* Evolution Chart */}
@@ -454,15 +518,15 @@ const RatiosPyramid: React.FC<RatiosPyramidProps> = ({ companyId, companyName })
                 <thead>
                   <tr>
                     <th className="border border-gray-600 p-1 bg-gray-700"></th>
-                    {years.slice(0, 4).map(year => (
-                      <th key={year} className="border border-gray-600 p-1 bg-amber-700 text-center">Dic - {year.toString().slice(-2)}</th>
+                    {years.map(year => (
+                      <th key={year} className="border border-gray-600 p-1 bg-amber-700 text-center whitespace-nowrap">Dic - {year.toString().slice(-2)}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   <tr className="bg-amber-100">
-                    <td className="border border-gray-400 p-1 text-gray-800 font-semibold">Nº de empleados</td>
-                    {years.slice(0, 4).map((year, idx) => (
+                    <td className="border border-gray-400 p-1 text-gray-800 font-semibold whitespace-nowrap">Nº de empleados</td>
+                    {years.map((year, idx) => (
                       <td key={year} className="border border-gray-400 p-1 text-center">
                         <input 
                           type="number" 
@@ -474,8 +538,8 @@ const RatiosPyramid: React.FC<RatiosPyramidProps> = ({ companyId, companyName })
                     ))}
                   </tr>
                   <tr className="bg-amber-100">
-                    <td className="border border-gray-400 p-1 text-gray-800 font-semibold">Ventas Sector</td>
-                    {years.slice(0, 4).map((year, idx) => (
+                    <td className="border border-gray-400 p-1 text-gray-800 font-semibold whitespace-nowrap">Ventas Sector</td>
+                    {years.map((year, idx) => (
                       <td key={year} className="border border-gray-400 p-1 text-center">
                         <input 
                           type="number" 
