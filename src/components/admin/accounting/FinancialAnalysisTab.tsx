@@ -10,6 +10,7 @@ import AddedValueAnalysis from "./AddedValueAnalysis";
 import TreasuryMovements from "./TreasuryMovements";
 import FinancingStatement from "./FinancingStatement";
 import EconomicFinancialDashboard from "./EconomicFinancialDashboard";
+import LiquidityDebtRatios from "./LiquidityDebtRatios";
 
 interface FinancialAnalysisTabProps {
   companyId: string;
@@ -202,6 +203,7 @@ export function FinancialAnalysisTab({ companyId, companyName }: FinancialAnalys
             Índex Z
           </TabsTrigger>
           <TabsTrigger value="economic-dashboard" className="text-xs">Quadre Mando</TabsTrigger>
+          <TabsTrigger value="liquidity-debt" className="text-xs">Ràtios Liquidez</TabsTrigger>
           <TabsTrigger value="dashboard" className="text-xs">Dashboard</TabsTrigger>
         </TabsList>
 
@@ -553,6 +555,10 @@ export function FinancialAnalysisTab({ companyId, companyName }: FinancialAnalys
 
         <TabsContent value="economic-dashboard">
           <EconomicFinancialDashboard companyId={companyId} companyName={companyName} />
+        </TabsContent>
+
+        <TabsContent value="liquidity-debt">
+          <LiquidityDebtRatios companyId={companyId} companyName={companyName} />
         </TabsContent>
       </Tabs>
     </div>
