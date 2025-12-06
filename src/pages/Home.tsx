@@ -246,14 +246,14 @@ const Home = () => {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-6 py-12 flex-1">
-        <div className="max-w-6xl mx-auto space-y-8">
+      <main className="container mx-auto px-6 py-6 flex-1">
+        <div className="max-w-6xl mx-auto space-y-6">
           {/* Welcome Section */}
-          <div className="text-center space-y-4 mb-12">
-            <h2 className="text-4xl font-bold tracking-tight">
+          <div className="text-center space-y-2 mb-6">
+            <h2 className="text-2xl font-bold tracking-tight">
               Panell de Control
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-sm text-muted-foreground max-w-xl mx-auto">
               Selecciona una de les opcions disponibles per accedir a les diferents funcionalitats del sistema
             </p>
           </div>
