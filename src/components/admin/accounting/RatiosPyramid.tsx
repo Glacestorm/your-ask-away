@@ -51,9 +51,9 @@ const RatiosPyramid: React.FC<RatiosPyramidProps> = ({ companyId, companyName })
     fetchData();
   }, [companyId]);
 
-  const years = [...new Set([...balanceSheets.map(b => b.fiscal_year), ...incomeStatements.map(i => i.fiscal_year)])]
-    .sort((a, b) => b - a)
-    .slice(0, 5);
+  // Always show 5 years (current year and 4 previous, even if no data)
+  const currentYear = new Date().getFullYear();
+  const displayYears = [currentYear, currentYear - 1, currentYear - 2, currentYear - 3, currentYear - 4];
 
   const getYearData = (year: number) => {
     const balance = balanceSheets.find(b => b.fiscal_year === year);
@@ -194,17 +194,13 @@ const RatiosPyramid: React.FC<RatiosPyramidProps> = ({ companyId, companyName })
     );
   };
 
-  const chartData = years.map(year => ({
+  const chartData = displayYears.map(year => ({
     name: year.toString(),
     value: calculateRatio(getYearData(year), selectedRatios[0] || 1),
   })).reverse();
 
   if (loading) {
     return <div className="flex items-center justify-center h-64 text-muted-foreground">Carregant dades...</div>;
-  }
-
-  if (years.length === 0) {
-    return <div className="flex items-center justify-center h-64 text-muted-foreground">No hi ha dades financeres disponibles</div>;
   }
 
   return (
@@ -428,16 +424,16 @@ const RatiosPyramid: React.FC<RatiosPyramidProps> = ({ companyId, companyName })
         {/* Right Side - Ratios Table and Chart */}
         <div className="w-[550px] bg-[#2d2d44] p-3 border-l border-gray-700 flex flex-col">
           {/* Ratios Table with scroll */}
-          <div className="mb-4 flex-1 min-h-0">
-            <div className="h-[400px] overflow-y-auto overflow-x-auto border border-gray-600 rounded">
-              <table className="w-full text-xs border-collapse min-w-[600px]">
+          <div className="mb-2">
+            <div className="h-[350px] overflow-y-auto overflow-x-auto border border-gray-600 rounded">
+              <table className="w-full text-xs border-collapse min-w-[700px]">
                 <thead className="sticky top-0 z-10">
                   <tr className="bg-amber-800">
                     <th className="border border-amber-900 p-1 text-center w-10 bg-amber-800">Gráfico</th>
                     <th className="border border-amber-900 p-1 text-center w-10 bg-amber-800">Nº Ratio</th>
                     <th className="border border-amber-900 p-1 text-left min-w-[200px] bg-amber-800">Fórmula del Ratio</th>
-                    {years.map(year => (
-                      <th key={year} className="border border-amber-900 p-1 text-center w-20 bg-amber-800 whitespace-nowrap">Dic-{year}</th>
+                    {displayYears.map(year => (
+                      <th key={year} className="border border-amber-900 p-1 text-center w-16 bg-amber-800 whitespace-nowrap">Dic-{year}</th>
                     ))}
                   </tr>
                 </thead>
@@ -454,7 +450,7 @@ const RatiosPyramid: React.FC<RatiosPyramidProps> = ({ companyId, companyName })
                       </td>
                       <td className="border border-gray-600 p-1 text-center text-amber-400">{ratio.num}</td>
                       <td className="border border-gray-600 p-1 text-gray-300 whitespace-nowrap">{ratio.formula}</td>
-                      {years.map(year => {
+                      {displayYears.map(year => {
                         const value = calculateRatio(getYearData(year), ratio.num);
                         return (
                           <td key={year} className={`border border-gray-600 p-1 text-center whitespace-nowrap ${value < 0 ? 'text-red-400' : 'text-green-400'}`}>
@@ -470,7 +466,7 @@ const RatiosPyramid: React.FC<RatiosPyramidProps> = ({ companyId, companyName })
           </div>
 
           {/* Evolution Chart */}
-          <div className="mb-4">
+          <div className="mb-2">
             <div className="text-amber-400 text-sm font-semibold mb-2 border-b border-amber-400 pb-1">GRÁFICO DE EVOLUCIÓN</div>
             <div className="flex items-center gap-4 mb-2 text-xs">
               <span className="text-gray-400">Visión de datos</span>
@@ -518,7 +514,7 @@ const RatiosPyramid: React.FC<RatiosPyramidProps> = ({ companyId, companyName })
                 <thead>
                   <tr>
                     <th className="border border-gray-600 p-1 bg-gray-700"></th>
-                    {years.map(year => (
+                    {displayYears.map(year => (
                       <th key={year} className="border border-gray-600 p-1 bg-amber-700 text-center whitespace-nowrap">Dic - {year.toString().slice(-2)}</th>
                     ))}
                   </tr>
@@ -526,7 +522,7 @@ const RatiosPyramid: React.FC<RatiosPyramidProps> = ({ companyId, companyName })
                 <tbody>
                   <tr className="bg-amber-100">
                     <td className="border border-gray-400 p-1 text-gray-800 font-semibold whitespace-nowrap">Nº de empleados</td>
-                    {years.map((year, idx) => (
+                    {displayYears.map((year, idx) => (
                       <td key={year} className="border border-gray-400 p-1 text-center">
                         <input 
                           type="number" 
@@ -539,10 +535,10 @@ const RatiosPyramid: React.FC<RatiosPyramidProps> = ({ companyId, companyName })
                   </tr>
                   <tr className="bg-amber-100">
                     <td className="border border-gray-400 p-1 text-gray-800 font-semibold whitespace-nowrap">Ventas Sector</td>
-                    {years.map((year, idx) => (
+                    {displayYears.map((year, idx) => (
                       <td key={year} className="border border-gray-400 p-1 text-center">
                         <input 
-                          type="number" 
+                          type="number"
                           value={idx === 0 ? sectorSales : 0}
                           onChange={(e) => idx === 0 && setSectorSales(Number(e.target.value))}
                           className="w-full bg-white text-gray-800 text-center text-xs p-0.5"
