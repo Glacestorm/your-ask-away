@@ -292,6 +292,164 @@ export type Database = {
         }
         Relationships: []
       }
+      balance_sheets: {
+        Row: {
+          accruals_assets: number | null
+          available_for_sale_assets_adjustment: number | null
+          capital_grants: number | null
+          cash_equivalents: number | null
+          created_at: string
+          current_year_result: number | null
+          deferred_tax_assets: number | null
+          deferred_tax_liabilities: number | null
+          goodwill: number | null
+          hedging_operations_adjustment: number | null
+          id: string
+          intangible_assets: number | null
+          interim_dividend: number | null
+          inventory: number | null
+          legal_reserve: number | null
+          liabilities_held_for_sale: number | null
+          long_term_accruals: number | null
+          long_term_debts: number | null
+          long_term_financial_investments: number | null
+          long_term_group_debts: number | null
+          long_term_group_investments: number | null
+          long_term_provisions: number | null
+          long_term_trade_receivables: number | null
+          non_current_assets_held_for_sale: number | null
+          other_creditors: number | null
+          other_equity_instruments: number | null
+          other_value_adjustments: number | null
+          real_estate_investments: number | null
+          retained_earnings: number | null
+          revaluation_reserve: number | null
+          share_capital: number | null
+          share_premium: number | null
+          short_term_accruals: number | null
+          short_term_debts: number | null
+          short_term_financial_investments: number | null
+          short_term_group_debts: number | null
+          short_term_group_receivables: number | null
+          short_term_provisions: number | null
+          statement_id: string
+          statutory_reserves: number | null
+          tangible_assets: number | null
+          trade_payables: number | null
+          trade_receivables: number | null
+          translation_differences: number | null
+          treasury_shares: number | null
+          updated_at: string
+          voluntary_reserves: number | null
+        }
+        Insert: {
+          accruals_assets?: number | null
+          available_for_sale_assets_adjustment?: number | null
+          capital_grants?: number | null
+          cash_equivalents?: number | null
+          created_at?: string
+          current_year_result?: number | null
+          deferred_tax_assets?: number | null
+          deferred_tax_liabilities?: number | null
+          goodwill?: number | null
+          hedging_operations_adjustment?: number | null
+          id?: string
+          intangible_assets?: number | null
+          interim_dividend?: number | null
+          inventory?: number | null
+          legal_reserve?: number | null
+          liabilities_held_for_sale?: number | null
+          long_term_accruals?: number | null
+          long_term_debts?: number | null
+          long_term_financial_investments?: number | null
+          long_term_group_debts?: number | null
+          long_term_group_investments?: number | null
+          long_term_provisions?: number | null
+          long_term_trade_receivables?: number | null
+          non_current_assets_held_for_sale?: number | null
+          other_creditors?: number | null
+          other_equity_instruments?: number | null
+          other_value_adjustments?: number | null
+          real_estate_investments?: number | null
+          retained_earnings?: number | null
+          revaluation_reserve?: number | null
+          share_capital?: number | null
+          share_premium?: number | null
+          short_term_accruals?: number | null
+          short_term_debts?: number | null
+          short_term_financial_investments?: number | null
+          short_term_group_debts?: number | null
+          short_term_group_receivables?: number | null
+          short_term_provisions?: number | null
+          statement_id: string
+          statutory_reserves?: number | null
+          tangible_assets?: number | null
+          trade_payables?: number | null
+          trade_receivables?: number | null
+          translation_differences?: number | null
+          treasury_shares?: number | null
+          updated_at?: string
+          voluntary_reserves?: number | null
+        }
+        Update: {
+          accruals_assets?: number | null
+          available_for_sale_assets_adjustment?: number | null
+          capital_grants?: number | null
+          cash_equivalents?: number | null
+          created_at?: string
+          current_year_result?: number | null
+          deferred_tax_assets?: number | null
+          deferred_tax_liabilities?: number | null
+          goodwill?: number | null
+          hedging_operations_adjustment?: number | null
+          id?: string
+          intangible_assets?: number | null
+          interim_dividend?: number | null
+          inventory?: number | null
+          legal_reserve?: number | null
+          liabilities_held_for_sale?: number | null
+          long_term_accruals?: number | null
+          long_term_debts?: number | null
+          long_term_financial_investments?: number | null
+          long_term_group_debts?: number | null
+          long_term_group_investments?: number | null
+          long_term_provisions?: number | null
+          long_term_trade_receivables?: number | null
+          non_current_assets_held_for_sale?: number | null
+          other_creditors?: number | null
+          other_equity_instruments?: number | null
+          other_value_adjustments?: number | null
+          real_estate_investments?: number | null
+          retained_earnings?: number | null
+          revaluation_reserve?: number | null
+          share_capital?: number | null
+          share_premium?: number | null
+          short_term_accruals?: number | null
+          short_term_debts?: number | null
+          short_term_financial_investments?: number | null
+          short_term_group_debts?: number | null
+          short_term_group_receivables?: number | null
+          short_term_provisions?: number | null
+          statement_id?: string
+          statutory_reserves?: number | null
+          tangible_assets?: number | null
+          trade_payables?: number | null
+          trade_receivables?: number | null
+          translation_differences?: number | null
+          treasury_shares?: number | null
+          updated_at?: string
+          voluntary_reserves?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "balance_sheets_statement_id_fkey"
+            columns: ["statement_id"]
+            isOneToOne: true
+            referencedRelation: "company_financial_statements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       best_practice_comments: {
         Row: {
           content: string
@@ -423,6 +581,173 @@ export type Database = {
             columns: ["gestor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cash_flow_statements: {
+        Row: {
+          corporate_tax_paid: number | null
+          created_at: string
+          depreciation_adjustments: number | null
+          exchange_differences_adjustments: number | null
+          exchange_rate_effect: number | null
+          financial_expenses_adjustments: number | null
+          financial_income_adjustments: number | null
+          financing_dividends_paid: number | null
+          financing_interest_paid: number | null
+          financing_payments_debt: number | null
+          financing_payments_equity: number | null
+          financing_payments_group_debt: number | null
+          financing_receipts_debt: number | null
+          financing_receipts_equity: number | null
+          financing_receipts_grants: number | null
+          financing_receipts_group_debt: number | null
+          gains_losses_financial_instruments: number | null
+          gains_losses_fixed_assets: number | null
+          grants_adjustments: number | null
+          id: string
+          impairment_adjustments: number | null
+          inventory_changes: number | null
+          investing_dividends_received: number | null
+          investing_interest_received: number | null
+          investing_payments_financial: number | null
+          investing_payments_group: number | null
+          investing_payments_intangible: number | null
+          investing_payments_other: number | null
+          investing_payments_real_estate: number | null
+          investing_payments_tangible: number | null
+          investing_receipts_financial: number | null
+          investing_receipts_group: number | null
+          investing_receipts_intangible: number | null
+          investing_receipts_other: number | null
+          investing_receipts_real_estate: number | null
+          investing_receipts_tangible: number | null
+          operating_dividends_received: number | null
+          operating_interest_paid: number | null
+          operating_interest_received: number | null
+          operating_result: number | null
+          other_financing_payments: number | null
+          other_investing_receipts: number | null
+          other_operating_changes: number | null
+          other_operating_payments: number | null
+          payables_changes: number | null
+          provisions_variation: number | null
+          receivables_changes: number | null
+          statement_id: string
+          updated_at: string
+          working_capital_changes: number | null
+        }
+        Insert: {
+          corporate_tax_paid?: number | null
+          created_at?: string
+          depreciation_adjustments?: number | null
+          exchange_differences_adjustments?: number | null
+          exchange_rate_effect?: number | null
+          financial_expenses_adjustments?: number | null
+          financial_income_adjustments?: number | null
+          financing_dividends_paid?: number | null
+          financing_interest_paid?: number | null
+          financing_payments_debt?: number | null
+          financing_payments_equity?: number | null
+          financing_payments_group_debt?: number | null
+          financing_receipts_debt?: number | null
+          financing_receipts_equity?: number | null
+          financing_receipts_grants?: number | null
+          financing_receipts_group_debt?: number | null
+          gains_losses_financial_instruments?: number | null
+          gains_losses_fixed_assets?: number | null
+          grants_adjustments?: number | null
+          id?: string
+          impairment_adjustments?: number | null
+          inventory_changes?: number | null
+          investing_dividends_received?: number | null
+          investing_interest_received?: number | null
+          investing_payments_financial?: number | null
+          investing_payments_group?: number | null
+          investing_payments_intangible?: number | null
+          investing_payments_other?: number | null
+          investing_payments_real_estate?: number | null
+          investing_payments_tangible?: number | null
+          investing_receipts_financial?: number | null
+          investing_receipts_group?: number | null
+          investing_receipts_intangible?: number | null
+          investing_receipts_other?: number | null
+          investing_receipts_real_estate?: number | null
+          investing_receipts_tangible?: number | null
+          operating_dividends_received?: number | null
+          operating_interest_paid?: number | null
+          operating_interest_received?: number | null
+          operating_result?: number | null
+          other_financing_payments?: number | null
+          other_investing_receipts?: number | null
+          other_operating_changes?: number | null
+          other_operating_payments?: number | null
+          payables_changes?: number | null
+          provisions_variation?: number | null
+          receivables_changes?: number | null
+          statement_id: string
+          updated_at?: string
+          working_capital_changes?: number | null
+        }
+        Update: {
+          corporate_tax_paid?: number | null
+          created_at?: string
+          depreciation_adjustments?: number | null
+          exchange_differences_adjustments?: number | null
+          exchange_rate_effect?: number | null
+          financial_expenses_adjustments?: number | null
+          financial_income_adjustments?: number | null
+          financing_dividends_paid?: number | null
+          financing_interest_paid?: number | null
+          financing_payments_debt?: number | null
+          financing_payments_equity?: number | null
+          financing_payments_group_debt?: number | null
+          financing_receipts_debt?: number | null
+          financing_receipts_equity?: number | null
+          financing_receipts_grants?: number | null
+          financing_receipts_group_debt?: number | null
+          gains_losses_financial_instruments?: number | null
+          gains_losses_fixed_assets?: number | null
+          grants_adjustments?: number | null
+          id?: string
+          impairment_adjustments?: number | null
+          inventory_changes?: number | null
+          investing_dividends_received?: number | null
+          investing_interest_received?: number | null
+          investing_payments_financial?: number | null
+          investing_payments_group?: number | null
+          investing_payments_intangible?: number | null
+          investing_payments_other?: number | null
+          investing_payments_real_estate?: number | null
+          investing_payments_tangible?: number | null
+          investing_receipts_financial?: number | null
+          investing_receipts_group?: number | null
+          investing_receipts_intangible?: number | null
+          investing_receipts_other?: number | null
+          investing_receipts_real_estate?: number | null
+          investing_receipts_tangible?: number | null
+          operating_dividends_received?: number | null
+          operating_interest_paid?: number | null
+          operating_interest_received?: number | null
+          operating_result?: number | null
+          other_financing_payments?: number | null
+          other_investing_receipts?: number | null
+          other_operating_changes?: number | null
+          other_operating_payments?: number | null
+          payables_changes?: number | null
+          provisions_variation?: number | null
+          receivables_changes?: number | null
+          statement_id?: string
+          updated_at?: string
+          working_capital_changes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cash_flow_statements_statement_id_fkey"
+            columns: ["statement_id"]
+            isOneToOne: true
+            referencedRelation: "company_financial_statements"
             referencedColumns: ["id"]
           },
         ]
@@ -716,6 +1041,73 @@ export type Database = {
           },
         ]
       }
+      company_financial_statements: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          fiscal_year: number
+          id: string
+          is_archived: boolean
+          source: Database["public"]["Enums"]["financial_data_source"]
+          statement_type: Database["public"]["Enums"]["financial_statement_type"]
+          status: Database["public"]["Enums"]["financial_statement_status"]
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          fiscal_year: number
+          id?: string
+          is_archived?: boolean
+          source?: Database["public"]["Enums"]["financial_data_source"]
+          statement_type?: Database["public"]["Enums"]["financial_statement_type"]
+          status?: Database["public"]["Enums"]["financial_statement_status"]
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          fiscal_year?: number
+          id?: string
+          is_archived?: boolean
+          source?: Database["public"]["Enums"]["financial_data_source"]
+          statement_type?: Database["public"]["Enums"]["financial_statement_type"]
+          status?: Database["public"]["Enums"]["financial_statement_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_financial_statements_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_financial_statements_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_financial_statements_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_photos: {
         Row: {
           company_id: string
@@ -948,6 +1340,256 @@ export type Database = {
         }
         Relationships: []
       }
+      equity_changes_statements: {
+        Row: {
+          adjusted_initial_grants: number | null
+          adjusted_initial_other_equity: number | null
+          adjusted_initial_reserves: number | null
+          adjusted_initial_result: number | null
+          adjusted_initial_retained_earnings: number | null
+          adjusted_initial_share_capital: number | null
+          adjusted_initial_share_premium: number | null
+          adjusted_initial_treasury_shares: number | null
+          adjusted_initial_value_adjustments: number | null
+          created_at: string
+          criterion_changes_reserves: number | null
+          criterion_changes_retained: number | null
+          error_adjustments_reserves: number | null
+          error_adjustments_retained: number | null
+          final_grants: number | null
+          final_other_equity: number | null
+          final_reserves: number | null
+          final_result: number | null
+          final_retained_earnings: number | null
+          final_share_capital: number | null
+          final_share_premium: number | null
+          final_treasury_shares: number | null
+          final_value_adjustments: number | null
+          id: string
+          initial_grants: number | null
+          initial_other_equity: number | null
+          initial_reserves: number | null
+          initial_result: number | null
+          initial_retained_earnings: number | null
+          initial_share_capital: number | null
+          initial_share_premium: number | null
+          initial_treasury_shares: number | null
+          initial_value_adjustments: number | null
+          statement_id: string
+          updated_at: string
+          variation_dividends: number | null
+          variation_grants: number | null
+          variation_income_expenses_equity: number | null
+          variation_other: number | null
+          variation_reserves: number | null
+          variation_result: number | null
+          variation_share_capital: number | null
+          variation_share_premium: number | null
+          variation_treasury_shares: number | null
+        }
+        Insert: {
+          adjusted_initial_grants?: number | null
+          adjusted_initial_other_equity?: number | null
+          adjusted_initial_reserves?: number | null
+          adjusted_initial_result?: number | null
+          adjusted_initial_retained_earnings?: number | null
+          adjusted_initial_share_capital?: number | null
+          adjusted_initial_share_premium?: number | null
+          adjusted_initial_treasury_shares?: number | null
+          adjusted_initial_value_adjustments?: number | null
+          created_at?: string
+          criterion_changes_reserves?: number | null
+          criterion_changes_retained?: number | null
+          error_adjustments_reserves?: number | null
+          error_adjustments_retained?: number | null
+          final_grants?: number | null
+          final_other_equity?: number | null
+          final_reserves?: number | null
+          final_result?: number | null
+          final_retained_earnings?: number | null
+          final_share_capital?: number | null
+          final_share_premium?: number | null
+          final_treasury_shares?: number | null
+          final_value_adjustments?: number | null
+          id?: string
+          initial_grants?: number | null
+          initial_other_equity?: number | null
+          initial_reserves?: number | null
+          initial_result?: number | null
+          initial_retained_earnings?: number | null
+          initial_share_capital?: number | null
+          initial_share_premium?: number | null
+          initial_treasury_shares?: number | null
+          initial_value_adjustments?: number | null
+          statement_id: string
+          updated_at?: string
+          variation_dividends?: number | null
+          variation_grants?: number | null
+          variation_income_expenses_equity?: number | null
+          variation_other?: number | null
+          variation_reserves?: number | null
+          variation_result?: number | null
+          variation_share_capital?: number | null
+          variation_share_premium?: number | null
+          variation_treasury_shares?: number | null
+        }
+        Update: {
+          adjusted_initial_grants?: number | null
+          adjusted_initial_other_equity?: number | null
+          adjusted_initial_reserves?: number | null
+          adjusted_initial_result?: number | null
+          adjusted_initial_retained_earnings?: number | null
+          adjusted_initial_share_capital?: number | null
+          adjusted_initial_share_premium?: number | null
+          adjusted_initial_treasury_shares?: number | null
+          adjusted_initial_value_adjustments?: number | null
+          created_at?: string
+          criterion_changes_reserves?: number | null
+          criterion_changes_retained?: number | null
+          error_adjustments_reserves?: number | null
+          error_adjustments_retained?: number | null
+          final_grants?: number | null
+          final_other_equity?: number | null
+          final_reserves?: number | null
+          final_result?: number | null
+          final_retained_earnings?: number | null
+          final_share_capital?: number | null
+          final_share_premium?: number | null
+          final_treasury_shares?: number | null
+          final_value_adjustments?: number | null
+          id?: string
+          initial_grants?: number | null
+          initial_other_equity?: number | null
+          initial_reserves?: number | null
+          initial_result?: number | null
+          initial_retained_earnings?: number | null
+          initial_share_capital?: number | null
+          initial_share_premium?: number | null
+          initial_treasury_shares?: number | null
+          initial_value_adjustments?: number | null
+          statement_id?: string
+          updated_at?: string
+          variation_dividends?: number | null
+          variation_grants?: number | null
+          variation_income_expenses_equity?: number | null
+          variation_other?: number | null
+          variation_reserves?: number | null
+          variation_result?: number | null
+          variation_share_capital?: number | null
+          variation_share_premium?: number | null
+          variation_treasury_shares?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equity_changes_statements_statement_id_fkey"
+            columns: ["statement_id"]
+            isOneToOne: true
+            referencedRelation: "company_financial_statements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_notes: {
+        Row: {
+          created_at: string
+          id: string
+          note_content: string | null
+          note_number: number
+          note_title: string
+          statement_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note_content?: string | null
+          note_number: number
+          note_title: string
+          statement_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note_content?: string | null
+          note_number?: number
+          note_title?: string
+          statement_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_notes_statement_id_fkey"
+            columns: ["statement_id"]
+            isOneToOne: false
+            referencedRelation: "company_financial_statements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_statements_archive: {
+        Row: {
+          archived_at: string
+          archived_by: string | null
+          balance_sheet_data: Json | null
+          cash_flow_data: Json | null
+          company_id: string
+          created_at: string
+          equity_changes_data: Json | null
+          fiscal_year: number
+          id: string
+          income_statement_data: Json | null
+          notes_data: Json | null
+          original_statement_id: string
+          statement_type: Database["public"]["Enums"]["financial_statement_type"]
+        }
+        Insert: {
+          archived_at?: string
+          archived_by?: string | null
+          balance_sheet_data?: Json | null
+          cash_flow_data?: Json | null
+          company_id: string
+          created_at?: string
+          equity_changes_data?: Json | null
+          fiscal_year: number
+          id?: string
+          income_statement_data?: Json | null
+          notes_data?: Json | null
+          original_statement_id: string
+          statement_type: Database["public"]["Enums"]["financial_statement_type"]
+        }
+        Update: {
+          archived_at?: string
+          archived_by?: string | null
+          balance_sheet_data?: Json | null
+          cash_flow_data?: Json | null
+          company_id?: string
+          created_at?: string
+          equity_changes_data?: Json | null
+          fiscal_year?: number
+          id?: string
+          income_statement_data?: Json | null
+          notes_data?: Json | null
+          original_statement_id?: string
+          statement_type?: Database["public"]["Enums"]["financial_statement_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_statements_archive_archived_by_fkey"
+            columns: ["archived_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_statements_archive_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       goals: {
         Row: {
           assigned_to: string | null
@@ -1037,6 +1679,95 @@ export type Database = {
           total_records?: number
         }
         Relationships: []
+      }
+      income_statements: {
+        Row: {
+          capitalized_work: number | null
+          corporate_tax: number | null
+          created_at: string
+          depreciation: number | null
+          discontinued_operations_result: number | null
+          excess_provisions: number | null
+          exchange_differences: number | null
+          financial_expenses: number | null
+          financial_income: number | null
+          grants_allocation: number | null
+          id: string
+          impairment_financial_instruments: number | null
+          impairment_trade_operations: number | null
+          inventory_variation: number | null
+          net_turnover: number | null
+          operating_grants: number | null
+          other_financial_results: number | null
+          other_operating_expenses: number | null
+          other_operating_income: number | null
+          other_operating_results: number | null
+          personnel_expenses: number | null
+          statement_id: string
+          supplies: number | null
+          updated_at: string
+        }
+        Insert: {
+          capitalized_work?: number | null
+          corporate_tax?: number | null
+          created_at?: string
+          depreciation?: number | null
+          discontinued_operations_result?: number | null
+          excess_provisions?: number | null
+          exchange_differences?: number | null
+          financial_expenses?: number | null
+          financial_income?: number | null
+          grants_allocation?: number | null
+          id?: string
+          impairment_financial_instruments?: number | null
+          impairment_trade_operations?: number | null
+          inventory_variation?: number | null
+          net_turnover?: number | null
+          operating_grants?: number | null
+          other_financial_results?: number | null
+          other_operating_expenses?: number | null
+          other_operating_income?: number | null
+          other_operating_results?: number | null
+          personnel_expenses?: number | null
+          statement_id: string
+          supplies?: number | null
+          updated_at?: string
+        }
+        Update: {
+          capitalized_work?: number | null
+          corporate_tax?: number | null
+          created_at?: string
+          depreciation?: number | null
+          discontinued_operations_result?: number | null
+          excess_provisions?: number | null
+          exchange_differences?: number | null
+          financial_expenses?: number | null
+          financial_income?: number | null
+          grants_allocation?: number | null
+          id?: string
+          impairment_financial_instruments?: number | null
+          impairment_trade_operations?: number | null
+          inventory_variation?: number | null
+          net_turnover?: number | null
+          operating_grants?: number | null
+          other_financial_results?: number | null
+          other_operating_expenses?: number | null
+          other_operating_income?: number | null
+          other_operating_results?: number | null
+          personnel_expenses?: number | null
+          statement_id?: string
+          supplies?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "income_statements_statement_id_fkey"
+            columns: ["statement_id"]
+            isOneToOne: true
+            referencedRelation: "company_financial_statements"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       kpi_report_history: {
         Row: {
@@ -1736,6 +2467,9 @@ export type Database = {
         | "director_comercial"
         | "director_oficina"
         | "responsable_comercial"
+      financial_data_source: "manual" | "pdf_import"
+      financial_statement_status: "draft" | "submitted" | "approved"
+      financial_statement_type: "normal" | "abreujat" | "simplificat"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1872,6 +2606,9 @@ export const Constants = {
         "director_oficina",
         "responsable_comercial",
       ],
+      financial_data_source: ["manual", "pdf_import"],
+      financial_statement_status: ["draft", "submitted", "approved"],
+      financial_statement_type: ["normal", "abreujat", "simplificat"],
     },
   },
 } as const
