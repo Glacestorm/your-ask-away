@@ -1,10 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 import { 
   TrendingUp, 
   Building2, 
@@ -23,7 +25,6 @@ import {
 } from 'lucide-react';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { ThemeSelector } from '@/components/ThemeSelector';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface MenuOption {
@@ -129,16 +130,37 @@ const roleConfig: Record<string, { title: string; icon: React.ElementType; path:
 // Roles that can access Admin panel
 const adminAccessRoles = ['superadmin', 'director_comercial', 'responsable_comercial'];
 
+type AppRole = Database['public']['Enums']['app_role'];
+
 const Home = () => {
   const { user, userRole, loading: authLoading } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const [allUserRoles, setAllUserRoles] = useState<AppRole[]>([]);
 
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/auth');
     }
   }, [user, authLoading, navigate]);
+
+  // Fetch all roles for the current user
+  useEffect(() => {
+    const fetchAllRoles = async () => {
+      if (!user) return;
+      
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id);
+      
+      if (!error && data) {
+        setAllUserRoles(data.map(r => r.role));
+      }
+    };
+    
+    fetchAllRoles();
+  }, [user]);
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -319,18 +341,32 @@ const Home = () => {
         </div>
       </main>
 
-      {/* Footer with Role Badge */}
+      {/* Footer with All Role Badges */}
       <footer className="border-t bg-card/50 backdrop-blur-sm">
         <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${currentRole.color} text-white`}>
-                <RoleIcon className="h-5 w-5" />
-              </div>
-              <div>
-                <Badge variant="secondary" className="text-sm font-medium">
-                  {currentRole.title}
-                </Badge>
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-muted-foreground font-medium">Els meus rols:</span>
+              <div className="flex flex-wrap items-center gap-2">
+                {allUserRoles.map((role) => {
+                  const config = roleConfig[role] || roleConfig.user;
+                  const Icon = config.icon;
+                  return (
+                    <div key={role} className="flex items-center gap-2">
+                      <div className={`p-1.5 rounded-lg ${config.color} text-white`}>
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <Badge variant="secondary" className="text-sm font-medium">
+                        {config.title}
+                      </Badge>
+                    </div>
+                  );
+                })}
+                {allUserRoles.length === 0 && (
+                  <Badge variant="outline" className="text-sm">
+                    Carregant rols...
+                  </Badge>
+                )}
               </div>
             </div>
             <p className="text-sm text-muted-foreground">
