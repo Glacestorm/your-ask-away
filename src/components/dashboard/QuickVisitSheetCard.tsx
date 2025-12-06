@@ -20,10 +20,8 @@ import { cn } from '@/lib/utils';
 import { 
   FileText, X, Building2, User, CreditCard, Landmark, Shield, TrendingUp, BarChart3,
   Target, Save, ChevronRight, AlertCircle, Calendar, Edit2, RefreshCw, Download,
-  ZoomIn, ZoomOut, RotateCcw, Printer, ChevronLeft, ChevronDown, Maximize2, Minimize2, Search, ClipboardCheck,
-  Settings, Users, Package, BookOpen, Mail, Palette, Bell
+  ZoomIn, ZoomOut, RotateCcw, Printer, ChevronLeft, ChevronDown, Maximize2, Minimize2, Search, ClipboardCheck
 } from 'lucide-react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { format } from 'date-fns';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -101,8 +99,6 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
   const [isPdfFullscreen, setIsPdfFullscreen] = useState(false);
   const [isCommercialManager, setIsCommercialManager] = useState(false);
   const [isNotAuditor, setIsNotAuditor] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [showAdminMenu, setShowAdminMenu] = useState(false);
 
   // Check user role for permissions
   useEffect(() => {
@@ -118,8 +114,6 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
         const canValidate = ['responsable_comercial', 'director_comercial', 'director_oficina', 'superadmin'].includes(roleData.role);
         setIsCommercialManager(canValidate);
         setIsNotAuditor(roleData.role !== 'auditor');
-        const canAdmin = ['superadmin', 'director_comercial', 'responsable_comercial'].includes(roleData.role);
-        setIsAdmin(canAdmin);
       }
     };
     checkRole();
@@ -1140,122 +1134,6 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-              )}
-              {isAdmin && (
-                <Sheet open={showAdminMenu} onOpenChange={setShowAdminMenu}>
-                  <SheetTrigger asChild>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-8 gap-1.5 bg-slate-600/10 border-slate-500/30 text-slate-600 hover:bg-slate-600/20 hover:border-slate-500/50 dark:text-slate-300"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                            }}
-                          >
-                            <Settings className="h-4 w-4" />
-                            <span className="text-xs font-medium">Admin</span>
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="left">
-                          <p>Opcions d'administració</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </SheetTrigger>
-                  <SheetContent side="right" className="w-[320px] sm:w-[400px]">
-                    <SheetHeader>
-                      <SheetTitle className="flex items-center gap-2">
-                        <Settings className="h-5 w-5 text-primary" />
-                        Administració
-                      </SheetTitle>
-                    </SheetHeader>
-                    <div className="mt-6 space-y-2">
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start gap-3 h-12 hover:bg-accent"
-                        onClick={() => { setShowAdminMenu(false); navigate('/admin?section=users'); }}
-                      >
-                        <Users className="h-5 w-5 text-primary" />
-                        <span>Gestió d'Usuaris</span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start gap-3 h-12 hover:bg-accent"
-                        onClick={() => { setShowAdminMenu(false); navigate('/admin?section=products'); }}
-                      >
-                        <Package className="h-5 w-5 text-primary" />
-                        <span>Productes</span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start gap-3 h-12 hover:bg-accent"
-                        onClick={() => { setShowAdminMenu(false); navigate('/admin?section=tpv-goals'); }}
-                      >
-                        <Target className="h-5 w-5 text-primary" />
-                        <span>Objectius TPV</span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start gap-3 h-12 hover:bg-accent"
-                        onClick={() => { setShowAdminMenu(false); navigate('/admin?section=bulk-goals'); }}
-                      >
-                        <Users className="h-5 w-5 text-primary" />
-                        <span>Assignar Objectius</span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start gap-3 h-12 hover:bg-accent"
-                        onClick={() => { setShowAdminMenu(false); navigate('/admin?section=goals-progress'); }}
-                      >
-                        <Target className="h-5 w-5 text-primary" />
-                        <span>Seguiment d'Objectius</span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start gap-3 h-12 hover:bg-accent"
-                        onClick={() => { setShowAdminMenu(false); navigate('/admin?section=concepts'); }}
-                      >
-                        <BookOpen className="h-5 w-5 text-primary" />
-                        <span>Conceptes</span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start gap-3 h-12 hover:bg-accent"
-                        onClick={() => { setShowAdminMenu(false); navigate('/admin?section=templates'); }}
-                      >
-                        <Mail className="h-5 w-5 text-primary" />
-                        <span>Plantilles de Correu</span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start gap-3 h-12 hover:bg-accent"
-                        onClick={() => { setShowAdminMenu(false); navigate('/admin?section=colors'); }}
-                      >
-                        <Palette className="h-5 w-5 text-primary" />
-                        <span>Colors d'Estat</span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start gap-3 h-12 hover:bg-accent"
-                        onClick={() => { setShowAdminMenu(false); navigate('/admin?section=alerts'); }}
-                      >
-                        <Bell className="h-5 w-5 text-primary" />
-                        <span>Alertes</span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start gap-3 h-12 hover:bg-accent"
-                        onClick={() => { setShowAdminMenu(false); navigate('/admin?section=notifications'); }}
-                      >
-                        <Settings className="h-5 w-5 text-primary" />
-                        <span>Notificacions</span>
-                      </Button>
-                    </div>
-                  </SheetContent>
-                </Sheet>
               )}
             </div>
           </div>
