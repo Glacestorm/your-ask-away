@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
-import { BarChart3, Package, Target } from 'lucide-react';
+import { BarChart3, Package, Target, Users } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export function MetricsCardsSection() {
@@ -31,6 +31,14 @@ export function MetricsCardsSection() {
       icon: Target,
       color: 'text-orange-500',
       bgColor: 'bg-orange-500/10'
+    },
+    {
+      id: 'gestores',
+      title: 'Mètriques de Gestors',
+      description: 'Anàlisi de rendiment per gestor',
+      icon: Users,
+      color: 'text-emerald-500',
+      bgColor: 'bg-emerald-500/10'
     }
   ];
 
