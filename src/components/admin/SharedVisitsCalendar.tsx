@@ -77,7 +77,7 @@ interface Gestor {
 }
 
 export function SharedVisitsCalendar() {
-  const { user, userRole, isCommercialDirector, isCommercialManager, isOfficeDirector } = useAuth();
+  const { user, userRole, isCommercialDirector, isCommercialManager, isOfficeDirector, isSuperAdmin } = useAuth();
   const [visits, setVisits] = useState<Visit[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [gestores, setGestores] = useState<Gestor[]>([]);
@@ -103,8 +103,8 @@ export function SharedVisitsCalendar() {
   };
 
   // Check if user can see filters (directors and managers)
-  const canSeeFilters = isCommercialDirector || isCommercialManager || isOfficeDirector;
-  const canFilterByOffice = isCommercialDirector || isCommercialManager;
+  const canSeeFilters = isCommercialDirector || isCommercialManager || isOfficeDirector || isSuperAdmin;
+  const canFilterByOffice = isCommercialDirector || isCommercialManager || isSuperAdmin;
 
   // Form state for creating/editing visits
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -343,7 +343,9 @@ export function SharedVisitsCalendar() {
     }
     // For commercial directors and managers, apply office filter if selected
     if (canFilterByOffice && filterOficina !== 'all') {
-      return gestores.filter(g => g.oficina === filterOficina);
+      const filtered = gestores.filter(g => g.oficina === filterOficina);
+      console.log('Filtering gestores by office:', filterOficina, 'Result:', filtered.map(g => ({ name: g.full_name, oficina: g.oficina })));
+      return filtered;
     }
     return gestores;
   }, [isOfficeDirector, profile?.oficina, gestores, canFilterByOffice, filterOficina]);
