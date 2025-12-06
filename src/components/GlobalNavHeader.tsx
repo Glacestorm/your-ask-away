@@ -1,11 +1,12 @@
 import { useNavigate } from 'react-router-dom';
-import { Home, ChevronLeft, ChevronRight, Map } from 'lucide-react';
+import { Home, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { ThemeSelector } from '@/components/ThemeSelector';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { MapButton } from '@/components/dashboard/MapButton';
 
 interface GlobalNavHeaderProps {
   title?: string;
@@ -131,15 +132,7 @@ export function GlobalNavHeader({
           <Home className="h-5 w-5" />
         </Button>
         
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate('/map')}
-          className="hover:bg-accent/50 transition-all rounded-xl h-9 w-9 bg-gradient-to-b from-background to-muted border border-border/50 shadow-[0_2px_4px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.2)] hover:shadow-[0_1px_2px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.15)] hover:translate-y-[1px] active:translate-y-[2px] active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]"
-          title="Mapa"
-        >
-          <Map className="h-5 w-5" />
-        </Button>
+        <MapButton />
         
         <Button
           variant="ghost"
