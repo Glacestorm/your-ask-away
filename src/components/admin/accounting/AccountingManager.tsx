@@ -273,31 +273,30 @@ const AccountingManager = () => {
             
             <div className="flex items-center gap-2 flex-wrap">
               {!currentStatement && selectedCompanyId && (
-                <Dialog open={showNewYearDialog} onOpenChange={setShowNewYearDialog}>
+                <Dialog open={showNewYearDialog} onOpenChange={setShowNewYearDialog} modal={false}>
                   <DialogTrigger asChild>
                     <Button>
                       <Plus className="w-4 h-4 mr-2" />
                       Crear Any {selectedYear}
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()}>
                     <DialogHeader>
                       <DialogTitle>Crear Estat Financer {selectedYear}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4 pt-4">
-                      <div>
+                      <div className="space-y-2">
                         <Label>Tipus de Model</Label>
-                        <Select value={statementType} onValueChange={(v) => setStatementType(v as 'normal' | 'abreujat' | 'simplificat')}>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Selecciona model" />
-                          </SelectTrigger>
-                          <SelectContent className="z-[9999] bg-background">
-                            <SelectItem value="normal">Normal (Complet)</SelectItem>
-                            <SelectItem value="abreujat">Abreujat</SelectItem>
-                            <SelectItem value="simplificat">Simplificat</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <p className="text-sm text-muted-foreground mt-2">
+                        <select 
+                          value={statementType} 
+                          onChange={(e) => setStatementType(e.target.value as 'normal' | 'abreujat' | 'simplificat')}
+                          className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                        >
+                          <option value="normal">Normal (Complet)</option>
+                          <option value="abreujat">Abreujat</option>
+                          <option value="simplificat">Simplificat</option>
+                        </select>
+                        <p className="text-sm text-muted-foreground">
                           El model determina el nivell de detall dels estats financers segons el PGC Andorrà.
                         </p>
                       </div>
