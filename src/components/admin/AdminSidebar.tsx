@@ -359,111 +359,43 @@ export function AdminSidebar({
           </SidebarMenu>
         </SidebarGroup>
 
-        {/* Métricas y Análisis - Hide from regular gestores */}
+        {/* Gestores Metrics - Only keep Gestores option for non-regular gestores */}
         {!isRegularGestor && open ? (
-          <Collapsible open={openGroups.metrics} onOpenChange={() => toggleGroup('metrics')}>
-            <SidebarGroup className="mt-4">
-               <CollapsibleTrigger asChild>
-                 <SidebarGroupLabel className="cursor-pointer hover:bg-accent/50 rounded-xl p-3 transition-all duration-300 flex items-center gap-2 text-sm font-medium group">
-                   <BarChart3 className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                   <span className="flex-1 transition-all duration-300 group-hover:translate-x-1">{t('admin.metrics')}</span>
-                   <ChevronRight className={`h-4 w-4 transition-all duration-300 group-hover:text-primary ${openGroups.metrics ? 'rotate-90' : ''}`} />
-                 </SidebarGroupLabel>
-               </CollapsibleTrigger>
-              <CollapsibleContent className="transition-all duration-300 data-[state=open]:animate-slide-in data-[state=closed]:animate-slide-out">
-                <SidebarGroupContent className="mt-2">
-                  <SidebarMenu className="space-y-1">
-                     <SidebarMenuItem>
-                       <SidebarMenuButton 
-                         onClick={() => onSectionChange('visits')} 
-                         isActive={isActive('visits')}
-                         className="rounded-lg hover:bg-accent/50 transition-all group"
-                        >
-                          <BarChart3 className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                          <span className="text-sm transition-all duration-300 group-hover:translate-x-1">{t('sidebar.visits')}</span>
-                       </SidebarMenuButton>
-                     </SidebarMenuItem>
-                     <SidebarMenuItem>
-                       <SidebarMenuButton 
-                         onClick={() => onSectionChange('products-metrics')} 
-                         isActive={isActive('products-metrics')}
-                         className="rounded-lg hover:bg-accent/50 transition-all group"
-                        >
-                          <Package className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                          <span className="text-sm transition-all duration-300 group-hover:translate-x-1">{t('admin.products')}</span>
-                       </SidebarMenuButton>
-                     </SidebarMenuItem>
-                     <SidebarMenuItem>
-                       <SidebarMenuButton 
-                         onClick={() => onSectionChange('gestores')} 
-                         isActive={isActive('gestores')}
-                         className="rounded-lg hover:bg-accent/50 transition-all group"
-                        >
-                          <Users className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                          <span className="text-sm transition-all duration-300 group-hover:translate-x-1">{t('map.managers')}</span>
-                       </SidebarMenuButton>
-                     </SidebarMenuItem>
-                     <SidebarMenuItem>
-                       <SidebarMenuButton 
-                         onClick={() => onSectionChange('vinculacion')} 
-                         isActive={isActive('vinculacion')}
-                         className="rounded-lg hover:bg-accent/50 transition-all group"
-                        >
-                          <Target className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                          <span className="text-sm transition-all duration-300 group-hover:translate-x-1">{t('tabs.vinculacion')}</span>
-                       </SidebarMenuButton>
-                     </SidebarMenuItem>
-                  </SidebarMenu>
-                </SidebarGroupContent>
-              </CollapsibleContent>
-            </SidebarGroup>
-          </Collapsible>
+          <SidebarGroup className="mt-4">
+            <SidebarGroupLabel className="px-3 text-xs font-medium text-muted-foreground">
+              {t('admin.metrics')}
+            </SidebarGroupLabel>
+            <SidebarGroupContent className="mt-2">
+              <SidebarMenu className="space-y-1">
+                <SidebarMenuItem>
+                  <SidebarMenuButton 
+                    onClick={() => onSectionChange('gestores')} 
+                    isActive={isActive('gestores')}
+                    className="rounded-lg hover:bg-accent/50 transition-all group"
+                  >
+                    <Users className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
+                    <span className="text-sm transition-all duration-300 group-hover:translate-x-1">{t('map.managers')}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
         ) : !isRegularGestor ? (
           <SidebarGroup className="mt-4">
             <SidebarMenu className="space-y-2">
-               <SidebarMenuItem>
-                 <SidebarMenuButton 
-                   onClick={() => onSectionChange('visits')} 
-                   isActive={isActive('visits')} 
-                  tooltip={t('sidebar.visits')}
-                  className="rounded-xl hover:shadow-md transition-all duration-300 group"
-                >
-                  <BarChart3 className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
-                 </SidebarMenuButton>
-               </SidebarMenuItem>
-               <SidebarMenuItem>
-                 <SidebarMenuButton 
-                   onClick={() => onSectionChange('products-metrics')} 
-                   isActive={isActive('products-metrics')} 
-                  tooltip={t('admin.products')}
-                  className="rounded-xl hover:shadow-md transition-all duration-300 group"
-                >
-                  <Package className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
-                 </SidebarMenuButton>
-               </SidebarMenuItem>
-               <SidebarMenuItem>
-                 <SidebarMenuButton 
-                   onClick={() => onSectionChange('gestores')} 
-                   isActive={isActive('gestores')} 
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  onClick={() => onSectionChange('gestores')} 
+                  isActive={isActive('gestores')} 
                   tooltip={t('map.managers')}
                   className="rounded-xl hover:shadow-md transition-all duration-300 group"
                 >
                   <Users className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
-                 </SidebarMenuButton>
-               </SidebarMenuItem>
-               <SidebarMenuItem>
-                 <SidebarMenuButton 
-                   onClick={() => onSectionChange('vinculacion')} 
-                   isActive={isActive('vinculacion')} 
-                  tooltip={t('tabs.vinculacion')}
-                  className="rounded-xl hover:shadow-md transition-all duration-300 group"
-                >
-                  <Target className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
-                 </SidebarMenuButton>
-               </SidebarMenuItem>
-             </SidebarMenu>
-           </SidebarGroup>
-         ) : null}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroup>
+        ) : null}
 
         {/* TPV Management - Hide from regular gestores */}
         {!isRegularGestor && (

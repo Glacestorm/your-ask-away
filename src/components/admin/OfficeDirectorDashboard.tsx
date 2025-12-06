@@ -18,6 +18,7 @@ import { MapButton } from '@/components/dashboard/MapButton';
 import { MapDashboardCard } from '@/components/dashboard/MapDashboardCard';
 import { QuickVisitSheetCard } from '@/components/dashboard/QuickVisitSheetCard';
 import { AccountingDashboardCard } from '@/components/dashboard/AccountingDashboardCard';
+import { MetricsCardsSection } from '@/components/dashboard/MetricsCardsSection';
 
 // Panel del Director de Oficina con vista filtrada por su oficina
 
@@ -319,6 +320,9 @@ export function OfficeDirectorDashboard() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Métriques Cards */}
+          <MetricsCardsSection />
 
           {/* Ficha de Visita, Mapa y Comptabilitat Cards */}
           <div className="grid gap-6 md:grid-cols-3">
