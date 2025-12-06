@@ -269,22 +269,7 @@ export function AccountingMainMenu({ onNavigate, currentSection }: AccountingMai
   };
 
   return (
-    <div className="w-full min-h-[650px] bg-gradient-to-br from-background via-muted/20 to-background rounded-2xl border border-border/30 shadow-lg overflow-hidden">
-      {/* Header con diseño moderno */}
-      <div className="relative bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 border-b border-border/30">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
-        <div className="relative text-center">
-          <Badge variant="outline" className="mb-3 px-4 py-1 text-xs font-medium bg-background/80 backdrop-blur-sm">
-            Mòdul de Comptabilitat
-          </Badge>
-          <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-            Organigrama Comptable Corporate / Empreses
-          </h1>
-          <p className="text-sm text-muted-foreground mt-2">
-            Selecciona una opció per accedir a les funcionalitats del sistema
-          </p>
-        </div>
-      </div>
+    <div className="w-full min-h-[600px] bg-gradient-to-br from-background via-muted/20 to-background rounded-2xl border border-border/30 shadow-lg overflow-hidden">
 
       {/* Menu Grid */}
       <ScrollArea className="h-[520px] p-4 md:p-6">
