@@ -10,7 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { FileUp, Plus, CheckCircle, Clock, FileText, Wallet, RefreshCcw, Archive, Building2, CreditCard, Pyramid, TrendingUp, Target, ClipboardCheck, FileBarChart, CalendarClock } from 'lucide-react';
+import { FileUp, Plus, CheckCircle, Clock, FileText, Wallet, RefreshCcw, Archive, Building2, CreditCard, Pyramid, TrendingUp, Target, ClipboardCheck, FileBarChart, CalendarClock, Trash2, Printer, Unlock, AlertTriangle } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import BalanceSheetForm from './BalanceSheetForm';
 import IncomeStatementForm from './IncomeStatementForm';
 import CashFlowForm from './CashFlowForm';
@@ -219,6 +220,201 @@ const AccountingManager = () => {
     }
   };
 
+  const deleteStatement = async () => {
+    if (!currentStatement) return;
+
+    setSaving(true);
+    try {
+      // Delete related records first
+      await Promise.all([
+        supabase.from('balance_sheets').delete().eq('statement_id', currentStatement.id),
+        supabase.from('income_statements').delete().eq('statement_id', currentStatement.id),
+        supabase.from('cash_flow_statements').delete().eq('statement_id', currentStatement.id),
+        supabase.from('equity_changes_statements').delete().eq('statement_id', currentStatement.id),
+        supabase.from('financial_notes').delete().eq('statement_id', currentStatement.id)
+      ]);
+
+      // Then delete the main statement
+      const { error } = await supabase
+        .from('company_financial_statements')
+        .delete()
+        .eq('id', currentStatement.id);
+      
+      if (error) throw error;
+
+      toast.success('Estat financer eliminat correctament');
+      setCurrentStatement(null);
+      fetchFinancialStatement();
+    } catch (error) {
+      console.error('Error deleting statement:', error);
+      toast.error('Error eliminant estat financer');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const unlockStatement = async () => {
+    if (!currentStatement) return;
+
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('company_financial_statements')
+        .update({ status: 'draft', approved_by: null, approved_at: null })
+        .eq('id', currentStatement.id);
+      
+      if (error) throw error;
+
+      toast.success('Estat desbloquejat per edició');
+      fetchFinancialStatement();
+    } catch (error) {
+      console.error('Error unlocking statement:', error);
+      toast.error('Error desbloquejant estat');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const printStatement = async () => {
+    if (!currentStatement || !selectedCompany) return;
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast.error("No s'ha pogut obrir la finestra d'impressió");
+      return;
+    }
+
+    try {
+      const [balanceResult, incomeResult] = await Promise.all([
+        supabase.from('balance_sheets').select('*').eq('statement_id', currentStatement.id).single(),
+        supabase.from('income_statements').select('*').eq('statement_id', currentStatement.id).single()
+      ]);
+
+      const balance = balanceResult.data;
+      const income = incomeResult.data;
+
+      const formatCurrency = (value: number | null) => 
+        new Intl.NumberFormat('ca-ES', { style: 'currency', currency: 'EUR' }).format(value || 0);
+
+      const totalNonCurrentAssets = (balance?.intangible_assets || 0) + (balance?.goodwill || 0) + 
+        (balance?.tangible_assets || 0) + (balance?.real_estate_investments || 0) +
+        (balance?.long_term_group_investments || 0) + (balance?.long_term_financial_investments || 0) +
+        (balance?.deferred_tax_assets || 0) + (balance?.long_term_trade_receivables || 0);
+
+      const totalCurrentAssets = (balance?.non_current_assets_held_for_sale || 0) + (balance?.inventory || 0) +
+        (balance?.trade_receivables || 0) + (balance?.short_term_group_receivables || 0) +
+        (balance?.short_term_financial_investments || 0) + (balance?.accruals_assets || 0) +
+        (balance?.cash_equivalents || 0);
+
+      const totalAssets = totalNonCurrentAssets + totalCurrentAssets;
+
+      const totalEquity = (balance?.share_capital || 0) + (balance?.share_premium || 0) +
+        (balance?.revaluation_reserve || 0) + (balance?.legal_reserve || 0) +
+        (balance?.statutory_reserves || 0) + (balance?.voluntary_reserves || 0) -
+        (balance?.treasury_shares || 0) + (balance?.retained_earnings || 0) +
+        (balance?.current_year_result || 0) - (balance?.interim_dividend || 0) +
+        (balance?.other_equity_instruments || 0) + (balance?.capital_grants || 0);
+
+      const totalNonCurrentLiabilities = (balance?.long_term_provisions || 0) +
+        (balance?.long_term_debts || 0) + (balance?.long_term_group_debts || 0) +
+        (balance?.deferred_tax_liabilities || 0) + (balance?.long_term_accruals || 0);
+
+      const totalCurrentLiabilities = (balance?.liabilities_held_for_sale || 0) +
+        (balance?.short_term_provisions || 0) + (balance?.short_term_debts || 0) +
+        (balance?.short_term_group_debts || 0) + (balance?.trade_payables || 0) +
+        (balance?.other_creditors || 0) + (balance?.short_term_accruals || 0);
+
+      const totalEquityAndLiabilities = totalEquity + totalNonCurrentLiabilities + totalCurrentLiabilities;
+
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Estats Financers - ${selectedCompany.name} - ${selectedYear}</title>
+          <style>
+            body { font-family: Arial, sans-serif; font-size: 12px; padding: 20px; }
+            h1 { font-size: 18px; text-align: center; margin-bottom: 5px; }
+            h2 { font-size: 14px; color: #333; border-bottom: 2px solid #333; padding-bottom: 5px; margin-top: 20px; }
+            h3 { font-size: 12px; color: #666; margin: 10px 0 5px; }
+            .header { text-align: center; margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px; }
+            .company-info { font-size: 10px; color: #666; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+            th, td { padding: 4px 8px; text-align: left; border-bottom: 1px solid #eee; }
+            th { background: #f5f5f5; font-weight: bold; }
+            .amount { text-align: right; }
+            .total { font-weight: bold; background: #f0f0f0; }
+            .subtotal { font-weight: bold; font-style: italic; }
+            .section { page-break-inside: avoid; }
+            @media print { body { print-color-adjust: exact; -webkit-print-color-adjust: exact; } .no-print { display: none; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>ESTATS FINANCERS</h1>
+            <p style="font-size: 16px; font-weight: bold;">${selectedCompany.name}</p>
+            <p class="company-info">
+              ${selectedCompany.bp ? 'BP: ' + selectedCompany.bp + ' | ' : ''}
+              ${selectedCompany.tax_id ? 'NRT: ' + selectedCompany.tax_id + ' | ' : ''}
+              Exercici: ${selectedYear} | Model: ${currentStatement.statement_type}
+            </p>
+          </div>
+          <div class="section">
+            <h2>BALANÇ DE SITUACIÓ</h2>
+            <h3>ACTIU</h3>
+            <table>
+              <tr class="subtotal"><td>Actiu No Corrent</td><td class="amount">${formatCurrency(totalNonCurrentAssets)}</td></tr>
+              <tr><td style="padding-left:20px">Immobilitzat intangible</td><td class="amount">${formatCurrency(balance?.intangible_assets || 0)}</td></tr>
+              <tr><td style="padding-left:20px">Immobilitzat material</td><td class="amount">${formatCurrency(balance?.tangible_assets || 0)}</td></tr>
+              <tr><td style="padding-left:20px">Inversions financeres llarg termini</td><td class="amount">${formatCurrency(balance?.long_term_financial_investments || 0)}</td></tr>
+              <tr class="subtotal"><td>Actiu Corrent</td><td class="amount">${formatCurrency(totalCurrentAssets)}</td></tr>
+              <tr><td style="padding-left:20px">Existències</td><td class="amount">${formatCurrency(balance?.inventory || 0)}</td></tr>
+              <tr><td style="padding-left:20px">Deutors comercials</td><td class="amount">${formatCurrency(balance?.trade_receivables || 0)}</td></tr>
+              <tr><td style="padding-left:20px">Efectiu i equivalents</td><td class="amount">${formatCurrency(balance?.cash_equivalents || 0)}</td></tr>
+              <tr class="total"><td>TOTAL ACTIU</td><td class="amount">${formatCurrency(totalAssets)}</td></tr>
+            </table>
+            <h3>PATRIMONI NET I PASSIU</h3>
+            <table>
+              <tr class="subtotal"><td>Patrimoni Net</td><td class="amount">${formatCurrency(totalEquity)}</td></tr>
+              <tr><td style="padding-left:20px">Capital social</td><td class="amount">${formatCurrency(balance?.share_capital || 0)}</td></tr>
+              <tr><td style="padding-left:20px">Reserves</td><td class="amount">${formatCurrency((balance?.legal_reserve || 0) + (balance?.statutory_reserves || 0) + (balance?.voluntary_reserves || 0))}</td></tr>
+              <tr><td style="padding-left:20px">Resultat de l'exercici</td><td class="amount">${formatCurrency(balance?.current_year_result || 0)}</td></tr>
+              <tr class="subtotal"><td>Passiu No Corrent</td><td class="amount">${formatCurrency(totalNonCurrentLiabilities)}</td></tr>
+              <tr><td style="padding-left:20px">Deutes llarg termini</td><td class="amount">${formatCurrency(balance?.long_term_debts || 0)}</td></tr>
+              <tr class="subtotal"><td>Passiu Corrent</td><td class="amount">${formatCurrency(totalCurrentLiabilities)}</td></tr>
+              <tr><td style="padding-left:20px">Creditors comercials</td><td class="amount">${formatCurrency(balance?.trade_payables || 0)}</td></tr>
+              <tr class="total"><td>TOTAL PATRIMONI NET I PASSIU</td><td class="amount">${formatCurrency(totalEquityAndLiabilities)}</td></tr>
+            </table>
+          </div>
+          <div class="section" style="page-break-before: always;">
+            <h2>COMPTE DE PÈRDUES I GUANYS</h2>
+            <table>
+              <tr><td>Import net de la xifra de negocis</td><td class="amount">${formatCurrency(income?.net_turnover || 0)}</td></tr>
+              <tr><td>Aprovisionaments</td><td class="amount">${formatCurrency(income?.supplies || 0)}</td></tr>
+              <tr><td>Despeses de personal</td><td class="amount">${formatCurrency(income?.personnel_expenses || 0)}</td></tr>
+              <tr><td>Altres despeses d'explotació</td><td class="amount">${formatCurrency(income?.other_operating_expenses || 0)}</td></tr>
+              <tr><td>Amortització de l'immobilitzat</td><td class="amount">${formatCurrency(income?.depreciation || 0)}</td></tr>
+              <tr><td>Ingressos financers</td><td class="amount">${formatCurrency(income?.financial_income || 0)}</td></tr>
+              <tr><td>Despeses financeres</td><td class="amount">${formatCurrency(income?.financial_expenses || 0)}</td></tr>
+              <tr><td>Impost sobre beneficis</td><td class="amount">${formatCurrency(income?.corporate_tax || 0)}</td></tr>
+              <tr class="total"><td>RESULTAT DE L'EXERCICI</td><td class="amount">${formatCurrency(balance?.current_year_result || 0)}</td></tr>
+            </table>
+          </div>
+          <div class="no-print" style="text-align: center; margin-top: 20px;">
+            <button onclick="window.print()" style="padding: 10px 20px; font-size: 14px; cursor: pointer;">Imprimir</button>
+          </div>
+        </body>
+        </html>
+      `;
+
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+    } catch (error) {
+      console.error('Error preparing print:', error);
+      toast.error('Error preparant impressió');
+      printWindow.close();
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'draft':
@@ -367,26 +563,63 @@ const AccountingManager = () => {
                 
                 {currentStatement && (
                   <>
-                    <Button variant="outline" onClick={() => setShowPDFImport(true)}>
+                    <Button variant="outline" size="sm" onClick={printStatement}>
+                      <Printer className="w-4 h-4 mr-2" />
+                      Imprimir
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => setShowPDFImport(true)}>
                       <FileUp className="w-4 h-4 mr-2" />
                       Importar PDF
                     </Button>
-                    <Button variant="outline" onClick={fetchFinancialStatement}>
+                    <Button variant="outline" size="sm" onClick={fetchFinancialStatement}>
                       <RefreshCcw className="w-4 h-4 mr-2" />
                       Actualitzar
                     </Button>
+                    {currentStatement.status === 'approved' && (isAdmin || isSuperAdmin) && (
+                      <Button variant="outline" size="sm" onClick={unlockStatement}>
+                        <Unlock className="w-4 h-4 mr-2" />
+                        Desbloquejar
+                      </Button>
+                    )}
                     {currentStatement.status === 'draft' && (
-                      <Button onClick={() => updateStatementStatus('submitted')}>
+                      <Button size="sm" onClick={() => updateStatementStatus('submitted')}>
                         <FileText className="w-4 h-4 mr-2" />
                         Enviar
                       </Button>
                     )}
                     {currentStatement.status === 'submitted' && (isAdmin || isSuperAdmin) && (
-                      <Button onClick={() => updateStatementStatus('approved')} className="bg-green-600 hover:bg-green-700">
+                      <Button size="sm" onClick={() => updateStatementStatus('approved')} className="bg-green-600 hover:bg-green-700">
                         <CheckCircle className="w-4 h-4 mr-2" />
                         Aprovar
                       </Button>
                     )}
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm">
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Eliminar
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="flex items-center gap-2">
+                            <AlertTriangle className="w-5 h-5 text-destructive" />
+                            Eliminar Estat Financer
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Estàs segur que vols eliminar l'estat financer de l'any {selectedYear}? 
+                            Aquesta acció no es pot desfer i s'eliminaran totes les dades associades 
+                            (balanç, compte de resultats, estat de fluxos, canvis de patrimoni i notes).
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel·lar</AlertDialogCancel>
+                          <AlertDialogAction onClick={deleteStatement} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Eliminar
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </>
                 )}
               </div>
