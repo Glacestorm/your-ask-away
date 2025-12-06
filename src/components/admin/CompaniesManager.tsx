@@ -12,12 +12,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
-import { Building2, MapPin, Phone, Tag, User, Eye, Trash2, Plus, Search, Grid3x3, List, CheckSquare, Square, Package, Users, Mail, FileText, TrendingUp, Camera, Upload, Copy, Loader2, AlertTriangle, CheckCircle2, XCircle, Clock, History, Pencil, Globe } from "lucide-react";
+import { Badge } from '@/components/ui/badge';
+import { Building2, MapPin, Phone, Tag, User, Eye, Trash2, Plus, Search, Grid3x3, List, CheckSquare, Square, Package, Users, Mail, FileText, TrendingUp, Camera, Upload, Copy, Loader2, AlertTriangle, CheckCircle2, XCircle, Clock, History, Pencil, Globe, Lock } from "lucide-react";
 import { toast } from 'sonner';
 import { CompanyWithDetails, StatusColor, Profile } from '@/types/database';
 import { ExcelImporter } from './ExcelImporter';
 import { CompanyPhotosManager } from '@/components/company/CompanyPhotosManager';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/hooks/useAuth';
 
 interface CompanyContact {
   id: string;
@@ -62,6 +64,8 @@ interface AuditLog {
 
 export function CompaniesManager() {
   const { t } = useLanguage();
+  const { user, isAuditor, isCommercialDirector, isSuperAdmin, isCommercialManager, isOfficeDirector } = useAuth();
+  const [userOficina, setUserOficina] = useState<string | null>(null);
   const [companies, setCompanies] = useState<CompanyWithDetails[]>([]);
   const [statusColors, setStatusColors] = useState<StatusColor[]>([]);
   const [gestores, setGestores] = useState<Profile[]>([]);
@@ -138,10 +142,61 @@ export function CompaniesManager() {
   });
 
   useEffect(() => {
-    fetchData();
-    loadCompanyPhotos();
-    loadAllTags();
-  }, []);
+    if (user) {
+      fetchUserOffice();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchData();
+      loadCompanyPhotos();
+      loadAllTags();
+    }
+  }, [user, userOficina]);
+
+  const fetchUserOffice = async () => {
+    if (!user) return;
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('oficina')
+        .eq('id', user.id)
+        .single();
+      if (profile?.oficina) {
+        setUserOficina(profile.oficina);
+      }
+    } catch (error) {
+      console.error('Error fetching user office:', error);
+    }
+  };
+
+  // Check if user can edit a specific company
+  const canEditCompany = (company: CompanyWithDetails): boolean => {
+    // Auditors cannot edit anything
+    if (isAuditor) return false;
+    
+    // Superadmins, commercial directors, and commercial managers can edit all
+    if (isSuperAdmin || isCommercialDirector || isCommercialManager) return true;
+    
+    // Office directors can edit companies in their office
+    if (isOfficeDirector && userOficina) {
+      return company.oficina === userOficina;
+    }
+    
+    // Regular gestores can only edit their own assigned companies
+    return company.gestor_id === user?.id;
+  };
+
+  // Check if user can delete companies
+  const canDeleteCompanies = (): boolean => {
+    return isSuperAdmin || isCommercialDirector || isCommercialManager;
+  };
+
+  // Check if user can add new companies
+  const canAddCompany = (): boolean => {
+    return !isAuditor;
+  };
 
   const loadCompanyPhotos = async () => {
     try {
@@ -189,9 +244,32 @@ export function CompaniesManager() {
   };
 
   const fetchData = async () => {
+    if (!user) return;
+    
+    // Auditors cannot see companies
+    if (isAuditor) {
+      setCompanies([]);
+      return;
+    }
+
     try {
+      let companiesQuery = supabase.from('companies').select('*, status_colors(*), profiles(*)');
+      
+      // Apply role-based filtering
+      if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+        if (isOfficeDirector && userOficina) {
+          // Office directors see only their office's companies
+          companiesQuery = companiesQuery.eq('oficina', userOficina);
+        } else {
+          // Regular gestores see only their assigned companies
+          companiesQuery = companiesQuery.eq('gestor_id', user.id);
+        }
+      }
+      
+      companiesQuery = companiesQuery.order('name');
+
       const [companiesRes, statusRes, gestoresRes, conceptsRes, productsRes, oficinasRes] = await Promise.all([
-        supabase.from('companies').select('*, status_colors(*), profiles(*)').order('name'),
+        companiesQuery,
         supabase.from('status_colors').select('*').order('display_order'),
         supabase.from('profiles').select('*').order('full_name'),
         supabase.from('concepts').select('*').eq('concept_type', 'parroquia').eq('active', true),
@@ -1038,58 +1116,68 @@ export function CompaniesManager() {
             <CardDescription>{t('companyForm.title')}</CardDescription>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={detectDuplicates}
-              disabled={detectingDuplicates}
-            >
-              {detectingDuplicates ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Copy className="h-4 w-4" />
-              )}
-              <span className="ml-2">{t('companyForm.detectDuplicates')}</span>
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleBulkGeocode}
-              disabled={geocoding}
-            >
-              <MapPin className="h-4 w-4" />
-              <span className="ml-2">
-                {geocoding ? `${t('companyForm.geocoding')} ${geocodingProgress.current}/${geocodingProgress.total}...` : t('companyForm.geocodeCompanies')}
-              </span>
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleSearchPhotosAll}
-              disabled={isSearchingPhotos}
-            >
-              {isSearchingPhotos ? (
-                <>
+            {canDeleteCompanies() && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={detectDuplicates}
+                disabled={detectingDuplicates}
+              >
+                {detectingDuplicates ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="ml-2">{t('companyForm.searchingPhotos')} {photoSearchProgress}%</span>
-                </>
-              ) : (
-                <>
-                  <Camera className="h-4 w-4" />
-                  <span className="ml-2">{t('companyForm.searchPhotos')}</span>
-                </>
-              )}
-            </Button>
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+                <span className="ml-2">{t('companyForm.detectDuplicates')}</span>
+              </Button>
+            )}
+            {canDeleteCompanies() && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleBulkGeocode}
+                disabled={geocoding}
+              >
+                <MapPin className="h-4 w-4" />
+                <span className="ml-2">
+                  {geocoding ? `${t('companyForm.geocoding')} ${geocodingProgress.current}/${geocodingProgress.total}...` : t('companyForm.geocodeCompanies')}
+                </span>
+              </Button>
+            )}
             
-            <Button variant="outline" size="sm" onClick={() => setImporterOpen(true)}>
-              <Upload className="h-4 w-4" />
-              <span className="ml-2">{t('companyForm.importExcel')}</span>
-            </Button>
-            <Button size="sm" onClick={() => { resetForm(); setDialogOpen(true); }}>
-              <Plus className="h-4 w-4" />
-              <span className="ml-2">{t('companyForm.addCompany')}</span>
-            </Button>
+            {canDeleteCompanies() && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleSearchPhotosAll}
+                disabled={isSearchingPhotos}
+              >
+                {isSearchingPhotos ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="ml-2">{t('companyForm.searchingPhotos')} {photoSearchProgress}%</span>
+                  </>
+                ) : (
+                  <>
+                    <Camera className="h-4 w-4" />
+                    <span className="ml-2">{t('companyForm.searchPhotos')}</span>
+                  </>
+                )}
+              </Button>
+            )}
+            
+            {canDeleteCompanies() && (
+              <Button variant="outline" size="sm" onClick={() => setImporterOpen(true)}>
+                <Upload className="h-4 w-4" />
+                <span className="ml-2">{t('companyForm.importExcel')}</span>
+              </Button>
+            )}
+            {canAddCompany() && (
+              <Button size="sm" onClick={() => { resetForm(); setDialogOpen(true); }}>
+                <Plus className="h-4 w-4" />
+                <span className="ml-2">{t('companyForm.addCompany')}</span>
+              </Button>
+            )}
           </div>
         </div>
       </CardHeader>
@@ -1350,20 +1438,26 @@ export function CompaniesManager() {
                           handleEdit(company);
                         }}
                       >
-                        <FileText className="h-3.5 w-3.5 mr-1.5" />
-                        Ver Detalles
+                        {canEditCompany(company) ? (
+                          <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                        ) : (
+                          <Eye className="h-3.5 w-3.5 mr-1.5" />
+                        )}
+                        {canEditCompany(company) ? 'Editar' : 'Ver'}
                       </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        className="shadow-lg backdrop-blur-sm bg-background/80 hover:bg-destructive/20 text-destructive hover:text-destructive border-destructive/30"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(company.id);
-                        }}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
+                      {canDeleteCompanies() && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="shadow-lg backdrop-blur-sm bg-background/80 hover:bg-destructive/20 text-destructive hover:text-destructive border-destructive/30"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(company.id);
+                          }}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -1572,17 +1666,20 @@ export function CompaniesManager() {
                               setDetailsCompany(company);
                               handleEdit(company);
                             }}
+                            title={canEditCompany(company) ? 'Editar' : 'Ver'}
                           >
-                            <Eye className="h-4 w-4" />
+                            {canEditCompany(company) ? <Pencil className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                           </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => handleDelete(company.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          {canDeleteCompanies() && (
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                              onClick={() => handleDelete(company.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>

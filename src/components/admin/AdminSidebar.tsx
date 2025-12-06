@@ -438,7 +438,7 @@ export function AdminSidebar({
           </>
         )}
 
-        {/* Gestión de Datos - Hide from regular gestores */}
+        {/* Gestión de Datos - Hide from regular gestores - Only Import History now (Companies moved to dashboard card) */}
         {!isRegularGestor && (isSuperAdmin || isCommercialDirector || isCommercialManager) && (
           <>
             {open ? (
@@ -455,12 +455,6 @@ export function AdminSidebar({
                     <SidebarGroupContent>
                       <SidebarMenu>
                         <SidebarMenuItem>
-                          <SidebarMenuButton onClick={() => onSectionChange('companies')} isActive={isActive('companies')} className="group">
-                            <Building2 className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                            <span className="transition-all duration-300 group-hover:translate-x-1">{t('admin.companies')}</span>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
                           <SidebarMenuButton onClick={() => onSectionChange('import-history')} isActive={isActive('import-history')} className="group">
                             <History className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
                             <span className="transition-all duration-300 group-hover:translate-x-1">Historial de Importaciones</span>
@@ -474,11 +468,6 @@ export function AdminSidebar({
             ) : (
               <SidebarGroup>
                 <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => onSectionChange('companies')} isActive={isActive('companies')} tooltip={t('admin.companies')} className="group">
-                      <Building2 className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton onClick={() => onSectionChange('import-history')} isActive={isActive('import-history')} tooltip="Historial de Importaciones" className="group">
                       <History className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
