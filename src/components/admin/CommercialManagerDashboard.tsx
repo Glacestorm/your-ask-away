@@ -23,6 +23,7 @@ import { AlertHistoryDashboardCard } from '@/components/dashboard/AlertHistoryDa
 import { ContractedProductsDashboardCard } from '@/components/dashboard/ContractedProductsDashboardCard';
 import { GoalsAlertsDashboardCard } from '@/components/dashboard/GoalsAlertsDashboardCard';
 import { KPIDashboardCard } from '@/components/dashboard/KPIDashboardCard';
+import { AdvancedAnalyticsDashboardCard } from '@/components/dashboard/AdvancedAnalyticsDashboardCard';
 
 // Panel del Responsable Comercial con vista general y explorador de métricas
 
@@ -400,6 +401,9 @@ const [gestorRanking, setGestorRanking] = useState<GestorRanking[]>([]);
 
           {/* Alert History Card */}
           <AlertHistoryDashboardCard />
+
+          {/* Advanced Analytics Card */}
+          <AdvancedAnalyticsDashboardCard />
 
           {/* Gráfico de Ranking */}
           <Card>

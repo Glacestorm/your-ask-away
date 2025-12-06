@@ -26,6 +26,7 @@ import { CompaniesDashboardCard } from '@/components/dashboard/CompaniesDashboar
 import { MetricsDashboardCard } from '@/components/dashboard/MetricsDashboardCard';
 import { cn } from '@/lib/utils';
 import { AlertHistoryDashboardCard } from '@/components/dashboard/AlertHistoryDashboardCard';
+import { AdvancedAnalyticsDashboardCard } from '@/components/dashboard/AdvancedAnalyticsDashboardCard';
 import { GestorOverviewSection } from '@/components/dashboard/GestorOverviewSection';
 import {
   Breadcrumb,
@@ -777,6 +778,11 @@ export function GestorDashboard({
               {/* Mètriques Card */}
               <div className="animate-fade-in" style={{ animationDelay: `${(cards.length + 4) * 100}ms` }}>
                 <MetricsDashboardCard />
+              </div>
+
+              {/* Advanced Analytics Card */}
+              <div className="animate-fade-in" style={{ animationDelay: `${(cards.length + 5) * 100}ms` }}>
+                <AdvancedAnalyticsDashboardCard showGestorComparison={false} showLeaderboard={false} />
               </div>
             </div>
 
