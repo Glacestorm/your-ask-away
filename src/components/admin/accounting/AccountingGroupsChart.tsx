@@ -8,9 +8,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { FileSpreadsheet, Printer, RefreshCw, Calculator, Building2, Layers, FileText } from 'lucide-react';
+import { FileSpreadsheet, Printer, RefreshCw, Calculator, Building2, Layers, FileText, Filter } from 'lucide-react';
 import * as XLSX from 'xlsx';
+
+type AccountType = 'ACTIU' | 'PASSIU' | 'PATRIMONI' | 'INGRESSOS' | 'DESPESES';
+type TypeFilter = 'TOTS' | AccountType | 'PERSONALITZAT';
 
 interface AccountingGroup {
   code: string;
@@ -156,6 +160,8 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
   const [showThousands, setShowThousands] = useState(false);
   const [showProvisional, setShowProvisional] = useState(true);
   const [showConsolidated, setShowConsolidated] = useState(true);
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>('TOTS');
+  const [customTypes, setCustomTypes] = useState<AccountType[]>(['ACTIU', 'PASSIU', 'PATRIMONI', 'INGRESSOS', 'DESPESES']);
 
   useEffect(() => {
     if (companyId) {
@@ -317,6 +323,20 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
     return true;
   });
 
+  const filteredAccountingData = accountingData.filter(group => {
+    if (typeFilter === 'TOTS') return true;
+    if (typeFilter === 'PERSONALITZAT') return customTypes.includes(group.type);
+    return group.type === typeFilter;
+  });
+
+  const toggleCustomType = (type: AccountType) => {
+    setCustomTypes(prev => 
+      prev.includes(type) 
+        ? prev.filter(t => t !== type)
+        : [...prev, type]
+    );
+  };
+
   const formatCurrency = (value: number) => {
     const displayValue = showThousands ? value / 1000 : value;
     return new Intl.NumberFormat('ca-AD', {
@@ -404,7 +424,44 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
         </div>
 
         <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-2 text-sm">
+          {/* Type Filter */}
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as TypeFilter)}>
+              <SelectTrigger className="w-[160px] h-8 text-sm">
+                <SelectValue placeholder="Tipus" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="TOTS">Tots els tipus</SelectItem>
+                <SelectItem value="ACTIU">Actiu</SelectItem>
+                <SelectItem value="PASSIU">Passiu</SelectItem>
+                <SelectItem value="PATRIMONI">Patrimoni Net</SelectItem>
+                <SelectItem value="INGRESSOS">Ingressos</SelectItem>
+                <SelectItem value="DESPESES">Despeses</SelectItem>
+                <SelectItem value="PERSONALITZAT">Personalitzat</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Custom Type Selection */}
+          {typeFilter === 'PERSONALITZAT' && (
+            <div className="flex items-center gap-2 border-l border-border pl-4">
+              {(['ACTIU', 'PASSIU', 'PATRIMONI', 'INGRESSOS', 'DESPESES'] as AccountType[]).map(type => (
+                <div key={type} className="flex items-center gap-1">
+                  <Checkbox
+                    id={`type-${type}`}
+                    checked={customTypes.includes(type)}
+                    onCheckedChange={() => toggleCustomType(type)}
+                  />
+                  <label htmlFor={`type-${type}`} className="text-xs text-muted-foreground cursor-pointer">
+                    {type === 'PATRIMONI' ? 'Patri.' : type.charAt(0) + type.slice(1).toLowerCase()}
+                  </label>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 text-sm border-l border-border pl-4">
             <Checkbox
               id="thousands"
               checked={showThousands}
@@ -468,7 +525,7 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {accountingData.map((group, idx) => (
+                {filteredAccountingData.map((group, idx) => (
                   <TableRow 
                     key={group.code}
                     className={`
@@ -493,6 +550,13 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
                     ))}
                   </TableRow>
                 ))}
+                {filteredAccountingData.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={3 + years.length} className="text-center text-muted-foreground py-8">
+                      No hi ha comptes per al filtre seleccionat
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </ScrollArea>
