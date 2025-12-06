@@ -538,6 +538,17 @@ const Admin = () => {
                   </div>
                 </CardContent>
               </Card>
+              <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('tpv')}>
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                    <Activity className="h-5 w-5 text-emerald-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Gestió TPV</h3>
+                    <p className="text-sm text-muted-foreground">Administrar terminals de punt de venda</p>
+                  </div>
+                </CardContent>
+              </Card>
               <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('tpv-goals')}>
                 <CardContent className="p-4 flex items-center gap-3">
                   <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
