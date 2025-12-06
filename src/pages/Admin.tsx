@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigationHistory } from '@/hooks/useNavigationHistory';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Activity } from 'lucide-react';
+import { ArrowLeft, Activity, History } from 'lucide-react';
 import { toast } from 'sonner';
 import VisitSheets from '@/pages/VisitSheets';
 import { SidebarProvider } from '@/components/ui/sidebar';
@@ -642,6 +642,17 @@ const Admin = () => {
                   <div>
                     <h3 className="font-semibold">Mètriques de Gestors</h3>
                     <p className="text-sm text-muted-foreground">Anàlisi de rendiment per gestor</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('import-history')}>
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-orange-500/10 flex items-center justify-center">
+                    <History className="h-5 w-5 text-orange-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Historial d'Importacions</h3>
+                    <p className="text-sm text-muted-foreground">Registre d'importacions d'empreses</p>
                   </div>
                 </CardContent>
               </Card>
