@@ -191,6 +191,26 @@ export function AdminSidebar({
                   </span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              {(isSuperAdmin || isCommercialDirector || isCommercialManager) && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => onSectionChange('administration')}
+                    isActive={isActive('administration') || isActive('users') || isActive('products') || isActive('tpv-goals') || isActive('bulk-goals') || isActive('goals-progress') || isActive('concepts') || isActive('templates') || isActive('colors') || isActive('alerts') || isActive('notifications')}
+                    className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
+                    tooltip={!open ? {
+                      children: 'Admin',
+                      className: "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
+                    } : undefined}
+                  >
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-slate-500/50 group-hover:rotate-3">
+                      <Settings className="h-5 w-5 text-white transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3" />
+                    </div>
+                    <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
+                      Admin
+                    </span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroup>
         )}
