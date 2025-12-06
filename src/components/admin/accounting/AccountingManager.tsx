@@ -8,8 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { FileUp, Plus, CheckCircle, Clock, FileText, Wallet, RefreshCcw, Archive } from 'lucide-react';
+import { FileUp, Plus, CheckCircle, Clock, FileText, Wallet, RefreshCcw, Archive, Building2, CreditCard, Pyramid } from 'lucide-react';
 import BalanceSheetForm from './BalanceSheetForm';
 import IncomeStatementForm from './IncomeStatementForm';
 import CashFlowForm from './CashFlowForm';
@@ -17,10 +18,15 @@ import EquityChangesForm from './EquityChangesForm';
 import FinancialNotesManager from './FinancialNotesManager';
 import FinancialStatementsHistory from './FinancialStatementsHistory';
 import PDFImportDialog from './PDFImportDialog';
+import CompanySearchBar from './CompanySearchBar';
+import MultiYearComparison from './MultiYearComparison';
+import RatiosPyramid from './RatiosPyramid';
 
 interface Company {
   id: string;
   name: string;
+  bp: string | null;
+  tax_id: string | null;
 }
 
 interface FinancialStatement {
@@ -37,57 +43,40 @@ interface FinancialStatement {
 
 const AccountingManager = () => {
   const { user, isAdmin, isSuperAdmin } = useAuth();
-  const [companies, setCompanies] = useState<Company[]>([]);
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string>('');
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [currentStatement, setCurrentStatement] = useState<FinancialStatement | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState('balance');
+  const [activeTab, setActiveTab] = useState('comparison');
   const [showPDFImport, setShowPDFImport] = useState(false);
   const [showNewYearDialog, setShowNewYearDialog] = useState(false);
   const [statementType, setStatementType] = useState<'normal' | 'abreujat' | 'simplificat'>('abreujat');
+  const [bp, setBp] = useState('');
 
   const currentYear = new Date().getFullYear();
-  const availableYears = Array.from({ length: 5 }, (_, i) => currentYear - i);
+  const availableYears = Array.from({ length: 10 }, (_, i) => currentYear - i);
 
   useEffect(() => {
-    fetchCompanies();
-  }, []);
-
-  useEffect(() => {
-    if (selectedCompanyId && selectedYear) {
+    if (selectedCompany?.id && selectedYear) {
       fetchFinancialStatement();
     }
-  }, [selectedCompanyId, selectedYear]);
+  }, [selectedCompany?.id, selectedYear]);
 
-  const fetchCompanies = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('companies')
-        .select('id, name')
-        .order('name');
-      
-      if (error) throw error;
-      setCompanies(data || []);
-      if (data && data.length > 0) {
-        setSelectedCompanyId(data[0].id);
-      }
-    } catch (error) {
-      console.error('Error fetching companies:', error);
-      toast.error('Error carregant empreses');
-    }
+  const handleSelectCompany = (company: Company) => {
+    setSelectedCompany(company);
+    setBp(company.bp || '');
   };
 
   const fetchFinancialStatement = async () => {
-    if (!selectedCompanyId) return;
+    if (!selectedCompany?.id) return;
     
     setLoading(true);
     try {
       const { data, error } = await supabase
         .from('company_financial_statements')
         .select('*')
-        .eq('company_id', selectedCompanyId)
+        .eq('company_id', selectedCompany.id)
         .eq('fiscal_year', selectedYear)
         .eq('is_archived', false)
         .maybeSingle();
@@ -114,14 +103,14 @@ const AccountingManager = () => {
   };
 
   const createNewStatement = async () => {
-    if (!selectedCompanyId || !user) return;
+    if (!selectedCompany?.id || !user) return;
     
     setSaving(true);
     try {
       const { data: existing } = await supabase
         .from('company_financial_statements')
         .select('id')
-        .eq('company_id', selectedCompanyId)
+        .eq('company_id', selectedCompany.id)
         .eq('fiscal_year', selectedYear)
         .maybeSingle();
 
@@ -130,10 +119,18 @@ const AccountingManager = () => {
         return;
       }
 
+      // Update company BP if provided
+      if (bp && bp !== selectedCompany.bp) {
+        await supabase
+          .from('companies')
+          .update({ bp })
+          .eq('id', selectedCompany.id);
+      }
+
       const { data, error } = await supabase
         .from('company_financial_statements')
         .insert({
-          company_id: selectedCompanyId,
+          company_id: selectedCompany.id,
           fiscal_year: selectedYear,
           statement_type: statementType,
           status: 'draft',
@@ -213,221 +210,271 @@ const AccountingManager = () => {
     return <Badge variant="outline" className={colors[type] || ''}>{type.charAt(0).toUpperCase() + type.slice(1)}</Badge>;
   };
 
-  const selectedCompany = companies.find(c => c.id === selectedCompanyId);
-
   return (
     <div className="space-y-6">
+      {/* Search Bar and Company Header */}
       <Card className="border-primary/20">
         <CardHeader className="pb-3">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <CardTitle className="flex items-center gap-2">
-              <Wallet className="h-6 w-6 text-primary" />
-              Comptabilitat - Estats Financers
-            </CardTitle>
-            <div className="flex items-center gap-3 flex-wrap">
-              <div className="flex items-center gap-2">
-                <Label className="text-sm text-muted-foreground">Empresa:</Label>
-                <Select value={selectedCompanyId} onValueChange={setSelectedCompanyId}>
-                  <SelectTrigger className="w-[200px]">
-                    <SelectValue placeholder="Selecciona empresa" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {companies.map(company => (
-                      <SelectItem key={company.id} value={company.id}>{company.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <Label className="text-sm text-muted-foreground">Any:</Label>
-                <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}>
-                  <SelectTrigger className="w-[100px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableYears.map(year => (
-                      <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              {currentStatement && (
-                <>
-                  {getStatusBadge(currentStatement.status)}
-                  {getStatementTypeBadge(currentStatement.statement_type)}
-                  {currentStatement.source === 'pdf_import' && (
-                    <Badge variant="outline" className="bg-orange-500/10 text-orange-600 border-orange-500/30">
-                      <FileUp className="w-3 h-3 mr-1" /> Importat PDF
-                    </Badge>
-                  )}
-                </>
-              )}
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Wallet className="h-6 w-6 text-primary" />
+                Comptabilitat - Estats Financers
+              </CardTitle>
             </div>
             
-            <div className="flex items-center gap-2 flex-wrap">
-              {!currentStatement && selectedCompanyId && (
-                <Dialog open={showNewYearDialog} onOpenChange={setShowNewYearDialog} modal={false}>
-                  <DialogTrigger asChild>
-                    <Button>
-                      <Plus className="w-4 h-4 mr-2" />
-                      Crear Any {selectedYear}
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()}>
-                    <DialogHeader>
-                      <DialogTitle>Crear Estat Financer {selectedYear}</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4 pt-4">
-                      <div className="space-y-2">
-                        <Label>Tipus de Model</Label>
-                        <select 
-                          value={statementType} 
-                          onChange={(e) => setStatementType(e.target.value as 'normal' | 'abreujat' | 'simplificat')}
-                          className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                        >
-                          <option value="normal">Normal (Complet)</option>
-                          <option value="abreujat">Abreujat</option>
-                          <option value="simplificat">Simplificat</option>
-                        </select>
-                        <p className="text-sm text-muted-foreground">
-                          El model determina el nivell de detall dels estats financers segons el PGC Andorrà.
-                        </p>
-                      </div>
-                      <div className="flex justify-end gap-2">
-                        <Button variant="outline" onClick={() => setShowNewYearDialog(false)}>Cancel·lar</Button>
-                        <Button onClick={createNewStatement} disabled={saving}>
-                          {saving ? 'Creant...' : 'Crear'}
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              )}
-              
-              {currentStatement && (
-                <>
-                  <Button variant="outline" onClick={() => setShowPDFImport(true)}>
-                    <FileUp className="w-4 h-4 mr-2" />
-                    Importar PDF
-                  </Button>
-                  <Button variant="outline" onClick={fetchFinancialStatement}>
-                    <RefreshCcw className="w-4 h-4 mr-2" />
-                    Actualitzar
-                  </Button>
-                  {currentStatement.status === 'draft' && (
-                    <Button onClick={() => updateStatementStatus('submitted')}>
-                      <FileText className="w-4 h-4 mr-2" />
-                      Enviar
-                    </Button>
-                  )}
-                  {currentStatement.status === 'submitted' && (isAdmin || isSuperAdmin) && (
-                    <Button onClick={() => updateStatementStatus('approved')} className="bg-green-600 hover:bg-green-700">
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      Aprovar
-                    </Button>
-                  )}
-                </>
-              )}
-            </div>
+            {/* Company Search */}
+            <CompanySearchBar 
+              onSelectCompany={handleSelectCompany}
+              selectedCompanyId={selectedCompany?.id || ''}
+            />
           </div>
-        </CardContent>
+        </CardHeader>
+
+        {selectedCompany && (
+          <CardContent>
+            {/* Company Header */}
+            <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-4 mb-4">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-primary/20 rounded-full">
+                  <Building2 className="w-8 h-8 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold">{selectedCompany.name}</h2>
+                  <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                    {selectedCompany.bp && (
+                      <span className="flex items-center gap-1">
+                        <CreditCard className="w-4 h-4" />
+                        BP: {selectedCompany.bp}
+                      </span>
+                    )}
+                    {selectedCompany.tax_id && (
+                      <span className="flex items-center gap-1">
+                        <FileText className="w-4 h-4" />
+                        NRT: {selectedCompany.tax_id}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Year Selection and Actions */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-2">
+                  <Label className="text-sm text-muted-foreground">Any:</Label>
+                  <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}>
+                    <SelectTrigger className="w-[100px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableYears.map(year => (
+                        <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                {currentStatement && (
+                  <>
+                    {getStatusBadge(currentStatement.status)}
+                    {getStatementTypeBadge(currentStatement.statement_type)}
+                    {currentStatement.source === 'pdf_import' && (
+                      <Badge variant="outline" className="bg-orange-500/10 text-orange-600 border-orange-500/30">
+                        <FileUp className="w-3 h-3 mr-1" /> Importat PDF
+                      </Badge>
+                    )}
+                  </>
+                )}
+              </div>
+              
+              <div className="flex items-center gap-2 flex-wrap">
+                {!currentStatement && (
+                  <Dialog open={showNewYearDialog} onOpenChange={setShowNewYearDialog} modal={false}>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Crear Any {selectedYear}
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()}>
+                      <DialogHeader>
+                        <DialogTitle>Crear Estat Financer {selectedYear}</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4 pt-4">
+                        <div className="space-y-2">
+                          <Label>BP (Número de Compte)</Label>
+                          <Input 
+                            value={bp}
+                            onChange={(e) => setBp(e.target.value)}
+                            placeholder="Introdueix el BP..."
+                            maxLength={34}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            El BP s'utilitzarà com a referència per als balanços d'aquesta empresa
+                          </p>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Tipus de Model</Label>
+                          <select 
+                            value={statementType} 
+                            onChange={(e) => setStatementType(e.target.value as 'normal' | 'abreujat' | 'simplificat')}
+                            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                          >
+                            <option value="normal">Normal (Complet)</option>
+                            <option value="abreujat">Abreujat</option>
+                            <option value="simplificat">Simplificat</option>
+                          </select>
+                          <p className="text-sm text-muted-foreground">
+                            El model determina el nivell de detall dels estats financers segons el PGC Andorrà.
+                          </p>
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" onClick={() => setShowNewYearDialog(false)}>Cancel·lar</Button>
+                          <Button onClick={createNewStatement} disabled={saving}>
+                            {saving ? 'Creant...' : 'Crear'}
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                )}
+                
+                {currentStatement && (
+                  <>
+                    <Button variant="outline" onClick={() => setShowPDFImport(true)}>
+                      <FileUp className="w-4 h-4 mr-2" />
+                      Importar PDF
+                    </Button>
+                    <Button variant="outline" onClick={fetchFinancialStatement}>
+                      <RefreshCcw className="w-4 h-4 mr-2" />
+                      Actualitzar
+                    </Button>
+                    {currentStatement.status === 'draft' && (
+                      <Button onClick={() => updateStatementStatus('submitted')}>
+                        <FileText className="w-4 h-4 mr-2" />
+                        Enviar
+                      </Button>
+                    )}
+                    {currentStatement.status === 'submitted' && (isAdmin || isSuperAdmin) && (
+                      <Button onClick={() => updateStatementStatus('approved')} className="bg-green-600 hover:bg-green-700">
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        Aprovar
+                      </Button>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        )}
       </Card>
 
-      {loading ? (
+      {!selectedCompany ? (
+        <Card>
+          <CardContent className="p-8 text-center">
+            <Building2 className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Selecciona una Empresa</h3>
+            <p className="text-muted-foreground">
+              Utilitza el cercador per trobar una empresa per nom, BP o NRT i veure els seus estats financers.
+            </p>
+          </CardContent>
+        </Card>
+      ) : loading ? (
         <Card>
           <CardContent className="p-8 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
             <p className="mt-4 text-muted-foreground">Carregant dades financeres...</p>
           </CardContent>
         </Card>
-      ) : !currentStatement ? (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <Archive className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No hi ha estats financers per {selectedYear}</h3>
-            <p className="text-muted-foreground mb-4">
-              Crea un nou estat financer per començar a introduir les dades comptables.
-            </p>
-          </CardContent>
-        </Card>
       ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-6 mb-4">
-            <TabsTrigger value="balance">Balanç</TabsTrigger>
-            <TabsTrigger value="income">P&G</TabsTrigger>
-            <TabsTrigger value="equity">Canvis PN</TabsTrigger>
-            {currentStatement.statement_type === 'normal' && (
-              <TabsTrigger value="cashflow">Flux Efectiu</TabsTrigger>
-            )}
-            <TabsTrigger value="notes">Memòria</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-7 mb-4">
+            <TabsTrigger value="comparison">Comparativa</TabsTrigger>
+            <TabsTrigger value="balance" disabled={!currentStatement}>Balanç {selectedYear}</TabsTrigger>
+            <TabsTrigger value="income" disabled={!currentStatement}>P&G {selectedYear}</TabsTrigger>
+            <TabsTrigger value="equity" disabled={!currentStatement}>Canvis PN</TabsTrigger>
+            <TabsTrigger value="notes" disabled={!currentStatement}>Memòria</TabsTrigger>
+            <TabsTrigger value="ratios">
+              <Pyramid className="w-4 h-4 mr-1" />
+              Ràtios
+            </TabsTrigger>
             <TabsTrigger value="history">Historial</TabsTrigger>
           </TabsList>
           
+          <TabsContent value="comparison">
+            <MultiYearComparison 
+              companyId={selectedCompany.id}
+              companyName={selectedCompany.name}
+            />
+          </TabsContent>
+
           <TabsContent value="balance">
-            <BalanceSheetForm 
-              statementId={currentStatement.id} 
-              isLocked={currentStatement.status === 'approved'}
-              fiscalYear={selectedYear}
-            />
-          </TabsContent>
-          
-          <TabsContent value="income">
-            <IncomeStatementForm 
-              statementId={currentStatement.id} 
-              isLocked={currentStatement.status === 'approved'}
-              fiscalYear={selectedYear}
-            />
-          </TabsContent>
-          
-          <TabsContent value="equity">
-            <EquityChangesForm 
-              statementId={currentStatement.id} 
-              isLocked={currentStatement.status === 'approved'}
-              fiscalYear={selectedYear}
-            />
-          </TabsContent>
-          
-          {currentStatement.statement_type === 'normal' && (
-            <TabsContent value="cashflow">
-              <CashFlowForm 
+            {currentStatement && (
+              <BalanceSheetForm 
                 statementId={currentStatement.id} 
                 isLocked={currentStatement.status === 'approved'}
                 fiscalYear={selectedYear}
               />
-            </TabsContent>
-          )}
+            )}
+          </TabsContent>
+          
+          <TabsContent value="income">
+            {currentStatement && (
+              <IncomeStatementForm 
+                statementId={currentStatement.id} 
+                isLocked={currentStatement.status === 'approved'}
+                fiscalYear={selectedYear}
+              />
+            )}
+          </TabsContent>
+          
+          <TabsContent value="equity">
+            {currentStatement && (
+              <EquityChangesForm 
+                statementId={currentStatement.id} 
+                isLocked={currentStatement.status === 'approved'}
+                fiscalYear={selectedYear}
+              />
+            )}
+          </TabsContent>
           
           <TabsContent value="notes">
-            <FinancialNotesManager 
-              statementId={currentStatement.id} 
-              isLocked={currentStatement.status === 'approved'}
+            {currentStatement && (
+              <FinancialNotesManager 
+                statementId={currentStatement.id} 
+                isLocked={currentStatement.status === 'approved'}
+              />
+            )}
+          </TabsContent>
+          
+          <TabsContent value="ratios">
+            <RatiosPyramid 
+              companyId={selectedCompany.id}
+              companyName={selectedCompany.name}
             />
           </TabsContent>
           
           <TabsContent value="history">
             <FinancialStatementsHistory 
-              companyId={selectedCompanyId}
+              companyId={selectedCompany.id}
               currentYear={selectedYear}
             />
           </TabsContent>
         </Tabs>
       )}
 
-      <PDFImportDialog
-        open={showPDFImport}
-        onOpenChange={setShowPDFImport}
-        statementId={currentStatement?.id || ''}
-        companyName={selectedCompany?.name || ''}
-        fiscalYear={selectedYear}
-        onImportComplete={fetchFinancialStatement}
-      />
+      {currentStatement && (
+        <PDFImportDialog
+          open={showPDFImport}
+          onOpenChange={setShowPDFImport}
+          statementId={currentStatement.id}
+          companyName={selectedCompany?.name || ''}
+          fiscalYear={selectedYear}
+          onImportComplete={fetchFinancialStatement}
+        />
+      )}
     </div>
   );
 };
