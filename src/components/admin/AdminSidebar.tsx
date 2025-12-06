@@ -359,43 +359,7 @@ export function AdminSidebar({
           </SidebarMenu>
         </SidebarGroup>
 
-        {/* Gestores Metrics - Only keep Gestores option for non-regular gestores */}
-        {!isRegularGestor && open ? (
-          <SidebarGroup className="mt-4">
-            <SidebarGroupLabel className="px-3 text-xs font-medium text-muted-foreground">
-              {t('admin.metrics')}
-            </SidebarGroupLabel>
-            <SidebarGroupContent className="mt-2">
-              <SidebarMenu className="space-y-1">
-                <SidebarMenuItem>
-                  <SidebarMenuButton 
-                    onClick={() => onSectionChange('gestores')} 
-                    isActive={isActive('gestores')}
-                    className="rounded-lg hover:bg-accent/50 transition-all group"
-                  >
-                    <Users className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                    <span className="text-sm transition-all duration-300 group-hover:translate-x-1">{t('map.managers')}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ) : !isRegularGestor ? (
-          <SidebarGroup className="mt-4">
-            <SidebarMenu className="space-y-2">
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  onClick={() => onSectionChange('gestores')} 
-                  isActive={isActive('gestores')} 
-                  tooltip={t('map.managers')}
-                  className="rounded-xl hover:shadow-md transition-all duration-300 group"
-                >
-                  <Users className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroup>
-        ) : null}
+        {/* Gestores Metrics section moved to Admin panel */}
 
         {/* TPV Management - Hide from regular gestores */}
         {!isRegularGestor && (
