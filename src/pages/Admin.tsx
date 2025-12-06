@@ -648,6 +648,17 @@ const Admin = () => {
                   </div>
                 </CardContent>
               </Card>
+              <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('map-config')}>
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                    <Activity className="h-5 w-5 text-blue-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Configuració del Mapa</h3>
+                    <p className="text-sm text-muted-foreground">Personalitzar capes i tooltip del mapa</p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         );
