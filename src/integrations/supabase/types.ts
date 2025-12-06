@@ -1274,6 +1274,333 @@ export type Database = {
         }
         Relationships: []
       }
+      consolidated_balance_sheets: {
+        Row: {
+          accruals_assets: number | null
+          available_for_sale_assets_adjustment: number | null
+          capital_grants: number | null
+          cash_equivalents: number | null
+          created_at: string
+          current_year_result: number | null
+          deferred_tax_assets: number | null
+          deferred_tax_liabilities: number | null
+          goodwill: number | null
+          goodwill_eliminations: number | null
+          hedging_operations_adjustment: number | null
+          id: string
+          intangible_assets: number | null
+          intercompany_eliminations: number | null
+          interim_dividend: number | null
+          inventory: number | null
+          legal_reserve: number | null
+          liabilities_held_for_sale: number | null
+          long_term_accruals: number | null
+          long_term_debts: number | null
+          long_term_financial_investments: number | null
+          long_term_group_debts: number | null
+          long_term_group_investments: number | null
+          long_term_provisions: number | null
+          long_term_trade_receivables: number | null
+          minority_interests: number | null
+          non_current_assets_held_for_sale: number | null
+          other_creditors: number | null
+          other_equity_instruments: number | null
+          other_value_adjustments: number | null
+          real_estate_investments: number | null
+          retained_earnings: number | null
+          revaluation_reserve: number | null
+          share_capital: number | null
+          share_premium: number | null
+          short_term_accruals: number | null
+          short_term_debts: number | null
+          short_term_financial_investments: number | null
+          short_term_group_debts: number | null
+          short_term_group_receivables: number | null
+          short_term_provisions: number | null
+          statement_id: string
+          statutory_reserves: number | null
+          tangible_assets: number | null
+          trade_payables: number | null
+          trade_receivables: number | null
+          translation_differences: number | null
+          treasury_shares: number | null
+          updated_at: string
+          voluntary_reserves: number | null
+        }
+        Insert: {
+          accruals_assets?: number | null
+          available_for_sale_assets_adjustment?: number | null
+          capital_grants?: number | null
+          cash_equivalents?: number | null
+          created_at?: string
+          current_year_result?: number | null
+          deferred_tax_assets?: number | null
+          deferred_tax_liabilities?: number | null
+          goodwill?: number | null
+          goodwill_eliminations?: number | null
+          hedging_operations_adjustment?: number | null
+          id?: string
+          intangible_assets?: number | null
+          intercompany_eliminations?: number | null
+          interim_dividend?: number | null
+          inventory?: number | null
+          legal_reserve?: number | null
+          liabilities_held_for_sale?: number | null
+          long_term_accruals?: number | null
+          long_term_debts?: number | null
+          long_term_financial_investments?: number | null
+          long_term_group_debts?: number | null
+          long_term_group_investments?: number | null
+          long_term_provisions?: number | null
+          long_term_trade_receivables?: number | null
+          minority_interests?: number | null
+          non_current_assets_held_for_sale?: number | null
+          other_creditors?: number | null
+          other_equity_instruments?: number | null
+          other_value_adjustments?: number | null
+          real_estate_investments?: number | null
+          retained_earnings?: number | null
+          revaluation_reserve?: number | null
+          share_capital?: number | null
+          share_premium?: number | null
+          short_term_accruals?: number | null
+          short_term_debts?: number | null
+          short_term_financial_investments?: number | null
+          short_term_group_debts?: number | null
+          short_term_group_receivables?: number | null
+          short_term_provisions?: number | null
+          statement_id: string
+          statutory_reserves?: number | null
+          tangible_assets?: number | null
+          trade_payables?: number | null
+          trade_receivables?: number | null
+          translation_differences?: number | null
+          treasury_shares?: number | null
+          updated_at?: string
+          voluntary_reserves?: number | null
+        }
+        Update: {
+          accruals_assets?: number | null
+          available_for_sale_assets_adjustment?: number | null
+          capital_grants?: number | null
+          cash_equivalents?: number | null
+          created_at?: string
+          current_year_result?: number | null
+          deferred_tax_assets?: number | null
+          deferred_tax_liabilities?: number | null
+          goodwill?: number | null
+          goodwill_eliminations?: number | null
+          hedging_operations_adjustment?: number | null
+          id?: string
+          intangible_assets?: number | null
+          intercompany_eliminations?: number | null
+          interim_dividend?: number | null
+          inventory?: number | null
+          legal_reserve?: number | null
+          liabilities_held_for_sale?: number | null
+          long_term_accruals?: number | null
+          long_term_debts?: number | null
+          long_term_financial_investments?: number | null
+          long_term_group_debts?: number | null
+          long_term_group_investments?: number | null
+          long_term_provisions?: number | null
+          long_term_trade_receivables?: number | null
+          minority_interests?: number | null
+          non_current_assets_held_for_sale?: number | null
+          other_creditors?: number | null
+          other_equity_instruments?: number | null
+          other_value_adjustments?: number | null
+          real_estate_investments?: number | null
+          retained_earnings?: number | null
+          revaluation_reserve?: number | null
+          share_capital?: number | null
+          share_premium?: number | null
+          short_term_accruals?: number | null
+          short_term_debts?: number | null
+          short_term_financial_investments?: number | null
+          short_term_group_debts?: number | null
+          short_term_group_receivables?: number | null
+          short_term_provisions?: number | null
+          statement_id?: string
+          statutory_reserves?: number | null
+          tangible_assets?: number | null
+          trade_payables?: number | null
+          trade_receivables?: number | null
+          translation_differences?: number | null
+          treasury_shares?: number | null
+          updated_at?: string
+          voluntary_reserves?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consolidated_balance_sheets_statement_id_fkey"
+            columns: ["statement_id"]
+            isOneToOne: false
+            referencedRelation: "consolidated_financial_statements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      consolidated_financial_statements: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          created_by: string | null
+          fiscal_year: number
+          group_id: string
+          id: string
+          source: string
+          statement_type: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          fiscal_year: number
+          group_id: string
+          id?: string
+          source?: string
+          statement_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          fiscal_year?: number
+          group_id?: string
+          id?: string
+          source?: string
+          statement_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consolidated_financial_statements_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "consolidated_financial_statements_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "consolidated_financial_statements_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "consolidation_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      consolidation_group_members: {
+        Row: {
+          company_id: string
+          consolidation_method: string
+          created_at: string
+          group_id: string
+          id: string
+          is_parent: boolean
+          participation_percentage: number
+        }
+        Insert: {
+          company_id: string
+          consolidation_method?: string
+          created_at?: string
+          group_id: string
+          id?: string
+          is_parent?: boolean
+          participation_percentage?: number
+        }
+        Update: {
+          company_id?: string
+          consolidation_method?: string
+          created_at?: string
+          group_id?: string
+          id?: string
+          is_parent?: boolean
+          participation_percentage?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consolidation_group_members_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "consolidation_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "consolidation_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      consolidation_groups: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          fiscal_year: number
+          group_name: string
+          id: string
+          notes: string | null
+          parent_company_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          fiscal_year: number
+          group_name: string
+          id?: string
+          notes?: string | null
+          parent_company_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          fiscal_year?: number
+          group_name?: string
+          id?: string
+          notes?: string | null
+          parent_company_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consolidation_groups_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "consolidation_groups_parent_company_id_fkey"
+            columns: ["parent_company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_reminder_preferences: {
         Row: {
           created_at: string | null
