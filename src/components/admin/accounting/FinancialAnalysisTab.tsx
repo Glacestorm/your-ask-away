@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, TrendingUp, TrendingDown, Activity, DollarSign, BarChart3, PieChart } from "lucide-react";
+import { Loader2, TrendingUp, TrendingDown, Activity, DollarSign, BarChart3, PieChart, AlertTriangle } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, AreaChart, Area } from "recharts";
+import { ZScoreAnalysis } from "./ZScoreAnalysis";
 
 interface FinancialAnalysisTabProps {
   companyId: string;
@@ -182,11 +183,15 @@ export function FinancialAnalysisTab({ companyId, companyName }: FinancialAnalys
       </div>
 
       <Tabs defaultValue="ebitda" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 lg:grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6 lg:grid-cols-6">
           <TabsTrigger value="ebitda" className="text-xs">EBIT/EBITDA</TabsTrigger>
           <TabsTrigger value="margins" className="text-xs">Marges</TabsTrigger>
           <TabsTrigger value="working-capital" className="text-xs">Capital Circulant</TabsTrigger>
           <TabsTrigger value="value-added" className="text-xs">Valor Afegit</TabsTrigger>
+          <TabsTrigger value="zscore" className="text-xs">
+            <AlertTriangle className="w-3 h-3 mr-1" />
+            Índex Z
+          </TabsTrigger>
           <TabsTrigger value="dashboard" className="text-xs">Dashboard</TabsTrigger>
         </TabsList>
 
@@ -514,6 +519,10 @@ export function FinancialAnalysisTab({ companyId, companyName }: FinancialAnalys
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="zscore">
+          <ZScoreAnalysis companyId={companyId} companyName={companyName} />
         </TabsContent>
       </Tabs>
     </div>
