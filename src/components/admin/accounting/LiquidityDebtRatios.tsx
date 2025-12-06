@@ -4,10 +4,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { BarChart, Bar, LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Loader2 } from 'lucide-react';
+import { BarChart, Bar, LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { Loader2, ChevronDown, ChevronRight, Home, Building2, FileText, Calculator, PieChart, TrendingUp, ClipboardCheck, Star, BookOpen, HelpCircle, Info } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 type BalanceSheet = Database['public']['Tables']['balance_sheets']['Row'];
 type IncomeStatement = Database['public']['Tables']['income_statements']['Row'];
@@ -15,25 +16,38 @@ type IncomeStatement = Database['public']['Tables']['income_statements']['Row'];
 interface LiquidityDebtRatiosProps {
   companyId: string;
   companyName: string;
+  onNavigate?: (section: string) => void;
 }
+
+type MenuSection = 'financial-system' | 'balances' | 'financiera' | 'ratios' | 'rentabilidad' | 'auditoria' | 'valoraciones' | 'cuentas-anuales' | 'valor-accionarial' | 'informacion';
 
 const LiquidityDebtRatios: React.FC<LiquidityDebtRatiosProps> = ({
   companyId,
-  companyName
+  companyName,
+  onNavigate
 }) => {
   const [balanceSheets, setBalanceSheets] = useState<(BalanceSheet & { fiscal_year: number })[]>([]);
   const [incomeStatements, setIncomeStatements] = useState<(IncomeStatement & { fiscal_year: number })[]>([]);
   const [loading, setLoading] = useState(true);
   const [dataViewOption, setDataViewOption] = useState<'values' | 'values_deviation'>('values');
   const [showThousands, setShowThousands] = useState(false);
-  const [chartGroup1, setChartGroup1] = useState('liquidity');
+  const [chartGroup1, setChartGroup1] = useState('liquidez');
   const [chartType1, setChartType1] = useState<'bar' | 'line' | 'area'>('bar');
-  const [chartGroup2, setChartGroup2] = useState('debt');
+  const [chartGroup2, setChartGroup2] = useState('endeudamiento');
   const [chartType2, setChartType2] = useState<'bar' | 'line' | 'area'>('bar');
+  const [expandedSections, setExpandedSections] = useState<MenuSection[]>(['ratios']);
 
   useEffect(() => {
     fetchFinancialData();
   }, [companyId]);
+
+  const toggleSection = (section: MenuSection) => {
+    setExpandedSections(prev => 
+      prev.includes(section) 
+        ? prev.filter(s => s !== section)
+        : [...prev, section]
+    );
+  };
 
   const fetchFinancialData = async () => {
     setLoading(true);
@@ -80,34 +94,35 @@ const LiquidityDebtRatios: React.FC<LiquidityDebtRatiosProps> = ({
     }
   };
 
+  const currentYear = new Date().getFullYear();
+  const displayYears = useMemo(() => {
+    return Array.from({ length: 5 }, (_, i) => currentYear - i);
+  }, [currentYear]);
+
   const sortedYears = useMemo(() => {
     const years = [...new Set(balanceSheets.map(bs => bs.fiscal_year))].sort((a, b) => b - a);
     return years.slice(0, 5);
   }, [balanceSheets]);
 
   const calculateRatios = useMemo(() => {
-    return sortedYears.map(year => {
+    return displayYears.map(year => {
       const bs = balanceSheets.find(b => b.fiscal_year === year);
       const is = incomeStatements.find(i => i.fiscal_year === year);
 
       if (!bs) return { year, liquidez: 0, fondoManiobra: 0, tesoreria: 0, disponibilidad: 0, endeudamiento: 0, endeudamientoActivo: 0, endeudamientoCP: 0, endeudamientoLP: 0, autonomia: 0, garantia: 0, calidadDeuda: 0, capacidadDevolucion: 0, gastosFinancieros: 0, costeDeuda: 0, costeMedioPasivo: 0 };
 
-      // Current Assets
       const activoCorriente = Number(bs.inventory || 0) + Number(bs.trade_receivables || 0) + 
         Number(bs.short_term_group_receivables || 0) + Number(bs.short_term_financial_investments || 0) + 
         Number(bs.cash_equivalents || 0) + Number(bs.accruals_assets || 0);
 
-      // Current Liabilities
       const pasivoCorriente = Number(bs.short_term_provisions || 0) + Number(bs.short_term_debts || 0) + 
         Number(bs.short_term_group_debts || 0) + Number(bs.trade_payables || 0) + 
         Number(bs.other_creditors || 0) + Number(bs.short_term_accruals || 0);
 
-      // Non-Current Liabilities
       const pasivoNoCorriente = Number(bs.long_term_provisions || 0) + Number(bs.long_term_debts || 0) + 
         Number(bs.long_term_group_debts || 0) + Number(bs.deferred_tax_liabilities || 0) + 
         Number(bs.long_term_accruals || 0);
 
-      // Equity
       const patrimonioNeto = Number(bs.share_capital || 0) + Number(bs.share_premium || 0) + 
         Number(bs.revaluation_reserve || 0) + Number(bs.legal_reserve || 0) + 
         Number(bs.statutory_reserves || 0) + Number(bs.voluntary_reserves || 0) + 
@@ -115,26 +130,17 @@ const LiquidityDebtRatios: React.FC<LiquidityDebtRatiosProps> = ({
         Number(bs.treasury_shares || 0) - Number(bs.interim_dividend || 0) + 
         Number(bs.capital_grants || 0);
 
-      // Total Assets
       const activoTotal = Number(bs.intangible_assets || 0) + Number(bs.goodwill || 0) + 
         Number(bs.tangible_assets || 0) + Number(bs.real_estate_investments || 0) + 
         Number(bs.long_term_group_investments || 0) + Number(bs.long_term_financial_investments || 0) + 
         Number(bs.deferred_tax_assets || 0) + Number(bs.long_term_trade_receivables || 0) + activoCorriente;
 
-      // Total Liabilities (Deudas Totales)
       const deudasTotales = pasivoCorriente + pasivoNoCorriente;
-
-      // Cash and equivalents (Tesorería)
       const tesoreriaVal = Number(bs.cash_equivalents || 0);
-
-      // Realizable (Trade receivables + short term investments)
       const realizable = Number(bs.trade_receivables || 0) + Number(bs.short_term_group_receivables || 0) + 
         Number(bs.short_term_financial_investments || 0);
-
-      // Working Capital (Fondo de Maniobra)
       const fondoManiobraVal = activoCorriente - pasivoCorriente;
 
-      // Income statement values
       const ventas = Number(is?.net_turnover || 0);
       const gastosFinancierosVal = Number(is?.financial_expenses || 0);
       const beneficioNeto = Number(is?.corporate_tax || 0) ? 
@@ -146,13 +152,11 @@ const LiquidityDebtRatios: React.FC<LiquidityDebtRatiosProps> = ({
       const amortizacion = Number(is?.depreciation || 0);
       const provisiones = Number(is?.excess_provisions || 0);
 
-      // Liquidity Ratios
       const liquidez = pasivoCorriente !== 0 ? activoCorriente / pasivoCorriente : 0;
       const fondoManiobra = pasivoCorriente !== 0 ? (fondoManiobraVal / pasivoCorriente) * 100 : 0;
       const tesoreria = pasivoCorriente !== 0 ? (tesoreriaVal + realizable) / pasivoCorriente : 0;
       const disponibilidad = pasivoCorriente !== 0 ? tesoreriaVal / pasivoCorriente : 0;
 
-      // Debt Ratios
       const endeudamiento = patrimonioNeto !== 0 ? (deudasTotales / patrimonioNeto) * 100 : 0;
       const endeudamientoActivo = activoTotal !== 0 ? (deudasTotales / activoTotal) * 100 : 0;
       const endeudamientoCP = patrimonioNeto !== 0 ? (pasivoCorriente / patrimonioNeto) * 100 : 0;
@@ -184,7 +188,7 @@ const LiquidityDebtRatios: React.FC<LiquidityDebtRatiosProps> = ({
         costeMedioPasivo
       };
     });
-  }, [balanceSheets, incomeStatements, sortedYears]);
+  }, [balanceSheets, incomeStatements, displayYears]);
 
   const formatValue = (value: number, isPercentage: boolean = false) => {
     if (isPercentage) {
@@ -199,7 +203,7 @@ const LiquidityDebtRatios: React.FC<LiquidityDebtRatiosProps> = ({
   };
 
   const liquidityRatios = [
-    { key: 'liquidez', name: 'LIQUIDEZ', formula: 'Activo Corriente / Pasivo Corriente', mediaNormal: 'De 1.5 a 2', isPercentage: false },
+    { key: 'liquidez', name: 'LIQUIDEZ', formula: 'Activo Corriente / Pasivo Corriente', mediaNormal: 'De 1.5 a 2.', isPercentage: false },
     { key: 'fondoManiobra', name: 'FONDO DE MANIOBRA SOBRE PASIVO CORRIENTE', formula: 'Fondo de Maniobra / Pasivo Corriente', mediaNormal: 'De 50 a 100', isPercentage: true },
     { key: 'tesoreria', name: 'TESORERÍA', formula: '(Tesorería + Realizable) / Pasivo Corriente', mediaNormal: '1', isPercentage: false },
     { key: 'disponibilidad', name: 'DISPONIBILIDAD', formula: 'Tesorería / Pasivo Corriente', mediaNormal: '0.3', isPercentage: false }
@@ -219,50 +223,91 @@ const LiquidityDebtRatios: React.FC<LiquidityDebtRatiosProps> = ({
     { key: 'costeMedioPasivo', name: 'COSTE MEDIO DEL PASIVO', formula: 'Gastos financieros + Dividendos / Total Pasivo', mediaNormal: 'Reducido', isPercentage: true }
   ];
 
-  const chartData1 = useMemo(() => {
+  const chartOptions1 = [
+    { value: 'liquidez', label: 'Ratio de Liquidez' },
+    { value: 'fondoManiobra', label: 'Fondo Maniobra' },
+    { value: 'tesoreria', label: 'Tesorería' },
+    { value: 'disponibilidad', label: 'Disponibilidad' }
+  ];
+
+  const chartOptions2 = [
+    { value: 'endeudamiento', label: 'Endeudamiento' },
+    { value: 'autonomia', label: 'Autonomía' },
+    { value: 'garantia', label: 'Garantía' },
+    { value: 'calidadDeuda', label: 'Calidad Deuda' }
+  ];
+
+  const chartData = useMemo(() => {
     return [...calculateRatios].reverse().map(r => ({
       name: `${r.year}`,
-      liquidez: r.liquidez,
-      fondoManiobra: r.fondoManiobra,
-      tesoreria: r.tesoreria,
-      disponibilidad: r.disponibilidad
+      ...r
     }));
   }, [calculateRatios]);
 
-  const chartData2 = useMemo(() => {
-    return [...calculateRatios].reverse().map(r => ({
-      name: `${r.year}`,
-      endeudamiento: r.endeudamiento,
-      autonomia: r.autonomia,
-      garantia: r.garantia,
-      calidadDeuda: r.calidadDeuda
-    }));
-  }, [calculateRatios]);
-
-  const renderChart = (data: any[], dataKey: string, chartType: 'bar' | 'line' | 'area', color: string) => {
-    const ChartComponent = chartType === 'bar' ? BarChart : chartType === 'line' ? LineChart : AreaChart;
-    const DataComponent = chartType === 'bar' ? Bar : chartType === 'line' ? Line : Area;
-
+  const renderChart = (dataKey: string, chartType: 'bar' | 'line' | 'area', title: string) => {
     return (
-      <ResponsiveContainer width="100%" height={180}>
-        <ChartComponent data={data}>
-          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-          <XAxis dataKey="name" tick={{ fill: 'hsl(var(--foreground))', fontSize: 10 }} />
-          <YAxis tick={{ fill: 'hsl(var(--foreground))', fontSize: 10 }} />
-          <Tooltip 
-            contentStyle={{ 
-              backgroundColor: 'hsl(var(--background))', 
-              border: '1px solid hsl(var(--border))',
-              borderRadius: '8px'
-            }}
-            formatter={(value: number) => value.toFixed(2)}
-          />
-          {chartType === 'bar' && <Bar dataKey={dataKey} fill={color} radius={[4, 4, 0, 0]} />}
-          {chartType === 'line' && <Line type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2} dot={{ fill: color }} />}
-          {chartType === 'area' && <Area type="monotone" dataKey={dataKey} fill={color} stroke={color} fillOpacity={0.3} />}
-        </ChartComponent>
-      </ResponsiveContainer>
+      <div className="space-y-1">
+        <h4 className="text-xs font-semibold text-center">{title}</h4>
+        <ResponsiveContainer width="100%" height={150}>
+          {chartType === 'bar' ? (
+            <BarChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="name" tick={{ fill: 'hsl(var(--foreground))', fontSize: 9 }} />
+              <YAxis tick={{ fill: 'hsl(var(--foreground))', fontSize: 9 }} />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'hsl(var(--background))', 
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: '4px',
+                  fontSize: '10px'
+                }}
+                formatter={(value: number) => value.toFixed(2)}
+              />
+              <Bar dataKey={dataKey} fill="hsl(var(--primary))" radius={[2, 2, 0, 0]} />
+            </BarChart>
+          ) : chartType === 'line' ? (
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="name" tick={{ fill: 'hsl(var(--foreground))', fontSize: 9 }} />
+              <YAxis tick={{ fill: 'hsl(var(--foreground))', fontSize: 9 }} />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'hsl(var(--background))', 
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: '4px',
+                  fontSize: '10px'
+                }}
+                formatter={(value: number) => value.toFixed(2)}
+              />
+              <Line type="monotone" dataKey={dataKey} stroke="hsl(var(--primary))" strokeWidth={2} dot={{ fill: 'hsl(var(--primary))' }} />
+            </LineChart>
+          ) : (
+            <AreaChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="name" tick={{ fill: 'hsl(var(--foreground))', fontSize: 9 }} />
+              <YAxis tick={{ fill: 'hsl(var(--foreground))', fontSize: 9 }} />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'hsl(var(--background))', 
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: '4px',
+                  fontSize: '10px'
+                }}
+                formatter={(value: number) => value.toFixed(2)}
+              />
+              <Area type="monotone" dataKey={dataKey} fill="hsl(var(--primary))" stroke="hsl(var(--primary))" fillOpacity={0.3} />
+            </AreaChart>
+          )}
+        </ResponsiveContainer>
+        <p className="text-[9px] text-center text-muted-foreground">Períodos anuales</p>
+      </div>
     );
+  };
+
+  const handleMenuClick = (section: string) => {
+    if (onNavigate) {
+      onNavigate(section);
+    }
   };
 
   if (loading) {
@@ -273,95 +318,193 @@ const LiquidityDebtRatios: React.FC<LiquidityDebtRatiosProps> = ({
     );
   }
 
-  if (!balanceSheets.length) {
-    return (
-      <Card>
-        <CardContent className="p-8 text-center text-muted-foreground">
-          No hi ha dades financeres disponibles per a aquesta empresa.
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
-    <div className="flex gap-4 h-full">
-      {/* Left Sidebar */}
-      <div className="w-48 flex-shrink-0 space-y-4">
-        <Card className="bg-card">
-          <CardHeader className="py-2 px-3">
-            <CardTitle className="text-xs">Visió de dades</CardTitle>
-          </CardHeader>
-          <CardContent className="py-2 px-3 space-y-2">
-            <label className="flex items-center gap-2 text-xs cursor-pointer">
-              <input
-                type="radio"
-                checked={dataViewOption === 'values'}
-                onChange={() => setDataViewOption('values')}
-                className="w-3 h-3"
-              />
-              Vista de valors
-            </label>
-            <label className="flex items-center gap-2 text-xs cursor-pointer">
-              <input
-                type="radio"
-                checked={dataViewOption === 'values_deviation'}
-                onChange={() => setDataViewOption('values_deviation')}
-                className="w-3 h-3"
-              />
-              Vista de valors i % de desviació
-            </label>
-          </CardContent>
-        </Card>
+    <div className="flex gap-2 h-full min-h-[600px]" style={{ backgroundColor: '#c0c000' }}>
+      {/* Left Sidebar - Matching screenshot style */}
+      <div className="w-52 flex-shrink-0 space-y-1 p-2 overflow-y-auto" style={{ backgroundColor: '#c0c000' }}>
+        {/* Vision de datos */}
+        <div className="bg-black/20 p-2 rounded text-xs">
+          <div className="border border-black/30 p-1 mb-2 text-black font-semibold">Visión de datos</div>
+          <label className="flex items-center gap-2 cursor-pointer text-red-600 font-medium">
+            <input
+              type="radio"
+              checked={dataViewOption === 'values'}
+              onChange={() => setDataViewOption('values')}
+              className="w-3 h-3"
+            />
+            Vista de valores
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer text-black mt-1">
+            <input
+              type="radio"
+              checked={dataViewOption === 'values_deviation'}
+              onChange={() => setDataViewOption('values_deviation')}
+              className="w-3 h-3"
+            />
+            Vista de valores y % de desviación
+          </label>
+        </div>
 
-        <Card className="bg-card">
-          <CardHeader className="py-2 px-3">
-            <CardTitle className="text-xs">Opcions principals</CardTitle>
-          </CardHeader>
-          <CardContent className="py-1 px-3">
-            <div className="space-y-1 text-xs">
-              <div className="font-semibold text-primary">Ràtios</div>
-              <div className="pl-2 space-y-0.5 text-muted-foreground">
-                <div className="text-primary font-medium">Ràtios de Liquidez i Endeutament</div>
-                <div>Ràtios Sectorials</div>
-                <div>Simulador Altre Sector</div>
-                <div>Piràmide de Ràtios Fin.</div>
-                <div>Anàlisi Bancari</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Opciones Principales */}
+        <Collapsible open={expandedSections.includes('financial-system')} onOpenChange={() => toggleSection('financial-system')}>
+          <div className="bg-black/20 p-1 rounded">
+            <div className="border border-black/30 p-1 text-black font-semibold text-xs">Opciones Principales</div>
+            <CollapsibleTrigger className="flex items-center gap-1 w-full text-left p-1 text-xs text-blue-800 font-semibold hover:bg-black/10">
+              {expandedSections.includes('financial-system') ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+              Financial System
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pl-4 space-y-0.5 text-[10px]">
+              <button onClick={() => handleMenuClick('inicio')} className="flex items-center gap-1 text-black hover:text-blue-600 w-full text-left">
+                <Home className="h-3 w-3" /> Pantalla principal
+              </button>
+              <button onClick={() => handleMenuClick('empresas')} className="flex items-center gap-1 text-black hover:text-blue-600 w-full text-left">
+                <Building2 className="h-3 w-3" /> Pantalla de empresas
+              </button>
+              <button onClick={() => handleMenuClick('datos')} className="flex items-center gap-1 text-black hover:text-blue-600 w-full text-left">
+                <FileText className="h-3 w-3" /> Introducción Datos
+              </button>
+              <button onClick={() => handleMenuClick('informes')} className="flex items-center gap-1 text-black hover:text-blue-600 w-full text-left">
+                <FileText className="h-3 w-3" /> Informes
+              </button>
+            </CollapsibleContent>
+          </div>
+        </Collapsible>
 
-        <Card className="bg-card">
-          <CardContent className="py-2 px-3">
-            <div className="flex items-center justify-between">
-              <Label className="text-xs">Milers</Label>
-              <Switch
-                checked={showThousands}
-                onCheckedChange={setShowThousands}
-              />
-            </div>
-          </CardContent>
-        </Card>
+        {/* Balances */}
+        <Collapsible open={expandedSections.includes('balances')} onOpenChange={() => toggleSection('balances')}>
+          <CollapsibleTrigger className="flex items-center justify-between w-full bg-[#000080] text-white p-1 text-xs font-semibold rounded">
+            Balances
+            {expandedSections.includes('balances') ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+          </CollapsibleTrigger>
+          <CollapsibleContent className="bg-black/10 p-1 text-[10px] space-y-0.5">
+            <button onClick={() => handleMenuClick('balance-situacion')} className="block w-full text-left text-black hover:text-blue-600">Balance de Situación</button>
+            <button onClick={() => handleMenuClick('cuenta-resultados')} className="block w-full text-left text-black hover:text-blue-600">Cuenta de Resultados</button>
+            <button onClick={() => handleMenuClick('cuadro-pgc')} className="block w-full text-left text-black hover:text-blue-600">Cuadro General PGC</button>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Financiera */}
+        <Collapsible open={expandedSections.includes('financiera')} onOpenChange={() => toggleSection('financiera')}>
+          <CollapsibleTrigger className="flex items-center justify-between w-full bg-[#000080] text-white p-1 text-xs font-semibold rounded">
+            Financiera
+            {expandedSections.includes('financiera') ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+          </CollapsibleTrigger>
+          <CollapsibleContent className="bg-black/10 p-1 text-[10px] space-y-0.5">
+            <button onClick={() => handleMenuClick('flujo-caja')} className="block w-full text-left text-black hover:text-blue-600">Flujo de Caja</button>
+            <button onClick={() => handleMenuClick('ebit-ebitda')} className="block w-full text-left text-black hover:text-blue-600">EBIT/EBITDA</button>
+            <button onClick={() => handleMenuClick('capital-circulante')} className="block w-full text-left text-black hover:text-blue-600">Capital Circulante</button>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Ratios */}
+        <Collapsible open={expandedSections.includes('ratios')} onOpenChange={() => toggleSection('ratios')}>
+          <CollapsibleTrigger className="flex items-center justify-between w-full bg-[#000080] text-white p-1 text-xs font-semibold rounded">
+            <span className="flex items-center gap-1"><PieChart className="h-3 w-3" /> Ratios</span>
+            {expandedSections.includes('ratios') ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+          </CollapsibleTrigger>
+          <CollapsibleContent className="bg-black/10 p-1 text-[10px] space-y-0.5">
+            <div className="text-blue-800 font-semibold">Grupo Ratios</div>
+            <button onClick={() => handleMenuClick('ratios-liquidez')} className="flex items-center gap-1 w-full text-left text-blue-800 font-medium pl-2">
+              <PieChart className="h-3 w-3" /> Ratios de Liquidez y Endeudamiento
+            </button>
+            <button onClick={() => handleMenuClick('ratios-sectoriales')} className="flex items-center gap-1 w-full text-left text-black hover:text-blue-600 pl-2">
+              <FileText className="h-3 w-3" /> Ratios Sectoriales
+            </button>
+            <button onClick={() => handleMenuClick('simulador-sector')} className="flex items-center gap-1 w-full text-left text-black hover:text-blue-600 pl-2">
+              <Calculator className="h-3 w-3" /> Simulador Otro Sector
+            </button>
+            <button onClick={() => handleMenuClick('piramide-ratios')} className="flex items-center gap-1 w-full text-left text-black hover:text-blue-600 pl-2">
+              <TrendingUp className="h-3 w-3" /> Pirámide de Ratios Fin.
+            </button>
+            <button onClick={() => handleMenuClick('analisis-bancario')} className="flex items-center gap-1 w-full text-left text-black hover:text-blue-600 pl-2">
+              <Building2 className="h-3 w-3" /> Análisis Bancario
+            </button>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Rentabilidad */}
+        <Collapsible open={expandedSections.includes('rentabilidad')} onOpenChange={() => toggleSection('rentabilidad')}>
+          <CollapsibleTrigger className="flex items-center justify-between w-full bg-[#000080] text-white p-1 text-xs font-semibold rounded">
+            Rentabilidad
+            {expandedSections.includes('rentabilidad') ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+          </CollapsibleTrigger>
+          <CollapsibleContent className="bg-black/10 p-1 text-[10px] space-y-0.5">
+            <button onClick={() => handleMenuClick('rentabilidad-economica')} className="block w-full text-left text-black hover:text-blue-600">Rentabilidad Económica</button>
+            <button onClick={() => handleMenuClick('rentabilidad-financiera')} className="block w-full text-left text-black hover:text-blue-600">Rentabilidad Financiera</button>
+            <button onClick={() => handleMenuClick('apalancamiento')} className="block w-full text-left text-black hover:text-blue-600">Apalancamiento</button>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Auditoría */}
+        <Collapsible open={expandedSections.includes('auditoria')} onOpenChange={() => toggleSection('auditoria')}>
+          <CollapsibleTrigger className="flex items-center justify-between w-full bg-[#000080] text-white p-1 text-xs font-semibold rounded">
+            <span className="flex items-center gap-1"><ClipboardCheck className="h-3 w-3" /> Auditoría</span>
+            {expandedSections.includes('auditoria') ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+          </CollapsibleTrigger>
+        </Collapsible>
+
+        {/* Valoraciones */}
+        <Collapsible open={expandedSections.includes('valoraciones')} onOpenChange={() => toggleSection('valoraciones')}>
+          <CollapsibleTrigger className="flex items-center justify-between w-full bg-[#000080] text-white p-1 text-xs font-semibold rounded">
+            <span className="flex items-center gap-1"><Star className="h-3 w-3" /> Valoraciones</span>
+            {expandedSections.includes('valoraciones') ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+          </CollapsibleTrigger>
+        </Collapsible>
+
+        {/* Cuentas Anuales */}
+        <Collapsible open={expandedSections.includes('cuentas-anuales')} onOpenChange={() => toggleSection('cuentas-anuales')}>
+          <CollapsibleTrigger className="flex items-center justify-between w-full bg-[#800000] text-white p-1 text-xs font-semibold rounded">
+            Cuentas Anuales
+            {expandedSections.includes('cuentas-anuales') ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+          </CollapsibleTrigger>
+        </Collapsible>
+
+        {/* Valor Accionarial */}
+        <Collapsible open={expandedSections.includes('valor-accionarial')} onOpenChange={() => toggleSection('valor-accionarial')}>
+          <CollapsibleTrigger className="flex items-center justify-between w-full bg-[#800000] text-white p-1 text-xs font-semibold rounded">
+            Valor Accionarial
+            {expandedSections.includes('valor-accionarial') ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+          </CollapsibleTrigger>
+        </Collapsible>
+
+        {/* Información */}
+        <div className="bg-black/20 p-1 rounded text-[10px]">
+          <div className="border border-black/30 p-1 mb-1 text-black font-semibold text-xs">Información</div>
+          <div className="text-blue-800 font-semibold">Varios</div>
+          <button onClick={() => handleMenuClick('calculadora')} className="flex items-center gap-1 text-black hover:text-blue-600 pl-2">
+            <Calculator className="h-3 w-3" /> Calculadora
+          </button>
+          <div className="text-blue-800 font-semibold mt-1">Ayuda</div>
+          <button onClick={() => handleMenuClick('contenido')} className="flex items-center gap-1 text-green-700 hover:text-blue-600 pl-2">
+            <BookOpen className="h-3 w-3" /> Contenido
+          </button>
+          <a href="https://www.financialsystem.es" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-green-700 hover:text-blue-600 pl-2">
+            <Info className="h-3 w-3" /> www.financialsystem.es
+          </a>
+          <div className="mt-2 text-[9px] text-black/70">
+            <div>Fecha Versión: 01/11/2025</div>
+            <div>Número Versión: 10.0.5.0</div>
+            <div>Tipo Versión: 'MASTER'</div>
+          </div>
+        </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 space-y-4 overflow-auto">
+      <div className="flex-1 space-y-2 p-2 overflow-auto bg-[#c0c000]">
         {/* Liquidity Ratios Table */}
-        <Card className="bg-card">
-          <CardHeader className="py-2 px-4">
-            <CardTitle className="text-lg text-center text-primary font-bold">
-              RATIOS GENERALES DE LIQUIDEZ
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-2">
+        <div className="bg-white rounded shadow">
+          <h2 className="text-lg font-bold text-center py-2 text-amber-600 italic">
+            RATIOS GENERALES DE LIQUIDEZ
+          </h2>
+          <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-amber-500/20">
-                  <TableHead className="text-foreground font-bold text-xs py-1">DESCRIPCIÓN</TableHead>
-                  <TableHead className="text-foreground font-bold text-xs py-1">FÓRMULA</TableHead>
-                  <TableHead className="text-foreground font-bold text-xs py-1 text-center">* Media Normal</TableHead>
-                  {sortedYears.map(year => (
-                    <TableHead key={year} className="text-foreground font-bold text-xs py-1 text-right">
+                <TableRow className="bg-amber-400">
+                  <TableHead className="text-black font-bold text-xs py-1 border border-black/20">DESCRIPCIÓN</TableHead>
+                  <TableHead className="text-black font-bold text-xs py-1 border border-black/20">FÓRMULA</TableHead>
+                  <TableHead className="text-black font-bold text-xs py-1 text-center border border-black/20">* Media Normal</TableHead>
+                  {displayYears.map(year => (
+                    <TableHead key={year} className="text-black font-bold text-xs py-1 text-right border border-black/20">
                       Dic.-{String(year).slice(-2)}
                     </TableHead>
                   ))}
@@ -371,44 +514,50 @@ const LiquidityDebtRatios: React.FC<LiquidityDebtRatiosProps> = ({
                 {liquidityRatios.map((ratio, idx) => {
                   const values = calculateRatios.map(r => r[ratio.key as keyof typeof r] as number);
                   return (
-                    <TableRow key={ratio.key} className={idx % 2 === 0 ? 'bg-muted/30' : ''}>
-                      <TableCell className="font-medium text-xs py-1">{ratio.name}</TableCell>
-                      <TableCell className="text-xs py-1 text-muted-foreground">{ratio.formula}</TableCell>
-                      <TableCell className="text-xs py-1 text-center text-red-500 font-medium">{ratio.mediaNormal}</TableCell>
-                      {values.map((value, i) => (
-                        <TableCell key={i} className="text-xs py-1 text-right">
-                          {formatValue(value, ratio.isPercentage)}
-                          {dataViewOption === 'values_deviation' && i < values.length - 1 && (
-                            <span className={`block text-[10px] ${getDeviation(value, values[i + 1]) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                              ({getDeviation(value, values[i + 1]).toFixed(2)}%)
-                            </span>
-                          )}
-                        </TableCell>
-                      ))}
+                    <TableRow key={ratio.key} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-100'}>
+                      <TableCell className="font-medium text-xs py-1 border border-black/20">{ratio.name}</TableCell>
+                      <TableCell className="text-xs py-1 border border-black/20">{ratio.formula}</TableCell>
+                      <TableCell className="text-xs py-1 text-center border border-black/20 text-green-600 font-semibold">{ratio.mediaNormal}</TableCell>
+                      {displayYears.map((year, i) => {
+                        const ratioData = calculateRatios.find(r => r.year === year);
+                        const value = ratioData ? (ratioData[ratio.key as keyof typeof ratioData] as number) : 0;
+                        const prevRatioData = calculateRatios.find(r => r.year === displayYears[i + 1]);
+                        const prevValue = prevRatioData ? (prevRatioData[ratio.key as keyof typeof prevRatioData] as number) : 0;
+                        const deviation = getDeviation(value, prevValue);
+                        
+                        return (
+                          <TableCell key={year} className="text-xs py-1 text-right border border-black/20">
+                            {formatValue(value, ratio.isPercentage)}
+                            {dataViewOption === 'values_deviation' && i < displayYears.length - 1 && (
+                              <span className={`block text-[9px] ${deviation >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                ({deviation >= 0 ? '+' : ''}{deviation.toFixed(1)}%)
+                              </span>
+                            )}
+                          </TableCell>
+                        );
+                      })}
                     </TableRow>
                   );
                 })}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Debt Ratios Table */}
-        <Card className="bg-card">
-          <CardHeader className="py-2 px-4">
-            <CardTitle className="text-lg text-center text-primary font-bold">
-              RATIOS GENERALES DE ENDEUDAMIENTO
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-2">
+        <div className="bg-white rounded shadow">
+          <h2 className="text-lg font-bold text-center py-2 text-amber-600 italic">
+            RATIOS GENERALES DE ENDEUDAMIENTO
+          </h2>
+          <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-amber-500/20">
-                  <TableHead className="text-foreground font-bold text-xs py-1">DESCRIPCIÓN</TableHead>
-                  <TableHead className="text-foreground font-bold text-xs py-1">FÓRMULA</TableHead>
-                  <TableHead className="text-foreground font-bold text-xs py-1 text-center">* Media Normal</TableHead>
-                  {sortedYears.map(year => (
-                    <TableHead key={year} className="text-foreground font-bold text-xs py-1 text-right">
+                <TableRow className="bg-amber-400">
+                  <TableHead className="text-black font-bold text-xs py-1 border border-black/20">DESCRIPCIÓN</TableHead>
+                  <TableHead className="text-black font-bold text-xs py-1 border border-black/20">FÓRMULA</TableHead>
+                  <TableHead className="text-black font-bold text-xs py-1 text-center border border-black/20">* Media Normal</TableHead>
+                  {displayYears.map(year => (
+                    <TableHead key={year} className="text-black font-bold text-xs py-1 text-right border border-black/20">
                       Dic.-{String(year).slice(-2)}
                     </TableHead>
                   ))}
@@ -416,118 +565,112 @@ const LiquidityDebtRatios: React.FC<LiquidityDebtRatiosProps> = ({
               </TableHeader>
               <TableBody>
                 {debtRatios.map((ratio, idx) => {
-                  const values = calculateRatios.map(r => r[ratio.key as keyof typeof r] as number);
                   return (
-                    <TableRow key={ratio.key} className={idx % 2 === 0 ? 'bg-muted/30' : ''}>
-                      <TableCell className="font-medium text-xs py-1">{ratio.name}</TableCell>
-                      <TableCell className="text-xs py-1 text-muted-foreground">{ratio.formula}</TableCell>
-                      <TableCell className="text-xs py-1 text-center text-red-500 font-medium">{ratio.mediaNormal}</TableCell>
-                      {values.map((value, i) => (
-                        <TableCell key={i} className="text-xs py-1 text-right">
-                          {formatValue(value, ratio.isPercentage)}
-                          {dataViewOption === 'values_deviation' && i < values.length - 1 && (
-                            <span className={`block text-[10px] ${getDeviation(value, values[i + 1]) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                              ({getDeviation(value, values[i + 1]).toFixed(2)}%)
-                            </span>
-                          )}
-                        </TableCell>
-                      ))}
+                    <TableRow key={ratio.key} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-100'}>
+                      <TableCell className="font-medium text-xs py-1 border border-black/20">{ratio.name}</TableCell>
+                      <TableCell className="text-xs py-1 border border-black/20">{ratio.formula}</TableCell>
+                      <TableCell className="text-xs py-1 text-center border border-black/20 text-green-600 font-semibold">{ratio.mediaNormal}</TableCell>
+                      {displayYears.map((year, i) => {
+                        const ratioData = calculateRatios.find(r => r.year === year);
+                        const value = ratioData ? (ratioData[ratio.key as keyof typeof ratioData] as number) : 0;
+                        const prevRatioData = calculateRatios.find(r => r.year === displayYears[i + 1]);
+                        const prevValue = prevRatioData ? (prevRatioData[ratio.key as keyof typeof prevRatioData] as number) : 0;
+                        const deviation = getDeviation(value, prevValue);
+                        
+                        return (
+                          <TableCell key={year} className="text-xs py-1 text-right border border-black/20">
+                            {formatValue(value, ratio.isPercentage)}
+                            {dataViewOption === 'values_deviation' && i < displayYears.length - 1 && (
+                              <span className={`block text-[9px] ${deviation >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                ({deviation >= 0 ? '+' : ''}{deviation.toFixed(1)}%)
+                              </span>
+                            )}
+                          </TableCell>
+                        );
+                      })}
                     </TableRow>
                   );
                 })}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <p className="text-xs text-muted-foreground italic px-2">
+        {/* Footer note */}
+        <p className="text-[10px] text-black/70 italic">
           * Media establecida como guía general, aunque pueden haber sectores que esta media no se corresponda con su ciclo económico.
         </p>
       </div>
 
-      {/* Right Sidebar - Charts */}
-      <div className="w-64 flex-shrink-0 space-y-4">
-        <Card className="bg-card">
-          <CardHeader className="py-2 px-3">
-            <CardTitle className="text-xs text-center text-primary font-bold">
-              GRÁFICOS DE CONTROL Y EVOLUCIÓN
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-2 space-y-2">
-            <div className="text-xs text-center font-medium">Ratio Atenc.Disp.Pagos</div>
-            {renderChart(chartData1, 'liquidez', chartType1, 'hsl(var(--primary))')}
-            
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <Label className="text-[10px] w-20">Gràfic de Valors</Label>
-                <Select value={chartGroup1} onValueChange={setChartGroup1}>
-                  <SelectTrigger className="h-6 text-[10px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="liquidity">Valors Anàlisi Masses Patrimon.</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-center gap-2">
-                <Label className="text-[10px] w-20">Tipus de Gràfic</Label>
-                <Select value={chartType1} onValueChange={(v) => setChartType1(v as 'bar' | 'line' | 'area')}>
-                  <SelectTrigger className="h-6 text-[10px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="bar">Barres</SelectItem>
-                    <SelectItem value="line">Línies</SelectItem>
-                    <SelectItem value="area">Àrea</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+      {/* Right Charts Panel */}
+      <div className="w-64 flex-shrink-0 p-2 space-y-2 overflow-y-auto" style={{ backgroundColor: '#c0c000' }}>
+        <h3 className="text-sm font-bold text-center text-black italic">GRÁFICOS DE CONTROL Y EVOLUCIÓN</h3>
+        
+        {/* Chart 1 */}
+        <div className="bg-white rounded p-2 shadow">
+          {renderChart(chartGroup1, chartType1, chartOptions1.find(o => o.value === chartGroup1)?.label || 'Ratio de Liquidez')}
+          
+          <div className="mt-2 space-y-1 border-t pt-2">
+            <div className="text-[9px] font-semibold">Selección gráfico y tipo</div>
+            <div className="flex items-center gap-1 text-[9px]">
+              <span>~ Gráfico de Valores</span>
+              <select 
+                value={chartGroup1}
+                onChange={(e) => setChartGroup1(e.target.value)}
+                className="text-[9px] border rounded px-1 py-0.5 flex-1"
+              >
+                {chartOptions1.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-card">
-          <CardContent className="p-2 space-y-2">
-            <div className="text-xs text-center font-medium">Ratio Atenc.Disp.Pagos</div>
-            {renderChart(chartData2, 'endeudamiento', chartType2, 'hsl(var(--chart-2))')}
-            
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <Label className="text-[10px] w-20">Gràfic de Desviacions</Label>
-                <Select value={chartGroup2} onValueChange={setChartGroup2}>
-                  <SelectTrigger className="h-6 text-[10px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="debt">% s/Totals i Desviacions</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-center gap-2">
-                <Label className="text-[10px] w-20">Tipus de Gràfic</Label>
-                <Select value={chartType2} onValueChange={(v) => setChartType2(v as 'bar' | 'line' | 'area')}>
-                  <SelectTrigger className="h-6 text-[10px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="bar">Barres</SelectItem>
-                    <SelectItem value="line">Línies</SelectItem>
-                    <SelectItem value="area">Àrea</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="flex items-center gap-1 text-[9px]">
+              <span>~ Tipo de Gráfico</span>
+              <select 
+                value={chartType1}
+                onChange={(e) => setChartType1(e.target.value as 'bar' | 'line' | 'area')}
+                className="text-[9px] border rounded px-1 py-0.5 flex-1"
+              >
+                <option value="bar">Barras</option>
+                <option value="line">Líneas</option>
+                <option value="area">Área</option>
+              </select>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </div>
 
-      {/* Footer Status Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-muted border-t border-border px-4 py-1 flex justify-between items-center text-xs">
-        <span>{companyName}</span>
-        <span className="font-medium">Ratios Generales de Liquidez y Endeudamiento</span>
-        <span>Anàlisi de períodes: ANUALS</span>
-        <span className="text-green-500 font-medium">QUADRE DE BALANÇOS: 'OK'</span>
-        <span>{new Date().toLocaleDateString('es-ES')} {new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
+        {/* Chart 2 */}
+        <div className="bg-white rounded p-2 shadow">
+          {renderChart(chartGroup2, chartType2, chartOptions2.find(o => o.value === chartGroup2)?.label || 'Ratio de Liquidez')}
+          
+          <div className="mt-2 space-y-1 border-t pt-2">
+            <div className="text-[9px] font-semibold">Selección gráfico y tipo</div>
+            <div className="flex items-center gap-1 text-[9px]">
+              <span>Gráfico de Desviaciones</span>
+              <select 
+                value={chartGroup2}
+                onChange={(e) => setChartGroup2(e.target.value)}
+                className="text-[9px] border rounded px-1 py-0.5 flex-1"
+              >
+                {chartOptions2.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-center gap-1 text-[9px]">
+              <span>~ Tipo de Gráfico</span>
+              <select 
+                value={chartType2}
+                onChange={(e) => setChartType2(e.target.value as 'bar' | 'line' | 'area')}
+                className="text-[9px] border rounded px-1 py-0.5 flex-1"
+              >
+                <option value="bar">Barras</option>
+                <option value="line">Líneas</option>
+                <option value="area">Área</option>
+              </select>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
