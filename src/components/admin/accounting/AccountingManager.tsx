@@ -27,6 +27,9 @@ import { ValuationTab } from './ValuationTab';
 import { AuditTab } from './AuditTab';
 import { ReportsTab } from './ReportsTab';
 import { ProvisionalStatementsManager } from './ProvisionalStatementsManager';
+import AccountingCompanyIndex from './AccountingCompanyIndex';
+import PeriodYearSelector from './PeriodYearSelector';
+import EnhancedCompanyHeader from './EnhancedCompanyHeader';
 
 interface Company {
   id: string;
@@ -59,6 +62,7 @@ const AccountingManager = () => {
   const [showNewYearDialog, setShowNewYearDialog] = useState(false);
   const [statementType, setStatementType] = useState<'normal' | 'abreujat' | 'simplificat'>('abreujat');
   const [bp, setBp] = useState('');
+  const [showCompanyIndex, setShowCompanyIndex] = useState(true);
 
   const currentYear = new Date().getFullYear();
   const availableYears = Array.from({ length: 10 }, (_, i) => currentYear - i);
@@ -72,6 +76,27 @@ const AccountingManager = () => {
   const handleSelectCompany = (company: Company) => {
     setSelectedCompany(company);
     setBp(company.bp || '');
+    setShowCompanyIndex(false);
+  };
+  
+  const handleSelectFromIndex = (companyId: string) => {
+    // Fetch company details and select
+    supabase
+      .from('companies')
+      .select('id, name, bp, tax_id')
+      .eq('id', companyId)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          handleSelectCompany(data);
+        }
+      });
+  };
+  
+  const handleBackToIndex = () => {
+    setSelectedCompany(null);
+    setCurrentStatement(null);
+    setShowCompanyIndex(true);
   };
 
   const fetchFinancialStatement = async () => {
@@ -218,52 +243,45 @@ const AccountingManager = () => {
 
   return (
     <div className="space-y-6">
-      {/* Search Bar and Company Header */}
-      <Card className="border-primary/20">
-        <CardHeader className="pb-3">
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <Wallet className="h-6 w-6 text-primary" />
-                Comptabilitat - Estats Financers
-              </CardTitle>
-            </div>
-            
-            {/* Company Search */}
-            <CompanySearchBar 
-              onSelectCompany={handleSelectCompany}
-              selectedCompanyId={selectedCompany?.id || ''}
-            />
-          </div>
-        </CardHeader>
-
-        {selectedCompany && (
-          <CardContent>
-            {/* Company Header */}
-            <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-4 mb-4">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-primary/20 rounded-full">
-                  <Building2 className="w-8 h-8 text-primary" />
+      {/* Toggle between Index and Company Detail */}
+      {showCompanyIndex && !selectedCompany ? (
+        <AccountingCompanyIndex onSelectCompany={handleSelectFromIndex} />
+      ) : (
+        <>
+          {/* Search Bar and Company Header */}
+          <Card className="border-primary/20">
+            <CardHeader className="pb-3">
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Wallet className="h-6 w-6 text-primary" />
+                    Comptabilitat - Estats Financers
+                  </CardTitle>
+                  <Button variant="ghost" size="sm" onClick={handleBackToIndex}>
+                    <Building2 className="w-4 h-4 mr-2" />
+                    Tornar a l'índex
+                  </Button>
                 </div>
-                <div className="flex-1">
-                  <h2 className="text-2xl font-bold">{selectedCompany.name}</h2>
-                  <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-                    {selectedCompany.bp && (
-                      <span className="flex items-center gap-1">
-                        <CreditCard className="w-4 h-4" />
-                        BP: {selectedCompany.bp}
-                      </span>
-                    )}
-                    {selectedCompany.tax_id && (
-                      <span className="flex items-center gap-1">
-                        <FileText className="w-4 h-4" />
-                        NRT: {selectedCompany.tax_id}
-                      </span>
-                    )}
-                  </div>
-                </div>
+                
+                {/* Company Search */}
+                <CompanySearchBar 
+                  onSelectCompany={handleSelectCompany}
+                  selectedCompanyId={selectedCompany?.id || ''}
+                />
               </div>
-            </div>
+            </CardHeader>
+
+            {selectedCompany && (
+              <CardContent>
+                {/* Enhanced Company Header with CNAE */}
+                <EnhancedCompanyHeader companyId={selectedCompany.id} />
+                
+                {/* Period Year Selector */}
+                <PeriodYearSelector 
+                  companyId={selectedCompany.id}
+                  selectedYear={selectedYear}
+                  onSelectYear={setSelectedYear}
+                />
 
             {/* Year Selection and Actions */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -543,6 +561,8 @@ const AccountingManager = () => {
           fiscalYear={selectedYear}
           onImportComplete={fetchFinancialStatement}
         />
+      )}
+        </>
       )}
     </div>
   );

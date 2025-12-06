@@ -524,23 +524,4 @@ export function searchCnaeCodes(query: string): Array<{ code: string; descriptio
   return results;
 }
 
-export function getCnaeDescription(cnaeCode: string | null | undefined): string {
-  if (!cnaeCode) return '';
-  
-  // Remove any non-numeric characters and get first 4 digits
-  const cleanCode = cnaeCode.replace(/\D/g, '').slice(0, 4);
-  
-  return cnaeDescriptions[cleanCode] || '';
-}
-
-export function formatCnaeWithDescription(cnaeCode: string | null | undefined): string {
-  if (!cnaeCode) return '';
-  
-  const description = getCnaeDescription(cnaeCode);
-  
-  if (description) {
-    return `${cnaeCode} - ${description}`;
-  }
-  
-  return cnaeCode;
-}
+// Duplicate functions removed - they are defined above at lines 469-488
