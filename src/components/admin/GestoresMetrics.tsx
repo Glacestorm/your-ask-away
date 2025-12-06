@@ -201,12 +201,12 @@ export function GestoresMetrics() {
               <ResponsiveContainer width="100%" height={350}>
                 <BarChart 
                   data={topGestores.filter(g => 
-                    !isNaN(g.visitas) && isFinite(g.visitas)
+                    g.gestor && !isNaN(g.visitas) && isFinite(g.visitas) && g.visitas > 0
                   )} 
-                  layout="horizontal"
+                  layout="vertical"
                 >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" allowDecimals={false} />
+                  <XAxis type="number" allowDecimals={false} domain={[0, 'auto']} />
                   <YAxis 
                     dataKey="gestor" 
                     type="category" 
@@ -233,9 +233,9 @@ export function GestoresMetrics() {
               <ResponsiveContainer width="100%" height={350}>
                 <BarChart 
                   data={successRate.filter(g => 
-                    !isNaN(g.tasa) && isFinite(g.tasa)
+                    g.gestor && !isNaN(g.tasa) && isFinite(g.tasa)
                   )} 
-                  layout="horizontal"
+                  layout="vertical"
                 >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis type="number" domain={[0, 100]} allowDecimals={false} />
@@ -265,7 +265,7 @@ export function GestoresMetrics() {
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart 
                   data={companiesPerGestor.filter(c => 
-                    !isNaN(c.empresas) && isFinite(c.empresas)
+                    c.gestor && !isNaN(c.empresas) && isFinite(c.empresas) && c.empresas > 0
                   )}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
@@ -276,7 +276,7 @@ export function GestoresMetrics() {
                     textAnchor="end"
                     height={100}
                   />
-                  <YAxis allowDecimals={false} />
+                  <YAxis allowDecimals={false} domain={[0, 'auto']} />
                   <Tooltip />
                   <Legend />
                   <Bar dataKey="empresas" fill="hsl(var(--chart-3))" name="Empresas" />
