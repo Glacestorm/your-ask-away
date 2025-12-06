@@ -74,7 +74,7 @@ export function GlobalNavHeader({
           
           <div>
             {title && (
-              <h1 className="text-xl font-bold tracking-tight text-foreground">
+              <h1 className="text-2xl font-black tracking-tight text-foreground drop-shadow-[2px_2px_0px_rgba(0,0,0,0.3)] [text-shadow:_1px_1px_0_hsl(var(--primary)/0.3),_2px_2px_0_hsl(var(--primary)/0.2),_3px_3px_4px_rgba(0,0,0,0.2)]">
                 {title}
               </h1>
             )}
