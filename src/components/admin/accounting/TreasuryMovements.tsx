@@ -1,26 +1,22 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Calculator, ChevronRight } from 'lucide-react';
+import { Calculator, ChevronRight, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface TreasuryMovementsProps {
+  companyId: string;
   companyName: string;
-  statements: any[];
-  incomeStatements: any[];
-  balanceSheets: any[];
-  cashFlowStatements: any[];
 }
 
 type DataViewMode = 'values' | 'values_deviation';
 
 const TreasuryMovements: React.FC<TreasuryMovementsProps> = ({
-  companyName,
-  statements,
-  incomeStatements,
-  balanceSheets,
-  cashFlowStatements
+  companyId,
+  companyName
 }) => {
   const [dataViewMode, setDataViewMode] = useState<DataViewMode>('values_deviation');
   const [showThousands, setShowThousands] = useState(true);
@@ -28,6 +24,46 @@ const TreasuryMovements: React.FC<TreasuryMovementsProps> = ({
   const [chartType1, setChartType1] = useState('bar');
   const [chartGroup2, setChartGroup2] = useState('flujos_operaciones_pct');
   const [chartType2, setChartType2] = useState('bar');
+  const [loading, setLoading] = useState(true);
+  const [statements, setStatements] = useState<any[]>([]);
+  const [incomeStatements, setIncomeStatements] = useState<any[]>([]);
+  const [balanceSheets, setBalanceSheets] = useState<any[]>([]);
+  const [cashFlowStatements, setCashFlowStatements] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const { data: stmts } = await supabase
+          .from('company_financial_statements')
+          .select('*')
+          .eq('company_id', companyId)
+          .eq('is_archived', false)
+          .order('fiscal_year', { ascending: false });
+
+        if (stmts?.length) {
+          setStatements(stmts);
+          const stmtIds = stmts.map(s => s.id);
+          
+          const [incomeRes, balanceRes, cashFlowRes] = await Promise.all([
+            supabase.from('income_statements').select('*').in('statement_id', stmtIds),
+            supabase.from('balance_sheets').select('*').in('statement_id', stmtIds),
+            supabase.from('cash_flow_statements').select('*').in('statement_id', stmtIds)
+          ]);
+          
+          setIncomeStatements(incomeRes.data || []);
+          setBalanceSheets(balanceRes.data || []);
+          setCashFlowStatements(cashFlowRes.data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, [companyId]);
 
   // Get sorted years (most recent first)
   const sortedYears = useMemo(() => {
@@ -272,6 +308,24 @@ const TreasuryMovements: React.FC<TreasuryMovementsProps> = ({
     saldoInicialTesoreria: 0,
     saldoFinalTesoreria: 0
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!statements.length) {
+    return (
+      <Card>
+        <CardContent className="p-8 text-center text-muted-foreground">
+          No hi ha dades financeres disponibles per a aquesta empresa.
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full bg-background text-foreground">

@@ -5,6 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, TrendingUp, TrendingDown, Activity, DollarSign, BarChart3, PieChart, AlertTriangle } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, AreaChart, Area } from "recharts";
 import { ZScoreAnalysis } from "./ZScoreAnalysis";
+import EBITEBITDAAnalysis from "./EBITEBITDAAnalysis";
+import AddedValueAnalysis from "./AddedValueAnalysis";
+import TreasuryMovements from "./TreasuryMovements";
 
 interface FinancialAnalysisTabProps {
   companyId: string;
@@ -183,11 +186,14 @@ export function FinancialAnalysisTab({ companyId, companyName }: FinancialAnalys
       </div>
 
       <Tabs defaultValue="ebitda" className="w-full">
-        <TabsList className="grid w-full grid-cols-6 lg:grid-cols-6">
+        <TabsList className="flex flex-wrap gap-1 h-auto p-1">
           <TabsTrigger value="ebitda" className="text-xs">EBIT/EBITDA</TabsTrigger>
+          <TabsTrigger value="ebit-ebitda-detail" className="text-xs">Anàlisi EBIT/EBITDA</TabsTrigger>
           <TabsTrigger value="margins" className="text-xs">Marges</TabsTrigger>
           <TabsTrigger value="working-capital" className="text-xs">Capital Circulant</TabsTrigger>
           <TabsTrigger value="value-added" className="text-xs">Valor Afegit</TabsTrigger>
+          <TabsTrigger value="value-added-detail" className="text-xs">Anàlisi Valor Afegit</TabsTrigger>
+          <TabsTrigger value="treasury" className="text-xs">Fluxos Tresoreria</TabsTrigger>
           <TabsTrigger value="zscore" className="text-xs">
             <AlertTriangle className="w-3 h-3 mr-1" />
             Índex Z
@@ -523,6 +529,18 @@ export function FinancialAnalysisTab({ companyId, companyName }: FinancialAnalys
 
         <TabsContent value="zscore">
           <ZScoreAnalysis companyId={companyId} companyName={companyName} />
+        </TabsContent>
+
+        <TabsContent value="ebit-ebitda-detail">
+          <EBITEBITDAAnalysis companyId={companyId} companyName={companyName} />
+        </TabsContent>
+
+        <TabsContent value="value-added-detail">
+          <AddedValueAnalysis companyId={companyId} companyName={companyName} />
+        </TabsContent>
+
+        <TabsContent value="treasury">
+          <TreasuryMovements companyId={companyId} companyName={companyName} />
         </TabsContent>
       </Tabs>
     </div>
