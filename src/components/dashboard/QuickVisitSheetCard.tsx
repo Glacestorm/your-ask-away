@@ -992,7 +992,7 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
           onMouseLeave={handleMouseLeave}
           onMouseEnter={() => setIsHovered(true)}
           className={cn(
-            "relative cursor-pointer rounded-2xl p-6 h-48 transition-all duration-300 ease-out",
+            "relative cursor-pointer rounded-2xl p-4 h-auto min-h-[200px] transition-all duration-300 ease-out",
             "border-2 shadow-lg hover:shadow-2xl",
             "bg-gradient-to-br from-card via-card to-card/80",
             "transform-gpu will-change-transform",
