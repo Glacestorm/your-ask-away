@@ -54,6 +54,7 @@ const Admin = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialSection = searchParams.get('section') || 'director';
   const [activeSection, setActiveSection] = useState(initialSection);
+  const [roleCardExpanded, setRoleCardExpanded] = useState(false);
   
   // Navigation history
   const { canGoBack, canGoForward, goBack, goForward, push } = useNavigationHistory(initialSection);
@@ -516,59 +517,65 @@ const Admin = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {/* Role View Selector - Only for Superadmin */}
               {isSuperAdmin && (
-                <Card className="cursor-pointer hover:shadow-md transition-shadow border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10"
+                  onClick={() => setRoleCardExpanded(!roleCardExpanded)}
+                >
                   <CardContent className="p-4">
-                    <div className="flex items-center gap-3 mb-3">
+                    <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center">
                         <Activity className="h-5 w-5 text-primary" />
                       </div>
-                      <div>
+                      <div className="flex-1">
                         <h3 className="font-semibold">Selector de Visió</h3>
                         <p className="text-sm text-muted-foreground">Escull el rol per visualitzar</p>
                       </div>
+                      <ArrowLeft className={`h-4 w-4 text-muted-foreground transition-transform ${roleCardExpanded ? 'rotate-90' : '-rotate-90'}`} />
                     </div>
-                    <div className="grid grid-cols-1 gap-2 mt-3">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="justify-start" 
-                        onClick={(e) => { e.stopPropagation(); handleSectionChange('director'); }}
-                      >
-                        Director de Negoci
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="justify-start" 
-                        onClick={(e) => { e.stopPropagation(); handleSectionChange('office-director'); }}
-                      >
-                        Director d'Oficina
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="justify-start" 
-                        onClick={(e) => { e.stopPropagation(); handleSectionChange('commercial-manager'); }}
-                      >
-                        Responsable Comercial
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="justify-start" 
-                        onClick={(e) => { e.stopPropagation(); handleSectionChange('gestor-dashboard'); }}
-                      >
-                        Gestor
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="justify-start" 
-                        onClick={(e) => { e.stopPropagation(); handleSectionChange('audit'); }}
-                      >
-                        Auditor
-                      </Button>
-                    </div>
+                    {roleCardExpanded && (
+                      <div className="grid grid-cols-1 gap-2 mt-4 pt-4 border-t border-border/50">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="justify-start" 
+                          onClick={(e) => { e.stopPropagation(); handleSectionChange('director'); }}
+                        >
+                          Director de Negoci
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="justify-start" 
+                          onClick={(e) => { e.stopPropagation(); handleSectionChange('office-director'); }}
+                        >
+                          Director d'Oficina
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="justify-start" 
+                          onClick={(e) => { e.stopPropagation(); handleSectionChange('commercial-manager'); }}
+                        >
+                          Responsable Comercial
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="justify-start" 
+                          onClick={(e) => { e.stopPropagation(); handleSectionChange('gestor-dashboard'); }}
+                        >
+                          Gestor
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="justify-start" 
+                          onClick={(e) => { e.stopPropagation(); handleSectionChange('audit'); }}
+                        >
+                          Auditor
+                        </Button>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               )}
