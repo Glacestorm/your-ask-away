@@ -338,36 +338,37 @@ const AccountingCompanyIndex = ({ onSelectCompany }: AccountingCompanyIndexProps
             </div>
             
             <Select value={filterBalanced} onValueChange={(v: 'all' | 'balanced' | 'unbalanced') => setFilterBalanced(v)}>
-              <SelectTrigger className="w-[140px]">
+              <SelectTrigger className="w-[150px]">
                 <Filter className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="Cuadre" />
+                <SelectValue placeholder="Estat cuadre" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tots</SelectItem>
+                <SelectItem value="all">Cuadre: Tots</SelectItem>
                 <SelectItem value="balanced">Quadrats</SelectItem>
                 <SelectItem value="unbalanced">Descuadrats</SelectItem>
               </SelectContent>
             </Select>
 
             <Select value={filterModel} onValueChange={setFilterModel}>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Model" />
+              <SelectTrigger className="w-[160px]">
+                <FileText className="w-4 h-4 mr-2" />
+                <SelectValue placeholder="Model comptable" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tots els models</SelectItem>
-                <SelectItem value="normal">Normal</SelectItem>
+                <SelectItem value="all">Model: Tots</SelectItem>
+                <SelectItem value="normal">Normal (PGC)</SelectItem>
                 <SelectItem value="abreujat">Abreujat</SelectItem>
                 <SelectItem value="simplificat">Simplificat</SelectItem>
               </SelectContent>
             </Select>
 
             <Select value={filterYear} onValueChange={setFilterYear}>
-              <SelectTrigger className="w-[120px]">
+              <SelectTrigger className="w-[150px]">
                 <Calendar className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="Any" />
+                <SelectValue placeholder="Any fiscal" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tots els anys</SelectItem>
+                <SelectItem value="all">Any: Tots</SelectItem>
                 {availableYears.map(year => (
                   <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
                 ))}
