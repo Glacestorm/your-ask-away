@@ -99,7 +99,7 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
   const [isPdfFullscreen, setIsPdfFullscreen] = useState(false);
   const [isCommercialManager, setIsCommercialManager] = useState(false);
 
-  // Check if user is commercial manager
+  // Check if user can validate (responsable_comercial, director_comercial, director_oficina, superadmin)
   useEffect(() => {
     const checkRole = async () => {
       if (!user) return;
@@ -110,7 +110,8 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
         .maybeSingle();
       
       if (roleData) {
-        setIsCommercialManager(roleData.role === 'responsable_comercial' || roleData.role === 'superadmin');
+        const canValidate = ['responsable_comercial', 'director_comercial', 'director_oficina', 'superadmin'].includes(roleData.role);
+        setIsCommercialManager(canValidate);
       }
     };
     checkRole();
@@ -1070,16 +1071,16 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
-                        variant="outline"
+                        variant="default"
                         size="sm"
-                        className="h-8 gap-1.5 bg-green-500/10 border-green-500/30 text-green-600 hover:bg-green-500/20 hover:border-green-500/50 dark:text-green-400 dark:hover:bg-green-500/30"
+                        className="h-8 gap-1.5 bg-green-600 hover:bg-green-700 text-white shadow-md"
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate('/admin?section=visit-validation');
                         }}
                       >
-                        <ClipboardCheck className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline text-xs">Validar</span>
+                        <ClipboardCheck className="h-4 w-4" />
+                        <span className="text-xs font-medium">Validar</span>
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent side="left">
