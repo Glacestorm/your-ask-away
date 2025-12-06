@@ -218,26 +218,6 @@ export function AdminSidebar({
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )}
-            {isCommercialManager && (
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={() => onSectionChange('visit-validation')}
-                  isActive={isActive('visit-validation')}
-                  className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
-                  tooltip={!open ? {
-                    children: 'Validación de Fichas',
-                    className: "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
-                  } : undefined}
-                >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-green-500 to-green-600 shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-green-500/50 group-hover:rotate-3">
-                    <ClipboardCheck className="h-5 w-5 text-white transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3" />
-                  </div>
-                  <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
-                    Validación de Fichas
-                  </span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            )}
             {(isCommercialManager || isCommercialDirector || isOfficeDirector || isSuperAdmin) && (
               <SidebarMenuItem>
                 <SidebarMenuButton
