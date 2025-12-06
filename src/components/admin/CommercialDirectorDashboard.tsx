@@ -13,7 +13,7 @@ import { subMonths, format } from 'date-fns';
 import { MetricsExplorer } from '@/components/admin/MetricsExplorer';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { QuickVisitManager } from '@/components/dashboard/QuickVisitManager';
-import { MapButton } from '@/components/dashboard/MapButton';
+
 import { MapDashboardCard } from '@/components/dashboard/MapDashboardCard';
 import { QuickVisitSheetCard } from '@/components/dashboard/QuickVisitSheetCard';
 import { AccountingDashboardCard } from '@/components/dashboard/AccountingDashboardCard';
@@ -205,18 +205,6 @@ export function CommercialDirectorDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Encabezado */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>{t('director.title')}</CardTitle>
-            <CardDescription>
-              {t('director.subtitle')}
-            </CardDescription>
-          </div>
-          <MapButton />
-        </CardHeader>
-      </Card>
 
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="grid w-full max-w-2xl grid-cols-3">
