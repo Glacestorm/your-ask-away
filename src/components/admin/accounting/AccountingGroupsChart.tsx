@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ComposedChart, Line } from 'recharts';
+import { PGCTooltip, getComposition } from './PGCTooltip';
 
 type AccountType = 'ACTIU' | 'PASSIU' | 'PATRIMONI' | 'INGRESSOS' | 'DESPESES';
 type TypeFilter = 'TOTS' | AccountType | 'PERSONALITZAT';
@@ -730,7 +731,14 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
                     <TableBody>
                       {/* Activo No Corriente Total */}
                       <TableRow className="bg-amber-500/30 hover:bg-amber-500/40">
-                        <TableCell className="font-bold text-amber-200 py-1.5 text-sm">A) ACTIU NO CORRENT</TableCell>
+                        <TableCell className="font-bold text-amber-200 py-1.5 text-sm">
+                          <PGCTooltip 
+                            title="Actiu No Corrent" 
+                            composition={getComposition('A', 'activo', planType)}
+                          >
+                            A) ACTIU NO CORRENT
+                          </PGCTooltip>
+                        </TableCell>
                         {filteredBalanceSummaries.map(s => (
                           <TableCell key={s.year} className="text-right font-mono text-amber-200 font-bold py-1.5 text-sm">
                             {formatCurrency(s.details.activoNoCorriente)}
@@ -745,7 +753,14 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
                       {planType === 'COMPLET' && (
                         <>
                           <TableRow className="bg-amber-500/10 hover:bg-amber-500/20">
-                            <TableCell className="font-semibold text-foreground pl-4 py-1 text-xs">I. Immobilitzat intangible</TableCell>
+                            <TableCell className="font-semibold text-foreground pl-4 py-1 text-xs">
+                              <PGCTooltip 
+                                title="Immobilitzat intangible" 
+                                composition={getComposition('I', 'activo', planType)}
+                              >
+                                I. Immobilitzat intangible
+                              </PGCTooltip>
+                            </TableCell>
                             {filteredBalanceSummaries.map(s => (
                               <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
                                 {formatCurrency(s.details.activoNoCorriente * 0.05)}
@@ -756,7 +771,14 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
                             ))}
                           </TableRow>
                           <TableRow className="bg-amber-500/10 hover:bg-amber-500/20">
-                            <TableCell className="font-semibold text-foreground pl-4 py-1 text-xs">II. Immobilitzat material</TableCell>
+                            <TableCell className="font-semibold text-foreground pl-4 py-1 text-xs">
+                              <PGCTooltip 
+                                title="Immobilitzat material" 
+                                composition={getComposition('II', 'activo', planType)}
+                              >
+                                II. Immobilitzat material
+                              </PGCTooltip>
+                            </TableCell>
                             {filteredBalanceSummaries.map(s => (
                               <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
                                 {formatCurrency(s.details.activoNoCorriente * 0.70)}
@@ -767,7 +789,14 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
                             ))}
                           </TableRow>
                           <TableRow className="bg-amber-500/10 hover:bg-amber-500/20">
-                            <TableCell className="font-semibold text-foreground pl-4 py-1 text-xs">III. Inversions immobiliàries</TableCell>
+                            <TableCell className="font-semibold text-foreground pl-4 py-1 text-xs">
+                              <PGCTooltip 
+                                title="Inversions immobiliàries" 
+                                composition={getComposition('III', 'activo', planType)}
+                              >
+                                III. Inversions immobiliàries
+                              </PGCTooltip>
+                            </TableCell>
                             {filteredBalanceSummaries.map(s => (
                               <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
                                 {formatCurrency(s.details.activoNoCorriente * 0.10)}
@@ -778,7 +807,14 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
                             ))}
                           </TableRow>
                           <TableRow className="bg-amber-500/10 hover:bg-amber-500/20">
-                            <TableCell className="font-semibold text-foreground pl-4 py-1 text-xs">IV. Inversions financeres a llarg termini</TableCell>
+                            <TableCell className="font-semibold text-foreground pl-4 py-1 text-xs">
+                              <PGCTooltip 
+                                title="Inversions financeres a llarg termini" 
+                                composition={getComposition('V', 'activo', planType)}
+                              >
+                                IV. Inversions financeres a llarg termini
+                              </PGCTooltip>
+                            </TableCell>
                             {filteredBalanceSummaries.map(s => (
                               <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
                                 {formatCurrency(s.details.activoNoCorriente * 0.15)}
@@ -793,7 +829,14 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
 
                       {/* Activo Corriente Total */}
                       <TableRow className="bg-amber-500/30 hover:bg-amber-500/40">
-                        <TableCell className="font-bold text-amber-200 py-1.5 text-sm">B) ACTIU CORRENT</TableCell>
+                        <TableCell className="font-bold text-amber-200 py-1.5 text-sm">
+                          <PGCTooltip 
+                            title="Actiu Corrent" 
+                            composition={getComposition('B', 'activo', planType)}
+                          >
+                            B) ACTIU CORRENT
+                          </PGCTooltip>
+                        </TableCell>
                         {filteredBalanceSummaries.map(s => (
                           <TableCell key={s.year} className="text-right font-mono text-amber-200 font-bold py-1.5 text-sm">
                             {formatCurrency(s.details.activoCorriente)}
@@ -808,7 +851,14 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
                       {planType === 'COMPLET' && (
                         <>
                           <TableRow className="bg-amber-500/10 hover:bg-amber-500/20">
-                            <TableCell className="font-semibold text-foreground pl-4 py-1 text-xs">I. Existències</TableCell>
+                            <TableCell className="font-semibold text-foreground pl-4 py-1 text-xs">
+                              <PGCTooltip 
+                                title="Existències" 
+                                composition={getComposition('VIII', 'activo', planType)}
+                              >
+                                I. Existències
+                              </PGCTooltip>
+                            </TableCell>
                             {filteredBalanceSummaries.map(s => (
                               <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
                                 {formatCurrency(s.details.activoCorriente * 0.25)}
@@ -819,7 +869,14 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
                             ))}
                           </TableRow>
                           <TableRow className="bg-amber-500/10 hover:bg-amber-500/20">
-                            <TableCell className="font-semibold text-foreground pl-4 py-1 text-xs">II. Deutors comercials</TableCell>
+                            <TableCell className="font-semibold text-foreground pl-4 py-1 text-xs">
+                              <PGCTooltip 
+                                title="Deutors comercials" 
+                                composition={getComposition('IX', 'activo', planType)}
+                              >
+                                II. Deutors comercials
+                              </PGCTooltip>
+                            </TableCell>
                             {filteredBalanceSummaries.map(s => (
                               <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
                                 {formatCurrency(s.details.activoCorriente * 0.40)}
@@ -830,7 +887,14 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
                             ))}
                           </TableRow>
                           <TableRow className="bg-amber-500/10 hover:bg-amber-500/20">
-                            <TableCell className="font-semibold text-foreground pl-4 py-1 text-xs">III. Efectiu i equivalents</TableCell>
+                            <TableCell className="font-semibold text-foreground pl-4 py-1 text-xs">
+                              <PGCTooltip 
+                                title="Efectiu i equivalents" 
+                                composition={getComposition('XIII', 'activo', planType)}
+                              >
+                                III. Efectiu i equivalents
+                              </PGCTooltip>
+                            </TableCell>
                             {filteredBalanceSummaries.map(s => (
                               <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
                                 {formatCurrency(s.details.activoCorriente * 0.35)}
@@ -945,7 +1009,14 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
                     <TableBody>
                       {/* Patrimonio Neto Total */}
                       <TableRow className="bg-amber-500/30 hover:bg-amber-500/40">
-                        <TableCell className="font-bold text-amber-200 py-1.5 text-sm">A) PATRIMONI NET</TableCell>
+                        <TableCell className="font-bold text-amber-200 py-1.5 text-sm">
+                          <PGCTooltip 
+                            title="Patrimoni Net" 
+                            composition={getComposition('A)', 'pasivo', planType)}
+                          >
+                            A) PATRIMONI NET
+                          </PGCTooltip>
+                        </TableCell>
                         {filteredBalanceSummaries.map(s => (
                           <TableCell key={s.year} className="text-right font-mono text-amber-200 font-bold py-1.5 text-sm">
                             {formatCurrency(s.details.patrimonioNeto)}
@@ -960,7 +1031,14 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
                       {planType === 'COMPLET' && (
                         <>
                           <TableRow className="bg-amber-500/10 hover:bg-amber-500/20">
-                            <TableCell className="font-semibold text-foreground pl-4 py-1 text-xs">A-1) Fons propis</TableCell>
+                            <TableCell className="font-semibold text-foreground pl-4 py-1 text-xs">
+                              <PGCTooltip 
+                                title="Fons propis" 
+                                composition={getComposition('A-1)', 'pasivo', planType)}
+                              >
+                                A-1) Fons propis
+                              </PGCTooltip>
+                            </TableCell>
                             {filteredBalanceSummaries.map(s => (
                               <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
                                 {formatCurrency(s.details.patrimonioNeto * 0.95)}
@@ -971,7 +1049,14 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
                             ))}
                           </TableRow>
                           <TableRow className="hover:bg-muted/30">
-                            <TableCell className="text-foreground pl-8 py-1 text-xs">I. Capital</TableCell>
+                            <TableCell className="text-foreground pl-8 py-1 text-xs">
+                              <PGCTooltip 
+                                title="Capital" 
+                                composition={getComposition('I.', 'pasivo', planType)}
+                              >
+                                I. Capital
+                              </PGCTooltip>
+                            </TableCell>
                             {filteredBalanceSummaries.map(s => (
                               <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
                                 {formatCurrency(s.details.patrimonioNeto * 0.50)}
@@ -982,7 +1067,14 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
                             ))}
                           </TableRow>
                           <TableRow className="hover:bg-muted/30">
-                            <TableCell className="text-foreground pl-8 py-1 text-xs">II. Prima d'emissió</TableCell>
+                            <TableCell className="text-foreground pl-8 py-1 text-xs">
+                              <PGCTooltip 
+                                title="Prima d'emissió" 
+                                composition={getComposition('II.', 'pasivo', planType)}
+                              >
+                                II. Prima d&apos;emissió
+                              </PGCTooltip>
+                            </TableCell>
                             {filteredBalanceSummaries.map(s => (
                               <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
                                 {formatCurrency(s.details.patrimonioNeto * 0.05)}
@@ -1030,7 +1122,14 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
 
                       {/* Pasivo No Corriente */}
                       <TableRow className="bg-rose-500/30 hover:bg-rose-500/40">
-                        <TableCell className="font-bold text-rose-200 py-1.5 text-sm">B) PASSIU NO CORRENT</TableCell>
+                        <TableCell className="font-bold text-rose-200 py-1.5 text-sm">
+                          <PGCTooltip 
+                            title="Passiu No Corrent" 
+                            composition={getComposition('B)', 'pasivo', planType)}
+                          >
+                            B) PASSIU NO CORRENT
+                          </PGCTooltip>
+                        </TableCell>
                         {filteredBalanceSummaries.map(s => (
                           <TableCell key={s.year} className="text-right font-mono text-rose-200 font-bold py-1.5 text-sm">
                             {formatCurrency(s.details.pasivoNoCorriente)}
@@ -1045,7 +1144,14 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
                       {planType === 'COMPLET' && (
                         <>
                           <TableRow className="bg-rose-500/10 hover:bg-rose-500/20">
-                            <TableCell className="font-semibold text-foreground pl-4 py-1 text-xs">I. Provisions a llarg termini</TableCell>
+                            <TableCell className="font-semibold text-foreground pl-4 py-1 text-xs">
+                              <PGCTooltip 
+                                title="Provisions a llarg termini" 
+                                composition={getComposition('I..', 'pasivo', planType)}
+                              >
+                                I. Provisions a llarg termini
+                              </PGCTooltip>
+                            </TableCell>
                             {filteredBalanceSummaries.map(s => (
                               <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
                                 {formatCurrency(s.details.pasivoNoCorriente * 0.20)}
@@ -1056,7 +1162,14 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
                             ))}
                           </TableRow>
                           <TableRow className="bg-rose-500/10 hover:bg-rose-500/20">
-                            <TableCell className="font-semibold text-foreground pl-4 py-1 text-xs">II. Deutes a llarg termini</TableCell>
+                            <TableCell className="font-semibold text-foreground pl-4 py-1 text-xs">
+                              <PGCTooltip 
+                                title="Deutes a llarg termini" 
+                                composition={getComposition('II..', 'pasivo', planType)}
+                              >
+                                II. Deutes a llarg termini
+                              </PGCTooltip>
+                            </TableCell>
                             {filteredBalanceSummaries.map(s => (
                               <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
                                 {formatCurrency(s.details.pasivoNoCorriente * 0.80)}
@@ -1071,7 +1184,14 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
 
                       {/* Pasivo Corriente */}
                       <TableRow className="bg-rose-500/30 hover:bg-rose-500/40">
-                        <TableCell className="font-bold text-rose-200 py-1.5 text-sm">C) PASSIU CORRENT</TableCell>
+                        <TableCell className="font-bold text-rose-200 py-1.5 text-sm">
+                          <PGCTooltip 
+                            title="Passiu Corrent" 
+                            composition={getComposition('C)', 'pasivo', planType)}
+                          >
+                            C) PASSIU CORRENT
+                          </PGCTooltip>
+                        </TableCell>
                         {filteredBalanceSummaries.map(s => (
                           <TableCell key={s.year} className="text-right font-mono text-rose-200 font-bold py-1.5 text-sm">
                             {formatCurrency(s.details.pasivoCorriente)}
