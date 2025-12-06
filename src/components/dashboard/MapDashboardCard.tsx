@@ -486,642 +486,687 @@ export function MapDashboardCard({ onNavigateToMap }: MapDashboardCardProps) {
         </div>
       </div>
 
-      {/* Dialog for expanded view */}
+      {/* Dialog for expanded view - Much larger and more modern */}
       <Dialog open={isExpanded} onOpenChange={setIsExpanded}>
-        <DialogContent className="max-w-3xl max-h-[85vh] p-0 gap-0 overflow-hidden dark:bg-gradient-to-b dark:from-card dark:to-background">
-          <DialogHeader className="px-6 py-4 border-b border-border/50 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent dark:from-primary/20 dark:via-primary/10 dark:to-transparent">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-md dark:shadow-primary/20">
-                <Map className="h-5 w-5 text-primary-foreground" />
+        <DialogContent className="max-w-6xl w-[95vw] max-h-[92vh] p-0 gap-0 overflow-hidden bg-gradient-to-br from-background via-background to-muted/20 dark:from-background dark:via-background dark:to-muted/10 border-border/50">
+          {/* Enhanced Header with gradient */}
+          <DialogHeader className="px-8 py-6 border-b border-border/30 bg-gradient-to-r from-primary/15 via-primary/5 to-transparent dark:from-primary/25 dark:via-primary/10 dark:to-transparent">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary via-primary to-primary/80 shadow-lg shadow-primary/25 dark:shadow-primary/40">
+                  <Map className="h-7 w-7 text-primary-foreground" />
+                </div>
+                <div>
+                  <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                    Mapa d'Empreses
+                  </DialogTitle>
+                  <DialogDescription className="text-base mt-1">
+                    Gestiona les teves empreses, visites i vinculacions en un sol lloc
+                  </DialogDescription>
+                </div>
               </div>
-              <div>
-                <DialogTitle className="text-lg dark:text-foreground">Mapa d'Empreses</DialogTitle>
-                <DialogDescription className="dark:text-muted-foreground">
-                  Visualitza les teves empreses i vinculacions
-                </DialogDescription>
-              </div>
+              <Button 
+                variant="default" 
+                size="lg" 
+                className="shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all"
+                onClick={handleClick}
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Obrir Mapa Complet
+              </Button>
             </div>
           </DialogHeader>
           
-          <div className="p-6 space-y-4 overflow-y-auto max-h-[calc(85vh-80px)]">
-            {/* Stats row */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 dark:bg-muted/30 dark:border dark:border-border/30">
-                <Building2 className="h-4 w-4 text-primary" />
-                <div>
-                  <span className="text-xs text-muted-foreground">Total empreses</span>
-                  <p className="font-semibold text-lg text-foreground">{totalCount}</p>
+          <div className="p-8 space-y-6 overflow-y-auto max-h-[calc(92vh-120px)]">
+            {/* Stats Grid - 4 columns */}
+            <div className="grid grid-cols-4 gap-4">
+              <div className="relative overflow-hidden rounded-2xl p-5 bg-gradient-to-br from-card to-card/80 border border-border/30 shadow-sm hover:shadow-md transition-all group">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-primary/10 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-primary/15 transition-colors" />
+                <div className="relative">
+                  <Building2 className="h-6 w-6 text-primary mb-3" />
+                  <p className="text-sm text-muted-foreground font-medium">Total Empreses</p>
+                  <p className="text-3xl font-bold text-foreground mt-1">{totalCount}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 dark:bg-muted/30 dark:border dark:border-border/30">
-                <TrendingUp className="h-4 w-4 text-green-500 dark:text-green-400" />
-                <div>
-                  <span className="text-xs text-muted-foreground">Vinculació mitjana</span>
-                  <p className="font-semibold text-lg text-foreground">{avgVinculacion.toFixed(0)}%</p>
+              
+              <div className="relative overflow-hidden rounded-2xl p-5 bg-gradient-to-br from-card to-card/80 border border-border/30 shadow-sm hover:shadow-md transition-all group">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-green-500/10 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-green-500/15 transition-colors" />
+                <div className="relative">
+                  <TrendingUp className="h-6 w-6 text-green-500 mb-3" />
+                  <p className="text-sm text-muted-foreground font-medium">Vinculació Mitjana</p>
+                  <p className="text-3xl font-bold text-green-600 dark:text-green-400 mt-1">{avgVinculacion.toFixed(0)}%</p>
                 </div>
               </div>
-            </div>
-
-            {/* Distribution chart */}
-            {companies.length > 0 && (
-          <div className="space-y-1.5" ref={chartRef}>
-            <p className="text-[10px] text-muted-foreground font-medium">Distribució per vinculació:</p>
-            <div className="flex h-5 w-full rounded-full overflow-hidden bg-muted dark:bg-muted/50">
-              <TooltipProvider delayDuration={100}>
-                {vinculacionCounts.high > 0 && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div 
-                        className={`bg-green-500 dark:bg-green-600 h-full cursor-pointer hover:brightness-110 transition-all duration-500 ease-out ${
-                          vinculacionFilter === 'high' ? 'ring-2 ring-primary ring-offset-1 dark:ring-offset-background' : ''
-                        }`}
-                        style={{ 
-                          width: chartVisible ? `${(vinculacionCounts.high / companies.length) * 100}%` : '0%',
-                          transitionDelay: '0ms'
-                        }}
-                        onClick={() => setVinculacionFilter(prev => prev === 'high' ? 'all' : 'high')}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="text-xs">
-                      <div className="flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full bg-green-500" />
-                        <span>Alta (≥70%): <strong>{vinculacionCounts.high}</strong></span>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-                {vinculacionCounts.medium > 0 && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div 
-                        className={`bg-yellow-500 dark:bg-yellow-600 h-full cursor-pointer hover:brightness-110 transition-all duration-500 ease-out ${
-                          vinculacionFilter === 'medium' ? 'ring-2 ring-primary ring-offset-1 dark:ring-offset-background' : ''
-                        }`}
-                        style={{ 
-                          width: chartVisible ? `${(vinculacionCounts.medium / companies.length) * 100}%` : '0%',
-                          transitionDelay: '150ms'
-                        }}
-                        onClick={() => setVinculacionFilter(prev => prev === 'medium' ? 'all' : 'medium')}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="text-xs">
-                      <div className="flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full bg-yellow-500" />
-                        <span>Mitjana (40-69%): <strong>{vinculacionCounts.medium}</strong></span>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-                {vinculacionCounts.low > 0 && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div 
-                        className={`bg-red-500 dark:bg-red-600 h-full cursor-pointer hover:brightness-110 transition-all duration-500 ease-out ${
-                          vinculacionFilter === 'low' ? 'ring-2 ring-primary ring-offset-1 dark:ring-offset-background' : ''
-                        }`}
-                        style={{ 
-                          width: chartVisible ? `${(vinculacionCounts.low / companies.length) * 100}%` : '0%',
-                          transitionDelay: '300ms'
-                        }}
-                        onClick={() => setVinculacionFilter(prev => prev === 'low' ? 'all' : 'low')}
-                      />
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="text-xs">
-                      <div className="flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full bg-red-500" />
-                        <span>Baixa (&lt;40%): <strong>{vinculacionCounts.low}</strong></span>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-              </TooltipProvider>
-            </div>
-            <div className="flex justify-between text-[9px] text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-green-500" />
-                {Math.round((vinculacionCounts.high / companies.length) * 100) || 0}%
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-yellow-500" />
-                {Math.round((vinculacionCounts.medium / companies.length) * 100) || 0}%
-              </span>
-              <span className="flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-red-500" />
-                {Math.round((vinculacionCounts.low / companies.length) * 100) || 0}%
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Visits evolution */}
-        {monthlyVisits.length > 0 && (
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <BarChart3 className="h-3 w-3 text-muted-foreground" />
-                <p className="text-[10px] text-muted-foreground">Evolució visites ({monthRange} mesos):</p>
-              </div>
-              <div className="flex items-center gap-1">
-                <TooltipProvider delayDuration={100}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => setChartViewMode(chartViewMode === 'chart' ? 'table' : 'chart')}
-                        className={`p-1 rounded transition-all ${
-                          chartViewMode === 'table'
-                            ? 'bg-primary/20 text-primary' 
-                            : 'bg-muted/50 text-muted-foreground hover:bg-muted'
-                        }`}
-                      >
-                        {chartViewMode === 'chart' ? <Table className="h-3 w-3" /> : <LayoutGrid className="h-3 w-3" />}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="text-xs">
-                      {chartViewMode === 'chart' ? 'Veure taula' : 'Veure gràfic'}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                {hasLastYearData && chartViewMode === 'chart' && (
-                  <TooltipProvider delayDuration={100}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          onClick={() => setShowYoY(!showYoY)}
-                          className={`p-1 rounded transition-all ${
-                            showYoY 
-                              ? 'bg-primary/20 text-primary' 
-                              : 'bg-muted/50 text-muted-foreground hover:bg-muted'
-                          }`}
-                        >
-                          {showYoY ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="text-xs">
-                        {showYoY ? 'Amagar any anterior' : 'Mostrar any anterior'}
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-                <div className="flex items-center gap-0.5 bg-muted/50 rounded p-0.5">
-                  {([3, 6, 12] as const).map((range) => (
-                    <button
-                      key={range}
-                      onClick={() => setMonthRange(range)}
-                      className={`px-1.5 py-0.5 rounded text-[9px] font-medium transition-all ${
-                        monthRange === range
-                          ? 'bg-primary text-primary-foreground'
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      {range}m
-                    </button>
-                  ))}
+              
+              <div className="relative overflow-hidden rounded-2xl p-5 bg-gradient-to-br from-card to-card/80 border border-border/30 shadow-sm hover:shadow-md transition-all group">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-blue-500/15 transition-colors" />
+                <div className="relative">
+                  <Calendar className="h-6 w-6 text-blue-500 mb-3" />
+                  <p className="text-sm text-muted-foreground font-medium">Visites Aquest Mes</p>
+                  <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mt-1">{totalVisitsThisMonth}</p>
                 </div>
-                <div className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-medium ${
-                  isPositive 
-                    ? 'bg-green-500/10 text-green-600 dark:text-green-400' 
-                    : 'bg-red-500/10 text-red-600 dark:text-red-400'
-                }`}>
-                  {isPositive ? <TrendingUp className="h-2.5 w-2.5" /> : <TrendingDown className="h-2.5 w-2.5" />}
-                  <span>{isPositive ? '+' : ''}{monthChange}%</span>
+              </div>
+              
+              <div className="relative overflow-hidden rounded-2xl p-5 bg-gradient-to-br from-card to-card/80 border border-border/30 shadow-sm hover:shadow-md transition-all group">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-amber-500/10 rounded-full blur-2xl -mr-8 -mt-8 group-hover:bg-amber-500/15 transition-colors" />
+                <div className="relative">
+                  <Award className="h-6 w-6 text-amber-500 mb-3" />
+                  <p className="text-sm text-muted-foreground font-medium">Visites Exitoses</p>
+                  <p className="text-3xl font-bold text-amber-600 dark:text-amber-400 mt-1">{resultCounts.exitosa}</p>
                 </div>
               </div>
             </div>
 
-            {/* Result Filter */}
-            <div className="flex items-center gap-1 flex-wrap">
-              <span className="text-[9px] text-muted-foreground">Resultat:</span>
-              <div className="flex items-center gap-0.5 bg-muted/50 rounded p-0.5">
-                <TooltipProvider delayDuration={100}>
-                  {([
-                    { value: 'all' as const, label: 'Tot', dot: '', activeBg: 'bg-primary', inactiveBg: 'bg-muted/80', barColor: 'bg-primary' },
-                    { value: 'exitosa' as const, label: 'Exitosa', dot: 'bg-green-500', activeBg: 'bg-green-500', inactiveBg: 'bg-green-500/15 hover:bg-green-500/25', barColor: 'bg-green-500' },
-                    { value: 'pendiente' as const, label: 'Pendent', dot: 'bg-yellow-500', activeBg: 'bg-yellow-500', inactiveBg: 'bg-yellow-500/15 hover:bg-yellow-500/25', barColor: 'bg-yellow-500' },
-                    { value: 'fallida' as const, label: 'Fallida', dot: 'bg-red-500', activeBg: 'bg-red-500', inactiveBg: 'bg-red-500/15 hover:bg-red-500/25', barColor: 'bg-red-500' },
-                    { value: 'reagendada' as const, label: 'Reagend.', dot: 'bg-blue-500', activeBg: 'bg-blue-500', inactiveBg: 'bg-blue-500/15 hover:bg-blue-500/25', barColor: 'bg-blue-500' },
-                  ]).map((filter) => {
-                    const total = resultCounts.all || 1;
-                    const count = resultCounts[filter.value] || 0;
-                    const percentage = filter.value === 'all' ? 100 : Math.round((count / total) * 100);
-                    const exactPercentage = filter.value === 'all' ? 100 : ((count / total) * 100).toFixed(1);
-                    return (
-                      <Tooltip key={filter.value}>
-                        <TooltipTrigger asChild>
+            {/* Two Column Layout */}
+            <div className="grid grid-cols-2 gap-6">
+              {/* Left Column - Charts and Analytics */}
+              <div className="space-y-6">
+                {/* Vinculación Distribution */}
+                {companies.length > 0 && (
+                  <div className="rounded-2xl p-5 bg-gradient-to-br from-card to-card/80 border border-border/30 shadow-sm">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-base font-semibold text-foreground">Distribució per Vinculació</h3>
+                      <div className="flex gap-1">
+                        {[
+                          { key: 'all', label: 'Totes', color: '' },
+                          { key: 'high', label: 'Alta', color: 'bg-green-500' },
+                          { key: 'medium', label: 'Mitjana', color: 'bg-yellow-500' },
+                          { key: 'low', label: 'Baixa', color: 'bg-red-500' },
+                        ].map((filter) => (
                           <button
-                            onClick={() => setResultFilter(filter.value)}
-                            className={`px-1.5 py-0.5 rounded text-[9px] font-medium transition-all flex flex-col items-center gap-0.5 min-w-[42px] ${
-                              resultFilter === filter.value
-                                ? `${filter.activeBg} text-white`
-                                : `${filter.inactiveBg} text-foreground/70`
+                            key={filter.key}
+                            onClick={() => setVinculacionFilter(filter.key as VinculacionFilter)}
+                            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                              vinculacionFilter === filter.key
+                                ? 'bg-primary text-primary-foreground shadow-sm'
+                                : 'bg-muted/50 text-muted-foreground hover:bg-muted'
                             }`}
                           >
-                            <div className="flex items-center gap-1">
-                              {filter.dot && resultFilter !== filter.value && <span className={`h-1.5 w-1.5 rounded-full ${filter.dot}`} />}
-                              {filter.label}
-                              <span className={`text-[8px] ${resultFilter === filter.value ? 'opacity-80' : 'opacity-60'}`}>
-                                ({count})
-                              </span>
-                            </div>
-                            {filter.value !== 'all' && (
-                              <div className="w-full h-1 bg-black/10 rounded-full overflow-hidden">
-                                <div 
-                                  className={`h-full ${resultFilter === filter.value ? 'bg-white/50' : filter.barColor} transition-all`}
-                                  style={{ width: `${percentage}%` }}
-                                />
-                              </div>
-                            )}
+                            {filter.color && <span className={`h-2 w-2 rounded-full ${filter.color}`} />}
+                            <span>{filter.label}</span>
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${
+                              vinculacionFilter === filter.key ? 'bg-primary-foreground/20' : 'bg-muted'
+                            }`}>
+                              {vinculacionCounts[filter.key as keyof typeof vinculacionCounts]}
+                            </span>
                           </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" className="text-xs">
-                          <p className="font-medium">{filter.label}</p>
-                          <p>{count} visites ({exactPercentage}% del total)</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    );
-                  })}
-                </TooltipProvider>
-              </div>
-            </div>
-
-            {/* Chart View */}
-            {chartViewMode === 'chart' && (
-              <>
-                <div className="relative flex items-end gap-1 h-14">
-                  <svg 
-                    className="absolute inset-0 w-full h-full pointer-events-none z-10"
-                    viewBox="0 0 100 100"
-                    preserveAspectRatio="none"
-                  >
-                    <defs>
-                      <linearGradient id="areaGradientCard" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
-                        <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.02" />
-                      </linearGradient>
-                    </defs>
-                    <polygon
-                      points={areaPoints}
-                      fill="url(#areaGradientCard)"
-                      className="transition-all duration-700"
-                      style={{ opacity: chartVisible ? 1 : 0, transitionDelay: '300ms' }}
-                    />
-                    <polyline
-                      points={trendPoints}
-                      fill="none"
-                      stroke="hsl(var(--primary))"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="transition-all duration-700"
-                      style={{
-                        strokeDasharray: chartVisible ? '0' : '500',
-                        strokeDashoffset: chartVisible ? '0' : '500',
-                        transitionDelay: '400ms'
-                      }}
-                    />
-                    {monthlyVisits.map((m, i) => {
-                      const x = (i / barCount) * 100;
-                      const y = 100 - ((m.count / maxCount) * 80);
-                      return (
-                        <circle
-                          key={i}
-                          cx={x}
-                          cy={y}
-                          r="2.5"
-                          fill="hsl(var(--background))"
-                          stroke="hsl(var(--primary))"
-                          strokeWidth="1.5"
-                          className="transition-all duration-500"
-                          style={{ opacity: chartVisible ? 1 : 0, transitionDelay: `${500 + i * 50}ms` }}
-                        />
-                      );
-                    })}
-                  </svg>
-                  {monthlyVisits.map((month, idx) => (
-                    <TooltipProvider key={month.month} delayDuration={100}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className="flex flex-col items-center flex-1 relative z-20">
-                            <div className="flex gap-0.5 items-end h-10 w-full justify-center">
-                              {showYoY && hasLastYearData && (
+                        ))}
+                      </div>
+                    </div>
+                    
+                    {/* Enhanced Distribution Bar */}
+                    <div className="space-y-3">
+                      <div className="flex h-8 w-full rounded-xl overflow-hidden bg-muted/50 shadow-inner">
+                        <TooltipProvider delayDuration={100}>
+                          {vinculacionCounts.high > 0 && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
                                 <div 
-                                  className="w-2 bg-muted-foreground/30 rounded-t transition-all duration-500"
+                                  className={`bg-gradient-to-b from-green-400 to-green-600 h-full cursor-pointer hover:brightness-110 transition-all duration-500 ease-out ${
+                                    vinculacionFilter === 'high' ? 'ring-2 ring-primary ring-offset-2 dark:ring-offset-background' : ''
+                                  }`}
                                   style={{ 
-                                    height: chartVisible ? `${((month.lastYearCount || 0) / maxCount) * 100}%` : '0%',
-                                    transitionDelay: `${idx * 100}ms`,
-                                    minHeight: (month.lastYearCount || 0) > 0 ? '2px' : '0'
+                                    width: chartVisible ? `${(vinculacionCounts.high / companies.length) * 100}%` : '0%',
+                                    transitionDelay: '0ms'
                                   }}
+                                  onClick={() => setVinculacionFilter(prev => prev === 'high' ? 'all' : 'high')}
                                 />
-                              )}
-                              <div 
-                                className="w-2 bg-primary/50 hover:bg-primary/70 rounded-t transition-all duration-500 relative"
-                                style={{ 
-                                  height: chartVisible ? `${(month.count / maxCount) * 100}%` : '0%',
-                                  transitionDelay: `${idx * 100}ms`,
-                                  minHeight: month.count > 0 ? '2px' : '0'
-                                }}
-                              />
-                            </div>
-                            <span className="text-[8px] text-muted-foreground mt-0.5 capitalize">{month.shortMonth}</span>
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="text-xs">
-                          <p className="font-medium capitalize">{month.month}</p>
-                          <p>{month.count} visites</p>
-                          {showYoY && hasLastYearData && (
-                            <p className="text-muted-foreground">{month.lastYearCount || 0} any ant.</p>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="text-sm px-3 py-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="h-3 w-3 rounded-full bg-green-500" />
+                                  <span>Alta (≥70%): <strong>{vinculacionCounts.high} empreses</strong></span>
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
                           )}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  ))}
-                  {/* Prediction bar */}
-                  <TooltipProvider delayDuration={100}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="flex flex-col items-center flex-1 relative z-20">
-                          <div className="flex gap-0.5 items-end h-10 w-full justify-center">
-                            <div 
-                              className="w-2 bg-primary/30 rounded-t transition-all duration-500 border border-dashed border-primary/50"
-                              style={{ 
-                                height: chartVisible ? `${(predictedCount / maxCount) * 100}%` : '0%',
-                                transitionDelay: `${monthlyVisits.length * 100}ms`,
-                                minHeight: predictedCount > 0 ? '2px' : '0'
+                          {vinculacionCounts.medium > 0 && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div 
+                                  className={`bg-gradient-to-b from-yellow-400 to-yellow-600 h-full cursor-pointer hover:brightness-110 transition-all duration-500 ease-out ${
+                                    vinculacionFilter === 'medium' ? 'ring-2 ring-primary ring-offset-2 dark:ring-offset-background' : ''
+                                  }`}
+                                  style={{ 
+                                    width: chartVisible ? `${(vinculacionCounts.medium / companies.length) * 100}%` : '0%',
+                                    transitionDelay: '150ms'
+                                  }}
+                                  onClick={() => setVinculacionFilter(prev => prev === 'medium' ? 'all' : 'medium')}
+                                />
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="text-sm px-3 py-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="h-3 w-3 rounded-full bg-yellow-500" />
+                                  <span>Mitjana (40-69%): <strong>{vinculacionCounts.medium} empreses</strong></span>
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                          {vinculacionCounts.low > 0 && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div 
+                                  className={`bg-gradient-to-b from-red-400 to-red-600 h-full cursor-pointer hover:brightness-110 transition-all duration-500 ease-out ${
+                                    vinculacionFilter === 'low' ? 'ring-2 ring-primary ring-offset-2 dark:ring-offset-background' : ''
+                                  }`}
+                                  style={{ 
+                                    width: chartVisible ? `${(vinculacionCounts.low / companies.length) * 100}%` : '0%',
+                                    transitionDelay: '300ms'
+                                  }}
+                                  onClick={() => setVinculacionFilter(prev => prev === 'low' ? 'all' : 'low')}
+                                />
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="text-sm px-3 py-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="h-3 w-3 rounded-full bg-red-500" />
+                                  <span>Baixa (&lt;40%): <strong>{vinculacionCounts.low} empreses</strong></span>
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </TooltipProvider>
+                      </div>
+                      
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span className="flex items-center gap-2">
+                          <span className="h-3 w-3 rounded-full bg-gradient-to-b from-green-400 to-green-600" />
+                          {Math.round((vinculacionCounts.high / companies.length) * 100) || 0}% Alta
+                        </span>
+                        <span className="flex items-center gap-2">
+                          <span className="h-3 w-3 rounded-full bg-gradient-to-b from-yellow-400 to-yellow-600" />
+                          {Math.round((vinculacionCounts.medium / companies.length) * 100) || 0}% Mitjana
+                        </span>
+                        <span className="flex items-center gap-2">
+                          <span className="h-3 w-3 rounded-full bg-gradient-to-b from-red-400 to-red-600" />
+                          {Math.round((vinculacionCounts.low / companies.length) * 100) || 0}% Baixa
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Visits Evolution Chart */}
+                {monthlyVisits.length > 0 && (
+                  <div className="rounded-2xl p-5 bg-gradient-to-br from-card to-card/80 border border-border/30 shadow-sm">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <BarChart3 className="h-5 w-5 text-primary" />
+                        <h3 className="text-base font-semibold text-foreground">Evolució de Visites</h3>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <TooltipProvider delayDuration={100}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                onClick={() => setChartViewMode(chartViewMode === 'chart' ? 'table' : 'chart')}
+                                className={`p-2 rounded-lg transition-all ${
+                                  chartViewMode === 'table'
+                                    ? 'bg-primary/20 text-primary' 
+                                    : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                                }`}
+                              >
+                                {chartViewMode === 'chart' ? <Table className="h-4 w-4" /> : <LayoutGrid className="h-4 w-4" />}
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="text-xs">
+                              {chartViewMode === 'chart' ? 'Veure taula' : 'Veure gràfic'}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        {hasLastYearData && chartViewMode === 'chart' && (
+                          <TooltipProvider delayDuration={100}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  onClick={() => setShowYoY(!showYoY)}
+                                  className={`p-2 rounded-lg transition-all ${
+                                    showYoY 
+                                      ? 'bg-primary/20 text-primary' 
+                                      : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                                  }`}
+                                >
+                                  {showYoY ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="text-xs">
+                                {showYoY ? 'Amagar any anterior' : 'Mostrar any anterior'}
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                        <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1">
+                          {([3, 6, 12] as const).map((range) => (
+                            <button
+                              key={range}
+                              onClick={() => setMonthRange(range)}
+                              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                                monthRange === range
+                                  ? 'bg-primary text-primary-foreground shadow-sm'
+                                  : 'text-muted-foreground hover:text-foreground'
+                              }`}
+                            >
+                              {range}m
+                            </button>
+                          ))}
+                        </div>
+                        <div className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold ${
+                          isPositive 
+                            ? 'bg-green-500/15 text-green-600 dark:text-green-400' 
+                            : 'bg-red-500/15 text-red-600 dark:text-red-400'
+                        }`}>
+                          {isPositive ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
+                          <span>{isPositive ? '+' : ''}{monthChange}%</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Result Filter Pills */}
+                    <div className="flex items-center gap-2 mb-4 flex-wrap">
+                      <span className="text-xs text-muted-foreground font-medium">Filtrar per resultat:</span>
+                      <div className="flex items-center gap-1 bg-muted/30 rounded-xl p-1">
+                        <TooltipProvider delayDuration={100}>
+                          {([
+                            { value: 'all' as const, label: 'Tot', dot: '', activeBg: 'bg-primary', inactiveBg: 'bg-muted/80', barColor: 'bg-primary' },
+                            { value: 'exitosa' as const, label: 'Exitosa', dot: 'bg-green-500', activeBg: 'bg-green-500', inactiveBg: 'bg-green-500/15 hover:bg-green-500/25', barColor: 'bg-green-500' },
+                            { value: 'pendiente' as const, label: 'Pendent', dot: 'bg-yellow-500', activeBg: 'bg-yellow-500', inactiveBg: 'bg-yellow-500/15 hover:bg-yellow-500/25', barColor: 'bg-yellow-500' },
+                            { value: 'fallida' as const, label: 'Fallida', dot: 'bg-red-500', activeBg: 'bg-red-500', inactiveBg: 'bg-red-500/15 hover:bg-red-500/25', barColor: 'bg-red-500' },
+                            { value: 'reagendada' as const, label: 'Reagend.', dot: 'bg-blue-500', activeBg: 'bg-blue-500', inactiveBg: 'bg-blue-500/15 hover:bg-blue-500/25', barColor: 'bg-blue-500' },
+                          ]).map((filter) => {
+                            const total = resultCounts.all || 1;
+                            const count = resultCounts[filter.value] || 0;
+                            const percentage = filter.value === 'all' ? 100 : Math.round((count / total) * 100);
+                            return (
+                              <Tooltip key={filter.value}>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    onClick={() => setResultFilter(filter.value)}
+                                    className={`px-3 py-2 rounded-lg text-xs font-medium transition-all flex flex-col items-center gap-1 min-w-[60px] ${
+                                      resultFilter === filter.value
+                                        ? `${filter.activeBg} text-white shadow-sm`
+                                        : `${filter.inactiveBg} text-foreground/70`
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-1.5">
+                                      {filter.dot && resultFilter !== filter.value && <span className={`h-2 w-2 rounded-full ${filter.dot}`} />}
+                                      {filter.label}
+                                    </div>
+                                    <span className={`text-[10px] ${resultFilter === filter.value ? 'opacity-90' : 'opacity-70'}`}>
+                                      {count}
+                                    </span>
+                                    {filter.value !== 'all' && (
+                                      <div className="w-full h-1 bg-black/10 rounded-full overflow-hidden">
+                                        <div 
+                                          className={`h-full ${resultFilter === filter.value ? 'bg-white/50' : filter.barColor} transition-all`}
+                                          style={{ width: `${percentage}%` }}
+                                        />
+                                      </div>
+                                    )}
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="bottom" className="text-xs">
+                                  <p className="font-medium">{filter.label}</p>
+                                  <p>{count} visites ({percentage}% del total)</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            );
+                          })}
+                        </TooltipProvider>
+                      </div>
+                    </div>
+
+                    {/* Chart View */}
+                    {chartViewMode === 'chart' && (
+                      <div className="space-y-3">
+                        <div className="relative flex items-end gap-2 h-32 pt-4">
+                          <svg 
+                            className="absolute inset-0 w-full h-full pointer-events-none z-10"
+                            viewBox="0 0 100 100"
+                            preserveAspectRatio="none"
+                          >
+                            <defs>
+                              <linearGradient id="areaGradientCardExpanded" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.4" />
+                                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
+                              </linearGradient>
+                            </defs>
+                            <polygon
+                              points={areaPoints}
+                              fill="url(#areaGradientCardExpanded)"
+                              className="transition-all duration-700"
+                              style={{ opacity: chartVisible ? 1 : 0, transitionDelay: '300ms' }}
+                            />
+                            <polyline
+                              points={trendPoints}
+                              fill="none"
+                              stroke="hsl(var(--primary))"
+                              strokeWidth="2.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="transition-all duration-700"
+                              style={{
+                                strokeDasharray: chartVisible ? '0' : '500',
+                                strokeDashoffset: chartVisible ? '0' : '500',
+                                transitionDelay: '400ms'
                               }}
                             />
+                            {monthlyVisits.map((m, i) => {
+                              const x = (i / barCount) * 100;
+                              const y = 100 - ((m.count / maxCount) * 80);
+                              return (
+                                <circle
+                                  key={i}
+                                  cx={x}
+                                  cy={y}
+                                  r="3"
+                                  fill="hsl(var(--background))"
+                                  stroke="hsl(var(--primary))"
+                                  strokeWidth="2"
+                                  className="transition-all duration-500"
+                                  style={{ opacity: chartVisible ? 1 : 0, transitionDelay: `${500 + i * 50}ms` }}
+                                />
+                              );
+                            })}
+                          </svg>
+                          
+                          {monthlyVisits.map((month, idx) => (
+                            <TooltipProvider key={month.month} delayDuration={100}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="flex flex-col items-center flex-1 relative z-20">
+                                    <div className="flex gap-1 items-end h-20 w-full justify-center">
+                                      {showYoY && hasLastYearData && (
+                                        <div 
+                                          className="w-3 bg-muted-foreground/30 rounded-t-md transition-all duration-500"
+                                          style={{ 
+                                            height: chartVisible ? `${((month.lastYearCount || 0) / maxCount) * 100}%` : '0%',
+                                            transitionDelay: `${idx * 100}ms`,
+                                            minHeight: (month.lastYearCount || 0) > 0 ? '4px' : '0'
+                                          }}
+                                        />
+                                      )}
+                                      <div 
+                                        className="w-3 bg-gradient-to-t from-primary to-primary/70 hover:from-primary hover:to-primary/90 rounded-t-md transition-all duration-500 relative"
+                                        style={{ 
+                                          height: chartVisible ? `${(month.count / maxCount) * 100}%` : '0%',
+                                          transitionDelay: `${idx * 100}ms`,
+                                          minHeight: month.count > 0 ? '4px' : '0'
+                                        }}
+                                      />
+                                    </div>
+                                    <span className="text-xs text-muted-foreground mt-2 capitalize font-medium">{month.shortMonth}</span>
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="text-sm px-3 py-2">
+                                  <p className="font-semibold capitalize">{month.month}</p>
+                                  <p className="text-primary">{month.count} visites</p>
+                                  {showYoY && hasLastYearData && (
+                                    <p className="text-muted-foreground">{month.lastYearCount || 0} any anterior</p>
+                                  )}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          ))}
+                          
+                          {/* Prediction bar */}
+                          <TooltipProvider delayDuration={100}>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="flex flex-col items-center flex-1 relative z-20">
+                                  <div className="flex gap-1 items-end h-20 w-full justify-center">
+                                    <div 
+                                      className="w-3 bg-primary/30 rounded-t-md transition-all duration-500 border-2 border-dashed border-primary/50"
+                                      style={{ 
+                                        height: chartVisible ? `${(predictedCount / maxCount) * 100}%` : '0%',
+                                        transitionDelay: `${monthlyVisits.length * 100}ms`,
+                                        minHeight: predictedCount > 0 ? '4px' : '0'
+                                      }}
+                                    />
+                                  </div>
+                                  <span className="text-xs text-primary/70 mt-2 font-medium">Pred.</span>
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent side="top" className="text-sm px-3 py-2">
+                                <p className="font-semibold text-primary">Predicció proper mes</p>
+                                <p className="font-bold">{predictedCount} visites</p>
+                                <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                                  <span>Interval:</span>
+                                  <span className="font-medium">{predictionMin} - {predictionMax}</span>
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                        
+                        <div className="flex justify-between items-center text-sm text-muted-foreground pt-2 border-t border-border/30">
+                          <div className="flex gap-4">
+                            <span className="font-medium">Total: <span className="text-foreground">{totalThisYear}</span></span>
+                            {hasLastYearData && showYoY && (
+                              <span className="text-muted-foreground/70">({totalLastYear} any ant.)</span>
+                            )}
                           </div>
-                          <span className="text-[8px] text-primary/70 mt-0.5">Pred.</span>
+                          <span className="font-medium">Mitjana: <span className="text-foreground">{n > 0 ? Math.round(totalThisYear / n) : 0}</span>/mes</span>
                         </div>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="text-xs">
-                        <p className="font-medium text-primary">Predicció proper mes</p>
-                        <p className="font-medium">{predictedCount} visites</p>
-                        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                          <span>Interval:</span>
-                          <span className="font-medium">{predictionMin} - {predictionMax}</span>
+                      </div>
+                    )}
+
+                    {/* Table View */}
+                    {chartViewMode === 'table' && (
+                      <div className="space-y-3">
+                        <div className="overflow-hidden rounded-xl border border-border/30">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="bg-muted/50">
+                                <th className="px-4 py-3 text-left font-semibold text-foreground">Mes</th>
+                                <th className="px-4 py-3 text-right font-semibold text-foreground">Visites</th>
+                                {hasLastYearData && <th className="px-4 py-3 text-right font-semibold text-foreground">Ant.</th>}
+                                {hasLastYearData && <th className="px-4 py-3 text-right font-semibold text-foreground">Δ%</th>}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {monthlyVisits.map((month, idx) => {
+                                const yoyMonthChange = (month.lastYearCount || 0) > 0 
+                                  ? Math.round(((month.count - (month.lastYearCount || 0)) / (month.lastYearCount || 0)) * 100)
+                                  : null;
+                                const isBestMonth = bestMonth?.idx === idx;
+                                const isWorstMonth = worstMonth?.idx === idx && worstMonth?.change !== bestMonth?.change;
+                                
+                                return (
+                                  <tr 
+                                    key={month.month}
+                                    className={`border-t border-border/20 transition-colors ${
+                                      isBestMonth ? 'bg-green-500/10' : isWorstMonth ? 'bg-red-500/10' : 'hover:bg-muted/30'
+                                    }`}
+                                  >
+                                    <td className="px-4 py-3 capitalize flex items-center gap-2">
+                                      {month.shortMonth}
+                                      {isBestMonth && <Award className="h-4 w-4 text-green-500" />}
+                                      {isWorstMonth && <AlertTriangle className="h-4 w-4 text-red-500" />}
+                                    </td>
+                                    <td className="px-4 py-3 text-right font-semibold">{month.count}</td>
+                                    {hasLastYearData && (
+                                      <td className="px-4 py-3 text-right text-muted-foreground">{month.lastYearCount || 0}</td>
+                                    )}
+                                    {hasLastYearData && (
+                                      <td className={`px-4 py-3 text-right font-semibold ${
+                                        yoyMonthChange === null 
+                                          ? 'text-muted-foreground' 
+                                          : yoyMonthChange >= 0 
+                                            ? 'text-green-600 dark:text-green-400' 
+                                            : 'text-red-600 dark:text-red-400'
+                                      }`}>
+                                        {yoyMonthChange !== null ? `${yoyMonthChange >= 0 ? '+' : ''}${yoyMonthChange}%` : '-'}
+                                      </td>
+                                    )}
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </table>
                         </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-                <div className="flex justify-between items-center text-[9px] text-muted-foreground">
-                  <div className="flex gap-2">
-                    <span>Total: {totalThisYear}</span>
-                    {hasLastYearData && showYoY && (
-                      <span className="text-muted-foreground/60">({totalLastYear} ant.)</span>
+                        <div className="flex justify-between items-center text-sm text-muted-foreground">
+                          <span className="font-medium">Total: <span className="text-foreground">{totalThisYear}</span></span>
+                          <span className="font-medium">Mitjana: <span className="text-foreground">{n > 0 ? Math.round(totalThisYear / n) : 0}</span>/mes</span>
+                        </div>
+                      </div>
                     )}
                   </div>
-                  <span>Mitjana: {n > 0 ? Math.round(totalThisYear / n) : 0}/mes</span>
-                </div>
-              </>
-            )}
-
-            {/* Table View */}
-            {chartViewMode === 'table' && (
-              <div className="space-y-1">
-                <div className="overflow-hidden rounded-md border border-border/50 dark:border-border/30">
-                  <table className="w-full text-[9px]">
-                    <thead>
-                      <tr className="bg-muted/50 dark:bg-muted/30">
-                        <th className="px-1.5 py-1 text-left font-medium text-muted-foreground">Mes</th>
-                        <th className="px-1.5 py-1 text-right font-medium text-muted-foreground">Visites</th>
-                        {hasLastYearData && <th className="px-1.5 py-1 text-right font-medium text-muted-foreground">Ant.</th>}
-                        {hasLastYearData && <th className="px-1.5 py-1 text-right font-medium text-muted-foreground">Δ%</th>}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {monthlyVisits.map((month, idx) => {
-                        const yoyMonthChange = (month.lastYearCount || 0) > 0 
-                          ? Math.round(((month.count - (month.lastYearCount || 0)) / (month.lastYearCount || 0)) * 100)
-                          : null;
-                        const isBestMonth = bestMonth?.idx === idx;
-                        const isWorstMonth = worstMonth?.idx === idx && worstMonth?.change !== bestMonth?.change;
-                        
-                        return (
-                          <tr 
-                            key={month.month}
-                            className={`border-t border-border/30 transition-colors ${
-                              isBestMonth ? 'bg-green-500/10' : isWorstMonth ? 'bg-red-500/10' : 'hover:bg-muted/30'
-                            }`}
-                          >
-                            <td className="px-1.5 py-1 capitalize flex items-center gap-1">
-                              {month.shortMonth}
-                              {isBestMonth && <Award className="h-2.5 w-2.5 text-green-500" />}
-                              {isWorstMonth && <AlertTriangle className="h-2.5 w-2.5 text-red-500" />}
-                            </td>
-                            <td className="px-1.5 py-1 text-right font-medium">{month.count}</td>
-                            {hasLastYearData && (
-                              <td className="px-1.5 py-1 text-right text-muted-foreground">{month.lastYearCount || 0}</td>
-                            )}
-                            {hasLastYearData && (
-                              <td className={`px-1.5 py-1 text-right font-medium ${
-                                yoyMonthChange === null 
-                                  ? 'text-muted-foreground' 
-                                  : yoyMonthChange >= 0 
-                                    ? 'text-green-600 dark:text-green-400' 
-                                    : 'text-red-600 dark:text-red-400'
-                              }`}>
-                                {yoyMonthChange !== null ? `${yoyMonthChange >= 0 ? '+' : ''}${yoyMonthChange}%` : '-'}
-                              </td>
-                            )}
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="flex justify-between items-center text-[9px] text-muted-foreground">
-                  <span>Total: {totalThisYear}</span>
-                  <span>Mitjana: {n > 0 ? Math.round(totalThisYear / n) : 0}/mes</span>
-                </div>
+                )}
               </div>
-            )}
-          </div>
-        )}
 
-        {/* Vinculación filter buttons */}
-        <div className="flex items-center gap-1 flex-wrap">
-          {[
-            { key: 'all', label: 'Totes', color: '' },
-            { key: 'high', label: 'Alta', color: 'bg-green-500' },
-            { key: 'medium', label: 'Mitjana', color: 'bg-yellow-500' },
-            { key: 'low', label: 'Baixa', color: 'bg-red-500' },
-          ].map((filter) => (
-            <button
-              key={filter.key}
-              onClick={() => setVinculacionFilter(filter.key as VinculacionFilter)}
-              className={`flex items-center gap-1 px-1.5 py-1 rounded-md text-[10px] transition-all ${
-                vinculacionFilter === filter.key
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted/50 text-muted-foreground hover:bg-muted'
-              }`}
-            >
-              {filter.color && <span className={`h-2 w-2 rounded-full ${filter.color}`} />}
-              <span>{filter.label}</span>
-              <span className={`text-[9px] px-1 rounded ${
-                vinculacionFilter === filter.key
-                  ? 'bg-primary-foreground/20'
-                  : 'bg-muted'
-              }`}>
-                {vinculacionCounts[filter.key as keyof typeof vinculacionCounts]}
-              </span>
-            </button>
-          ))}
-        </div>
-
-        {/* Companies preview */}
-        {loading ? (
-          <div className="text-xs text-muted-foreground text-center py-2">Carregant...</div>
-        ) : companies.length > 0 ? (
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-medium text-muted-foreground">
-                Top empreses per {sortMode === 'vinculacion' ? 'vinculació' : 'última visita'}:
-              </p>
-              <button
-                onClick={() => setSortMode(prev => prev === 'vinculacion' ? 'lastVisit' : 'vinculacion')}
-                className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors"
-              >
-                <ArrowUpDown className="h-3 w-3" />
-                <span>{sortMode === 'vinculacion' ? 'Visita' : 'Vinc.'}</span>
-              </button>
-            </div>
-            {sortedCompanies.map((company) => (
-              <div 
-                key={company.id}
-                className="w-full py-1.5 px-2 rounded-md bg-muted/50 dark:bg-muted/30 hover:bg-primary/10 dark:hover:bg-primary/20 hover:border-primary/30 dark:hover:border-primary/40 border border-transparent dark:border-border/20 transition-all group"
-              >
-                <div className="flex items-center gap-2">
-                  {company.photo_url ? (
-                    <div className="h-8 w-8 rounded-md overflow-hidden flex-shrink-0 border border-border/50 dark:border-border/30 group-hover:border-primary/50 transition-all relative">
-                      <img 
-                        src={company.photo_url} 
-                        alt={company.name}
-                        className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-110"
-                      />
-                      {company.photo_count && company.photo_count > 1 && (
-                        <div className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-primary text-[9px] font-medium text-primary-foreground flex items-center justify-center">
-                          {company.photo_count}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="h-8 w-8 rounded-md bg-muted dark:bg-muted/50 flex items-center justify-center flex-shrink-0 border border-border/50 dark:border-border/30 group-hover:border-primary/50 transition-colors">
-                      <MapPin className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
-                    </div>
-                  )}
-                  <div className="flex flex-col min-w-0 flex-1">
-                    <button 
-                      onClick={() => navigate(`/admin?section=map&company=${company.id}`)}
-                      className="text-xs truncate group-hover:text-primary transition-colors text-left"
-                    >
-                      {company.name}
-                    </button>
-                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                      {(company.sector || company.cnae) && (
-                        <span className="truncate max-w-[80px]">{company.sector || company.cnae}</span>
-                      )}
-                      {(company.sector || company.cnae) && company.parroquia && <span>·</span>}
-                      {company.parroquia && <span className="truncate">{company.parroquia}</span>}
-                    </div>
-                    <TooltipProvider delayDuration={200}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <div className={`flex items-center gap-1 text-[10px] cursor-help ${getDateColorClass(company.fecha_ultima_visita)}`}>
-                            <Calendar className="h-2.5 w-2.5" />
-                            {company.fecha_ultima_visita ? (
-                              <span>{new Date(company.fecha_ultima_visita).toLocaleDateString('ca-ES', { day: '2-digit', month: 'short' })}</span>
-                            ) : (
-                              <span className="text-muted-foreground">Sense visites</span>
-                            )}
-                            {company.visit_count !== undefined && company.visit_count > 0 && (
-                              <span className="text-muted-foreground">({company.visit_count})</span>
-                            )}
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="text-xs">
-                          {getDaysAgo(company.fecha_ultima_visita)}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <TooltipProvider delayDuration={200}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            onClick={async (e) => {
-                              e.stopPropagation();
-                              if (!user?.id) return;
-                              try {
-                                const { error } = await supabase.from('visits').insert({
-                                  company_id: company.id,
-                                  gestor_id: user.id,
-                                  visit_date: new Date().toISOString().split('T')[0],
-                                  result: 'pending'
-                                });
-                                if (error) throw error;
-                                toast.success(`Visita creada per ${company.name}`);
-                                fetchCompanyPreview();
-                              } catch (err) {
-                                toast.error('Error creant la visita');
-                              }
-                            }}
-                            className="h-6 w-6 rounded-md bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-colors"
-                          >
-                            <Plus className="h-3.5 w-3.5 text-primary" />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top" className="text-xs">
-                          Crear visita ràpida
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                    <button 
-                      onClick={() => navigate(`/admin?section=map&company=${company.id}`)}
-                      className="h-6 w-6 rounded-md hover:bg-muted flex items-center justify-center"
-                    >
-                      <ExternalLink className="h-3 w-3 text-muted-foreground" />
-                    </button>
-                  </div>
-                  <div className="flex flex-col items-end">
-                    <div className={`text-xs font-semibold ${
-                      (company.vinculacion_entidad_1 || 0) >= 70 ? 'text-green-600 dark:text-green-400' :
-                      (company.vinculacion_entidad_1 || 0) >= 40 ? 'text-yellow-600 dark:text-yellow-400' :
-                      'text-red-600 dark:text-red-400'
-                    }`}>
-                      {company.vinculacion_entidad_1 || 0}%
-                    </div>
-                    <div className="w-12 h-1.5 rounded-full bg-muted overflow-hidden">
+              {/* Right Column - Companies List */}
+              <div className="rounded-2xl p-5 bg-gradient-to-br from-card to-card/80 border border-border/30 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-base font-semibold text-foreground">
+                    Top Empreses per {sortMode === 'vinculacion' ? 'Vinculació' : 'Última Visita'}
+                  </h3>
+                  <button
+                    onClick={() => setSortMode(prev => prev === 'vinculacion' ? 'lastVisit' : 'vinculacion')}
+                    className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-lg bg-muted/50 hover:bg-muted"
+                  >
+                    <ArrowUpDown className="h-4 w-4" />
+                    <span>{sortMode === 'vinculacion' ? 'Ordenar per visita' : 'Ordenar per vinc.'}</span>
+                  </button>
+                </div>
+                
+                {loading ? (
+                  <div className="text-sm text-muted-foreground text-center py-8">Carregant empreses...</div>
+                ) : companies.length > 0 ? (
+                  <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
+                    {sortedCompanies.map((company, idx) => (
                       <div 
-                        className={`h-full transition-all ${
-                          (company.vinculacion_entidad_1 || 0) >= 70 ? 'bg-green-500' :
-                          (company.vinculacion_entidad_1 || 0) >= 40 ? 'bg-yellow-500' :
-                          'bg-red-500'
-                        }`}
-                        style={{ width: `${company.vinculacion_entidad_1 || 0}%` }}
-                      />
-                    </div>
+                        key={company.id}
+                        className="w-full p-4 rounded-xl bg-gradient-to-r from-muted/30 to-muted/10 hover:from-primary/10 hover:to-primary/5 border border-border/20 hover:border-primary/30 transition-all group"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10 text-primary font-bold text-sm">
+                            {idx + 1}
+                          </div>
+                          
+                          {company.photo_url ? (
+                            <div className="h-14 w-14 rounded-xl overflow-hidden flex-shrink-0 border border-border/30 group-hover:border-primary/50 transition-all relative shadow-sm">
+                              <img 
+                                src={company.photo_url} 
+                                alt={company.name}
+                                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+                              />
+                              {company.photo_count && company.photo_count > 1 && (
+                                <div className="absolute -top-1 -right-1 h-5 min-w-5 px-1 rounded-full bg-primary text-[10px] font-bold text-primary-foreground flex items-center justify-center shadow-sm">
+                                  {company.photo_count}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="h-14 w-14 rounded-xl bg-muted/50 flex items-center justify-center flex-shrink-0 border border-border/30 group-hover:border-primary/50 transition-colors">
+                              <MapPin className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                            </div>
+                          )}
+                          
+                          <div className="flex flex-col min-w-0 flex-1">
+                            <button 
+                              onClick={() => navigate(`/admin?section=map&company=${company.id}`)}
+                              className="text-sm font-semibold truncate group-hover:text-primary transition-colors text-left"
+                            >
+                              {company.name}
+                            </button>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                              {(company.sector || company.cnae) && (
+                                <span className="truncate max-w-[120px]">{company.sector || company.cnae}</span>
+                              )}
+                              {(company.sector || company.cnae) && company.parroquia && <span>·</span>}
+                              {company.parroquia && <span className="truncate">{company.parroquia}</span>}
+                            </div>
+                            <TooltipProvider delayDuration={200}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className={`flex items-center gap-1.5 text-xs cursor-help mt-1 ${getDateColorClass(company.fecha_ultima_visita)}`}>
+                                    <Calendar className="h-3.5 w-3.5" />
+                                    {company.fecha_ultima_visita ? (
+                                      <span>{new Date(company.fecha_ultima_visita).toLocaleDateString('ca-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                                    ) : (
+                                      <span className="text-muted-foreground">Sense visites</span>
+                                    )}
+                                    {company.visit_count !== undefined && company.visit_count > 0 && (
+                                      <span className="text-muted-foreground font-medium">({company.visit_count} visites)</span>
+                                    )}
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="text-xs">
+                                  {getDaysAgo(company.fecha_ultima_visita)}
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <TooltipProvider delayDuration={200}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <button
+                                    onClick={async (e) => {
+                                      e.stopPropagation();
+                                      if (!user?.id) return;
+                                      try {
+                                        const { error } = await supabase.from('visits').insert({
+                                          company_id: company.id,
+                                          gestor_id: user.id,
+                                          visit_date: new Date().toISOString().split('T')[0],
+                                          result: 'pending'
+                                        });
+                                        if (error) throw error;
+                                        toast.success(`Visita creada per ${company.name}`);
+                                        fetchCompanyPreview();
+                                      } catch (err) {
+                                        toast.error('Error creant la visita');
+                                      }
+                                    }}
+                                    className="h-9 w-9 rounded-lg bg-primary/15 hover:bg-primary/25 flex items-center justify-center transition-colors"
+                                  >
+                                    <Plus className="h-5 w-5 text-primary" />
+                                  </button>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="text-xs">
+                                  Crear visita ràpida
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                            <button 
+                              onClick={() => navigate(`/admin?section=map&company=${company.id}`)}
+                              className="h-9 w-9 rounded-lg hover:bg-muted flex items-center justify-center transition-colors"
+                            >
+                              <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                            </button>
+                          </div>
+                          
+                          <div className="flex flex-col items-end min-w-[70px]">
+                            <div className={`text-lg font-bold ${
+                              (company.vinculacion_entidad_1 || 0) >= 70 ? 'text-green-600 dark:text-green-400' :
+                              (company.vinculacion_entidad_1 || 0) >= 40 ? 'text-yellow-600 dark:text-yellow-400' :
+                              'text-red-600 dark:text-red-400'
+                            }`}>
+                              {company.vinculacion_entidad_1 || 0}%
+                            </div>
+                            <div className="w-16 h-2 rounded-full bg-muted overflow-hidden mt-1">
+                              <div 
+                                className={`h-full transition-all rounded-full ${
+                                  (company.vinculacion_entidad_1 || 0) >= 70 ? 'bg-gradient-to-r from-green-400 to-green-600' :
+                                  (company.vinculacion_entidad_1 || 0) >= 40 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600' :
+                                  'bg-gradient-to-r from-red-400 to-red-600'
+                                }`}
+                                style={{ width: `${company.vinculacion_entidad_1 || 0}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </div>
+                ) : (
+                  <div className="text-sm text-muted-foreground text-center py-8">
+                    No hi ha empreses assignades
+                  </div>
+                )}
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-xs text-muted-foreground text-center py-2">
-            No hi ha empreses assignades
-          </div>
-        )}
-
-        {/* CTA */}
-            <Button 
-              variant="default" 
-              size="default" 
-              className="w-full mt-4 dark:shadow-sm dark:shadow-primary/20"
-              onClick={handleClick}
-            >
-              <Map className="h-4 w-4 mr-2" />
-              Obrir Mapa Complet
-            </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
