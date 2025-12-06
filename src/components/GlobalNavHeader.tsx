@@ -74,11 +74,11 @@ export function GlobalNavHeader({
           
           <div>
             {title && (
-              <h1 className="text-2xl font-black tracking-tight text-foreground drop-shadow-[2px_2px_0px_rgba(0,0,0,0.3)] [text-shadow:_1px_1px_0_hsl(var(--primary)/0.3),_2px_2px_0_hsl(var(--primary)/0.2),_3px_3px_4px_rgba(0,0,0,0.2)]">
+              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-foreground via-foreground to-primary bg-clip-text text-transparent">
                 {title}
               </h1>
             )}
-            {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
+            {subtitle && <p className="text-sm text-muted-foreground font-medium">{subtitle}</p>}
           </div>
         </div>
       )}
