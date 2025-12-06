@@ -195,7 +195,7 @@ export function AdminSidebar({
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     onClick={() => onSectionChange('administration')}
-                    isActive={isActive('administration') || isActive('users') || isActive('products') || isActive('tpv-goals') || isActive('bulk-goals') || isActive('goals-progress') || isActive('concepts') || isActive('templates') || isActive('colors') || isActive('alerts') || isActive('notifications') || isActive('map-config')}
+                    isActive={isActive('administration') || isActive('users') || isActive('products') || isActive('tpv-goals') || isActive('bulk-goals') || isActive('goals-progress') || isActive('concepts') || isActive('templates') || isActive('colors') || isActive('alerts') || isActive('notifications') || isActive('map-config') || isActive('tpv')}
                     className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
                     tooltip={!open ? {
                       children: 'Admin',
@@ -241,46 +241,7 @@ export function AdminSidebar({
 
         {/* Gestores Metrics section moved to Admin panel */}
 
-        {/* TPV Management - Hide from regular gestores */}
-        {!isRegularGestor && (
-          <>
-            {open ? (
-              <Collapsible open={openGroups.tpv} onOpenChange={() => toggleGroup('tpv')}>
-                <SidebarGroup>
-                  <CollapsibleTrigger asChild>
-                    <SidebarGroupLabel className="cursor-pointer hover:bg-muted/50 rounded-md p-2 transition-all duration-300 group">
-                      <CreditCard className="h-4 w-4 mr-2 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                      <span className="flex-1 transition-all duration-300 group-hover:translate-x-1">TPV</span>
-                      <ChevronRight className={`h-4 w-4 transition-all duration-300 group-hover:text-primary ${openGroups.tpv ? 'rotate-90' : ''}`} />
-                    </SidebarGroupLabel>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="transition-all duration-300 data-[state=open]:animate-slide-in data-[state=closed]:animate-slide-out">
-                    <SidebarGroupContent>
-                      <SidebarMenu>
-                        <SidebarMenuItem>
-                          <SidebarMenuButton onClick={() => onSectionChange('tpv')} isActive={isActive('tpv')} className="group">
-                            <CreditCard className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                            <span className="transition-all duration-300 group-hover:translate-x-1">{t('tpv.title')}</span>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      </SidebarMenu>
-                    </SidebarGroupContent>
-                  </CollapsibleContent>
-                </SidebarGroup>
-              </Collapsible>
-            ) : (
-              <SidebarGroup>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => onSectionChange('tpv')} isActive={isActive('tpv')} tooltip={t('tpv.title')} className="group">
-                      <CreditCard className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroup>
-            )}
-          </>
-        )}
+        {/* TPV Management moved to Admin panel */}
 
         {/* Gestión de Datos moved to Admin panel */}
 
