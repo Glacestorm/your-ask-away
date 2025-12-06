@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -10,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { FileUp, Plus, CheckCircle, Clock, FileText, Wallet, RefreshCcw, Archive, Building2, CreditCard, Pyramid, TrendingUp, Target, ClipboardCheck, FileBarChart, CalendarClock, Trash2, Printer, Unlock, AlertTriangle, Layers, TableProperties } from 'lucide-react';
+import { FileUp, Plus, CheckCircle, Clock, FileText, Wallet, RefreshCcw, Archive, Building2, CreditCard, Pyramid, TrendingUp, Target, ClipboardCheck, FileBarChart, CalendarClock, Trash2, Printer, Unlock, AlertTriangle, Layers, TableProperties, Home, ArrowLeft } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import BalanceSheetForm from './BalanceSheetForm';
 import IncomeStatementForm from './IncomeStatementForm';
@@ -33,6 +34,7 @@ import PeriodYearSelector from './PeriodYearSelector';
 import EnhancedCompanyHeader from './EnhancedCompanyHeader';
 import ConsolidatedStatementsManager from './ConsolidatedStatementsManager';
 import AccountingGroupsChart from './AccountingGroupsChart';
+import { AccountingMainMenu } from './AccountingMainMenu';
 
 interface Company {
   id: string;
@@ -55,6 +57,9 @@ interface FinancialStatement {
 
 const AccountingManager = () => {
   const { user, isAdmin, isSuperAdmin } = useAuth();
+  const [searchParams] = useSearchParams();
+  const viewParam = searchParams.get('view');
+  
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [currentStatement, setCurrentStatement] = useState<FinancialStatement | null>(null);
@@ -65,10 +70,20 @@ const AccountingManager = () => {
   const [showNewYearDialog, setShowNewYearDialog] = useState(false);
   const [statementType, setStatementType] = useState<'normal' | 'abreujat' | 'simplificat'>('abreujat');
   const [bp, setBp] = useState('');
-  const [showCompanyIndex, setShowCompanyIndex] = useState(true);
+  const [showCompanyIndex, setShowCompanyIndex] = useState(viewParam !== 'menu');
+  const [showMainMenu, setShowMainMenu] = useState(viewParam === 'menu');
+  const [currentMenuSection, setCurrentMenuSection] = useState<string | null>(null);
 
   const currentYear = new Date().getFullYear();
   const availableYears = Array.from({ length: 10 }, (_, i) => currentYear - i);
+  
+  // Handle view param changes
+  useEffect(() => {
+    if (viewParam === 'menu') {
+      setShowMainMenu(true);
+      setShowCompanyIndex(false);
+    }
+  }, [viewParam]);
 
   useEffect(() => {
     if (selectedCompany?.id && selectedYear) {
@@ -100,6 +115,58 @@ const AccountingManager = () => {
     setSelectedCompany(null);
     setCurrentStatement(null);
     setShowCompanyIndex(true);
+    setShowMainMenu(false);
+    setCurrentMenuSection(null);
+  };
+
+  const handleBackToMainMenu = () => {
+    setShowMainMenu(true);
+    setShowCompanyIndex(false);
+    setSelectedCompany(null);
+    setCurrentMenuSection(null);
+  };
+
+  const handleMenuNavigate = (section: string) => {
+    setCurrentMenuSection(section);
+    // Map menu sections to appropriate views
+    const companyRequiredSections = [
+      'balance-situacion', 'estado-perdidas-ganancias', 'activo-disponible',
+      'activo-no-corriente', 'activo-funcional', 'exigible', 'fondos-propios',
+      'resultados-explotacion', 'resultados-financieros', 'masas-patrimoniales',
+      'cuadro-analitico', 'resumen-analitico', 'flujo-caja', 'valor-anadido',
+      'cuadro-financiacion', 'ebit-ebitda', 'capital-circulante', 'situacion-largo-plazo',
+      'flujos-tesoreria', 'nof', 'cuadro-mando', 'indice-z', 'ratios-liquidez',
+      'ratios-endeudamiento', 'ratios-sectoriales', 'simulador-sectorial',
+      'piramide-ratios', 'piramide-dupont', 'analisis-bancario', 'rentabilidad-economica',
+      'umbral-rentabilidad', 'apalancamiento', 'fondo-maniobra', 'autofinanciacion',
+      'periodos-maduracion', 'capacidad-crecimiento', 'nivel-endeudamiento',
+      'estados-financieros', 'resumen-financiero', 'activo-neto', 'valor-substancial',
+      'multiplos', 'flujos-descontados', 'proyecciones', 'proyecto-inversion',
+      'desv-balance', 'desv-resultados', 'audit-fondo-maniobra', 'audit-acid-test',
+      'audit-disponibilidad', 'audit-cobro', 'audit-pago', 'audit-rotacion',
+      'audit-apalancamiento', 'audit-fondos-propios', 'audit-endeudamiento',
+      'ca-balance', 'ca-perdidas-ganancias', 'ca-flujos-efectivo', 'ca-cambios-patrimonio',
+      'ca-gastos-ingresos'
+    ];
+
+    if (section === 'inicio') {
+      handleBackToMainMenu();
+    } else if (section === 'empresas') {
+      setShowCompanyIndex(true);
+      setShowMainMenu(false);
+    } else if (section === 'consolidacion') {
+      setShowCompanyIndex(false);
+      setShowMainMenu(false);
+      setActiveTab('consolidated');
+    } else if (companyRequiredSections.includes(section)) {
+      // These require a company selection first
+      setShowCompanyIndex(true);
+      setShowMainMenu(false);
+      toast.info('Seleccioneu una empresa per accedir a aquesta secció');
+    } else {
+      setShowCompanyIndex(false);
+      setShowMainMenu(false);
+    }
   };
 
   const fetchFinancialStatement = async () => {
@@ -441,9 +508,23 @@ const AccountingManager = () => {
 
   return (
     <div className="space-y-6">
-      {/* Toggle between Index and Company Detail */}
-      {showCompanyIndex && !selectedCompany ? (
-        <AccountingCompanyIndex onSelectCompany={handleSelectFromIndex} />
+      {/* Main Menu View */}
+      {showMainMenu ? (
+        <AccountingMainMenu 
+          onNavigate={handleMenuNavigate}
+          currentSection={currentMenuSection || undefined}
+        />
+      ) : showCompanyIndex && !selectedCompany ? (
+        <>
+          {/* Button to go back to main menu */}
+          <div className="flex items-center gap-2 mb-4">
+            <Button variant="outline" size="sm" onClick={handleBackToMainMenu}>
+              <Home className="w-4 h-4 mr-2" />
+              Menú Principal
+            </Button>
+          </div>
+          <AccountingCompanyIndex onSelectCompany={handleSelectFromIndex} />
+        </>
       ) : (
         <>
           {/* Search Bar and Company Header */}
@@ -455,10 +536,16 @@ const AccountingManager = () => {
                     <Wallet className="h-6 w-6 text-primary" />
                     Comptabilitat - Estats Financers
                   </CardTitle>
-                  <Button variant="ghost" size="sm" onClick={handleBackToIndex}>
-                    <Building2 className="w-4 h-4 mr-2" />
-                    Tornar a l'índex
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="sm" onClick={handleBackToMainMenu}>
+                      <Home className="w-4 h-4 mr-2" />
+                      Menú Principal
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={handleBackToIndex}>
+                      <Building2 className="w-4 h-4 mr-2" />
+                      Índex Empreses
+                    </Button>
+                  </div>
                 </div>
                 
                 {/* Company Search */}

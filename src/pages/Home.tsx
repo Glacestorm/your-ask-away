@@ -79,7 +79,7 @@ const menuOptions: MenuOption[] = [
     title: 'Comptabilitat',
     description: 'Gestió comptable i estats financers',
     icon: Calculator,
-    path: '/admin?section=accounting',
+    path: '/admin?section=accounting&view=menu',
     roles: ['superadmin', 'admin', 'user', 'director_comercial', 'director_oficina', 'responsable_comercial']
   },
   {

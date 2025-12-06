@@ -83,7 +83,7 @@ export function AccountingDashboardCard({ onNavigate }: AccountingDashboardCardP
     if (onNavigate) {
       onNavigate();
     } else {
-      navigate('/admin?section=accounting');
+      navigate('/admin?section=accounting&view=menu');
     }
   };
 
