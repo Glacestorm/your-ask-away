@@ -24,6 +24,7 @@ import { AlertHistoryDashboardCard } from '@/components/dashboard/AlertHistoryDa
 import { ContractedProductsDashboardCard } from '@/components/dashboard/ContractedProductsDashboardCard';
 import { GoalsAlertsDashboardCard } from '@/components/dashboard/GoalsAlertsDashboardCard';
 import { KPIDashboardCard } from '@/components/dashboard/KPIDashboardCard';
+import { AdvancedAnalyticsDashboardCard } from '@/components/dashboard/AdvancedAnalyticsDashboardCard';
 
 // Panel del Director de Oficina con vista filtrada por su oficina
 
@@ -346,6 +347,9 @@ export function OfficeDirectorDashboard() {
 
           {/* Alert History Card */}
           <AlertHistoryDashboardCard />
+
+          {/* Advanced Analytics Card */}
+          <AdvancedAnalyticsDashboardCard />
 
           {/* Gráfico de Ranking */}
           <Card>
