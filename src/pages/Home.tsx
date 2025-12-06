@@ -227,7 +227,7 @@ const Home = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => navigate('/admin')}
+                  onClick={() => navigate('/admin?section=administration')}
                   className="gap-2"
                 >
                   <Settings className="h-4 w-4" />
