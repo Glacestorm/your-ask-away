@@ -12,6 +12,7 @@ import FinancingStatement from "./FinancingStatement";
 import EconomicFinancialDashboard from "./EconomicFinancialDashboard";
 import LiquidityDebtRatios from "./LiquidityDebtRatios";
 import SectoralRatiosAnalysis from "./SectoralRatiosAnalysis";
+import SectorSimulator from "./SectorSimulator";
 
 interface FinancialAnalysisTabProps {
   companyId: string;
@@ -206,6 +207,7 @@ export function FinancialAnalysisTab({ companyId, companyName }: FinancialAnalys
           <TabsTrigger value="economic-dashboard" className="text-xs">Quadre Mando</TabsTrigger>
           <TabsTrigger value="liquidity-debt" className="text-xs">Ràtios Liquidez</TabsTrigger>
           <TabsTrigger value="sectoral-ratios" className="text-xs">Ràtios Sectorials</TabsTrigger>
+          <TabsTrigger value="sector-simulator" className="text-xs">Simulador Sector</TabsTrigger>
           <TabsTrigger value="dashboard" className="text-xs">Dashboard</TabsTrigger>
         </TabsList>
 
@@ -565,6 +567,10 @@ export function FinancialAnalysisTab({ companyId, companyName }: FinancialAnalys
 
         <TabsContent value="sectoral-ratios">
           <SectoralRatiosAnalysis companyId={companyId} companyName={companyName} />
+        </TabsContent>
+
+        <TabsContent value="sector-simulator">
+          <SectorSimulator companyId={companyId} companyName={companyName} />
         </TabsContent>
       </Tabs>
     </div>
