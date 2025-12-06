@@ -1016,106 +1016,125 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
           />
 
           {/* Content */}
-          <div className="relative z-10 h-full flex flex-col justify-between" style={{ transform: 'translateZ(30px)' }}>
-            <div className="flex items-start justify-between">
+          <div className="relative z-10 h-full flex flex-col" style={{ transform: 'translateZ(30px)' }}>
+            {/* Header with icon and title */}
+            <div className="flex items-center gap-3 mb-3">
               <div
                 className={cn(
-                  "flex h-14 w-14 items-center justify-center rounded-xl transition-transform duration-300",
+                  "flex h-12 w-12 items-center justify-center rounded-xl transition-transform duration-300 shrink-0",
                   isHovered && "scale-110"
                 )}
                 style={{ backgroundColor: `${cardColor}20` }}
               >
-                <FileText className="h-7 w-7" style={{ color: cardColor }} />
+                <FileText className="h-6 w-6" style={{ color: cardColor }} />
               </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-foreground">{visitSheetsCount}</div>
-                <div className="text-xs text-muted-foreground">Fitxes</div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg font-semibold text-foreground leading-tight">Fitxa de Visita</h3>
+                <p className="text-xs text-muted-foreground">Formulari comercial</p>
               </div>
             </div>
 
-            {/* Compact stats row */}
-            <TooltipProvider delayDuration={200}>
-              <div className="flex items-center gap-3 text-xs">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-background/50 cursor-help">
-                      <Building2 className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-muted-foreground">{companies.length}</span>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" className="text-xs">
-                    <p>Empreses disponibles per seleccionar</p>
-                  </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-background/50 cursor-help">
-                      <Calendar className="h-3 w-3 text-muted-foreground" />
-                      <span className="text-muted-foreground">{format(new Date(), 'dd/MM')}</span>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" className="text-xs">
-                    <p>Data actual per noves fitxes</p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-            </TooltipProvider>
+            {/* Stats section */}
+            <div className="flex-1 flex items-center">
+              <div className="grid grid-cols-3 gap-2 w-full">
+                <TooltipProvider delayDuration={200}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex flex-col items-center p-2 rounded-lg bg-background/60 border border-border/30 cursor-help hover:bg-background/80 transition-colors">
+                        <div className="text-xl font-bold text-foreground">{visitSheetsCount}</div>
+                        <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Fitxes</div>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="text-xs">
+                      <p>Total de fitxes creades</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
 
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-foreground mb-1">Ficha de Visita</h3>
-                <p className="text-sm text-muted-foreground line-clamp-1">
-                  Formulari de visites comercials
-                </p>
+                <TooltipProvider delayDuration={200}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex flex-col items-center p-2 rounded-lg bg-background/60 border border-border/30 cursor-help hover:bg-background/80 transition-colors">
+                        <div className="flex items-center gap-1">
+                          <Building2 className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-lg font-bold text-foreground">{companies.length}</span>
+                        </div>
+                        <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Empreses</div>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="text-xs">
+                      <p>Empreses disponibles</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                <TooltipProvider delayDuration={200}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex flex-col items-center p-2 rounded-lg bg-background/60 border border-border/30 cursor-help hover:bg-background/80 transition-colors">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-lg font-bold text-foreground">{format(new Date(), 'dd')}</span>
+                        </div>
+                        <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">{format(new Date(), 'MMM')}</div>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="text-xs">
+                      <p>Data actual</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
-              <div className="flex items-center gap-2">
-                {isNotAuditor && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-8 gap-1.5 bg-primary/10 border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate('/admin?section=visit-sheets');
-                          }}
-                        >
-                          <FileText className="h-4 w-4" />
-                          <span className="text-xs font-medium">Fitxes</span>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom">
-                        <p>Ver todas las Fichas de Visita</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-                {isCommercialManager && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="default"
-                          size="sm"
-                          className="h-8 gap-1.5 bg-green-600 hover:bg-green-700 text-white shadow-md"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate('/admin?section=visit-validation');
-                          }}
-                        >
-                          <ClipboardCheck className="h-4 w-4" />
-                          <span className="text-xs font-medium">Validar</span>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="left">
-                        <p>Validación de Fichas de Visita</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t border-border/20">
+              {isNotAuditor && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 gap-1.5 bg-primary/10 border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate('/admin?section=visit-sheets');
+                        }}
+                      >
+                        <FileText className="h-4 w-4" />
+                        <span className="text-xs font-medium">Fitxes</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                      <p>Veure totes les Fitxes</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+              {isCommercialManager && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="h-8 gap-1.5 bg-green-600 hover:bg-green-700 text-white shadow-md"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate('/admin?section=visit-validation');
+                        }}
+                      >
+                        <ClipboardCheck className="h-4 w-4" />
+                        <span className="text-xs font-medium">Validar</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left">
+                      <p>Validar Fitxes de Visita</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
           </div>
 
