@@ -34,8 +34,8 @@ export function GlobalNavHeader({
     <div className={`flex items-center ${hasTitle ? 'justify-between' : 'justify-end'} rounded-2xl bg-gradient-to-br from-card via-card to-accent/20 p-3 shadow-lg border border-border/50`}>
       {hasTitle && (
         <div className="flex items-center gap-3">
-          {/* Navigation History Buttons */}
-          {(onGoBack || onGoForward) && (
+          {/* Navigation History Buttons - only show if there's history */}
+          {(canGoBack || canGoForward) && (
             <div className="flex items-center gap-1 mr-2">
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -74,18 +74,18 @@ export function GlobalNavHeader({
           
           <div>
             {title && (
-              <h1 className="text-base font-semibold tracking-tight text-foreground">
+              <h1 className="text-xl font-bold tracking-tight text-foreground">
                 {title}
               </h1>
             )}
-            {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
+            {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
           </div>
         </div>
       )}
       
       <div className="flex items-center gap-2">
-        {/* Navigation History Buttons when no title */}
-        {!hasTitle && (onGoBack || onGoForward) && (
+        {/* Navigation History Buttons when no title - only show if there's history */}
+        {!hasTitle && (canGoBack || canGoForward) && (
           <div className="flex items-center gap-1 mr-2">
             <Tooltip>
               <TooltipTrigger asChild>
