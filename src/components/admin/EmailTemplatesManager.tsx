@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import DOMPurify from "dompurify";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -358,7 +359,7 @@ export function EmailTemplatesManager() {
             <TabsContent value="preview" className="max-h-[60vh] overflow-auto">
               {previewTemplate && (
                 <div
-                  dangerouslySetInnerHTML={{ __html: getPreviewHTML(previewTemplate) }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(getPreviewHTML(previewTemplate)) }}
                   className="border rounded-lg p-4"
                 />
               )}

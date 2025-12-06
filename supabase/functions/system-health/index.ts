@@ -17,7 +17,48 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     
+    // Create client with anon key for user authentication check
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Authorization header required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    // Verify user is authenticated and has admin role
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check if user has admin or superadmin role
+    const { data: roles, error: rolesError } = await userClient
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .in('role', ['admin', 'superadmin', 'director_comercial']);
+
+    if (rolesError || !roles || roles.length === 0) {
+      console.log('User does not have required role:', user.id);
+      return new Response(
+        JSON.stringify({ error: 'Forbidden: Admin access required' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('User authorized:', user.id, 'with roles:', roles.map(r => r.role));
+    
+    // Use service role for actual health checks
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Check database connectivity
@@ -107,13 +148,13 @@ serve(async (req) => {
 
     // Check authentication service
     const authStartTime = Date.now();
-    const { error: authError } = await supabase.auth.getUser();
+    const { error: authServiceError } = await supabase.auth.getUser();
     const authResponseTime = Date.now() - authStartTime;
 
     const authStatus = {
-      status: authError ? 'degraded' : 'healthy',
+      status: authServiceError ? 'degraded' : 'healthy',
       responseTime: authResponseTime,
-      error: authError?.message || null,
+      error: authServiceError?.message || null,
     };
 
     console.log('Auth status:', authStatus);
