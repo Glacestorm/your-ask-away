@@ -72,7 +72,7 @@ interface ValidationErrors {
 }
 
 export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: QuickVisitSheetCardProps) {
-  const { user } = useAuth();
+  const { user, isCommercialDirector, isCommercialManager: isCommManager, isOfficeDirector, isSuperAdmin, isAuditor } = useAuth();
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(!!editSheet);
   const [isHovered, setIsHovered] = useState(false);
@@ -97,27 +97,10 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
   const [pdfPage, setPdfPage] = useState(1);
   const [pdfTotalPages, setPdfTotalPages] = useState(1);
   const [isPdfFullscreen, setIsPdfFullscreen] = useState(false);
-  const [isCommercialManager, setIsCommercialManager] = useState(false);
-  const [isNotAuditor, setIsNotAuditor] = useState(false);
 
-  // Check user role for permissions
-  useEffect(() => {
-    const checkRole = async () => {
-      if (!user) return;
-      const { data: roleData } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      
-      if (roleData) {
-        const canValidate = ['responsable_comercial', 'director_comercial', 'director_oficina', 'superadmin'].includes(roleData.role);
-        setIsCommercialManager(canValidate);
-        setIsNotAuditor(roleData.role !== 'auditor');
-      }
-    };
-    checkRole();
-  }, [user]);
+  // Derive permissions from useAuth hook directly
+  const isCommercialManager = isCommManager || isCommercialDirector || isOfficeDirector || isSuperAdmin;
+  const isNotAuditor = !isAuditor;
 
   // Datos Generales
   const [formData, setFormData] = useState({
