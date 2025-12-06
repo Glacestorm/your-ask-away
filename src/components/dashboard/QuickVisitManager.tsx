@@ -16,7 +16,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { Plus, CalendarIcon, Edit, Trash2, Eye, Building2, Search, Filter, X, ChevronLeft, ChevronRight, Save, Package, FileText, MapPin } from 'lucide-react';
+import { Plus, CalendarIcon, Edit, Trash2, Eye, Building2, Search, Filter, X, ChevronLeft, ChevronRight, Save, Package, FileText, MapPin, Calendar as CalendarViewIcon } from 'lucide-react';
+import { SharedVisitsCalendar } from '@/components/admin/SharedVisitsCalendar';
 import { format } from 'date-fns';
 import { ca, es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -79,6 +80,7 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
   const [companySearch, setCompanySearch] = useState('');
   const [recentVisits, setRecentVisits] = useState<Visit[]>([]);
   const [showRecentVisits, setShowRecentVisits] = useState(true);
+  const [showCalendar, setShowCalendar] = useState(false);
   
   // Filters for recent visits
   const [filterResult, setFilterResult] = useState<string>('all');
@@ -308,17 +310,25 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
         </div>
         <div className="flex items-center gap-2">
           <Button 
-            variant={showRecentVisits ? "default" : "outline"} 
+            variant={showRecentVisits && !showCalendar ? "default" : "outline"} 
             size="sm"
-            onClick={() => { setShowRecentVisits(true); if (!isEditing) resetForm(); }}
+            onClick={() => { setShowRecentVisits(true); setShowCalendar(false); if (!isEditing) resetForm(); }}
           >
             <Eye className="h-4 w-4 mr-1" />
             Llistat ({recentVisits.length})
           </Button>
           <Button 
-            variant={!showRecentVisits ? "default" : "outline"} 
+            variant={showCalendar ? "default" : "outline"} 
             size="sm"
-            onClick={() => { setShowRecentVisits(false); if (!isEditing) resetForm(); }}
+            onClick={() => { setShowCalendar(true); setShowRecentVisits(false); }}
+          >
+            <CalendarViewIcon className="h-4 w-4 mr-1" />
+            Calendari
+          </Button>
+          <Button 
+            variant={!showRecentVisits && !showCalendar ? "default" : "outline"} 
+            size="sm"
+            onClick={() => { setShowRecentVisits(false); setShowCalendar(false); if (!isEditing) resetForm(); }}
           >
             <Plus className="h-4 w-4 mr-1" />
             {isEditing ? 'Editant' : 'Nova Visita'}
@@ -348,7 +358,9 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
         </Card>
       )}
 
-      {showRecentVisits ? (
+      {showCalendar ? (
+        <SharedVisitsCalendar />
+      ) : showRecentVisits ? (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
