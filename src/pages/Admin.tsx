@@ -142,7 +142,7 @@ const Admin = () => {
       case 'kpi-report-history': return 'Historial d\'Informes KPI';
       case 'alert-history': return 'Historial d\'Alertes';
       case 'gestor-comparison': return 'Comparativa de Gestores';
-      case 'accounting': return 'Comptabilitat';
+      case 'accounting': return 'Comptabilitat | Organigrama Comptable Corporate / Empreses';
       case 'administration': return 'Administració';
       case 'role-selector': return 'Selector de Visió';
       default: return '';

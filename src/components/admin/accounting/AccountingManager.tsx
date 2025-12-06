@@ -732,20 +732,6 @@ const AccountingManager = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header principal con título centrado */}
-      {showMainMenu && (
-        <div className="relative bg-gradient-to-r from-primary/10 via-primary/5 to-transparent rounded-xl p-4 border border-border/30">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent rounded-xl" />
-          <div className="relative text-center">
-            <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              Organigrama Comptable Corporate / Empreses
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Selecciona una opció per accedir a les funcionalitats del sistema
-            </p>
-          </div>
-        </div>
-      )}
 
       {/* Main Menu View */}
       {showMainMenu ? (
