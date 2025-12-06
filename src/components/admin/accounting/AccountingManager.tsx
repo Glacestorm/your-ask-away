@@ -35,6 +35,14 @@ import EnhancedCompanyHeader from './EnhancedCompanyHeader';
 import ConsolidatedStatementsManager from './ConsolidatedStatementsManager';
 import AccountingGroupsChart from './AccountingGroupsChart';
 import { AccountingMainMenu } from './AccountingMainMenu';
+import LiquidityDebtRatios from './LiquidityDebtRatios';
+import SectoralRatiosAnalysis from './SectoralRatiosAnalysis';
+import SectorSimulator from './SectorSimulator';
+import DuPontPyramid from './DuPontPyramid';
+import { BankRatingAnalysis } from './BankRatingAnalysis';
+import EBITEBITDAAnalysis from './EBITEBITDAAnalysis';
+import { ZScoreAnalysis } from './ZScoreAnalysis';
+import IncomeStatementChart from './IncomeStatementChart';
 
 interface Company {
   id: string;
@@ -128,45 +136,34 @@ const AccountingManager = () => {
 
   const handleMenuNavigate = (section: string) => {
     setCurrentMenuSection(section);
-    // Map menu sections to appropriate views
-    const companyRequiredSections = [
-      'balance-situacion', 'estado-perdidas-ganancias', 'activo-disponible',
-      'activo-no-corriente', 'activo-funcional', 'exigible', 'fondos-propios',
-      'resultados-explotacion', 'resultados-financieros', 'masas-patrimoniales',
-      'cuadro-analitico', 'resumen-analitico', 'flujo-caja', 'valor-anadido',
-      'cuadro-financiacion', 'ebit-ebitda', 'capital-circulante', 'situacion-largo-plazo',
-      'flujos-tesoreria', 'nof', 'cuadro-mando', 'indice-z', 'ratios-liquidez',
-      'ratios-endeudamiento', 'ratios-sectoriales', 'simulador-sectorial',
-      'piramide-ratios', 'piramide-dupont', 'analisis-bancario', 'rentabilidad-economica',
-      'umbral-rentabilidad', 'apalancamiento', 'fondo-maniobra', 'autofinanciacion',
-      'periodos-maduracion', 'capacidad-crecimiento', 'nivel-endeudamiento',
-      'estados-financieros', 'resumen-financiero', 'activo-neto', 'valor-substancial',
-      'multiplos', 'flujos-descontados', 'proyecciones', 'proyecto-inversion',
-      'desv-balance', 'desv-resultados', 'audit-fondo-maniobra', 'audit-acid-test',
-      'audit-disponibilidad', 'audit-cobro', 'audit-pago', 'audit-rotacion',
-      'audit-apalancamiento', 'audit-fondos-propios', 'audit-endeudamiento',
-      'ca-balance', 'ca-perdidas-ganancias', 'ca-flujos-efectivo', 'ca-cambios-patrimonio',
-      'ca-gastos-ingresos'
+    
+    // Sections that don't require company selection - render directly
+    const directAccessSections = [
+      'inicio', 'empresas', 'consolidacion', 'bateria-informes',
+      'estudio-sectorial', 'estudio-financiero', 'comentarios-gestion'
     ];
-
+    
     if (section === 'inicio') {
       handleBackToMainMenu();
-    } else if (section === 'empresas') {
+      return;
+    }
+    
+    if (section === 'empresas') {
       setShowCompanyIndex(true);
       setShowMainMenu(false);
-    } else if (section === 'consolidacion') {
+      return;
+    }
+    
+    if (section === 'consolidacion') {
       setShowCompanyIndex(false);
       setShowMainMenu(false);
       setActiveTab('consolidated');
-    } else if (companyRequiredSections.includes(section)) {
-      // These require a company selection first
-      setShowCompanyIndex(true);
-      setShowMainMenu(false);
-      toast.info('Seleccioneu una empresa per accedir a aquesta secció');
-    } else {
-      setShowCompanyIndex(false);
-      setShowMainMenu(false);
+      return;
     }
+    
+    // For all other sections, show the content directly (with company selection if needed)
+    setShowMainMenu(false);
+    setShowCompanyIndex(false);
   };
 
   const fetchFinancialStatement = async () => {
@@ -506,6 +503,233 @@ const AccountingManager = () => {
     return <Badge variant="outline" className={colors[type] || ''}>{type.charAt(0).toUpperCase() + type.slice(1)}</Badge>;
   };
 
+  // Render content based on currentMenuSection
+  const renderSectionContent = () => {
+    const companyId = selectedCompany?.id || '';
+    const companyName = selectedCompany?.name || '';
+    
+    // Helper to show company selection prompt if no company selected
+    const needsCompanySelection = !selectedCompany;
+    
+    const CompanySelectionPrompt = () => (
+      <Card>
+        <CardContent className="p-8">
+          <div className="flex items-center gap-2 mb-4">
+            <Button variant="outline" size="sm" onClick={handleBackToMainMenu}>
+              <Home className="w-4 h-4 mr-2" />
+              Menú Principal
+            </Button>
+          </div>
+          <div className="text-center">
+            <Building2 className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Selecciona una Empresa</h3>
+            <p className="text-muted-foreground mb-4">
+              Aquesta secció requereix seleccionar una empresa.
+            </p>
+            <CompanySearchBar 
+              onSelectCompany={handleSelectCompany}
+              selectedCompanyId=""
+            />
+          </div>
+        </CardContent>
+      </Card>
+    );
+
+    const SectionWrapper = ({ title, children }: { title: string; children: React.ReactNode }) => (
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handleBackToMainMenu}>
+            <Home className="w-4 h-4 mr-2" />
+            Menú Principal
+          </Button>
+          <span className="text-lg font-semibold">{title}</span>
+        </div>
+        {children}
+      </div>
+    );
+
+    switch (currentMenuSection) {
+      // RATIOS sections
+      case 'ratios-liquidez':
+      case 'ratios-endeudamiento':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Ratios de Liquidez y Endeudamiento">
+            <LiquidityDebtRatios companyId={companyId} companyName={companyName} onNavigate={handleMenuNavigate} />
+          </SectionWrapper>
+        );
+      
+      case 'ratios-sectoriales':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Ratios Sectoriales">
+            <SectoralRatiosAnalysis companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+      
+      case 'simulador-sectorial':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Simulador Sectorial">
+            <SectorSimulator companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+      
+      case 'piramide-ratios':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Pirámide de Ratios Financieros">
+            <RatiosPyramid companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+      
+      case 'piramide-dupont':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Pirámide DuPont">
+            <DuPontPyramid companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+      
+      case 'analisis-bancario':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Análisis Bancario">
+            <BankRatingAnalysis companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+
+      // FINANCIERA sections - use FinancialAnalysisTab which handles data loading
+      case 'masas-patrimoniales':
+      case 'cuadro-analitico':
+      case 'resumen-analitico':
+      case 'flujo-caja':
+      case 'valor-anadido':
+      case 'cuadro-financiacion':
+      case 'ebit-ebitda':
+      case 'capital-circulante':
+      case 'situacion-largo-plazo':
+      case 'flujos-tesoreria':
+      case 'nof':
+      case 'cuadro-mando':
+      case 'indice-z':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Análisis Financiero">
+            <FinancialAnalysisTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+
+      // BALANCES sections
+      case 'balance-situacion':
+      case 'activo-disponible':
+      case 'activo-no-corriente':
+      case 'activo-funcional':
+      case 'exigible':
+      case 'fondos-propios':
+      case 'resultados-explotacion':
+      case 'resultados-financieros':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Balance de Situación">
+            <AccountingGroupsChart companyId={companyId} />
+          </SectionWrapper>
+        );
+      
+      case 'estado-perdidas-ganancias':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Estado de Pérdidas y Ganancias">
+            <IncomeStatementChart companyId={companyId} />
+          </SectionWrapper>
+        );
+
+      // RENTABILIDAD sections
+      case 'rentabilidad-economica':
+      case 'umbral-rentabilidad':
+      case 'apalancamiento':
+      case 'fondo-maniobra':
+      case 'autofinanciacion':
+      case 'periodos-maduracion':
+      case 'capacidad-crecimiento':
+      case 'nivel-endeudamiento':
+      case 'estados-financieros':
+      case 'resumen-financiero':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Rentabilidad">
+            <ProfitabilityTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+
+      // VALORACIONES sections
+      case 'activo-neto':
+      case 'valor-substancial':
+      case 'multiplos':
+      case 'flujos-descontados':
+      case 'proyecciones':
+      case 'proyecto-inversion':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Valoraciones">
+            <ValuationTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+
+      // AUDITORIA sections
+      case 'desv-balance':
+      case 'desv-resultados':
+      case 'audit-fondo-maniobra':
+      case 'audit-acid-test':
+      case 'audit-disponibilidad':
+      case 'audit-cobro':
+      case 'audit-pago':
+      case 'audit-rotacion':
+      case 'audit-apalancamiento':
+      case 'audit-fondos-propios':
+      case 'audit-endeudamiento':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Auditoría">
+            <AuditTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+
+      // CUENTAS ANUALES sections
+      case 'ca-balance':
+      case 'ca-perdidas-ganancias':
+      case 'ca-flujos-efectivo':
+      case 'ca-cambios-patrimonio':
+      case 'ca-gastos-ingresos':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Cuentas Anuales">
+            <ReportsTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+
+      // INFORMES
+      case 'bateria-informes':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Batería de Informes">
+            <ReportsTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+
+      // CONSOLIDACION
+      case 'consolidacion':
+        return (
+          <SectionWrapper title="Consolidación de Empresas">
+            <ConsolidatedStatementsManager />
+          </SectionWrapper>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Main Menu View */}
@@ -514,6 +738,9 @@ const AccountingManager = () => {
           onNavigate={handleMenuNavigate}
           currentSection={currentMenuSection || undefined}
         />
+      ) : currentMenuSection && !showCompanyIndex ? (
+        // Render section-specific content
+        renderSectionContent()
       ) : showCompanyIndex && !selectedCompany ? (
         <>
           {/* Button to go back to main menu */}
