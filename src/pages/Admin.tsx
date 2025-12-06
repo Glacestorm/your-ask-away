@@ -54,7 +54,6 @@ const Admin = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialSection = searchParams.get('section') || 'director';
   const [activeSection, setActiveSection] = useState(initialSection);
-  const [roleCardExpanded, setRoleCardExpanded] = useState(false);
   
   // Navigation history
   const { canGoBack, canGoForward, goBack, goForward, push } = useNavigationHistory(initialSection);
@@ -145,6 +144,7 @@ const Admin = () => {
       case 'gestor-comparison': return 'Comparativa de Gestores';
       case 'accounting': return 'Comptabilitat';
       case 'administration': return 'Administració';
+      case 'role-selector': return 'Selector de Visió';
       default: return '';
     }
   };
@@ -519,63 +519,16 @@ const Admin = () => {
               {isSuperAdmin && (
                 <Card 
                   className="cursor-pointer hover:shadow-md transition-all border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10"
-                  onClick={() => setRoleCardExpanded(!roleCardExpanded)}
+                  onClick={() => handleSectionChange('role-selector')}
                 >
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                        <Activity className="h-5 w-5 text-primary" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold">Selector de Visió</h3>
-                        <p className="text-sm text-muted-foreground">Escull el rol per visualitzar</p>
-                      </div>
-                      <ArrowLeft className={`h-4 w-4 text-muted-foreground transition-transform ${roleCardExpanded ? 'rotate-90' : '-rotate-90'}`} />
+                  <CardContent className="p-4 flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                      <Activity className="h-5 w-5 text-primary" />
                     </div>
-                    {roleCardExpanded && (
-                      <div className="grid grid-cols-1 gap-2 mt-4 pt-4 border-t border-border/50">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="justify-start" 
-                          onClick={(e) => { e.stopPropagation(); handleSectionChange('director'); }}
-                        >
-                          Director de Negoci
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="justify-start" 
-                          onClick={(e) => { e.stopPropagation(); handleSectionChange('office-director'); }}
-                        >
-                          Director d'Oficina
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="justify-start" 
-                          onClick={(e) => { e.stopPropagation(); handleSectionChange('commercial-manager'); }}
-                        >
-                          Responsable Comercial
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="justify-start" 
-                          onClick={(e) => { e.stopPropagation(); handleSectionChange('gestor-dashboard'); }}
-                        >
-                          Gestor
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="justify-start" 
-                          onClick={(e) => { e.stopPropagation(); handleSectionChange('audit'); }}
-                        >
-                          Auditor
-                        </Button>
-                      </div>
-                    )}
+                    <div>
+                      <h3 className="font-semibold">Selector de Visió</h3>
+                      <p className="text-sm text-muted-foreground">Escull el rol per visualitzar</p>
+                    </div>
                   </CardContent>
                 </Card>
               )}
@@ -730,6 +683,98 @@ const Admin = () => {
                   <div>
                     <h3 className="font-semibold">Historial d'Importacions</h3>
                     <p className="text-sm text-muted-foreground">Registre d'importacions d'empreses</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        );
+      case 'role-selector':
+        if (!isSuperAdmin) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return (
+          <div className="rounded-lg border bg-card p-6">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold">Selector de Visió</h2>
+              <p className="text-sm text-muted-foreground">
+                Escull el rol per visualitzar el seu dashboard corresponent
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50"
+                onClick={() => handleSectionChange('director')}
+              >
+                <CardContent className="p-6 flex flex-col items-center text-center gap-3">
+                  <div className="h-14 w-14 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
+                    <Activity className="h-7 w-7 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">Director de Negoci</h3>
+                    <p className="text-sm text-muted-foreground">Visió global del negoci</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50"
+                onClick={() => handleSectionChange('office-director')}
+              >
+                <CardContent className="p-6 flex flex-col items-center text-center gap-3">
+                  <div className="h-14 w-14 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
+                    <Activity className="h-7 w-7 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">Director d'Oficina</h3>
+                    <p className="text-sm text-muted-foreground">Gestió de l'oficina</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50"
+                onClick={() => handleSectionChange('commercial-manager')}
+              >
+                <CardContent className="p-6 flex flex-col items-center text-center gap-3">
+                  <div className="h-14 w-14 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg">
+                    <Activity className="h-7 w-7 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">Responsable Comercial</h3>
+                    <p className="text-sm text-muted-foreground">Gestió comercial</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50"
+                onClick={() => handleSectionChange('gestor-dashboard')}
+              >
+                <CardContent className="p-6 flex flex-col items-center text-center gap-3">
+                  <div className="h-14 w-14 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-lg">
+                    <Activity className="h-7 w-7 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">Gestor</h3>
+                    <p className="text-sm text-muted-foreground">Dashboard personal</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50"
+                onClick={() => handleSectionChange('audit')}
+              >
+                <CardContent className="p-6 flex flex-col items-center text-center gap-3">
+                  <div className="h-14 w-14 rounded-full bg-gradient-to-br from-slate-500 to-slate-600 flex items-center justify-center shadow-lg">
+                    <Activity className="h-7 w-7 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">Auditor</h3>
+                    <p className="text-sm text-muted-foreground">Auditoria i registres</p>
                   </div>
                 </CardContent>
               </Card>
