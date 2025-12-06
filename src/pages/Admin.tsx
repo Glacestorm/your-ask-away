@@ -47,7 +47,7 @@ import VisitSheetValidationPanel from '@/components/admin/VisitSheetValidationPa
 import ContractedProductsReport from '@/components/admin/ContractedProductsReport';
 import MapView from './MapView';
 import AccountingManager from '@/components/admin/accounting/AccountingManager';
-import { FilteredMetricsWrapper } from '@/components/dashboard/FilteredMetricsWrapper';
+import { UnifiedMetricsDashboard } from '@/components/dashboard/UnifiedMetricsDashboard';
 
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
@@ -248,11 +248,7 @@ const Admin = () => {
       case 'health':
         return <SystemHealthMonitor />;
       case 'filtered-metrics':
-        return (
-          <div className="rounded-lg border bg-card p-6">
-            <FilteredMetricsWrapper />
-          </div>
-        );
+        return <UnifiedMetricsDashboard />;
       case 'visits':
         return (
           <div className="rounded-lg border bg-card p-6">
