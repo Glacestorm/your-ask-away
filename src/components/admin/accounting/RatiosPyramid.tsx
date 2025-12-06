@@ -1,463 +1,526 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Pyramid, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Info } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Button } from '@/components/ui/button';
 
 interface RatiosPyramidProps {
   companyId: string;
   companyName: string;
 }
 
-interface FinancialData {
-  fiscal_year: number;
-  // Balance data
-  total_assets: number;
-  total_current_assets: number;
-  total_non_current_assets: number;
-  total_equity: number;
-  total_current_liabilities: number;
-  total_non_current_liabilities: number;
-  inventory: number;
-  trade_receivables: number;
-  cash_equivalents: number;
-  short_term_debts: number;
-  long_term_debts: number;
-  // Income data
-  net_turnover: number;
-  operating_result: number;
-  net_result: number;
-  financial_expenses: number;
-}
-
-interface Ratio {
-  name: string;
-  value: number;
-  category: 'liquidity' | 'solvency' | 'profitability' | 'efficiency';
-  description: string;
-  benchmark: { min: number; max: number; optimal: number };
-  format: 'percentage' | 'decimal' | 'times';
-}
-
-const RatiosPyramid = ({ companyId, companyName }: RatiosPyramidProps) => {
-  const [yearsData, setYearsData] = useState<FinancialData[]>([]);
-  const [selectedYear, setSelectedYear] = useState<number | null>(null);
+const RatiosPyramid: React.FC<RatiosPyramidProps> = ({ companyId, companyName }) => {
+  const [dataViewMode, setDataViewMode] = useState<'values' | 'values_deviation'>('values');
+  const [balanceSheets, setBalanceSheets] = useState<any[]>([]);
+  const [incomeStatements, setIncomeStatements] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedRatios, setSelectedRatios] = useState<number[]>([1]);
+  const [employees, setEmployees] = useState(0);
+  const [sectorSales, setSectorSales] = useState(0);
 
   useEffect(() => {
-    if (companyId) {
-      fetchFinancialData();
-    }
-  }, [companyId]);
+    const fetchData = async () => {
+      if (!companyId) return;
+      setLoading(true);
 
-  const fetchFinancialData = async () => {
-    setLoading(true);
-    try {
       const { data: statements } = await supabase
         .from('company_financial_statements')
-        .select('id, fiscal_year')
+        .select(`
+          id,
+          fiscal_year,
+          balance_sheets(*),
+          income_statements(*)
+        `)
         .eq('company_id', companyId)
         .eq('is_archived', false)
-        .order('fiscal_year', { ascending: false });
+        .order('fiscal_year', { ascending: false })
+        .limit(5);
 
-      if (!statements || statements.length === 0) {
-        setYearsData([]);
-        setLoading(false);
-        return;
+      if (statements) {
+        const balances = statements
+          .filter(s => s.balance_sheets)
+          .map(s => ({ ...s.balance_sheets, fiscal_year: s.fiscal_year }));
+        const incomes = statements
+          .filter(s => s.income_statements)
+          .map(s => ({ ...s.income_statements, fiscal_year: s.fiscal_year }));
+        setBalanceSheets(balances);
+        setIncomeStatements(incomes);
       }
-
-      const statementIds = statements.map(s => s.id);
-      
-      const [balanceResult, incomeResult] = await Promise.all([
-        supabase.from('balance_sheets').select('*').in('statement_id', statementIds),
-        supabase.from('income_statements').select('*').in('statement_id', statementIds)
-      ]);
-
-      const balanceMap = new Map(balanceResult.data?.map(b => [b.statement_id, b]) || []);
-      const incomeMap = new Map(incomeResult.data?.map(i => [i.statement_id, i]) || []);
-
-      const processedData: FinancialData[] = statements.map(stmt => {
-        const b = balanceMap.get(stmt.id);
-        const i = incomeMap.get(stmt.id);
-
-        const totalNonCurrentAssets = 
-          (b?.intangible_assets || 0) + (b?.goodwill || 0) + (b?.tangible_assets || 0) +
-          (b?.real_estate_investments || 0) + (b?.long_term_group_investments || 0) +
-          (b?.long_term_financial_investments || 0) + (b?.deferred_tax_assets || 0) +
-          (b?.long_term_trade_receivables || 0);
-
-        const totalCurrentAssets = 
-          (b?.non_current_assets_held_for_sale || 0) + (b?.inventory || 0) + (b?.trade_receivables || 0) +
-          (b?.short_term_group_receivables || 0) + (b?.short_term_financial_investments || 0) +
-          (b?.accruals_assets || 0) + (b?.cash_equivalents || 0);
-
-        const totalEquity = 
-          (b?.share_capital || 0) + (b?.share_premium || 0) + (b?.revaluation_reserve || 0) +
-          (b?.legal_reserve || 0) + (b?.statutory_reserves || 0) + (b?.voluntary_reserves || 0) -
-          (b?.treasury_shares || 0) + (b?.retained_earnings || 0) + (b?.current_year_result || 0) -
-          (b?.interim_dividend || 0) + (b?.other_equity_instruments || 0) + (b?.capital_grants || 0);
-
-        const totalNonCurrentLiabilities = 
-          (b?.long_term_provisions || 0) + (b?.long_term_debts || 0) + (b?.long_term_group_debts || 0) +
-          (b?.deferred_tax_liabilities || 0) + (b?.long_term_accruals || 0);
-
-        const totalCurrentLiabilities = 
-          (b?.liabilities_held_for_sale || 0) + (b?.short_term_provisions || 0) +
-          (b?.short_term_debts || 0) + (b?.short_term_group_debts || 0) +
-          (b?.trade_payables || 0) + (b?.other_creditors || 0) + (b?.short_term_accruals || 0);
-
-        const operatingResult = 
-          (i?.net_turnover || 0) + (i?.inventory_variation || 0) + (i?.capitalized_work || 0) +
-          (i?.other_operating_income || 0) + (i?.operating_grants || 0) -
-          (i?.supplies || 0) - (i?.personnel_expenses || 0) - (i?.depreciation || 0) -
-          (i?.impairment_trade_operations || 0) - (i?.other_operating_expenses || 0) +
-          (i?.excess_provisions || 0) + (i?.other_operating_results || 0);
-
-        const financialResult = 
-          (i?.financial_income || 0) - (i?.financial_expenses || 0) +
-          (i?.exchange_differences || 0) - (i?.impairment_financial_instruments || 0) +
-          (i?.other_financial_results || 0);
-
-        const netResult = operatingResult + financialResult - (i?.corporate_tax || 0) + (i?.discontinued_operations_result || 0);
-
-        return {
-          fiscal_year: stmt.fiscal_year,
-          total_assets: totalNonCurrentAssets + totalCurrentAssets,
-          total_current_assets: totalCurrentAssets,
-          total_non_current_assets: totalNonCurrentAssets,
-          total_equity: totalEquity,
-          total_current_liabilities: totalCurrentLiabilities,
-          total_non_current_liabilities: totalNonCurrentLiabilities,
-          inventory: b?.inventory || 0,
-          trade_receivables: b?.trade_receivables || 0,
-          cash_equivalents: b?.cash_equivalents || 0,
-          short_term_debts: b?.short_term_debts || 0,
-          long_term_debts: b?.long_term_debts || 0,
-          net_turnover: i?.net_turnover || 0,
-          operating_result: operatingResult,
-          net_result: netResult,
-          financial_expenses: i?.financial_expenses || 0
-        };
-      });
-
-      setYearsData(processedData);
-      if (processedData.length > 0) {
-        setSelectedYear(processedData[0].fiscal_year);
-      }
-    } catch (error) {
-      console.error('Error fetching financial data:', error);
-    } finally {
       setLoading(false);
+    };
+
+    fetchData();
+  }, [companyId]);
+
+  const years = [...new Set([...balanceSheets.map(b => b.fiscal_year), ...incomeStatements.map(i => i.fiscal_year)])]
+    .sort((a, b) => b - a)
+    .slice(0, 5);
+
+  const getYearData = (year: number) => {
+    const balance = balanceSheets.find(b => b.fiscal_year === year);
+    const income = incomeStatements.find(i => i.fiscal_year === year);
+    return { balance, income };
+  };
+
+  const calculateRatio = (yearData: any, ratioNum: number): number => {
+    const { balance, income } = yearData;
+    if (!balance && !income) return 0;
+
+    const netTurnover = income?.net_turnover || 0;
+    const totalAssets = (balance?.tangible_assets || 0) + (balance?.intangible_assets || 0) + 
+                        (balance?.inventory || 0) + (balance?.trade_receivables || 0) + 
+                        (balance?.cash_equivalents || 0);
+    const equity = (balance?.share_capital || 0) + (balance?.retained_earnings || 0) + 
+                   (balance?.current_year_result || 0);
+    const personnelExpenses = Math.abs(income?.personnel_expenses || 0);
+    const supplies = Math.abs(income?.supplies || 0);
+    const depreciation = Math.abs(income?.depreciation || 0);
+    const otherExpenses = Math.abs(income?.other_operating_expenses || 0);
+    const financialExpenses = Math.abs(income?.financial_expenses || 0);
+    const corporateTax = Math.abs(income?.corporate_tax || 0);
+    const netResult = income?.current_year_result || balance?.current_year_result || 0;
+    const grossMargin = netTurnover - supplies;
+    const ebit = grossMargin - personnelExpenses - depreciation - otherExpenses;
+    const resultBeforeTax = ebit - financialExpenses;
+    const currentAssets = (balance?.inventory || 0) + (balance?.trade_receivables || 0) + (balance?.cash_equivalents || 0);
+    const addedValue = netTurnover - supplies;
+
+    switch (ratioNum) {
+      case 1: return equity !== 0 ? (netResult / equity) * 100 : 0;
+      case 2: return netTurnover !== 0 ? (netResult / netTurnover) * 100 : 0;
+      case 3: return equity !== 0 ? (netTurnover / equity) * 100 : 0;
+      case 4: return totalAssets !== 0 ? (netTurnover / totalAssets) * 100 : 0;
+      case 5: return equity !== 0 ? (totalAssets / equity) * 100 : 0;
+      case 6: return netTurnover !== 0 ? (supplies / netTurnover) * 100 : 0;
+      case 7: return netTurnover !== 0 ? ((netTurnover - (income?.inventory_variation || 0)) / netTurnover) * 100 : 0;
+      case 8: return netTurnover !== 0 ? (otherExpenses / netTurnover) * 100 : 0;
+      case 9: return netTurnover !== 0 ? (financialExpenses / netTurnover) * 100 : 0;
+      case 10: return netTurnover !== 0 ? (corporateTax / netTurnover) * 100 : 0;
+      case 11: return netTurnover !== 0 ? (resultBeforeTax / netTurnover) * 100 : 0;
+      case 12: return netTurnover !== 0 ? (supplies / netTurnover) * 100 : 0;
+      case 13: return addedValue !== 0 ? ((addedValue - (income?.inventory_variation || 0)) / addedValue) * 100 : 0;
+      case 14: return grossMargin !== 0 ? (supplies / grossMargin) * 100 : 0;
+      case 15: return netTurnover !== 0 ? (otherExpenses / netTurnover) * 100 : 0;
+      default: return 0;
     }
   };
 
-  const calculateRatios = (data: FinancialData): Ratio[] => {
-    const safeDiv = (a: number, b: number) => (b !== 0 ? a / b : 0);
+  const ratioDefinitions = [
+    { num: 1, formula: 'Beneficio Neto / Patrimonio Neto' },
+    { num: 2, formula: 'Beneficio Neto / Ventas' },
+    { num: 3, formula: 'Ventas / Patrimonio Neto' },
+    { num: 4, formula: 'Ventas / Activo' },
+    { num: 5, formula: 'Activo / Patrimonio Neto' },
+    { num: 6, formula: 'Gastos Proporcionales de Fabricación / Ventas' },
+    { num: 7, formula: 'Expansión Ventas / Ventas' },
+    { num: 8, formula: 'Gastos de Estructura / Ventas' },
+    { num: 9, formula: 'Gastos Financieros / Ventas' },
+    { num: 10, formula: 'Impuesto Beneficios / Ventas' },
+    { num: 11, formula: 'B.A.I. / Ventas' },
+    { num: 12, formula: 'Compras Materias Primas / Ventas' },
+    { num: 13, formula: 'Incremento Valor Añadido / Valor Añadido' },
+    { num: 14, formula: 'Consumos de Explotación / Margen Bruto' },
+    { num: 15, formula: 'Gastos de Publicidad / Ventas' },
+  ];
 
-    return [
-      // Apex - ROE
-      {
-        name: 'ROE (Rendibilitat Financera)',
-        value: safeDiv(data.net_result, data.total_equity) * 100,
-        category: 'profitability',
-        description: 'Rendibilitat dels fons propis',
-        benchmark: { min: 5, max: 20, optimal: 15 },
-        format: 'percentage'
-      },
-      // Level 2 - ROA and Leverage
-      {
-        name: 'ROA (Rendibilitat Econòmica)',
-        value: safeDiv(data.operating_result, data.total_assets) * 100,
-        category: 'profitability',
-        description: 'Rendibilitat dels actius totals',
-        benchmark: { min: 3, max: 15, optimal: 10 },
-        format: 'percentage'
-      },
-      {
-        name: 'Palanquejament Financer',
-        value: safeDiv(data.total_assets, data.total_equity),
-        category: 'solvency',
-        description: 'Actius totals / Patrimoni net',
-        benchmark: { min: 1, max: 3, optimal: 2 },
-        format: 'times'
-      },
-      // Level 3 - Margin and Rotation
-      {
-        name: 'Marge Net',
-        value: safeDiv(data.net_result, data.net_turnover) * 100,
-        category: 'profitability',
-        description: 'Benefici net / Vendes',
-        benchmark: { min: 2, max: 15, optimal: 8 },
-        format: 'percentage'
-      },
-      {
-        name: 'Rotació d\'Actius',
-        value: safeDiv(data.net_turnover, data.total_assets),
-        category: 'efficiency',
-        description: 'Vendes / Actius totals',
-        benchmark: { min: 0.5, max: 2, optimal: 1.2 },
-        format: 'times'
-      },
-      // Level 4 - Liquidity
-      {
-        name: 'Ràtio de Liquiditat',
-        value: safeDiv(data.total_current_assets, data.total_current_liabilities),
-        category: 'liquidity',
-        description: 'Actiu corrent / Passiu corrent',
-        benchmark: { min: 1, max: 2, optimal: 1.5 },
-        format: 'times'
-      },
-      {
-        name: 'Prova Àcida',
-        value: safeDiv(data.total_current_assets - data.inventory, data.total_current_liabilities),
-        category: 'liquidity',
-        description: '(Actiu corrent - Existències) / Passiu corrent',
-        benchmark: { min: 0.8, max: 1.5, optimal: 1 },
-        format: 'times'
-      },
-      {
-        name: 'Tresoreria Immediata',
-        value: safeDiv(data.cash_equivalents, data.total_current_liabilities),
-        category: 'liquidity',
-        description: 'Efectiu / Passiu corrent',
-        benchmark: { min: 0.1, max: 0.5, optimal: 0.3 },
-        format: 'times'
-      },
-      // Level 5 - Solvency
-      {
-        name: 'Ràtio d\'Endeutament',
-        value: safeDiv(data.total_current_liabilities + data.total_non_current_liabilities, data.total_assets) * 100,
-        category: 'solvency',
-        description: 'Passiu total / Actiu total',
-        benchmark: { min: 30, max: 60, optimal: 45 },
-        format: 'percentage'
-      },
-      {
-        name: 'Autonomia Financera',
-        value: safeDiv(data.total_equity, data.total_assets) * 100,
-        category: 'solvency',
-        description: 'Patrimoni net / Actiu total',
-        benchmark: { min: 40, max: 70, optimal: 55 },
-        format: 'percentage'
-      },
-      {
-        name: 'Cobertura d\'Interessos',
-        value: data.financial_expenses > 0 ? safeDiv(data.operating_result, data.financial_expenses) : 999,
-        category: 'solvency',
-        description: 'Resultat operatiu / Despeses financeres',
-        benchmark: { min: 2, max: 10, optimal: 5 },
-        format: 'times'
-      }
-    ];
+  const formatValue = (value: number): string => {
+    return value.toFixed(2) + ' %';
   };
 
-  const getRatioStatus = (ratio: Ratio): 'good' | 'warning' | 'danger' => {
-    const { value, benchmark } = ratio;
-    if (value >= benchmark.min && value <= benchmark.max) {
-      if (Math.abs(value - benchmark.optimal) < (benchmark.max - benchmark.min) * 0.3) {
-        return 'good';
-      }
-      return 'warning';
-    }
-    return 'danger';
+  const toggleRatioSelection = (num: number) => {
+    setSelectedRatios(prev => 
+      prev.includes(num) ? prev.filter(n => n !== num) : [...prev, num]
+    );
   };
 
-  const formatRatioValue = (ratio: Ratio): string => {
-    switch (ratio.format) {
-      case 'percentage':
-        return `${ratio.value.toFixed(1)}%`;
-      case 'times':
-        return `${ratio.value.toFixed(2)}x`;
-      default:
-        return ratio.value.toFixed(2);
-    }
-  };
-
-  const currentData = yearsData.find(d => d.fiscal_year === selectedYear);
+  const chartData = years.map(year => ({
+    name: year.toString(),
+    value: calculateRatio(getYearData(year), selectedRatios[0] || 1),
+  })).reverse();
 
   if (loading) {
-    return (
-      <Card>
-        <CardContent className="p-8 text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Carregant ràtios...</p>
-        </CardContent>
-      </Card>
-    );
+    return <div className="flex items-center justify-center h-64 text-muted-foreground">Carregant dades...</div>;
   }
 
-  if (!currentData) {
-    return (
-      <Card>
-        <CardContent className="p-8 text-center text-muted-foreground">
-          <Pyramid className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <p>No hi ha dades disponibles per calcular ràtios</p>
-        </CardContent>
-      </Card>
-    );
+  if (years.length === 0) {
+    return <div className="flex items-center justify-center h-64 text-muted-foreground">No hi ha dades financeres disponibles</div>;
   }
-
-  const ratios = calculateRatios(currentData);
-  const categoryColors: Record<string, string> = {
-    profitability: 'bg-green-500/10 border-green-500/30 text-green-700',
-    liquidity: 'bg-blue-500/10 border-blue-500/30 text-blue-700',
-    solvency: 'bg-purple-500/10 border-purple-500/30 text-purple-700',
-    efficiency: 'bg-amber-500/10 border-amber-500/30 text-amber-700'
-  };
-
-  const categoryLabels: Record<string, string> = {
-    profitability: 'Rendibilitat',
-    liquidity: 'Liquiditat',
-    solvency: 'Solvència',
-    efficiency: 'Eficiència'
-  };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Pyramid className="w-5 h-5 text-primary" />
-            Piràmide de Ràtios Financers
-          </CardTitle>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Any:</span>
-            <Select value={selectedYear?.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}>
-              <SelectTrigger className="w-[100px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {yearsData.map(y => (
-                  <SelectItem key={y.fiscal_year} value={y.fiscal_year.toString()}>
-                    {y.fiscal_year}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {/* ROE - Apex */}
-          <div className="flex justify-center mb-6">
-            <RatioCard ratio={ratios[0]} status={getRatioStatus(ratios[0])} formatValue={formatRatioValue} isApex />
-          </div>
+    <div className="flex flex-col h-full bg-[#1a1a2e] text-white min-h-screen">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-amber-700 to-amber-600 p-3 border-b border-amber-800">
+        <h1 className="text-xl font-bold text-center">PIRÁMIDE DE RATIOS FINANCIEROS</h1>
+      </div>
 
-          {/* Level 2 */}
-          <div className="flex justify-center gap-4 mb-6">
-            <RatioCard ratio={ratios[1]} status={getRatioStatus(ratios[1])} formatValue={formatRatioValue} />
-            <RatioCard ratio={ratios[2]} status={getRatioStatus(ratios[2])} formatValue={formatRatioValue} />
-          </div>
-
-          {/* Level 3 */}
-          <div className="flex justify-center gap-4 mb-6">
-            <RatioCard ratio={ratios[3]} status={getRatioStatus(ratios[3])} formatValue={formatRatioValue} />
-            <RatioCard ratio={ratios[4]} status={getRatioStatus(ratios[4])} formatValue={formatRatioValue} />
-          </div>
-
-          {/* Level 4 - Liquidity */}
-          <div className="flex justify-center gap-4 mb-6">
-            <RatioCard ratio={ratios[5]} status={getRatioStatus(ratios[5])} formatValue={formatRatioValue} />
-            <RatioCard ratio={ratios[6]} status={getRatioStatus(ratios[6])} formatValue={formatRatioValue} />
-            <RatioCard ratio={ratios[7]} status={getRatioStatus(ratios[7])} formatValue={formatRatioValue} />
-          </div>
-
-          {/* Level 5 - Solvency */}
-          <div className="flex justify-center gap-4">
-            <RatioCard ratio={ratios[8]} status={getRatioStatus(ratios[8])} formatValue={formatRatioValue} />
-            <RatioCard ratio={ratios[9]} status={getRatioStatus(ratios[9])} formatValue={formatRatioValue} />
-            <RatioCard ratio={ratios[10]} status={getRatioStatus(ratios[10])} formatValue={formatRatioValue} />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Legend */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-wrap gap-4 justify-center">
-            {Object.entries(categoryLabels).map(([key, label]) => (
-              <Badge key={key} variant="outline" className={categoryColors[key]}>
-                {label}
-              </Badge>
-            ))}
-            <div className="flex items-center gap-4 ml-4 border-l pl-4">
-              <div className="flex items-center gap-1 text-sm">
-                <CheckCircle className="w-4 h-4 text-green-600" />
-                <span>Òptim</span>
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left Side - Pyramid */}
+        <div className="flex-1 p-4 overflow-auto">
+          <div className="relative">
+            {/* Pyramid Grid */}
+            <div className="grid gap-2" style={{ fontSize: '10px' }}>
+              {/* Row 1 - Top Level */}
+              <div className="flex justify-center gap-2 mb-4">
+                <div className="bg-amber-100 border-2 border-amber-600 p-2 text-center text-gray-800 w-24">
+                  <div className="text-red-600 font-bold">1</div>
+                  <div className="font-semibold">Bº Neto</div>
+                  <div className="border-t border-gray-400">Cap.Propios</div>
+                </div>
               </div>
-              <div className="flex items-center gap-1 text-sm">
-                <AlertTriangle className="w-4 h-4 text-amber-600" />
-                <span>Acceptable</span>
+
+              {/* Row 2 */}
+              <div className="flex justify-center gap-4 mb-2">
+                <div className="bg-amber-100 border-2 border-amber-600 p-2 text-center text-gray-800 w-24">
+                  <div className="text-red-600 font-bold">2</div>
+                  <div className="font-semibold">Bº Neto</div>
+                  <div className="border-t border-gray-400">Ventas</div>
+                </div>
+                <div className="flex items-center text-amber-400 font-bold">×</div>
+                <div className="bg-amber-100 border-2 border-amber-600 p-2 text-center text-gray-800 w-24">
+                  <div className="text-red-600 font-bold">3</div>
+                  <div className="font-semibold">Ventas</div>
+                  <div className="border-t border-gray-400">Cap.Propios</div>
+                </div>
               </div>
-              <div className="flex items-center gap-1 text-sm">
-                <AlertTriangle className="w-4 h-4 text-red-600" />
-                <span>Alerta</span>
+
+              {/* Row 3 */}
+              <div className="flex justify-center gap-2 mb-2 flex-wrap">
+                <div className="bg-yellow-200 border-2 border-yellow-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">6</div>
+                  <div className="text-xs">Gtos.Prop.Fabric.</div>
+                  <div className="border-t border-gray-400 text-xs">Ventas</div>
+                </div>
+                <div className="bg-yellow-200 border-2 border-yellow-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">11</div>
+                  <div className="text-xs">B.A.I.</div>
+                  <div className="border-t border-gray-400 text-xs">Ventas</div>
+                </div>
+                <div className="bg-yellow-200 border-2 border-yellow-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">12</div>
+                  <div className="text-xs">Compra Mat.Primas</div>
+                  <div className="border-t border-gray-400 text-xs">Ventas</div>
+                </div>
+                <div className="bg-yellow-200 border-2 border-yellow-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">13</div>
+                  <div className="text-xs">Val.Añadido(1,-1)</div>
+                  <div className="border-t border-gray-400 text-xs">Val.Añadido(-1)</div>
+                </div>
+              </div>
+
+              {/* Row 4 */}
+              <div className="flex justify-center gap-2 mb-2 flex-wrap">
+                <div className="bg-yellow-200 border-2 border-yellow-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">7</div>
+                  <div className="text-xs">Expansión Ventas</div>
+                  <div className="border-t border-gray-400 text-xs">Ventas</div>
+                </div>
+                <div className="bg-yellow-200 border-2 border-yellow-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">14</div>
+                  <div className="text-xs">Consumos Explot.</div>
+                  <div className="border-t border-gray-400 text-xs">Margen Bruto</div>
+                </div>
+                <div className="bg-yellow-200 border-2 border-yellow-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">15</div>
+                  <div className="text-xs">Gtos.Publicidad</div>
+                  <div className="border-t border-gray-400 text-xs">Ventas</div>
+                </div>
+                <div className="bg-yellow-200 border-2 border-yellow-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">16</div>
+                  <div className="text-xs">Otros Gtos.Ciales.</div>
+                  <div className="border-t border-gray-400 text-xs">Ventas</div>
+                </div>
+              </div>
+
+              {/* Row 5 */}
+              <div className="flex justify-center gap-2 mb-2 flex-wrap">
+                <div className="bg-yellow-200 border-2 border-yellow-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">8</div>
+                  <div className="text-xs">Gtos.Estructura</div>
+                  <div className="border-t border-gray-400 text-xs">Ventas</div>
+                </div>
+                <div className="bg-yellow-200 border-2 border-yellow-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">17</div>
+                  <div className="text-xs">Amortizaciones</div>
+                  <div className="border-t border-gray-400 text-xs">Ventas</div>
+                </div>
+                <div className="bg-yellow-200 border-2 border-yellow-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">18</div>
+                  <div className="text-xs">Gtos.Personal</div>
+                  <div className="border-t border-gray-400 text-xs">Nº de empleados</div>
+                </div>
+                <div className="bg-yellow-200 border-2 border-yellow-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">19</div>
+                  <div className="text-xs">Ventas</div>
+                  <div className="border-t border-gray-400 text-xs">Nº de empleados</div>
+                </div>
+              </div>
+
+              {/* Row 6 */}
+              <div className="flex justify-center gap-2 mb-2 flex-wrap">
+                <div className="bg-yellow-200 border-2 border-yellow-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">9</div>
+                  <div className="text-xs">Gtos.Financieros</div>
+                  <div className="border-t border-gray-400 text-xs">Ventas</div>
+                </div>
+                <div className="bg-green-200 border-2 border-green-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">20</div>
+                  <div className="text-xs">Gtos.Financieros</div>
+                  <div className="border-t border-gray-400 text-xs">B.A.I.I.</div>
+                </div>
+                <div className="bg-yellow-200 border-2 border-yellow-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">36</div>
+                  <div className="text-xs">Nec.Fdo.Maniobra</div>
+                  <div className="border-t border-gray-400 text-xs">Ventas</div>
+                </div>
+              </div>
+
+              {/* Row 7 */}
+              <div className="flex justify-center gap-2 mb-2 flex-wrap">
+                <div className="bg-yellow-200 border-2 border-yellow-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">10</div>
+                  <div className="text-xs">Impto.Sociedades</div>
+                  <div className="border-t border-gray-400 text-xs">Ventas</div>
+                </div>
+                <div className="bg-green-200 border-2 border-green-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">21</div>
+                  <div className="text-xs">Cash Flow</div>
+                  <div className="border-t border-gray-400 text-xs">Ventas</div>
+                </div>
+                <div className="bg-green-200 border-2 border-green-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">22</div>
+                  <div className="text-xs">Cash Flow</div>
+                  <div className="border-t border-gray-400 text-xs">Préstamos</div>
+                </div>
+                <div className="bg-green-200 border-2 border-green-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">23</div>
+                  <div className="text-xs">Dividendo</div>
+                  <div className="border-t border-gray-400 text-xs">Bº Neto</div>
+                </div>
+                <div className="bg-green-200 border-2 border-green-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">24</div>
+                  <div className="text-xs">Dividendo</div>
+                  <div className="border-t border-gray-400 text-xs">Capital social</div>
+                </div>
+              </div>
+
+              {/* Row 8 */}
+              <div className="flex justify-center gap-2 mb-2 flex-wrap">
+                <div className="bg-amber-100 border-2 border-amber-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">4</div>
+                  <div className="text-xs">Ventas</div>
+                  <div className="border-t border-gray-400 text-xs">Activo</div>
+                </div>
+                <div className="bg-green-200 border-2 border-green-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">25</div>
+                  <div className="text-xs">Ventas</div>
+                  <div className="border-t border-gray-400 text-xs">Activo Fijo</div>
+                </div>
+                <div className="bg-green-200 border-2 border-green-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">27</div>
+                  <div className="text-xs">Inversiones</div>
+                  <div className="border-t border-gray-400 text-xs">Ventas</div>
+                </div>
+                <div className="bg-green-200 border-2 border-green-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">28</div>
+                  <div className="text-xs">Vtas. Ej.Act.</div>
+                  <div className="border-t border-gray-400 text-xs">Vtas. Ej.Anter.</div>
+                </div>
+                <div className="bg-green-200 border-2 border-green-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">29</div>
+                  <div className="text-xs">Ventas</div>
+                  <div className="border-t border-gray-400 text-xs">Ventas Sector</div>
+                </div>
+              </div>
+
+              {/* Row 9 */}
+              <div className="flex justify-center gap-2 mb-2 flex-wrap">
+                <div className="bg-amber-100 border-2 border-amber-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">5</div>
+                  <div className="text-xs">Activo</div>
+                  <div className="border-t border-gray-400 text-xs">Cap.Propios</div>
+                </div>
+                <div className="bg-green-200 border-2 border-green-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">37</div>
+                  <div className="text-xs">Activo real</div>
+                  <div className="border-t border-gray-400 text-xs">Deudas</div>
+                </div>
+                <div className="bg-green-200 border-2 border-green-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">38</div>
+                  <div className="text-xs">Ventas Sec...</div>
+                  <div className="border-t border-gray-400 text-xs">Exig.c/pzo.</div>
+                </div>
+                <div className="bg-green-200 border-2 border-green-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">39</div>
+                  <div className="text-xs">Disp. + Real.</div>
+                  <div className="border-t border-gray-400 text-xs">Exig.c/pzo.</div>
+                </div>
+                <div className="bg-green-200 border-2 border-green-600 p-1 text-center text-gray-800 w-20">
+                  <div className="text-red-600 text-xs font-bold">40</div>
+                  <div className="text-xs">Disponible</div>
+                  <div className="border-t border-gray-400 text-xs">Exig.c/pzo.</div>
+                </div>
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Right Side - Ratios Table and Chart */}
+        <div className="w-[500px] bg-[#2d2d44] p-3 border-l border-gray-700 overflow-y-auto">
+          {/* Ratios Table */}
+          <div className="overflow-x-auto mb-4">
+            <table className="w-full text-xs border-collapse">
+              <thead>
+                <tr className="bg-amber-800">
+                  <th className="border border-amber-900 p-1 text-center w-12">Gráfico</th>
+                  <th className="border border-amber-900 p-1 text-center w-12">Nº Ratio</th>
+                  <th className="border border-amber-900 p-1 text-left">Fórmula del Ratio</th>
+                  {years.slice(0, 4).map(year => (
+                    <th key={year} className="border border-amber-900 p-1 text-center w-20">Diciembre-{year}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {ratioDefinitions.map((ratio, idx) => (
+                  <tr key={ratio.num} className={idx % 2 === 0 ? 'bg-gray-700' : 'bg-gray-800'}>
+                    <td className="border border-gray-600 p-1 text-center">
+                      <input 
+                        type="checkbox"
+                        checked={selectedRatios.includes(ratio.num)}
+                        onChange={() => toggleRatioSelection(ratio.num)}
+                        className="w-3 h-3"
+                      />
+                    </td>
+                    <td className="border border-gray-600 p-1 text-center text-amber-400">{ratio.num}</td>
+                    <td className="border border-gray-600 p-1 text-gray-300">{ratio.formula}</td>
+                    {years.slice(0, 4).map(year => {
+                      const value = calculateRatio(getYearData(year), ratio.num);
+                      return (
+                        <td key={year} className={`border border-gray-600 p-1 text-center ${value < 0 ? 'text-red-400' : 'text-green-400'}`}>
+                          {formatValue(value)}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Evolution Chart */}
+          <div className="mb-4">
+            <div className="text-amber-400 text-sm font-semibold mb-2 border-b border-amber-400 pb-1">GRÁFICO DE EVOLUCIÓN</div>
+            <div className="flex items-center gap-4 mb-2 text-xs">
+              <span className="text-gray-400">Visión de datos</span>
+              <label className="flex items-center gap-1 cursor-pointer">
+                <input 
+                  type="radio" 
+                  name="chartView" 
+                  checked={dataViewMode === 'values'}
+                  onChange={() => setDataViewMode('values')}
+                  className="w-3 h-3"
+                />
+                <span className="text-blue-400">Vista de valores</span>
+              </label>
+              <label className="flex items-center gap-1 cursor-pointer">
+                <input 
+                  type="radio" 
+                  name="chartView" 
+                  checked={dataViewMode === 'values_deviation'}
+                  onChange={() => setDataViewMode('values_deviation')}
+                  className="w-3 h-3"
+                />
+                <span className="text-gray-400">Vista de valores y % de desviación</span>
+              </label>
+            </div>
+            <div className="text-amber-400 text-xs mb-1">Ratio {selectedRatios[0] || 1}: {ratioDefinitions.find(r => r.num === (selectedRatios[0] || 1))?.formula}</div>
+            <div className="bg-gray-200 p-2 rounded h-32">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => v.toFixed(2) + '%'} />
+                  <Tooltip formatter={(value: number) => value.toFixed(2) + '%'} />
+                  <Bar dataKey="value" fill="#3b82f6" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="text-center text-xs text-gray-400 mt-1">Periodos anuales</div>
+          </div>
+
+          {/* Data Entry Section */}
+          <div className="mb-4">
+            <div className="text-amber-400 text-sm font-semibold mb-2 border-b border-amber-400 pb-1">INTRODUCCIÓN DE DATOS</div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs border-collapse">
+                <thead>
+                  <tr>
+                    <th className="border border-gray-600 p-1 bg-gray-700"></th>
+                    {years.slice(0, 4).map(year => (
+                      <th key={year} className="border border-gray-600 p-1 bg-amber-700 text-center">Dic - {year.toString().slice(-2)}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="bg-amber-100">
+                    <td className="border border-gray-400 p-1 text-gray-800 font-semibold">Nº de empleados</td>
+                    {years.slice(0, 4).map((year, idx) => (
+                      <td key={year} className="border border-gray-400 p-1 text-center">
+                        <input 
+                          type="number" 
+                          value={idx === 0 ? employees : 0}
+                          onChange={(e) => idx === 0 && setEmployees(Number(e.target.value))}
+                          className="w-full bg-white text-gray-800 text-center text-xs p-0.5"
+                        />
+                      </td>
+                    ))}
+                  </tr>
+                  <tr className="bg-amber-100">
+                    <td className="border border-gray-400 p-1 text-gray-800 font-semibold">Ventas Sector</td>
+                    {years.slice(0, 4).map((year, idx) => (
+                      <td key={year} className="border border-gray-400 p-1 text-center">
+                        <input 
+                          type="number" 
+                          value={idx === 0 ? sectorSales : 0}
+                          onChange={(e) => idx === 0 && setSectorSales(Number(e.target.value))}
+                          className="w-full bg-white text-gray-800 text-center text-xs p-0.5"
+                        />
+                      </td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div className="flex justify-end mt-2">
+              <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-xs">GRABAR DATOS</Button>
+            </div>
+            <div className="text-gray-500 text-xs mt-1">* Los ratios 18, 19 y 29 están calculados en miles de u.m. // Introduzca las "Ventas Sector" en miles de...</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="bg-gray-800 border-t border-gray-700 px-4 py-2 text-xs">
+        <div className="mb-1 text-amber-400">
+          Gastos proporcionales de Fabricación: Ratio 6 y 12. // Gastos proporcionales de Comercialización: Ratio 16. // Gastos proporcionales de Administración: Ratio 8. // Gastos financieros: Ratios 9 y 20. // Expansión de Ventas y Competencia: Ratio 7, 11, 28 y 29. // Flujo de Caja:
+        </div>
+        <div className="mb-1 text-amber-400">
+          Autofinanciación: Ratios 21 al 24 y 44. // Evolución del valor añadido bruto: Ratio 13. // Ratio Política de Inversiones: Ratio 27. // Apalancamiento: Ratio 5. // Efecto fiscal: Ratio 10. // Endeudamiento: Ratios 37, 41, 42, 43 y 44. // Liquidez: Ratios 38 al 40. // Rotación del Activo
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-gray-400">005 - {companyName || 'Empresa de ejemplo'}.</span>
+          <div className="flex items-center gap-4">
+            <span className="text-gray-400">📊 PIRÁMIDE DE RATIOS FINANCIEROS</span>
+            <span className="text-gray-400">|</span>
+            <span className="text-gray-400">Análisis de periodos: ANUALES</span>
+            <span className="text-gray-400">|</span>
+            <span className="text-green-400">CUADRE DE BALANCES: 'OK'</span>
+            <span className="text-gray-400">|</span>
+            <span className="text-gray-400">📱 Calculadora</span>
+            <span className="text-gray-400">|</span>
+            <span className="text-gray-400">{new Date().toLocaleString()}</span>
+          </div>
+        </div>
+      </div>
     </div>
-  );
-};
-
-interface RatioCardProps {
-  ratio: Ratio;
-  status: 'good' | 'warning' | 'danger';
-  formatValue: (ratio: Ratio) => string;
-  isApex?: boolean;
-}
-
-const RatioCard = ({ ratio, status, formatValue, isApex }: RatioCardProps) => {
-  const statusStyles = {
-    good: 'border-green-500/50 bg-green-500/5',
-    warning: 'border-amber-500/50 bg-amber-500/5',
-    danger: 'border-red-500/50 bg-red-500/5'
-  };
-
-  const statusIcons = {
-    good: <CheckCircle className="w-4 h-4 text-green-600" />,
-    warning: <AlertTriangle className="w-4 h-4 text-amber-600" />,
-    danger: <AlertTriangle className="w-4 h-4 text-red-600" />
-  };
-
-  const categoryColors: Record<string, string> = {
-    profitability: 'text-green-700',
-    liquidity: 'text-blue-700',
-    solvency: 'text-purple-700',
-    efficiency: 'text-amber-700'
-  };
-
-  return (
-    <Card className={cn(
-      "border-2 transition-all hover:shadow-md",
-      statusStyles[status],
-      isApex && "min-w-[280px]"
-    )}>
-      <CardContent className={cn("p-3", isApex && "p-4")}>
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <span className={cn(
-            "font-medium text-sm leading-tight",
-            categoryColors[ratio.category],
-            isApex && "text-base"
-          )}>
-            {ratio.name}
-          </span>
-          {statusIcons[status]}
-        </div>
-        <div className={cn(
-          "font-bold text-2xl",
-          isApex && "text-3xl"
-        )}>
-          {formatValue(ratio)}
-        </div>
-        <p className="text-xs text-muted-foreground mt-1">{ratio.description}</p>
-        <div className="text-xs text-muted-foreground mt-2 pt-2 border-t">
-          Rang: {ratio.format === 'percentage' ? `${ratio.benchmark.min}% - ${ratio.benchmark.max}%` : `${ratio.benchmark.min}x - ${ratio.benchmark.max}x`}
-        </div>
-      </CardContent>
-    </Card>
   );
 };
 
