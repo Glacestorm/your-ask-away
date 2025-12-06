@@ -8,6 +8,7 @@ import { ZScoreAnalysis } from "./ZScoreAnalysis";
 import EBITEBITDAAnalysis from "./EBITEBITDAAnalysis";
 import AddedValueAnalysis from "./AddedValueAnalysis";
 import TreasuryMovements from "./TreasuryMovements";
+import FinancingStatement from "./FinancingStatement";
 
 interface FinancialAnalysisTabProps {
   companyId: string;
@@ -194,6 +195,7 @@ export function FinancialAnalysisTab({ companyId, companyName }: FinancialAnalys
           <TabsTrigger value="value-added" className="text-xs">Valor Afegit</TabsTrigger>
           <TabsTrigger value="value-added-detail" className="text-xs">Anàlisi Valor Afegit</TabsTrigger>
           <TabsTrigger value="treasury" className="text-xs">Fluxos Tresoreria</TabsTrigger>
+          <TabsTrigger value="financing" className="text-xs">Quadre Finançament</TabsTrigger>
           <TabsTrigger value="zscore" className="text-xs">
             <AlertTriangle className="w-3 h-3 mr-1" />
             Índex Z
@@ -541,6 +543,10 @@ export function FinancialAnalysisTab({ companyId, companyName }: FinancialAnalys
 
         <TabsContent value="treasury">
           <TreasuryMovements companyId={companyId} companyName={companyName} />
+        </TabsContent>
+
+        <TabsContent value="financing">
+          <FinancingStatement companyId={companyId} companyName={companyName} />
         </TabsContent>
       </Tabs>
     </div>
