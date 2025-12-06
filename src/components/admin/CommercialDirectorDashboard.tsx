@@ -16,6 +16,7 @@ import { QuickVisitManager } from '@/components/dashboard/QuickVisitManager';
 import { MapButton } from '@/components/dashboard/MapButton';
 import { MapDashboardCard } from '@/components/dashboard/MapDashboardCard';
 import { QuickVisitSheetCard } from '@/components/dashboard/QuickVisitSheetCard';
+import { AccountingDashboardCard } from '@/components/dashboard/AccountingDashboardCard';
 
 // Panel del Director con vista general y explorador de métricas
 
@@ -273,10 +274,11 @@ export function CommercialDirectorDashboard() {
             </Card>
           </div>
 
-          {/* Ficha de Visita y Mapa Cards */}
-          <div className="grid gap-6 md:grid-cols-2">
+          {/* Ficha de Visita, Mapa y Comptabilitat Cards */}
+          <div className="grid gap-6 md:grid-cols-3">
             <QuickVisitSheetCard />
             <MapDashboardCard />
+            <AccountingDashboardCard />
           </div>
 
           {/* Gráfico de Ranking */}
