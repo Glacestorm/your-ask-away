@@ -1087,8 +1087,8 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
               </div>
             </div>
 
-            {/* Action buttons */}
-            <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t border-border/20">
+            {/* Action buttons - always visible with proper z-index */}
+            <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t border-border/20 relative z-20">
               {isNotAuditor && (
                 <TooltipProvider>
                   <Tooltip>
@@ -1096,7 +1096,7 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
                       <Button
                         variant="outline"
                         size="sm"
-                        className="h-8 gap-1.5 bg-primary/10 border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50"
+                        className="h-8 gap-1.5 bg-primary/10 border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50 opacity-100"
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate('/admin?section=visit-sheets');
@@ -1119,7 +1119,7 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
                       <Button
                         variant="default"
                         size="sm"
-                        className="h-8 gap-1.5 bg-green-600 hover:bg-green-700 text-white shadow-md"
+                        className="h-8 gap-1.5 bg-green-600 hover:bg-green-700 text-white shadow-md opacity-100"
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate('/admin?section=visit-validation');
