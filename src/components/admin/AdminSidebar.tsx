@@ -191,7 +191,7 @@ export function AdminSidebar({
                   </span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              {(isSuperAdmin || isCommercialDirector || isCommercialManager) && (
+              {(isCommercialDirector || isCommercialManager) && (
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     onClick={() => onSectionChange('administration')}
