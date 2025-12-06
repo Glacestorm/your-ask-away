@@ -195,7 +195,7 @@ export function AdminSidebar({
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     onClick={() => onSectionChange('administration')}
-                    isActive={isActive('administration') || isActive('users') || isActive('products') || isActive('tpv-goals') || isActive('bulk-goals') || isActive('goals-progress') || isActive('concepts') || isActive('templates') || isActive('colors') || isActive('alerts') || isActive('notifications')}
+                    isActive={isActive('administration') || isActive('users') || isActive('products') || isActive('tpv-goals') || isActive('bulk-goals') || isActive('goals-progress') || isActive('concepts') || isActive('templates') || isActive('colors') || isActive('alerts') || isActive('notifications') || isActive('map-config')}
                     className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
                     tooltip={!open ? {
                       children: 'Admin',
@@ -284,46 +284,7 @@ export function AdminSidebar({
 
         {/* Gestión de Datos moved to Admin panel */}
 
-        {/* Configuración - Hide from regular gestores */}
-        {!isRegularGestor && (isSuperAdmin || isCommercialDirector || isCommercialManager) && (
-          <>
-            {open ? (
-              <Collapsible open={openGroups.config} onOpenChange={() => toggleGroup('config')}>
-                <SidebarGroup>
-                  <CollapsibleTrigger asChild>
-                    <SidebarGroupLabel className="cursor-pointer hover:bg-muted/50 rounded-md p-2 transition-all duration-300 group">
-                      <Settings className="h-4 w-4 mr-2 transition-all duration-300 group-hover:scale-110 group-hover:text-primary group-hover:rotate-90" />
-                      <span className="flex-1 transition-all duration-300 group-hover:translate-x-1">{t('admin.configuration')}</span>
-                      <ChevronRight className={`h-4 w-4 transition-all duration-300 group-hover:text-primary ${openGroups.config ? 'rotate-90' : ''}`} />
-                    </SidebarGroupLabel>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="transition-all duration-300 data-[state=open]:animate-slide-in data-[state=closed]:animate-slide-out">
-                    <SidebarGroupContent>
-                      <SidebarMenu>
-                        <SidebarMenuItem>
-                          <SidebarMenuButton onClick={() => onSectionChange('map-config')} isActive={isActive('map-config')} className="group">
-                            <Map className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                            <span className="transition-all duration-300 group-hover:translate-x-1">{t('map.layers')}</span>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      </SidebarMenu>
-                    </SidebarGroupContent>
-                  </CollapsibleContent>
-                </SidebarGroup>
-              </Collapsible>
-            ) : (
-              <SidebarGroup>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => onSectionChange('map-config')} isActive={isActive('map-config')} tooltip={t('map.layers')} className="group">
-                      <Map className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroup>
-            )}
-          </>
-        )}
+        {/* Configuración moved to Admin panel */}
 
 
         {/* Navigation - Available to all users */}
