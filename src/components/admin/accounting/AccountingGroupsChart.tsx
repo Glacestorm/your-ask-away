@@ -19,11 +19,31 @@ import {
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ComposedChart, Line } from 'recharts';
+import RatiosPyramid from './RatiosPyramid';
+import EBITEBITDAAnalysis from './EBITEBITDAAnalysis';
+import CashFlowAnalysis from './CashFlowAnalysis';
+import IncomeStatementChart from './IncomeStatementChart';
+import { ProfitabilityTab } from './ProfitabilityTab';
+import AccountingCompanyIndex from './AccountingCompanyIndex';
+import BalanceAnalysisArea from './BalanceAnalysisArea';
+import AnalyticalPLChart from './AnalyticalPLChart';
 
 type AccountType = 'ACTIU' | 'PASSIU' | 'PATRIMONI' | 'INGRESSOS' | 'DESPESES';
 type TypeFilter = 'TOTS' | AccountType | 'PERSONALITZAT';
 type PlanType = 'COMPLET' | 'SIMPLIFICAT';
 type DataViewType = 'VALORS' | 'VALORS_PERCENTATGES' | 'VALORS_TOTAL' | 'VALORS_DESVIACIO';
+type ActiveView = 
+  | 'balance' 
+  | 'results' 
+  | 'masses' 
+  | 'analytical' 
+  | 'cashflow' 
+  | 'ebit' 
+  | 'ratios' 
+  | 'profitability'
+  | 'companies'
+  | 'data-entry'
+  | 'reports';
 type ChartType = 'barres' | 'linies' | 'area';
 
 interface HierarchicalAccount {
@@ -187,6 +207,9 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
   const [balanceSummaries, setBalanceSummaries] = useState<BalanceSheetSummary[]>([]);
   const [incomeSummaries, setIncomeSummaries] = useState<IncomeStatementSummary[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Active view state
+  const [activeView, setActiveView] = useState<ActiveView>('balance');
   
   // Opciones de visualización
   const [planType, setPlanType] = useState<PlanType>('COMPLET');
@@ -458,6 +481,24 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
     })).reverse();
   }, [filteredBalanceSummaries, showThousands]);
 
+  // Helper function to get title based on active view
+  const getViewTitle = () => {
+    switch (activeView) {
+      case 'balance': return 'BALANÇOS DE SITUACIÓ (ACTIU i PASSIU)';
+      case 'results': return 'COMPTE DE RESULTATS';
+      case 'masses': return 'ANÀLISI MASSES PATRIMONIALS';
+      case 'analytical': return 'QUADRE ANALÍTIC P. i G.';
+      case 'cashflow': return 'FLUX DE CAIXA';
+      case 'ebit': return 'ANÀLISI EBIT i EBITDA';
+      case 'ratios': return 'RÀTIOS FINANCERS';
+      case 'profitability': return 'RENDIBILITAT';
+      case 'companies': return 'PANTALLA D\'EMPRESES';
+      case 'data-entry': return 'INTRODUCCIÓ DE DADES';
+      case 'reports': return 'INFORMES';
+      default: return 'BALANÇOS DE SITUACIÓ (ACTIU i PASSIU)';
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -550,19 +591,31 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
                 Financial System
               </CollapsibleTrigger>
               <CollapsibleContent className="pl-6 space-y-1">
-                <button className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground py-1 w-full text-left">
+                <button 
+                  onClick={() => setActiveView('balance')}
+                  className={`flex items-center gap-2 text-xs py-1 w-full text-left ${activeView === 'balance' ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
+                >
                   <FileBarChart className="h-3.5 w-3.5" />
                   Pantalla principal
                 </button>
-                <button className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground py-1 w-full text-left">
+                <button 
+                  onClick={() => setActiveView('companies')}
+                  className={`flex items-center gap-2 text-xs py-1 w-full text-left ${activeView === 'companies' ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
+                >
                   <Building2 className="h-3.5 w-3.5" />
                   Pantalla d'empreses
                 </button>
-                <button className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground py-1 w-full text-left">
+                <button 
+                  onClick={() => setActiveView('data-entry')}
+                  className={`flex items-center gap-2 text-xs py-1 w-full text-left ${activeView === 'data-entry' ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
+                >
                   <ArrowDownUp className="h-3.5 w-3.5" />
                   Introducció Dades
                 </button>
-                <button className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground py-1 w-full text-left">
+                <button 
+                  onClick={() => setActiveView('reports')}
+                  className={`flex items-center gap-2 text-xs py-1 w-full text-left ${activeView === 'reports' ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
+                >
                   <Receipt className="h-3.5 w-3.5" />
                   Informes
                 </button>
@@ -577,10 +630,16 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
                 Balanços
               </CollapsibleTrigger>
               <CollapsibleContent className="pl-6 space-y-1">
-                <button className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground py-1 w-full text-left">
+                <button 
+                  onClick={() => setActiveView('balance')}
+                  className={`flex items-center gap-2 text-xs py-1 w-full text-left ${activeView === 'balance' ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
+                >
                   Balanç de Situació
                 </button>
-                <button className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground py-1 w-full text-left">
+                <button 
+                  onClick={() => setActiveView('results')}
+                  className={`flex items-center gap-2 text-xs py-1 w-full text-left ${activeView === 'results' ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
+                >
                   Compte de Resultats
                 </button>
               </CollapsibleContent>
@@ -594,38 +653,50 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
                 Financera
               </CollapsibleTrigger>
               <CollapsibleContent className="pl-6 space-y-1">
-                <button className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground py-1 w-full text-left">
+                <button 
+                  onClick={() => setActiveView('masses')}
+                  className={`flex items-center gap-2 text-xs py-1 w-full text-left ${activeView === 'masses' ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
+                >
                   Anàlisi Masses Patrimonials
                 </button>
-                <button className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground py-1 w-full text-left">
+                <button 
+                  onClick={() => setActiveView('analytical')}
+                  className={`flex items-center gap-2 text-xs py-1 w-full text-left ${activeView === 'analytical' ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
+                >
                   Quadre Analític P. i G.
                 </button>
-                <button className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground py-1 w-full text-left">
+                <button 
+                  onClick={() => setActiveView('cashflow')}
+                  className={`flex items-center gap-2 text-xs py-1 w-full text-left ${activeView === 'cashflow' ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
+                >
                   Flux de Caixa
                 </button>
-                <button className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground py-1 w-full text-left">
+                <button 
+                  onClick={() => setActiveView('ebit')}
+                  className={`flex items-center gap-2 text-xs py-1 w-full text-left ${activeView === 'ebit' ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
+                >
                   Anàlisi EBIT i EBITDA
                 </button>
               </CollapsibleContent>
             </Collapsible>
 
             {/* Ratios */}
-            <Collapsible open={expandedSections.includes('ratios')} onOpenChange={() => toggleSection('ratios')}>
-              <CollapsibleTrigger className="flex items-center gap-2 w-full py-1.5 text-left text-sm font-medium text-foreground hover:text-foreground/80">
-                {expandedSections.includes('ratios') ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                <PieChart className="h-4 w-4" />
-                Ràtios
-              </CollapsibleTrigger>
-            </Collapsible>
+            <button 
+              onClick={() => setActiveView('ratios')}
+              className={`flex items-center gap-2 w-full py-1.5 text-left text-sm font-medium ${activeView === 'ratios' ? 'text-primary' : 'text-foreground hover:text-foreground/80'}`}
+            >
+              <PieChart className="h-4 w-4" />
+              Ràtios
+            </button>
 
             {/* Rentabilidad */}
-            <Collapsible open={expandedSections.includes('rentabilidad')} onOpenChange={() => toggleSection('rentabilidad')}>
-              <CollapsibleTrigger className="flex items-center gap-2 w-full py-1.5 text-left text-sm font-medium text-foreground hover:text-foreground/80">
-                {expandedSections.includes('rentabilidad') ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                <TrendingUp className="h-4 w-4" />
-                Rendibilitat
-              </CollapsibleTrigger>
-            </Collapsible>
+            <button 
+              onClick={() => setActiveView('profitability')}
+              className={`flex items-center gap-2 w-full py-1.5 text-left text-sm font-medium ${activeView === 'profitability' ? 'text-primary' : 'text-foreground hover:text-foreground/80'}`}
+            >
+              <TrendingUp className="h-4 w-4" />
+              Rendibilitat
+            </button>
           </CardContent>
         </Card>
 
@@ -683,10 +754,10 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
 
       {/* Main Content */}
       <div className="flex-1 space-y-4 overflow-auto">
-        {/* Header */}
+        {/* Header for all views */}
         <div className="text-center print:mb-4">
           <h1 className="text-2xl font-bold text-amber-400 tracking-wide">
-            BALANÇOS DE SITUACIÓ (ACTIU i PASSIU)
+            {getViewTitle()}
           </h1>
           {company && (
             <div className="flex items-center justify-center gap-4 mt-2">
@@ -704,7 +775,9 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
           )}
         </div>
 
-        {/* Tables and Charts Grid */}
+        {/* Balance Content - shown when activeView is 'balance' */}
+        {activeView === 'balance' && (
+          <>
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
           {/* ACTIVO Table */}
           <div className="xl:col-span-2">
@@ -1196,7 +1269,7 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
               <div className="flex items-center gap-4 text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Scale className="h-3.5 w-3.5" />
-                  BALANÇ DE SITUACIÓ
+                  {getViewTitle()}
                 </span>
                 <span>Anàlisi de períodes: ANUALS</span>
                 <span className={`flex items-center gap-1 ${filteredBalanceSummaries.length > 0 && filteredBalanceSummaries[0].difference === 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
@@ -1220,6 +1293,61 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
             </div>
           </CardContent>
         </Card>
+        </>
+        )}
+
+        {/* Other views */}
+        {activeView === 'results' && (
+          <IncomeStatementChart companyId={companyId} />
+        )}
+        {activeView === 'masses' && (
+          <BalanceAnalysisArea companyId={companyId} companyName={company?.name || ''} />
+        )}
+        {activeView === 'analytical' && (
+          <AnalyticalPLChart companyId={companyId} companyName={company?.name || ''} />
+        )}
+        {activeView === 'ebit' && (
+          <EBITEBITDAAnalysis companyId={companyId} companyName={company?.name || ''} />
+        )}
+        {activeView === 'ratios' && (
+          <RatiosPyramid companyId={companyId} companyName={company?.name || ''} />
+        )}
+        {activeView === 'profitability' && (
+          <ProfitabilityTab companyId={companyId} companyName={company?.name || ''} />
+        )}
+        {activeView === 'companies' && (
+          <AccountingCompanyIndex onSelectCompany={(id) => console.log('Selected company:', id)} />
+        )}
+        {activeView === 'cashflow' && (
+          <Card className="border-border/50 bg-card/90">
+            <CardHeader>
+              <CardTitle>Flux de Caixa</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Anàlisi del flux de caixa de l'empresa.</p>
+            </CardContent>
+          </Card>
+        )}
+        {activeView === 'data-entry' && (
+          <Card className="border-border/50 bg-card/90">
+            <CardHeader>
+              <CardTitle>Introducció de Dades</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Secció per a la introducció manual de dades financeres.</p>
+            </CardContent>
+          </Card>
+        )}
+        {activeView === 'reports' && (
+          <Card className="border-border/50 bg-card/90">
+            <CardHeader>
+              <CardTitle>Informes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">Secció per a la generació d'informes financers.</p>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
