@@ -402,46 +402,7 @@ export function AdminSidebar({
           </>
         )}
 
-        {/* Gestión de Datos - Hide from regular gestores - Only Import History now (Companies moved to dashboard card) */}
-        {!isRegularGestor && (isSuperAdmin || isCommercialDirector || isCommercialManager) && (
-          <>
-            {open ? (
-              <Collapsible open={openGroups.management} onOpenChange={() => toggleGroup('management')}>
-                <SidebarGroup>
-                  <CollapsibleTrigger asChild>
-                    <SidebarGroupLabel className="cursor-pointer hover:bg-muted/50 rounded-md p-2 transition-all duration-300 group">
-                      <Building2 className="h-4 w-4 mr-2 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                      <span className="flex-1 transition-all duration-300 group-hover:translate-x-1">{t('admin.dataManagement')}</span>
-                      <ChevronRight className={`h-4 w-4 transition-all duration-300 group-hover:text-primary ${openGroups.management ? 'rotate-90' : ''}`} />
-                    </SidebarGroupLabel>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="transition-all duration-300 data-[state=open]:animate-slide-in data-[state=closed]:animate-slide-out">
-                    <SidebarGroupContent>
-                      <SidebarMenu>
-                        <SidebarMenuItem>
-                          <SidebarMenuButton onClick={() => onSectionChange('import-history')} isActive={isActive('import-history')} className="group">
-                            <History className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                            <span className="transition-all duration-300 group-hover:translate-x-1">Historial de Importaciones</span>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      </SidebarMenu>
-                    </SidebarGroupContent>
-                  </CollapsibleContent>
-                </SidebarGroup>
-              </Collapsible>
-            ) : (
-              <SidebarGroup>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => onSectionChange('import-history')} isActive={isActive('import-history')} tooltip="Historial de Importaciones" className="group">
-                      <History className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroup>
-            )}
-          </>
-        )}
+        {/* Gestión de Datos moved to Admin panel */}
 
         {/* Configuración - Hide from regular gestores */}
         {!isRegularGestor && (isSuperAdmin || isCommercialDirector || isCommercialManager) && (
