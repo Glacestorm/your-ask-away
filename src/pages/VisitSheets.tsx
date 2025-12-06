@@ -12,7 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
-import { CalendarIcon, FileText, Search, Filter, Loader2, Save, CheckCircle2, AlertCircle, Edit2 } from 'lucide-react';
+import { CalendarIcon, FileText, Search, Filter, Loader2, Save, CheckCircle2, AlertCircle, Edit2, Users } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -307,14 +307,26 @@ export default function VisitSheets() {
 
   return (
     <div className="container mx-auto py-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-3">
           <FileText className="h-8 w-8 text-primary" />
           <h1 className="text-3xl font-bold">Fichas de Visita</h1>
         </div>
-        <Badge variant="secondary" className="text-lg">
-          {filteredSheets.length} fichas
-        </Badge>
+        <div className="flex items-center gap-3">
+          {(isAdmin || isCommercialDirector || isOfficeDirector || isCommercialManager) && (
+            <Button
+              variant="outline"
+              onClick={() => window.location.href = '/admin?section=gestor-comparison'}
+              className="flex items-center gap-2 bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 border-emerald-500/30 hover:bg-emerald-500/20 hover:border-emerald-500/50 transition-all"
+            >
+              <Users className="h-4 w-4 text-emerald-600" />
+              <span>Comparativa Gestores</span>
+            </Button>
+          )}
+          <Badge variant="secondary" className="text-lg">
+            {filteredSheets.length} fichas
+          </Badge>
+        </div>
       </div>
 
       {/* Filtros */}
