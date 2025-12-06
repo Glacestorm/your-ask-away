@@ -96,6 +96,12 @@ export function SharedVisitsCalendar() {
   const [filterGestorId, setFilterGestorId] = useState<string>('all');
   const [filterOficina, setFilterOficina] = useState<string>('all');
 
+  // Reset gestor filter when office changes
+  const handleOfficeFilterChange = (oficina: string) => {
+    setFilterOficina(oficina);
+    setFilterGestorId('all'); // Reset gestor selection when office changes
+  };
+
   // Check if user can see filters (directors and managers)
   const canSeeFilters = isCommercialDirector || isCommercialManager || isOfficeDirector;
   const canFilterByOffice = isCommercialDirector || isCommercialManager;
@@ -626,13 +632,7 @@ export function SharedVisitsCalendar() {
               {canFilterByOffice && (
                 <div className="flex items-center gap-2">
                   <Building2 className="h-4 w-4 text-muted-foreground" />
-                  <Select value={filterOficina} onValueChange={(value) => {
-                    setFilterOficina(value);
-                    // Reset gestor filter when office changes
-                    if (value !== 'all') {
-                      setFilterGestorId('all');
-                    }
-                  }}>
+                  <Select value={filterOficina} onValueChange={handleOfficeFilterChange}>
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Totes les oficines" />
                     </SelectTrigger>
