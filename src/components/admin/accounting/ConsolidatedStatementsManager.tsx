@@ -535,17 +535,17 @@ const ConsolidatedStatementsManager = () => {
     setLoading(true);
     try {
       for (const company of selectedCompanies) {
-        // Check if company already has a consolidated statement reference
+        // Check if company already has a financial statement for this year
         const { data: existing } = await supabase
           .from('company_financial_statements')
           .select('id')
           .eq('company_id', company.id)
           .eq('fiscal_year', selectedYear)
-          .eq('source', 'consolidated')
+          .eq('is_archived', false)
           .single();
 
         if (!existing) {
-          // Create a new statement marked as consolidated source
+          // Create a new statement for this year
           await supabase
             .from('company_financial_statements')
             .insert({
@@ -1071,11 +1071,18 @@ const ConsolidatedStatementsManager = () => {
                             <Building2 className="w-4 h-4 text-muted-foreground" />
                             <div>
                               <p className="font-medium">{company.name}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {company.bp && `BP: ${company.bp}`}
-                                {company.bp && company.tax_id && ' | '}
-                                {company.tax_id && `NRT: ${company.tax_id}`}
-                              </p>
+                              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                                {company.bp && (
+                                  <span className="flex items-center gap-1">
+                                    <span className="font-medium text-blue-600">BP:</span> {company.bp}
+                                  </span>
+                                )}
+                                {company.tax_id && (
+                                  <span className="flex items-center gap-1">
+                                    <span className="font-medium text-green-600">NRT:</span> {company.tax_id}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
@@ -1154,8 +1161,24 @@ const ConsolidatedStatementsManager = () => {
                     {selectedCompanies.map(company => (
                       <TableRow key={company.id}>
                         <TableCell className="font-medium">{company.name}</TableCell>
-                        <TableCell>{company.bp || '-'}</TableCell>
-                        <TableCell>{company.tax_id || '-'}</TableCell>
+                        <TableCell>
+                          {company.bp ? (
+                            <code className="px-1.5 py-0.5 bg-blue-500/10 text-blue-600 rounded text-xs font-mono">
+                              {company.bp}
+                            </code>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {company.tax_id ? (
+                            <code className="px-1.5 py-0.5 bg-green-500/10 text-green-600 rounded text-xs font-mono">
+                              {company.tax_id}
+                            </code>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
                         <TableCell>
                           {company.is_parent ? (
                             <Badge className="bg-primary">Matriu</Badge>
@@ -1216,9 +1239,18 @@ const ConsolidatedStatementsManager = () => {
                         <TableCell>
                           <div>
                             <p className="font-medium">{company.name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {company.bp && `BP: ${company.bp}`}
-                            </p>
+                            <div className="flex items-center gap-2 text-xs mt-0.5">
+                              {company.bp && (
+                                <code className="px-1 py-0.5 bg-blue-500/10 text-blue-600 rounded font-mono">
+                                  BP: {company.bp}
+                                </code>
+                              )}
+                              {company.tax_id && (
+                                <code className="px-1 py-0.5 bg-green-500/10 text-green-600 rounded font-mono">
+                                  NRT: {company.tax_id}
+                                </code>
+                              )}
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell>
