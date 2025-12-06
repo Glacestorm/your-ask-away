@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { FileUp, Plus, CheckCircle, Clock, FileText, Wallet, RefreshCcw, Archive, Building2, CreditCard, Pyramid, TrendingUp, Target, ClipboardCheck, FileBarChart, CalendarClock, Trash2, Printer, Unlock, AlertTriangle } from 'lucide-react';
+import { FileUp, Plus, CheckCircle, Clock, FileText, Wallet, RefreshCcw, Archive, Building2, CreditCard, Pyramid, TrendingUp, Target, ClipboardCheck, FileBarChart, CalendarClock, Trash2, Printer, Unlock, AlertTriangle, Layers } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import BalanceSheetForm from './BalanceSheetForm';
 import IncomeStatementForm from './IncomeStatementForm';
@@ -31,6 +31,7 @@ import { ProvisionalStatementsManager } from './ProvisionalStatementsManager';
 import AccountingCompanyIndex from './AccountingCompanyIndex';
 import PeriodYearSelector from './PeriodYearSelector';
 import EnhancedCompanyHeader from './EnhancedCompanyHeader';
+import ConsolidatedStatementsManager from './ConsolidatedStatementsManager';
 
 interface Company {
   id: string;
@@ -677,6 +678,10 @@ const AccountingManager = () => {
             <TabsTrigger value="provisional" className="text-xs px-2 py-1.5">
               <CalendarClock className="w-3 h-3 mr-1" />
               Previsional
+            </TabsTrigger>
+            <TabsTrigger value="consolidated" className="text-xs px-2 py-1.5">
+              <Layers className="w-3 h-3 mr-1" />
+              Consolidació
             </TabsTrigger>
             <TabsTrigger value="history" className="text-xs px-2 py-1.5">Historial</TabsTrigger>
           </TabsList>
