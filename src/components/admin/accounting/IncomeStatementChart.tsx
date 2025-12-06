@@ -19,7 +19,6 @@ import {
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { PGCTooltip, getComposition } from './PGCTooltip';
 
 type PlanType = 'COMPLET' | 'SIMPLIFICAT';
 type DataViewType = 'VALORS' | 'VALORS_PERCENTATGES' | 'VALORS_TOTAL' | 'VALORS_DESVIACIO';
@@ -610,14 +609,7 @@ const IncomeStatementChart = ({ companyId }: IncomeStatementChartProps) => {
 
                       {/* 1. Importe neto de la cifra de negocios */}
                       <TableRow className="bg-amber-500/20 hover:bg-amber-500/30">
-                        <TableCell className="font-bold text-amber-200 py-1.5 text-sm">
-                          <PGCTooltip 
-                            title="Import net de la xifra de negocis" 
-                            composition={getComposition('netTurnover', 'income', planType)}
-                          >
-                            1. Import net de la xifra de negocis
-                          </PGCTooltip>
-                        </TableCell>
+                        <TableCell className="font-bold text-amber-200 py-1.5 text-sm">1. Import net de la xifra de negocis</TableCell>
                         {filteredIncomeData.map(s => (
                           <TableCell key={s.year} className="text-right font-mono text-amber-200 font-bold py-1.5 text-sm">
                             {formatCurrency(s.netTurnover)}
@@ -683,14 +675,7 @@ const IncomeStatementChart = ({ companyId }: IncomeStatementChartProps) => {
 
                       {/* 4. Aprovisionamientos */}
                       <TableRow className="bg-rose-500/20 hover:bg-rose-500/30">
-                        <TableCell className="font-bold text-rose-200 py-1.5 text-sm">
-                          <PGCTooltip 
-                            title="Aprovisionaments" 
-                            composition={getComposition('supplies', 'income', planType)}
-                          >
-                            4. Aprovisionaments
-                          </PGCTooltip>
-                        </TableCell>
+                        <TableCell className="font-bold text-rose-200 py-1.5 text-sm">4. Aprovisionaments</TableCell>
                         {filteredIncomeData.map(s => (
                           <TableCell key={s.year} className="text-right font-mono text-rose-200 font-bold py-1.5 text-sm">
                             {formatCurrency(-s.supplies)}
@@ -765,14 +750,7 @@ const IncomeStatementChart = ({ companyId }: IncomeStatementChartProps) => {
 
                       {/* 6. Gastos de personal */}
                       <TableRow className="bg-rose-500/20 hover:bg-rose-500/30">
-                        <TableCell className="font-bold text-rose-200 py-1.5 text-sm">
-                          <PGCTooltip 
-                            title="Despeses de personal" 
-                            composition={getComposition('personnelExpenses', 'income', planType)}
-                          >
-                            6. Despeses de personal
-                          </PGCTooltip>
-                        </TableCell>
+                        <TableCell className="font-bold text-rose-200 py-1.5 text-sm">6. Despeses de personal</TableCell>
                         {filteredIncomeData.map(s => (
                           <TableCell key={s.year} className="text-right font-mono text-rose-200 font-bold py-1.5 text-sm">
                             {formatCurrency(-s.personnelExpenses)}
