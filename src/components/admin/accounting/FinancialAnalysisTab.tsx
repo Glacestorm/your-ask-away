@@ -14,6 +14,7 @@ import LiquidityDebtRatios from "./LiquidityDebtRatios";
 import SectoralRatiosAnalysis from "./SectoralRatiosAnalysis";
 import SectorSimulator from "./SectorSimulator";
 import RatiosPyramid from "./RatiosPyramid";
+import DuPontPyramid from "./DuPontPyramid";
 
 interface FinancialAnalysisTabProps {
   companyId: string;
@@ -210,6 +211,7 @@ export function FinancialAnalysisTab({ companyId, companyName }: FinancialAnalys
           <TabsTrigger value="sectoral-ratios" className="text-xs">Ràtios Sectorials</TabsTrigger>
           <TabsTrigger value="sector-simulator" className="text-xs">Simulador Sector</TabsTrigger>
           <TabsTrigger value="ratios-pyramid" className="text-xs">Pirámide Ràtios</TabsTrigger>
+          <TabsTrigger value="dupont-pyramid" className="text-xs">Pirámide DuPont</TabsTrigger>
           <TabsTrigger value="dashboard" className="text-xs">Dashboard</TabsTrigger>
         </TabsList>
 
@@ -577,6 +579,10 @@ export function FinancialAnalysisTab({ companyId, companyName }: FinancialAnalys
 
         <TabsContent value="ratios-pyramid">
           <RatiosPyramid companyId={companyId} companyName={companyName} />
+        </TabsContent>
+
+        <TabsContent value="dupont-pyramid">
+          <DuPontPyramid companyId={companyId} companyName={companyName} />
         </TabsContent>
       </Tabs>
     </div>
