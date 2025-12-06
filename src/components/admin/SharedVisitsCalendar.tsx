@@ -335,13 +335,18 @@ export function SharedVisitsCalendar() {
     return gestores.filter(g => g.oficina === filterOficina);
   }, [gestores, filterOficina]);
 
-  // For office directors, filter gestores by their office
+  // Get available gestores based on role and office filter
   const availableGestores = useMemo(() => {
+    // For office directors, show only their office's gestores
     if (isOfficeDirector && profile?.oficina) {
       return gestores.filter(g => g.oficina === profile.oficina);
     }
-    return filteredGestores;
-  }, [isOfficeDirector, profile?.oficina, gestores, filteredGestores]);
+    // For commercial directors and managers, apply office filter if selected
+    if (canFilterByOffice && filterOficina !== 'all') {
+      return gestores.filter(g => g.oficina === filterOficina);
+    }
+    return gestores;
+  }, [isOfficeDirector, profile?.oficina, gestores, canFilterByOffice, filterOficina]);
 
   const events: CalendarEvent[] = useMemo(() => {
     return filteredVisits.map((visit) => {
