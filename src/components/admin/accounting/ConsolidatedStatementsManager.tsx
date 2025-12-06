@@ -354,7 +354,7 @@ const ConsolidatedStatementsManager = () => {
             fiscal_year: selectedYear,
             statement_type: 'normal',
             status: 'draft',
-            source: 'calculated'
+            source: 'manual'
           })
           .select()
           .single();
