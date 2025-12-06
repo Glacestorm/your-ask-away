@@ -42,29 +42,24 @@ export function MetricsCardsSection() {
     }
   ];
 
-  const handleCardClick = (sectionId: string) => {
-    navigate(`/admin?section=${sectionId}`);
+  const handleCardClick = () => {
+    navigate('/admin?section=filtered-metrics');
   };
 
   return (
-    <div className="grid gap-4 md:grid-cols-3">
-      {metricsCards.map((card) => (
-        <Card 
-          key={card.id}
-          className="cursor-pointer hover:shadow-md transition-all hover:scale-[1.02]"
-          onClick={() => handleCardClick(card.id)}
-        >
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className={`h-10 w-10 rounded-lg ${card.bgColor} flex items-center justify-center`}>
-              <card.icon className={`h-5 w-5 ${card.color}`} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-sm truncate">{card.title}</h3>
-              <p className="text-xs text-muted-foreground truncate">{card.description}</p>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+    <Card 
+      className="cursor-pointer hover:shadow-md transition-all hover:scale-[1.02]"
+      onClick={handleCardClick}
+    >
+      <CardContent className="p-4 flex items-center gap-3">
+        <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+          <BarChart3 className="h-5 w-5 text-blue-500" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-sm truncate">Mètriques</h3>
+          <p className="text-xs text-muted-foreground truncate">Visites, Productes, Vinculació i Gestors</p>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

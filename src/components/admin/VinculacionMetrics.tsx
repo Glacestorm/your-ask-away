@@ -6,7 +6,11 @@ import { TrendingUp, Target, Percent } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 
-export function VinculacionMetrics() {
+interface VinculacionMetricsProps {
+  gestorId?: string | null;
+}
+
+export function VinculacionMetrics({ gestorId }: VinculacionMetricsProps) {
   const [loading, setLoading] = useState(true);
   const [avgVinculacion, setAvgVinculacion] = useState(0);
   const [vinculacionTrend, setVinculacionTrend] = useState<any[]>([]);
@@ -15,18 +19,24 @@ export function VinculacionMetrics() {
 
   useEffect(() => {
     fetchVinculacionData();
-  }, []);
+  }, [gestorId]);
 
   const fetchVinculacionData = async () => {
     try {
       setLoading(true);
 
       // Visitas con porcentaje de vinculación
-      const { data: visits } = await supabase
+      let query = supabase
         .from('visits')
         .select('visit_date, porcentaje_vinculacion, gestor_id, profiles(full_name, email)')
         .not('porcentaje_vinculacion', 'is', null)
         .order('visit_date');
+
+      if (gestorId) {
+        query = query.eq('gestor_id', gestorId);
+      }
+
+      const { data: visits } = await query;
 
       if (!visits || visits.length === 0) {
         setLoading(false);
@@ -82,41 +92,45 @@ export function VinculacionMetrics() {
         .sort((a: any, b: any) => a.sortKey.localeCompare(b.sortKey));
       setVinculacionTrend(sortedTrend);
 
-      // Promedio de vinculación por gestor (últimos 6 meses)
-      const sixMonthsAgo = new Date();
-      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+      // Promedio de vinculación por gestor (últimos 6 meses) - only if not filtering by a specific gestor
+      if (!gestorId) {
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
-      const recentVisits = visits.filter((v: any) => 
-        new Date(v.visit_date) >= sixMonthsAgo
-      );
+        const recentVisits = visits.filter((v: any) => 
+          new Date(v.visit_date) >= sixMonthsAgo
+        );
 
-      const gestorMap: any = {};
-      recentVisits.forEach((visit: any) => {
-        const gestorName = visit.profiles?.full_name || visit.profiles?.email || 'Sin asignar';
-        if (!gestorMap[gestorName]) {
-          gestorMap[gestorName] = {
-            gestor: gestorName,
-            suma: 0,
-            count: 0,
-            promedio: 0
-          };
-        }
-        gestorMap[gestorName].suma += visit.porcentaje_vinculacion || 0;
-        gestorMap[gestorName].count++;
-      });
+        const gestorMap: any = {};
+        recentVisits.forEach((visit: any) => {
+          const gestorName = visit.profiles?.full_name || visit.profiles?.email || 'Sin asignar';
+          if (!gestorMap[gestorName]) {
+            gestorMap[gestorName] = {
+              gestor: gestorName,
+              suma: 0,
+              count: 0,
+              promedio: 0
+            };
+          }
+          gestorMap[gestorName].suma += visit.porcentaje_vinculacion || 0;
+          gestorMap[gestorName].count++;
+        });
 
-      Object.values(gestorMap).forEach((g: any) => {
-        g.promedio = g.count > 0 ? Math.round((g.suma / g.count) * 10) / 10 : 0;
-        if (!isFinite(g.promedio) || isNaN(g.promedio)) {
-          g.promedio = 0;
-        }
-      });
+        Object.values(gestorMap).forEach((g: any) => {
+          g.promedio = g.count > 0 ? Math.round((g.suma / g.count) * 10) / 10 : 0;
+          if (!isFinite(g.promedio) || isNaN(g.promedio)) {
+            g.promedio = 0;
+          }
+        });
 
-      const sortedGestores = Object.values(gestorMap)
-        .filter((g: any) => g.count >= 3 && g.gestor && !isNaN(g.promedio)) // Mínimo 3 visitas con vinculación
-        .sort((a: any, b: any) => (b.promedio || 0) - (a.promedio || 0))
-        .slice(0, 10);
-      setTopGestoresVinculacion(sortedGestores);
+        const sortedGestores = Object.values(gestorMap)
+          .filter((g: any) => g.count >= 3 && g.gestor && !isNaN(g.promedio)) // Mínimo 3 visitas con vinculación
+          .sort((a: any, b: any) => (b.promedio || 0) - (a.promedio || 0))
+          .slice(0, 10);
+        setTopGestoresVinculacion(sortedGestores);
+      } else {
+        setTopGestoresVinculacion([]);
+      }
 
       // Distribución de rangos de vinculación
       const ranges = [
@@ -209,24 +223,22 @@ export function VinculacionMetrics() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Mejor Gestor</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold truncate">
-              {topGestoresVinculacion.length > 0 
-                ? topGestoresVinculacion[0].gestor 
-                : 'N/A'}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {topGestoresVinculacion.length > 0 
-                ? `${topGestoresVinculacion[0].promedio}% promedio` 
-                : ''}
-            </p>
-          </CardContent>
-        </Card>
+        {!gestorId && topGestoresVinculacion.length > 0 && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Mejor Gestor</CardTitle>
+              <Target className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold truncate">
+                {topGestoresVinculacion[0].gestor}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {`${topGestoresVinculacion[0].promedio}% promedio`}
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Gráficos */}
@@ -275,12 +287,12 @@ export function VinculacionMetrics() {
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart 
                   data={vinculacionDistribution.filter(r => 
-                    !isNaN(r.count) && isFinite(r.count) && r.count > 0
+                    !isNaN(r.count) && isFinite(r.count)
                   )}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="rango" />
-                  <YAxis allowDecimals={false} />
+                  <YAxis allowDecimals={false} domain={[0, 'auto']} />
                   <Tooltip />
                   <Legend />
                   <Bar dataKey="count" fill="hsl(var(--chart-1))" name="Visitas" />
@@ -290,8 +302,8 @@ export function VinculacionMetrics() {
           </Card>
         )}
 
-        {/* Top Gestores por Vinculación */}
-        {topGestoresVinculacion.length > 0 && (
+        {/* Top Gestores por Vinculación - Only show when not filtering by gestor */}
+        {!gestorId && topGestoresVinculacion.length > 0 && (
           <Card className="md:col-span-2">
             <CardHeader>
               <CardTitle>Promedio de Vinculación por Gestor</CardTitle>
