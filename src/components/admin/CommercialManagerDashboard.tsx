@@ -19,6 +19,7 @@ import { QuickVisitSheetCard } from '@/components/dashboard/QuickVisitSheetCard'
 import { AccountingDashboardCard } from '@/components/dashboard/AccountingDashboardCard';
 import { MetricsCardsSection } from '@/components/dashboard/MetricsCardsSection';
 import { CompaniesDashboardCard } from '@/components/dashboard/CompaniesDashboardCard';
+import { AlertHistoryDashboardCard } from '@/components/dashboard/AlertHistoryDashboardCard';
 
 // Panel del Responsable Comercial con vista general y explorador de métricas
 
@@ -386,6 +387,9 @@ const [gestorRanking, setGestorRanking] = useState<GestorRanking[]>([]);
             <AccountingDashboardCard />
             <CompaniesDashboardCard />
           </div>
+
+          {/* Alert History Card */}
+          <AlertHistoryDashboardCard />
 
           {/* Gráfico de Ranking */}
           <Card>
