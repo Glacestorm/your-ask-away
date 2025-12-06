@@ -407,18 +407,6 @@ export function AuditorDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-lg">
-          <Shield className="h-6 w-6 text-primary-foreground" />
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold">Dashboard d'Auditor</h2>
-          <p className="text-sm text-muted-foreground">
-            Mètriques d'auditoría i traçabilitat del sistema
-          </p>
-        </div>
-      </div>
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
