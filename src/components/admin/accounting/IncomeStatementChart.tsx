@@ -313,9 +313,9 @@ const IncomeStatementChart = ({ companyId }: IncomeStatementChartProps) => {
   };
 
   return (
-    <div className="flex gap-4 h-full print:block">
+    <div className="flex gap-2 h-full overflow-hidden print:block">
       {/* Sidebar - Opciones */}
-      <div className="w-64 flex-shrink-0 space-y-4 print:hidden">
+      <div className="w-56 flex-shrink-0 space-y-2 overflow-y-auto print:hidden">
         {/* Selección Vista del Balance */}
         <Card className="border-border/50 bg-card/90">
           <CardHeader className="py-3 px-4">
@@ -554,10 +554,10 @@ const IncomeStatementChart = ({ companyId }: IncomeStatementChartProps) => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 space-y-4 overflow-auto">
+      <div className="flex-1 space-y-2 overflow-hidden min-w-0">
         {/* Header */}
-        <div className="text-center print:mb-4">
-          <h1 className="text-2xl font-bold text-amber-400 tracking-wide">
+        <div className="text-center print:mb-2">
+          <h1 className="text-lg font-bold text-amber-400 tracking-wide">
             ESTRUCTURA DE PÈRDUES I GUANYS (INGRESSOS - DESPESES)
           </h1>
           {company && (
@@ -577,24 +577,24 @@ const IncomeStatementChart = ({ companyId }: IncomeStatementChartProps) => {
         </div>
 
         {/* Tables and Charts Grid */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_220px] gap-2 h-[calc(100%-60px)]">
           {/* Income Statement Table */}
-          <div className="xl:col-span-2">
-            <Card className="border-border/50 bg-card/90">
-              <CardHeader className="py-2 px-4 bg-amber-500/20 border-b border-amber-500/30">
-                <CardTitle className="text-center text-amber-400 font-bold">
+          <div className="overflow-hidden min-w-0">
+            <Card className="border-border/50 bg-card/90 h-full">
+              <CardHeader className="py-1.5 px-3 bg-amber-500/20 border-b border-amber-500/30">
+                <CardTitle className="text-center text-amber-400 font-bold text-sm">
                   COMPTE DE PÈRDUES I GUANYS
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-0">
-                <ScrollArea className="h-[600px]">
-                  <Table>
+              <CardContent className="p-0 h-[calc(100%-40px)]">
+                <ScrollArea className="h-full">
+                  <Table className="text-[10px]">
                     <TableHeader className="sticky top-0 bg-card z-10">
                       <TableRow className="border-b border-border/50 hover:bg-transparent">
-                        <TableHead className="w-[350px] font-bold text-foreground text-sm py-2">DESCRIPCIÓ</TableHead>
+                        <TableHead className="w-[220px] min-w-[180px] font-bold text-foreground text-[10px] py-1 px-2">DESCRIPCIÓ</TableHead>
                         {years.slice(0, 5).map(year => (
-                          <TableHead key={year} className="font-bold text-foreground text-right text-xs py-2 w-24">
-                            Desembre-{year}
+                          <TableHead key={year} className="font-bold text-foreground text-right text-[10px] py-1 px-1 w-16 min-w-[60px]">
+                            Des-{year}
                           </TableHead>
                         ))}
                       </TableRow>
@@ -602,46 +602,46 @@ const IncomeStatementChart = ({ companyId }: IncomeStatementChartProps) => {
                     <TableBody>
                       {/* A) OPERACIONES CONTINUADAS */}
                       <TableRow className="bg-emerald-600/40 hover:bg-emerald-600/50">
-                        <TableCell colSpan={years.length + 1} className="font-bold text-emerald-200 py-1.5 text-sm">
+                        <TableCell colSpan={years.length + 1} className="font-bold text-emerald-200 py-1 text-[10px] px-2">
                           A) OPERACIONS CONTINUADES
                         </TableCell>
                       </TableRow>
 
                       {/* 1. Importe neto de la cifra de negocios */}
                       <TableRow className="bg-amber-500/20 hover:bg-amber-500/30">
-                        <TableCell className="font-bold text-amber-200 py-1.5 text-sm">1. Import net de la xifra de negocis</TableCell>
+                        <TableCell className="font-bold text-amber-200 py-1 text-[10px] px-2">1. Import net xifra negocis</TableCell>
                         {filteredIncomeData.map(s => (
-                          <TableCell key={s.year} className="text-right font-mono text-amber-200 font-bold py-1.5 text-sm">
+                          <TableCell key={s.year} className="text-right font-mono text-amber-200 font-bold py-1 text-[10px] px-1">
                             {formatCurrency(s.netTurnover)}
                           </TableCell>
                         ))}
                         {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                          <TableCell key={`empty-nt-${i}`} className="text-right py-1.5">0,00</TableCell>
+                          <TableCell key={`empty-nt-${i}`} className="text-right py-1 text-[10px] px-1">0,00</TableCell>
                         ))}
                       </TableRow>
                       
                       {planType === 'COMPLET' && (
                         <>
                           <TableRow className="hover:bg-muted/30">
-                            <TableCell className="text-foreground pl-6 py-1 text-xs">a) Vendes</TableCell>
+                            <TableCell className="text-foreground pl-4 py-0.5 text-[9px] px-2">a) Vendes</TableCell>
                             {filteredIncomeData.map(s => (
-                              <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
+                              <TableCell key={s.year} className="text-right font-mono text-foreground py-0.5 text-[9px] px-1">
                                 {formatCurrency(s.sales)}
                               </TableCell>
                             ))}
                             {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                              <TableCell key={`empty-sales-${i}`} className="text-right py-1">0,00</TableCell>
+                              <TableCell key={`empty-sales-${i}`} className="text-right py-0.5 text-[9px] px-1">0,00</TableCell>
                             ))}
                           </TableRow>
                           <TableRow className="hover:bg-muted/30">
-                            <TableCell className="text-foreground pl-6 py-1 text-xs">b) Prestació de serveis</TableCell>
+                            <TableCell className="text-foreground pl-4 py-0.5 text-[9px] px-2">b) Prestació serveis</TableCell>
                             {filteredIncomeData.map(s => (
-                              <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
+                              <TableCell key={s.year} className="text-right font-mono text-foreground py-0.5 text-[9px] px-1">
                                 {formatCurrency(s.services)}
                               </TableCell>
                             ))}
                             {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                              <TableCell key={`empty-serv-${i}`} className="text-right py-1">0,00</TableCell>
+                              <TableCell key={`empty-serv-${i}`} className="text-right py-0.5 text-[9px] px-1">0,00</TableCell>
                             ))}
                           </TableRow>
                         </>
@@ -649,87 +649,87 @@ const IncomeStatementChart = ({ companyId }: IncomeStatementChartProps) => {
 
                       {/* 2. Variación de existencias */}
                       <TableRow className="bg-amber-500/10 hover:bg-amber-500/20">
-                        <TableCell className="font-semibold text-foreground py-1 text-xs">2. Variac. d'existènc. de prod. term. i en curs de fabr.</TableCell>
+                        <TableCell className="font-semibold text-foreground py-0.5 text-[9px] px-2">2. Variac. existènc. prod. term.</TableCell>
                         {filteredIncomeData.map(s => (
-                          <TableCell key={s.year} className={`text-right font-mono py-1 text-xs ${getValueColor(s.inventoryChange)}`}>
+                          <TableCell key={s.year} className={`text-right font-mono py-0.5 text-[9px] px-1 ${getValueColor(s.inventoryChange)}`}>
                             {formatCurrency(s.inventoryChange)}
                           </TableCell>
                         ))}
                         {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                          <TableCell key={`empty-inv-${i}`} className="text-right py-1">0,00</TableCell>
+                          <TableCell key={`empty-inv-${i}`} className="text-right py-0.5 text-[9px] px-1">0,00</TableCell>
                         ))}
                       </TableRow>
 
                       {/* 3. Trabajos realizados */}
                       <TableRow className="bg-amber-500/10 hover:bg-amber-500/20">
-                        <TableCell className="font-semibold text-foreground py-1 text-xs">3. Treballs realitzats per l'empresa per al seu actiu</TableCell>
+                        <TableCell className="font-semibold text-foreground py-0.5 text-[9px] px-2">3. Treballs realitzats empresa</TableCell>
                         {filteredIncomeData.map(s => (
-                          <TableCell key={s.year} className={`text-right font-mono py-1 text-xs ${getValueColor(s.workPerformed)}`}>
+                          <TableCell key={s.year} className={`text-right font-mono py-0.5 text-[9px] px-1 ${getValueColor(s.workPerformed)}`}>
                             {formatCurrency(s.workPerformed)}
                           </TableCell>
                         ))}
                         {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                          <TableCell key={`empty-work-${i}`} className="text-right py-1">0,00</TableCell>
+                          <TableCell key={`empty-work-${i}`} className="text-right py-0.5 text-[9px] px-1">0,00</TableCell>
                         ))}
                       </TableRow>
 
                       {/* 4. Aprovisionamientos */}
                       <TableRow className="bg-rose-500/20 hover:bg-rose-500/30">
-                        <TableCell className="font-bold text-rose-200 py-1.5 text-sm">4. Aprovisionaments</TableCell>
+                        <TableCell className="font-bold text-rose-200 py-1 text-[10px] px-2">4. Aprovisionaments</TableCell>
                         {filteredIncomeData.map(s => (
-                          <TableCell key={s.year} className="text-right font-mono text-rose-200 font-bold py-1.5 text-sm">
+                          <TableCell key={s.year} className="text-right font-mono text-rose-200 font-bold py-1 text-[10px] px-1">
                             {formatCurrency(-s.supplies)}
                           </TableCell>
                         ))}
                         {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                          <TableCell key={`empty-sup-${i}`} className="text-right py-1.5">0,00</TableCell>
+                          <TableCell key={`empty-sup-${i}`} className="text-right py-1 text-[10px] px-1">0,00</TableCell>
                         ))}
                       </TableRow>
 
                       {planType === 'COMPLET' && (
                         <>
                           <TableRow className="hover:bg-muted/30">
-                            <TableCell className="text-foreground pl-6 py-1 text-xs">a) Consum de mercaderies</TableCell>
+                            <TableCell className="text-foreground pl-4 py-0.5 text-[9px] px-2">a) Consum mercaderies</TableCell>
                             {filteredIncomeData.map(s => (
-                              <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
+                              <TableCell key={s.year} className="text-right font-mono text-foreground py-0.5 text-[9px] px-1">
                                 {formatCurrency(-s.merchandiseCost)}
                               </TableCell>
                             ))}
                             {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                              <TableCell key={`empty-merc-${i}`} className="text-right py-1">0,00</TableCell>
+                              <TableCell key={`empty-merc-${i}`} className="text-right py-0.5 text-[9px] px-1">0,00</TableCell>
                             ))}
                           </TableRow>
                           <TableRow className="hover:bg-muted/30">
-                            <TableCell className="text-foreground pl-6 py-1 text-xs">b) Consum de matèries primeres i altres matèries consum.</TableCell>
+                            <TableCell className="text-foreground pl-4 py-0.5 text-[9px] px-2">b) Consum matèries primeres</TableCell>
                             {filteredIncomeData.map(s => (
-                              <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
+                              <TableCell key={s.year} className="text-right font-mono text-foreground py-0.5 text-[9px] px-1">
                                 {formatCurrency(-s.rawMaterialsCost)}
                               </TableCell>
                             ))}
                             {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                              <TableCell key={`empty-raw-${i}`} className="text-right py-1">0,00</TableCell>
+                              <TableCell key={`empty-raw-${i}`} className="text-right py-0.5 text-[9px] px-1">0,00</TableCell>
                             ))}
                           </TableRow>
                           <TableRow className="hover:bg-muted/30">
-                            <TableCell className="text-foreground pl-6 py-1 text-xs">c) Treballs realitzats per altres empreses</TableCell>
+                            <TableCell className="text-foreground pl-4 py-0.5 text-[9px] px-2">c) Treballs altres empreses</TableCell>
                             {filteredIncomeData.map(s => (
-                              <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
+                              <TableCell key={s.year} className="text-right font-mono text-foreground py-0.5 text-[9px] px-1">
                                 {formatCurrency(-s.externalWork)}
                               </TableCell>
                             ))}
                             {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                              <TableCell key={`empty-ext-${i}`} className="text-right py-1">0,00</TableCell>
+                              <TableCell key={`empty-ext-${i}`} className="text-right py-0.5 text-[9px] px-1">0,00</TableCell>
                             ))}
                           </TableRow>
                           <TableRow className="hover:bg-muted/30">
-                            <TableCell className="text-foreground pl-6 py-1 text-xs">d) Deteriorament de mercaderies, mat.primeres i altres aprovis.</TableCell>
+                            <TableCell className="text-foreground pl-4 py-0.5 text-[9px] px-2">d) Deteriorament mercaderies</TableCell>
                             {filteredIncomeData.map(s => (
-                              <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
+                              <TableCell key={s.year} className="text-right font-mono text-foreground py-0.5 text-[9px] px-1">
                                 {formatCurrency(-s.impairmentMerchandise)}
                               </TableCell>
                             ))}
                             {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                              <TableCell key={`empty-det-${i}`} className="text-right py-1">0,00</TableCell>
+                              <TableCell key={`empty-det-${i}`} className="text-right py-0.5 text-[9px] px-1">0,00</TableCell>
                             ))}
                           </TableRow>
                         </>
@@ -737,63 +737,63 @@ const IncomeStatementChart = ({ companyId }: IncomeStatementChartProps) => {
 
                       {/* 5. Otros ingresos de explotación */}
                       <TableRow className="bg-amber-500/10 hover:bg-amber-500/20">
-                        <TableCell className="font-semibold text-foreground py-1 text-xs">5. Altres ingressos d'explotació</TableCell>
+                        <TableCell className="font-semibold text-foreground py-0.5 text-[9px] px-2">5. Altres ingressos explotació</TableCell>
                         {filteredIncomeData.map(s => (
-                          <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
+                          <TableCell key={s.year} className="text-right font-mono text-foreground py-0.5 text-[9px] px-1">
                             {formatCurrency(s.otherOperatingIncome)}
                           </TableCell>
                         ))}
                         {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                          <TableCell key={`empty-other-${i}`} className="text-right py-1">0,00</TableCell>
+                          <TableCell key={`empty-other-${i}`} className="text-right py-0.5 text-[9px] px-1">0,00</TableCell>
                         ))}
                       </TableRow>
 
                       {/* 6. Gastos de personal */}
                       <TableRow className="bg-rose-500/20 hover:bg-rose-500/30">
-                        <TableCell className="font-bold text-rose-200 py-1.5 text-sm">6. Despeses de personal</TableCell>
+                        <TableCell className="font-bold text-rose-200 py-1 text-[10px] px-2">6. Despeses personal</TableCell>
                         {filteredIncomeData.map(s => (
-                          <TableCell key={s.year} className="text-right font-mono text-rose-200 font-bold py-1.5 text-sm">
+                          <TableCell key={s.year} className="text-right font-mono text-rose-200 font-bold py-1 text-[10px] px-1">
                             {formatCurrency(-s.personnelExpenses)}
                           </TableCell>
                         ))}
                         {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                          <TableCell key={`empty-pers-${i}`} className="text-right py-1.5">0,00</TableCell>
+                          <TableCell key={`empty-pers-${i}`} className="text-right py-1 text-[10px] px-1">0,00</TableCell>
                         ))}
                       </TableRow>
 
                       {planType === 'COMPLET' && (
                         <>
                           <TableRow className="hover:bg-muted/30">
-                            <TableCell className="text-foreground pl-6 py-1 text-xs">a) Sous, salaris i assimilats</TableCell>
+                            <TableCell className="text-foreground pl-4 py-0.5 text-[9px] px-2">a) Sous, salaris</TableCell>
                             {filteredIncomeData.map(s => (
-                              <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
+                              <TableCell key={s.year} className="text-right font-mono text-foreground py-0.5 text-[9px] px-1">
                                 {formatCurrency(-s.wagesSalaries)}
                               </TableCell>
                             ))}
                             {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                              <TableCell key={`empty-wage-${i}`} className="text-right py-1">0,00</TableCell>
+                              <TableCell key={`empty-wage-${i}`} className="text-right py-0.5 text-[9px] px-1">0,00</TableCell>
                             ))}
                           </TableRow>
                           <TableRow className="hover:bg-muted/30">
-                            <TableCell className="text-foreground pl-6 py-1 text-xs">b) Càrregues socials</TableCell>
+                            <TableCell className="text-foreground pl-4 py-0.5 text-[9px] px-2">b) Càrregues socials</TableCell>
                             {filteredIncomeData.map(s => (
-                              <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
+                              <TableCell key={s.year} className="text-right font-mono text-foreground py-0.5 text-[9px] px-1">
                                 {formatCurrency(-s.socialCharges)}
                               </TableCell>
                             ))}
                             {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                              <TableCell key={`empty-soc-${i}`} className="text-right py-1">0,00</TableCell>
+                              <TableCell key={`empty-soc-${i}`} className="text-right py-0.5 text-[9px] px-1">0,00</TableCell>
                             ))}
                           </TableRow>
                           <TableRow className="hover:bg-muted/30">
-                            <TableCell className="text-foreground pl-6 py-1 text-xs">c) Provisions</TableCell>
+                            <TableCell className="text-foreground pl-4 py-0.5 text-[9px] px-2">c) Provisions</TableCell>
                             {filteredIncomeData.map(s => (
-                              <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
+                              <TableCell key={s.year} className="text-right font-mono text-foreground py-0.5 text-[9px] px-1">
                                 {formatCurrency(-s.provisions)}
                               </TableCell>
                             ))}
                             {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                              <TableCell key={`empty-prov-${i}`} className="text-right py-1">0,00</TableCell>
+                              <TableCell key={`empty-prov-${i}`} className="text-right py-0.5 text-[9px] px-1">0,00</TableCell>
                             ))}
                           </TableRow>
                         </>
@@ -801,61 +801,61 @@ const IncomeStatementChart = ({ companyId }: IncomeStatementChartProps) => {
 
                       {/* 7. Otros gastos de explotación */}
                       <TableRow className="bg-rose-500/20 hover:bg-rose-500/30">
-                        <TableCell className="font-bold text-rose-200 py-1.5 text-sm">7. Altres despeses d'explotació</TableCell>
+                        <TableCell className="font-bold text-rose-200 py-1 text-[10px] px-2">7. Altres despeses explotació</TableCell>
                         {filteredIncomeData.map(s => (
-                          <TableCell key={s.year} className="text-right font-mono text-rose-200 font-bold py-1.5 text-sm">
+                          <TableCell key={s.year} className="text-right font-mono text-rose-200 font-bold py-1 text-[10px] px-1">
                             {formatCurrency(-s.otherOperatingExpenses)}
                           </TableCell>
                         ))}
                         {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                          <TableCell key={`empty-otherexp-${i}`} className="text-right py-1.5">0,00</TableCell>
+                          <TableCell key={`empty-otherexp-${i}`} className="text-right py-1 text-[10px] px-1">0,00</TableCell>
                         ))}
                       </TableRow>
 
                       {planType === 'COMPLET' && (
                         <>
                           <TableRow className="hover:bg-muted/30">
-                            <TableCell className="text-foreground pl-6 py-1 text-xs">a) Serveis exteriors</TableCell>
+                            <TableCell className="text-foreground pl-4 py-0.5 text-[9px] px-2">a) Serveis exteriors</TableCell>
                             {filteredIncomeData.map(s => (
-                              <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
+                              <TableCell key={s.year} className="text-right font-mono text-foreground py-0.5 text-[9px] px-1">
                                 {formatCurrency(-s.externalServices)}
                               </TableCell>
                             ))}
                             {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                              <TableCell key={`empty-extsvc-${i}`} className="text-right py-1">0,00</TableCell>
+                              <TableCell key={`empty-extsvc-${i}`} className="text-right py-0.5 text-[9px] px-1">0,00</TableCell>
                             ))}
                           </TableRow>
                           <TableRow className="hover:bg-muted/30">
-                            <TableCell className="text-foreground pl-6 py-1 text-xs">b) Tributs</TableCell>
+                            <TableCell className="text-foreground pl-4 py-0.5 text-[9px] px-2">b) Tributs</TableCell>
                             {filteredIncomeData.map(s => (
-                              <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
+                              <TableCell key={s.year} className="text-right font-mono text-foreground py-0.5 text-[9px] px-1">
                                 {formatCurrency(-s.taxes)}
                               </TableCell>
                             ))}
                             {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                              <TableCell key={`empty-tax-${i}`} className="text-right py-1">0,00</TableCell>
+                              <TableCell key={`empty-tax-${i}`} className="text-right py-0.5 text-[9px] px-1">0,00</TableCell>
                             ))}
                           </TableRow>
                           <TableRow className="hover:bg-muted/30">
-                            <TableCell className="text-foreground pl-6 py-1 text-xs">c) Pèrdues, deteriorament i variac.de prov.por oper.comerc.</TableCell>
+                            <TableCell className="text-foreground pl-4 py-0.5 text-[9px] px-2">c) Pèrdues, deteriorament</TableCell>
                             {filteredIncomeData.map(s => (
-                              <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
+                              <TableCell key={s.year} className="text-right font-mono text-foreground py-0.5 text-[9px] px-1">
                                 {formatCurrency(-s.lossesProvisions)}
                               </TableCell>
                             ))}
                             {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                              <TableCell key={`empty-loss-${i}`} className="text-right py-1">0,00</TableCell>
+                              <TableCell key={`empty-loss-${i}`} className="text-right py-0.5 text-[9px] px-1">0,00</TableCell>
                             ))}
                           </TableRow>
                           <TableRow className="hover:bg-muted/30">
-                            <TableCell className="text-foreground pl-6 py-1 text-xs">d) Altres despeses de gestió corrent</TableCell>
+                            <TableCell className="text-foreground pl-4 py-0.5 text-[9px] px-2">d) Altres despeses gestió</TableCell>
                             {filteredIncomeData.map(s => (
-                              <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
+                              <TableCell key={s.year} className="text-right font-mono text-foreground py-0.5 text-[9px] px-1">
                                 {formatCurrency(-s.otherManagementExpenses)}
                               </TableCell>
                             ))}
                             {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                              <TableCell key={`empty-othermgmt-${i}`} className="text-right py-1">0,00</TableCell>
+                              <TableCell key={`empty-othermgmt-${i}`} className="text-right py-0.5 text-[9px] px-1">0,00</TableCell>
                             ))}
                           </TableRow>
                         </>
@@ -863,88 +863,88 @@ const IncomeStatementChart = ({ companyId }: IncomeStatementChartProps) => {
 
                       {/* 8. Amortización del inmovilizado */}
                       <TableRow className="bg-rose-500/20 hover:bg-rose-500/30">
-                        <TableCell className="font-bold text-rose-200 py-1.5 text-sm">8. Amortització de l'immobilitzat</TableCell>
+                        <TableCell className="font-bold text-rose-200 py-1 text-[10px] px-2">8. Amortització immobilitzat</TableCell>
                         {filteredIncomeData.map(s => (
-                          <TableCell key={s.year} className="text-right font-mono text-rose-200 font-bold py-1.5 text-sm">
+                          <TableCell key={s.year} className="text-right font-mono text-rose-200 font-bold py-1 text-[10px] px-1">
                             {formatCurrency(-s.depreciation)}
                           </TableCell>
                         ))}
                         {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                          <TableCell key={`empty-dep-${i}`} className="text-right py-1.5">0,00</TableCell>
+                          <TableCell key={`empty-dep-${i}`} className="text-right py-1 text-[10px] px-1">0,00</TableCell>
                         ))}
                       </TableRow>
 
                       {/* 9-13 Otros elementos */}
                       <TableRow className="bg-amber-500/10 hover:bg-amber-500/20">
-                        <TableCell className="font-semibold text-foreground py-1 text-xs">9. Imputació de subvencions d'immov.financ.i altres</TableCell>
+                        <TableCell className="font-semibold text-foreground py-0.5 text-[9px] px-2">9. Imputació subvencions</TableCell>
                         {filteredIncomeData.map(s => (
-                          <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
+                          <TableCell key={s.year} className="text-right font-mono text-foreground py-0.5 text-[9px] px-1">
                             {formatCurrency(s.grantImputation)}
                           </TableCell>
                         ))}
                         {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                          <TableCell key={`empty-grant-${i}`} className="text-right py-1">0,00</TableCell>
+                          <TableCell key={`empty-grant-${i}`} className="text-right py-0.5 text-[9px] px-1">0,00</TableCell>
                         ))}
                       </TableRow>
 
                       <TableRow className="bg-amber-500/10 hover:bg-amber-500/20">
-                        <TableCell className="font-semibold text-foreground py-1 text-xs">10. Excessos de provisions</TableCell>
+                        <TableCell className="font-semibold text-foreground py-0.5 text-[9px] px-2">10. Excessos provisions</TableCell>
                         {filteredIncomeData.map(s => (
-                          <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
+                          <TableCell key={s.year} className="text-right font-mono text-foreground py-0.5 text-[9px] px-1">
                             {formatCurrency(s.excessProvisions)}
                           </TableCell>
                         ))}
                         {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                          <TableCell key={`empty-excess-${i}`} className="text-right py-1">0,00</TableCell>
+                          <TableCell key={`empty-excess-${i}`} className="text-right py-0.5 text-[9px] px-1">0,00</TableCell>
                         ))}
                       </TableRow>
 
                       <TableRow className="bg-amber-500/10 hover:bg-amber-500/20">
-                        <TableCell className="font-semibold text-foreground py-1 text-xs">11. Deteriorament i resultat per enajenac.del immobilitzat</TableCell>
+                        <TableCell className="font-semibold text-foreground py-0.5 text-[9px] px-2">11. Deteriorament enajenac.</TableCell>
                         {filteredIncomeData.map(s => (
-                          <TableCell key={s.year} className={`text-right font-mono py-1 text-xs ${getValueColor(s.disposalResults)}`}>
+                          <TableCell key={s.year} className={`text-right font-mono py-0.5 text-[9px] px-1 ${getValueColor(s.disposalResults)}`}>
                             {formatCurrency(s.disposalResults)}
                           </TableCell>
                         ))}
                         {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                          <TableCell key={`empty-disp-${i}`} className="text-right py-1">0,00</TableCell>
+                          <TableCell key={`empty-disp-${i}`} className="text-right py-0.5 text-[9px] px-1">0,00</TableCell>
                         ))}
                       </TableRow>
 
                       <TableRow className="bg-amber-500/10 hover:bg-amber-500/20">
-                        <TableCell className="font-semibold text-foreground py-1 text-xs">12. Diferència negativa en combinacions de negocis</TableCell>
+                        <TableCell className="font-semibold text-foreground py-0.5 text-[9px] px-2">12. Diferència negativa</TableCell>
                         {filteredIncomeData.map(s => (
-                          <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
+                          <TableCell key={s.year} className="text-right font-mono text-foreground py-0.5 text-[9px] px-1">
                             {formatCurrency(s.negativeDifference)}
                           </TableCell>
                         ))}
                         {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                          <TableCell key={`empty-neg-${i}`} className="text-right py-1">0,00</TableCell>
+                          <TableCell key={`empty-neg-${i}`} className="text-right py-0.5 text-[9px] px-1">0,00</TableCell>
                         ))}
                       </TableRow>
 
                       <TableRow className="bg-amber-500/10 hover:bg-amber-500/20">
-                        <TableCell className="font-semibold text-foreground py-1 text-xs">13. Altres resultats</TableCell>
+                        <TableCell className="font-semibold text-foreground py-0.5 text-[9px] px-2">13. Altres resultats</TableCell>
                         {filteredIncomeData.map(s => (
-                          <TableCell key={s.year} className="text-right font-mono text-foreground py-1 text-xs">
+                          <TableCell key={s.year} className="text-right font-mono text-foreground py-0.5 text-[9px] px-1">
                             {formatCurrency(s.otherResults)}
                           </TableCell>
                         ))}
                         {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                          <TableCell key={`empty-otherres-${i}`} className="text-right py-1">0,00</TableCell>
+                          <TableCell key={`empty-otherres-${i}`} className="text-right py-0.5 text-[9px] px-1">0,00</TableCell>
                         ))}
                       </TableRow>
 
                       {/* A.1) RESULTADO DE EXPLOTACIÓN */}
                       <TableRow className="bg-emerald-500/30 hover:bg-emerald-500/40 border-t-2 border-emerald-500">
-                        <TableCell className="font-bold text-emerald-200 py-2 text-sm">A.1) RESULTAT D'EXPLOTACIÓ (1 A 13)</TableCell>
+                        <TableCell className="font-bold text-emerald-200 py-1 text-[10px] px-2">A.1) RESULTAT EXPLOTACIÓ (1 A 13)</TableCell>
                         {filteredIncomeData.map(s => (
-                          <TableCell key={s.year} className={`text-right font-mono font-bold py-2 text-sm ${s.operatingResult >= 0 ? 'text-emerald-200' : 'text-rose-300'}`}>
+                          <TableCell key={s.year} className={`text-right font-mono font-bold py-1 text-[10px] px-1 ${s.operatingResult >= 0 ? 'text-emerald-200' : 'text-rose-300'}`}>
                             {formatCurrency(s.operatingResult)}
                           </TableCell>
                         ))}
                         {Array(5 - filteredIncomeData.length).fill(0).map((_, i) => (
-                          <TableCell key={`empty-opres-${i}`} className="text-right py-2">0,00</TableCell>
+                          <TableCell key={`empty-opres-${i}`} className="text-right py-1 text-[10px] px-1">0,00</TableCell>
                         ))}
                       </TableRow>
 
