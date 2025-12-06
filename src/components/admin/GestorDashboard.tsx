@@ -22,6 +22,7 @@ import { GestorDashboardCard } from '@/components/dashboard/GestorDashboardCard'
 import { MapDashboardCard } from '@/components/dashboard/MapDashboardCard';
 import { AccountingDashboardCard } from '@/components/dashboard/AccountingDashboardCard';
 import { QuickVisitSheetCard } from '@/components/dashboard/QuickVisitSheetCard';
+import { CompaniesDashboardCard } from '@/components/dashboard/CompaniesDashboardCard';
 import { cn } from '@/lib/utils';
 import { GestorOverviewSection } from '@/components/dashboard/GestorOverviewSection';
 import {
@@ -764,6 +765,11 @@ export function GestorDashboard({
               {/* Comptabilitat Card */}
               <div className="animate-fade-in" style={{ animationDelay: `${(cards.length + 2) * 100}ms` }}>
                 <AccountingDashboardCard />
+              </div>
+
+              {/* Gestió Empreses Card */}
+              <div className="animate-fade-in" style={{ animationDelay: `${(cards.length + 3) * 100}ms` }}>
+                <CompaniesDashboardCard />
               </div>
             </div>
 
