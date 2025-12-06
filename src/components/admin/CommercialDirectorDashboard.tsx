@@ -20,6 +20,9 @@ import { AccountingDashboardCard } from '@/components/dashboard/AccountingDashbo
 import { MetricsCardsSection } from '@/components/dashboard/MetricsCardsSection';
 import { CompaniesDashboardCard } from '@/components/dashboard/CompaniesDashboardCard';
 import { AlertHistoryDashboardCard } from '@/components/dashboard/AlertHistoryDashboardCard';
+import { ContractedProductsDashboardCard } from '@/components/dashboard/ContractedProductsDashboardCard';
+import { GoalsAlertsDashboardCard } from '@/components/dashboard/GoalsAlertsDashboardCard';
+import { KPIDashboardCard } from '@/components/dashboard/KPIDashboardCard';
 
 // Panel del Director con vista general y explorador de métricas
 
@@ -286,6 +289,13 @@ export function CommercialDirectorDashboard() {
             <MapDashboardCard />
             <AccountingDashboardCard />
             <CompaniesDashboardCard />
+          </div>
+
+          {/* Additional Dashboard Cards */}
+          <div className="grid gap-6 md:grid-cols-3">
+            <ContractedProductsDashboardCard />
+            <GoalsAlertsDashboardCard />
+            <KPIDashboardCard />
           </div>
 
           {/* Alert History Card */}
