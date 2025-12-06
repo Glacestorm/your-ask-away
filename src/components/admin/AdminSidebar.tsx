@@ -375,16 +375,6 @@ export function AdminSidebar({
                   <SidebarMenu className="space-y-1">
                      <SidebarMenuItem>
                        <SidebarMenuButton 
-                         onClick={() => onSectionChange('health')} 
-                         isActive={isActive('health')}
-                         className="rounded-lg hover:bg-accent/50 transition-all group"
-                        >
-                          <Activity className="h-4 w-4 transition-all duration-300 group-hover:scale-110 group-hover:text-primary" />
-                          <span className="text-sm transition-all duration-300 group-hover:translate-x-1">{t('health.title')}</span>
-                       </SidebarMenuButton>
-                     </SidebarMenuItem>
-                     <SidebarMenuItem>
-                       <SidebarMenuButton 
                          onClick={() => onSectionChange('visits')} 
                          isActive={isActive('visits')}
                          className="rounded-lg hover:bg-accent/50 transition-all group"
@@ -431,16 +421,6 @@ export function AdminSidebar({
         ) : !isRegularGestor ? (
           <SidebarGroup className="mt-4">
             <SidebarMenu className="space-y-2">
-               <SidebarMenuItem>
-                 <SidebarMenuButton 
-                   onClick={() => onSectionChange('health')} 
-                   isActive={isActive('health')} 
-                  tooltip={t('health.title')}
-                  className="rounded-xl hover:shadow-md transition-all duration-300 group"
-                >
-                  <Activity className="h-5 w-5 transition-all duration-300 group-hover:scale-125 group-hover:text-primary" />
-                 </SidebarMenuButton>
-               </SidebarMenuItem>
                <SidebarMenuItem>
                  <SidebarMenuButton 
                    onClick={() => onSectionChange('visits')} 
