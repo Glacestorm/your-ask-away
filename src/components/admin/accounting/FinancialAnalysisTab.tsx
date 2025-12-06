@@ -16,6 +16,7 @@ import SectorSimulator from "./SectorSimulator";
 import RatiosPyramid from "./RatiosPyramid";
 import DuPontPyramid from "./DuPontPyramid";
 import BalanceAnalysisArea from "./BalanceAnalysisArea";
+import { BankRatingAnalysis } from "./BankRatingAnalysis";
 
 interface FinancialAnalysisTabProps {
   companyId: string;
@@ -214,6 +215,7 @@ export function FinancialAnalysisTab({ companyId, companyName }: FinancialAnalys
           <TabsTrigger value="ratios-pyramid" className="text-xs">Pirámide Ràtios</TabsTrigger>
           <TabsTrigger value="dupont-pyramid" className="text-xs">Pirámide DuPont</TabsTrigger>
           <TabsTrigger value="balance-analysis" className="text-xs">Área Análisis</TabsTrigger>
+          <TabsTrigger value="bank-rating" className="text-xs">Calificación Bancaria</TabsTrigger>
           <TabsTrigger value="dashboard" className="text-xs">Dashboard</TabsTrigger>
         </TabsList>
 
@@ -589,6 +591,10 @@ export function FinancialAnalysisTab({ companyId, companyName }: FinancialAnalys
 
         <TabsContent value="balance-analysis">
           <BalanceAnalysisArea companyId={companyId} companyName={companyName} />
+        </TabsContent>
+
+        <TabsContent value="bank-rating">
+          <BankRatingAnalysis companyId={companyId} companyName={companyName} />
         </TabsContent>
       </Tabs>
     </div>
