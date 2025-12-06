@@ -288,10 +288,10 @@ const AccountingManager = () => {
                       <div>
                         <Label>Tipus de Model</Label>
                         <Select value={statementType} onValueChange={(v) => setStatementType(v as 'normal' | 'abreujat' | 'simplificat')}>
-                          <SelectTrigger>
-                            <SelectValue />
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Selecciona model" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="z-[9999] bg-background">
                             <SelectItem value="normal">Normal (Complet)</SelectItem>
                             <SelectItem value="abreujat">Abreujat</SelectItem>
                             <SelectItem value="simplificat">Simplificat</SelectItem>
