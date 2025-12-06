@@ -133,10 +133,11 @@ const Home = () => {
   };
 
   const getAvailableOptions = () => {
-    if (!userRole) return [];
+    // If no role assigned, treat as regular gestor (user role)
+    const effectiveRole = userRole || 'user';
     
     return menuOptions.filter(option => 
-      option.roles.includes(userRole)
+      option.roles.includes(effectiveRole)
     );
   };
 
