@@ -16,7 +16,8 @@ import {
   Package,
   Activity,
   LogOut,
-  ArrowRight
+  ArrowRight,
+  Calculator
 } from 'lucide-react';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { ThemeSelector } from '@/components/ThemeSelector';
@@ -73,6 +74,13 @@ const menuOptions: MenuOption[] = [
     icon: Map,
     path: '/admin?section=map',
     roles: ['superadmin', 'admin', 'user', 'director_comercial', 'director_oficina', 'responsable_comercial', 'auditor']
+  },
+  {
+    title: 'Comptabilitat',
+    description: 'Gestió comptable i estats financers',
+    icon: Calculator,
+    path: '/admin?section=accounting',
+    roles: ['superadmin', 'admin', 'user', 'director_comercial', 'director_oficina', 'responsable_comercial']
   },
   {
     title: 'Calendario de Visitas',
