@@ -76,7 +76,11 @@ interface Gestor {
   oficina: string | null;
 }
 
-export function SharedVisitsCalendar() {
+interface SharedVisitsCalendarProps {
+  hideOfficeFilter?: boolean;
+}
+
+export function SharedVisitsCalendar({ hideOfficeFilter = false }: SharedVisitsCalendarProps) {
   const { user, userRole, isCommercialDirector, isCommercialManager, isOfficeDirector, isSuperAdmin } = useAuth();
   const [visits, setVisits] = useState<Visit[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -104,7 +108,9 @@ export function SharedVisitsCalendar() {
 
   // Check if user can see filters (directors and managers)
   const canSeeFilters = isCommercialDirector || isCommercialManager || isOfficeDirector || isSuperAdmin;
-  const canFilterByOffice = isCommercialDirector || isCommercialManager || isSuperAdmin;
+  // Office directors (pure role) should NOT see the office filter - they only see their office's gestores
+  const isOnlyOfficeDirector = userRole === 'director_oficina';
+  const canFilterByOffice = !hideOfficeFilter && !isOnlyOfficeDirector && (isCommercialDirector || isCommercialManager || isSuperAdmin);
 
   // Form state for creating/editing visits
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
