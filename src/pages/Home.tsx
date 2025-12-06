@@ -210,11 +210,16 @@ const Home = () => {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                Benvingut/da
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-sm text-muted-foreground">
                 {user?.email}
+              </p>
+            </div>
+            <div className="absolute left-1/2 -translate-x-1/2 text-center">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                Benvingut/da - Panell de Control
+              </h1>
+              <p className="text-xs text-muted-foreground">
+                Selecciona una opció per accedir a les funcionalitats
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -248,15 +253,6 @@ const Home = () => {
       {/* Main Content */}
       <main className="container mx-auto px-6 py-6 flex-1">
         <div className="max-w-6xl mx-auto space-y-6">
-          {/* Welcome Section */}
-          <div className="text-center space-y-2 mb-6">
-            <h2 className="text-2xl font-bold tracking-tight">
-              Panell de Control
-            </h2>
-            <p className="text-sm text-muted-foreground max-w-xl mx-auto">
-              Selecciona una de les opcions disponibles per accedir a les diferents funcionalitats del sistema
-            </p>
-          </div>
 
           {/* Role Dashboard Card - Direct access to role-specific dashboard */}
           <Card
