@@ -46,6 +46,7 @@ import { VisitSheetsGestorComparison } from '@/components/admin/VisitSheetsGesto
 import VisitSheetValidationPanel from '@/components/admin/VisitSheetValidationPanel';
 import ContractedProductsReport from '@/components/admin/ContractedProductsReport';
 import MapView from './MapView';
+import AccountingManager from '@/components/admin/accounting/AccountingManager';
 
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
@@ -142,6 +143,7 @@ const Admin = () => {
       case 'kpi-report-history': return 'Historial d\'Informes KPI';
       case 'alert-history': return 'Historial d\'Alertes';
       case 'gestor-comparison': return 'Comparativa de Gestores';
+      case 'accounting': return 'Comptabilitat';
       default: return '';
     }
   };
@@ -480,6 +482,17 @@ const Admin = () => {
           );
         }
         return <VisitSheetsGestorComparison />;
+      case 'accounting':
+        if (isAuditor) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <AccountingManager />;
       default:
         return null;
     }
