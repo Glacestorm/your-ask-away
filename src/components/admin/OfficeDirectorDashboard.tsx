@@ -20,6 +20,7 @@ import { QuickVisitSheetCard } from '@/components/dashboard/QuickVisitSheetCard'
 import { AccountingDashboardCard } from '@/components/dashboard/AccountingDashboardCard';
 import { MetricsCardsSection } from '@/components/dashboard/MetricsCardsSection';
 import { CompaniesDashboardCard } from '@/components/dashboard/CompaniesDashboardCard';
+import { AlertHistoryDashboardCard } from '@/components/dashboard/AlertHistoryDashboardCard';
 
 // Panel del Director de Oficina con vista filtrada por su oficina
 
@@ -332,6 +333,9 @@ export function OfficeDirectorDashboard() {
             <AccountingDashboardCard />
             <CompaniesDashboardCard />
           </div>
+
+          {/* Alert History Card */}
+          <AlertHistoryDashboardCard />
 
           {/* Gráfico de Ranking */}
           <Card>

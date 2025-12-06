@@ -298,26 +298,6 @@ export function AdminSidebar({
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )}
-            {(isCommercialDirector || isOfficeDirector || isSuperAdmin || isCommercialManager) && (
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={() => onSectionChange('alert-history')}
-                  isActive={isActive('alert-history')}
-                  className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
-                  tooltip={!open ? {
-                    children: 'Historial de Alertas',
-                    className: "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
-                  } : undefined}
-                >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-rose-500 to-rose-600 shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-rose-500/50 group-hover:rotate-3">
-                    <Bell className="h-5 w-5 text-white transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3" />
-                  </div>
-                  <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
-                    Historial de Alertas
-                  </span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            )}
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={() => navigate('/dashboard')}

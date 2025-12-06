@@ -25,6 +25,7 @@ import { QuickVisitSheetCard } from '@/components/dashboard/QuickVisitSheetCard'
 import { CompaniesDashboardCard } from '@/components/dashboard/CompaniesDashboardCard';
 import { MetricsDashboardCard } from '@/components/dashboard/MetricsDashboardCard';
 import { cn } from '@/lib/utils';
+import { AlertHistoryDashboardCard } from '@/components/dashboard/AlertHistoryDashboardCard';
 import { GestorOverviewSection } from '@/components/dashboard/GestorOverviewSection';
 import {
   Breadcrumb,
@@ -918,6 +919,9 @@ export function GestorDashboard({
                 </CardContent>
               </Card>
             </div>
+
+            {/* Alert History Card */}
+            <AlertHistoryDashboardCard />
           </div>
         ) : (
           renderContent()
