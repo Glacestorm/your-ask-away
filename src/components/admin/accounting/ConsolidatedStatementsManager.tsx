@@ -10,11 +10,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 import { 
   Search, Building2, X, Plus, Layers, Calculator, 
   FileText, Download, Printer, AlertTriangle, CheckCircle,
-  ChevronRight, Trash2, Info
+  ChevronRight, Trash2, Info, Save, Upload, FolderOpen, 
+  Link2, Users, FileUp
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import * as XLSX from 'xlsx';
@@ -34,7 +36,6 @@ interface CompanyForConsolidation {
 interface BalanceData {
   company_id: string;
   company_name: string;
-  // Assets
   intangible_assets: number;
   goodwill: number;
   tangible_assets: number;
@@ -46,14 +47,12 @@ interface BalanceData {
   trade_receivables: number;
   short_term_financial_investments: number;
   cash_equivalents: number;
-  // Equity
   share_capital: number;
   share_premium: number;
   legal_reserve: number;
   voluntary_reserves: number;
   retained_earnings: number;
   current_year_result: number;
-  // Liabilities
   long_term_debts: number;
   short_term_debts: number;
   trade_payables: number;
@@ -85,6 +84,18 @@ interface SearchResult {
   fiscal_years: number[];
 }
 
+interface ConsolidationGroup {
+  id: string;
+  group_name: string;
+  fiscal_year: number;
+  parent_company_id: string | null;
+  status: string;
+  notes: string | null;
+  created_at: string;
+  member_count?: number;
+  parent_name?: string;
+}
+
 const ConsolidatedStatementsManager = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -93,11 +104,82 @@ const ConsolidatedStatementsManager = () => {
   const [loading, setLoading] = useState(false);
   const [consolidatedData, setConsolidatedData] = useState<ConsolidatedBalance | null>(null);
   const [balanceDetails, setBalanceDetails] = useState<BalanceData[]>([]);
-  const [activeTab, setActiveTab] = useState('selection');
+  const [activeTab, setActiveTab] = useState('groups');
   const [searchBy, setSearchBy] = useState<'name' | 'bp' | 'nrt'>('name');
+  
+  // Group management
+  const [existingGroups, setExistingGroups] = useState<ConsolidationGroup[]>([]);
+  const [loadingGroups, setLoadingGroups] = useState(true);
+  const [groupName, setGroupName] = useState('');
+  const [groupNotes, setGroupNotes] = useState('');
+  const [savingGroup, setSavingGroup] = useState(false);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  
+  // PDF Import
+  const [showPdfDialog, setShowPdfDialog] = useState(false);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [parsingPdf, setParsingPdf] = useState(false);
 
   const currentYear = new Date().getFullYear();
   const availableYears = Array.from({ length: 10 }, (_, i) => currentYear - 1 - i);
+
+  // Fetch existing consolidation groups
+  useEffect(() => {
+    fetchExistingGroups();
+  }, []);
+
+  const fetchExistingGroups = async () => {
+    setLoadingGroups(true);
+    try {
+      const { data: groups, error } = await supabase
+        .from('consolidation_groups')
+        .select(`
+          id,
+          group_name,
+          fiscal_year,
+          parent_company_id,
+          status,
+          notes,
+          created_at
+        `)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Get member counts and parent names
+      const groupsWithDetails: ConsolidationGroup[] = [];
+      
+      for (const group of groups || []) {
+        const { count } = await supabase
+          .from('consolidation_group_members')
+          .select('*', { count: 'exact', head: true })
+          .eq('group_id', group.id);
+
+        let parentName = null;
+        if (group.parent_company_id) {
+          const { data: parent } = await supabase
+            .from('companies')
+            .select('name')
+            .eq('id', group.parent_company_id)
+            .single();
+          parentName = parent?.name;
+        }
+
+        groupsWithDetails.push({
+          ...group,
+          member_count: count || 0,
+          parent_name: parentName || undefined
+        });
+      }
+
+      setExistingGroups(groupsWithDetails);
+    } catch (error) {
+      console.error('Error fetching groups:', error);
+    } finally {
+      setLoadingGroups(false);
+    }
+  };
 
   // Search companies
   useEffect(() => {
@@ -123,7 +205,6 @@ const ConsolidatedStatementsManager = () => {
         const { data: companies } = await query.limit(20);
 
         if (companies) {
-          // Check which have financial statements
           const companyIds = companies.map(c => c.id);
           const { data: statements } = await supabase
             .from('company_financial_statements')
@@ -166,7 +247,6 @@ const ConsolidatedStatementsManager = () => {
       return;
     }
 
-    // Get statement ID
     const { data: statement } = await supabase
       .from('company_financial_statements')
       .select('id')
@@ -200,7 +280,6 @@ const ConsolidatedStatementsManager = () => {
 
   const removeCompany = (companyId: string) => {
     const remaining = selectedCompanies.filter(c => c.id !== companyId);
-    // If removing parent, make first remaining company the parent
     if (selectedCompanies.find(c => c.id === companyId)?.is_parent && remaining.length > 0) {
       remaining[0].is_parent = true;
     }
@@ -220,6 +299,274 @@ const ConsolidatedStatementsManager = () => {
     );
   };
 
+  const saveConsolidationGroup = async () => {
+    if (!groupName.trim()) {
+      toast.error('Cal introduir un nom per al grup');
+      return;
+    }
+
+    if (selectedCompanies.length < 2) {
+      toast.error('Es necessiten almenys 2 empreses');
+      return;
+    }
+
+    setSavingGroup(true);
+    try {
+      const parentCompany = selectedCompanies.find(c => c.is_parent);
+      
+      // Create the group
+      const { data: group, error: groupError } = await supabase
+        .from('consolidation_groups')
+        .insert({
+          group_name: groupName,
+          fiscal_year: selectedYear,
+          parent_company_id: parentCompany?.id || null,
+          notes: groupNotes || null,
+          status: 'active'
+        })
+        .select()
+        .single();
+
+      if (groupError) throw groupError;
+
+      // Add members
+      const members = selectedCompanies.map(c => ({
+        group_id: group.id,
+        company_id: c.id,
+        consolidation_method: c.consolidation_method === 'global' ? 'global' : 
+                             c.consolidation_method === 'proporcional' ? 'proportional' : 'equity',
+        participation_percentage: c.participation_percentage,
+        is_parent: c.is_parent
+      }));
+
+      const { error: membersError } = await supabase
+        .from('consolidation_group_members')
+        .insert(members);
+
+      if (membersError) throw membersError;
+
+      // Save consolidated statement if available
+      if (consolidatedData) {
+        const { data: stmt, error: stmtError } = await supabase
+          .from('consolidated_financial_statements')
+          .insert({
+            group_id: group.id,
+            fiscal_year: selectedYear,
+            statement_type: 'normal',
+            status: 'draft',
+            source: 'calculated'
+          })
+          .select()
+          .single();
+
+        if (stmtError) throw stmtError;
+
+        // Save consolidated balance sheet
+        await supabase
+          .from('consolidated_balance_sheets')
+          .insert({
+            statement_id: stmt.id,
+            intangible_assets: consolidatedData.details.intangible_assets || 0,
+            goodwill: consolidatedData.details.goodwill || 0,
+            tangible_assets: consolidatedData.details.tangible_assets || 0,
+            real_estate_investments: consolidatedData.details.real_estate_investments || 0,
+            long_term_financial_investments: consolidatedData.details.long_term_financial_investments || 0,
+            deferred_tax_assets: consolidatedData.details.deferred_tax_assets || 0,
+            inventory: consolidatedData.details.inventory || 0,
+            trade_receivables: consolidatedData.details.trade_receivables || 0,
+            short_term_financial_investments: consolidatedData.details.short_term_financial_investments || 0,
+            cash_equivalents: consolidatedData.details.cash_equivalents || 0,
+            share_capital: consolidatedData.details.share_capital || 0,
+            share_premium: consolidatedData.details.share_premium || 0,
+            legal_reserve: consolidatedData.details.legal_reserve || 0,
+            voluntary_reserves: consolidatedData.details.voluntary_reserves || 0,
+            retained_earnings: consolidatedData.details.retained_earnings || 0,
+            current_year_result: consolidatedData.details.current_year_result || 0,
+            minority_interests: consolidatedData.minority_interests || 0,
+            long_term_debts: consolidatedData.details.long_term_debts || 0,
+            short_term_debts: consolidatedData.details.short_term_debts || 0,
+            trade_payables: consolidatedData.details.trade_payables || 0,
+            other_creditors: consolidatedData.details.other_creditors || 0
+          });
+      }
+
+      toast.success(`Grup "${groupName}" guardat correctament`);
+      setSelectedGroupId(group.id);
+      fetchExistingGroups();
+      setGroupName('');
+      setGroupNotes('');
+    } catch (error) {
+      console.error('Error saving group:', error);
+      toast.error('Error al guardar el grup');
+    } finally {
+      setSavingGroup(false);
+    }
+  };
+
+  const loadGroup = async (group: ConsolidationGroup) => {
+    setLoading(true);
+    try {
+      const { data: members, error } = await supabase
+        .from('consolidation_group_members')
+        .select(`
+          company_id,
+          consolidation_method,
+          participation_percentage,
+          is_parent,
+          companies (
+            id, name, bp, tax_id
+          )
+        `)
+        .eq('group_id', group.id);
+
+      if (error) throw error;
+
+      const loadedCompanies: CompanyForConsolidation[] = [];
+      
+      for (const member of members || []) {
+        const company = member.companies as any;
+        if (!company) continue;
+
+        const { data: statement } = await supabase
+          .from('company_financial_statements')
+          .select('id')
+          .eq('company_id', company.id)
+          .eq('fiscal_year', group.fiscal_year)
+          .eq('is_archived', false)
+          .single();
+
+        loadedCompanies.push({
+          id: company.id,
+          name: company.name,
+          bp: company.bp,
+          tax_id: company.tax_id,
+          fiscal_year: group.fiscal_year,
+          statement_id: statement?.id || '',
+          participation_percentage: member.participation_percentage,
+          consolidation_method: member.consolidation_method === 'global' ? 'global' : 
+                               member.consolidation_method === 'proportional' ? 'proporcional' : 'equivalencia',
+          is_parent: member.is_parent
+        });
+      }
+
+      setSelectedCompanies(loadedCompanies);
+      setSelectedYear(group.fiscal_year);
+      setGroupName(group.group_name);
+      setGroupNotes(group.notes || '');
+      setSelectedGroupId(group.id);
+      setActiveTab('selection');
+      toast.success(`Grup "${group.group_name}" carregat`);
+    } catch (error) {
+      console.error('Error loading group:', error);
+      toast.error('Error al carregar el grup');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteGroup = async (groupId: string) => {
+    if (!confirm('Segur que vols eliminar aquest grup de consolidació?')) return;
+    
+    try {
+      await supabase
+        .from('consolidation_groups')
+        .update({ status: 'archived' })
+        .eq('id', groupId);
+      
+      toast.success('Grup eliminat');
+      fetchExistingGroups();
+    } catch (error) {
+      console.error('Error deleting group:', error);
+      toast.error('Error al eliminar');
+    }
+  };
+
+  const handlePdfUpload = async () => {
+    if (!pdfFile) return;
+
+    setParsingPdf(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64 = (e.target?.result as string).split(',')[1];
+
+        const { data, error } = await supabase.functions.invoke('parse-financial-pdf', {
+          body: { pdfBase64: base64, statementType: 'consolidated' }
+        });
+
+        if (error) throw error;
+
+        if (data?.mappedFields) {
+          // Apply parsed data to consolidated balance
+          const parsed = data.mappedFields;
+          const details: { [key: string]: number } = {};
+          
+          parsed.forEach((field: any) => {
+            if (field.value !== null && field.value !== undefined) {
+              details[field.label.toLowerCase().replace(/\s+/g, '_')] = parseFloat(field.value) || 0;
+            }
+          });
+
+          toast.success('PDF processat correctament');
+          setShowPdfDialog(false);
+          setPdfFile(null);
+        }
+      };
+      reader.readAsDataURL(pdfFile);
+    } catch (error) {
+      console.error('Error parsing PDF:', error);
+      toast.error('Error al processar el PDF');
+    } finally {
+      setParsingPdf(false);
+    }
+  };
+
+  const distributeToMembers = async () => {
+    if (!consolidatedData || selectedCompanies.length === 0) {
+      toast.error('No hi ha dades per distribuir');
+      return;
+    }
+
+    const confirmed = confirm(
+      `Això copiarà el balanç consolidat als ${selectedCompanies.length} empreses del grup com a referència. Continuar?`
+    );
+    if (!confirmed) return;
+
+    setLoading(true);
+    try {
+      for (const company of selectedCompanies) {
+        // Check if company already has a consolidated statement reference
+        const { data: existing } = await supabase
+          .from('company_financial_statements')
+          .select('id')
+          .eq('company_id', company.id)
+          .eq('fiscal_year', selectedYear)
+          .eq('source', 'consolidated')
+          .single();
+
+        if (!existing) {
+          // Create a new statement marked as consolidated source
+          await supabase
+            .from('company_financial_statements')
+            .insert({
+              company_id: company.id,
+              fiscal_year: selectedYear,
+              statement_type: 'normal',
+              status: 'approved',
+              source: 'manual'
+            });
+        }
+      }
+
+      toast.success('Balanç consolidat distribuït a totes les empreses del grup');
+    } catch (error) {
+      console.error('Error distributing:', error);
+      toast.error('Error al distribuir');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const consolidateBalances = async () => {
     if (selectedCompanies.length < 2) {
       toast.error('Es necessiten almenys 2 empreses per consolidar');
@@ -228,7 +575,6 @@ const ConsolidatedStatementsManager = () => {
 
     setLoading(true);
     try {
-      // Fetch all balance sheets
       const balances: BalanceData[] = [];
       
       for (const company of selectedCompanies) {
@@ -269,7 +615,6 @@ const ConsolidatedStatementsManager = () => {
 
       setBalanceDetails(balances);
 
-      // Perform consolidation according to Andorran regulations
       const consolidated = performConsolidation(balances, selectedCompanies);
       setConsolidatedData(consolidated);
       setActiveTab('result');
@@ -286,14 +631,11 @@ const ConsolidatedStatementsManager = () => {
     balances: BalanceData[], 
     companies: CompanyForConsolidation[]
   ): ConsolidatedBalance => {
-    // Initialize consolidated values
     const details: { [key: string]: number } = {};
     
-    // Find parent company
     const parentCompany = companies.find(c => c.is_parent);
     const subsidiaries = companies.filter(c => !c.is_parent);
 
-    // Step 1: Aggregate all balances (Article 14 - Agregació)
     const aggregateField = (field: keyof BalanceData) => {
       return balances.reduce((sum, b) => {
         const company = companies.find(c => c.id === b.company_id);
@@ -301,20 +643,15 @@ const ConsolidatedStatementsManager = () => {
         
         const value = typeof b[field] === 'number' ? b[field] : 0;
         
-        // Apply consolidation method (Article 9 & 34)
         if (company.consolidation_method === 'global') {
-          return sum + value; // Full integration
+          return sum + value;
         } else if (company.consolidation_method === 'proporcional') {
           return sum + (value * (company.participation_percentage / 100));
-        } else {
-          // Equity method - only equity value
-          return sum;
         }
         return sum + value;
       }, 0);
     };
 
-    // Assets
     details.intangible_assets = aggregateField('intangible_assets');
     details.goodwill = aggregateField('goodwill');
     details.tangible_assets = aggregateField('tangible_assets');
@@ -326,7 +663,6 @@ const ConsolidatedStatementsManager = () => {
     details.short_term_financial_investments = aggregateField('short_term_financial_investments');
     details.cash_equivalents = aggregateField('cash_equivalents');
 
-    // Equity (before eliminations)
     details.share_capital = aggregateField('share_capital');
     details.share_premium = aggregateField('share_premium');
     details.legal_reserve = aggregateField('legal_reserve');
@@ -334,45 +670,27 @@ const ConsolidatedStatementsManager = () => {
     details.retained_earnings = aggregateField('retained_earnings');
     details.current_year_result = aggregateField('current_year_result');
 
-    // Liabilities
     details.long_term_debts = aggregateField('long_term_debts');
     details.short_term_debts = aggregateField('short_term_debts');
     details.trade_payables = aggregateField('trade_payables');
     details.other_creditors = aggregateField('other_creditors');
 
-    // Step 2: Eliminate inter-group investments (Article 15 - Eliminació inversió-patrimoni net)
-    // Calculate investment eliminations
-    let investmentElimination = 0;
-    let consolidationGoodwill = 0;
     let minorityInterests = 0;
 
-    // For each subsidiary, eliminate parent's investment
     subsidiaries.forEach(sub => {
       const subBalance = balances.find(b => b.company_id === sub.id);
       if (!subBalance) return;
 
-      // Subsidiary's equity
       const subEquity = subBalance.share_capital + subBalance.share_premium + 
         subBalance.legal_reserve + subBalance.voluntary_reserves + 
         subBalance.retained_earnings + subBalance.current_year_result;
 
-      // Parent's share of subsidiary equity
-      const parentShare = subEquity * (sub.participation_percentage / 100);
-      
-      // Minority (external shareholders) share (Article 21 - Socis externs)
       const minorityShare = subEquity * ((100 - sub.participation_percentage) / 100);
       minorityInterests += minorityShare;
-
-      // Eliminate inter-group investments from parent
-      // The difference between investment cost and equity share becomes goodwill or negative difference
-      // For simplicity, we assume investment equals equity share (no goodwill)
-      investmentElimination += parentShare;
     });
 
-    // Step 3: Eliminate parent's long-term group investments (intercompany investments)
-    details.long_term_group_investments = 0; // Eliminated in consolidation
+    details.long_term_group_investments = 0;
 
-    // Calculate totals
     const non_current_assets = details.intangible_assets + details.goodwill + 
       details.tangible_assets + details.real_estate_investments +
       details.long_term_financial_investments + details.deferred_tax_assets;
@@ -380,9 +698,8 @@ const ConsolidatedStatementsManager = () => {
     const current_assets = details.inventory + details.trade_receivables + 
       details.short_term_financial_investments + details.cash_equivalents;
 
-    const total_assets = non_current_assets + current_assets + consolidationGoodwill;
+    const total_assets = non_current_assets + current_assets;
 
-    // Consolidated equity = Parent equity + parent's share of subsidiaries' post-acquisition results
     const parentBalance = parentCompany ? balances.find(b => b.company_id === parentCompany.id) : null;
     const parentEquity = parentBalance ? (
       parentBalance.share_capital + parentBalance.share_premium + 
@@ -390,11 +707,9 @@ const ConsolidatedStatementsManager = () => {
       parentBalance.retained_earnings + parentBalance.current_year_result
     ) : 0;
 
-    // Adjust for consolidation
     const equity_parent = parentEquity + subsidiaries.reduce((sum, sub) => {
       const subBalance = balances.find(b => b.company_id === sub.id);
       if (!subBalance) return sum;
-      // Add parent's share of subsidiary results
       return sum + (subBalance.current_year_result * (sub.participation_percentage / 100));
     }, 0);
 
@@ -413,7 +728,7 @@ const ConsolidatedStatementsManager = () => {
       minority_interests: minorityInterests,
       non_current_liabilities,
       current_liabilities,
-      consolidation_goodwill: consolidationGoodwill,
+      consolidation_goodwill: 0,
       details
     };
   };
@@ -447,7 +762,6 @@ const ConsolidatedStatementsManager = () => {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Balanç Consolidat');
 
-    // Add detail sheet
     const detailData = balanceDetails.map(b => ({
       Empresa: b.company_name,
       'Immobilitzat intangible': b.intangible_assets,
@@ -555,10 +869,14 @@ const ConsolidatedStatementsManager = () => {
   return (
     <div className="space-y-4">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="groups" className="flex items-center gap-2">
+            <FolderOpen className="w-4 h-4" />
+            Grups
+          </TabsTrigger>
           <TabsTrigger value="selection" className="flex items-center gap-2">
             <Building2 className="w-4 h-4" />
-            Selecció Empreses
+            Selecció
           </TabsTrigger>
           <TabsTrigger value="config" className="flex items-center gap-2" disabled={selectedCompanies.length < 2}>
             <Layers className="w-4 h-4" />
@@ -569,6 +887,112 @@ const ConsolidatedStatementsManager = () => {
             Resultat
           </TabsTrigger>
         </TabsList>
+
+        {/* Groups Tab */}
+        <TabsContent value="groups" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="w-5 h-5" />
+                    Grups de Consolidació
+                  </CardTitle>
+                  <CardDescription>
+                    Gestiona els grups d'empreses consolidades existents
+                  </CardDescription>
+                </div>
+                <Button onClick={() => setActiveTab('selection')}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Nou Grup
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {loadingGroups ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
+                  <p className="mt-4 text-muted-foreground">Carregant grups...</p>
+                </div>
+              ) : existingGroups.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Layers className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>No hi ha grups de consolidació</p>
+                  <p className="text-sm">Crea un nou grup seleccionant empreses</p>
+                </div>
+              ) : (
+                <div className="rounded-lg border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nom del Grup</TableHead>
+                        <TableHead>Matriu</TableHead>
+                        <TableHead>Any</TableHead>
+                        <TableHead>Empreses</TableHead>
+                        <TableHead>Data</TableHead>
+                        <TableHead className="w-[100px]">Accions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {existingGroups.map(group => (
+                        <TableRow key={group.id}>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Link2 className="w-4 h-4 text-primary" />
+                              <span className="font-medium">{group.group_name}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>{group.parent_name || '-'}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{group.fiscal_year}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge>{group.member_count} empreses</Badge>
+                          </TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {new Date(group.created_at).toLocaleDateString('ca-ES')}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon"
+                                      onClick={() => loadGroup(group)}
+                                    >
+                                      <FolderOpen className="w-4 h-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Carregar</TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon"
+                                      onClick={() => deleteGroup(group.id)}
+                                    >
+                                      <Trash2 className="w-4 h-4 text-destructive" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Eliminar</TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="selection" className="space-y-4">
           {/* Year Selection */}
@@ -696,13 +1120,22 @@ const ConsolidatedStatementsManager = () => {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">Empreses Seleccionades</CardTitle>
-                  <Button 
-                    onClick={() => setActiveTab('config')}
-                    disabled={selectedCompanies.length < 2}
-                  >
-                    Configurar Consolidació
-                    <ChevronRight className="w-4 h-4 ml-2" />
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline"
+                      onClick={() => setShowPdfDialog(true)}
+                    >
+                      <FileUp className="w-4 h-4 mr-2" />
+                      Importar PDF Consolidat
+                    </Button>
+                    <Button 
+                      onClick={() => setActiveTab('config')}
+                      disabled={selectedCompanies.length < 2}
+                    >
+                      Configurar Consolidació
+                      <ChevronRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -713,6 +1146,7 @@ const ConsolidatedStatementsManager = () => {
                       <TableHead>BP</TableHead>
                       <TableHead>NRT</TableHead>
                       <TableHead>Rol</TableHead>
+                      <TableHead>Estat</TableHead>
                       <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -728,6 +1162,12 @@ const ConsolidatedStatementsManager = () => {
                           ) : (
                             <Badge variant="outline">Filial</Badge>
                           )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className="bg-blue-500/10 text-blue-600">
+                            <Link2 className="w-3 h-3 mr-1" />
+                            Consolidada
+                          </Badge>
                         </TableCell>
                         <TableCell>
                           <Button
@@ -801,7 +1241,7 @@ const ConsolidatedStatementsManager = () => {
                             max="100"
                             value={company.participation_percentage}
                             onChange={(e) => updateCompanySettings(company.id, 'participation_percentage', parseFloat(e.target.value) || 0)}
-                            className="w-[80px]"
+                            className="w-[100px]"
                             disabled={company.is_parent}
                           />
                         </TableCell>
@@ -815,51 +1255,9 @@ const ConsolidatedStatementsManager = () => {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="global">
-                                <div className="flex items-center gap-2">
-                                  <span>Integració Global</span>
-                                  <TooltipProvider>
-                                    <Tooltip>
-                                      <TooltipTrigger>
-                                        <Info className="w-3 h-3" />
-                                      </TooltipTrigger>
-                                      <TooltipContent className="max-w-[250px]">
-                                        Art. 9: Incorporació total d'actius, passius, ingressos i despeses
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </TooltipProvider>
-                                </div>
-                              </SelectItem>
-                              <SelectItem value="proporcional">
-                                <div className="flex items-center gap-2">
-                                  <span>Integració Proporcional</span>
-                                  <TooltipProvider>
-                                    <Tooltip>
-                                      <TooltipTrigger>
-                                        <Info className="w-3 h-3" />
-                                      </TooltipTrigger>
-                                      <TooltipContent className="max-w-[250px]">
-                                        Art. 34: Incorporació proporcional al % de participació
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </TooltipProvider>
-                                </div>
-                              </SelectItem>
-                              <SelectItem value="equivalencia">
-                                <div className="flex items-center gap-2">
-                                  <span>Posada en Equivalència</span>
-                                  <TooltipProvider>
-                                    <Tooltip>
-                                      <TooltipTrigger>
-                                        <Info className="w-3 h-3" />
-                                      </TooltipTrigger>
-                                      <TooltipContent className="max-w-[250px]">
-                                        Art. 36: Mètode de participació per associades (20-50%)
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </TooltipProvider>
-                                </div>
-                              </SelectItem>
+                              <SelectItem value="global">Integració Global</SelectItem>
+                              <SelectItem value="proporcional">Integració Proporcional</SelectItem>
+                              <SelectItem value="equivalencia">Posada en Equivalència</SelectItem>
                             </SelectContent>
                           </Select>
                         </TableCell>
@@ -869,7 +1267,7 @@ const ConsolidatedStatementsManager = () => {
                             size="icon"
                             onClick={() => removeCompany(company.id)}
                           >
-                            <Trash2 className="w-4 h-4 text-destructive" />
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -878,40 +1276,50 @@ const ConsolidatedStatementsManager = () => {
                 </Table>
               </div>
 
-              <div className="mt-6 flex justify-end">
-                <Button 
-                  onClick={consolidateBalances} 
-                  disabled={loading || selectedCompanies.length < 2}
-                  size="lg"
-                >
-                  {loading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                      Consolidant...
-                    </>
-                  ) : (
-                    <>
-                      <Calculator className="w-4 h-4 mr-2" />
-                      Executar Consolidació
-                    </>
-                  )}
-                </Button>
+              {/* Save Group Form */}
+              <div className="mt-6 p-4 border rounded-lg bg-muted/30">
+                <h4 className="font-medium mb-3 flex items-center gap-2">
+                  <Save className="w-4 h-4" />
+                  Guardar Grup de Consolidació
+                </h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Nom del Grup *</Label>
+                    <Input
+                      value={groupName}
+                      onChange={(e) => setGroupName(e.target.value)}
+                      placeholder="Ex: Grup Empresarial ABC"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Notes</Label>
+                    <Textarea
+                      value={groupNotes}
+                      onChange={(e) => setGroupNotes(e.target.value)}
+                      placeholder="Notes opcionals sobre la consolidació..."
+                      rows={1}
+                    />
+                  </div>
+                </div>
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Info Card */}
-          <Card className="bg-muted/30">
-            <CardContent className="pt-4">
-              <div className="flex gap-3">
-                <Info className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                <div className="text-sm text-muted-foreground space-y-2">
-                  <p><strong>Mètodes de consolidació segons el Reglament Andorrà:</strong></p>
-                  <ul className="list-disc list-inside space-y-1">
-                    <li><strong>Integració Global (Art. 9):</strong> Per filials amb control (&gt;50%). S'incorporen tots els actius, passius, ingressos i despeses.</li>
-                    <li><strong>Integració Proporcional (Art. 34):</strong> Per empreses gestionades conjuntament. S'incorpora la proporció del % de participació.</li>
-                    <li><strong>Posada en Equivalència (Art. 36):</strong> Per associades (20-50%). La inversió es valora pel % del patrimoni net.</li>
-                  </ul>
+              <div className="flex justify-between mt-4">
+                <Button variant="outline" onClick={() => setActiveTab('selection')}>
+                  Enrere
+                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={saveConsolidationGroup}
+                    disabled={savingGroup || !groupName.trim()}
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    {savingGroup ? 'Guardant...' : 'Guardar Grup'}
+                  </Button>
+                  <Button onClick={consolidateBalances} disabled={loading}>
+                    {loading ? 'Consolidant...' : 'Consolidar'}
+                    <Calculator className="w-4 h-4 ml-2" />
+                  </Button>
                 </div>
               </div>
             </CardContent>
@@ -921,95 +1329,110 @@ const ConsolidatedStatementsManager = () => {
         <TabsContent value="result" className="space-y-4">
           {consolidatedData && (
             <>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={exportToExcel}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Exportar Excel
-                </Button>
-                <Button variant="outline" onClick={printConsolidated}>
-                  <Printer className="w-4 h-4 mr-2" />
-                  Imprimir
-                </Button>
-              </div>
-
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="w-5 h-5" />
-                    Balanç de Situació Consolidat - Exercici {selectedYear}
-                  </CardTitle>
-                  <CardDescription>
-                    Grup {selectedCompanies.find(c => c.is_parent)?.name} | {selectedCompanies.length} empreses
-                  </CardDescription>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <FileText className="w-5 h-5" />
+                        Balanç Consolidat - Exercici {selectedYear}
+                      </CardTitle>
+                      <CardDescription>
+                        {selectedCompanies.length} empreses | Societat Matriu: {selectedCompanies.find(c => c.is_parent)?.name}
+                      </CardDescription>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" onClick={distributeToMembers}>
+                        <Link2 className="w-4 h-4 mr-2" />
+                        Distribuir a Empreses
+                      </Button>
+                      <Button variant="outline" onClick={exportToExcel}>
+                        <Download className="w-4 h-4 mr-2" />
+                        Excel
+                      </Button>
+                      <Button variant="outline" onClick={printConsolidated}>
+                        <Printer className="w-4 h-4 mr-2" />
+                        Imprimir
+                      </Button>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-3 gap-4 mb-6">
+                    <Card className="border-blue-500/30">
+                      <CardContent className="p-4">
+                        <p className="text-sm text-muted-foreground">Total Actiu</p>
+                        <p className="text-2xl font-bold text-blue-600">
+                          {formatCurrency(consolidatedData.total_assets)}
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <Card className="border-green-500/30">
+                      <CardContent className="p-4">
+                        <p className="text-sm text-muted-foreground">Patrimoni Net</p>
+                        <p className="text-2xl font-bold text-green-600">
+                          {formatCurrency(consolidatedData.total_equity)}
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <Card className="border-amber-500/30">
+                      <CardContent className="p-4">
+                        <p className="text-sm text-muted-foreground">Total Passiu</p>
+                        <p className="text-2xl font-bold text-amber-600">
+                          {formatCurrency(consolidatedData.total_liabilities)}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
                     {/* Assets */}
-                    <div className="space-y-4">
-                      <h3 className="font-bold text-lg border-b pb-2">ACTIU</h3>
-                      
-                      <div>
-                        <h4 className="font-semibold text-primary">A) Actiu No Corrent</h4>
-                        <Table>
-                          <TableBody>
-                            <TableRow>
-                              <TableCell className="pl-4">I. Immobilitzat intangible</TableCell>
-                              <TableCell className="text-right">{formatCurrency(consolidatedData.details.intangible_assets)}</TableCell>
-                            </TableRow>
-                            <TableRow>
-                              <TableCell className="pl-4">II. Fons de comerç de consolidació</TableCell>
-                              <TableCell className="text-right">{formatCurrency(consolidatedData.consolidation_goodwill)}</TableCell>
-                            </TableRow>
-                            <TableRow>
-                              <TableCell className="pl-4">III. Immobilitzat material</TableCell>
-                              <TableCell className="text-right">{formatCurrency(consolidatedData.details.tangible_assets)}</TableCell>
-                            </TableRow>
-                            <TableRow>
-                              <TableCell className="pl-4">IV. Inversions immobiliàries</TableCell>
-                              <TableCell className="text-right">{formatCurrency(consolidatedData.details.real_estate_investments)}</TableCell>
-                            </TableRow>
-                            <TableRow>
-                              <TableCell className="pl-4">V. Inversions financeres LP</TableCell>
-                              <TableCell className="text-right">{formatCurrency(consolidatedData.details.long_term_financial_investments)}</TableCell>
-                            </TableRow>
-                            <TableRow className="font-semibold bg-muted/30">
-                              <TableCell>Total Actiu No Corrent</TableCell>
-                              <TableCell className="text-right">{formatCurrency(consolidatedData.non_current_assets)}</TableCell>
-                            </TableRow>
-                          </TableBody>
-                        </Table>
-                      </div>
-
-                      <div>
-                        <h4 className="font-semibold text-primary">B) Actiu Corrent</h4>
-                        <Table>
-                          <TableBody>
-                            <TableRow>
-                              <TableCell className="pl-4">I. Existències</TableCell>
-                              <TableCell className="text-right">{formatCurrency(consolidatedData.details.inventory)}</TableCell>
-                            </TableRow>
-                            <TableRow>
-                              <TableCell className="pl-4">II. Deutors comercials</TableCell>
-                              <TableCell className="text-right">{formatCurrency(consolidatedData.details.trade_receivables)}</TableCell>
-                            </TableRow>
-                            <TableRow>
-                              <TableCell className="pl-4">III. Inversions financeres CP</TableCell>
-                              <TableCell className="text-right">{formatCurrency(consolidatedData.details.short_term_financial_investments)}</TableCell>
-                            </TableRow>
-                            <TableRow>
-                              <TableCell className="pl-4">IV. Efectiu i equivalents</TableCell>
-                              <TableCell className="text-right">{formatCurrency(consolidatedData.details.cash_equivalents)}</TableCell>
-                            </TableRow>
-                            <TableRow className="font-semibold bg-muted/30">
-                              <TableCell>Total Actiu Corrent</TableCell>
-                              <TableCell className="text-right">{formatCurrency(consolidatedData.current_assets)}</TableCell>
-                            </TableRow>
-                          </TableBody>
-                        </Table>
-                      </div>
-
-                      <div className="bg-primary/10 rounded-lg p-3">
-                        <div className="flex justify-between items-center font-bold text-lg">
+                    <div className="border rounded-lg p-4">
+                      <h3 className="font-semibold mb-4 pb-2 border-b">ACTIU</h3>
+                      <div className="space-y-2">
+                        <div className="flex justify-between font-medium bg-muted/50 p-2 rounded">
+                          <span>A) Actiu No Corrent</span>
+                          <span>{formatCurrency(consolidatedData.non_current_assets)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm pl-4">
+                          <span>Immobilitzat intangible</span>
+                          <span>{formatCurrency(consolidatedData.details.intangible_assets)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm pl-4">
+                          <span>Fons de comerç</span>
+                          <span>{formatCurrency(consolidatedData.details.goodwill)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm pl-4">
+                          <span>Immobilitzat material</span>
+                          <span>{formatCurrency(consolidatedData.details.tangible_assets)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm pl-4">
+                          <span>Inversions immobiliàries</span>
+                          <span>{formatCurrency(consolidatedData.details.real_estate_investments)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm pl-4">
+                          <span>Inversions financeres</span>
+                          <span>{formatCurrency(consolidatedData.details.long_term_financial_investments)}</span>
+                        </div>
+                        
+                        <div className="flex justify-between font-medium bg-muted/50 p-2 rounded mt-4">
+                          <span>B) Actiu Corrent</span>
+                          <span>{formatCurrency(consolidatedData.current_assets)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm pl-4">
+                          <span>Existències</span>
+                          <span>{formatCurrency(consolidatedData.details.inventory)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm pl-4">
+                          <span>Deutors comercials</span>
+                          <span>{formatCurrency(consolidatedData.details.trade_receivables)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm pl-4">
+                          <span>Efectiu i equivalents</span>
+                          <span>{formatCurrency(consolidatedData.details.cash_equivalents)}</span>
+                        </div>
+                        
+                        <div className="flex justify-between font-bold bg-primary/10 p-2 rounded mt-4">
                           <span>TOTAL ACTIU</span>
                           <span>{formatCurrency(consolidatedData.total_assets)}</span>
                         </div>
@@ -1017,161 +1440,149 @@ const ConsolidatedStatementsManager = () => {
                     </div>
 
                     {/* Equity & Liabilities */}
-                    <div className="space-y-4">
-                      <h3 className="font-bold text-lg border-b pb-2">PATRIMONI NET I PASSIU</h3>
-                      
-                      <div>
-                        <h4 className="font-semibold text-primary">A) Patrimoni Net</h4>
-                        <Table>
-                          <TableBody>
-                            <TableRow>
-                              <TableCell className="pl-4">A-1) Fons propis atribuïbles a la matriu</TableCell>
-                              <TableCell className="text-right">{formatCurrency(consolidatedData.equity_parent)}</TableCell>
-                            </TableRow>
-                            <TableRow>
-                              <TableCell className="pl-4">A-2) Socis externs</TableCell>
-                              <TableCell className="text-right">{formatCurrency(consolidatedData.minority_interests)}</TableCell>
-                            </TableRow>
-                            <TableRow className="font-semibold bg-muted/30">
-                              <TableCell>Total Patrimoni Net</TableCell>
-                              <TableCell className="text-right">{formatCurrency(consolidatedData.total_equity)}</TableCell>
-                            </TableRow>
-                          </TableBody>
-                        </Table>
-                      </div>
-
-                      <div>
-                        <h4 className="font-semibold text-primary">B) Passiu No Corrent</h4>
-                        <Table>
-                          <TableBody>
-                            <TableRow>
-                              <TableCell className="pl-4">Deutes a llarg termini</TableCell>
-                              <TableCell className="text-right">{formatCurrency(consolidatedData.details.long_term_debts)}</TableCell>
-                            </TableRow>
-                            <TableRow className="font-semibold bg-muted/30">
-                              <TableCell>Total Passiu No Corrent</TableCell>
-                              <TableCell className="text-right">{formatCurrency(consolidatedData.non_current_liabilities)}</TableCell>
-                            </TableRow>
-                          </TableBody>
-                        </Table>
-                      </div>
-
-                      <div>
-                        <h4 className="font-semibold text-primary">C) Passiu Corrent</h4>
-                        <Table>
-                          <TableBody>
-                            <TableRow>
-                              <TableCell className="pl-4">Deutes a curt termini</TableCell>
-                              <TableCell className="text-right">{formatCurrency(consolidatedData.details.short_term_debts)}</TableCell>
-                            </TableRow>
-                            <TableRow>
-                              <TableCell className="pl-4">Creditors comercials</TableCell>
-                              <TableCell className="text-right">{formatCurrency(consolidatedData.details.trade_payables)}</TableCell>
-                            </TableRow>
-                            <TableRow>
-                              <TableCell className="pl-4">Altres creditors</TableCell>
-                              <TableCell className="text-right">{formatCurrency(consolidatedData.details.other_creditors)}</TableCell>
-                            </TableRow>
-                            <TableRow className="font-semibold bg-muted/30">
-                              <TableCell>Total Passiu Corrent</TableCell>
-                              <TableCell className="text-right">{formatCurrency(consolidatedData.current_liabilities)}</TableCell>
-                            </TableRow>
-                          </TableBody>
-                        </Table>
-                      </div>
-
-                      <div className="bg-primary/10 rounded-lg p-3">
-                        <div className="flex justify-between items-center font-bold text-lg">
+                    <div className="border rounded-lg p-4">
+                      <h3 className="font-semibold mb-4 pb-2 border-b">PATRIMONI NET I PASSIU</h3>
+                      <div className="space-y-2">
+                        <div className="flex justify-between font-medium bg-muted/50 p-2 rounded">
+                          <span>A) Patrimoni Net</span>
+                          <span>{formatCurrency(consolidatedData.total_equity)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm pl-4">
+                          <span>Fons propis matriu</span>
+                          <span>{formatCurrency(consolidatedData.equity_parent)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm pl-4">
+                          <span>Socis externs</span>
+                          <span>{formatCurrency(consolidatedData.minority_interests)}</span>
+                        </div>
+                        
+                        <div className="flex justify-between font-medium bg-muted/50 p-2 rounded mt-4">
+                          <span>B) Passiu No Corrent</span>
+                          <span>{formatCurrency(consolidatedData.non_current_liabilities)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm pl-4">
+                          <span>Deutes a llarg termini</span>
+                          <span>{formatCurrency(consolidatedData.details.long_term_debts)}</span>
+                        </div>
+                        
+                        <div className="flex justify-between font-medium bg-muted/50 p-2 rounded mt-4">
+                          <span>C) Passiu Corrent</span>
+                          <span>{formatCurrency(consolidatedData.current_liabilities)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm pl-4">
+                          <span>Deutes a curt termini</span>
+                          <span>{formatCurrency(consolidatedData.details.short_term_debts)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm pl-4">
+                          <span>Creditors comercials</span>
+                          <span>{formatCurrency(consolidatedData.details.trade_payables)}</span>
+                        </div>
+                        
+                        <div className="flex justify-between font-bold bg-primary/10 p-2 rounded mt-4">
                           <span>TOTAL PN + PASSIU</span>
                           <span>{formatCurrency(consolidatedData.total_equity + consolidatedData.total_liabilities)}</span>
                         </div>
                       </div>
                     </div>
                   </div>
-
-                  {/* Validation Check */}
-                  <div className="mt-6 p-4 rounded-lg border">
-                    <div className="flex items-center gap-3">
-                      {Math.abs(consolidatedData.total_assets - (consolidatedData.total_equity + consolidatedData.total_liabilities)) < 1 ? (
-                        <>
-                          <CheckCircle className="w-6 h-6 text-green-500" />
-                          <div>
-                            <p className="font-semibold text-green-700">Balanç Quadrat</p>
-                            <p className="text-sm text-muted-foreground">Actiu = Patrimoni Net + Passiu</p>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <AlertTriangle className="w-6 h-6 text-amber-500" />
-                          <div>
-                            <p className="font-semibold text-amber-700">Diferència detectada</p>
-                            <p className="text-sm text-muted-foreground">
-                              Diferència: {formatCurrency(consolidatedData.total_assets - (consolidatedData.total_equity + consolidatedData.total_liabilities))}
-                            </p>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
                 </CardContent>
               </Card>
 
-              {/* Company Details */}
+              {/* Member Companies */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Detall per Empresa</CardTitle>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Info className="w-5 h-5" />
+                    Perímetre de Consolidació
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ScrollArea className="w-full">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Empresa</TableHead>
-                          <TableHead className="text-right">Actiu</TableHead>
-                          <TableHead className="text-right">PN</TableHead>
-                          <TableHead className="text-right">Passiu</TableHead>
-                          <TableHead className="text-right">Resultat</TableHead>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Empresa</TableHead>
+                        <TableHead>BP</TableHead>
+                        <TableHead>NRT</TableHead>
+                        <TableHead>Rol</TableHead>
+                        <TableHead>% Participació</TableHead>
+                        <TableHead>Mètode</TableHead>
+                        <TableHead>Estat</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {selectedCompanies.map(company => (
+                        <TableRow key={company.id}>
+                          <TableCell className="font-medium">{company.name}</TableCell>
+                          <TableCell>{company.bp || '-'}</TableCell>
+                          <TableCell>{company.tax_id || '-'}</TableCell>
+                          <TableCell>
+                            {company.is_parent ? (
+                              <Badge className="bg-primary">Matriu</Badge>
+                            ) : (
+                              <Badge variant="outline">Filial</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>{company.participation_percentage}%</TableCell>
+                          <TableCell>
+                            {company.consolidation_method === 'global' ? 'Integració global' :
+                             company.consolidation_method === 'proporcional' ? 'Integració proporcional' :
+                             'Posada en equivalència'}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className="bg-blue-500/10 text-blue-600">
+                              <Link2 className="w-3 h-3 mr-1" />
+                              Consolidada
+                            </Badge>
+                          </TableCell>
                         </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {balanceDetails.map(b => {
-                          const company = selectedCompanies.find(c => c.id === b.company_id);
-                          const totalAssets = b.intangible_assets + b.tangible_assets + b.inventory + 
-                            b.trade_receivables + b.cash_equivalents + b.long_term_financial_investments +
-                            b.short_term_financial_investments;
-                          const totalEquity = b.share_capital + b.share_premium + b.legal_reserve + 
-                            b.voluntary_reserves + b.retained_earnings + b.current_year_result;
-                          const totalLiabilities = b.long_term_debts + b.short_term_debts + 
-                            b.trade_payables + b.other_creditors;
-                          
-                          return (
-                            <TableRow key={b.company_id}>
-                              <TableCell>
-                                <div className="flex items-center gap-2">
-                                  {company?.is_parent && <Badge className="text-xs">Matriu</Badge>}
-                                  {b.company_name}
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-right">{formatCurrency(totalAssets)}</TableCell>
-                              <TableCell className="text-right">{formatCurrency(totalEquity)}</TableCell>
-                              <TableCell className="text-right">{formatCurrency(totalLiabilities)}</TableCell>
-                              <TableCell className="text-right font-medium">
-                                <span className={b.current_year_result >= 0 ? 'text-green-600' : 'text-red-600'}>
-                                  {formatCurrency(b.current_year_result)}
-                                </span>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
-                  </ScrollArea>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </CardContent>
               </Card>
             </>
           )}
         </TabsContent>
       </Tabs>
+
+      {/* PDF Import Dialog */}
+      <Dialog open={showPdfDialog} onOpenChange={setShowPdfDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Importar Balanç Consolidat des de PDF</DialogTitle>
+            <DialogDescription>
+              Puja un PDF amb el balanç consolidat per extreure les dades automàticament
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="border-2 border-dashed rounded-lg p-6 text-center">
+              <input
+                type="file"
+                accept=".pdf"
+                onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
+                className="hidden"
+                id="pdf-upload"
+              />
+              <label htmlFor="pdf-upload" className="cursor-pointer">
+                <Upload className="w-10 h-10 mx-auto text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground">
+                  {pdfFile ? pdfFile.name : 'Clica per seleccionar un PDF'}
+                </p>
+              </label>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPdfDialog(false)}>
+              Cancel·lar
+            </Button>
+            <Button onClick={handlePdfUpload} disabled={!pdfFile || parsingPdf}>
+              {parsingPdf ? 'Processant...' : 'Importar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
