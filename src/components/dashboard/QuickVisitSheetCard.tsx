@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,7 +20,7 @@ import { cn } from '@/lib/utils';
 import { 
   FileText, X, Building2, User, CreditCard, Landmark, Shield, TrendingUp, BarChart3,
   Target, Save, ChevronRight, AlertCircle, Calendar, Edit2, RefreshCw, Download,
-  ZoomIn, ZoomOut, RotateCcw, Printer, ChevronLeft, ChevronDown, Maximize2, Minimize2, Search
+  ZoomIn, ZoomOut, RotateCcw, Printer, ChevronLeft, ChevronDown, Maximize2, Minimize2, Search, ClipboardCheck
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
@@ -72,6 +73,7 @@ interface ValidationErrors {
 
 export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: QuickVisitSheetCardProps) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(!!editSheet);
   const [isHovered, setIsHovered] = useState(false);
   const [rotateX, setRotateX] = useState(0);
@@ -95,6 +97,24 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
   const [pdfPage, setPdfPage] = useState(1);
   const [pdfTotalPages, setPdfTotalPages] = useState(1);
   const [isPdfFullscreen, setIsPdfFullscreen] = useState(false);
+  const [isCommercialManager, setIsCommercialManager] = useState(false);
+
+  // Check if user is commercial manager
+  useEffect(() => {
+    const checkRole = async () => {
+      if (!user) return;
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (roleData) {
+        setIsCommercialManager(roleData.role === 'responsable_comercial' || roleData.role === 'superadmin');
+      }
+    };
+    checkRole();
+  }, [user]);
 
   // Datos Generales
   const [formData, setFormData] = useState({
@@ -1038,11 +1058,36 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
               </div>
             </TooltipProvider>
 
-            <div>
-              <h3 className="text-lg font-semibold text-foreground mb-1">Ficha de Visita</h3>
-              <p className="text-sm text-muted-foreground line-clamp-1">
-                Formulari de visites comercials
-              </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-foreground mb-1">Ficha de Visita</h3>
+                <p className="text-sm text-muted-foreground line-clamp-1">
+                  Formulari de visites comercials
+                </p>
+              </div>
+              {isCommercialManager && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 gap-1.5 bg-green-500/10 border-green-500/30 text-green-600 hover:bg-green-500/20 hover:border-green-500/50 dark:text-green-400 dark:hover:bg-green-500/30"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate('/admin?section=visit-validation');
+                        }}
+                      >
+                        <ClipboardCheck className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline text-xs">Validar</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left">
+                      <p>Validación de Fichas de Visita</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
           </div>
 
