@@ -8,7 +8,11 @@ import { toast } from 'sonner';
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
-export function ProductsMetrics() {
+interface ProductsMetricsProps {
+  gestorId?: string | null;
+}
+
+export function ProductsMetrics({ gestorId }: ProductsMetricsProps) {
   const [loading, setLoading] = useState(true);
   const [topProducts, setTopProducts] = useState<any[]>([]);
   const [productsOffered, setProductsOffered] = useState<any[]>([]);
@@ -16,20 +20,26 @@ export function ProductsMetrics() {
 
   useEffect(() => {
     fetchProductsData();
-  }, []);
+  }, [gestorId]);
 
   const fetchProductsData = async () => {
     try {
       setLoading(true);
 
-      // Productos más contratados
-      const { data: companyProducts } = await supabase
+      // Productos más contratados (filtered by gestor's companies)
+      let companyProductsQuery = supabase
         .from('company_products')
-        .select('product_id, products(name, category)')
+        .select('product_id, company_id, products(name, category), companies(gestor_id)')
         .eq('active', true);
+
+      const { data: companyProducts } = await companyProductsQuery;
 
       const productMap: any = {};
       companyProducts?.forEach((cp: any) => {
+        // Filter by gestor if provided
+        if (gestorId && cp.companies?.gestor_id !== gestorId) {
+          return;
+        }
         const name = cp.products?.name || 'Desconocido';
         if (!productMap[name]) {
           productMap[name] = { producto: name, contratos: 0 };
@@ -44,10 +54,16 @@ export function ProductsMetrics() {
       setTopProducts(sorted);
 
       // Productos más ofrecidos en visitas
-      const { data: visits } = await supabase
+      let visitsQuery = supabase
         .from('visits')
-        .select('productos_ofrecidos')
+        .select('productos_ofrecidos, gestor_id')
         .not('productos_ofrecidos', 'is', null);
+
+      if (gestorId) {
+        visitsQuery = visitsQuery.eq('gestor_id', gestorId);
+      }
+
+      const { data: visits } = await visitsQuery;
 
       const offeredMap: any = {};
       visits?.forEach((visit: any) => {
@@ -65,7 +81,7 @@ export function ProductsMetrics() {
         .filter((p: any) => p.producto && !isNaN(p.ofertas));
       setProductsOffered(sortedOffered);
 
-      // Distribución por categoría
+      // Distribución por categoría (this is general catalog, no filter)
       const { data: products } = await supabase
         .from('products')
         .select('category')
@@ -166,10 +182,10 @@ export function ProductsMetrics() {
                   data={topProducts.filter(p => 
                     !isNaN(p.contratos) && isFinite(p.contratos)
                   )} 
-                  layout="horizontal"
+                  layout="vertical"
                 >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" allowDecimals={false} />
+                  <XAxis type="number" allowDecimals={false} domain={[0, 'auto']} />
                   <YAxis 
                     dataKey="producto" 
                     type="category" 
@@ -198,10 +214,10 @@ export function ProductsMetrics() {
                   data={productsOffered.filter(p => 
                     !isNaN(p.ofertas) && isFinite(p.ofertas)
                   )} 
-                  layout="horizontal"
+                  layout="vertical"
                 >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" allowDecimals={false} />
+                  <XAxis type="number" allowDecimals={false} domain={[0, 'auto']} />
                   <YAxis 
                     dataKey="producto" 
                     type="category" 

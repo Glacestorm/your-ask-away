@@ -6,7 +6,11 @@ import { Calendar, TrendingUp } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 
-export function VisitsMetrics() {
+interface VisitsMetricsProps {
+  gestorId?: string | null;
+}
+
+export function VisitsMetrics({ gestorId }: VisitsMetricsProps) {
   const [loading, setLoading] = useState(true);
   const [monthlyVisits, setMonthlyVisits] = useState<any[]>([]);
   const [visitTrend, setVisitTrend] = useState<any[]>([]);
@@ -15,7 +19,7 @@ export function VisitsMetrics() {
 
   useEffect(() => {
     fetchVisitsData();
-  }, []);
+  }, [gestorId]);
 
   const fetchVisitsData = async () => {
     try {
@@ -25,11 +29,18 @@ export function VisitsMetrics() {
       const twelveMonthsAgo = new Date();
       twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
 
-      const { data: visitsData, error } = await supabase
+      let query = supabase
         .from('visits')
-        .select('visit_date')
+        .select('visit_date, gestor_id')
         .gte('visit_date', twelveMonthsAgo.toISOString().split('T')[0])
         .order('visit_date');
+
+      // Apply gestor filter if provided
+      if (gestorId) {
+        query = query.eq('gestor_id', gestorId);
+      }
+
+      const { data: visitsData, error } = await query;
 
       if (error) throw error;
 
@@ -156,7 +167,7 @@ export function VisitsMetrics() {
                   textAnchor="end"
                   height={80}
                 />
-                <YAxis allowDecimals={false} />
+                <YAxis allowDecimals={false} domain={[0, 'auto']} />
                 <Tooltip />
                 <Legend />
                 <Bar dataKey="visitas" fill="hsl(var(--primary))" name="Visitas" />
@@ -186,7 +197,7 @@ export function VisitsMetrics() {
                   textAnchor="end"
                   height={80}
                 />
-                <YAxis allowDecimals={false} />
+                <YAxis allowDecimals={false} domain={[0, 'auto']} />
                 <Tooltip />
                 <Legend />
                 <Line 
