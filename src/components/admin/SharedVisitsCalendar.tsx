@@ -97,7 +97,8 @@ export function SharedVisitsCalendar() {
     try {
       setLoading(true);
       
-      const { data, error } = await supabase
+      // First, get visits where user is the gestor
+      const { data: gestorVisits, error: gestorError } = await supabase
         .from('visits')
         .select(`
           *,
@@ -107,11 +108,50 @@ export function SharedVisitsCalendar() {
             profiles:user_id(full_name, email)
           )
         `)
-        .or(`gestor_id.eq.${user.id},participants.user_id.eq.${user.id}`)
+        .eq('gestor_id', user.id)
         .order('visit_date', { ascending: false });
 
-      if (error) throw error;
-      setVisits(data || []);
+      if (gestorError) throw gestorError;
+
+      // Then, get visit IDs where user is a participant
+      const { data: participantData, error: participantError } = await supabase
+        .from('visit_participants')
+        .select('visit_id')
+        .eq('user_id', user.id);
+
+      if (participantError) throw participantError;
+
+      const participantVisitIds = participantData?.map(p => p.visit_id) || [];
+      
+      // Filter out visits we already have from gestor query
+      const gestorVisitIds = new Set(gestorVisits?.map(v => v.id) || []);
+      const additionalVisitIds = participantVisitIds.filter(id => !gestorVisitIds.has(id));
+
+      let allVisits = gestorVisits || [];
+
+      // Fetch additional visits where user is participant but not gestor
+      if (additionalVisitIds.length > 0) {
+        const { data: participantVisits, error: pVisitsError } = await supabase
+          .from('visits')
+          .select(`
+            *,
+            company:companies(name, address),
+            participants:visit_participants(
+              user_id,
+              profiles:user_id(full_name, email)
+            )
+          `)
+          .in('id', additionalVisitIds)
+          .order('visit_date', { ascending: false });
+
+        if (pVisitsError) throw pVisitsError;
+        allVisits = [...allVisits, ...(participantVisits || [])];
+      }
+
+      // Sort combined results by visit_date
+      allVisits.sort((a, b) => new Date(b.visit_date).getTime() - new Date(a.visit_date).getTime());
+      
+      setVisits(allVisits);
     } catch (error: any) {
       console.error('Error fetching visits:', error);
       toast.error('Error al cargar las visitas');
