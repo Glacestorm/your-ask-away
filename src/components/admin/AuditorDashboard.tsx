@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Progress } from '@/components/ui/progress';
 import { 
   Database, 
   Activity, 
@@ -23,7 +24,12 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
-  ClipboardList
+  ClipboardList,
+  LayoutDashboard,
+  LineChart as LineChartIcon,
+  PieChart as PieChartIcon,
+  ArrowUpRight,
+  ArrowDownRight
 } from 'lucide-react';
 import { VisitSheetAuditViewer } from './VisitSheetAuditViewer';
 import { 
@@ -39,7 +45,9 @@ import {
   Cell,
   LineChart,
   Line,
-  Legend
+  Legend,
+  AreaChart,
+  Area
 } from 'recharts';
 import { format, startOfDay, subDays, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -98,7 +106,7 @@ interface FullLog {
   created_at: string;
 }
 
-const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
+const CHART_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
 export function AuditorDashboard() {
   const [loading, setLoading] = useState(true);
@@ -162,13 +170,8 @@ export function AuditorDashboard() {
     const today = startOfDay(new Date());
     const weekAgo = subDays(today, 7);
 
-    const todayLogs = logs?.filter(log => 
-      parseISO(log.created_at) >= today
-    ) || [];
-
-    const weekLogs = logs?.filter(log => 
-      parseISO(log.created_at) >= weekAgo
-    ) || [];
+    const todayLogs = logs?.filter(log => parseISO(log.created_at) >= today) || [];
+    const weekLogs = logs?.filter(log => parseISO(log.created_at) >= weekAgo) || [];
 
     const uniqueUsers = new Set(logs?.map(log => log.user_id).filter(Boolean)).size;
     const uniqueTables = new Set(logs?.map(log => log.table_name)).size;
@@ -186,78 +189,48 @@ export function AuditorDashboard() {
   };
 
   const fetchTableActivity = async () => {
-    const { data: logs, error } = await supabase
-      .from('audit_logs')
-      .select('table_name, action');
-
+    const { data: logs, error } = await supabase.from('audit_logs').select('table_name, action');
     if (error) throw error;
 
     const tableMap = new Map<string, TableActivity>();
-    
     logs?.forEach(log => {
-      const existing = tableMap.get(log.table_name) || {
-        table_name: log.table_name,
-        count: 0,
-        inserts: 0,
-        updates: 0,
-        deletes: 0
-      };
-
+      const existing = tableMap.get(log.table_name) || { table_name: log.table_name, count: 0, inserts: 0, updates: 0, deletes: 0 };
       existing.count++;
       if (log.action === 'INSERT') existing.inserts++;
       if (log.action === 'UPDATE') existing.updates++;
       if (log.action === 'DELETE') existing.deletes++;
-
       tableMap.set(log.table_name, existing);
     });
 
-    const sortedTables = Array.from(tableMap.values())
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 10);
-
-    setTableActivity(sortedTables);
+    setTableActivity(Array.from(tableMap.values()).sort((a, b) => b.count - a.count).slice(0, 10));
   };
 
   const fetchUserActivity = async () => {
-    const { data: logs, error } = await supabase
-      .from('audit_logs')
-      .select('user_id, created_at');
-
+    const { data: logs, error } = await supabase.from('audit_logs').select('user_id, created_at');
     if (error) throw error;
 
     const userMap = new Map<string, { count: number; last: string }>();
-    
     logs?.forEach(log => {
       if (!log.user_id) return;
-      
       const existing = userMap.get(log.user_id) || { count: 0, last: log.created_at };
       existing.count++;
-      if (parseISO(log.created_at) > parseISO(existing.last)) {
-        existing.last = log.created_at;
-      }
+      if (parseISO(log.created_at) > parseISO(existing.last)) existing.last = log.created_at;
       userMap.set(log.user_id, existing);
     });
 
-    // Fetch user emails
     const userIds = Array.from(userMap.keys());
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('id, email')
-      .in('id', userIds);
+    const { data: profiles } = await supabase.from('profiles').select('id, email').in('id', userIds);
 
-    const userActivityList: UserActivity[] = userIds.map(userId => {
+    setUserActivity(userIds.map(userId => {
       const activity = userMap.get(userId)!;
       const profile = profiles?.find(p => p.id === userId);
-      
       return {
         user_id: userId,
         user_email: profile?.email || 'Usuario desconocido',
         action_count: activity.count,
         last_action: activity.last
       };
-    }).sort((a, b) => b.action_count - a.action_count).slice(0, 10);
-
-    setUserActivity(userActivityList);
+    }).sort((a, b) => b.action_count - a.action_count).slice(0, 10));
   };
 
   const fetchTimelineActivity = async () => {
@@ -270,22 +243,17 @@ export function AuditorDashboard() {
     if (error) throw error;
 
     const dateMap = new Map<string, TimelineActivity>();
-    
     for (let i = 6; i >= 0; i--) {
       const date = format(subDays(new Date(), i), 'yyyy-MM-dd');
       dateMap.set(date, {
         date: format(subDays(new Date(), i), 'dd MMM', { locale: es }),
-        inserts: 0,
-        updates: 0,
-        deletes: 0,
-        total: 0
+        inserts: 0, updates: 0, deletes: 0, total: 0
       });
     }
 
     logs?.forEach(log => {
       const date = format(parseISO(log.created_at), 'yyyy-MM-dd');
       const activity = dateMap.get(date);
-      
       if (activity) {
         activity.total++;
         if (log.action === 'INSERT') activity.inserts++;
@@ -298,82 +266,41 @@ export function AuditorDashboard() {
   };
 
   const fetchRecentLogs = async () => {
-    const { data, error } = await supabase
-      .from('audit_logs')
-      .select('id, action, table_name, created_at, user_id')
-      .order('created_at', { ascending: false })
-      .limit(20);
-
+    const { data, error } = await supabase.from('audit_logs').select('id, action, table_name, created_at, user_id').order('created_at', { ascending: false }).limit(20);
     if (error) throw error;
     setRecentLogs(data || []);
   };
 
   const fetchFullLogs = async () => {
-    // Get total count first
-    const { count, error: countError } = await supabase
-      .from('audit_logs')
-      .select('*', { count: 'exact', head: true });
-
+    const { count, error: countError } = await supabase.from('audit_logs').select('*', { count: 'exact', head: true });
     if (countError) throw countError;
     setTotalLogs(count || 0);
 
-    // Fetch paginated data
     const offset = (currentPage - 1) * itemsPerPage;
-    const { data, error } = await supabase
-      .from('audit_logs')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .range(offset, offset + itemsPerPage - 1);
-
+    const { data, error } = await supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).range(offset, offset + itemsPerPage - 1);
     if (error) throw error;
     setFullLogs(data || []);
   };
 
   const filteredFullLogs = fullLogs.filter((log) => {
-    const matchesSearch = searchTerm === '' || 
-      log.table_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.action.toLowerCase().includes(searchTerm.toLowerCase());
-    
+    const matchesSearch = searchTerm === '' || log.table_name.toLowerCase().includes(searchTerm.toLowerCase()) || log.action.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesAction = filterAction === 'all' || log.action === filterAction;
     const matchesTable = filterTable === 'all' || log.table_name === filterTable;
-
     return matchesSearch && matchesAction && matchesTable;
   });
 
   const uniqueActions = [...new Set(fullLogs.map(log => log.action))];
   const uniqueTables = [...new Set(fullLogs.map(log => log.table_name))];
-
   const totalPages = Math.ceil(totalLogs / itemsPerPage);
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalLogs);
 
-  const handlePreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const handleItemsPerPageChange = (value: string) => {
-    setItemsPerPage(Number(value));
-    setCurrentPage(1); // Reset to first page when changing items per page
-  };
-
   const getActionIcon = (action: string) => {
     switch (action) {
-      case 'INSERT':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'UPDATE':
-        return <AlertCircle className="h-4 w-4 text-blue-500" />;
-      case 'DELETE':
-        return <XCircle className="h-4 w-4 text-red-500" />;
-      default:
-        return <Activity className="h-4 w-4" />;
+      case 'INSERT': return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'UPDATE': return <AlertCircle className="h-4 w-4 text-blue-500" />;
+      case 'DELETE': return <XCircle className="h-4 w-4 text-red-500" />;
+      default: return <Activity className="h-4 w-4" />;
     }
   };
 
@@ -383,18 +310,13 @@ export function AuditorDashboard() {
       UPDATE: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
       DELETE: 'bg-red-500/10 text-red-500 border-red-500/20'
     };
-    
-    return (
-      <Badge variant="outline" className={colors[action as keyof typeof colors]}>
-        {action}
-      </Badge>
-    );
+    return <Badge variant="outline" className={colors[action as keyof typeof colors]}>{action}</Badge>;
   };
 
   const actionDistribution = [
-    { name: 'Inserciones', value: stats.inserts, color: 'hsl(var(--chart-1))' },
-    { name: 'Actualizaciones', value: stats.updates, color: 'hsl(var(--chart-2))' },
-    { name: 'Eliminaciones', value: stats.deletes, color: 'hsl(var(--chart-3))' }
+    { name: 'Insercions', value: stats.inserts, color: 'hsl(var(--chart-1))' },
+    { name: 'Actualitzacions', value: stats.updates, color: 'hsl(var(--chart-2))' },
+    { name: 'Eliminacions', value: stats.deletes, color: 'hsl(var(--chart-3))' }
   ];
 
   if (loading) {
@@ -407,56 +329,68 @@ export function AuditorDashboard() {
 
   return (
     <div className="space-y-6">
-
-      {/* Stats Cards */}
+      {/* Hero KPIs */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-primary/10 via-primary/5 to-background shadow-lg">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -translate-y-16 translate-x-16" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Accions</CardTitle>
-            <Database className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Accions</CardTitle>
+            <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center">
+              <Database className="h-5 w-5 text-primary" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalActions.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">
-              Avui: {stats.todayActions} | Setmana: {stats.weekActions}
-            </p>
+            <div className="text-3xl font-bold">{stats.totalActions.toLocaleString()}</div>
+            <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+              <Badge variant="secondary">Avui: {stats.todayActions}</Badge>
+              <Badge variant="outline">Setmana: {stats.weekActions}</Badge>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-green-500/10 via-green-500/5 to-background shadow-lg">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full -translate-y-16 translate-x-16" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Insercions</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-500" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Insercions</CardTitle>
+            <div className="h-10 w-10 rounded-xl bg-green-500/20 flex items-center justify-center">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-500">{stats.inserts.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold text-green-600">{stats.inserts.toLocaleString()}</div>
+            <p className="text-sm text-muted-foreground mt-2">
               {((stats.inserts / stats.totalActions) * 100).toFixed(1)}% del total
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-background shadow-lg">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full -translate-y-16 translate-x-16" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Actualitzacions</CardTitle>
-            <AlertCircle className="h-4 w-4 text-blue-500" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Actualitzacions</CardTitle>
+            <div className="h-10 w-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
+              <AlertCircle className="h-5 w-5 text-blue-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-500">{stats.updates.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold text-blue-600">{stats.updates.toLocaleString()}</div>
+            <p className="text-sm text-muted-foreground mt-2">
               {((stats.updates / stats.totalActions) * 100).toFixed(1)}% del total
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-red-500/10 via-red-500/5 to-background shadow-lg">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-full -translate-y-16 translate-x-16" />
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Eliminacions</CardTitle>
-            <XCircle className="h-4 w-4 text-red-500" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Eliminacions</CardTitle>
+            <div className="h-10 w-10 rounded-xl bg-red-500/20 flex items-center justify-center">
+              <XCircle className="h-5 w-5 text-red-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-500">{stats.deletes.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold text-red-600">{stats.deletes.toLocaleString()}</div>
+            <p className="text-sm text-muted-foreground mt-2">
               {((stats.deletes / stats.totalActions) * 100).toFixed(1)}% del total
             </p>
           </CardContent>
@@ -465,195 +399,159 @@ export function AuditorDashboard() {
 
       {/* Additional Stats */}
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
+        <Card className="border-0 shadow-lg bg-gradient-to-r from-muted/50 to-muted/30">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Usuaris Actius</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.uniqueUsers}</div>
-            <p className="text-xs text-muted-foreground">Usuaris amb activitat registrada</p>
+            <div className="text-3xl font-bold">{stats.uniqueUsers}</div>
+            <p className="text-sm text-muted-foreground mt-1">Usuaris amb activitat registrada</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-0 shadow-lg bg-gradient-to-r from-muted/50 to-muted/30">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Taules Auditades</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
+            <FileText className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.uniqueTables}</div>
-            <p className="text-xs text-muted-foreground">Taules amb canvis registrats</p>
+            <div className="text-3xl font-bold">{stats.uniqueTables}</div>
+            <p className="text-sm text-muted-foreground mt-1">Taules amb canvis registrats</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Charts and Detailed Info */}
-      <Tabs defaultValue="timeline" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-7">
-          <TabsTrigger value="timeline">
-            <TrendingUp className="h-4 w-4 mr-2" />
+      {/* Modern Tabs */}
+      <Tabs defaultValue="timeline" className="space-y-6">
+        <TabsList className="inline-flex h-12 items-center justify-center rounded-xl bg-muted p-1 text-muted-foreground flex-wrap gap-1">
+          <TabsTrigger value="timeline" className="inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
+            <TrendingUp className="h-4 w-4" />
             Evolució
           </TabsTrigger>
-          <TabsTrigger value="distribution">
-            <BarChart3 className="h-4 w-4 mr-2" />
+          <TabsTrigger value="distribution" className="inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
+            <PieChartIcon className="h-4 w-4" />
             Distribució
           </TabsTrigger>
-          <TabsTrigger value="tables">
-            <Database className="h-4 w-4 mr-2" />
+          <TabsTrigger value="tables" className="inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
+            <Database className="h-4 w-4" />
             Taules
           </TabsTrigger>
-          <TabsTrigger value="users">
-            <Users className="h-4 w-4 mr-2" />
+          <TabsTrigger value="users" className="inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
+            <Users className="h-4 w-4" />
             Usuaris
           </TabsTrigger>
-          <TabsTrigger value="recent">
-            <Clock className="h-4 w-4 mr-2" />
-            Recents
+          <TabsTrigger value="full-logs" className="inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
+            <FileText className="h-4 w-4" />
+            Logs
           </TabsTrigger>
-          <TabsTrigger value="full-logs">
-            <FileText className="h-4 w-4 mr-2" />
-            Logs Complets
-          </TabsTrigger>
-          <TabsTrigger value="visit-sheets">
-            <ClipboardList className="h-4 w-4 mr-2" />
-            Fitxes Visita
+          <TabsTrigger value="visit-sheets" className="inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
+            <ClipboardList className="h-4 w-4" />
+            Fitxes
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="timeline" className="space-y-4">
-          <Card>
+        <TabsContent value="timeline" className="space-y-6 animate-in fade-in-50 duration-300">
+          <Card className="shadow-lg border-0">
             <CardHeader>
-              <CardTitle>Activitat dels Últims 7 Dies</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                Activitat dels Últims 7 Dies
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
-                <LineChart data={timelineData}>
+                <AreaChart data={timelineData}>
+                  <defs>
+                    <linearGradient id="colorInserts" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="colorUpdates" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="colorDeletes" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--chart-3))" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="hsl(var(--chart-3))" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                   <XAxis dataKey="date" className="text-sm" />
                   <YAxis className="text-sm" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
-                    }}
-                  />
+                  <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
                   <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="inserts" 
-                    stroke="hsl(var(--chart-1))" 
-                    name="Insercions"
-                    strokeWidth={2}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="updates" 
-                    stroke="hsl(var(--chart-2))" 
-                    name="Actualitzacions"
-                    strokeWidth={2}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="deletes" 
-                    stroke="hsl(var(--chart-3))" 
-                    name="Eliminacions"
-                    strokeWidth={2}
-                  />
-                </LineChart>
+                  <Area type="monotone" dataKey="inserts" stroke="hsl(var(--chart-1))" fillOpacity={1} fill="url(#colorInserts)" name="Insercions" />
+                  <Area type="monotone" dataKey="updates" stroke="hsl(var(--chart-2))" fillOpacity={1} fill="url(#colorUpdates)" name="Actualitzacions" />
+                  <Area type="monotone" dataKey="deletes" stroke="hsl(var(--chart-3))" fillOpacity={1} fill="url(#colorDeletes)" name="Eliminacions" />
+                </AreaChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="distribution" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
+        <TabsContent value="distribution" className="space-y-6 animate-in fade-in-50 duration-300">
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card className="shadow-lg border-0">
               <CardHeader>
                 <CardTitle>Distribució d'Accions</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={actionDistribution}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={100}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {actionDistribution.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+                <div className="flex items-center gap-6">
+                  <ResponsiveContainer width="50%" height={250}>
+                    <PieChart>
+                      <Pie data={actionDistribution} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={5} dataKey="value">
+                        {actionDistribution.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="flex-1 space-y-4">
+                    {actionDistribution.map((item, index) => (
+                      <div key={index} className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                            <span className="text-sm font-medium">{item.name}</span>
+                          </div>
+                          <Badge variant="secondary">{item.value}</Badge>
+                        </div>
+                        <Progress value={(item.value / stats.totalActions) * 100} className="h-2" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="shadow-lg border-0">
               <CardHeader>
                 <CardTitle>Resum Estadístic</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Insercions</span>
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-24 rounded-full bg-secondary overflow-hidden">
-                        <div 
-                          className="h-full bg-chart-1"
-                          style={{ width: `${(stats.inserts / stats.totalActions) * 100}%` }}
-                        />
-                      </div>
-                      <span className="text-sm text-muted-foreground">
-                        {stats.inserts}
-                      </span>
+                {actionDistribution.map((item, index) => (
+                  <div key={index} className="flex items-center gap-4 p-4 rounded-xl bg-muted/50">
+                    <div className="h-12 w-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${item.color}20` }}>
+                      {index === 0 ? <CheckCircle className="h-6 w-6" style={{ color: item.color }} /> :
+                       index === 1 ? <AlertCircle className="h-6 w-6" style={{ color: item.color }} /> :
+                       <XCircle className="h-6 w-6" style={{ color: item.color }} />}
                     </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Actualitzacions</span>
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-24 rounded-full bg-secondary overflow-hidden">
-                        <div 
-                          className="h-full bg-chart-2"
-                          style={{ width: `${(stats.updates / stats.totalActions) * 100}%` }}
-                        />
-                      </div>
-                      <span className="text-sm text-muted-foreground">
-                        {stats.updates}
-                      </span>
+                    <div className="flex-1">
+                      <p className="font-medium">{item.name}</p>
+                      <p className="text-sm text-muted-foreground">{((item.value / stats.totalActions) * 100).toFixed(1)}% del total</p>
                     </div>
+                    <p className="text-2xl font-bold">{item.value}</p>
                   </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Eliminacions</span>
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-24 rounded-full bg-secondary overflow-hidden">
-                        <div 
-                          className="h-full bg-chart-3"
-                          style={{ width: `${(stats.deletes / stats.totalActions) * 100}%` }}
-                        />
-                      </div>
-                      <span className="text-sm text-muted-foreground">
-                        {stats.deletes}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                ))}
               </CardContent>
             </Card>
           </div>
         </TabsContent>
 
-        <TabsContent value="tables" className="space-y-4">
-          <Card>
+        <TabsContent value="tables" className="space-y-6 animate-in fade-in-50 duration-300">
+          <Card className="shadow-lg border-0">
             <CardHeader>
               <CardTitle>Activitat per Taula (Top 10)</CardTitle>
             </CardHeader>
@@ -663,53 +561,36 @@ export function AuditorDashboard() {
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                   <XAxis dataKey="table_name" angle={-45} textAnchor="end" height={100} className="text-xs" />
                   <YAxis className="text-sm" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
-                      borderRadius: '8px'
-                    }}
-                  />
+                  <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))', borderRadius: '8px' }} />
                   <Legend />
-                  <Bar dataKey="inserts" fill="hsl(var(--chart-1))" name="Insercions" />
-                  <Bar dataKey="updates" fill="hsl(var(--chart-2))" name="Actualitzacions" />
-                  <Bar dataKey="deletes" fill="hsl(var(--chart-3))" name="Eliminacions" />
+                  <Bar dataKey="inserts" fill="hsl(var(--chart-1))" name="Insercions" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="updates" fill="hsl(var(--chart-2))" name="Actualitzacions" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="deletes" fill="hsl(var(--chart-3))" name="Eliminacions" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="shadow-lg border-0">
             <CardHeader>
               <CardTitle>Detall per Taula</CardTitle>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="h-[300px]">
-                <div className="space-y-2">
-                  {tableActivity.map((table) => (
-                    <div 
-                      key={table.table_name}
-                      className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Database className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="text-sm font-medium">{table.table_name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {table.count} accions totals
-                          </p>
-                        </div>
+              <ScrollArea className="h-[400px]">
+                <div className="space-y-3">
+                  {tableActivity.map((table, index) => (
+                    <div key={table.table_name} className="flex items-center gap-4 p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center bg-primary/10 text-primary font-bold text-sm">
+                        {index + 1}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium">{table.table_name}</p>
+                        <p className="text-xs text-muted-foreground">{table.count} accions totals</p>
                       </div>
                       <div className="flex gap-2">
-                        <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
-                          +{table.inserts}
-                        </Badge>
-                        <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20">
-                          ~{table.updates}
-                        </Badge>
-                        <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/20">
-                          -{table.deletes}
-                        </Badge>
+                        <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">+{table.inserts}</Badge>
+                        <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20">~{table.updates}</Badge>
+                        <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/20">-{table.deletes}</Badge>
                       </div>
                     </div>
                   ))}
@@ -719,77 +600,45 @@ export function AuditorDashboard() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="users" className="space-y-4">
-          <Card>
+        <TabsContent value="users" className="space-y-6 animate-in fade-in-50 duration-300">
+          <Card className="shadow-lg border-0">
             <CardHeader>
               <CardTitle>Usuaris Més Actius (Top 10)</CardTitle>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="h-[500px]">
-                <div className="space-y-2">
-                  {userActivity.map((user, index) => (
-                    <div 
-                      key={user.user_id}
-                      className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary font-bold">
-                          {index + 1}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium">{user.user_email}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Última acció: {format(parseISO(user.last_action), "dd MMM yyyy 'a les' HH:mm", { locale: es })}
-                          </p>
-                        </div>
-                      </div>
-                      <Badge variant="outline" className="bg-primary/10">
-                        {user.action_count} accions
-                      </Badge>
+              <div className="space-y-4">
+                {userActivity.map((user, index) => (
+                  <div key={user.user_id} className="flex items-center gap-4">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${
+                      index === 0 ? 'bg-yellow-500/20 text-yellow-600' :
+                      index === 1 ? 'bg-gray-400/20 text-gray-600' :
+                      index === 2 ? 'bg-orange-500/20 text-orange-600' :
+                      'bg-muted text-muted-foreground'
+                    }`}>
+                      {index + 1}
                     </div>
-                  ))}
-                </div>
-              </ScrollArea>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-medium truncate">{user.user_email}</span>
+                        <Badge variant="secondary">{user.action_count} accions</Badge>
+                      </div>
+                      <Progress value={userActivity[0]?.action_count > 0 ? (user.action_count / userActivity[0].action_count) * 100 : 0} className="h-2" />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Última: {format(parseISO(user.last_action), "dd MMM yyyy HH:mm", { locale: es })}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="recent" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Activitat Recent (Últimes 20 accions)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[500px]">
-                <div className="space-y-2">
-                  {recentLogs.map((log) => (
-                    <div 
-                      key={log.id}
-                      className="flex items-center gap-4 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-                    >
-                      {getActionIcon(log.action)}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          {getActionBadge(log.action)}
-                          <span className="text-sm font-medium truncate">{log.table_name}</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          {format(parseISO(log.created_at), "dd MMM yyyy 'a les' HH:mm:ss", { locale: es })}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="full-logs" className="space-y-4">
-          <Card>
+        <TabsContent value="full-logs" className="space-y-6 animate-in fade-in-50 duration-300">
+          <Card className="shadow-lg border-0">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Database className="h-5 w-5" />
+                <Database className="h-5 w-5 text-primary" />
                 Logs d'Auditoría Complets
               </CardTitle>
             </CardHeader>
@@ -797,178 +646,66 @@ export function AuditorDashboard() {
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    placeholder="Buscar per taula o acció..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
+                  <Input placeholder="Buscar per taula o acció..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-10" />
                 </div>
                 <Select value={filterAction} onValueChange={setFilterAction}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Filtrar per acció" />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Filtrar per acció" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Totes les accions</SelectItem>
-                    {uniqueActions.map((action) => (
-                      <SelectItem key={action} value={action}>
-                        {action}
-                      </SelectItem>
-                    ))}
+                    {uniqueActions.map((action) => (<SelectItem key={action} value={action}>{action}</SelectItem>))}
                   </SelectContent>
                 </Select>
                 <Select value={filterTable} onValueChange={setFilterTable}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Filtrar per taula" />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Filtrar per taula" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Totes les taules</SelectItem>
-                    {uniqueTables.map((table) => (
-                      <SelectItem key={table} value={table}>
-                        {table}
-                      </SelectItem>
-                    ))}
+                    {uniqueTables.map((table) => (<SelectItem key={table} value={table}>{table}</SelectItem>))}
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="flex items-center justify-between">
                 <div className="text-sm text-muted-foreground">
-                  Mostrant {startItem} - {endItem} de {totalLogs} registres totals
-                  {filteredFullLogs.length !== fullLogs.length && (
-                    <span className="ml-2 text-primary">
-                      ({filteredFullLogs.length} filtrats)
-                    </span>
-                  )}
+                  Mostrant {startItem} - {endItem} de {totalLogs} registres
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Registres per pàgina:</span>
-                  <Select value={itemsPerPage.toString()} onValueChange={handleItemsPerPageChange}>
-                    <SelectTrigger className="w-20">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="10">10</SelectItem>
-                      <SelectItem value="25">25</SelectItem>
-                      <SelectItem value="50">50</SelectItem>
-                      <SelectItem value="100">100</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="text-sm">{currentPage} / {totalPages}</span>
+                  <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
 
-              <ScrollArea className="h-[600px] rounded-md border">
-                <div className="space-y-2 p-4">
+              <ScrollArea className="h-[500px]">
+                <div className="space-y-3">
                   {filteredFullLogs.map((log) => (
-                    <Card key={log.id} className="overflow-hidden">
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex items-start gap-3 flex-1 min-w-0">
-                            {getActionIcon(log.action)}
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-2">
-                                {getActionBadge(log.action)}
-                                <Badge variant="outline">{log.table_name}</Badge>
-                                {log.record_id && (
-                                  <Badge variant="secondary" className="text-xs">
-                                    ID: {log.record_id.substring(0, 8)}...
-                                  </Badge>
-                                )}
-                              </div>
-                              <p className="text-xs text-muted-foreground mb-2">
-                                {format(parseISO(log.created_at), "dd MMM yyyy 'a les' HH:mm:ss", { locale: es })}
-                              </p>
-                              
-                              {(log.old_data || log.new_data) && (
-                                <div className="grid gap-2 mt-3">
-                                  {log.old_data && log.action === 'UPDATE' && (
-                                    <div className="rounded-md bg-red-500/5 border border-red-500/10 p-3">
-                                      <p className="text-xs font-medium text-red-600 mb-1">Dades anteriors:</p>
-                                      <pre className="text-xs overflow-x-auto text-muted-foreground">
-                                        {JSON.stringify(log.old_data, null, 2)}
-                                      </pre>
-                                    </div>
-                                  )}
-                                  {log.new_data && (
-                                    <div className="rounded-md bg-green-500/5 border border-green-500/10 p-3">
-                                      <p className="text-xs font-medium text-green-600 mb-1">
-                                        {log.action === 'UPDATE' ? 'Dades noves:' : 'Dades:'}
-                                      </p>
-                                      <pre className="text-xs overflow-x-auto text-muted-foreground">
-                                        {JSON.stringify(log.new_data, null, 2)}
-                                      </pre>
-                                    </div>
-                                  )}
-                                  {log.old_data && log.action === 'DELETE' && (
-                                    <div className="rounded-md bg-red-500/5 border border-red-500/10 p-3">
-                                      <p className="text-xs font-medium text-red-600 mb-1">Dades eliminades:</p>
-                                      <pre className="text-xs overflow-x-auto text-muted-foreground">
-                                        {JSON.stringify(log.old_data, null, 2)}
-                                      </pre>
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-                            </div>
+                    <div key={log.id} className="p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
+                      <div className="flex items-start gap-3">
+                        {getActionIcon(log.action)}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-2">
+                            {getActionBadge(log.action)}
+                            <Badge variant="outline">{log.table_name}</Badge>
+                            {log.record_id && <Badge variant="secondary" className="text-xs">ID: {log.record_id.substring(0, 8)}...</Badge>}
                           </div>
+                          <p className="text-xs text-muted-foreground">
+                            {format(parseISO(log.created_at), "dd MMM yyyy 'a les' HH:mm:ss", { locale: es })}
+                          </p>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                  
-                  {filteredFullLogs.length === 0 && (
-                    <div className="flex flex-col items-center justify-center py-12 text-center">
-                      <Database className="h-12 w-12 text-muted-foreground/50 mb-4" />
-                      <p className="text-sm font-medium">No s'han trobat registres</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Prova d'ajustar els filtres de cerca
-                      </p>
+                      </div>
                     </div>
-                  )}
+                  ))}
                 </div>
               </ScrollArea>
-
-              <div className="flex items-center justify-between pt-4 border-t">
-                <div className="text-sm text-muted-foreground">
-                  Pàgina {currentPage} de {totalPages}
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handlePreviousPage}
-                    disabled={currentPage === 1}
-                  >
-                    <ChevronLeft className="h-4 w-4 mr-1" />
-                    Anterior
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleNextPage}
-                    disabled={currentPage === totalPages}
-                  >
-                    Següent
-                    <ChevronRight className="h-4 w-4 ml-1" />
-                  </Button>
-                </div>
-              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="visit-sheets" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ClipboardList className="h-5 w-5" />
-                Auditoría de Fichas de Visita
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <VisitSheetAuditViewer />
-            </CardContent>
-          </Card>
+        <TabsContent value="visit-sheets" className="space-y-6 animate-in fade-in-50 duration-300">
+          <VisitSheetAuditViewer />
         </TabsContent>
       </Tabs>
     </div>
