@@ -4,18 +4,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { FileSpreadsheet, Printer, RefreshCw, ArrowUpDown, Calculator, Building2 } from 'lucide-react';
+import { FileSpreadsheet, Printer, RefreshCw, Calculator, Building2, Layers, FileText } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 interface AccountingGroup {
   code: string;
   description: string;
   type: 'ACTIU' | 'PASSIU' | 'PATRIMONI' | 'INGRESSOS' | 'DESPESES';
-  values: { [year: number]: number };
+  values: { [year: number]: { value: number; isProvisional: boolean; isConsolidated: boolean } };
 }
 
 interface CompanyData {
@@ -30,6 +31,8 @@ interface BalanceSheetSummary {
   totalAssets: number;
   totalLiabilities: number;
   difference: number;
+  isProvisional: boolean;
+  isConsolidated: boolean;
 }
 
 interface IncomeStatementSummary {
@@ -38,6 +41,8 @@ interface IncomeStatementSummary {
   haber: number;
   result: number;
   difference: number;
+  isProvisional: boolean;
+  isConsolidated: boolean;
 }
 
 interface AccountingGroupsChartProps {
@@ -149,7 +154,8 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
   const [incomeSummaries, setIncomeSummaries] = useState<IncomeStatementSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [showThousands, setShowThousands] = useState(false);
-  const [sortColumn, setSortColumn] = useState<string>('code');
+  const [showProvisional, setShowProvisional] = useState(true);
+  const [showConsolidated, setShowConsolidated] = useState(true);
 
   useEffect(() => {
     if (companyId) {
@@ -171,23 +177,49 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
         setCompany(companyData);
       }
 
-      // Load financial statements for this company
+      // Load financial statements for this company (all 5 years)
       const { data: statements } = await supabase
         .from('company_financial_statements')
-        .select('id, fiscal_year')
+        .select('id, fiscal_year, status, statement_type')
         .eq('company_id', companyId)
         .eq('is_archived', false)
+        .order('fiscal_year', { ascending: false })
+        .limit(5);
+
+      // Also load provisional statements
+      const { data: provisionalStatements } = await supabase
+        .from('company_financial_statements')
+        .select('id, fiscal_year, status, statement_type')
+        .eq('company_id', companyId)
+        .eq('status', 'draft')
         .order('fiscal_year', { ascending: false });
 
-      if (statements && statements.length > 0) {
-        const availableYears = statements.map(s => s.fiscal_year);
+      // Also check for consolidated statements
+      const { data: consolidatedStmts } = await supabase
+        .from('consolidated_financial_statements')
+        .select('id, fiscal_year, status')
+        .order('fiscal_year', { ascending: false })
+        .limit(5);
+
+      const allStatements = [
+        ...(statements || []).map(s => ({ ...s, isProvisional: s.status === 'draft', isConsolidated: false })),
+        ...(provisionalStatements || [])
+          .filter(ps => !(statements || []).find(s => s.id === ps.id))
+          .map(s => ({ ...s, isProvisional: true, isConsolidated: false }))
+      ];
+
+      // Add consolidated statements
+      const consolidatedYears = new Set((consolidatedStmts || []).map(c => c.fiscal_year));
+
+      if (allStatements.length > 0) {
+        const availableYears = [...new Set(allStatements.map(s => s.fiscal_year))].sort((a, b) => b - a).slice(0, 5);
         setYears(availableYears);
 
         // Load balance sheet data for each year
         const balanceData: BalanceSheetSummary[] = [];
         const incomeData: IncomeStatementSummary[] = [];
 
-        for (const stmt of statements) {
+        for (const stmt of allStatements) {
           const { data: balance } = await supabase
             .from('balance_sheets')
             .select('*')
@@ -231,7 +263,9 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
               year: stmt.fiscal_year,
               totalAssets,
               totalLiabilities: totalEquity + totalLiabilities,
-              difference: totalAssets - (totalEquity + totalLiabilities)
+              difference: totalAssets - (totalEquity + totalLiabilities),
+              isProvisional: stmt.isProvisional,
+              isConsolidated: consolidatedYears.has(stmt.fiscal_year)
             });
           }
 
@@ -253,7 +287,9 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
               debe,
               haber,
               result: haber - debe,
-              difference: 0
+              difference: 0,
+              isProvisional: stmt.isProvisional,
+              isConsolidated: consolidatedYears.has(stmt.fiscal_year)
             });
           }
         }
@@ -268,6 +304,18 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
       setLoading(false);
     }
   };
+
+  const filteredBalanceSummaries = balanceSummaries.filter(s => {
+    if (!showProvisional && s.isProvisional) return false;
+    if (!showConsolidated && s.isConsolidated) return false;
+    return true;
+  });
+
+  const filteredIncomeSummaries = incomeSummaries.filter(s => {
+    if (!showProvisional && s.isProvisional) return false;
+    if (!showConsolidated && s.isConsolidated) return false;
+    return true;
+  });
 
   const formatCurrency = (value: number) => {
     const displayValue = showThousands ? value / 1000 : value;
@@ -355,7 +403,7 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
           )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2 text-sm">
             <Checkbox
               id="thousands"
@@ -363,12 +411,37 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
               onCheckedChange={(checked) => setShowThousands(checked as boolean)}
             />
             <label htmlFor="thousands" className="text-muted-foreground">
-              Valors en milers d'€
+              Milers d'€
             </label>
           </div>
+          
+          <div className="flex items-center gap-2">
+            <Switch
+              id="provisional"
+              checked={showProvisional}
+              onCheckedChange={setShowProvisional}
+            />
+            <Label htmlFor="provisional" className="text-sm text-muted-foreground flex items-center gap-1">
+              <FileText className="h-3.5 w-3.5 text-amber-400" />
+              Provisionals
+            </Label>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Switch
+              id="consolidated"
+              checked={showConsolidated}
+              onCheckedChange={setShowConsolidated}
+            />
+            <Label htmlFor="consolidated" className="text-sm text-muted-foreground flex items-center gap-1">
+              <Layers className="h-3.5 w-3.5 text-blue-400" />
+              Consolidats
+            </Label>
+          </div>
+
           <Button variant="outline" size="sm" onClick={exportToExcel}>
             <FileSpreadsheet className="h-4 w-4 mr-2" />
-            Exportar a Excel
+            Exportar
           </Button>
           <Button variant="outline" size="sm" onClick={printChart}>
             <Printer className="h-4 w-4 mr-2" />
@@ -384,11 +457,11 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
             <Table>
               <TableHeader className="sticky top-0 bg-card z-10">
                 <TableRow className="border-b-2 border-primary/30 hover:bg-transparent">
-                  <TableHead className="w-24 font-bold text-primary">Codi</TableHead>
-                  <TableHead className="min-w-[300px] font-bold text-primary">Descripció</TableHead>
-                  <TableHead className="w-32 font-bold text-primary text-center">Tipus</TableHead>
-                  {years.map(year => (
-                    <TableHead key={year} className="w-32 font-bold text-primary text-right">
+                  <TableHead className="w-20 font-bold text-primary">Codi</TableHead>
+                  <TableHead className="min-w-[200px] font-bold text-primary">Descripció</TableHead>
+                  <TableHead className="w-24 font-bold text-primary text-center">Tipus</TableHead>
+                  {years.slice(0, 5).map(year => (
+                    <TableHead key={year} className="w-28 font-bold text-primary text-right text-xs">
                       Des-{year}
                     </TableHead>
                   ))}
@@ -409,13 +482,13 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
                       {group.description}
                     </TableCell>
                     <TableCell className="text-center">
-                      <Badge variant="outline" className={`${getTypeColor(group.type)} text-xs`}>
+                      <Badge variant="outline" className={`${getTypeColor(group.type)} text-[10px] px-1.5`}>
                         {group.type}
                       </Badge>
                     </TableCell>
-                    {years.map(year => (
-                      <TableCell key={year} className="text-right font-mono text-sm tabular-nums">
-                        {formatCurrency(group.values[year] || 0)}
+                    {years.slice(0, 5).map(year => (
+                      <TableCell key={year} className="text-right font-mono text-xs tabular-nums">
+                        {formatCurrency(group.values[year]?.value || 0)}
                       </TableCell>
                     ))}
                   </TableRow>
@@ -448,28 +521,40 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {balanceSummaries.map((summary, idx) => (
+                {filteredBalanceSummaries.map((summary, idx) => (
                   <TableRow 
-                    key={summary.year}
+                    key={`${summary.year}-${summary.isProvisional}`}
                     className={idx % 2 === 0 ? 'bg-muted/20' : 'bg-transparent'}
                   >
                     <TableCell className="font-semibold bg-amber-500/5">
-                      Desembre - {summary.year}
+                      <div className="flex items-center gap-1.5">
+                        <span>Des-{summary.year}</span>
+                        {summary.isProvisional && (
+                          <Badge variant="outline" className="text-[9px] px-1 py-0 bg-amber-500/20 text-amber-400 border-amber-500/50">
+                            PROV
+                          </Badge>
+                        )}
+                        {summary.isConsolidated && (
+                          <Badge variant="outline" className="text-[9px] px-1 py-0 bg-blue-500/20 text-blue-400 border-blue-500/50">
+                            CONS
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
-                    <TableCell className="text-right font-mono tabular-nums bg-emerald-500/5 text-emerald-400">
+                    <TableCell className="text-right font-mono tabular-nums bg-emerald-500/5 text-emerald-400 text-sm">
                       {formatCurrency(summary.totalAssets)}
                     </TableCell>
-                    <TableCell className="text-right font-mono tabular-nums bg-rose-500/5 text-rose-400">
+                    <TableCell className="text-right font-mono tabular-nums bg-rose-500/5 text-rose-400 text-sm">
                       {formatCurrency(summary.totalLiabilities)}
                     </TableCell>
-                    <TableCell className={`text-right font-mono tabular-nums bg-blue-500/5 ${
+                    <TableCell className={`text-right font-mono tabular-nums bg-blue-500/5 text-sm ${
                       summary.difference === 0 ? 'text-emerald-400' : 'text-rose-400'
                     }`}>
                       {formatCurrency(summary.difference)}
                     </TableCell>
                   </TableRow>
                 ))}
-                {balanceSummaries.length === 0 && (
+                {filteredBalanceSummaries.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
                       No hi ha dades disponibles
@@ -501,28 +586,40 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {incomeSummaries.map((summary, idx) => (
+                {filteredIncomeSummaries.map((summary, idx) => (
                   <TableRow 
-                    key={summary.year}
+                    key={`${summary.year}-${summary.isProvisional}`}
                     className={idx % 2 === 0 ? 'bg-muted/20' : 'bg-transparent'}
                   >
                     <TableCell className="font-semibold bg-amber-500/5">
-                      Desembre - {summary.year}
+                      <div className="flex items-center gap-1.5">
+                        <span>Des-{summary.year}</span>
+                        {summary.isProvisional && (
+                          <Badge variant="outline" className="text-[9px] px-1 py-0 bg-amber-500/20 text-amber-400 border-amber-500/50">
+                            PROV
+                          </Badge>
+                        )}
+                        {summary.isConsolidated && (
+                          <Badge variant="outline" className="text-[9px] px-1 py-0 bg-blue-500/20 text-blue-400 border-blue-500/50">
+                            CONS
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
-                    <TableCell className="text-right font-mono tabular-nums bg-rose-500/5 text-rose-400">
+                    <TableCell className="text-right font-mono tabular-nums bg-rose-500/5 text-rose-400 text-sm">
                       {formatCurrency(summary.debe)}
                     </TableCell>
-                    <TableCell className="text-right font-mono tabular-nums bg-emerald-500/5 text-emerald-400">
+                    <TableCell className="text-right font-mono tabular-nums bg-emerald-500/5 text-emerald-400 text-sm">
                       {formatCurrency(summary.haber)}
                     </TableCell>
-                    <TableCell className={`text-right font-mono tabular-nums bg-blue-500/5 ${
+                    <TableCell className={`text-right font-mono tabular-nums bg-blue-500/5 text-sm ${
                       summary.result >= 0 ? 'text-emerald-400' : 'text-rose-400'
                     }`}>
                       {formatCurrency(summary.result)}
                     </TableCell>
                   </TableRow>
                 ))}
-                {incomeSummaries.length === 0 && (
+                {filteredIncomeSummaries.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
                       No hi ha dades disponibles
@@ -545,6 +642,9 @@ const AccountingGroupsChart = ({ companyId }: AccountingGroupsChartProps) => {
             <Badge variant="outline" className={getTypeColor('PATRIMONI')}>PATRIMONI NET</Badge>
             <Badge variant="outline" className={getTypeColor('INGRESSOS')}>INGRESSOS</Badge>
             <Badge variant="outline" className={getTypeColor('DESPESES')}>DESPESES</Badge>
+            <span className="border-l border-border pl-4 ml-2"></span>
+            <Badge variant="outline" className="bg-amber-500/20 text-amber-400 border-amber-500/50">PROV = Provisional</Badge>
+            <Badge variant="outline" className="bg-blue-500/20 text-blue-400 border-blue-500/50">CONS = Consolidat</Badge>
           </div>
         </CardContent>
       </Card>
