@@ -98,8 +98,9 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
   const [pdfTotalPages, setPdfTotalPages] = useState(1);
   const [isPdfFullscreen, setIsPdfFullscreen] = useState(false);
   const [isCommercialManager, setIsCommercialManager] = useState(false);
+  const [isNotAuditor, setIsNotAuditor] = useState(false);
 
-  // Check if user can validate (responsable_comercial, director_comercial, director_oficina, superadmin)
+  // Check user role for permissions
   useEffect(() => {
     const checkRole = async () => {
       if (!user) return;
@@ -112,6 +113,7 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
       if (roleData) {
         const canValidate = ['responsable_comercial', 'director_comercial', 'director_oficina', 'superadmin'].includes(roleData.role);
         setIsCommercialManager(canValidate);
+        setIsNotAuditor(roleData.role !== 'auditor');
       }
     };
     checkRole();
@@ -1066,29 +1068,54 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
                   Formulari de visites comercials
                 </p>
               </div>
-              {isCommercialManager && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="default"
-                        size="sm"
-                        className="h-8 gap-1.5 bg-green-600 hover:bg-green-700 text-white shadow-md"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate('/admin?section=visit-validation');
-                        }}
-                      >
-                        <ClipboardCheck className="h-4 w-4" />
-                        <span className="text-xs font-medium">Validar</span>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="left">
-                      <p>Validación de Fichas de Visita</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
+              <div className="flex items-center gap-2">
+                {isNotAuditor && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 gap-1.5 bg-primary/10 border-primary/30 text-primary hover:bg-primary/20 hover:border-primary/50"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate('/admin?section=visit-sheets');
+                          }}
+                        >
+                          <FileText className="h-4 w-4" />
+                          <span className="text-xs font-medium">Fitxes</span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p>Ver todas las Fichas de Visita</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+                {isCommercialManager && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="h-8 gap-1.5 bg-green-600 hover:bg-green-700 text-white shadow-md"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate('/admin?section=visit-validation');
+                          }}
+                        >
+                          <ClipboardCheck className="h-4 w-4" />
+                          <span className="text-xs font-medium">Validar</span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="left">
+                        <p>Validación de Fichas de Visita</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
             </div>
           </div>
 

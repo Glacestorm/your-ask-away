@@ -198,26 +198,6 @@ export function AdminSidebar({
         {/* 2. Navegación y Visualización - Available to all users except auditors */}
         <SidebarGroup className="mt-4">
           <SidebarMenu className="space-y-2">
-            {!isAuditor && (
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={() => onSectionChange('visit-sheets')}
-                  isActive={isActive('visit-sheets')}
-                  className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
-                  tooltip={!open ? {
-                    children: 'Fichas de Visita',
-                    className: "bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20"
-                  } : undefined}
-                >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/80 shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-primary/50 group-hover:rotate-3">
-                    <FileText className="h-5 w-5 text-primary-foreground transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3" />
-                  </div>
-                  <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
-                    Fichas de Visita
-                  </span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            )}
             {(isCommercialManager || isCommercialDirector || isOfficeDirector || isSuperAdmin) && (
               <SidebarMenuItem>
                 <SidebarMenuButton
