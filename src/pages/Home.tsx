@@ -341,18 +341,18 @@ const Home = () => {
         </div>
       </main>
 
-      {/* Footer with All Role Badges */}
+      {/* Footer with All Role Badges - Centered */}
       <footer className="border-t bg-card/50 backdrop-blur-sm">
         <div className="container mx-auto px-6 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col items-center gap-3">
               <span className="text-sm text-muted-foreground font-medium">Els meus rols:</span>
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center justify-center gap-3">
                 {allUserRoles.map((role) => {
                   const config = roleConfig[role] || roleConfig.user;
                   const Icon = config.icon;
                   return (
-                    <div key={role} className="flex items-center gap-2">
+                    <div key={role} className="flex items-center gap-2 bg-card/80 px-3 py-2 rounded-lg border shadow-sm">
                       <div className={`p-1.5 rounded-lg ${config.color} text-white`}>
                         <Icon className="h-4 w-4" />
                       </div>
@@ -369,7 +369,7 @@ const Home = () => {
                 )}
               </div>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               © 2024 Sistema de Gestió Comercial. Tots els drets reservats.
             </p>
           </div>
