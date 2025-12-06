@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.notify-visit-validation]
 verify_jwt = false
+
+[functions.parse-financial-pdf]
+verify_jwt = false
