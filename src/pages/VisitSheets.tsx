@@ -313,7 +313,7 @@ export default function VisitSheets() {
           <h1 className="text-3xl font-bold">Fichas de Visita</h1>
         </div>
         <div className="flex items-center gap-3">
-          {(isAdmin || isCommercialDirector || isOfficeDirector || isCommercialManager) && (
+          {(isCommercialDirector || isOfficeDirector || isCommercialManager) && (
             <Button
               variant="outline"
               onClick={() => window.location.href = '/admin?section=gestor-comparison'}
