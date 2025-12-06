@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Users, User, Calendar as CalendarIcon, FileText, Plus, Edit, Send, Loader2, Trash2 } from 'lucide-react';
+import { Users, User, Calendar as CalendarIcon, FileText, Plus, Edit, Send, Loader2, Trash2, Filter, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { VisitSheetForm } from '@/components/visits/VisitSheetForm';
 import { ParticipantsSelector } from '@/components/visits/ParticipantsSelector';
@@ -42,6 +42,10 @@ interface Visit {
     name: string;
     address: string;
   };
+  gestor?: {
+    full_name: string;
+    oficina: string;
+  };
   participants?: Array<{
     user_id: string;
     profiles?: {
@@ -66,12 +70,20 @@ interface Company {
   address: string;
 }
 
+interface Gestor {
+  id: string;
+  full_name: string;
+  oficina: string | null;
+}
+
 export function SharedVisitsCalendar() {
-  const { user } = useAuth();
+  const { user, userRole, isCommercialDirector, isCommercialManager, isOfficeDirector } = useAuth();
   const [visits, setVisits] = useState<Visit[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);
+  const [gestores, setGestores] = useState<Gestor[]>([]);
+  const [offices, setOffices] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<{ email: string; full_name: string | null } | null>(null);
+  const [profile, setProfile] = useState<{ email: string; full_name: string | null; oficina: string | null } | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [sheetDialogOpen, setSheetDialogOpen] = useState(false);
@@ -79,6 +91,14 @@ export function SharedVisitsCalendar() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [view, setView] = useState<View>('month');
   const [sendingEmail, setSendingEmail] = useState(false);
+
+  // Filters
+  const [filterGestorId, setFilterGestorId] = useState<string>('all');
+  const [filterOficina, setFilterOficina] = useState<string>('all');
+
+  // Check if user can see filters (directors and managers)
+  const canSeeFilters = isCommercialDirector || isCommercialManager || isOfficeDirector;
+  const canFilterByOffice = isCommercialDirector || isCommercialManager;
 
   // Form state for creating/editing visits
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -91,74 +111,139 @@ export function SharedVisitsCalendar() {
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
+  // Fetch gestores and offices for filters
+  const fetchGestoresAndOffices = useCallback(async () => {
+    try {
+      const { data: profilesData, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, oficina')
+        .order('full_name');
+
+      if (error) throw error;
+
+      setGestores(profilesData || []);
+
+      // Extract unique offices
+      const uniqueOffices = [...new Set(
+        (profilesData || [])
+          .map(p => p.oficina)
+          .filter((o): o is string => o !== null && o !== '')
+      )].sort();
+      setOffices(uniqueOffices);
+    } catch (error) {
+      console.error('Error fetching gestores:', error);
+    }
+  }, []);
+
   const fetchVisits = useCallback(async () => {
     if (!user) return;
 
     try {
       setLoading(true);
-      
-      // First, get visits where user is the gestor
-      const { data: gestorVisits, error: gestorError } = await supabase
+
+      // Determine which visits to fetch based on role
+      let query = supabase
         .from('visits')
         .select(`
           *,
           company:companies(name, address),
+          gestor:profiles!visits_gestor_id_fkey(full_name, oficina),
           participants:visit_participants(
             user_id,
             profiles:user_id(full_name, email)
           )
         `)
-        .eq('gestor_id', user.id)
         .order('visit_date', { ascending: false });
 
-      if (gestorError) throw gestorError;
-
-      // Then, get visit IDs where user is a participant
-      const { data: participantData, error: participantError } = await supabase
-        .from('visit_participants')
-        .select('visit_id')
-        .eq('user_id', user.id);
-
-      if (participantError) throw participantError;
-
-      const participantVisitIds = participantData?.map(p => p.visit_id) || [];
-      
-      // Filter out visits we already have from gestor query
-      const gestorVisitIds = new Set(gestorVisits?.map(v => v.id) || []);
-      const additionalVisitIds = participantVisitIds.filter(id => !gestorVisitIds.has(id));
-
-      let allVisits = gestorVisits || [];
-
-      // Fetch additional visits where user is participant but not gestor
-      if (additionalVisitIds.length > 0) {
-        const { data: participantVisits, error: pVisitsError } = await supabase
+      // Role-based filtering
+      if (isCommercialDirector || isCommercialManager) {
+        // Director Comercial y Responsable Comercial: ven todas las visitas
+        // No filter needed - they see all
+      } else if (isOfficeDirector && profile?.oficina) {
+        // Director de Oficina: solo ve visitas de gestores de su oficina
+        // Get gestor IDs from their office
+        const { data: officeGestores } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('oficina', profile.oficina);
+        
+        const officeGestorIds = officeGestores?.map(g => g.id) || [];
+        if (officeGestorIds.length > 0) {
+          query = query.in('gestor_id', officeGestorIds);
+        } else {
+          // No gestores in office, return empty
+          setVisits([]);
+          setLoading(false);
+          return;
+        }
+      } else {
+        // Gestor: solo ve sus propias visitas + donde participa
+        // First, get visits where user is the gestor
+        const { data: gestorVisits, error: gestorError } = await supabase
           .from('visits')
           .select(`
             *,
             company:companies(name, address),
+            gestor:profiles!visits_gestor_id_fkey(full_name, oficina),
             participants:visit_participants(
               user_id,
               profiles:user_id(full_name, email)
             )
           `)
-          .in('id', additionalVisitIds)
+          .eq('gestor_id', user.id)
           .order('visit_date', { ascending: false });
 
-        if (pVisitsError) throw pVisitsError;
-        allVisits = [...allVisits, ...(participantVisits || [])];
+        if (gestorError) throw gestorError;
+
+        // Then, get visit IDs where user is a participant
+        const { data: participantData, error: participantError } = await supabase
+          .from('visit_participants')
+          .select('visit_id')
+          .eq('user_id', user.id);
+
+        if (participantError) throw participantError;
+
+        const participantVisitIds = participantData?.map(p => p.visit_id) || [];
+        const gestorVisitIds = new Set(gestorVisits?.map(v => v.id) || []);
+        const additionalVisitIds = participantVisitIds.filter(id => !gestorVisitIds.has(id));
+
+        let allVisits = gestorVisits || [];
+
+        if (additionalVisitIds.length > 0) {
+          const { data: participantVisits, error: pVisitsError } = await supabase
+            .from('visits')
+            .select(`
+              *,
+              company:companies(name, address),
+              gestor:profiles!visits_gestor_id_fkey(full_name, oficina),
+              participants:visit_participants(
+                user_id,
+                profiles:user_id(full_name, email)
+              )
+            `)
+            .in('id', additionalVisitIds)
+            .order('visit_date', { ascending: false });
+
+          if (pVisitsError) throw pVisitsError;
+          allVisits = [...allVisits, ...(participantVisits || [])];
+        }
+
+        allVisits.sort((a, b) => new Date(b.visit_date).getTime() - new Date(a.visit_date).getTime());
+        setVisits(allVisits);
+        setLoading(false);
+        return;
       }
 
-      // Sort combined results by visit_date
-      allVisits.sort((a, b) => new Date(b.visit_date).getTime() - new Date(a.visit_date).getTime());
-      
-      setVisits(allVisits);
+      const { data, error } = await query;
+      if (error) throw error;
+      setVisits(data || []);
     } catch (error: any) {
       console.error('Error fetching visits:', error);
       toast.error('Error al cargar las visitas');
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, isCommercialDirector, isCommercialManager, isOfficeDirector, profile?.oficina]);
 
   const fetchCompanies = useCallback(async () => {
     try {
@@ -175,21 +260,28 @@ export function SharedVisitsCalendar() {
   }, []);
 
   useEffect(() => {
-    fetchVisits();
-    fetchCompanies();
-
-    // Fetch profile
+    // Fetch profile first
     const fetchProfile = async () => {
       if (!user) return;
       const { data } = await supabase
         .from('profiles')
-        .select('email, full_name')
+        .select('email, full_name, oficina')
         .eq('id', user.id)
         .single();
       if (data) setProfile(data);
     };
     fetchProfile();
+    fetchGestoresAndOffices();
+    fetchCompanies();
+  }, [user, fetchGestoresAndOffices, fetchCompanies]);
 
+  useEffect(() => {
+    if (profile !== null || !canSeeFilters) {
+      fetchVisits();
+    }
+  }, [profile, canSeeFilters, fetchVisits]);
+
+  useEffect(() => {
     const channel = supabase
       .channel('shared-visits-changes')
       .on(
@@ -207,23 +299,59 @@ export function SharedVisitsCalendar() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchVisits, fetchCompanies]);
+  }, [fetchVisits]);
+
+  // Filter visits based on selected filters
+  const filteredVisits = useMemo(() => {
+    let result = visits;
+
+    // Filter by gestor
+    if (filterGestorId !== 'all') {
+      result = result.filter(v => v.gestor_id === filterGestorId);
+    }
+
+    // Filter by office (only for directors and managers)
+    if (canFilterByOffice && filterOficina !== 'all') {
+      result = result.filter(v => v.gestor?.oficina === filterOficina);
+    }
+
+    // For office directors, also apply office filter if set
+    if (isOfficeDirector && !canFilterByOffice && filterOficina !== 'all') {
+      result = result.filter(v => v.gestor?.oficina === filterOficina);
+    }
+
+    return result;
+  }, [visits, filterGestorId, filterOficina, canFilterByOffice, isOfficeDirector]);
+
+  // Filter gestores by selected office for the gestor dropdown
+  const filteredGestores = useMemo(() => {
+    if (filterOficina === 'all') return gestores;
+    return gestores.filter(g => g.oficina === filterOficina);
+  }, [gestores, filterOficina]);
+
+  // For office directors, filter gestores by their office
+  const availableGestores = useMemo(() => {
+    if (isOfficeDirector && profile?.oficina) {
+      return gestores.filter(g => g.oficina === profile.oficina);
+    }
+    return filteredGestores;
+  }, [isOfficeDirector, profile?.oficina, gestores, filteredGestores]);
 
   const events: CalendarEvent[] = useMemo(() => {
-    return visits.map((visit) => {
+    return filteredVisits.map((visit) => {
       const visitDate = new Date(visit.visit_date + 'T09:00:00');
       const isJoint = (visit.participants && visit.participants.length > 0) || false;
       
       return {
         id: visit.id,
-        title: visit.company?.name || 'Visita',
+        title: `${visit.company?.name || 'Visita'}${visit.gestor?.full_name ? ` - ${visit.gestor.full_name}` : ''}`,
         start: visitDate,
         end: new Date(visitDate.getTime() + 60 * 60 * 1000),
         resource: visit,
         isJoint,
       };
     });
-  }, [visits]);
+  }, [filteredVisits]);
 
   const eventStyleGetter = (event: CalendarEvent) => {
     const style: React.CSSProperties = {
@@ -466,6 +594,11 @@ export function SharedVisitsCalendar() {
     await sendCalendarInvite(selectedEvent.id, company);
   };
 
+  const clearFilters = () => {
+    setFilterGestorId('all');
+    setFilterOficina('all');
+  };
+
   if (loading) {
     return (
       <Card>
@@ -478,12 +611,82 @@ export function SharedVisitsCalendar() {
 
   return (
     <div className="space-y-4">
+      {/* Filters for directors and managers */}
+      {canSeeFilters && (
+        <Card>
+          <CardHeader className="py-3">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Filter className="h-4 w-4" />
+              Filtres
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="py-2">
+            <div className="flex flex-wrap items-center gap-4">
+              {/* Office filter - only for commercial director and commercial manager */}
+              {canFilterByOffice && (
+                <div className="flex items-center gap-2">
+                  <Building2 className="h-4 w-4 text-muted-foreground" />
+                  <Select value={filterOficina} onValueChange={(value) => {
+                    setFilterOficina(value);
+                    // Reset gestor filter when office changes
+                    if (value !== 'all') {
+                      setFilterGestorId('all');
+                    }
+                  }}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Totes les oficines" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Totes les oficines</SelectItem>
+                      {offices.map(office => (
+                        <SelectItem key={office} value={office}>{office}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Gestor filter */}
+              <div className="flex items-center gap-2">
+                <User className="h-4 w-4 text-muted-foreground" />
+                <Select value={filterGestorId} onValueChange={setFilterGestorId}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Tots els gestors" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tots els gestors</SelectItem>
+                    {availableGestores.map(gestor => (
+                      <SelectItem key={gestor.id} value={gestor.id}>
+                        {gestor.full_name || 'Sense nom'}
+                        {gestor.oficina && canFilterByOffice && ` (${gestor.oficina})`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Clear filters button */}
+              {(filterGestorId !== 'all' || filterOficina !== 'all') && (
+                <Button variant="ghost" size="sm" onClick={clearFilters}>
+                  Netejar filtres
+                </Button>
+              )}
+
+              {/* Stats */}
+              <div className="ml-auto text-sm text-muted-foreground">
+                {filteredVisits.length} visites
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Header with create button */}
       <div className="flex justify-between items-center">
         <Card className="flex-1">
           <CardHeader className="py-3">
             <CardTitle className="text-lg flex items-center gap-4">
-              <span>Leyenda:</span>
+              <span>Llegenda:</span>
               <div className="flex flex-wrap gap-4 font-normal text-sm">
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded" style={{ backgroundColor: 'hsl(var(--chart-1))' }} />
@@ -505,7 +708,7 @@ export function SharedVisitsCalendar() {
         </Card>
         <Button onClick={() => { resetFormState(); setSelectedDate(new Date()); setCreateDialogOpen(true); }} className="ml-4">
           <Plus className="mr-2 h-4 w-4" />
-          Nueva Visita
+          Nova Visita
         </Button>
       </div>
 
@@ -526,18 +729,18 @@ export function SharedVisitsCalendar() {
               eventPropGetter={eventStyleGetter}
               culture="es"
               messages={{
-                next: 'Siguiente',
+                next: 'Següent',
                 previous: 'Anterior',
-                today: 'Hoy',
+                today: 'Avui',
                 month: 'Mes',
-                week: 'Semana',
-                day: 'Día',
+                week: 'Setmana',
+                day: 'Dia',
                 agenda: 'Agenda',
-                date: 'Fecha',
+                date: 'Data',
                 time: 'Hora',
                 event: 'Visita',
-                noEventsInRange: 'No hay visitas en este rango de fechas',
-                showMore: (total) => `+ Ver más (${total})`,
+                noEventsInRange: 'No hi ha visites en aquest rang de dates',
+                showMore: (total) => `+ Veure més (${total})`,
               }}
             />
           </div>
@@ -554,7 +757,7 @@ export function SharedVisitsCalendar() {
               ) : (
                 <User className="h-5 w-5" />
               )}
-              Detalles de la Visita
+              Detalls de la Visita
             </DialogTitle>
           </DialogHeader>
           {selectedEvent && (
@@ -567,7 +770,7 @@ export function SharedVisitsCalendar() {
                 <div className="flex items-start gap-2">
                   <CalendarIcon className="h-4 w-4 mt-1 text-muted-foreground" />
                   <div>
-                    <p className="text-sm font-medium">Fecha</p>
+                    <p className="text-sm font-medium">Data</p>
                     <p className="text-sm text-muted-foreground">
                       {format(selectedEvent.start, "dd 'de' MMMM 'de' yyyy", { locale: es })}
                     </p>
@@ -589,11 +792,26 @@ export function SharedVisitsCalendar() {
                   </div>
                 </div>
 
+                {selectedEvent.resource.gestor && (
+                  <div className="flex items-start gap-2">
+                    <User className="h-4 w-4 mt-1 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Gestor</p>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedEvent.resource.gestor.full_name}
+                        {selectedEvent.resource.gestor.oficina && (
+                          <span className="text-xs ml-1">({selectedEvent.resource.gestor.oficina})</span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 {selectedEvent.resource.result && (
                   <div className="flex items-start gap-2">
                     <FileText className="h-4 w-4 mt-1 text-muted-foreground" />
                     <div>
-                      <p className="text-sm font-medium">Tipo</p>
+                      <p className="text-sm font-medium">Tipus</p>
                       <p className="text-sm text-muted-foreground">
                         {selectedEvent.resource.result}
                       </p>
@@ -605,7 +823,7 @@ export function SharedVisitsCalendar() {
                   <div className="flex items-start gap-2">
                     <FileText className="h-4 w-4 mt-1 text-muted-foreground" />
                     <div>
-                      <p className="text-sm font-medium">Notas</p>
+                      <p className="text-sm font-medium">Notes</p>
                       <p className="text-sm text-muted-foreground">
                         {selectedEvent.resource.notes}
                       </p>
@@ -617,11 +835,11 @@ export function SharedVisitsCalendar() {
                   <div className="flex items-start gap-2">
                     <Users className="h-4 w-4 mt-1 text-muted-foreground" />
                     <div>
-                      <p className="text-sm font-medium">Participantes</p>
+                      <p className="text-sm font-medium">Participants</p>
                       <ul className="text-sm text-muted-foreground space-y-1 mt-1">
                         {selectedEvent.resource.participants.map((participant, idx) => (
                           <li key={idx}>
-                            • {participant.profiles?.full_name || participant.profiles?.email || 'Usuario'}
+                            • {participant.profiles?.full_name || participant.profiles?.email || 'Usuari'}
                           </li>
                         ))}
                       </ul>
@@ -639,7 +857,7 @@ export function SharedVisitsCalendar() {
                   className="w-full"
                 >
                   <FileText className="mr-2 h-4 w-4" />
-                  Ver/Crear Ficha Completa
+                  Veure/Crear Fitxa Completa
                 </Button>
                 <div className="grid grid-cols-2 gap-2">
                   <Button variant="outline" onClick={openEditDialog}>
@@ -671,7 +889,7 @@ export function SharedVisitsCalendar() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Plus className="h-5 w-5" />
-              Nueva Visita - {format(selectedDate, "dd/MM/yyyy")}
+              Nova Visita - {format(selectedDate, "dd/MM/yyyy")}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
@@ -701,7 +919,7 @@ export function SharedVisitsCalendar() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Duración (min)</Label>
+                <Label>Duració (min)</Label>
                 <Input
                   type="number"
                   value={duration}
@@ -712,16 +930,16 @@ export function SharedVisitsCalendar() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Tipo de Visita</Label>
+                <Label>Tipus de Visita</Label>
                 <Select value={visitType} onValueChange={setVisitType}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Primera visita">Primera visita</SelectItem>
-                    <SelectItem value="Seguimiento">Seguimiento</SelectItem>
-                    <SelectItem value="Postventa">Postventa</SelectItem>
-                    <SelectItem value="Renovación">Renovación</SelectItem>
+                    <SelectItem value="Seguiment">Seguiment</SelectItem>
+                    <SelectItem value="Postvenda">Postvenda</SelectItem>
+                    <SelectItem value="Renovació">Renovació</SelectItem>
                     <SelectItem value="TPV">TPV</SelectItem>
                     <SelectItem value="Visita 360°">Visita 360°</SelectItem>
                   </SelectContent>
@@ -735,8 +953,8 @@ export function SharedVisitsCalendar() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Presencial">Presencial</SelectItem>
-                    <SelectItem value="Teléfono">Teléfono</SelectItem>
-                    <SelectItem value="Videollamada">Videollamada</SelectItem>
+                    <SelectItem value="Telèfon">Telèfon</SelectItem>
+                    <SelectItem value="Videotrucada">Videotrucada</SelectItem>
                     <SelectItem value="Email">Email</SelectItem>
                   </SelectContent>
                 </Select>
@@ -744,17 +962,17 @@ export function SharedVisitsCalendar() {
             </div>
 
             <div className="space-y-2">
-              <Label>Notas</Label>
+              <Label>Notes</Label>
               <Textarea
                 value={visitNotes}
                 onChange={(e) => setVisitNotes(e.target.value)}
-                placeholder="Notas adicionales..."
+                placeholder="Notes addicionals..."
                 rows={3}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Participantes adicionales</Label>
+              <Label>Participants addicionals</Label>
               <ParticipantsSelector
                 selectedParticipants={selectedParticipants}
                 onParticipantsChange={setSelectedParticipants}
@@ -764,7 +982,7 @@ export function SharedVisitsCalendar() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
-              Cancelar
+              Cancel·lar
             </Button>
             <Button onClick={handleCreateVisit} disabled={saving || !selectedCompanyId}>
               {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
@@ -785,7 +1003,7 @@ export function SharedVisitsCalendar() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Fecha</Label>
+              <Label>Data</Label>
               <Input
                 type="date"
                 value={format(selectedDate, 'yyyy-MM-dd')}
@@ -794,16 +1012,16 @@ export function SharedVisitsCalendar() {
             </div>
 
             <div className="space-y-2">
-              <Label>Tipo de Visita</Label>
+              <Label>Tipus de Visita</Label>
               <Select value={visitType} onValueChange={setVisitType}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Primera visita">Primera visita</SelectItem>
-                  <SelectItem value="Seguimiento">Seguimiento</SelectItem>
-                  <SelectItem value="Postventa">Postventa</SelectItem>
-                  <SelectItem value="Renovación">Renovación</SelectItem>
+                  <SelectItem value="Seguiment">Seguiment</SelectItem>
+                  <SelectItem value="Postvenda">Postvenda</SelectItem>
+                  <SelectItem value="Renovació">Renovació</SelectItem>
                   <SelectItem value="TPV">TPV</SelectItem>
                   <SelectItem value="Visita 360°">Visita 360°</SelectItem>
                 </SelectContent>
@@ -811,17 +1029,17 @@ export function SharedVisitsCalendar() {
             </div>
 
             <div className="space-y-2">
-              <Label>Notas</Label>
+              <Label>Notes</Label>
               <Textarea
                 value={visitNotes}
                 onChange={(e) => setVisitNotes(e.target.value)}
-                placeholder="Notas adicionales..."
+                placeholder="Notes addicionals..."
                 rows={3}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Participantes adicionales</Label>
+              <Label>Participants addicionals</Label>
               <ParticipantsSelector
                 selectedParticipants={selectedParticipants}
                 onParticipantsChange={setSelectedParticipants}
@@ -831,11 +1049,11 @@ export function SharedVisitsCalendar() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
-              Cancelar
+              Cancel·lar
             </Button>
             <Button onClick={handleUpdateVisit} disabled={saving}>
               {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Guardar Cambios
+              Desar Canvis
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -849,7 +1067,7 @@ export function SharedVisitsCalendar() {
           open={sheetDialogOpen}
           onOpenChange={setSheetDialogOpen}
           onSaved={() => {
-            toast.success('Ficha de visita guardada');
+            toast.success('Fitxa de visita desada');
             fetchVisits();
           }}
         />
