@@ -157,13 +157,13 @@ const DuPontPyramid: React.FC<DuPontPyramidProps> = ({ companyId, companyName })
     bgColor?: string;
     borderColor?: string;
   }) => (
-    <div className={`${bgColor} ${borderColor} border-2 rounded text-center text-gray-800 min-w-[120px]`}>
-      <div className="text-red-700 font-bold text-xs py-1 border-b border-gray-300">{label}</div>
+    <div className={`${bgColor} ${borderColor} border-2 rounded text-center text-gray-800 min-w-[100px] max-w-[140px]`}>
+      <div className="text-red-700 font-bold text-[10px] leading-tight py-1 px-1 border-b border-gray-300 whitespace-nowrap overflow-hidden text-ellipsis">{label}</div>
       <div className="flex">
         {values.map((val, idx) => (
-          <div key={idx} className="flex-1 p-1 text-xs border-r last:border-r-0 border-gray-300">
-            <div className="text-[10px] text-gray-500">{yearHeaders[idx]}</div>
-            <div className="font-semibold">{typeof val === 'number' ? formatNumber(val) : val}</div>
+          <div key={idx} className="flex-1 p-0.5 text-[10px] border-r last:border-r-0 border-gray-300">
+            <div className="text-[8px] text-gray-500">{yearHeaders[idx]}</div>
+            <div className="font-semibold text-[10px]">{typeof val === 'number' ? formatNumber(val) : val}</div>
           </div>
         ))}
       </div>
@@ -173,15 +173,15 @@ const DuPontPyramid: React.FC<DuPontPyramidProps> = ({ companyId, companyName })
   const metricsPerYear = years.map(y => calculateMetrics(y));
 
   return (
-    <div className="flex flex-col h-full bg-[#1a1a2e] text-white min-h-screen">
+    <div className="flex flex-col h-full bg-[#1a1a2e] text-white min-h-[600px] overflow-hidden">
       {/* Header */}
-      <div className="text-center py-3">
-        <h1 className="text-xl font-bold text-amber-400">PIRÁMIDE DUPONT</h1>
+      <div className="text-center py-2">
+        <h1 className="text-lg font-bold text-amber-400">PIRÁMIDE DUPONT</h1>
       </div>
 
-      <div className="flex flex-1 overflow-hidden p-4 gap-4">
+      <div className="flex flex-1 overflow-hidden p-2 gap-2">
         {/* Left Sidebar - Data View Options */}
-        <div className="w-48 flex-shrink-0">
+        <div className="w-40 flex-shrink-0">
           <div className="border border-amber-600 rounded p-3 bg-[#0d0d1a]">
             <div className="text-amber-400 text-sm font-bold mb-2">Visión de datos</div>
             <div className="space-y-1">
@@ -241,8 +241,8 @@ const DuPontPyramid: React.FC<DuPontPyramidProps> = ({ companyId, companyName })
         </div>
 
         {/* Center - Pyramid Diagram */}
-        <div className="flex-1 overflow-auto">
-          <div className="flex gap-8 items-start justify-center">
+        <div className="flex-1 overflow-hidden">
+          <div className="flex gap-4 items-start justify-center scale-[0.9] origin-top">
             {/* Left Column - Main Ratios */}
             <div className="flex flex-col items-center gap-3">
               {/* Rotación del Activo */}
@@ -367,7 +367,7 @@ const DuPontPyramid: React.FC<DuPontPyramidProps> = ({ companyId, companyName })
         </div>
 
         {/* Right Sidebar - Charts */}
-        <div className="w-72 flex-shrink-0 space-y-4">
+        <div className="w-64 flex-shrink-0 space-y-2 overflow-y-auto">
           <div className="text-center text-amber-400 font-bold text-sm mb-2">GRÁFICO DE EVOLUCIÓN</div>
           
           {/* Chart 1 */}
