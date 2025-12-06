@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { FileUp, Plus, CheckCircle, Clock, FileText, Wallet, RefreshCcw, Archive, Building2, CreditCard, Pyramid } from 'lucide-react';
+import { FileUp, Plus, CheckCircle, Clock, FileText, Wallet, RefreshCcw, Archive, Building2, CreditCard, Pyramid, TrendingUp, Target, ClipboardCheck, FileBarChart } from 'lucide-react';
 import BalanceSheetForm from './BalanceSheetForm';
 import IncomeStatementForm from './IncomeStatementForm';
 import CashFlowForm from './CashFlowForm';
@@ -21,6 +21,11 @@ import PDFImportDialog from './PDFImportDialog';
 import CompanySearchBar from './CompanySearchBar';
 import MultiYearComparison from './MultiYearComparison';
 import RatiosPyramid from './RatiosPyramid';
+import { FinancialAnalysisTab } from './FinancialAnalysisTab';
+import { ProfitabilityTab } from './ProfitabilityTab';
+import { ValuationTab } from './ValuationTab';
+import { AuditTab } from './AuditTab';
+import { ReportsTab } from './ReportsTab';
 
 interface Company {
   id: string;
@@ -390,17 +395,34 @@ const AccountingManager = () => {
         </Card>
       ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-7 mb-4">
-            <TabsTrigger value="comparison">Comparativa</TabsTrigger>
-            <TabsTrigger value="balance" disabled={!currentStatement}>Balanç {selectedYear}</TabsTrigger>
-            <TabsTrigger value="income" disabled={!currentStatement}>P&G {selectedYear}</TabsTrigger>
-            <TabsTrigger value="equity" disabled={!currentStatement}>Canvis PN</TabsTrigger>
-            <TabsTrigger value="notes" disabled={!currentStatement}>Memòria</TabsTrigger>
-            <TabsTrigger value="ratios">
-              <Pyramid className="w-4 h-4 mr-1" />
+          <TabsList className="flex flex-wrap gap-1 h-auto p-1 mb-4">
+            <TabsTrigger value="comparison" className="text-xs px-2 py-1.5">Comparativa</TabsTrigger>
+            <TabsTrigger value="balance" disabled={!currentStatement} className="text-xs px-2 py-1.5">Balanç</TabsTrigger>
+            <TabsTrigger value="income" disabled={!currentStatement} className="text-xs px-2 py-1.5">P&G</TabsTrigger>
+            <TabsTrigger value="equity" disabled={!currentStatement} className="text-xs px-2 py-1.5">Canvis PN</TabsTrigger>
+            <TabsTrigger value="notes" disabled={!currentStatement} className="text-xs px-2 py-1.5">Memòria</TabsTrigger>
+            <TabsTrigger value="analysis" className="text-xs px-2 py-1.5">
+              <TrendingUp className="w-3 h-3 mr-1" />
+              Anàlisi
+            </TabsTrigger>
+            <TabsTrigger value="ratios" className="text-xs px-2 py-1.5">
+              <Pyramid className="w-3 h-3 mr-1" />
               Ràtios
             </TabsTrigger>
-            <TabsTrigger value="history">Historial</TabsTrigger>
+            <TabsTrigger value="profitability" className="text-xs px-2 py-1.5">
+              <Target className="w-3 h-3 mr-1" />
+              Rendibilitat
+            </TabsTrigger>
+            <TabsTrigger value="valuation" className="text-xs px-2 py-1.5">Valoració</TabsTrigger>
+            <TabsTrigger value="audit" className="text-xs px-2 py-1.5">
+              <ClipboardCheck className="w-3 h-3 mr-1" />
+              Auditoria
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="text-xs px-2 py-1.5">
+              <FileBarChart className="w-3 h-3 mr-1" />
+              Informes
+            </TabsTrigger>
+            <TabsTrigger value="history" className="text-xs px-2 py-1.5">Historial</TabsTrigger>
           </TabsList>
           
           <TabsContent value="comparison">
@@ -448,9 +470,44 @@ const AccountingManager = () => {
               />
             )}
           </TabsContent>
+
+          <TabsContent value="analysis">
+            <FinancialAnalysisTab 
+              companyId={selectedCompany.id}
+              companyName={selectedCompany.name}
+            />
+          </TabsContent>
           
           <TabsContent value="ratios">
             <RatiosPyramid 
+              companyId={selectedCompany.id}
+              companyName={selectedCompany.name}
+            />
+          </TabsContent>
+
+          <TabsContent value="profitability">
+            <ProfitabilityTab 
+              companyId={selectedCompany.id}
+              companyName={selectedCompany.name}
+            />
+          </TabsContent>
+
+          <TabsContent value="valuation">
+            <ValuationTab 
+              companyId={selectedCompany.id}
+              companyName={selectedCompany.name}
+            />
+          </TabsContent>
+
+          <TabsContent value="audit">
+            <AuditTab 
+              companyId={selectedCompany.id}
+              companyName={selectedCompany.name}
+            />
+          </TabsContent>
+
+          <TabsContent value="reports">
+            <ReportsTab 
               companyId={selectedCompany.id}
               companyName={selectedCompany.name}
             />
