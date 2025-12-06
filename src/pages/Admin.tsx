@@ -8,9 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Activity, History } from 'lucide-react';
 import { toast } from 'sonner';
 import VisitSheets from '@/pages/VisitSheets';
-import { SidebarProvider } from '@/components/ui/sidebar';
 import { GlobalNavHeader } from '@/components/GlobalNavHeader';
-import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { CompaniesManager } from '@/components/admin/CompaniesManager';
 import { ProductsManager } from '@/components/admin/ProductsManager';
 import { UsersManager } from '@/components/admin/UsersManager';
@@ -516,6 +514,75 @@ const Admin = () => {
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Role View Selector - Only for Superadmin */}
+              {isSuperAdmin && (
+                <Card className="cursor-pointer hover:shadow-md transition-shadow border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                        <Activity className="h-5 w-5 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">Selector de Visió</h3>
+                        <p className="text-sm text-muted-foreground">Escull el rol per visualitzar</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 gap-2 mt-3">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="justify-start" 
+                        onClick={(e) => { e.stopPropagation(); handleSectionChange('director'); }}
+                      >
+                        Director de Negoci
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="justify-start" 
+                        onClick={(e) => { e.stopPropagation(); handleSectionChange('office-director'); }}
+                      >
+                        Director d'Oficina
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="justify-start" 
+                        onClick={(e) => { e.stopPropagation(); handleSectionChange('commercial-manager'); }}
+                      >
+                        Responsable Comercial
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="justify-start" 
+                        onClick={(e) => { e.stopPropagation(); handleSectionChange('gestor-dashboard'); }}
+                      >
+                        Gestor
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="justify-start" 
+                        onClick={(e) => { e.stopPropagation(); handleSectionChange('audit'); }}
+                      >
+                        Auditor
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('map-config')}>
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                    <Activity className="h-5 w-5 text-blue-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Configuració del Mapa</h3>
+                    <p className="text-sm text-muted-foreground">Personalitzar capes i tooltip del mapa</p>
+                  </div>
+                </CardContent>
+              </Card>
               <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('users')}>
                 <CardContent className="p-4 flex items-center gap-3">
                   <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -659,17 +726,6 @@ const Admin = () => {
                   </div>
                 </CardContent>
               </Card>
-              <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('map-config')}>
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                    <Activity className="h-5 w-5 text-blue-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Configuració del Mapa</h3>
-                    <p className="text-sm text-muted-foreground">Personalitzar capes i tooltip del mapa</p>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
           </div>
         );
@@ -679,41 +735,28 @@ const Admin = () => {
   };
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <AdminSidebar 
-          activeSection={activeSection} 
-          onSectionChange={handleSectionChange}
-          isCommercialDirector={isCommercialDirector}
-          isOfficeDirector={isOfficeDirector}
-          isCommercialManager={isCommercialManager}
-          isSuperAdmin={isSuperAdmin}
-          isAdmin={isAdmin}
-          isAuditor={isAuditor}
-        />
-        
-        <main className={`flex-1 ${activeSection === 'map' ? 'flex flex-col overflow-hidden' : 'overflow-auto'} bg-background`}>
-          {activeSection === 'map' ? (
-            <div className="flex-1 flex flex-col h-full">
-              {renderContent()}
-            </div>
-          ) : (
+    <div className="min-h-screen flex w-full bg-background">
+      <main className={`flex-1 ${activeSection === 'map' ? 'flex flex-col overflow-hidden' : 'overflow-auto'}`}>
+        {activeSection === 'map' ? (
+          <div className="flex-1 flex flex-col h-full">
+            {renderContent()}
+          </div>
+        ) : (
           <div className="p-6 space-y-6 w-full">
-              {activeSection !== 'gestor-dashboard' && (
-                <GlobalNavHeader 
-                  title={getSectionTitle()}
-                  canGoBack={canGoBack}
-                  canGoForward={canGoForward}
-                  onGoBack={handleGoBack}
-                  onGoForward={handleGoForward}
-                />
-              )}
-              {renderContent()}
-            </div>
-          )}
-        </main>
-      </div>
-    </SidebarProvider>
+            {activeSection !== 'gestor-dashboard' && (
+              <GlobalNavHeader 
+                title={getSectionTitle()}
+                canGoBack={canGoBack}
+                canGoForward={canGoForward}
+                onGoBack={handleGoBack}
+                onGoForward={handleGoForward}
+              />
+            )}
+            {renderContent()}
+          </div>
+        )}
+      </main>
+    </div>
   );
 };
 
