@@ -99,7 +99,8 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
   const [isPdfFullscreen, setIsPdfFullscreen] = useState(false);
 
   // Derive permissions from useAuth hook directly
-  const isCommercialManager = isCommManager || isCommercialDirector || isOfficeDirector || isSuperAdmin;
+  // Only responsable_comercial, director_comercial, and superadmin can validate (NOT director_oficina)
+  const isCommercialManager = isCommManager || isCommercialDirector || isSuperAdmin;
   const isNotAuditor = !isAuditor;
 
   // Datos Generales
