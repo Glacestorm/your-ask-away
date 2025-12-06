@@ -515,23 +515,21 @@ const Admin = () => {
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* Role View Selector - Only for Superadmin */}
-              {isSuperAdmin && (
-                <Card 
-                  className="cursor-pointer hover:shadow-md transition-all border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10"
-                  onClick={() => handleSectionChange('role-selector')}
-                >
-                  <CardContent className="p-4 flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                      <Activity className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">Selector de Visió</h3>
-                      <p className="text-sm text-muted-foreground">Escull el rol per visualitzar</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+              {/* Role View Selector - Available for director_comercial and responsable_comercial */}
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-all border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10"
+                onClick={() => handleSectionChange('role-selector')}
+              >
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <Activity className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Selector de Visió</h3>
+                    <p className="text-sm text-muted-foreground">Escull el rol per visualitzar</p>
+                  </div>
+                </CardContent>
+              </Card>
               <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('map-config')}>
                 <CardContent className="p-4 flex items-center gap-3">
                   <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
@@ -690,7 +688,7 @@ const Admin = () => {
           </div>
         );
       case 'role-selector':
-        if (!isSuperAdmin) {
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
           return (
             <Card>
               <CardContent className="p-6">
