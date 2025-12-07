@@ -217,7 +217,7 @@ const menuCategories: MenuCategory[] = [
 // Mapping de secciones del menú a vistas reales del sistema
 // Los IDs deben coincidir con los cases en AccountingManager.renderSectionContent()
 const sectionMappings: Record<string, string> = {
-  'inicio': 'menu',
+  'inicio': 'inicio',
   'empresas': 'empresas',
   'introduccion-datos': 'introduccion-datos',
   'importacion-datos': 'importacion-datos',

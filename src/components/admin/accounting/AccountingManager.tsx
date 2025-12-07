@@ -148,33 +148,28 @@ const AccountingManager = () => {
   };
 
   const handleMenuNavigate = (section: string) => {
-    setCurrentMenuSection(section);
-    
-    // Sections that don't require company selection - render directly
-    const directAccessSections = [
-      'inicio', 'empresas', 'consolidacion', 'bateria-informes',
-      'estudio-sectorial', 'estudio-financiero', 'comentarios-gestion'
-    ];
-    
-    if (section === 'inicio') {
+    // Handle special navigation cases first
+    if (section === 'menu' || section === 'inicio') {
       handleBackToMainMenu();
       return;
     }
     
     if (section === 'empresas') {
+      setCurrentMenuSection(section);
       setShowCompanyIndex(true);
       setShowMainMenu(false);
       return;
     }
     
     if (section === 'consolidacion') {
+      setCurrentMenuSection(section);
       setShowCompanyIndex(false);
       setShowMainMenu(false);
-      setActiveTab('consolidated');
       return;
     }
     
-    // For all other sections, show the content directly (with company selection if needed)
+    // For all other sections, show the content directly
+    setCurrentMenuSection(section);
     setShowMainMenu(false);
     setShowCompanyIndex(false);
   };
@@ -1184,7 +1179,24 @@ const AccountingManager = () => {
         );
 
       default:
-        return null;
+        // Fallback: show menu button and message for unknown sections
+        return (
+          <Card>
+            <CardContent className="p-8 text-center">
+              <div className="flex items-center gap-2 mb-6 justify-center">
+                <Button variant="outline" size="sm" onClick={handleBackToMainMenu}>
+                  <Home className="w-4 h-4 mr-2" />
+                  Menú Principal
+                </Button>
+              </div>
+              <Building2 className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Secció en desenvolupament</h3>
+              <p className="text-muted-foreground">
+                Aquesta secció ({currentMenuSection}) està en construcció.
+              </p>
+            </CardContent>
+          </Card>
+        );
     }
   };
 
