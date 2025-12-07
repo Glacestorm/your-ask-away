@@ -395,6 +395,7 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
               <RoutePlanner
                 companies={companies}
                 onRouteCalculated={(route) => {
+                  console.log('Route calculated, polyline:', route?.polyline?.substring(0, 50));
                   setRoutePolyline(route?.polyline || null);
                 }}
                 onClose={() => {
