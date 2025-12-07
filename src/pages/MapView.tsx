@@ -5,9 +5,10 @@ import { MapContainer } from '@/components/map/MapContainer';
 import { MapSidebar } from '@/components/map/MapSidebar';
 import { MapHeader, MapBaseLayers } from '@/components/map/MapHeader';
 import { GeoSearch } from '@/components/map/GeoSearch';
+import { RoutePlanner } from '@/components/map/RoutePlanner';
 import { CompanyWithDetails, MapFilters, StatusColor, Product, MapColorMode } from '@/types/database';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Search } from 'lucide-react';
+import { Loader2, Search, Route } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { MarkerStyle } from '@/components/map/markerStyles';
@@ -82,6 +83,8 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
     return saved ? parseFloat(saved) : 8;
   });
   const [sidebarFullscreen, setSidebarFullscreen] = useState(false);
+  const [showRoutePlanner, setShowRoutePlanner] = useState(false);
+  const [routePolyline, setRoutePolyline] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -328,14 +331,25 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
             )}
             
             {!showSearch && (
-              <Button
-                onClick={() => setShowSearch(true)}
-                className="absolute top-4 left-4 z-10 shadow-lg"
-                size="default"
-              >
-                <Search className="mr-2 h-4 w-4" />
-                Buscar ubicación
-              </Button>
+              <div className="absolute top-4 left-4 z-10 flex gap-2">
+                <Button
+                  onClick={() => setShowSearch(true)}
+                  className="shadow-lg"
+                  size="default"
+                >
+                  <Search className="mr-2 h-4 w-4" />
+                  Buscar ubicación
+                </Button>
+                <Button
+                  onClick={() => setShowRoutePlanner(true)}
+                  variant={showRoutePlanner ? "default" : "outline"}
+                  className="shadow-lg"
+                  size="default"
+                >
+                  <Route className="mr-2 h-4 w-4" />
+                  Planificar Ruta
+                </Button>
+              </div>
             )}
 
             <MapContainer
@@ -366,6 +380,19 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
               focusCompanyId={focusCompanyId}
               onFocusCompanyHandled={() => setFocusCompanyId(null)}
             />
+
+            {showRoutePlanner && (
+              <RoutePlanner
+                companies={companies}
+                onRouteCalculated={(route) => {
+                  setRoutePolyline(route?.polyline || null);
+                }}
+                onClose={() => {
+                  setShowRoutePlanner(false);
+                  setRoutePolyline(null);
+                }}
+              />
+            )}
           </div>
         )}
       </div>
