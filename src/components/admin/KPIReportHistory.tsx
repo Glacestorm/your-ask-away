@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { sanitizeHtml } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -341,7 +342,7 @@ export const KPIReportHistory = () => {
                             </DialogTitle>
                           </DialogHeader>
                           <ScrollArea className="h-[70vh]">
-                            <div dangerouslySetInnerHTML={{ __html: report.html_content }} />
+                            <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(report.html_content || '') }} />
                           </ScrollArea>
                         </DialogContent>
                       </Dialog>
