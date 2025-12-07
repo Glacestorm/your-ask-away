@@ -237,7 +237,7 @@ const sectionMappings: Record<string, string> = {
   'ratios-sectoriales': 'sector-ratios',
   'simulador-sectorial': 'sector-simulator',
   'piramide-ratios': 'ratios-pyramid',
-  'piramide-dupont': 'dupont',
+  'piramide-dupont': 'piramide-dupont',
   'analisis-bancario': 'bank-rating',
   'rentabilidad-economica': 'profitability',
   'ca-balance': 'balance-sheet',
