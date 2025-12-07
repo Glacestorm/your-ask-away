@@ -53,6 +53,9 @@ import LongTermFinancialAnalysis from './LongTermFinancialAnalysis';
 import TreasuryMovements from './TreasuryMovements';
 import WorkingCapitalNOF from './WorkingCapitalNOF';
 import EconomicFinancialDashboard from './EconomicFinancialDashboard';
+import CashFlowAnalysisWrapper from './CashFlowAnalysisWrapper';
+import WorkingCapitalAnalysisWrapper from './WorkingCapitalAnalysisWrapper';
+import LongTermFinancialAnalysisWrapper from './LongTermFinancialAnalysisWrapper';
 
 interface Company {
   id: string;
@@ -638,7 +641,7 @@ const AccountingManager = () => {
         if (needsCompanySelection) return <CompanySelectionPrompt />;
         return (
           <SectionWrapper title="Análisis Flujo de Caja">
-            <FinancialAnalysisTab companyId={companyId} companyName={companyName} />
+            <CashFlowAnalysisWrapper companyId={companyId} companyName={companyName} />
           </SectionWrapper>
         );
 
@@ -670,7 +673,7 @@ const AccountingManager = () => {
         if (needsCompanySelection) return <CompanySelectionPrompt />;
         return (
           <SectionWrapper title="Análisis Capital Circulante">
-            <FinancialAnalysisTab companyId={companyId} companyName={companyName} />
+            <WorkingCapitalAnalysisWrapper companyId={companyId} companyName={companyName} />
           </SectionWrapper>
         );
 
@@ -678,7 +681,7 @@ const AccountingManager = () => {
         if (needsCompanySelection) return <CompanySelectionPrompt />;
         return (
           <SectionWrapper title="Análisis Situación Financiera Largo Plazo">
-            <FinancialAnalysisTab companyId={companyId} companyName={companyName} />
+            <LongTermFinancialAnalysisWrapper companyId={companyId} companyName={companyName} />
           </SectionWrapper>
         );
 
@@ -816,6 +819,122 @@ const AccountingManager = () => {
         return (
           <SectionWrapper title="Consolidación de Empresas">
             <ConsolidatedStatementsManager />
+          </SectionWrapper>
+        );
+
+      // DATOS GENERALES - Secciones adicionales
+      case 'introduccion-datos':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Introducción de Datos">
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Introducció de Dades Financeres</h3>
+                <p className="text-muted-foreground mb-4">Selecciona una empresa i utilitza les pestanyes de Balanç, P&G, Canvis PN i Memòria per introduir les dades.</p>
+                <CompanySearchBar onSelectCompany={handleSelectCompany} selectedCompanyId="" />
+              </CardContent>
+            </Card>
+          </SectionWrapper>
+        );
+
+      case 'importacion-datos':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Importación de Datos">
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Importació de Dades des de PDF</h3>
+                <p className="text-muted-foreground mb-4">Pots importar dades financeres des de documents PDF. Selecciona una empresa primer i utilitza el botó "Importar PDF" a la secció d'estats financers.</p>
+                <Button variant="outline" onClick={() => setShowPDFImport(true)}>
+                  <FileUp className="w-4 h-4 mr-2" />
+                  Importar PDF
+                </Button>
+              </CardContent>
+            </Card>
+          </SectionWrapper>
+        );
+
+      case 'exportacion-datos':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Exportación de Datos">
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Exportació de Dades</h3>
+                <p className="text-muted-foreground mb-4">Les dades financeres es poden exportar des de les diferents seccions d'anàlisi i informes.</p>
+                <Button variant="outline" onClick={printStatement} disabled={!currentStatement}>
+                  <Printer className="w-4 h-4 mr-2" />
+                  Imprimir Estats Financers
+                </Button>
+              </CardContent>
+            </Card>
+          </SectionWrapper>
+        );
+
+      case 'copia-seguridad':
+        return (
+          <SectionWrapper title="Copia de Seguridad">
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Còpia de Seguretat</h3>
+                <p className="text-muted-foreground">Les dades es guarden automàticament a la base de dades. El sistema manté un historial d'arxivament dels últims 5 anys d'estats financers per empresa.</p>
+              </CardContent>
+            </Card>
+          </SectionWrapper>
+        );
+
+      // ESTUDIOS
+      case 'estudio-sectorial':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Estudio Sectorial">
+            <SectoralRatiosAnalysis companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+
+      case 'estudio-financiero':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Estudio Análisis Financiero">
+            <FinancialAnalysisTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+
+      case 'comentarios-gestion':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Comentarios de Gestión">
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Comentaris de Gestió</h3>
+                <p className="text-muted-foreground">Aquesta funcionalitat permet afegir comentaris i notes de gestió als estats financers de l'empresa.</p>
+              </CardContent>
+            </Card>
+          </SectionWrapper>
+        );
+
+      // VALOR ACCIONES
+      case 'eva':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Creación de Valor - EVA">
+            <ValuationTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+
+      case 'per':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Análisis del PER">
+            <ValuationTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+
+      case 'capitalizacion':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Valores de Capitalización">
+            <ValuationTab companyId={companyId} companyName={companyName} />
           </SectionWrapper>
         );
 
