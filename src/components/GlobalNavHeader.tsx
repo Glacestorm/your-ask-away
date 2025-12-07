@@ -7,6 +7,7 @@ import { LanguageSelector } from '@/components/LanguageSelector';
 import { ThemeSelector } from '@/components/ThemeSelector';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { MapButton } from '@/components/dashboard/MapButton';
+import { OnlineUsersIndicator } from '@/components/presence/OnlineUsersIndicator';
 
 interface GlobalNavHeaderProps {
   title?: string;
@@ -84,6 +85,9 @@ export function GlobalNavHeader({
       )}
       
       <div className="flex items-center gap-2">
+        {/* Online Users Indicator */}
+        <OnlineUsersIndicator />
+        
         {/* Navigation History Buttons when no title - only show if there's history */}
         {!hasTitle && (canGoBack || canGoForward) && (
           <div className="flex items-center gap-1 mr-2">
