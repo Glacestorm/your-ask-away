@@ -194,13 +194,13 @@ const AddedValueAnalysis: React.FC<AddedValueAnalysisProps> = ({
       <div className="bg-amber-600 text-black font-bold px-3 py-2 text-sm">
         GENERACIÓ DEL VALOR AFEGIT
       </div>
-      <div className="overflow-x-auto" style={{ maxWidth: '100%', overflowX: 'scroll' }}>
-        <table className="border-collapse text-xs" style={{ minWidth: '900px' }}>
+      <div className="overflow-x-auto relative" style={{ maxWidth: '100%' }}>
+        <table className="border-collapse text-xs w-full table-fixed">
           <thead>
             <tr className="bg-amber-500 text-black">
-              <th className="border border-amber-600 px-2 py-1 text-left min-w-[280px] sticky left-0 bg-amber-500 z-10">CONCEPTES</th>
+              <th className="border border-amber-600 px-2 py-1 text-left w-[280px] min-w-[280px] sticky left-0 bg-amber-500 z-10">CONCEPTES</th>
               {sortedYears.map(year => (
-                <th key={year} className="border border-amber-600 px-2 py-1 text-center min-w-[120px] whitespace-nowrap">
+                <th key={year} className="border border-amber-600 px-2 py-1 text-center w-[110px] min-w-[110px] whitespace-nowrap">
                   Desembre-{year}
                 </th>
               ))}
@@ -330,13 +330,13 @@ const AddedValueAnalysis: React.FC<AddedValueAnalysisProps> = ({
       <div className="bg-amber-600 text-black font-bold px-3 py-2 text-sm">
         DISTRIBUCIÓ DEL VALOR AFEGIT
       </div>
-      <div className="overflow-x-auto" style={{ maxWidth: '100%', overflowX: 'scroll' }}>
-        <table className="border-collapse text-xs" style={{ minWidth: '900px' }}>
+      <div className="overflow-x-auto relative" style={{ maxWidth: '100%' }}>
+        <table className="border-collapse text-xs w-full table-fixed">
           <thead>
             <tr className="bg-amber-500 text-black">
-              <th className="border border-amber-600 px-2 py-1 text-left min-w-[280px] sticky left-0 bg-amber-500 z-10">CONCEPTES</th>
+              <th className="border border-amber-600 px-2 py-1 text-left w-[280px] min-w-[280px] sticky left-0 bg-amber-500 z-10">CONCEPTES</th>
               {sortedYears.map(year => (
-                <th key={year} className="border border-amber-600 px-2 py-1 text-center min-w-[120px] whitespace-nowrap">
+                <th key={year} className="border border-amber-600 px-2 py-1 text-center w-[110px] min-w-[110px] whitespace-nowrap">
                   Desembre-{year}
                 </th>
               ))}
