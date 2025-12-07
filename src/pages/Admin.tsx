@@ -47,6 +47,7 @@ import MapView from './MapView';
 import AccountingManager from '@/components/admin/accounting/AccountingManager';
 import { UnifiedMetricsDashboard } from '@/components/dashboard/UnifiedMetricsDashboard';
 import { DynamicTechnicalDocGenerator } from '@/components/reports/DynamicTechnicalDocGenerator';
+import { GeocodingRecalculator } from '@/components/admin/GeocodingRecalculator';
 
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
@@ -146,6 +147,7 @@ const Admin = () => {
       case 'accounting': return 'Comptabilitat | Organigrama Comptable Corporate / Empreses';
       case 'administration': return 'Administració';
       case 'role-selector': return 'Selector de Visió';
+      case 'geocoding': return 'Recalcular Geolocalització';
       default: return '';
     }
   };
@@ -711,6 +713,21 @@ const Admin = () => {
                   </div>
                 </CardContent>
               </Card>
+              {/* Geocoding Recalculator */}
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-all border-2 border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-amber-500/10"
+                onClick={() => handleSectionChange('geocoding')}
+              >
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                    <Activity className="h-5 w-5 text-amber-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-amber-700 dark:text-amber-400">Recalcular Geolocalització</h3>
+                    <p className="text-sm text-muted-foreground">Actualitzar coordenades de totes les empreses</p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         );
@@ -806,6 +823,17 @@ const Admin = () => {
             </div>
           </div>
         );
+      case 'geocoding':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <GeocodingRecalculator />;
       default:
         return null;
     }
