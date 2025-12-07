@@ -717,19 +717,68 @@ const AccountingManager = () => {
           </SectionWrapper>
         );
 
-      // BALANCES sections
+      // BALANCES sections - cada uno con su vista específica
       case 'balance-situacion':
-      case 'activo-disponible':
-      case 'activo-no-corriente':
-      case 'activo-funcional':
-      case 'exigible':
-      case 'fondos-propios':
-      case 'resultados-explotacion':
-      case 'resultados-financieros':
         if (needsCompanySelection) return <CompanySelectionPrompt />;
         return (
           <SectionWrapper title="Balance de Situación">
             <AccountingGroupsChart companyId={companyId} />
+          </SectionWrapper>
+        );
+      
+      case 'activo-disponible':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Activo Disponible y Realizable">
+            <BalanceAnalysisArea companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+      
+      case 'activo-no-corriente':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Activo No Corriente">
+            <AccountingGroupsChart companyId={companyId} />
+          </SectionWrapper>
+        );
+      
+      case 'activo-funcional':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Activo Funcional">
+            <AccountingGroupsChart companyId={companyId} />
+          </SectionWrapper>
+        );
+      
+      case 'exigible':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Exigible a Corto y Largo Plazo">
+            <LiquidityDebtRatios companyId={companyId} companyName={companyName} onNavigate={handleMenuNavigate} />
+          </SectionWrapper>
+        );
+      
+      case 'fondos-propios':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Fondos Propios">
+            <AccountingGroupsChart companyId={companyId} />
+          </SectionWrapper>
+        );
+      
+      case 'resultados-explotacion':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Resultados de Explotación">
+            <IncomeStatementChart companyId={companyId} />
+          </SectionWrapper>
+        );
+      
+      case 'resultados-financieros':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Resultados Financieros">
+            <IncomeStatementChart companyId={companyId} />
           </SectionWrapper>
         );
       
@@ -741,66 +790,262 @@ const AccountingManager = () => {
           </SectionWrapper>
         );
 
-      // RENTABILIDAD sections
+      // RENTABILIDAD sections - cada uno con su análisis específico
       case 'rentabilidad-economica':
-      case 'umbral-rentabilidad':
-      case 'apalancamiento':
-      case 'fondo-maniobra':
-      case 'autofinanciacion':
-      case 'periodos-maduracion':
-      case 'capacidad-crecimiento':
-      case 'nivel-endeudamiento':
-      case 'estados-financieros':
-      case 'resumen-financiero':
         if (needsCompanySelection) return <CompanySelectionPrompt />;
         return (
-          <SectionWrapper title="Rentabilidad">
+          <SectionWrapper title="Análisis Rentabilidad Económica">
             <ProfitabilityTab companyId={companyId} companyName={companyName} />
           </SectionWrapper>
         );
+      
+      case 'umbral-rentabilidad':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Umbral de Rentabilidad">
+            <ProfitabilityTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+      
+      case 'apalancamiento':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Apalancamiento Financiero">
+            <ProfitabilityTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+      
+      case 'fondo-maniobra':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Fondo de Maniobra">
+            <WorkingCapitalAnalysisWrapper companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+      
+      case 'autofinanciacion':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Capacidad de Autofinanciación">
+            <CashFlowAnalysisWrapper companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+      
+      case 'periodos-maduracion':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Periodos de Maduración">
+            <ProfitabilityTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+      
+      case 'capacidad-crecimiento':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Capacidad de Crecimiento">
+            <ProfitabilityTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+      
+      case 'nivel-endeudamiento':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Nivel de Endeudamiento">
+            <LiquidityDebtRatios companyId={companyId} companyName={companyName} onNavigate={handleMenuNavigate} />
+          </SectionWrapper>
+        );
+      
+      case 'estados-financieros':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Análisis Estados Financieros">
+            <FinancialAnalysisTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+      
+      case 'resumen-financiero':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Resumen Financiero">
+            <EconomicFinancialDashboard companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
 
-      // VALORACIONES sections
+      // VALORACIONES sections - cada uno con su método específico
       case 'activo-neto':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Método: Activo Neto Real">
+            <ValuationTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+      
       case 'valor-substancial':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Método: Valor Substancial">
+            <ValuationTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+      
       case 'multiplos':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Método de los Múltiplos">
+            <ValuationTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+      
       case 'flujos-descontados':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Método: Flujos Descontados">
+            <ValuationTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+      
       case 'proyecciones':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Proyecciones Financieras">
+            <ValuationTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+      
       case 'proyecto-inversion':
         if (needsCompanySelection) return <CompanySelectionPrompt />;
         return (
-          <SectionWrapper title="Valoraciones">
+          <SectionWrapper title="Proyecto de Inversión">
             <ValuationTab companyId={companyId} companyName={companyName} />
           </SectionWrapper>
         );
 
-      // AUDITORIA sections
+      // AUDITORIA sections - cada uno con su auditoría específica
       case 'desv-balance':
-      case 'desv-resultados':
-      case 'audit-fondo-maniobra':
-      case 'audit-acid-test':
-      case 'audit-disponibilidad':
-      case 'audit-cobro':
-      case 'audit-pago':
-      case 'audit-rotacion':
-      case 'audit-apalancamiento':
-      case 'audit-fondos-propios':
-      case 'audit-endeudamiento':
         if (needsCompanySelection) return <CompanySelectionPrompt />;
         return (
-          <SectionWrapper title="Auditoría">
+          <SectionWrapper title="% y Desviaciones Balance de Situación">
             <AuditTab companyId={companyId} companyName={companyName} />
           </SectionWrapper>
         );
+      
+      case 'desv-resultados':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="% y Desviaciones Cuenta de Resultados">
+            <AuditTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+      
+      case 'audit-fondo-maniobra':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Auditoría Fondo de Maniobra">
+            <WorkingCapitalAnalysisWrapper companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+      
+      case 'audit-acid-test':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Auditoría del Acid Test">
+            <LiquidityDebtRatios companyId={companyId} companyName={companyName} onNavigate={handleMenuNavigate} />
+          </SectionWrapper>
+        );
+      
+      case 'audit-disponibilidad':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Auditoría Disponibilidad Ordinaria">
+            <LiquidityDebtRatios companyId={companyId} companyName={companyName} onNavigate={handleMenuNavigate} />
+          </SectionWrapper>
+        );
+      
+      case 'audit-cobro':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Auditoría Plazos Medio de Cobro">
+            <AuditTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+      
+      case 'audit-pago':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Auditoría Plazos Medio de Pago">
+            <AuditTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+      
+      case 'audit-rotacion':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Auditoría Rotación de Existencias">
+            <AuditTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+      
+      case 'audit-apalancamiento':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Auditoría del Apalancamiento">
+            <AuditTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+      
+      case 'audit-fondos-propios':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Auditoría Fondos Propios">
+            <AuditTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+      
+      case 'audit-endeudamiento':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Auditoría del Endeudamiento">
+            <LiquidityDebtRatios companyId={companyId} companyName={companyName} onNavigate={handleMenuNavigate} />
+          </SectionWrapper>
+        );
 
-      // CUENTAS ANUALES sections
+      // CUENTAS ANUALES sections - cada estado con su propia vista
       case 'ca-balance':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Cuentas Anuales - Balance de Situación">
+            <AccountingGroupsChart companyId={companyId} />
+          </SectionWrapper>
+        );
+      
       case 'ca-perdidas-ganancias':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Cuentas Anuales - Estado de Pérdidas y Ganancias">
+            <IncomeStatementChart companyId={companyId} />
+          </SectionWrapper>
+        );
+      
       case 'ca-flujos-efectivo':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Cuentas Anuales - Estado de Flujos de Efectivo">
+            <CashFlowAnalysisWrapper companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+      
       case 'ca-cambios-patrimonio':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Cuentas Anuales - Estado de Cambios en Patrimonio Neto">
+            <ReportsTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+      
       case 'ca-gastos-ingresos':
         if (needsCompanySelection) return <CompanySelectionPrompt />;
         return (
-          <SectionWrapper title="Cuentas Anuales">
+          <SectionWrapper title="Cuentas Anuales - Estado de Gastos e Ingresos Reconocidos">
             <ReportsTab companyId={companyId} companyName={companyName} />
           </SectionWrapper>
         );
