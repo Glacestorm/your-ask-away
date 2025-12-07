@@ -196,132 +196,134 @@ const AddedValueAnalysis: React.FC<AddedValueAnalysisProps> = ({
       <div className="bg-amber-600 text-black font-bold px-3 py-2 text-sm">
         GENERACIÓ DEL VALOR AFEGIT
       </div>
-      <table className="w-full border-collapse text-xs">
-        <thead>
-          <tr className="bg-amber-500 text-black">
-            <th className="border border-amber-600 px-2 py-1 text-left w-[280px]">CONCEPTES</th>
-            {sortedYears.map(year => (
-              <th key={year} className="border border-amber-600 px-2 py-1 text-center w-[100px]">
-                Desembre-{year}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="bg-muted/30">
-          <tr>
-            <td className="border border-border/50 px-2 py-1">+ Vendes netes</td>
-            {yearlyData.map((data, idx) => (
-              <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono">
-                {formatValue(data.vendesNetes)}
-              </td>
-            ))}
-          </tr>
-          <tr>
-            <td className="border border-border/50 px-2 py-1">+ Variac.de existènc.de prod.term.y en curs de fabr.</td>
-            {yearlyData.map((data, idx) => (
-              <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono">
-                {formatValue(data.variacioExistencies)}
-              </td>
-            ))}
-          </tr>
-          <tr>
-            <td className="border border-border/50 px-2 py-1">+ Treballs realitzats per l'empresa per al seu inmov.</td>
-            {yearlyData.map((data, idx) => (
-              <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono">
-                {formatValue(data.treballs)}
-              </td>
-            ))}
-          </tr>
-          <tr className="bg-amber-500/80 font-bold text-black">
-            <td className="border border-amber-600 px-2 py-1">= VALOR DE LA PRODUCCIÓ</td>
-            {yearlyData.map((data, idx) => (
-              <td key={idx} className="border border-amber-600 px-2 py-1 text-right font-mono">
-                {formatValue(data.valorProduccio)}
-              </td>
-            ))}
-          </tr>
-          <tr>
-            <td className="border border-border/50 px-2 py-1">- Consums d'explotació</td>
-            {yearlyData.map((data, idx) => (
-              <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono">
-                {formatValue(data.consumsExplotacio)}
-              </td>
-            ))}
-          </tr>
-          <tr>
-            <td className="border border-border/50 px-2 py-1">- Gastos externs d'explotació</td>
-            {yearlyData.map((data, idx) => (
-              <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono">
-                {formatValue(data.gastosExterns)}
-              </td>
-            ))}
-          </tr>
-          <tr>
-            <td className="border border-border/50 px-2 py-1">- Tributs</td>
-            {yearlyData.map((data, idx) => (
-              <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono">
-                {formatValue(data.tributs)}
-              </td>
-            ))}
-          </tr>
-          <tr>
-            <td className="border border-border/50 px-2 py-1">+ Altres ingressos de gestió corrent</td>
-            {yearlyData.map((data, idx) => (
-              <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono">
-                {formatValue(data.altresIngressos)}
-              </td>
-            ))}
-          </tr>
-          <tr>
-            <td className="border border-border/50 px-2 py-1">- Gastos diversos</td>
-            {yearlyData.map((data, idx) => (
-              <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono">
-                {formatValue(data.gastosDiversos)}
-              </td>
-            ))}
-          </tr>
-          <tr>
-            <td className="border border-border/50 px-2 py-1">- Provisions totals</td>
-            {yearlyData.map((data, idx) => (
-              <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono">
-                {formatValue(data.provisions)}
-              </td>
-            ))}
-          </tr>
-          <tr className="bg-amber-400/80 font-bold text-black">
-            <td className="border border-amber-600 px-2 py-1">= Valor afegit brut d'explotació</td>
-            {yearlyData.map((data, idx) => (
-              <td key={idx} className="border border-amber-600 px-2 py-1 text-right font-mono">
-                {formatValue(data.valorAfegitBrut)}
-              </td>
-            ))}
-          </tr>
-          <tr>
-            <td className="border border-border/50 px-2 py-1">- Amortitzacions totals</td>
-            {yearlyData.map((data, idx) => (
-              <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono">
-                {formatValue(data.amortitzacions)}
-              </td>
-            ))}
-          </tr>
-          <tr className="bg-amber-400/80 font-bold text-black">
-            <td className="border border-amber-600 px-2 py-1">= Valor afegit net d'explotació</td>
-            {yearlyData.map((data, idx) => (
-              <td key={idx} className="border border-amber-600 px-2 py-1 text-right font-mono">
-                {formatValue(data.valorAfegitNet)}
-              </td>
-            ))}
-          </tr>
-          <tr>
-            <td className="border border-border/50 px-2 py-1">+/- Altres ingressos i gastos de caràcter financer</td>
-            {yearlyData.map((data, idx) => (
-              <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono">
-                {formatValue(data.altresIngresosFinancers)}
-              </td>
-            ))}
-          </tr>
-        </tbody>
-      </table>
+      <div className="overflow-x-auto">
+        <table className="min-w-full border-collapse text-xs" style={{ minWidth: '700px' }}>
+          <thead>
+            <tr className="bg-amber-500 text-black">
+              <th className="border border-amber-600 px-2 py-1 text-left min-w-[280px] sticky left-0 bg-amber-500 z-10">CONCEPTES</th>
+              {sortedYears.map(year => (
+                <th key={year} className="border border-amber-600 px-2 py-1 text-center min-w-[100px] whitespace-nowrap">
+                  Desembre-{year}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="bg-muted/30">
+            <tr>
+              <td className="border border-border/50 px-2 py-1 sticky left-0 bg-muted/30 z-10">+ Vendes netes</td>
+              {yearlyData.map((data, idx) => (
+                <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono whitespace-nowrap">
+                  {formatValue(data.vendesNetes)}
+                </td>
+              ))}
+            </tr>
+            <tr>
+              <td className="border border-border/50 px-2 py-1 sticky left-0 bg-muted/30 z-10">+ Variac.de existènc.de prod.term.y en curs de fabr.</td>
+              {yearlyData.map((data, idx) => (
+                <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono whitespace-nowrap">
+                  {formatValue(data.variacioExistencies)}
+                </td>
+              ))}
+            </tr>
+            <tr>
+              <td className="border border-border/50 px-2 py-1 sticky left-0 bg-muted/30 z-10">+ Treballs realitzats per l'empresa per al seu inmov.</td>
+              {yearlyData.map((data, idx) => (
+                <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono whitespace-nowrap">
+                  {formatValue(data.treballs)}
+                </td>
+              ))}
+            </tr>
+            <tr className="bg-amber-500/80 font-bold text-black">
+              <td className="border border-amber-600 px-2 py-1 sticky left-0 bg-amber-500/80 z-10">= VALOR DE LA PRODUCCIÓ</td>
+              {yearlyData.map((data, idx) => (
+                <td key={idx} className="border border-amber-600 px-2 py-1 text-right font-mono whitespace-nowrap">
+                  {formatValue(data.valorProduccio)}
+                </td>
+              ))}
+            </tr>
+            <tr>
+              <td className="border border-border/50 px-2 py-1 sticky left-0 bg-muted/30 z-10">- Consums d'explotació</td>
+              {yearlyData.map((data, idx) => (
+                <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono whitespace-nowrap">
+                  {formatValue(data.consumsExplotacio)}
+                </td>
+              ))}
+            </tr>
+            <tr>
+              <td className="border border-border/50 px-2 py-1 sticky left-0 bg-muted/30 z-10">- Gastos externs d'explotació</td>
+              {yearlyData.map((data, idx) => (
+                <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono whitespace-nowrap">
+                  {formatValue(data.gastosExterns)}
+                </td>
+              ))}
+            </tr>
+            <tr>
+              <td className="border border-border/50 px-2 py-1 sticky left-0 bg-muted/30 z-10">- Tributs</td>
+              {yearlyData.map((data, idx) => (
+                <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono whitespace-nowrap">
+                  {formatValue(data.tributs)}
+                </td>
+              ))}
+            </tr>
+            <tr>
+              <td className="border border-border/50 px-2 py-1 sticky left-0 bg-muted/30 z-10">+ Altres ingressos de gestió corrent</td>
+              {yearlyData.map((data, idx) => (
+                <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono whitespace-nowrap">
+                  {formatValue(data.altresIngressos)}
+                </td>
+              ))}
+            </tr>
+            <tr>
+              <td className="border border-border/50 px-2 py-1 sticky left-0 bg-muted/30 z-10">- Gastos diversos</td>
+              {yearlyData.map((data, idx) => (
+                <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono whitespace-nowrap">
+                  {formatValue(data.gastosDiversos)}
+                </td>
+              ))}
+            </tr>
+            <tr>
+              <td className="border border-border/50 px-2 py-1 sticky left-0 bg-muted/30 z-10">- Provisions totals</td>
+              {yearlyData.map((data, idx) => (
+                <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono whitespace-nowrap">
+                  {formatValue(data.provisions)}
+                </td>
+              ))}
+            </tr>
+            <tr className="bg-amber-400/80 font-bold text-black">
+              <td className="border border-amber-600 px-2 py-1 sticky left-0 bg-amber-400/80 z-10">= Valor afegit brut d'explotació</td>
+              {yearlyData.map((data, idx) => (
+                <td key={idx} className="border border-amber-600 px-2 py-1 text-right font-mono whitespace-nowrap">
+                  {formatValue(data.valorAfegitBrut)}
+                </td>
+              ))}
+            </tr>
+            <tr>
+              <td className="border border-border/50 px-2 py-1 sticky left-0 bg-muted/30 z-10">- Amortitzacions totals</td>
+              {yearlyData.map((data, idx) => (
+                <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono whitespace-nowrap">
+                  {formatValue(data.amortitzacions)}
+                </td>
+              ))}
+            </tr>
+            <tr className="bg-amber-400/80 font-bold text-black">
+              <td className="border border-amber-600 px-2 py-1 sticky left-0 bg-amber-400/80 z-10">= Valor afegit net d'explotació</td>
+              {yearlyData.map((data, idx) => (
+                <td key={idx} className="border border-amber-600 px-2 py-1 text-right font-mono whitespace-nowrap">
+                  {formatValue(data.valorAfegitNet)}
+                </td>
+              ))}
+            </tr>
+            <tr>
+              <td className="border border-border/50 px-2 py-1 sticky left-0 bg-muted/30 z-10">+/- Altres ingressos i gastos de caràcter financer</td>
+              {yearlyData.map((data, idx) => (
+                <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono whitespace-nowrap">
+                  {formatValue(data.altresIngresosFinancers)}
+                </td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 
@@ -330,76 +332,78 @@ const AddedValueAnalysis: React.FC<AddedValueAnalysisProps> = ({
       <div className="bg-amber-600 text-black font-bold px-3 py-2 text-sm">
         DISTRIBUCIÓ DEL VALOR AFEGIT
       </div>
-      <table className="w-full border-collapse text-xs">
-        <thead>
-          <tr className="bg-amber-500 text-black">
-            <th className="border border-amber-600 px-2 py-1 text-left w-[280px]">CONCEPTES</th>
-            {sortedYears.map(year => (
-              <th key={year} className="border border-amber-600 px-2 py-1 text-center w-[100px]">
-                Desembre-{year}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="bg-muted/30">
-          <tr className="bg-amber-400/80 font-bold text-black">
-            <td className="border border-amber-600 px-2 py-1">= Valor afegit brut d'explotació</td>
-            {yearlyData.map((data, idx) => (
-              <td key={idx} className="border border-amber-600 px-2 py-1 text-right font-mono">
-                {formatValue(data.valorAfegitBrut)}
-              </td>
-            ))}
-          </tr>
-          <tr>
-            <td className="border border-border/50 px-2 py-1">+/- Altres ingressos i gastos de caràcter financer</td>
-            {yearlyData.map((data, idx) => (
-              <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono">
-                {formatValue(data.altresIngresosFinancers)}
-              </td>
-            ))}
-          </tr>
-          <tr className="bg-amber-500/80 font-bold text-black">
-            <td className="border border-amber-600 px-2 py-1">= Valor afegit brut</td>
-            {yearlyData.map((data, idx) => (
-              <td key={idx} className="border border-amber-600 px-2 py-1 text-right font-mono">
-                {formatValue(data.valorAfegitBrutTotal)}
-              </td>
-            ))}
-          </tr>
-          <tr>
-            <td className="border border-border/50 px-2 py-1">- Gastos de personal</td>
-            {yearlyData.map((data, idx) => (
-              <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono">
-                {formatValue(data.gastosPersonal)}
-              </td>
-            ))}
-          </tr>
-          <tr>
-            <td className="border border-border/50 px-2 py-1">- Amortitzacions totals</td>
-            {yearlyData.map((data, idx) => (
-              <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono">
-                {formatValue(data.amortitzacions)}
-              </td>
-            ))}
-          </tr>
-          <tr>
-            <td className="border border-border/50 px-2 py-1">+ Ingressos financers</td>
-            {yearlyData.map((data, idx) => (
-              <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono">
-                {formatValue(data.ingressosFinancers)}
-              </td>
-            ))}
-          </tr>
-          <tr>
-            <td className="border border-border/50 px-2 py-1">- Gastos financers</td>
-            {yearlyData.map((data, idx) => (
-              <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono">
-                {formatValue(data.despesesFinanceres)}
-              </td>
-            ))}
-          </tr>
-        </tbody>
-      </table>
+      <div className="overflow-x-auto">
+        <table className="min-w-full border-collapse text-xs" style={{ minWidth: '700px' }}>
+          <thead>
+            <tr className="bg-amber-500 text-black">
+              <th className="border border-amber-600 px-2 py-1 text-left min-w-[280px] sticky left-0 bg-amber-500 z-10">CONCEPTES</th>
+              {sortedYears.map(year => (
+                <th key={year} className="border border-amber-600 px-2 py-1 text-center min-w-[100px] whitespace-nowrap">
+                  Desembre-{year}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="bg-muted/30">
+            <tr className="bg-amber-400/80 font-bold text-black">
+              <td className="border border-amber-600 px-2 py-1 sticky left-0 bg-amber-400/80 z-10">= Valor afegit brut d'explotació</td>
+              {yearlyData.map((data, idx) => (
+                <td key={idx} className="border border-amber-600 px-2 py-1 text-right font-mono whitespace-nowrap">
+                  {formatValue(data.valorAfegitBrut)}
+                </td>
+              ))}
+            </tr>
+            <tr>
+              <td className="border border-border/50 px-2 py-1 sticky left-0 bg-muted/30 z-10">+/- Altres ingressos i gastos de caràcter financer</td>
+              {yearlyData.map((data, idx) => (
+                <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono whitespace-nowrap">
+                  {formatValue(data.altresIngresosFinancers)}
+                </td>
+              ))}
+            </tr>
+            <tr className="bg-amber-500/80 font-bold text-black">
+              <td className="border border-amber-600 px-2 py-1 sticky left-0 bg-amber-500/80 z-10">= Valor afegit brut</td>
+              {yearlyData.map((data, idx) => (
+                <td key={idx} className="border border-amber-600 px-2 py-1 text-right font-mono whitespace-nowrap">
+                  {formatValue(data.valorAfegitBrutTotal)}
+                </td>
+              ))}
+            </tr>
+            <tr>
+              <td className="border border-border/50 px-2 py-1 sticky left-0 bg-muted/30 z-10">- Gastos de personal</td>
+              {yearlyData.map((data, idx) => (
+                <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono whitespace-nowrap">
+                  {formatValue(data.gastosPersonal)}
+                </td>
+              ))}
+            </tr>
+            <tr>
+              <td className="border border-border/50 px-2 py-1 sticky left-0 bg-muted/30 z-10">- Amortitzacions totals</td>
+              {yearlyData.map((data, idx) => (
+                <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono whitespace-nowrap">
+                  {formatValue(data.amortitzacions)}
+                </td>
+              ))}
+            </tr>
+            <tr>
+              <td className="border border-border/50 px-2 py-1 sticky left-0 bg-muted/30 z-10">+ Ingressos financers</td>
+              {yearlyData.map((data, idx) => (
+                <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono whitespace-nowrap">
+                  {formatValue(data.ingressosFinancers)}
+                </td>
+              ))}
+            </tr>
+            <tr>
+              <td className="border border-border/50 px-2 py-1 sticky left-0 bg-muted/30 z-10">- Gastos financers</td>
+              {yearlyData.map((data, idx) => (
+                <td key={idx} className="border border-border/50 px-2 py-1 text-right font-mono whitespace-nowrap">
+                  {formatValue(data.despesesFinanceres)}
+                </td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 
