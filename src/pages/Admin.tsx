@@ -46,6 +46,7 @@ import ContractedProductsReport from '@/components/admin/ContractedProductsRepor
 import MapView from './MapView';
 import AccountingManager from '@/components/admin/accounting/AccountingManager';
 import { UnifiedMetricsDashboard } from '@/components/dashboard/UnifiedMetricsDashboard';
+import { TechnicalDocumentGenerator } from '@/components/reports/TechnicalDocumentGenerator';
 
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
