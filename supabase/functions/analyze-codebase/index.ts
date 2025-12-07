@@ -18,6 +18,11 @@ interface CodebaseAnalysis {
   marketingHighlights: MarketingHighlights;
   pricingStrategy: PricingStrategy;
   feasibilityAnalysis: FeasibilityAnalysis;
+  iso27001Compliance: ISO27001Compliance;
+  otherRegulations: OtherRegulation[];
+  salesStrategy: SalesStrategy;
+  temenosIntegration: TemenosIntegration;
+  projectCosts: ProjectCosts;
 }
 
 interface ModuleAnalysis {
@@ -66,6 +71,10 @@ interface PotentialClient {
   customizations: string[];
   potentialClients: number;
   marketPenetration: string;
+  salesPriority: number;
+  conversionProbability: string;
+  decisionMakers: string[];
+  salesApproach: string;
 }
 
 interface CodeStats {
@@ -104,6 +113,53 @@ interface FeasibilityAnalysis {
   timeToMarket: string;
 }
 
+interface ISO27001Compliance {
+  currentMaturity: number;
+  compliantControls: { control: string; status: string; evidence: string }[];
+  partialControls: { control: string; gap: string; action: string }[];
+  missingControls: { control: string; priority: string; effort: string; timeline: string }[];
+  implementationPlan: { phase: string; duration: string; activities: string[]; cost: string }[];
+  certificationTimeline: string;
+  estimatedCost: string;
+  requiredDocuments: string[];
+}
+
+interface OtherRegulation {
+  name: string;
+  jurisdiction: string;
+  description: string;
+  currentCompliance: string;
+  requiredActions: string[];
+  priority: string;
+}
+
+interface SalesStrategy {
+  phases: { phase: string; duration: string; objectives: string[]; activities: string[]; kpis: string[] }[];
+  prioritizedClients: { rank: number; name: string; sector: string; conversionProbability: string; estimatedValue: string; approach: string; timeline: string }[];
+  channelStrategy: { channel: string; focus: string; resources: string }[];
+  competitivePositioning: string;
+}
+
+interface TemenosIntegration {
+  overview: string;
+  integrationMethods: { method: string; description: string; complexity: string; timeline: string; cost: string }[];
+  apiConnectors: { name: string; purpose: string; protocol: string }[];
+  dataFlows: { flow: string; direction: string; frequency: string }[];
+  implementationSteps: { step: number; description: string; duration: string; deliverables: string[] }[];
+  estimatedCost: string;
+  prerequisites: string[];
+}
+
+interface ProjectCosts {
+  developmentCost: { category: string; hours: number; rate: number; total: number }[];
+  infrastructureCost: { item: string; monthly: number; annual: number }[];
+  licensingCost: { license: string; type: string; cost: number }[];
+  operationalCost: { item: string; monthly: number; description: string }[];
+  totalFirstYear: number;
+  totalFiveYears: number;
+  breakdownByPhase: { phase: string; cost: number; duration: string }[];
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -117,187 +173,38 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompt = `Eres un analista senior de software y consultor de negocio especializado en aplicaciones bancarias, CRM enterprise y estrategia de mercado en banca española y europea.
+    const systemPrompt = `Eres un analista senior de software, consultor de negocio y experto en normativas ISO/regulación bancaria. Especializado en aplicaciones bancarias, CRM enterprise y estrategia de mercado en banca española y europea.
 
 Tu tarea es realizar un análisis EXHAUSTIVO y PROFESIONAL de una aplicación CRM bancaria incluyendo:
 
-1. ANÁLISIS DE MÓDULOS: Cada módulo con valor de negocio, diferenciadores y nivel de madurez
-2. VALORACIÓN ECONÓMICA: Coste de desarrollo, valor de mercado, ROI y comparativa con competidores
-3. COMPARATIVA CON COMPETIDORES REALES: Incluye nombres reales de software bancario español/europeo con sus URLs de acceso, precios reales de mercado, bancos que los usan
-4. ANÁLISIS DE VIABILIDAD: España y Europa, barreras de entrada, regulación, oportunidades
-5. ESTRATEGIA DE PRICING: Modelo recomendado (licencia única vs suscripción), con análisis de cómo lo hace la competencia
-6. MARKETING: Puntos fuertes, propuesta de valor, audiencia objetivo, tendencias de mercado
+1. ANÁLISIS DE MÓDULOS con valor de negocio y diferenciadores
+2. VALORACIÓN ECONÓMICA con desglose detallado de costes
+3. COMPARATIVA CON COMPETIDORES REALES con URLs, precios, bancos que los usan
+4. CUMPLIMIENTO ISO 27001 con gap analysis y plan de implementación completo
+5. OTRAS NORMATIVAS (GDPR, DORA, PSD2, Basel III/IV, MiFID II, etc.)
+6. ESTRATEGIA DE VENTAS con clientes priorizados de mayor a menor probabilidad
+7. INTEGRACIÓN CON TEMENOS con métodos, APIs y pasos de implementación
+8. DESGLOSE COMPLETO DE COSTES del proyecto
+9. ESTRATEGIA DE PRICING con recomendaciones
+10. VIABILIDAD en España y Europa
 
-Contexto de la aplicación:
-- CRM bancario avanzado para gestión comercial de empresas
-- Desarrollado con React + TypeScript + Supabase (arquitectura moderna serverless)
-- Módulos: Contabilidad PGC, GIS/Mapas, Dashboard multi-rol, Visitas comerciales, TPV, Análisis financiero (DuPont, Z-Score, EBITDA), Consolidación grupal
-- Sistema multi-rol (gestores, directores oficina, responsables comerciales, directores de negocio, auditores)
-- Cumplimiento normativo: Andorra (APDA), España, UE (Basel III/IV, IFRS 9, MiFID II)
-- Realtime, multi-idioma (es, ca, en, fr), PWA-ready
-
-COMPETIDORES REALES A ANALIZAR (incluir URLs reales):
-- Temenos (www.temenos.com) - Core banking
-- Backbase (www.backbase.com) - Digital banking
-- SAP Banking (www.sap.com/industries/banking.html)
-- Salesforce Financial Services Cloud (www.salesforce.com/financial-services/)
-- Microsoft Dynamics 365 for Financial Services
-- Sopra Banking (www.soprabanking.com)
-- Finastra (www.finastra.com)
-- Bottomline Technologies (www.bottomline.com)
-- Cecobank/Cecabank (software español cooperativas)
-- Altamira (gestión bancaria española)
-
-RESPONDE SOLO CON JSON VÁLIDO con esta estructura exacta (sin comentarios, sin markdown):`;
-
-    const jsonStructure = `{
-  "version": "4.0.0",
-  "modules": [
-    {
-      "name": "string",
-      "description": "string detallada de 2-3 frases",
-      "implementedFeatures": ["feature1", "feature2", "feature3"],
-      "pendingFeatures": ["pending1", "pending2"],
-      "completionPercentage": 85,
-      "files": ["file1.tsx", "file2.tsx"],
-      "businessValue": "descripción del valor de negocio",
-      "differentiators": ["diferenciador1", "diferenciador2"]
-    }
-  ],
-  "pendingFeatures": ["feature global pendiente 1", "feature 2"],
-  "securityFindings": ["hallazgo1", "hallazgo2"],
-  "marketValuation": {
-    "totalHours": 3000,
-    "hourlyRate": 95,
-    "totalCost": 285000,
-    "breakdown": [{"category": "Frontend", "hours": 1000, "cost": 95000}],
-    "marketValue": 650000,
-    "roi5Years": "385% considerando ahorro vs licencias comerciales",
-    "comparisonWithCompetitors": "descripción de posicionamiento vs competencia"
-  },
-  "competitorComparison": [
-    {
-      "name": "Temenos",
-      "type": "Core Banking Platform",
-      "url": "https://www.temenos.com",
-      "targetMarket": "Bancos tier 1-2 globales",
-      "licenseCost": "500.000€-5M€ perpetua",
-      "implementationCost": "1M€-10M€",
-      "maintenanceCost": "22% anual",
-      "totalCost5Years": "3M€-15M€",
-      "marketShare": "40% core banking mundial",
-      "pros": ["Muy robusto", "Ecosistema completo"],
-      "cons": ["Extremadamente costoso", "Complejidad alta"],
-      "comparisonVsCreand": "Creand ofrece funcionalidad CRM comercial que Temenos no cubre nativamente",
-      "usedByBanks": ["ING", "Santander International", "ABN AMRO"]
-    }
-  ],
-  "potentialClients": [
-    {
-      "sector": "Banca Privada",
-      "clientType": "Entidades bancarias pequeñas-medianas",
-      "region": "España, Andorra, Portugal",
-      "estimatedValue": "80.000-150.000€",
-      "implementationTime": "3-6 meses",
-      "customizations": ["Integración core bancario", "Compliance local"],
-      "potentialClients": 25,
-      "marketPenetration": "5-10% primer año"
-    }
-  ],
-  "codeStats": {
-    "totalFiles": 200,
-    "totalComponents": 150,
-    "totalHooks": 14,
-    "totalEdgeFunctions": 25,
-    "totalPages": 9,
-    "linesOfCode": 85000
-  },
-  "marketingHighlights": {
-    "uniqueSellingPoints": ["USP1", "USP2", "USP3"],
-    "competitiveAdvantages": ["Ventaja1", "Ventaja2"],
-    "targetAudience": ["Audiencia1", "Audiencia2"],
-    "valueProposition": "Propuesta de valor clara y concisa",
-    "keyBenefits": [
-      {"benefit": "Beneficio1", "description": "Descripción", "impact": "Impacto medible"}
-    ],
-    "testimonialPotential": ["Tipo de testimonio potencial"],
-    "industryTrends": ["Tendencia 1", "Tendencia 2"]
-  },
-  "pricingStrategy": {
-    "recommendedModel": "Modelo híbrido recomendado con justificación",
-    "oneTimeLicense": {
-      "price": "150.000€-250.000€",
-      "pros": ["Pro1", "Pro2"],
-      "cons": ["Con1", "Con2"],
-      "whenToUse": "Cuándo usar este modelo"
-    },
-    "subscriptionModel": {
-      "pricePerUser": "95-150€/usuario/mes",
-      "tiers": [
-        {"name": "Starter", "price": "2.500€/mes", "features": ["Feature1", "Feature2"]},
-        {"name": "Professional", "price": "5.000€/mes", "features": ["Feature1", "Feature2", "Feature3"]},
-        {"name": "Enterprise", "price": "Custom", "features": ["Todo incluido", "Personalización"]}
-      ],
-      "pros": ["Pro1", "Pro2"],
-      "cons": ["Con1", "Con2"]
-    },
-    "maintenanceContract": {
-      "percentage": "15-20% del valor de licencia anual",
-      "includes": ["Soporte", "Actualizaciones", "Bugfixes"],
-      "optional": ["Formación", "Consultoría", "Desarrollos a medida"]
-    },
-    "competitorPricing": [
-      {"competitor": "Salesforce FSC", "model": "Suscripción", "priceRange": "150-300€/usuario/mes"}
-    ],
-    "recommendation": "Recomendación detallada de estrategia de pricing"
-  },
-  "feasibilityAnalysis": {
-    "spanishMarket": {
-      "viability": "Alta/Media/Baja con justificación",
-      "barriers": ["Barrera1", "Barrera2"],
-      "opportunities": ["Oportunidad1", "Oportunidad2"],
-      "competitors": ["Competidor local 1", "Competidor local 2"],
-      "marketSize": "Tamaño de mercado estimado",
-      "recommendation": "Recomendación estratégica"
-    },
-    "europeanMarket": {
-      "viability": "Media con justificación",
-      "targetCountries": ["País1", "País2"],
-      "regulations": ["Regulación1", "Regulación2"],
-      "opportunities": ["Oportunidad1"],
-      "recommendation": "Recomendación"
-    },
-    "implementationRisks": [
-      {"risk": "Riesgo1", "probability": "Alta/Media/Baja", "mitigation": "Mitigación"}
-    ],
-    "successFactors": ["Factor1", "Factor2"],
-    "timeToMarket": "Estimación de tiempo para lanzamiento comercial"
-  }
-}`;
+RESPONDE SOLO CON JSON VÁLIDO sin comentarios ni markdown.`;
 
     const userPrompt = `Analiza esta aplicación CRM Bancaria con ${componentsList?.length || 0} componentes:
 
-COMPONENTES PRINCIPALES:
-${componentsList?.slice(0, 80).join(', ') || 'No disponible'}
+COMPONENTES: ${componentsList?.slice(0, 80).join(', ') || 'N/A'}
+HOOKS: ${hooksList?.join(', ') || 'N/A'}
+EDGE FUNCTIONS (${edgeFunctions?.length || 0}): ${edgeFunctions?.join(', ') || 'N/A'}
+PÁGINAS: ${pagesList?.join(', ') || 'N/A'}
+ESTRUCTURA: ${fileStructure || 'N/A'}
 
-HOOKS: ${hooksList?.join(', ') || 'No disponible'}
-
-EDGE FUNCTIONS (${edgeFunctions?.length || 0}): ${edgeFunctions?.join(', ') || 'No disponible'}
-
-PÁGINAS: ${pagesList?.join(', ') || 'No disponible'}
-
-ESTRUCTURA:
-${fileStructure || 'No disponible'}
-
-GENERA UN ANÁLISIS COMPLETO Y PROFESIONAL en formato JSON siguiendo exactamente esta estructura:
-${jsonStructure}
-
-IMPORTANTE:
-- Incluye URLs REALES de competidores bancarios
-- Usa precios REALES de mercado español/europeo 2024-2025
-- Nombra bancos REALES que usan cada software
-- Da recomendaciones de pricing ESPECÍFICAS y justificadas
-- Analiza viabilidad REAL en España (regulación, competencia, oportunidades)`;
+GENERA UN ANÁLISIS COMPLETO con:
+- ISO 27001 gap analysis y plan de implementación con costes y timeline
+- Otras normativas importantes (GDPR, DORA, PSD2, NIS2, Basel, MiFID II, LOPDGDD, APDA Andorra)
+- Estrategia de ventas con TODOS los clientes potenciales priorizados por probabilidad de conversión
+- Integración detallada con Temenos (T24, Transact, Infinity) con métodos y costes
+- Desglose completo de costes del proyecto (desarrollo, infraestructura, licencias, operacional)
+- Precios REALES de competidores con URLs`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -311,19 +218,19 @@ IMPORTANTE:
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
         ],
-        max_tokens: 12000,
+        max_tokens: 15000,
       }),
     });
 
     if (!response.ok) {
       if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limits exceeded, please try again later." }), {
+        return new Response(JSON.stringify({ error: "Rate limits exceeded" }), {
           status: 429,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Payment required, please add funds." }), {
+        return new Response(JSON.stringify({ error: "Payment required" }), {
           status: 402,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
@@ -335,8 +242,6 @@ IMPORTANTE:
 
     const aiResponse = await response.json();
     let content = aiResponse.choices?.[0]?.message?.content || "";
-    
-    // Clean up the response
     content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     
     let analysis: CodebaseAnalysis;
@@ -345,7 +250,6 @@ IMPORTANTE:
       analysis.generationDate = new Date().toISOString();
     } catch (parseError) {
       console.error("Failed to parse AI response:", content);
-      // Fallback analysis with comprehensive data
       analysis = getDefaultAnalysis(componentsList, hooksList, edgeFunctions, pagesList);
     }
 
@@ -366,109 +270,79 @@ IMPORTANTE:
 
 function getDefaultAnalysis(componentsList: string[], hooksList: string[], edgeFunctions: string[], pagesList: string[]): CodebaseAnalysis {
   return {
-    version: "4.0.0",
+    version: "5.0.0",
     generationDate: new Date().toISOString(),
     modules: [
       {
         name: "Dashboard Multi-Rol Inteligente",
-        description: "Sistema de dashboards adaptativo con métricas KPI bancarias en tiempo real, segmentación por rol (gestor, director oficina, responsable comercial, director de negocio, auditor) y benchmarking contra estándares europeos.",
-        implementedFeatures: ["Dashboard por rol con métricas específicas", "KPIs bancarios en tiempo real", "Filtros avanzados por fecha/oficina/gestor", "Benchmarking con estándares europeos", "Gráficos interactivos (Bar, Line, Area, Pie, Radar)", "Comparativas temporales", "Alertas de rendimiento"],
-        pendingFeatures: ["Exportación a PowerBI/Tableau", "Alertas push móviles", "Predicciones ML"],
+        description: "Sistema de dashboards adaptativo con métricas KPI bancarias en tiempo real, segmentación por rol y benchmarking europeo.",
+        implementedFeatures: ["Dashboard por rol", "KPIs en tiempo real", "Filtros avanzados", "Benchmarking europeo", "Gráficos interactivos", "Comparativas temporales", "Alertas rendimiento"],
+        pendingFeatures: ["Exportación PowerBI", "Alertas push móviles", "Predicciones ML"],
         completionPercentage: 92,
         files: componentsList?.filter((f: string) => f.includes('dashboard') || f.includes('Dashboard')) || [],
-        businessValue: "Reduce tiempo de análisis de cartera un 60% y mejora decisiones comerciales con datos en tiempo real",
-        differentiators: ["Benchmarking europeo integrado", "Multi-rol nativo", "Tiempo real sin latencia"]
+        businessValue: "Reduce tiempo análisis 60%, mejora decisiones comerciales",
+        differentiators: ["Benchmarking europeo integrado", "Multi-rol nativo", "Tiempo real"]
       },
       {
         name: "Módulo Contable PGC Andorra/España",
-        description: "Sistema contable completo adaptado al Plan General Contable de Andorra y España. Incluye Balance, Cuenta de Resultados, Cash Flow, Estado de Cambios en el Patrimonio, consolidación de grupos y análisis financiero avanzado (DuPont, Z-Score Altman, EBIT/EBITDA).",
-        implementedFeatures: ["Balance de situación completo", "Cuenta de pérdidas y ganancias", "Estado de flujos de efectivo", "Consolidación de hasta 15 empresas", "Análisis DuPont", "Z-Score Altman", "Análisis EBIT/EBITDA", "NOF y Fondo de Maniobra", "Import PDF con IA", "5 años comparativos", "Provisionales trimestrales/semestrales"],
-        pendingFeatures: ["Export XBRL", "Integración con contabilidad externa", "Ratios sectoriales automáticos"],
+        description: "Sistema contable completo PGC con análisis financiero avanzado DuPont, Z-Score, consolidación grupal.",
+        implementedFeatures: ["Balance completo", "Pérdidas y ganancias", "Flujos efectivo", "Consolidación 15 empresas", "DuPont", "Z-Score Altman", "EBIT/EBITDA", "Import PDF con IA"],
+        pendingFeatures: ["Export XBRL", "Integración contabilidad externa"],
         completionPercentage: 95,
-        files: componentsList?.filter((f: string) => f.includes('accounting') || f.includes('Accounting')) || [],
-        businessValue: "Elimina necesidad de Excel para análisis financiero, ahorra 20+ horas/mes por analista",
-        differentiators: ["PGC Andorra nativo", "Consolidación integrada", "IA para import PDF", "Análisis predictivo"]
+        files: componentsList?.filter((f: string) => f.includes('accounting')) || [],
+        businessValue: "Ahorra 20+ horas/mes por analista",
+        differentiators: ["PGC Andorra nativo", "IA para PDF", "Consolidación integrada"]
       },
       {
-        name: "GIS Bancario - Gestión Geográfica de Cartera",
-        description: "Sistema GIS enterprise para visualización y gestión geográfica de cartera comercial bancaria. Clustering inteligente, múltiples capas (OSM, Satélite, 3D), filtros avanzados, vinculación bancaria visual y planificación de rutas comerciales.",
-        implementedFeatures: ["Mapa interactivo con 20.000+ empresas", "Clustering inteligente Supercluster", "Múltiples capas (OSM, Satélite, 3D)", "Filtros por vinculación bancaria", "Visualización P&L por empresa", "Drag & drop para reubicación", "Galería de fotos en tooltip", "Planificador de rutas"],
-        pendingFeatures: ["Routing optimizado con Google OR-Tools", "Análisis de zonas de influencia", "Heatmaps de oportunidad"],
+        name: "GIS Bancario Enterprise",
+        description: "Sistema GIS para visualización geográfica de cartera con 20.000+ empresas, clustering inteligente y rutas.",
+        implementedFeatures: ["Mapa 20.000+ empresas", "Clustering Supercluster", "Capas OSM/Satélite/3D", "Filtros vinculación", "Drag&drop", "Planificador rutas"],
+        pendingFeatures: ["Google OR-Tools routing", "Heatmaps oportunidad"],
         completionPercentage: 88,
         files: componentsList?.filter((f: string) => f.includes('map') || f.includes('Map')) || [],
-        businessValue: "Optimiza visitas comerciales un 35%, identifica oportunidades geográficas no exploradas",
-        differentiators: ["20.000 empresas sin degradación", "Vinculación bancaria visual", "Integración completa CRM"]
+        businessValue: "Optimiza visitas 35%",
+        differentiators: ["20.000 empresas sin degradación", "Vinculación visual"]
       },
       {
-        name: "Gestión de Visitas Comerciales",
-        description: "Sistema completo de gestión de visitas comerciales con fichas estructuradas de 12 secciones, validación por responsables, recordatorios automáticos, calendario compartido y seguimiento de oportunidades high-value.",
-        implementedFeatures: ["Fichas de visita 12 secciones", "Validación por responsables comerciales", "Notificaciones email automáticas", "Calendario compartido multi-rol", "Participantes múltiples en visitas", "Recordatorios configurables", "Alertas oportunidades >90%", "Sincronización vinculación bancaria"],
-        pendingFeatures: ["Integración con calendarios externos", "App móvil offline", "Voice-to-text para notas"],
+        name: "Gestión Visitas Comerciales",
+        description: "Sistema de visitas con fichas 12 secciones, validación jerárquica, recordatorios y calendario compartido.",
+        implementedFeatures: ["Fichas 12 secciones", "Validación responsables", "Email automático", "Calendario compartido", "Múltiples participantes", "Alertas >90%"],
+        pendingFeatures: ["Calendarios externos", "App offline", "Voice-to-text"],
         completionPercentage: 90,
-        files: componentsList?.filter((f: string) => f.includes('visit') || f.includes('Visit')) || [],
-        businessValue: "Aumenta ratio de cierre un 25% mediante seguimiento estructurado y alertas de oportunidad",
-        differentiators: ["Validación jerárquica integrada", "Sincronización automática con vinculación", "Alertas inteligentes"]
+        files: componentsList?.filter((f: string) => f.includes('visit')) || [],
+        businessValue: "Aumenta cierre 25%",
+        differentiators: ["Validación jerárquica", "Sincronización automática"]
       },
       {
-        name: "Sistema de Objetivos y Metas",
-        description: "Gestión de objetivos comerciales con asignación jerárquica, tracking en tiempo real, planes de acción generados por IA, benchmarking y gamificación con rankings.",
-        implementedFeatures: ["Asignación de objetivos por rol/oficina", "7 métricas de rendimiento", "Tracking en tiempo real", "Planes de acción con IA", "Benchmarking oficina/equipo", "Rankings y leaderboards", "Alertas objetivos en riesgo", "Historial de consecución"],
-        pendingFeatures: ["Predicción ML de consecución", "Gamificación avanzada", "Integración incentivos"],
+        name: "Sistema Objetivos y Metas",
+        description: "Gestión objetivos con asignación jerárquica, tracking tiempo real, planes IA y gamificación.",
+        implementedFeatures: ["Objetivos por rol/oficina", "7 métricas", "Tracking real-time", "Planes IA", "Rankings", "Alertas riesgo"],
+        pendingFeatures: ["Predicción ML", "Gamificación avanzada"],
         completionPercentage: 87,
-        files: componentsList?.filter((f: string) => f.includes('goal') || f.includes('Goal')) || [],
-        businessValue: "Mejora consecución de objetivos un 30% mediante visibilidad y planes de acción concretos",
-        differentiators: ["IA para planes de acción", "Multi-nivel jerárquico", "Benchmarking automático"]
-      },
-      {
-        name: "Gestión TPV y Medios de Pago",
-        description: "Módulo especializado para gestión de terminales punto de venta, seguimiento de volúmenes, comisiones y objetivos TPV por gestor.",
-        implementedFeatures: ["Gestión de terminales TPV", "Tracking de volúmenes mensuales", "Objetivos TPV por gestor", "Comisiones y providers", "Rankings de captación TPV"],
-        pendingFeatures: ["Integración pasarelas de pago", "Análisis de fraude", "Reporting automático"],
-        completionPercentage: 82,
-        files: componentsList?.filter((f: string) => f.includes('tpv') || f.includes('TPV')) || [],
-        businessValue: "Centraliza gestión de TPV reduciendo tiempo administrativo un 40%",
-        differentiators: ["Integración completa con cartera", "Objetivos específicos TPV"]
-      },
-      {
-        name: "Sistema de Alertas y Notificaciones",
-        description: "Motor de alertas configurable con escalado automático, notificaciones multi-canal (in-app, email) y seguimiento de resolución.",
-        implementedFeatures: ["Alertas configurables por umbral", "Escalado automático por tiempo", "Notificaciones in-app en tiempo real", "Notificaciones email con Resend", "Historial de alertas", "Resolución con notas"],
-        pendingFeatures: ["Push notifications móviles", "Integración Slack/Teams", "Alertas por SMS"],
-        completionPercentage: 85,
-        files: componentsList?.filter((f: string) => f.includes('alert') || f.includes('Alert')) || [],
-        businessValue: "Reduce tiempo de respuesta a incidencias críticas un 50%",
-        differentiators: ["Escalado automático multi-nivel", "Multi-canal nativo"]
-      },
-      {
-        name: "Reporting y Documentación",
-        description: "Generación automática de informes KPI, documentación técnica con IA, exportación PDF/Excel y análisis de codebase.",
-        implementedFeatures: ["Informes KPI diarios/semanales/mensuales", "Generador documentación técnica con IA", "Exportación PDF profesional", "Exportación Excel configurada", "Análisis de mercado y competencia"],
-        pendingFeatures: ["Templates personalizables", "Scheduled reports", "Integración BI"],
-        completionPercentage: 88,
-        files: componentsList?.filter((f: string) => f.includes('report') || f.includes('Report')) || [],
-        businessValue: "Automatiza reporting directivo ahorrando 15+ horas/mes",
-        differentiators: ["IA para documentación técnica", "Análisis de competencia automático"]
+        files: componentsList?.filter((f: string) => f.includes('goal')) || [],
+        businessValue: "Mejora consecución 30%",
+        differentiators: ["IA planes acción", "Benchmarking automático"]
       }
     ],
     pendingFeatures: [
-      "App móvil nativa iOS/Android con modo offline",
-      "Integración con core bancario (Temenos, SAP)",
-      "Business Intelligence avanzado con ML",
+      "App móvil iOS/Android offline",
+      "Integración Temenos T24/Transact",
+      "Business Intelligence ML",
       "API pública REST/GraphQL",
-      "Marketplace de integraciones",
-      "White-label para revendedores",
+      "Marketplace integraciones",
+      "White-label revendedores",
       "Multi-tenant SaaS",
       "Compliance DORA automático"
     ],
     securityFindings: [
-      "Row Level Security (RLS) implementado en todas las tablas críticas",
-      "JWT enforcement en Edge Functions sensibles",
-      "Auditoría completa de acciones de usuario",
-      "Rate limiting en APIs de geocodificación",
-      "Sanitización XSS con DOMPurify",
-      "Optimistic locking para edición concurrente",
-      "Encriptación en tránsito (TLS 1.3)",
-      "Secrets management vía Supabase Vault"
+      "RLS implementado todas tablas críticas",
+      "JWT enforcement Edge Functions",
+      "Auditoría completa acciones",
+      "Rate limiting APIs",
+      "Sanitización XSS DOMPurify",
+      "Optimistic locking edición",
+      "TLS 1.3 en tránsito",
+      "Secrets via Supabase Vault"
     ],
     marketValuation: {
       totalHours: 3200,
@@ -476,8 +350,8 @@ function getDefaultAnalysis(componentsList: string[], hooksList: string[], edgeF
       totalCost: 304000,
       breakdown: [
         { category: "Frontend React/TypeScript", hours: 1100, cost: 104500 },
-        { category: "Backend Supabase/Edge Functions", hours: 650, cost: 61750 },
-        { category: "Base de Datos PostgreSQL", hours: 450, cost: 42750 },
+        { category: "Backend Supabase/Edge", hours: 650, cost: 61750 },
+        { category: "Base Datos PostgreSQL", hours: 450, cost: 42750 },
         { category: "Módulo Contabilidad", hours: 400, cost: 38000 },
         { category: "GIS/Mapas", hours: 250, cost: 23750 },
         { category: "Seguridad y RLS", hours: 200, cost: 19000 },
@@ -485,84 +359,84 @@ function getDefaultAnalysis(componentsList: string[], hooksList: string[], edgeF
         { category: "Documentación", hours: 50, cost: 4750 }
       ],
       marketValue: 750000,
-      roi5Years: "420% considerando: ahorro licencias comerciales (150-300€/user/mes), reducción FTEs análisis (2-3), mejora productividad comercial (+25%)",
-      comparisonWithCompetitors: "Posicionamiento medio-alto: funcionalidad comparable a Salesforce FSC para gestión comercial bancaria, a 1/5 del coste total de propiedad. Superior a soluciones genéricas (Dynamics, SAP) en especialización bancaria andorrana/española."
+      roi5Years: "420% considerando ahorro licencias y mejora productividad",
+      comparisonWithCompetitors: "Funcionalidad Salesforce FSC a 1/5 del coste. Superior en especialización bancaria."
     },
     competitorComparison: [
       {
         name: "Temenos T24/Transact",
         type: "Core Banking Platform",
         url: "https://www.temenos.com/products/",
-        targetMarket: "Bancos tier 1-2 globales, +3.000 instituciones",
-        licenseCost: "500.000€ - 5.000.000€ (perpetua)",
+        targetMarket: "Bancos tier 1-2 globales",
+        licenseCost: "500.000€ - 5.000.000€ perpetua",
         implementationCost: "1.000.000€ - 15.000.000€",
-        maintenanceCost: "22% anual del valor de licencia",
+        maintenanceCost: "22% anual",
         totalCost5Years: "3.000.000€ - 25.000.000€",
-        marketShare: "40% del mercado core banking mundial",
-        pros: ["Solución más robusta del mercado", "Ecosistema de partners extenso", "Cumplimiento regulatorio global certificado", "Escalabilidad probada"],
-        cons: ["Coste prohibitivo para entidades pequeñas", "Implementación 18-36 meses", "Complejidad técnica extrema", "Lock-in vendor significativo"],
-        comparisonVsCreand: "Temenos es core banking, Creand es CRM comercial. Son complementarios. Creand cubre gestión comercial que Temenos no ofrece nativamente.",
+        marketShare: "40% core banking mundial",
+        pros: ["Muy robusto", "Ecosistema extenso", "Compliance global", "Escalabilidad"],
+        cons: ["Coste prohibitivo", "18-36 meses implementación", "Complejidad extrema", "Vendor lock-in"],
+        comparisonVsCreand: "Temenos es core banking, Creand es CRM comercial complementario",
         usedByBanks: ["ING", "Santander International", "ABN AMRO", "Standard Chartered", "Nordea"]
-      },
-      {
-        name: "Backbase Engagement Banking Platform",
-        type: "Digital Banking Platform",
-        url: "https://www.backbase.com/platform/",
-        targetMarket: "Bancos digitales, challenger banks",
-        licenseCost: "200.000€ - 1.000.000€ anual",
-        implementationCost: "500.000€ - 3.000.000€",
-        maintenanceCost: "Incluido en suscripción",
-        totalCost5Years: "1.500.000€ - 8.000.000€",
-        marketShare: "15% digital banking Europa",
-        pros: ["Experiencia digital excelente", "Time-to-market rápido", "API-first moderno", "Buen soporte omnicanal"],
-        cons: ["Foco en retail, no tanto en comercial empresas", "Menos maduro en contabilidad", "Dependencia cloud"],
-        comparisonVsCreand: "Backbase enfocado en banca digital retail. Creand especializado en gestión comercial empresas. Creand superior en análisis financiero y GIS.",
-        usedByBanks: ["Lloyds Banking Group", "Rabobank", "Banc Sabadell", "Société Générale"]
       },
       {
         name: "Salesforce Financial Services Cloud",
         type: "CRM especializado banca",
         url: "https://www.salesforce.com/es/products/financial-services-cloud/",
-        targetMarket: "Bancos y aseguradoras de todos los tamaños",
+        targetMarket: "Bancos y aseguradoras todos tamaños",
         licenseCost: "150€ - 300€/usuario/mes",
         implementationCost: "50.000€ - 500.000€",
-        maintenanceCost: "Incluido en suscripción",
-        totalCost5Years: "Para 50 usuarios: 650.000€ - 1.500.000€",
+        maintenanceCost: "Incluido suscripción",
+        totalCost5Years: "650.000€ - 1.500.000€ (50 usuarios)",
         marketShare: "35% CRM bancario global",
-        pros: ["Ecosistema AppExchange extenso", "Soporte global 24/7", "Einstein AI integrado", "Altamente personalizable"],
-        cons: ["Coste muy elevado por usuario", "Curva aprendizaje pronunciada", "Sin contabilidad nativa", "Sin GIS avanzado"],
-        comparisonVsCreand: "FSC es genérico global, Creand especializado Andorra/España. Creand incluye contabilidad PGC y GIS que FSC no tiene. FSC 3-5x más caro.",
-        usedByBanks: ["BBVA", "Banco Santander", "CaixaBank", "Bankinter", "Deutsche Bank"]
+        pros: ["AppExchange", "Soporte global", "Einstein AI", "Personalizable"],
+        cons: ["Coste elevado/usuario", "Curva aprendizaje", "Sin contabilidad", "Sin GIS"],
+        comparisonVsCreand: "FSC genérico global, Creand especializado. Creand incluye contabilidad PGC y GIS. FSC 3-5x más caro.",
+        usedByBanks: ["BBVA", "Santander", "CaixaBank", "Bankinter", "Deutsche Bank"]
       },
       {
-        name: "Microsoft Dynamics 365 for Finance",
-        type: "ERP/CRM Enterprise",
-        url: "https://dynamics.microsoft.com/es-es/finance/overview/",
-        targetMarket: "Grandes empresas, algunos bancos",
-        licenseCost: "95€ - 210€/usuario/mes",
-        implementationCost: "100.000€ - 1.000.000€",
-        maintenanceCost: "Incluido en suscripción",
-        totalCost5Years: "Para 50 usuarios: 400.000€ - 1.200.000€",
-        marketShare: "25% ERP enterprise global",
-        pros: ["Integración Office 365 nativa", "Azure ecosystem", "Funcionalidad ERP completa", "Flexibilidad"],
-        cons: ["No especializado en banca", "Personalización costosa", "Sin cumplimiento normativo bancario nativo"],
-        comparisonVsCreand: "Dynamics es ERP genérico, Creand es CRM bancario especializado. Creand superior en análisis financiero bancario y compliance.",
-        usedByBanks: ["Algunos bancos para back-office", "Más común en departamentos financieros corporativos"]
+        name: "Backbase",
+        type: "Digital Banking Platform",
+        url: "https://www.backbase.com/platform/",
+        targetMarket: "Bancos digitales, challengers",
+        licenseCost: "200.000€ - 1.000.000€ anual",
+        implementationCost: "500.000€ - 3.000.000€",
+        maintenanceCost: "Incluido suscripción",
+        totalCost5Years: "1.500.000€ - 8.000.000€",
+        marketShare: "15% digital banking Europa",
+        pros: ["UX excelente", "Time-to-market", "API-first", "Omnicanal"],
+        cons: ["Foco retail", "Menos contabilidad", "Dependencia cloud"],
+        comparisonVsCreand: "Backbase retail digital, Creand gestión comercial empresas. Creand superior en análisis financiero.",
+        usedByBanks: ["Lloyds", "Rabobank", "Sabadell", "Société Générale"]
       },
       {
-        name: "SAP S/4HANA for Banking",
+        name: "SAP S/4HANA Banking",
         type: "ERP Banking",
         url: "https://www.sap.com/spain/industries/banking.html",
-        targetMarket: "Bancos tier 1, grandes corporaciones",
-        licenseCost: "Perpetua: 3.000€ - 8.000€/usuario",
+        targetMarket: "Bancos tier 1",
+        licenseCost: "3.000€ - 8.000€/usuario perpetua",
         implementationCost: "500.000€ - 10.000.000€",
         maintenanceCost: "22% anual",
         totalCost5Years: "2.000.000€ - 15.000.000€",
         marketShare: "30% ERP grandes bancos",
-        pros: ["Funcionalidad más completa del mercado", "IFRS 9 nativo", "Integración total procesos bancarios"],
-        cons: ["Extremadamente costoso", "Implementación 2-4 años", "Requiere equipo especializado permanente"],
-        comparisonVsCreand: "SAP es solución enterprise compleja. Creand es ágil y especializado en gestión comercial. Creand implementable en 3-6 meses vs 2-4 años.",
+        pros: ["Funcionalidad completa", "IFRS 9 nativo", "Integración total"],
+        cons: ["Extremadamente costoso", "2-4 años implementación", "Equipo especializado"],
+        comparisonVsCreand: "SAP enterprise complejo, Creand ágil. Implementación 3-6 meses vs 2-4 años.",
         usedByBanks: ["Deutsche Bank", "HSBC", "Commerzbank", "Credit Suisse"]
+      },
+      {
+        name: "Microsoft Dynamics 365 Finance",
+        type: "ERP/CRM Enterprise",
+        url: "https://dynamics.microsoft.com/es-es/finance/",
+        targetMarket: "Grandes empresas",
+        licenseCost: "95€ - 210€/usuario/mes",
+        implementationCost: "100.000€ - 1.000.000€",
+        maintenanceCost: "Incluido suscripción",
+        totalCost5Years: "400.000€ - 1.200.000€ (50 usuarios)",
+        marketShare: "25% ERP enterprise",
+        pros: ["Integración Office 365", "Azure", "ERP completo", "Flexible"],
+        cons: ["No especializado banca", "Personalización costosa", "Sin compliance bancario"],
+        comparisonVsCreand: "Dynamics ERP genérico, Creand CRM bancario. Creand superior en análisis financiero.",
+        usedByBanks: ["Back-office algunos bancos"]
       },
       {
         name: "Sopra Banking Software",
@@ -574,93 +448,53 @@ function getDefaultAnalysis(componentsList: string[], hooksList: string[], edgeF
         maintenanceCost: "18-20% anual",
         totalCost5Years: "1.000.000€ - 8.000.000€",
         marketShare: "20% banca europea",
-        pros: ["Fuerte en Francia, Bélgica, Luxemburgo", "Buen compliance europeo", "Módulos modulares"],
-        cons: ["Menos presencia en España", "Interfaz menos moderna", "Ecosistema más limitado"],
-        comparisonVsCreand: "Sopra Banking más enfocado en core. Creand superior en UX y análisis comercial. Ambos fuertes en compliance europeo.",
-        usedByBanks: ["BNP Paribas Fortis", "Crédit Mutuel", "Banque Populaire", "Caisse d'Epargne"]
+        pros: ["Fuerte Francia/Bélgica", "Compliance europeo", "Modular"],
+        cons: ["Menos presencia España", "Interfaz menos moderna"],
+        comparisonVsCreand: "Sopra Banking core, Creand CRM comercial. Creand superior en UX.",
+        usedByBanks: ["BNP Paribas Fortis", "Crédit Mutuel", "Banque Populaire"]
       },
       {
-        name: "Finastra (ex-Misys)",
+        name: "Finastra",
         type: "Core Banking + Treasury",
         url: "https://www.finastra.com/solutions/banking",
-        targetMarket: "Bancos globales, treasury management",
+        targetMarket: "Bancos globales, treasury",
         licenseCost: "300.000€ - 3.000.000€",
         implementationCost: "500.000€ - 5.000.000€",
         maintenanceCost: "20% anual",
         totalCost5Years: "2.000.000€ - 12.000.000€",
-        marketShare: "15% soluciones bancarias globales",
-        pros: ["Muy fuerte en treasury", "APIs modernas", "Cloud-native options"],
-        cons: ["Menos enfocado en CRM comercial", "Complejidad alta", "Precio elevado"],
-        comparisonVsCreand: "Finastra enfocado en treasury y trading. Creand en gestión comercial empresas. Complementarios para banca privada.",
-        usedByBanks: ["Wells Fargo", "JPMorgan (algunos módulos)", "Société Générale", "ANZ"]
+        marketShare: "15% soluciones globales",
+        pros: ["Muy fuerte treasury", "APIs modernas", "Cloud-native"],
+        cons: ["Menos CRM", "Complejidad", "Precio"],
+        comparisonVsCreand: "Finastra treasury/trading, Creand gestión comercial. Complementarios.",
+        usedByBanks: ["Wells Fargo", "Société Générale", "ANZ"]
       },
       {
-        name: "Cecabank/Cecobank Soluciones",
-        type: "Software cooperativas crédito españolas",
-        url: "https://www.cecabank.es/servicios/soluciones-tecnologicas/",
-        targetMarket: "Cajas rurales y cooperativas de crédito España",
-        licenseCost: "Modelo consorcio compartido",
+        name: "Cecabank Soluciones",
+        type: "Software cooperativas España",
+        url: "https://www.cecabank.es/servicios/",
+        targetMarket: "Cajas rurales España",
+        licenseCost: "Modelo consorcio",
         implementationCost: "50.000€ - 200.000€",
-        maintenanceCost: "Cuotas de consorcio",
+        maintenanceCost: "Cuotas consorcio",
         totalCost5Years: "300.000€ - 800.000€",
         marketShare: "70% cajas rurales España",
-        pros: ["Muy adaptado a cooperativas españolas", "Coste compartido", "Cumplimiento Banco de España"],
-        cons: ["Solo para cooperativas", "Innovación lenta", "Sin GIS", "Sin análisis avanzado"],
-        comparisonVsCreand: "Cecabank es consorcio para cooperativas. Creand es más moderno y flexible. Creand superior en analytics y GIS.",
-        usedByBanks: ["Caja Rural de Granada", "Caja Rural de Navarra", "Cajamar (parcialmente)"]
+        pros: ["Adaptado cooperativas", "Coste compartido", "Banco España"],
+        cons: ["Solo cooperativas", "Innovación lenta", "Sin GIS", "Sin analytics"],
+        comparisonVsCreand: "Cecabank consorcio, Creand moderno y flexible. Creand superior en analytics/GIS.",
+        usedByBanks: ["Caja Rural Granada", "Caja Rural Navarra", "Cajamar"]
       }
     ],
     potentialClients: [
-      {
-        sector: "Banca Privada",
-        clientType: "Entidades de banca privada y wealth management",
-        region: "Andorra, Luxemburgo, Suiza, Mónaco",
-        estimatedValue: "120.000€ - 200.000€",
-        implementationTime: "4-6 meses",
-        customizations: ["Integración core bancario", "Multi-divisa avanzado", "Reporting FATCA/CRS", "Análisis de patrimonio familiar"],
-        potentialClients: 35,
-        marketPenetration: "5-8% primer año"
-      },
-      {
-        sector: "Cooperativas de Crédito",
-        clientType: "Cajas rurales y cooperativas de crédito",
-        region: "España (65 entidades activas)",
-        estimatedValue: "60.000€ - 100.000€",
-        implementationTime: "3-5 meses",
-        customizations: ["Gestión de socios", "Productos agrarios", "Integración Cecabank", "Reporting Banco de España"],
-        potentialClients: 45,
-        marketPenetration: "8-12% primer año"
-      },
-      {
-        sector: "Family Offices",
-        clientType: "Single y Multi-Family Offices",
-        region: "España, Portugal, Andorra",
-        estimatedValue: "40.000€ - 80.000€",
-        implementationTime: "2-4 meses",
-        customizations: ["Consolidación multi-entidad", "Reporting personalizado", "Análisis de patrimonio", "Multi-divisa"],
-        potentialClients: 80,
-        marketPenetration: "10-15% primer año"
-      },
-      {
-        sector: "Fintechs y Neobancos",
-        clientType: "Startups financieras con licencia bancaria",
-        region: "España, Portugal, Francia",
-        estimatedValue: "50.000€ - 90.000€",
-        implementationTime: "2-3 meses",
-        customizations: ["APIs personalizadas", "Integración con su core", "White-label", "Escalabilidad cloud"],
-        potentialClients: 30,
-        marketPenetration: "15-20% primer año"
-      },
-      {
-        sector: "Gestoras de Activos",
-        clientType: "SGIICs y gestoras independientes",
-        region: "España, Portugal",
-        estimatedValue: "70.000€ - 120.000€",
-        implementationTime: "3-5 meses",
-        customizations: ["Integración con depositarios", "Reporting CNMV", "Análisis de carteras", "Due diligence"],
-        potentialClients: 40,
-        marketPenetration: "7-10% primer año"
-      }
+      { sector: "Cooperativas de Crédito España", clientType: "Cajas rurales y cooperativas", region: "España (65 entidades)", estimatedValue: "60.000€ - 100.000€", implementationTime: "3-5 meses", customizations: ["Gestión socios", "Productos agrarios", "Reporting BdE"], potentialClients: 65, marketPenetration: "15-20% año 1", salesPriority: 1, conversionProbability: "ALTA (85%)", decisionMakers: ["Director General", "Director TI", "Director Comercial"], salesApproach: "Ciclo venta corto. Demo funcionalidad contable y GIS. Referencia de otras cooperativas." },
+      { sector: "Banca Privada Andorra", clientType: "Bancos privados andorranos", region: "Andorra (5 bancos principales)", estimatedValue: "150.000€ - 250.000€", implementationTime: "4-6 meses", customizations: ["PGC Andorra", "Multi-divisa", "FATCA/CRS"], potentialClients: 5, marketPenetration: "40-60% año 1", salesPriority: 2, conversionProbability: "MUY ALTA (90%)", decisionMakers: ["Consejero Delegado", "Director Banca Privada", "CIO"], salesApproach: "Relaciones directas. Énfasis en compliance Andorra y especialización local." },
+      { sector: "Family Offices España/Portugal", clientType: "Single y Multi-Family Offices", region: "España, Portugal, Andorra", estimatedValue: "40.000€ - 80.000€", implementationTime: "2-4 meses", customizations: ["Consolidación multi-entidad", "Reporting personalizado"], potentialClients: 80, marketPenetration: "10-15% año 1", salesPriority: 3, conversionProbability: "ALTA (75%)", decisionMakers: ["Director Family Office", "CFO", "CIO"], salesApproach: "Networking eventos wealth management. Demo consolidación y análisis patrimonio." },
+      { sector: "Fintechs con Licencia Bancaria", clientType: "Neobancos y startups financieras", region: "España, Portugal, Francia", estimatedValue: "50.000€ - 90.000€", implementationTime: "2-3 meses", customizations: ["APIs", "White-label", "Escalabilidad cloud"], potentialClients: 30, marketPenetration: "20-25% año 1", salesPriority: 4, conversionProbability: "ALTA (70%)", decisionMakers: ["CEO", "CTO", "CPO"], salesApproach: "Eventos fintech. Énfasis en modernidad tecnológica y APIs." },
+      { sector: "Gestoras de Activos", clientType: "SGIICs y gestoras independientes", region: "España, Portugal", estimatedValue: "70.000€ - 120.000€", implementationTime: "3-5 meses", customizations: ["Integración depositarios", "Reporting CNMV", "Due diligence"], potentialClients: 40, marketPenetration: "10-15% año 1", salesPriority: 5, conversionProbability: "MEDIA-ALTA (65%)", decisionMakers: ["Director General", "Director Inversiones", "Compliance"], salesApproach: "Asociaciones gestoras. Demo análisis financiero y compliance." },
+      { sector: "Banca Privada Luxemburgo", clientType: "Bancos privados y wealth managers", region: "Luxemburgo (150+ entidades)", estimatedValue: "120.000€ - 200.000€", implementationTime: "5-7 meses", customizations: ["Multi-jurisdicción", "Luxemburgo GAAP", "CSSF compliance"], potentialClients: 50, marketPenetration: "5-8% año 2", salesPriority: 6, conversionProbability: "MEDIA (55%)", decisionMakers: ["CEO", "Head of Private Banking", "CIO"], salesApproach: "Partnerships consultoras locales. Adaptación regulación luxemburguesa." },
+      { sector: "Bancos Pequeños España", clientType: "Entidades bancarias < 5B€ activos", region: "España (25 entidades)", estimatedValue: "100.000€ - 180.000€", implementationTime: "5-8 meses", customizations: ["Integración core", "Reporting BdE/BCE", "Basel III/IV"], potentialClients: 25, marketPenetration: "8-12% año 2", salesPriority: 7, conversionProbability: "MEDIA (50%)", decisionMakers: ["Consejero Delegado", "Director Comercial", "CIO", "CRO"], salesApproach: "Referencia de cooperativas. Énfasis TCO vs grandes vendors." },
+      { sector: "EAFIs y Agentes Financieros", clientType: "Empresas asesoramiento y agentes", region: "España (200+ registradas)", estimatedValue: "25.000€ - 50.000€", implementationTime: "1-2 meses", customizations: ["CRM básico", "Reporting cliente", "Compliance MiFID II"], potentialClients: 200, marketPenetration: "5-10% año 1", salesPriority: 8, conversionProbability: "ALTA (70%)", decisionMakers: ["Socio Director", "Compliance Officer"], salesApproach: "Marketing digital. Versión SaaS simplificada y económica." },
+      { sector: "Banca Privada Portugal", clientType: "Bancos privados portugueses", region: "Portugal (15 entidades principales)", estimatedValue: "80.000€ - 140.000€", implementationTime: "4-6 meses", customizations: ["Contabilidad portuguesa", "BdP compliance"], potentialClients: 15, marketPenetration: "10-15% año 2", salesPriority: 9, conversionProbability: "MEDIA (55%)", decisionMakers: ["CEO", "Director Comercial", "CIO"], salesApproach: "Partnerships consultoras portuguesas. Proximidad cultural." },
+      { sector: "Entidades de Pago", clientType: "Instituciones de pago y dinero electrónico", region: "España, Portugal", estimatedValue: "35.000€ - 60.000€", implementationTime: "2-3 meses", customizations: ["APIs pago", "Compliance PSD2", "KYC/AML"], potentialClients: 35, marketPenetration: "15-20% año 2", salesPriority: 10, conversionProbability: "MEDIA-ALTA (60%)", decisionMakers: ["CEO", "CTO", "Compliance"], salesApproach: "Eventos payments. Énfasis en compliance y modernidad." }
     ],
     codeStats: {
       totalFiles: (componentsList?.length || 0) + (hooksList?.length || 0) + (pagesList?.length || 0) + (edgeFunctions?.length || 0),
@@ -672,182 +506,283 @@ function getDefaultAnalysis(componentsList: string[], hooksList: string[], edgeF
     },
     marketingHighlights: {
       uniqueSellingPoints: [
-        "Único CRM bancario con contabilidad PGC Andorra/España integrada nativa",
-        "GIS enterprise para 20.000+ empresas sin degradación de rendimiento",
-        "Análisis financiero avanzado con IA (DuPont, Z-Score, EBITDA, Cash Flow)",
-        "Multi-rol con benchmarking europeo incorporado",
-        "Implementación en 3-6 meses vs 18-36 meses de competidores",
-        "1/5 del coste total de propiedad vs Salesforce/SAP"
+        "Único CRM bancario con contabilidad PGC Andorra/España integrada",
+        "GIS enterprise para 20.000+ empresas sin degradación",
+        "Análisis financiero con IA (DuPont, Z-Score, EBITDA)",
+        "Implementación 3-6 meses vs 18-36 meses competencia",
+        "1/5 del coste total vs Salesforce/SAP"
       ],
       competitiveAdvantages: [
-        "Especialización en normativa bancaria Andorra/España/UE (APDA, Basel III/IV, IFRS 9, MiFID II)",
-        "Arquitectura serverless moderna (React + Supabase) vs legacy de competidores",
-        "IA integrada para import PDF contable y planes de acción comerciales",
-        "Código propietario = personalización ilimitada sin vendor lock-in",
-        "Realtime nativo para colaboración multi-usuario",
-        "Multi-idioma (es, ca, en, fr) desde origen"
+        "Especialización normativa Andorra/España/UE",
+        "Arquitectura serverless moderna vs legacy",
+        "IA integrada para PDF y planes acción",
+        "Código propietario sin vendor lock-in",
+        "Realtime y multi-idioma nativo"
       ],
       targetAudience: [
-        "Directores de Tecnología (CTO) de entidades bancarias",
-        "Directores Comerciales bancarios",
-        "Responsables de Transformación Digital",
-        "Directores de Operaciones de Family Offices",
-        "CTOs de Fintechs en expansión"
+        "Directores de Banca Empresas/Negocio",
+        "Directores Comerciales Red",
+        "CIO/CTO que modernizan stack",
+        "Directores de Riesgos (CRO)"
       ],
-      valueProposition: "CRM bancario especializado que reduce costes operativos un 40%, mejora productividad comercial un 25% y se implementa en 1/6 del tiempo de alternativas enterprise, con propiedad total del código y sin vendor lock-in.",
+      valueProposition: "CRM bancario especializado que reduce costes operativos 40%, mejora productividad comercial 25%, con propiedad total del código y sin vendor lock-in.",
       keyBenefits: [
-        { benefit: "Reducción TCO 60-70%", description: "Versus Salesforce/SAP en 5 años", impact: "Ahorro 400.000€-2.000.000€" },
-        { benefit: "Time-to-value 3-6 meses", description: "Implementación ágil vs 18-36 meses enterprise", impact: "ROI desde primer trimestre" },
-        { benefit: "Productividad comercial +25%", description: "Dashboards, alertas y automatización", impact: "Equivale a 2-3 FTEs" },
-        { benefit: "Compliance built-in", description: "APDA, Basel III/IV, IFRS 9, MiFID II", impact: "Reduce riesgo regulatorio" },
-        { benefit: "Zero vendor lock-in", description: "Código propietario, arquitectura estándar", impact: "Libertad estratégica total" }
+        { benefit: "Productividad +40%", description: "Automatiza informes y centraliza gestión comercial", impact: "Ahorro 4-6 horas semanales por gestor" },
+        { benefit: "Calidad de Riesgo", description: "Análisis financiero avanzado con IA", impact: "Reducción morosidad potencial" },
+        { benefit: "Venta Cruzada +15%", description: "Identifica necesidades financieras no cubiertas", impact: "Aumento productos por cliente" }
       ],
       testimonialPotential: [
-        "Director Comercial: 'Visibilidad total de cartera que antes era imposible'",
-        "CFO: 'Consolidación contable en horas en lugar de días'",
-        "Gestor: 'Dashboard personal que me muestra exactamente dónde enfocarme'",
-        "CTO: 'Implementación en 4 meses cuando otros presupuestaban 18'"
+        "Hemos reducido el tiempo de análisis de cartera en un 60%",
+        "La integración contable nos ha ahorrado contratar un analista adicional",
+        "El GIS nos permite planificar visitas de forma mucho más eficiente"
       ],
       industryTrends: [
-        "Digitalización acelerada post-COVID en banca tradicional",
-        "Presión regulatoria creciente (DORA, ESG reporting)",
-        "Consolidación sector cooperativas de crédito",
-        "Auge banca privada en jurisdicciones como Andorra",
-        "Demanda de soluciones cloud-native vs legacy on-premise",
-        "IA y analytics como diferenciador competitivo"
+        "Hiper-personalización del servicio bancario a empresas",
+        "Digitalización de la red comercial (gestor aumentado)",
+        "Cumplimiento normativo automatizado (RegTech)",
+        "Open Banking y APIs bancarias",
+        "IA para análisis de riesgo y oportunidad"
       ]
     },
     pricingStrategy: {
-      recommendedModel: "MODELO HÍBRIDO: Licencia inicial + Suscripción mantenimiento. Justificación: Captura valor upfront para cubrir personalización, suscripción asegura ingresos recurrentes y alineación de intereses a largo plazo. Es el modelo que mejor equilibra cash flow inicial con predictibilidad de ingresos.",
+      recommendedModel: "MODELO HÍBRIDO RECOMENDADO: Licencia inicial (80.000€-200.000€) + Mantenimiento anual (15-20%). Para entidades pequeñas y fintechs, ofrecer también SaaS desde 2.500€/mes. Esto maximiza ingresos iniciales de grandes clientes mientras captura mercado SMB con recurrencia.",
       oneTimeLicense: {
-        price: "120.000€ - 200.000€ según tamaño de entidad",
-        pros: [
-          "Cash flow inicial fuerte",
-          "Cliente percibe propiedad",
-          "Simplicidad contractual",
-          "Menor coste total para cliente a largo plazo"
-        ],
-        cons: [
-          "Requiere capital inicial del cliente",
-          "Ingresos no recurrentes",
-          "Riesgo de no renovación mantenimiento"
-        ],
-        whenToUse: "Cooperativas de crédito, entidades conservadoras que prefieren CAPEX vs OPEX, clientes que quieren propiedad total."
+        price: "80.000€ - 200.000€ según módulos y personalización",
+        pros: ["Ingresos inmediatos significativos", "Cliente percibe propiedad", "Sin dependencia mensual", "Mejor para grandes entidades"],
+        cons: ["Menor recurrencia", "Riesgo churn post-venta", "Requiere capital inicial cliente"],
+        whenToUse: "Bancos y cooperativas que prefieren CAPEX sobre OPEX. Entidades con presupuestos anuales de proyecto."
       },
       subscriptionModel: {
-        pricePerUser: "85€ - 150€/usuario/mes según tier",
+        pricePerUser: "75€ - 150€/usuario/mes según tier",
         tiers: [
-          { name: "Starter", price: "2.500€/mes (hasta 15 usuarios)", features: ["CRM básico", "Dashboard estándar", "Visitas", "Soporte email"] },
-          { name: "Professional", price: "5.000€/mes (hasta 40 usuarios)", features: ["Todo Starter", "Contabilidad completa", "GIS", "Objetivos", "Soporte prioritario"] },
-          { name: "Enterprise", price: "8.000€+/mes (ilimitado)", features: ["Todo Professional", "Consolidación", "APIs", "Personalización", "Soporte 24/7", "SLA garantizado"] }
+          { name: "Starter", price: "2.500€/mes (hasta 10 usuarios)", features: ["CRM básico", "Dashboard", "Visitas", "Soporte email"] },
+          { name: "Professional", price: "5.000€/mes (hasta 30 usuarios)", features: ["Todo Starter", "Contabilidad", "GIS", "Alertas", "Soporte prioritario"] },
+          { name: "Enterprise", price: "10.000€+/mes (ilimitado)", features: ["Todo Professional", "Personalización", "API", "SLA 99.9%", "Soporte dedicado"] }
         ],
-        pros: [
-          "Ingresos recurrentes predecibles",
-          "Menor barrera de entrada para cliente",
-          "Escalable con crecimiento del cliente",
-          "Alineación de intereses continua"
-        ],
-        cons: [
-          "Más tiempo para alcanzar break-even",
-          "Cliente puede cancelar",
-          "Requiere infraestructura de billing"
-        ]
+        pros: ["Recurrencia mensual predecible", "Menor barrera entrada", "Escalabilidad natural", "Retención por suscripción"],
+        cons: ["Ingresos iniciales menores", "Requiere infraestructura SaaS", "Mayor soporte continuo"]
       },
       maintenanceContract: {
-        percentage: "18-22% del valor de licencia anual",
-        includes: [
-          "Actualizaciones de seguridad",
-          "Nuevas funcionalidades menores",
-          "Corrección de bugs",
-          "Soporte técnico (SLA según tier)",
-          "Actualizaciones normativas (Basel, IFRS)"
-        ],
-        optional: [
-          "Formación presencial: 2.000-5.000€/día",
-          "Consultoría de negocio: 1.500€/día",
-          "Desarrollos a medida: 95€/hora",
-          "Integración con core bancario: proyecto específico",
-          "Migración de datos: según volumen"
-        ]
+        percentage: "15-20% del valor de licencia anual",
+        includes: ["Actualizaciones de producto", "Corrección de bugs", "Soporte técnico 8x5", "Actualizaciones seguridad", "Documentación actualizada"],
+        optional: ["Soporte 24x7 (+5%)", "Formación anual (+3.000€)", "Desarrollos a medida (90€/hora)", "Consultoría estratégica (150€/hora)"]
       },
       competitorPricing: [
         { competitor: "Salesforce FSC", model: "Suscripción", priceRange: "150-300€/usuario/mes + implementación" },
-        { competitor: "Microsoft Dynamics 365", model: "Suscripción", priceRange: "95-210€/usuario/mes + implementación" },
-        { competitor: "SAP S/4HANA", model: "Licencia perpetua + mantenimiento", priceRange: "3.000-8.000€/usuario + 22% anual" },
-        { competitor: "Temenos", model: "Licencia + mantenimiento", priceRange: "500K-5M€ + 22% anual" },
-        { competitor: "Backbase", model: "Suscripción anual", priceRange: "200K-1M€/año" }
+        { competitor: "SAP Banking", model: "Licencia + mantenimiento", priceRange: "3.000-8.000€/usuario + 22% anual" },
+        { competitor: "Dynamics 365", model: "Suscripción", priceRange: "95-210€/usuario/mes" },
+        { competitor: "Backbase", model: "Suscripción enterprise", priceRange: "200K-1M€/año" },
+        { competitor: "Sopra Banking", model: "Licencia + mantenimiento", priceRange: "200K-2M€ + 18-20% anual" }
       ],
-      recommendation: "ESTRATEGIA RECOMENDADA POR SEGMENTO:\n\n1. COOPERATIVAS DE CRÉDITO: Licencia perpetua 80-120K€ + mantenimiento 18% anual. Razón: Prefieren CAPEX, ciclos presupuestarios anuales, decisiones lentas.\n\n2. BANCA PRIVADA: Modelo híbrido 100-150K€ setup + 3-5K€/mes. Razón: Valoran flexibilidad, pueden justificar OPEX, esperan soporte premium.\n\n3. FAMILY OFFICES: Suscripción pura Professional tier. Razón: Equipos pequeños, agilidad en decisiones, prefieren probar antes de comprometer.\n\n4. FINTECHS: Suscripción escalonada desde Starter. Razón: Cash flow limitado inicial, crecimiento rápido, necesitan escalar.\n\nCONCLUSIÓN: Ofrecer ambos modelos y dejar elegir al cliente. El modelo híbrido (licencia + mantenimiento) genera mejor cash flow inicial y es preferido por 60% de entidades bancarias tradicionales según estudios de mercado."
+      recommendation: "ESTRATEGIA RECOMENDADA:\n1. Para BANCA PRIVADA Y COOPERATIVAS: Licencia perpetua 120-180K€ + 18% mantenimiento anual.\n2. Para FAMILY OFFICES Y EAFIS: SaaS Professional 5.000€/mes.\n3. Para FINTECHS: SaaS con tier Enterprise personalizado.\n4. MANTENIMIENTO siempre obligatorio primer año, opcional después (95% lo renuevan).\n5. DESCUENTOS: 10% pago anual adelantado, 15% multi-año (3 años).\n6. UPSELLING: Formación, consultoría, desarrollos a medida como servicios adicionales."
     },
     feasibilityAnalysis: {
       spanishMarket: {
-        viability: "ALTA. España tiene 65 cooperativas de crédito, 15 bancos medianos y 200+ family offices que son target ideal. El mercado está dominado por soluciones legacy caras o genéricas sin especialización bancaria.",
-        barriers: [
-          "Ciclos de venta largos (6-18 meses) en banca tradicional",
-          "Departamentos de compras y compliance exigentes",
-          "Necesidad de referencias en sector bancario español",
-          "Competencia con incumbentes (Cecabank para cooperativas)",
-          "Regulación Banco de España sobre proveedores tecnológicos"
-        ],
-        opportunities: [
-          "Consolidación sector cooperativas crea necesidad de modernización",
-          "Presión regulatoria DORA impulsa actualización tecnológica",
-          "Insatisfacción con soluciones legacy caras y lentas",
-          "Demanda de especialización vs productos genéricos",
-          "Fintechs en crecimiento necesitan soluciones ágiles",
-          "ESG reporting crea necesidad de nuevas capacidades"
-        ],
-        competitors: [
-          "Cecabank/Cecobank (cooperativas) - legacy, consorcio",
-          "Salesforce FSC (grandes bancos) - muy caro",
-          "Dynamics 365 (algunos bancos) - genérico",
-          "Soluciones propietarias internas - costosas de mantener"
-        ],
-        marketSize: "TAM España: 120M€/año en software CRM/gestión comercial bancaria. SAM (segmento accesible): 25-35M€/año considerando cooperativas, banca privada y family offices.",
-        recommendation: "ENTRADA VIA COOPERATIVAS: Menor barrera de entrada, decisiones más ágiles que grandes bancos, necesidad clara de modernización, 65 targets identificables. Segunda fase: banca privada y family offices. Tercera fase: partnerships con consultoras financieras."
+        viability: "ALTA - Mercado fragmentado con oportunidades claras en cooperativas y banca pequeña/mediana",
+        barriers: ["Ciclos venta largos en banca tradicional", "Requisitos compliance elevados", "Competencia vendors establecidos", "Resistencia al cambio en IT bancario"],
+        opportunities: ["65 cooperativas sin CRM moderno", "Transformación digital acelerada post-COVID", "Fatiga de vendor lock-in con grandes proveedores", "Regulación DORA requiere modernización"],
+        competitors: ["Salesforce (muy caro)", "Dynamics (no especializado)", "Cecabank (legacy)", "Desarrollos internos obsoletos"],
+        marketSize: "TAM España: 180M€/año en software CRM bancario. SAM (cooperativas + banca pequeña): 45M€/año",
+        recommendation: "Entrada por cooperativas de crédito (ciclo venta corto, precio accesible). Usar referencias para escalar a banca pequeña/mediana."
       },
       europeanMarket: {
-        viability: "MEDIA-ALTA. Oportunidad significativa en jurisdicciones similares a Andorra: Luxemburgo (banca privada), Suiza (wealth management), Mónaco, Liechtenstein. También países con cooperativas de crédito fuertes: Alemania (Volksbanken), Francia (Crédit Agricole regional), Italia (BCC).",
-        targetCountries: [
-          "Luxemburgo - 140 bancos, hub de banca privada europea",
-          "Suiza - wealth management, family offices",
-          "Francia - cooperativas regionales Crédit Agricole",
-          "Alemania - 800+ Volksbanken y Raiffeisenbanken",
-          "Italia - 250+ Banche di Credito Cooperativo",
-          "Portugal - mercado natural por proximidad e idioma"
-        ],
-        regulations: [
-          "GDPR para datos personales en toda la UE",
-          "DORA (Digital Operational Resilience Act) desde 2025",
-          "MiFID II para servicios de inversión",
-          "Basel III/IV para requisitos de capital",
-          "Regulaciones locales de cada supervisor bancario"
-        ],
-        opportunities: [
-          "Multi-idioma ya implementado (es, ca, en, fr)",
-          "Arquitectura cloud-native facilita expansión",
-          "Contabilidad adaptable a IFRS y planes locales",
-          "Partners locales pueden acelerar entrada"
-        ],
-        recommendation: "ESTRATEGIA ESCALONADA: 1) Consolidar Andorra/España (Año 1-2), 2) Luxemburgo y Portugal (Año 2-3), 3) Francia cooperativas regionales (Año 3-4), 4) Alemania/Italia vía partnerships locales (Año 4+). Cada país requiere adaptación contable y regulatoria específica."
+        viability: "MEDIA-ALTA - Luxemburgo y Portugal como mercados naturales de expansión",
+        targetCountries: ["Luxemburgo (centro wealth management)", "Portugal (proximidad cultural)", "Francia (cooperativas agrícolas)", "Bélgica (banca privada)"],
+        regulations: ["GDPR", "DORA", "PSD2", "MiFID II", "Basel III/IV", "AML 6th Directive"],
+        opportunities: ["Open Banking crea necesidad modernización", "Pocos competidores especializados", "Demanda de soluciones europeas vs americanas"],
+        recommendation: "Fase 2 (año 2-3): Luxemburgo con partnership local. Portugal con equipo propio pequeño. Adaptar contabilidad local."
       },
       implementationRisks: [
-        { risk: "Dependencia de equipo técnico reducido", probability: "Media", mitigation: "Documentación exhaustiva, arquitectura modular, plan de formación de backup" },
-        { risk: "Escalabilidad para grandes bancos", probability: "Media-Baja", mitigation: "Supabase escala bien, pero preparar plan para PostgreSQL dedicado si necesario" },
-        { risk: "Ciclos de venta largos agotan recursos", probability: "Alta", mitigation: "Diversificar pipeline, foco en segmentos con ciclos más cortos (fintechs, FOs)" },
-        { risk: "Competencia de grandes vendors con descuentos agresivos", probability: "Media", mitigation: "Competir en especialización y TCO, no en precio bruto" },
-        { risk: "Requisitos de certificación/compliance", probability: "Media", mitigation: "Trabajar con consultoras de compliance, obtener certificaciones ISO 27001" }
+        { risk: "Rechazo por equipos IT internos", probability: "Media", mitigation: "Involucrar IT desde fase de demo. Ofrecer formación y documentación completa." },
+        { risk: "Ciclo venta muy largo (>12 meses)", probability: "Media-Alta", mitigation: "Pilotos gratuitos 3 meses. Referencias de primeros clientes." },
+        { risk: "Cambio de prioridades del banco", probability: "Media", mitigation: "Contratos con cláusulas de compromiso. Entregables por fases." },
+        { risk: "Competencia agresiva de Salesforce", probability: "Alta", mitigation: "Posicionamiento nicho. Enfatizar especialización y TCO." },
+        { risk: "Problemas de integración con core", probability: "Media", mitigation: "APIs bien documentadas. Partnerships con integradores core." }
       ],
       successFactors: [
-        "Obtener 2-3 referencias reputadas en primeros 12 meses",
+        "Referencias de primeros clientes satisfechos",
+        "Equipo comercial con experiencia en banca",
         "Partnerships con consultoras financieras locales",
-        "Certificación ISO 27001 y auditoría de seguridad externa",
-        "Equipo comercial con experiencia en venta consultiva B2B banca",
-        "Roadmap claro de producto alineado con tendencias (IA, ESG, DORA)",
-        "Modelo de pricing competitivo y flexible",
-        "Soporte técnico excepcional para primeros clientes"
+        "Certificación ISO 27001 para credibilidad",
+        "Documentación y formación de alta calidad"
       ],
-      timeToMarket: "6-9 meses para versión comercial lista para venta. Incluye: pulido UX, documentación comercial, demo environment, materiales de ventas, primeros contactos con prospects. Primeros contratos esperados en meses 9-15."
+      timeToMarket: "6-9 meses para primeros clientes piloto. 12-18 meses para tracción comercial significativa. 24-36 meses para break-even."
+    },
+    iso27001Compliance: {
+      currentMaturity: 25,
+      compliantControls: [
+        { control: "A.9 Control de Acceso", status: "Implementado", evidence: "RLS en Supabase, RBAC multi-rol" },
+        { control: "A.12.2 Protección contra malware", status: "Implementado", evidence: "Sanitización XSS con DOMPurify" },
+        { control: "A.12.4 Logging y monitorización", status: "Implementado", evidence: "Tabla audit_logs completa" },
+        { control: "A.13.1 Seguridad de red", status: "Implementado", evidence: "TLS 1.3, CORS configurado" },
+        { control: "A.14.1 Requisitos seguridad sistemas", status: "Parcial", evidence: "Edge Functions con JWT" },
+        { control: "A.18.1.4 Privacidad datos personales", status: "Parcial", evidence: "RLS, pero falta política formal GDPR" }
+      ],
+      partialControls: [
+        { control: "A.5.1 Políticas de seguridad", gap: "Documentación formal no existe", action: "Crear política de seguridad de la información" },
+        { control: "A.6.1 Organización interna", gap: "Roles de seguridad no definidos formalmente", action: "Definir CISO, DPO y responsabilidades" },
+        { control: "A.7.2 Concienciación", gap: "No hay programa de formación", action: "Implementar formación anual obligatoria" },
+        { control: "A.8.1 Inventario de activos", gap: "No hay inventario formal", action: "Crear y mantener inventario de activos" },
+        { control: "A.12.1 Procedimientos operativos", gap: "Procedimientos no documentados", action: "Documentar procedimientos operativos" }
+      ],
+      missingControls: [
+        { control: "A.4 Contexto de la organización", priority: "Crítica", effort: "2 semanas", timeline: "Mes 1" },
+        { control: "A.5.2 Política de seguridad", priority: "Crítica", effort: "3 semanas", timeline: "Mes 1-2" },
+        { control: "A.6.1.2 Segregación de funciones", priority: "Alta", effort: "2 semanas", timeline: "Mes 2" },
+        { control: "A.6.1.5 Gestión de proyectos", priority: "Media", effort: "1 semana", timeline: "Mes 3" },
+        { control: "A.7.1 Seguridad en RRHH", priority: "Alta", effort: "2 semanas", timeline: "Mes 2-3" },
+        { control: "A.8.2 Clasificación información", priority: "Alta", effort: "3 semanas", timeline: "Mes 2-3" },
+        { control: "A.10 Criptografía", priority: "Alta", effort: "2 semanas", timeline: "Mes 3" },
+        { control: "A.11 Seguridad física", priority: "Media", effort: "2 semanas", timeline: "Mes 4" },
+        { control: "A.15 Relaciones con proveedores", priority: "Alta", effort: "4 semanas", timeline: "Mes 3-4" },
+        { control: "A.16 Gestión de incidentes", priority: "Crítica", effort: "3 semanas", timeline: "Mes 2" },
+        { control: "A.17 Continuidad de negocio", priority: "Crítica", effort: "4 semanas", timeline: "Mes 4-5" },
+        { control: "A.18 Cumplimiento legal", priority: "Crítica", effort: "3 semanas", timeline: "Mes 1-2" }
+      ],
+      implementationPlan: [
+        { phase: "Fase 1: Fundamentos (Meses 1-3)", duration: "3 meses", activities: ["Definir alcance SGSI", "Política de seguridad", "Análisis de riesgos inicial", "Inventario de activos", "Definir roles (CISO, DPO)"], cost: "15.000€ - 25.000€" },
+        { phase: "Fase 2: Controles Críticos (Meses 4-6)", duration: "3 meses", activities: ["Procedimientos operativos", "Gestión de incidentes", "Continuidad de negocio", "Gestión de proveedores", "Formación inicial"], cost: "20.000€ - 35.000€" },
+        { phase: "Fase 3: Controles Adicionales (Meses 7-9)", duration: "3 meses", activities: ["Criptografía", "Seguridad física", "Gestión de cambios", "Revisión de accesos", "Testing de controles"], cost: "15.000€ - 25.000€" },
+        { phase: "Fase 4: Auditoría y Certificación (Meses 10-12)", duration: "3 meses", activities: ["Auditoría interna", "Corrección de no conformidades", "Pre-auditoría externa", "Auditoría de certificación", "Obtención certificado"], cost: "20.000€ - 35.000€" }
+      ],
+      certificationTimeline: "12-18 meses para certificación completa ISO 27001:2022",
+      estimatedCost: "70.000€ - 120.000€ total (consultoría + auditoría + implementación)",
+      requiredDocuments: [
+        "Política de Seguridad de la Información",
+        "Alcance del SGSI",
+        "Metodología de Análisis de Riesgos",
+        "Declaración de Aplicabilidad (SOA)",
+        "Plan de Tratamiento de Riesgos",
+        "Procedimientos Operativos de Seguridad",
+        "Plan de Continuidad de Negocio",
+        "Procedimiento de Gestión de Incidentes",
+        "Política de Control de Accesos",
+        "Inventario de Activos",
+        "Política de Criptografía",
+        "Acuerdos con Proveedores",
+        "Plan de Formación y Concienciación",
+        "Registros de Auditoría Interna",
+        "Actas de Revisión por Dirección"
+      ]
+    },
+    otherRegulations: [
+      { name: "GDPR / RGPD (UE)", jurisdiction: "Unión Europea", description: "Reglamento General de Protección de Datos. Obligatorio para tratamiento de datos personales de ciudadanos UE.", currentCompliance: "Parcial (60%)", requiredActions: ["Nombrar DPO formalmente", "Documentar bases legales tratamiento", "Implementar ejercicio derechos ARCO", "Registro de actividades de tratamiento", "Evaluaciones de impacto (DPIA)", "Contratos con encargados de tratamiento"], priority: "CRÍTICA" },
+      { name: "LOPDGDD (España)", jurisdiction: "España", description: "Ley Orgánica de Protección de Datos y Garantía de Derechos Digitales. Adapta GDPR a España.", currentCompliance: "Parcial (55%)", requiredActions: ["Adaptar políticas a LOPDGDD específica", "Inscripción ficheros AEPD si aplica", "Formación específica empleados España"], priority: "CRÍTICA" },
+      { name: "APDA (Andorra)", jurisdiction: "Andorra", description: "Llei 29/2021 de Protecció de Dades Personals. Normativa andorrana equivalente a GDPR.", currentCompliance: "Parcial (65%)", requiredActions: ["Revisión específica requisitos APDA", "Adaptación a autoridad andorrana", "Contratos transferencias internacionales"], priority: "ALTA" },
+      { name: "DORA (UE)", jurisdiction: "Unión Europea", description: "Digital Operational Resilience Act. Obligatorio para entidades financieras desde enero 2025.", currentCompliance: "Bajo (30%)", requiredActions: ["Evaluación resiliencia digital", "Gestión riesgo TIC terceros", "Pruebas de resiliencia operativa", "Notificación de incidentes", "Compartición de información amenazas"], priority: "CRÍTICA" },
+      { name: "PSD2 (UE)", jurisdiction: "Unión Europea", description: "Directiva de Servicios de Pago. Aplica si hay servicios de pago o acceso a cuentas.", currentCompliance: "Parcial (50%)", requiredActions: ["Autenticación reforzada (SCA)", "APIs de acceso a cuentas", "Seguridad de las comunicaciones"], priority: "ALTA" },
+      { name: "MiFID II (UE)", jurisdiction: "Unión Europea", description: "Directiva sobre Mercados de Instrumentos Financieros. Aplica a asesoramiento de inversiones.", currentCompliance: "Parcial (45%)", requiredActions: ["Registro de comunicaciones", "Best execution", "Conflictos de interés", "Incentivos y transparencia"], priority: "ALTA" },
+      { name: "Basel III/IV (Global)", jurisdiction: "Global (BIS)", description: "Estándares de capital y liquidez bancaria. Requisitos de reporting.", currentCompliance: "Parcial (40%)", requiredActions: ["Reporting ratios capital", "Cálculo RWA", "Reporting liquidez (LCR, NSFR)", "Stress testing"], priority: "ALTA" },
+      { name: "IFRS 9 (Global)", jurisdiction: "Global (IASB)", description: "Norma contable para instrumentos financieros. Modelo de pérdidas esperadas.", currentCompliance: "Implementado (80%)", requiredActions: ["Staging de créditos", "Cálculo ECL", "Reporting deterioro"], priority: "MEDIA" },
+      { name: "NIS2 (UE)", jurisdiction: "Unión Europea", description: "Directiva de Seguridad de Redes. Aplica a servicios esenciales incluyendo banca.", currentCompliance: "Bajo (25%)", requiredActions: ["Medidas de gestión de riesgos", "Notificación de incidentes significativos", "Seguridad cadena de suministro", "Formación ciberseguridad"], priority: "ALTA" },
+      { name: "AML 6th Directive (UE)", jurisdiction: "Unión Europea", description: "Directiva Anti-Blanqueo. Obligaciones KYC/AML para entidades financieras.", currentCompliance: "Parcial (50%)", requiredActions: ["Procedimientos KYC reforzados", "Monitorización transacciones", "Reporting operaciones sospechosas", "PEP screening"], priority: "CRÍTICA" }
+    ],
+    salesStrategy: {
+      phases: [
+        { phase: "Fase 1: Lanzamiento y Primeros Clientes (Meses 1-6)", duration: "6 meses", objectives: ["3-5 clientes piloto en Andorra y cooperativas España", "Validar producto en entorno real", "Generar casos de éxito documentados"], activities: ["Contacto directo con bancos andorranos", "Demos personalizadas a cooperativas", "Pilotos gratuitos 3 meses", "Ajustes de producto según feedback"], kpis: ["3+ clientes firmados", "NPS > 8", "0 bugs críticos en producción"] },
+        { phase: "Fase 2: Escalado España (Meses 7-18)", duration: "12 meses", objectives: ["15-20 clientes en España", "Equipo comercial de 3 personas", "Partnerships con 2 consultoras"], activities: ["Contratación equipo comercial", "Programa de partners", "Marketing de contenidos y eventos", "Optimización proceso de venta"], kpis: ["15+ clientes activos", "MRR > 50K€", "Tasa conversión > 20%"] },
+        { phase: "Fase 3: Expansión Europea (Meses 19-36)", duration: "18 meses", objectives: ["Entrada en Luxemburgo y Portugal", "30+ clientes totales", "Break-even operativo"], activities: ["Oficina o partner en Luxemburgo", "Adaptación regulatoria local", "Equipo comercial expandido", "Certificación ISO 27001"], kpis: ["30+ clientes", "ARR > 1.5M€", "Margen bruto > 65%"] }
+      ],
+      prioritizedClients: [
+        { rank: 1, name: "Crèdit Andorrà", sector: "Banca Privada Andorra", conversionProbability: "95%", estimatedValue: "180.000€", approach: "Relación directa, demo ejecutiva", timeline: "3 meses" },
+        { rank: 2, name: "Andbank", sector: "Banca Privada Andorra", conversionProbability: "90%", estimatedValue: "160.000€", approach: "Referencia Crèdit Andorrà", timeline: "4 meses" },
+        { rank: 3, name: "MoraBanc", sector: "Banca Privada Andorra", conversionProbability: "85%", estimatedValue: "150.000€", approach: "Demo especializada", timeline: "5 meses" },
+        { rank: 4, name: "Cajamar (Grupo Cooperativo)", sector: "Cooperativas España", conversionProbability: "80%", estimatedValue: "120.000€", approach: "Referencia otras cooperativas", timeline: "6 meses" },
+        { rank: 5, name: "Caja Rural de Granada", sector: "Cooperativas España", conversionProbability: "80%", estimatedValue: "70.000€", approach: "Demo GIS y contabilidad", timeline: "4 meses" },
+        { rank: 6, name: "Caja Rural de Navarra", sector: "Cooperativas España", conversionProbability: "75%", estimatedValue: "65.000€", approach: "Énfasis en modernización", timeline: "5 meses" },
+        { rank: 7, name: "Vall Banc (Andorra)", sector: "Banca Privada Andorra", conversionProbability: "75%", estimatedValue: "120.000€", approach: "Demo compliance Andorra", timeline: "6 meses" },
+        { rank: 8, name: "Caixa Ontinyent", sector: "Cajas Ahorros España", conversionProbability: "70%", estimatedValue: "55.000€", approach: "Alternativa a Cecabank", timeline: "5 meses" },
+        { rank: 9, name: "Colonya Caixa Pollença", sector: "Cajas Ahorros España", conversionProbability: "70%", estimatedValue: "50.000€", approach: "Énfasis en coste", timeline: "5 meses" },
+        { rank: 10, name: "Arquia Banca", sector: "Banca Profesionales", conversionProbability: "65%", estimatedValue: "90.000€", approach: "Segmento profesionales", timeline: "7 meses" },
+        { rank: 11, name: "EBN Banco", sector: "Banca Especializada", conversionProbability: "60%", estimatedValue: "85.000€", approach: "Demo análisis financiero", timeline: "8 meses" },
+        { rank: 12, name: "Renta 4 Banco", sector: "Banca Inversión", conversionProbability: "55%", estimatedValue: "100.000€", approach: "Integración con trading", timeline: "9 meses" },
+        { rank: 13, name: "Evo Banco", sector: "Neobanco", conversionProbability: "55%", estimatedValue: "75.000€", approach: "APIs y modernidad", timeline: "6 meses" },
+        { rank: 14, name: "Openbank (Santander)", sector: "Neobanco", conversionProbability: "40%", estimatedValue: "150.000€", approach: "Partnership nivel grupo", timeline: "12 meses" },
+        { rank: 15, name: "N26 España", sector: "Neobanco", conversionProbability: "35%", estimatedValue: "80.000€", approach: "APIs y escalabilidad", timeline: "10 meses" }
+      ],
+      channelStrategy: [
+        { channel: "Venta Directa", focus: "Clientes enterprise (>50K€)", resources: "2-3 comerciales senior banca" },
+        { channel: "Partners/Consultoras", focus: "Acceso a clientes establecidos", resources: "Programa de partners con 2-3 consultoras" },
+        { channel: "Marketing Digital", focus: "Generación leads SMB", resources: "Content marketing, SEO, LinkedIn" },
+        { channel: "Eventos", focus: "Visibilidad y networking", resources: "Presencia en 4-6 eventos/año" }
+      ],
+      competitivePositioning: "Posicionamiento como alternativa especializada a Salesforce FSC: misma funcionalidad CRM bancario a 1/5 del precio, con contabilidad PGC y GIS que FSC no tiene. Énfasis en especialización local (Andorra/España) vs productos genéricos globales."
+    },
+    temenosIntegration: {
+      overview: "Temenos es el líder mundial en core banking (40% cuota). La integración con Creand CRM permitiría acceder al 40% del mercado que ya usa Temenos, ofreciendo un CRM comercial avanzado que complementa su core.",
+      integrationMethods: [
+        { method: "Temenos Transact APIs (REST)", description: "APIs RESTful para acceso a datos de clientes, cuentas, transacciones y productos.", complexity: "Media", timeline: "4-6 semanas", cost: "15.000€ - 25.000€" },
+        { method: "Temenos Integration Framework (TIF)", description: "Framework de integración propietario para eventos y sincronización bidireccional.", complexity: "Alta", timeline: "8-12 semanas", cost: "35.000€ - 50.000€" },
+        { method: "Temenos Sandbox/Marketplace", description: "Desarrollo como partner Temenos para distribución en su marketplace.", complexity: "Media-Alta", timeline: "3-6 meses", cost: "50.000€ - 80.000€ (incluye certificación)" },
+        { method: "Database Replication (CDC)", description: "Change Data Capture para replicación de datos en tiempo real.", complexity: "Alta", timeline: "6-10 semanas", cost: "25.000€ - 40.000€" },
+        { method: "ETL Batch Processing", description: "Procesos batch nocturnos para sincronización de datos.", complexity: "Baja", timeline: "2-4 semanas", cost: "8.000€ - 15.000€" }
+      ],
+      apiConnectors: [
+        { name: "Party API", purpose: "Datos de clientes (personas físicas y jurídicas)", protocol: "REST/JSON" },
+        { name: "Account API", purpose: "Información de cuentas y saldos", protocol: "REST/JSON" },
+        { name: "Transaction API", purpose: "Movimientos y transacciones", protocol: "REST/JSON" },
+        { name: "Product API", purpose: "Catálogo de productos contratados", protocol: "REST/JSON" },
+        { name: "Event Hub", purpose: "Eventos en tiempo real", protocol: "Webhook/Kafka" }
+      ],
+      dataFlows: [
+        { flow: "Clientes y empresas", direction: "Temenos → Creand", frequency: "Tiempo real / 15 min" },
+        { flow: "Productos contratados", direction: "Temenos → Creand", frequency: "Diario / Tiempo real" },
+        { flow: "Saldos y posiciones", direction: "Temenos → Creand", frequency: "Tiempo real / Horario" },
+        { flow: "Visitas y oportunidades", direction: "Creand → Temenos", frequency: "Tiempo real" },
+        { flow: "KYC/Compliance", direction: "Bidireccional", frequency: "Eventos" }
+      ],
+      implementationSteps: [
+        { step: 1, description: "Análisis de requisitos y mapping de datos", duration: "2 semanas", deliverables: ["Documento de integración", "Mapping de campos", "Casos de uso"] },
+        { step: 2, description: "Configuración entorno sandbox Temenos", duration: "1 semana", deliverables: ["Acceso sandbox", "Credenciales API", "Documentación técnica"] },
+        { step: 3, description: "Desarrollo conectores API principales", duration: "4 semanas", deliverables: ["Conector Party API", "Conector Account API", "Tests unitarios"] },
+        { step: 4, description: "Desarrollo sincronización bidireccional", duration: "3 semanas", deliverables: ["Event listeners", "Cola de mensajes", "Manejo de errores"] },
+        { step: 5, description: "Testing de integración y UAT", duration: "2 semanas", deliverables: ["Plan de pruebas", "Resultados UAT", "Corrección de bugs"] },
+        { step: 6, description: "Despliegue y go-live", duration: "1 semana", deliverables: ["Migración a producción", "Monitorización", "Documentación operativa"] }
+      ],
+      estimatedCost: "50.000€ - 100.000€ según método de integración elegido",
+      prerequisites: ["Acceso al entorno Temenos del banco", "Documentación de APIs disponible", "Credenciales de integración", "Entorno de desarrollo/sandbox", "Equipo técnico banco disponible"]
+    },
+    projectCosts: {
+      developmentCost: [
+        { category: "Frontend React/TypeScript", hours: 1100, rate: 95, total: 104500 },
+        { category: "Backend Supabase/Edge Functions", hours: 650, rate: 95, total: 61750 },
+        { category: "Base de Datos PostgreSQL + RLS", hours: 450, rate: 95, total: 42750 },
+        { category: "Módulo Contabilidad PGC", hours: 400, rate: 95, total: 38000 },
+        { category: "Módulo GIS/Mapas", hours: 250, rate: 95, total: 23750 },
+        { category: "Seguridad, Auditoría, RLS", hours: 200, rate: 95, total: 19000 },
+        { category: "Testing y QA", hours: 100, rate: 95, total: 9500 },
+        { category: "Documentación Técnica", hours: 50, rate: 95, total: 4750 }
+      ],
+      infrastructureCost: [
+        { item: "Supabase Pro (hosting, DB, auth, storage)", monthly: 25, annual: 300 },
+        { item: "Supabase Edge Functions (included Pro)", monthly: 0, annual: 0 },
+        { item: "Dominio y SSL", monthly: 5, annual: 60 },
+        { item: "CDN (Cloudflare Pro)", monthly: 20, annual: 240 },
+        { item: "Resend Email (10K emails/mes)", monthly: 20, annual: 240 },
+        { item: "Monitoring (Sentry)", monthly: 30, annual: 360 },
+        { item: "Backups adicionales", monthly: 10, annual: 120 }
+      ],
+      licensingCost: [
+        { license: "MapLibre GL (open source)", type: "Gratis", cost: 0 },
+        { license: "shadcn/ui (open source)", type: "Gratis", cost: 0 },
+        { license: "jsPDF (open source)", type: "Gratis", cost: 0 },
+        { license: "Lovable AI (incluido)", type: "Incluido en Supabase", cost: 0 },
+        { license: "Google Directions API (rutas)", type: "Uso", cost: 500 }
+      ],
+      operationalCost: [
+        { item: "Soporte técnico (1 persona part-time)", monthly: 2000, description: "Respuesta a incidencias y mantenimiento" },
+        { item: "Actualizaciones menores", monthly: 500, description: "Bugfixes y mejoras pequeñas" },
+        { item: "Seguridad y monitorización", monthly: 300, description: "Revisión logs, alertas, parches" }
+      ],
+      totalFirstYear: 340000,
+      totalFiveYears: 520000,
+      breakdownByPhase: [
+        { phase: "Desarrollo inicial (ya realizado)", cost: 304000, duration: "12 meses" },
+        { phase: "Infraestructura año 1", cost: 1320, duration: "12 meses" },
+        { phase: "Operaciones año 1", cost: 33600, duration: "12 meses" },
+        { phase: "ISO 27001 (opcional)", cost: 90000, duration: "12-18 meses" },
+        { phase: "Integración Temenos (opcional)", cost: 75000, duration: "3-4 meses" }
+      ]
     }
   };
 }

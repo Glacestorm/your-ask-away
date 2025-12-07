@@ -429,36 +429,47 @@ supabase/
         const defaultWidth = contentWidth / headers.length;
         const widths = colWidths || headers.map(() => defaultWidth);
         
+        // Header row
         doc.setFillColor(15, 50, 120);
         doc.setTextColor(255, 255, 255);
-        doc.setFontSize(8);
+        doc.setFontSize(7);
         doc.setFont('helvetica', 'bold');
         let xPos = margin;
         doc.rect(margin, currentY - 4, contentWidth, 7, 'F');
         headers.forEach((header, i) => {
-          doc.text(header, xPos + 2, currentY);
+          const headerLines = doc.splitTextToSize(header, widths[i] - 3);
+          doc.text(headerLines[0] || '', xPos + 1.5, currentY);
           xPos += widths[i];
         });
         currentY += 5;
 
+        // Data rows with proper text wrapping
         doc.setTextColor(0, 0, 0);
         doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8);
+        doc.setFontSize(7);
         rows.forEach((row, rowIndex) => {
-          checkPageBreak(7);
+          // Calculate max lines needed for this row
+          const cellLines = row.map((cell, i) => doc.splitTextToSize(cell || '', widths[i] - 3));
+          const maxLines = Math.max(...cellLines.map(lines => lines.length), 1);
+          const rowHeight = Math.max(5, maxLines * 3.5);
+          
+          checkPageBreak(rowHeight + 2);
           if (rowIndex % 2 === 0) {
             doc.setFillColor(245, 247, 250);
-            doc.rect(margin, currentY - 3.5, contentWidth, 6, 'F');
+            doc.rect(margin, currentY - 3, contentWidth, rowHeight, 'F');
           }
+          
           xPos = margin;
           row.forEach((cell, i) => {
-            const cellText = doc.splitTextToSize(cell, widths[i] - 4)[0];
-            doc.text(cellText || '', xPos + 2, currentY);
+            const lines = doc.splitTextToSize(cell || '', widths[i] - 3);
+            lines.slice(0, 3).forEach((line: string, lineIdx: number) => {
+              doc.text(line, xPos + 1.5, currentY + (lineIdx * 3.5));
+            });
             xPos += widths[i];
           });
-          currentY += 5.5;
+          currentY += rowHeight;
         });
-        currentY += 4;
+        currentY += 3;
       };
 
       const addProgressBar = (label: string, percentage: number) => {
