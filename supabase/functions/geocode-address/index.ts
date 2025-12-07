@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,12 +17,81 @@ interface GeocodeResponse {
   error?: string;
 }
 
+const RATE_LIMIT_REQUESTS = 100; // requests per hour
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+
+async function checkRateLimit(supabase: any, userId: string): Promise<boolean> {
+  const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString();
+  
+  // Get current request count
+  const { data, error } = await supabase
+    .from('geocode_rate_limits')
+    .select('request_count')
+    .eq('user_id', userId)
+    .gte('window_start', windowStart)
+    .single();
+  
+  if (error && error.code !== 'PGRST116') {
+    console.error('Rate limit check error:', error);
+    return true; // Allow on error
+  }
+  
+  if (data && data.request_count >= RATE_LIMIT_REQUESTS) {
+    return false; // Rate limited
+  }
+  
+  // Upsert rate limit record
+  const { error: upsertError } = await supabase
+    .from('geocode_rate_limits')
+    .upsert({
+      user_id: userId,
+      request_count: (data?.request_count || 0) + 1,
+      window_start: data ? undefined : new Date().toISOString()
+    }, { onConflict: 'user_id' });
+  
+  if (upsertError) {
+    console.error('Rate limit upsert error:', upsertError);
+  }
+  
+  return true;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    // Get user from auth header
+    const authHeader = req.headers.get('Authorization');
+    let userId = 'anonymous';
+    
+    if (authHeader) {
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user } } = await supabase.auth.getUser(token);
+      if (user) {
+        userId = user.id;
+      }
+    }
+    
+    // Check rate limit
+    const allowed = await checkRateLimit(supabase, userId);
+    if (!allowed) {
+      return new Response(
+        JSON.stringify({ 
+          latitude: null, 
+          longitude: null, 
+          error: 'Rate limit exceeded. Please try again later.' 
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 }
+      );
+    }
+    
     const { address, parroquia }: GeocodeRequest = await req.json();
 
     if (!address) {
