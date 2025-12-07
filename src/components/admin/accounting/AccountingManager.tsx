@@ -43,6 +43,16 @@ import { BankRatingAnalysis } from './BankRatingAnalysis';
 import EBITEBITDAAnalysis from './EBITEBITDAAnalysis';
 import { ZScoreAnalysis } from './ZScoreAnalysis';
 import IncomeStatementChart from './IncomeStatementChart';
+import BalanceAnalysisArea from './BalanceAnalysisArea';
+import AnalyticalPLChart from './AnalyticalPLChart';
+import CashFlowAnalysis from './CashFlowAnalysis';
+import AddedValueAnalysis from './AddedValueAnalysis';
+import FinancingStatement from './FinancingStatement';
+import WorkingCapitalAnalysis from './WorkingCapitalAnalysis';
+import LongTermFinancialAnalysis from './LongTermFinancialAnalysis';
+import TreasuryMovements from './TreasuryMovements';
+import WorkingCapitalNOF from './WorkingCapitalNOF';
+import EconomicFinancialDashboard from './EconomicFinancialDashboard';
 
 interface Company {
   id: string;
@@ -599,24 +609,108 @@ const AccountingManager = () => {
           </SectionWrapper>
         );
 
-      // FINANCIERA sections - use FinancialAnalysisTab which handles data loading
+      // FINANCIERA sections - each with its own specific component
       case 'masas-patrimoniales':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Balance Masas Patrimoniales">
+            <BalanceAnalysisArea companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+
       case 'cuadro-analitico':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Cuadro Analítico P. y G.">
+            <AnalyticalPLChart companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+
       case 'resumen-analitico':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Resumen Analítico en %">
+            <FinancialAnalysisTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+
       case 'flujo-caja':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Análisis Flujo de Caja">
+            <FinancialAnalysisTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+
       case 'valor-anadido':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Análisis Valor Añadido">
+            <AddedValueAnalysis companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+
       case 'cuadro-financiacion':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Cuadro de Financiación">
+            <FinancingStatement companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+
       case 'ebit-ebitda':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Análisis EBIT y EBITDA">
+            <EBITEBITDAAnalysis companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+
       case 'capital-circulante':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Análisis Capital Circulante">
+            <FinancialAnalysisTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+
       case 'situacion-largo-plazo':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Análisis Situación Financiera Largo Plazo">
+            <FinancialAnalysisTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+
       case 'flujos-tesoreria':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Flujos de Tesorería">
+            <TreasuryMovements companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+
       case 'nof':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Necesidades Operativas de Fondos">
+            <WorkingCapitalNOF companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+
       case 'cuadro-mando':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Cuadro de Mando Financiero">
+            <EconomicFinancialDashboard companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+
       case 'indice-z':
         if (needsCompanySelection) return <CompanySelectionPrompt />;
         return (
-          <SectionWrapper title="Análisis Financiero">
-            <FinancialAnalysisTab companyId={companyId} companyName={companyName} />
+          <SectionWrapper title="Análisis Índice Z">
+            <ZScoreAnalysis companyId={companyId} companyName={companyName} />
           </SectionWrapper>
         );
 
