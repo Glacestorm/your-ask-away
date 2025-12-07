@@ -497,6 +497,27 @@ const Admin = () => {
           );
         }
         return <AccountingManager />;
+      case 'technical-docs':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return (
+          <div className="rounded-lg border bg-card p-6">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold">Documentació Tècnico-Funcional</h2>
+              <p className="text-sm text-muted-foreground">
+                Genera un document PDF complet amb tota la documentació del sistema
+              </p>
+            </div>
+            <TechnicalDocumentGenerator />
+          </div>
+        );
       case 'administration':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
           return (
