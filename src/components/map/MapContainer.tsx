@@ -10,6 +10,45 @@ import { getMarkerStyle, MarkerStyle } from './markerStyles';
 import { toast } from 'sonner';
 import { CompanyPhotosDialog } from './CompanyPhotosDialog';
 
+// Helper function to decode Google's encoded polyline
+function decodePolyline(encoded: string): [number, number][] {
+  const coords: [number, number][] = [];
+  let index = 0;
+  let lat = 0;
+  let lng = 0;
+
+  while (index < encoded.length) {
+    let b;
+    let shift = 0;
+    let result = 0;
+
+    do {
+      b = encoded.charCodeAt(index++) - 63;
+      result |= (b & 0x1f) << shift;
+      shift += 5;
+    } while (b >= 0x20);
+
+    const dlat = result & 1 ? ~(result >> 1) : result >> 1;
+    lat += dlat;
+
+    shift = 0;
+    result = 0;
+
+    do {
+      b = encoded.charCodeAt(index++) - 63;
+      result |= (b & 0x1f) << shift;
+      shift += 5;
+    } while (b >= 0x20);
+
+    const dlng = result & 1 ? ~(result >> 1) : result >> 1;
+    lng += dlng;
+
+    coords.push([lng / 1e5, lat / 1e5]);
+  }
+
+  return coords;
+}
+
 type CompanyPoint = {
   type: 'Feature';
   properties: CompanyWithDetails & {
@@ -198,6 +237,14 @@ export function MapContainer({
     name: string;
   } | null>(null);
 
+  // Ref to store current route polyline for re-adding after style changes
+  const currentRoutePolylineRef = useRef<string | null>(null);
+  
+  // Update ref when routePolyline changes
+  useEffect(() => {
+    currentRoutePolylineRef.current = routePolyline || null;
+  }, [routePolyline]);
+
   // Effect to propagate prop changes to state
   useEffect(() => {
     if (minZoomVinculacionProp !== undefined) {
@@ -358,45 +405,6 @@ export function MapContainer({
       mapInstance.once('styledata', addRouteLayers);
     }
   }, [routePolyline, mapLoaded]);
-
-  // Helper function to decode Google's encoded polyline
-  function decodePolyline(encoded: string): [number, number][] {
-    const coords: [number, number][] = [];
-    let index = 0;
-    let lat = 0;
-    let lng = 0;
-
-    while (index < encoded.length) {
-      let b;
-      let shift = 0;
-      let result = 0;
-
-      do {
-        b = encoded.charCodeAt(index++) - 63;
-        result |= (b & 0x1f) << shift;
-        shift += 5;
-      } while (b >= 0x20);
-
-      const dlat = result & 1 ? ~(result >> 1) : result >> 1;
-      lat += dlat;
-
-      shift = 0;
-      result = 0;
-
-      do {
-        b = encoded.charCodeAt(index++) - 63;
-        result |= (b & 0x1f) << shift;
-        shift += 5;
-      } while (b >= 0x20);
-
-      const dlng = result & 1 ? ~(result >> 1) : result >> 1;
-      lng += dlng;
-
-      coords.push([lng / 1e5, lat / 1e5]);
-    }
-
-    return coords;
-  }
 
   // Fetch tooltip configuration
   useEffect(() => {
@@ -739,6 +747,52 @@ export function MapContainer({
       
       // Re-add 3D buildings layer after style change
       add3DBuildingsLayer(map.current);
+      
+      // Re-add route layers if there's a current route
+      if (currentRoutePolylineRef.current) {
+        const polyline = currentRoutePolylineRef.current;
+        const mapInstance = map.current;
+        const sourceId = 'route-source';
+        const layerId = 'route-layer';
+        const outlineLayerId = 'route-outline-layer';
+        
+        try {
+          const decodedCoords = decodePolyline(polyline);
+          if (decodedCoords.length > 0) {
+            mapInstance.addSource(sourceId, {
+              type: 'geojson',
+              data: {
+                type: 'Feature',
+                properties: {},
+                geometry: {
+                  type: 'LineString',
+                  coordinates: decodedCoords,
+                },
+              },
+            });
+
+            mapInstance.addLayer({
+              id: outlineLayerId,
+              type: 'line',
+              source: sourceId,
+              layout: { 'line-join': 'round', 'line-cap': 'round' },
+              paint: { 'line-color': '#000000', 'line-width': 12, 'line-opacity': 1 },
+            });
+
+            mapInstance.addLayer({
+              id: layerId,
+              type: 'line',
+              source: sourceId,
+              layout: { 'line-join': 'round', 'line-cap': 'round' },
+              paint: { 'line-color': '#ef4444', 'line-width': 8, 'line-opacity': 1 },
+            });
+            
+            console.log('Route layers re-added after style change');
+          }
+        } catch (e) {
+          console.warn('Error re-adding route layers:', e);
+        }
+      }
     });
 
     map.current.easeTo({
