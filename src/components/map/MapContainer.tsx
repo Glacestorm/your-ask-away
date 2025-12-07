@@ -127,6 +127,8 @@ interface MapContainerProps {
   onMinZoomVinculacionChange?: (zoom: number) => void;
   focusCompanyId?: string | null;
   onFocusCompanyHandled?: () => void;
+  routePolyline?: string | null;
+  routeWaypoints?: { id: string; name: string; latitude: number; longitude: number }[];
 }
 
 interface TooltipConfig {
@@ -159,6 +161,8 @@ export function MapContainer({
   onMinZoomVinculacionChange,
   focusCompanyId,
   onFocusCompanyHandled,
+  routePolyline,
+  routeWaypoints,
 }: MapContainerProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
@@ -234,6 +238,138 @@ export function MapContainer({
       }
     }
   }, [focusCompanyId, companies, mapLoaded, view3D, onFocusCompanyHandled]);
+
+  // Effect to draw route polyline on map
+  useEffect(() => {
+    if (!map.current || !mapLoaded) return;
+
+    const mapInstance = map.current;
+    const sourceId = 'route-source';
+    const layerId = 'route-layer';
+    const outlineLayerId = 'route-outline-layer';
+
+    // Remove existing route layers and source
+    if (mapInstance.getLayer(layerId)) {
+      mapInstance.removeLayer(layerId);
+    }
+    if (mapInstance.getLayer(outlineLayerId)) {
+      mapInstance.removeLayer(outlineLayerId);
+    }
+    if (mapInstance.getSource(sourceId)) {
+      mapInstance.removeSource(sourceId);
+    }
+
+    if (routePolyline) {
+      try {
+        // Decode Google's encoded polyline
+        const decodedCoords = decodePolyline(routePolyline);
+        
+        if (decodedCoords.length > 0) {
+          // Add source with route geometry
+          mapInstance.addSource(sourceId, {
+            type: 'geojson',
+            data: {
+              type: 'Feature',
+              properties: {},
+              geometry: {
+                type: 'LineString',
+                coordinates: decodedCoords,
+              },
+            },
+          });
+
+          // Add outline layer (wider, darker)
+          mapInstance.addLayer({
+            id: outlineLayerId,
+            type: 'line',
+            source: sourceId,
+            layout: {
+              'line-join': 'round',
+              'line-cap': 'round',
+            },
+            paint: {
+              'line-color': '#1e40af',
+              'line-width': 8,
+              'line-opacity': 0.5,
+            },
+          });
+
+          // Add main route layer
+          mapInstance.addLayer({
+            id: layerId,
+            type: 'line',
+            source: sourceId,
+            layout: {
+              'line-join': 'round',
+              'line-cap': 'round',
+            },
+            paint: {
+              'line-color': '#3b82f6',
+              'line-width': 5,
+              'line-opacity': 0.9,
+            },
+          });
+
+          // Fit map to route bounds
+          const bounds = decodedCoords.reduce(
+            (acc, coord) => {
+              return [
+                [Math.min(acc[0][0], coord[0]), Math.min(acc[0][1], coord[1])],
+                [Math.max(acc[1][0], coord[0]), Math.max(acc[1][1], coord[1])],
+              ];
+            },
+            [[Infinity, Infinity], [-Infinity, -Infinity]] as [[number, number], [number, number]]
+          );
+
+          mapInstance.fitBounds(bounds as [[number, number], [number, number]], {
+            padding: { top: 100, bottom: 100, left: 100, right: 450 },
+            duration: 1000,
+          });
+        }
+      } catch (error) {
+        console.error('Error drawing route:', error);
+      }
+    }
+  }, [routePolyline, mapLoaded]);
+
+  // Helper function to decode Google's encoded polyline
+  function decodePolyline(encoded: string): [number, number][] {
+    const coords: [number, number][] = [];
+    let index = 0;
+    let lat = 0;
+    let lng = 0;
+
+    while (index < encoded.length) {
+      let b;
+      let shift = 0;
+      let result = 0;
+
+      do {
+        b = encoded.charCodeAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+
+      const dlat = result & 1 ? ~(result >> 1) : result >> 1;
+      lat += dlat;
+
+      shift = 0;
+      result = 0;
+
+      do {
+        b = encoded.charCodeAt(index++) - 63;
+        result |= (b & 0x1f) << shift;
+        shift += 5;
+      } while (b >= 0x20);
+
+      const dlng = result & 1 ? ~(result >> 1) : result >> 1;
+      lng += dlng;
+
+      coords.push([lng / 1e5, lat / 1e5]);
+    }
+
+    return coords;
+  }
 
   // Fetch tooltip configuration
   useEffect(() => {

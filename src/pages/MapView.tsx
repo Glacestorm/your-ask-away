@@ -385,6 +385,7 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
               }}
               focusCompanyId={focusCompanyId}
               onFocusCompanyHandled={() => setFocusCompanyId(null)}
+              routePolyline={routePolyline}
             />
 
             {showRoutePlanner && (
