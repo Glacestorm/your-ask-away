@@ -250,87 +250,101 @@ export function MapContainer({
     const layerId = 'route-layer';
     const outlineLayerId = 'route-outline-layer';
 
-    // Remove existing route layers and source
-    if (mapInstance.getLayer(layerId)) {
-      mapInstance.removeLayer(layerId);
-    }
-    if (mapInstance.getLayer(outlineLayerId)) {
-      mapInstance.removeLayer(outlineLayerId);
-    }
-    if (mapInstance.getSource(sourceId)) {
-      mapInstance.removeSource(sourceId);
-    }
-
-    if (routePolyline) {
-      try {
-        // Decode Google's encoded polyline
-        const decodedCoords = decodePolyline(routePolyline);
-        
-        if (decodedCoords.length > 0) {
-          // Add source with route geometry
-          mapInstance.addSource(sourceId, {
-            type: 'geojson',
-            data: {
-              type: 'Feature',
-              properties: {},
-              geometry: {
-                type: 'LineString',
-                coordinates: decodedCoords,
-              },
-            },
-          });
-
-          // Add outline layer (wider, darker)
-          mapInstance.addLayer({
-            id: outlineLayerId,
-            type: 'line',
-            source: sourceId,
-            layout: {
-              'line-join': 'round',
-              'line-cap': 'round',
-            },
-            paint: {
-              'line-color': '#1e40af',
-              'line-width': 8,
-              'line-opacity': 0.5,
-            },
-          });
-
-          // Add main route layer
-          mapInstance.addLayer({
-            id: layerId,
-            type: 'line',
-            source: sourceId,
-            layout: {
-              'line-join': 'round',
-              'line-cap': 'round',
-            },
-            paint: {
-              'line-color': '#3b82f6',
-              'line-width': 5,
-              'line-opacity': 0.9,
-            },
-          });
-
-          // Fit map to route bounds
-          const bounds = decodedCoords.reduce(
-            (acc, coord) => {
-              return [
-                [Math.min(acc[0][0], coord[0]), Math.min(acc[0][1], coord[1])],
-                [Math.max(acc[1][0], coord[0]), Math.max(acc[1][1], coord[1])],
-              ];
-            },
-            [[Infinity, Infinity], [-Infinity, -Infinity]] as [[number, number], [number, number]]
-          );
-
-          mapInstance.fitBounds(bounds as [[number, number], [number, number]], {
-            padding: { top: 100, bottom: 100, left: 100, right: 450 },
-            duration: 1000,
-          });
-        }
-      } catch (error) {
-        console.error('Error drawing route:', error);
+    // Function to add route layers
+    const addRouteLayers = () => {
+      // Remove existing route layers and source
+      if (mapInstance.getLayer(layerId)) {
+        mapInstance.removeLayer(layerId);
       }
+      if (mapInstance.getLayer(outlineLayerId)) {
+        mapInstance.removeLayer(outlineLayerId);
+      }
+      if (mapInstance.getSource(sourceId)) {
+        mapInstance.removeSource(sourceId);
+      }
+
+      if (routePolyline) {
+        try {
+          // Decode Google's encoded polyline
+          const decodedCoords = decodePolyline(routePolyline);
+          
+          console.log('Drawing route with', decodedCoords.length, 'coordinates');
+          
+          if (decodedCoords.length > 0) {
+            // Add source with route geometry
+            mapInstance.addSource(sourceId, {
+              type: 'geojson',
+              data: {
+                type: 'Feature',
+                properties: {},
+                geometry: {
+                  type: 'LineString',
+                  coordinates: decodedCoords,
+                },
+              },
+            });
+
+            // Add outline layer (wider, darker) - add first so it's below
+            mapInstance.addLayer({
+              id: outlineLayerId,
+              type: 'line',
+              source: sourceId,
+              layout: {
+                'line-join': 'round',
+                'line-cap': 'round',
+              },
+              paint: {
+                'line-color': '#1e3a5f',
+                'line-width': 10,
+                'line-opacity': 0.8,
+              },
+            });
+
+            // Add main route layer on top
+            mapInstance.addLayer({
+              id: layerId,
+              type: 'line',
+              source: sourceId,
+              layout: {
+                'line-join': 'round',
+                'line-cap': 'round',
+              },
+              paint: {
+                'line-color': '#3b82f6',
+                'line-width': 6,
+                'line-opacity': 1,
+              },
+            });
+
+            console.log('Route layers added successfully');
+
+            // Fit map to route bounds
+            const bounds = decodedCoords.reduce(
+              (acc, coord) => {
+                return [
+                  [Math.min(acc[0][0], coord[0]), Math.min(acc[0][1], coord[1])],
+                  [Math.max(acc[1][0], coord[0]), Math.max(acc[1][1], coord[1])],
+                ];
+              },
+              [[Infinity, Infinity], [-Infinity, -Infinity]] as [[number, number], [number, number]]
+            );
+
+            mapInstance.fitBounds(bounds as [[number, number], [number, number]], {
+              padding: { top: 100, bottom: 100, left: 100, right: 450 },
+              duration: 1000,
+            });
+          }
+        } catch (error) {
+          console.error('Error drawing route:', error);
+        }
+      }
+    };
+
+    // Ensure style is loaded before adding layers
+    if (mapInstance.isStyleLoaded()) {
+      addRouteLayers();
+    } else {
+      mapInstance.once('styledata', addRouteLayers);
     }
   }, [routePolyline, mapLoaded]);
 
