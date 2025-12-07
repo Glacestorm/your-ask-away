@@ -356,13 +356,14 @@ const LongTermFinancialAnalysis: React.FC<LongTermFinancialAnalysisProps> = ({
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
-                <table className="w-full text-xs">
+                <div className="overflow-x-auto">
+                <table className="w-full text-xs" style={{ minWidth: '700px' }}>
                   <thead>
                     <tr className="bg-[#21262d]">
-                      <th className="text-left p-1.5 text-amber-400 font-semibold">GRUPS PATRIMONIALS</th>
-                      {years.slice(0, 2).map(year => (
-                        <th key={year} className="text-right p-1.5 text-amber-400 font-semibold">
-                          Des-{year}
+                      <th className="text-left p-1.5 text-amber-400 font-semibold min-w-[200px] sticky left-0 bg-[#21262d] z-10">GRUPS PATRIMONIALS</th>
+                      {years.map(year => (
+                        <th key={year} className="text-right p-1.5 text-amber-400 font-semibold min-w-[100px] whitespace-nowrap">
+                          Desembre-{year}
                         </th>
                       ))}
                     </tr>
@@ -524,6 +525,7 @@ const LongTermFinancialAnalysis: React.FC<LongTermFinancialAnalysisProps> = ({
                     </tr>
                   </tbody>
                 </table>
+                </div>
               </CardContent>
             </Card>
           </div>
