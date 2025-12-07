@@ -196,13 +196,13 @@ const AddedValueAnalysis: React.FC<AddedValueAnalysisProps> = ({
       <div className="bg-amber-600 text-black font-bold px-3 py-2 text-sm">
         GENERACIÓ DEL VALOR AFEGIT
       </div>
-      <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse text-xs" style={{ minWidth: '700px' }}>
+      <div className="overflow-x-auto" style={{ maxWidth: '100%', overflowX: 'scroll' }}>
+        <table className="border-collapse text-xs" style={{ minWidth: '900px' }}>
           <thead>
             <tr className="bg-amber-500 text-black">
               <th className="border border-amber-600 px-2 py-1 text-left min-w-[280px] sticky left-0 bg-amber-500 z-10">CONCEPTES</th>
               {sortedYears.map(year => (
-                <th key={year} className="border border-amber-600 px-2 py-1 text-center min-w-[100px] whitespace-nowrap">
+                <th key={year} className="border border-amber-600 px-2 py-1 text-center min-w-[120px] whitespace-nowrap">
                   Desembre-{year}
                 </th>
               ))}
@@ -332,13 +332,13 @@ const AddedValueAnalysis: React.FC<AddedValueAnalysisProps> = ({
       <div className="bg-amber-600 text-black font-bold px-3 py-2 text-sm">
         DISTRIBUCIÓ DEL VALOR AFEGIT
       </div>
-      <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse text-xs" style={{ minWidth: '700px' }}>
+      <div className="overflow-x-auto" style={{ maxWidth: '100%', overflowX: 'scroll' }}>
+        <table className="border-collapse text-xs" style={{ minWidth: '900px' }}>
           <thead>
             <tr className="bg-amber-500 text-black">
               <th className="border border-amber-600 px-2 py-1 text-left min-w-[280px] sticky left-0 bg-amber-500 z-10">CONCEPTES</th>
               {sortedYears.map(year => (
-                <th key={year} className="border border-amber-600 px-2 py-1 text-center min-w-[100px] whitespace-nowrap">
+                <th key={year} className="border border-amber-600 px-2 py-1 text-center min-w-[120px] whitespace-nowrap">
                   Desembre-{year}
                 </th>
               ))}
@@ -591,10 +591,12 @@ const AddedValueAnalysis: React.FC<AddedValueAnalysisProps> = ({
         {/* Main Content */}
         <div className="flex-1 p-4 overflow-y-auto">
           <div className="flex gap-4">
-            {/* Tables Section */}
-            <div className="flex-1">
-              {renderGenerationTable()}
-              {renderDistributionTable()}
+            {/* Tables Section - with forced scroll */}
+            <div className="flex-1 min-w-0">
+              <div className="max-w-full">
+                {renderGenerationTable()}
+                {renderDistributionTable()}
+              </div>
             </div>
 
             {/* Charts Section */}
