@@ -355,6 +355,11 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
               </div>
             )}
 
+            {(() => {
+              console.log('=== MapContainer render ===');
+              console.log('routePolyline state:', routePolyline ? `string of ${routePolyline.length} chars` : 'null');
+              return null;
+            })()}
             <MapContainer
               companies={companies}
               statusColors={statusColors}
@@ -395,8 +400,14 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
               <RoutePlanner
                 companies={companies}
                 onRouteCalculated={(route) => {
-                  console.log('Route calculated, polyline:', route?.polyline?.substring(0, 50));
-                  setRoutePolyline(route?.polyline || null);
+                  console.log('=== MapView: onRouteCalculated called ===');
+                  console.log('Route object:', route);
+                  console.log('Polyline exists:', !!route?.polyline);
+                  console.log('Polyline length:', route?.polyline?.length);
+                  console.log('Polyline preview:', route?.polyline?.substring(0, 100));
+                  const polyline = route?.polyline || null;
+                  console.log('Setting routePolyline to:', polyline ? `string of ${polyline.length} chars` : 'null');
+                  setRoutePolyline(polyline);
                 }}
                 onClose={() => {
                   setShowRoutePlanner(false);
