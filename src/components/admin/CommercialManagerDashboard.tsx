@@ -26,6 +26,9 @@ import { ContractedProductsDashboardCard } from '@/components/dashboard/Contract
 import { GoalsAlertsDashboardCard } from '@/components/dashboard/GoalsAlertsDashboardCard';
 import { KPIDashboardCard } from '@/components/dashboard/KPIDashboardCard';
 import { AdvancedAnalyticsDashboardCard } from '@/components/dashboard/AdvancedAnalyticsDashboardCard';
+import { DashboardExportButton } from '@/components/dashboard/DashboardExportButton';
+import { RealtimeNotificationsBadge } from '@/components/dashboard/RealtimeNotificationsBadge';
+import { UpcomingVisitsWidget } from '@/components/dashboard/UpcomingVisitsWidget';
 
 interface BasicStats {
   totalVisits: number;
@@ -416,7 +419,28 @@ export function CommercialManagerDashboard() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6 animate-in fade-in-50 duration-300">
-          <DateRangeFilter dateRange={dateRange} onDateRangeChange={setDateRange} />
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <DateRangeFilter dateRange={dateRange} onDateRangeChange={setDateRange} />
+            <div className="flex items-center gap-2">
+              <RealtimeNotificationsBadge />
+              <DashboardExportButton 
+                data={{
+                  title: 'Dashboard Responsable Comercial',
+                  stats: {
+                    'Total Visites': stats.totalVisits,
+                    'Taxa Èxit': `${stats.avgSuccessRate}%`,
+                    'Total Empreses': stats.totalCompanies,
+                    'Gestors Actius': stats.activeGestores,
+                    'Fichas Validades': validationMetrics.totalValidated,
+                    'Taxa Aprovació': `${validationMetrics.approvalRate}%`,
+                  },
+                  tableData: gestorDetails,
+                  tableHeaders: ['name', 'oficina', 'totalVisits', 'successRate', 'companies']
+                }}
+                fileName="responsable-comercial-dashboard"
+              />
+            </div>
+          </div>
           <MetricsCardsSection />
 
           <div className="grid gap-6 md:grid-cols-4">
@@ -432,6 +456,7 @@ export function CommercialManagerDashboard() {
             <KPIDashboardCard />
           </div>
 
+          <UpcomingVisitsWidget />
           <AlertHistoryDashboardCard />
           <AdvancedAnalyticsDashboardCard />
         </TabsContent>

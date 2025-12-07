@@ -27,6 +27,9 @@ import { ContractedProductsDashboardCard } from '@/components/dashboard/Contract
 import { GoalsAlertsDashboardCard } from '@/components/dashboard/GoalsAlertsDashboardCard';
 import { KPIDashboardCard } from '@/components/dashboard/KPIDashboardCard';
 import { AdvancedAnalyticsDashboardCard } from '@/components/dashboard/AdvancedAnalyticsDashboardCard';
+import { DashboardExportButton } from '@/components/dashboard/DashboardExportButton';
+import { RealtimeNotificationsBadge } from '@/components/dashboard/RealtimeNotificationsBadge';
+import { UpcomingVisitsWidget } from '@/components/dashboard/UpcomingVisitsWidget';
 
 interface BasicStats {
   totalVisits: number;
@@ -381,10 +384,29 @@ export function OfficeDirectorDashboard() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6 animate-in fade-in-50 duration-300">
-          <DateRangeFilter 
-            dateRange={dateRange} 
-            onDateRangeChange={setDateRange}
-          />
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <DateRangeFilter 
+              dateRange={dateRange} 
+              onDateRangeChange={setDateRange}
+            />
+            <div className="flex items-center gap-2">
+              <RealtimeNotificationsBadge />
+              <DashboardExportButton 
+                data={{
+                  title: `Dashboard Director Oficina - ${userOficina}`,
+                  stats: {
+                    'Total Visites': stats.totalVisits,
+                    'Taxa Èxit': `${stats.avgSuccessRate}%`,
+                    'Total Empreses': stats.totalCompanies,
+                    'Gestors Oficina': stats.activeGestores,
+                  },
+                  tableData: gestorDetails,
+                  tableHeaders: ['name', 'totalVisits', 'successRate', 'companies']
+                }}
+                fileName="director-oficina-dashboard"
+              />
+            </div>
+          </div>
 
           <MetricsCardsSection />
 
@@ -401,6 +423,7 @@ export function OfficeDirectorDashboard() {
             <KPIDashboardCard />
           </div>
 
+          <UpcomingVisitsWidget />
           <AlertHistoryDashboardCard />
           <AdvancedAnalyticsDashboardCard />
         </TabsContent>

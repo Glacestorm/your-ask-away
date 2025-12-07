@@ -27,6 +27,9 @@ import { ContractedProductsDashboardCard } from '@/components/dashboard/Contract
 import { GoalsAlertsDashboardCard } from '@/components/dashboard/GoalsAlertsDashboardCard';
 import { KPIDashboardCard } from '@/components/dashboard/KPIDashboardCard';
 import { AdvancedAnalyticsDashboardCard } from '@/components/dashboard/AdvancedAnalyticsDashboardCard';
+import { DashboardExportButton } from '@/components/dashboard/DashboardExportButton';
+import { RealtimeNotificationsBadge } from '@/components/dashboard/RealtimeNotificationsBadge';
+import { UpcomingVisitsWidget } from '@/components/dashboard/UpcomingVisitsWidget';
 
 interface BasicStats {
   totalVisits: number;
@@ -304,12 +307,29 @@ export function CommercialDirectorDashboard() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-8 animate-in fade-in-50 duration-500">
-          {/* Date Filter */}
-          <div className="flex flex-wrap items-center gap-4">
+          {/* Date Filter and Actions */}
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <DateRangeFilter 
               dateRange={dateRange} 
               onDateRangeChange={setDateRange}
             />
+            <div className="flex items-center gap-2">
+              <RealtimeNotificationsBadge />
+              <DashboardExportButton 
+                data={{
+                  title: 'Dashboard Director Comercial',
+                  stats: {
+                    'Total Visites': stats.totalVisits,
+                    'Taxa Èxit': `${stats.avgSuccessRate}%`,
+                    'Total Empreses': stats.totalCompanies,
+                    'Gestors Actius': stats.activeGestores,
+                  },
+                  tableData: gestorDetails,
+                  tableHeaders: ['name', 'oficina', 'totalVisits', 'successRate', 'companies']
+                }}
+                fileName="director-comercial-dashboard"
+              />
+            </div>
           </div>
 
           {/* Hero KPIs */}
