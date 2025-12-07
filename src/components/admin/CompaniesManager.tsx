@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,8 +18,11 @@ import { toast } from 'sonner';
 import { CompanyWithDetails, StatusColor, Profile } from '@/types/database';
 import { ExcelImporter } from './ExcelImporter';
 import { CompanyPhotosManager } from '@/components/company/CompanyPhotosManager';
+import { CompaniesPagination } from './CompaniesPagination';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
+import { useCompaniesServerPagination } from '@/hooks/useCompaniesServerPagination';
+import { useCompanyPhotosLazy } from '@/hooks/useCompanyPhotosLazy';
 
 interface CompanyContact {
   id: string;
@@ -66,10 +69,44 @@ export function CompaniesManager() {
   const { t } = useLanguage();
   const { user, isAuditor, isCommercialDirector, isSuperAdmin, isCommercialManager, isOfficeDirector } = useAuth();
   const [userOficina, setUserOficina] = useState<string | null>(null);
-  const [companies, setCompanies] = useState<CompanyWithDetails[]>([]);
-  const [statusColors, setStatusColors] = useState<StatusColor[]>([]);
-  const [gestores, setGestores] = useState<Profile[]>([]);
-  const [parroquias, setParroquias] = useState<string[]>([]);
+  
+  // Use server-side pagination hook
+  const {
+    companies,
+    loading: companiesLoading,
+    pagination,
+    filters,
+    setPage,
+    setPageSize,
+    setFilters,
+    refetch,
+    statusColors,
+    gestores,
+    parroquias,
+    oficinas,
+    products,
+    allTags,
+  } = useCompaniesServerPagination({
+    userId: user?.id,
+    userOficina,
+    isAuditor,
+    isSuperAdmin,
+    isCommercialDirector,
+    isCommercialManager,
+    isOfficeDirector,
+  });
+
+  // Lazy loading for photos
+  const { getPhoto, loadPhotosForCompanies, isLoading: photosLoading } = useCompanyPhotosLazy();
+
+  // Load photos for current page companies
+  useEffect(() => {
+    if (companies.length > 0) {
+      const companyIds = companies.map(c => c.id);
+      loadPhotosForCompanies(companyIds);
+    }
+  }, [companies, loadPhotosForCompanies]);
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCompany, setEditingCompany] = useState<CompanyWithDetails | null>(null);
   const [loading, setLoading] = useState(false);
@@ -82,11 +119,9 @@ export function CompaniesManager() {
   const [selectedForDeletion, setSelectedForDeletion] = useState<Set<string>>(new Set());
   const [visits, setVisits] = useState<Visit[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
-  const [products, setProducts] = useState<any[]>([]);
   const [showVisitForm, setShowVisitForm] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
-  const [companyPhotos, setCompanyPhotos] = useState<Map<string, string>>(new Map());
   const [detailsCompany, setDetailsCompany] = useState<CompanyWithDetails | null>(null);
   const [isSearchingPhotos, setIsSearchingPhotos] = useState(false);
   const [photoSearchProgress, setPhotoSearchProgress] = useState(0);
@@ -98,8 +133,6 @@ export function CompaniesManager() {
   const [bulkStatusId, setBulkStatusId] = useState<string>('');
   const [bulkProductIds, setBulkProductIds] = useState<string[]>([]);
   const [bulkOficina, setBulkOficina] = useState<string>('');
-  const [oficinas, setOficinas] = useState<any[]>([]);
-  const [allTags, setAllTags] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
   const [bulkTags, setBulkTags] = useState<string[]>([]);
@@ -141,19 +174,24 @@ export function CompaniesManager() {
     tags: [] as string[],
   });
 
+  // Debounced search - update filters when search changes
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setFilters({ search: searchQuery });
+    }, 300);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, setFilters]);
+
+  // Update filters when sort or tags change
+  useEffect(() => {
+    setFilters({ sortBy, tags: selectedTags });
+  }, [sortBy, selectedTags, setFilters]);
+
   useEffect(() => {
     if (user) {
       fetchUserOffice();
     }
   }, [user]);
-
-  useEffect(() => {
-    if (user) {
-      fetchData();
-      loadCompanyPhotos();
-      loadAllTags();
-    }
-  }, [user, userOficina]);
 
   const fetchUserOffice = async () => {
     if (!user) return;
@@ -198,96 +236,9 @@ export function CompaniesManager() {
     return !isAuditor;
   };
 
-  const loadCompanyPhotos = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('company_photos')
-        .select('company_id, photo_url, uploaded_at')
-        .order('uploaded_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Map company_id to most recent photo_url
-      const photosMap = new Map<string, string>();
-      data?.forEach(photo => {
-        if (!photosMap.has(photo.company_id)) {
-          photosMap.set(photo.company_id, photo.photo_url);
-        }
-      });
-
-      setCompanyPhotos(photosMap);
-    } catch (error) {
-      console.error('Error loading company photos:', error);
-    }
-  };
-
-  const loadAllTags = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('companies')
-        .select('tags');
-
-      if (error) throw error;
-
-      // Extract all unique tags
-      const tagsSet = new Set<string>();
-      data?.forEach(company => {
-        if (company.tags && Array.isArray(company.tags)) {
-          company.tags.forEach((tag: string) => tagsSet.add(tag));
-        }
-      });
-
-      setAllTags(Array.from(tagsSet).sort());
-    } catch (error) {
-      console.error('Error loading tags:', error);
-    }
-  };
-
-  const fetchData = async () => {
-    if (!user) return;
-    
-    // Auditors cannot see companies
-    if (isAuditor) {
-      setCompanies([]);
-      return;
-    }
-
-    try {
-      let companiesQuery = supabase.from('companies').select('*, status_colors(*), profiles(*)');
-      
-      // Apply role-based filtering
-      if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
-        if (isOfficeDirector && userOficina) {
-          // Office directors see only their office's companies
-          companiesQuery = companiesQuery.eq('oficina', userOficina);
-        } else {
-          // Regular gestores see only their assigned companies
-          companiesQuery = companiesQuery.eq('gestor_id', user.id);
-        }
-      }
-      
-      companiesQuery = companiesQuery.order('name');
-
-      const [companiesRes, statusRes, gestoresRes, conceptsRes, productsRes, oficinasRes] = await Promise.all([
-        companiesQuery,
-        supabase.from('status_colors').select('*').order('display_order'),
-        supabase.from('profiles').select('*').order('full_name'),
-        supabase.from('concepts').select('*').eq('concept_type', 'parroquia').eq('active', true),
-        supabase.from('products').select('*').eq('active', true).order('category, name'),
-        supabase.from('concepts').select('*').eq('concept_type', 'oficina').eq('active', true),
-      ]);
-
-      if (companiesRes.data) setCompanies(companiesRes.data as CompanyWithDetails[]);
-      if (statusRes.data) setStatusColors(statusRes.data);
-      if (gestoresRes.data) setGestores(gestoresRes.data);
-      if (conceptsRes.data) setParroquias(conceptsRes.data.map((c: any) => c.concept_value));
-      if (productsRes.data) setProducts(productsRes.data);
-      if (oficinasRes.data) setOficinas(oficinasRes.data);
-    } catch (error: any) {
-      console.error('Error fetching data:', error);
-      toast.error(t('form.errorLoading'));
-    }
-  };
+  // Removed loadCompanyPhotos - now using useCompanyPhotosLazy hook
+  // Removed loadAllTags - now using useCompaniesServerPagination hook
+  // Removed fetchData - now using useCompaniesServerPagination hook
 
   const handleSave = async () => {
     try {
@@ -347,8 +298,7 @@ export function CompaniesManager() {
       setDialogOpen(false);
       setEditingCompany(null);
       resetForm();
-      fetchData();
-      loadAllTags();
+      refetch();
     } catch (error: any) {
       console.error('Error saving company:', error);
       toast.error(t('form.errorSaving'));
@@ -368,7 +318,7 @@ export function CompaniesManager() {
 
       if (error) throw error;
       toast.success(t('companyForm.companyDeleted'));
-      fetchData();
+      refetch();
     } catch (error: any) {
       console.error('Error deleting company:', error);
       toast.error(t('form.errorDeleting'));
@@ -585,7 +535,7 @@ export function CompaniesManager() {
       }
 
       toast.success(`Geocodificación completada: ${successCount} exitosas, ${failCount} fallidas`);
-      await fetchData();
+      await refetch();
     } catch (error: any) {
       console.error('Error in bulk geocoding:', error);
       toast.error('Error en el proceso de geocodificación masiva');
@@ -647,9 +597,8 @@ export function CompaniesManager() {
 
       toast.success(`Búsqueda completada: ${photosFound} fotos encontradas de ${totalCompanies} empresas`);
 
-      // Reload company photos
-      await loadCompanyPhotos();
-      await fetchData();
+      // Reload company photos by refetching (lazy loading will load photos for new page)
+      await refetch();
     } catch (error) {
       console.error("Error en búsqueda de fotos:", error);
       toast.error("Error al buscar fotos de empresas");
@@ -764,7 +713,7 @@ export function CompaniesManager() {
       setSelectedForDeletion(new Set());
       setShowDuplicates(false);
       setDuplicates([]);
-      await fetchData();
+      await refetch();
     } catch (error: any) {
       console.error('Error deleting duplicates:', error);
       toast.error('Error al eliminar duplicados');
@@ -870,7 +819,7 @@ export function CompaniesManager() {
       
       toast.success(`${t('companyForm.bulkDeleteSuccess')} (${selectedCompanies.size})`);
       setSelectedCompanies(new Set());
-      await fetchData();
+      await refetch();
     } catch (error: any) {
       console.error('Error deleting companies:', error);
       toast.error(t('form.errorDeleting'));
@@ -896,7 +845,7 @@ export function CompaniesManager() {
       setSelectedCompanies(new Set());
       setBulkActionDialog(null);
       setBulkGestorId('');
-      await fetchData();
+      await refetch();
     } catch (error: any) {
       console.error('Error updating gestor:', error);
       toast.error(t('form.errorSaving'));
@@ -922,7 +871,7 @@ export function CompaniesManager() {
       setSelectedCompanies(new Set());
       setBulkActionDialog(null);
       setBulkStatusId('');
-      await fetchData();
+      await refetch();
     } catch (error: any) {
       console.error('Error updating status:', error);
       toast.error(t('form.errorSaving'));
@@ -967,7 +916,7 @@ export function CompaniesManager() {
       setSelectedCompanies(new Set());
       setBulkActionDialog(null);
       setBulkProductIds([]);
-      await fetchData();
+      await refetch();
     } catch (error: any) {
       console.error('Error assigning products:', error);
       toast.error(t('form.errorSaving'));
@@ -993,7 +942,7 @@ export function CompaniesManager() {
       setSelectedCompanies(new Set());
       setBulkActionDialog(null);
       setBulkOficina('');
-      await fetchData();
+      await refetch();
     } catch (error: any) {
       console.error('Error updating oficina:', error);
       toast.error(t('form.errorSaving'));
@@ -1026,8 +975,7 @@ export function CompaniesManager() {
       setSelectedCompanies(new Set());
       setBulkActionDialog(null);
       setBulkTags([]);
-      await fetchData();
-      await loadAllTags();
+      await refetch();
     } catch (error: any) {
       console.error('Error adding tags:', error);
       toast.error(t('form.errorSaving'));
@@ -1056,55 +1004,8 @@ export function CompaniesManager() {
     );
   };
 
-  const filteredAndSortedCompanies = companies
-    .filter(company => {
-      // Tag filter
-      if (selectedTags.length > 0) {
-        const companyTags = (company as any).tags || [];
-        const hasAllTags = selectedTags.every(tag => companyTags.includes(tag));
-        if (!hasAllTags) return false;
-      }
-
-      // Search filter
-      if (!searchQuery) return true;
-      
-      const query = searchQuery.toLowerCase();
-      return (
-        company.name.toLowerCase().includes(query) ||
-        company.address.toLowerCase().includes(query) ||
-        company.parroquia.toLowerCase().includes(query) ||
-        ((company as any).phone && (company as any).phone.toLowerCase().includes(query)) ||
-        ((company as any).email && (company as any).email.toLowerCase().includes(query)) ||
-        ((company as any).tax_id && (company as any).tax_id.toLowerCase().includes(query)) ||
-        (company.gestor?.full_name && company.gestor.full_name.toLowerCase().includes(query))
-      );
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case 'name-asc':
-          return a.name.localeCompare(b.name);
-        case 'name-desc':
-          return b.name.localeCompare(a.name);
-        case 'linkage-desc':
-          return getAverageLinkage(b) - getAverageLinkage(a);
-        case 'linkage-asc':
-          return getAverageLinkage(a) - getAverageLinkage(b);
-        case 'visit-desc':
-          const dateA = a.fecha_ultima_visita ? new Date(a.fecha_ultima_visita).getTime() : 0;
-          const dateB = b.fecha_ultima_visita ? new Date(b.fecha_ultima_visita).getTime() : 0;
-          return dateB - dateA;
-        case 'visit-asc':
-          const dateAsc1 = a.fecha_ultima_visita ? new Date(a.fecha_ultima_visita).getTime() : 0;
-          const dateAsc2 = b.fecha_ultima_visita ? new Date(b.fecha_ultima_visita).getTime() : 0;
-          return dateAsc1 - dateAsc2;
-        case 'geolocated':
-          const geoA = isGeolocated(a) ? 1 : 0;
-          const geoB = isGeolocated(b) ? 1 : 0;
-          return geoB - geoA;
-        default:
-          return 0;
-      }
-    });
+  // Companies are now filtered and sorted server-side, just use them directly
+  const filteredAndSortedCompanies = companies;
 
 
   return (
@@ -1266,7 +1167,7 @@ export function CompaniesManager() {
           <ScrollArea className="h-[600px]">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredAndSortedCompanies.map((company) => {
-              const photoUrl = companyPhotos.get(company.id);
+              const photoUrl = getPhoto(company.id);
               return (
                 <Card 
                   key={company.id} 
@@ -1581,11 +1482,11 @@ export function CompaniesManager() {
                       </TableCell>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
-                          {companyPhotos.get(company.id) && (
+                          {getPhoto(company.id) && (
                             <div 
                               className="w-8 h-8 rounded bg-cover bg-center cursor-pointer flex-shrink-0"
-                              style={{ backgroundImage: `url(${companyPhotos.get(company.id)})` }}
-                              onClick={() => setSelectedPhoto(companyPhotos.get(company.id)!)}
+                              style={{ backgroundImage: `url(${getPhoto(company.id)})` }}
+                              onClick={() => setSelectedPhoto(getPhoto(company.id)!)}
                             />
                           )}
                           <span className="truncate max-w-[200px]">{company.name}</span>
@@ -1690,6 +1591,17 @@ export function CompaniesManager() {
           </ScrollArea>
           </>
         )}
+
+        {/* Pagination */}
+        <CompaniesPagination
+          page={pagination.page}
+          pageSize={pagination.pageSize}
+          totalCount={pagination.totalCount}
+          totalPages={pagination.totalPages}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          loading={companiesLoading}
+        />
       </CardContent>
 
       {/* Photo Viewer Dialog */}
@@ -2522,7 +2434,7 @@ export function CompaniesManager() {
       <ExcelImporter
         open={importerOpen}
         onOpenChange={setImporterOpen}
-        onImportComplete={fetchData}
+        onImportComplete={refetch}
         parroquias={parroquias}
       />
 
