@@ -306,9 +306,9 @@ export function MapContainer({
                 'line-cap': 'round',
               },
               paint: {
-                'line-color': '#1e3a5f',
-                'line-width': 10,
-                'line-opacity': 0.8,
+                'line-color': '#000000',
+                'line-width': 12,
+                'line-opacity': 1,
               },
             });
 
@@ -322,27 +322,24 @@ export function MapContainer({
                 'line-cap': 'round',
               },
               paint: {
-                'line-color': '#3b82f6',
-                'line-width': 6,
+                'line-color': '#ef4444',
+                'line-width': 8,
                 'line-opacity': 1,
               },
             });
 
             console.log('Route layers added successfully!');
 
-            // Fit map to route bounds
-            const bounds = decodedCoords.reduce(
-              (acc, coord) => {
-                return [
-                  [Math.min(acc[0][0], coord[0]), Math.min(acc[0][1], coord[1])],
-                  [Math.max(acc[1][0], coord[0]), Math.max(acc[1][1], coord[1])],
-                ];
-              },
-              [[Infinity, Infinity], [-Infinity, -Infinity]] as [[number, number], [number, number]]
-            );
+            // Fit map to route bounds - note: coords are [lng, lat]
+            const lngs = decodedCoords.map(c => c[0]);
+            const lats = decodedCoords.map(c => c[1]);
+            const bounds: [[number, number], [number, number]] = [
+              [Math.min(...lngs), Math.min(...lats)],
+              [Math.max(...lngs), Math.max(...lats)]
+            ];
 
             console.log('Fitting bounds:', bounds);
-            mapInstance.fitBounds(bounds as [[number, number], [number, number]], {
+            mapInstance.fitBounds(bounds, {
               padding: { top: 100, bottom: 100, left: 100, right: 450 },
               duration: 1000,
             });
