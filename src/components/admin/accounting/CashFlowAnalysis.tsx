@@ -295,13 +295,13 @@ const CashFlowAnalysis: React.FC<CashFlowAnalysisProps> = ({
 
         <Card className="bg-orange-100 border-orange-300">
           <CardContent className="p-2">
-            <ScrollArea className="h-[calc(100vh-200px)]">
-              <table className="w-full text-xs border-collapse">
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs border-collapse" style={{ minWidth: '900px' }}>
                 <thead>
                   <tr className="bg-orange-300">
-                    <th className="p-2 text-left font-bold border border-orange-400">CONCEPTES</th>
+                    <th className="p-2 text-left font-bold border border-orange-400 min-w-[280px] sticky left-0 bg-orange-300 z-10">CONCEPTES</th>
                     {years.map(year => (
-                      <th key={year} className="p-2 text-center font-bold border border-orange-400 min-w-[100px]">
+                      <th key={year} className="p-2 text-center font-bold border border-orange-400 min-w-[100px] whitespace-nowrap">
                         Desembre-{year}
                       </th>
                     ))}
@@ -438,7 +438,7 @@ const CashFlowAnalysis: React.FC<CashFlowAnalysisProps> = ({
                   />
                 </tbody>
               </table>
-            </ScrollArea>
+            </div>
           </CardContent>
         </Card>
       </div>

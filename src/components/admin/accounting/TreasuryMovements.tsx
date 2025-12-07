@@ -418,17 +418,17 @@ const TreasuryMovements: React.FC<TreasuryMovementsProps> = ({
           <div className="flex gap-3">
             {/* Table Section */}
             <div className="flex-1 overflow-x-auto">
-              <table className="w-full border-collapse text-[10px]">
+              <table className="w-full border-collapse text-[10px]" style={{ minWidth: '900px' }}>
                 <thead>
                   <tr className="bg-amber-500 text-black">
-                    <th className="border border-amber-600 px-2 py-1 text-left w-[240px]">CONCEPTES</th>
+                    <th className="border border-amber-600 px-2 py-1 text-left min-w-[280px] sticky left-0 bg-amber-500 z-10">CONCEPTES</th>
                     {sortedYears.map((year, idx) => (
                       <React.Fragment key={year}>
-                        <th className="border border-amber-600 px-1 py-1 text-center w-[70px]">
-                          Des-{year}
+                        <th className="border border-amber-600 px-2 py-1 text-center min-w-[100px] whitespace-nowrap">
+                          Desembre-{year}
                         </th>
                         {dataViewMode === 'values_deviation' && idx < sortedYears.length - 1 && (
-                          <th className="border border-amber-600 px-1 py-1 text-center w-[60px] text-amber-800">
+                          <th className="border border-amber-600 px-1 py-1 text-center min-w-[70px] text-amber-800 whitespace-nowrap">
                             % Desv.
                           </th>
                         )}
