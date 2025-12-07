@@ -44,3 +44,6 @@ verify_jwt = false
 
 [functions.parse-financial-pdf]
 verify_jwt = true
+
+[functions.analyze-codebase]
+verify_jwt = true
