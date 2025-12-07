@@ -11,6 +11,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Badge } from '@/components/ui/badge';
 import { Bell, Plus, Trash2, Edit, Loader2, Globe, Building, User, ArrowUpCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { useOptimisticLock } from '@/hooks/useOptimisticLock';
+import { ConflictDialog } from '@/components/ui/ConflictDialog';
 
 interface Alert {
   id: string;
@@ -22,6 +24,7 @@ interface Alert {
   active: boolean;
   last_checked: string | null;
   created_at: string;
+  updated_at: string | null;
   target_type: string | null;
   target_office: string | null;
   target_gestor_id: string | null;
@@ -44,6 +47,7 @@ export const AlertsManager = () => {
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingAlert, setEditingAlert] = useState<Alert | null>(null);
+  const [showConflictDialog, setShowConflictDialog] = useState(false);
   const [formData, setFormData] = useState({
     alert_name: '',
     metric_type: 'visits',
@@ -58,6 +62,15 @@ export const AlertsManager = () => {
     escalation_hours: 24,
     max_escalation_level: 3,
   });
+
+  const {
+    updateWithLock,
+    forceUpdate,
+    reloadRecord,
+    isUpdating,
+    conflict,
+    clearConflict,
+  } = useOptimisticLock({ table: 'alerts' });
 
   useEffect(() => {
     fetchAlerts();
@@ -115,12 +128,20 @@ export const AlertsManager = () => {
       };
 
       if (editingAlert) {
-        const { error } = await supabase
-          .from('alerts')
-          .update(dataToSave)
-          .eq('id', editingAlert.id);
+        // Use optimistic locking for updates
+        const result = await updateWithLock(
+          editingAlert.id,
+          dataToSave,
+          editingAlert.updated_at || editingAlert.created_at
+        );
 
-        if (error) throw error;
+        if (result.conflict) {
+          setShowConflictDialog(true);
+          return;
+        }
+
+        if (!result.success) return;
+
         toast.success('Alerta actualizada correctamente');
       } else {
         const { error } = await supabase
@@ -137,6 +158,49 @@ export const AlertsManager = () => {
     } catch (error) {
       console.error('Error saving alert:', error);
       toast.error('Error al guardar la alerta');
+    }
+  };
+
+  const handleReloadAlert = async () => {
+    if (!editingAlert) return;
+    const reloaded = await reloadRecord(editingAlert.id);
+    if (reloaded) {
+      const alertData = reloaded as unknown as Alert;
+      setEditingAlert(alertData);
+      setFormData({
+        alert_name: alertData.alert_name,
+        metric_type: alertData.metric_type,
+        condition_type: alertData.condition_type,
+        threshold_value: alertData.threshold_value,
+        period_type: alertData.period_type,
+        active: alertData.active,
+        target_type: alertData.target_type || 'global',
+        target_office: alertData.target_office || '',
+        target_gestor_id: alertData.target_gestor_id || '',
+        escalation_enabled: alertData.escalation_enabled || false,
+        escalation_hours: alertData.escalation_hours || 24,
+        max_escalation_level: alertData.max_escalation_level || 3,
+      });
+      setShowConflictDialog(false);
+      clearConflict();
+      toast.success('Dades recarregades');
+    }
+  };
+
+  const handleForceUpdateAlert = async () => {
+    if (!editingAlert) return;
+    const dataToSave = {
+      ...formData,
+      target_office: formData.target_type === 'office' ? formData.target_office : null,
+      target_gestor_id: formData.target_type === 'gestor' ? formData.target_gestor_id : null,
+    };
+    const result = await forceUpdate(editingAlert.id, dataToSave);
+    if (result.success) {
+      setShowConflictDialog(false);
+      clearConflict();
+      setIsDialogOpen(false);
+      resetForm();
+      fetchAlerts();
     }
   };
 
@@ -614,6 +678,15 @@ export const AlertsManager = () => {
           ))
         )}
       </div>
+
+      <ConflictDialog
+        conflict={conflict}
+        open={showConflictDialog}
+        onOpenChange={setShowConflictDialog}
+        onReload={handleReloadAlert}
+        onForceUpdate={handleForceUpdateAlert}
+        isUpdating={isUpdating}
+      />
     </div>
   );
 };
