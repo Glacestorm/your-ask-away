@@ -16,9 +16,17 @@ import {
 } from "recharts";
 import { cn } from "@/lib/utils";
 
+interface CompanySelection {
+  id: string;
+  name: string;
+}
+
 interface AuditTabProps {
-  companyId: string;
-  companyName: string;
+  companyId?: string;
+  companyName?: string;
+  // For consolidated analysis - up to 15 companies
+  consolidatedCompanies?: CompanySelection[];
+  isConsolidated?: boolean;
 }
 
 interface FinancialMetrics {
@@ -98,21 +106,36 @@ interface RegulatoryAlert {
   recommendation: string;
 }
 
-export function AuditTab({ companyId, companyName }: AuditTabProps) {
+export function AuditTab({ companyId, companyName, consolidatedCompanies, isConsolidated }: AuditTabProps) {
   const [data, setData] = useState<FinancialMetrics[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Determine company IDs to fetch
+  const companyIds = isConsolidated && consolidatedCompanies?.length 
+    ? consolidatedCompanies.map(c => c.id) 
+    : companyId ? [companyId] : [];
+
+  const displayName = isConsolidated && consolidatedCompanies?.length 
+    ? `Consolidat (${consolidatedCompanies.length} empreses)` 
+    : companyName || '';
+
   useEffect(() => {
-    fetchData();
-  }, [companyId]);
+    if (companyIds.length > 0) {
+      fetchData();
+    } else {
+      setData([]);
+      setLoading(false);
+    }
+  }, [companyId, JSON.stringify(consolidatedCompanies)]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
+      // Fetch statements for all selected companies
       const { data: statements } = await supabase
         .from("company_financial_statements")
-        .select("id, fiscal_year")
-        .eq("company_id", companyId)
+        .select("id, fiscal_year, company_id")
+        .in("company_id", companyIds)
         .eq("is_archived", false)
         .order("fiscal_year", { ascending: true });
 
@@ -122,192 +145,222 @@ export function AuditTab({ companyId, companyName }: AuditTabProps) {
         return;
       }
 
+      // Group statements by fiscal year for consolidated analysis
+      const statementsByYear = statements.reduce((acc, stmt) => {
+        if (!acc[stmt.fiscal_year]) {
+          acc[stmt.fiscal_year] = [];
+        }
+        acc[stmt.fiscal_year].push(stmt);
+        return acc;
+      }, {} as Record<number, typeof statements>);
+
       const metrics: FinancialMetrics[] = [];
 
-      for (const stmt of statements) {
-        const [{ data: balance }, { data: income }] = await Promise.all([
-          supabase.from("balance_sheets").select("*").eq("statement_id", stmt.id).single(),
+      for (const [year, yearStatements] of Object.entries(statementsByYear)) {
+        // Fetch all balance sheets and income statements for this year
+        const balancePromises = yearStatements.map(stmt => 
+          supabase.from("balance_sheets").select("*").eq("statement_id", stmt.id).single()
+        );
+        const incomePromises = yearStatements.map(stmt => 
           supabase.from("income_statements").select("*").eq("statement_id", stmt.id).single()
-        ]);
+        );
 
-        if (balance) {
-          // Raw balance data
-          const inventory = balance.inventory || 0;
-          const tradeReceivables = balance.trade_receivables || 0;
-          const cash = balance.cash_equivalents || 0;
-          const shortTermInvestments = balance.short_term_financial_investments || 0;
-          const shortTermGroupReceivables = balance.short_term_group_receivables || 0;
-          
-          const tangibleAssets = balance.tangible_assets || 0;
-          const intangibleAssets = balance.intangible_assets || 0;
-          const goodwill = balance.goodwill || 0;
-          const realEstateInvestments = balance.real_estate_investments || 0;
-          const longTermInvestments = balance.long_term_financial_investments || 0;
-          const deferredTaxAssets = balance.deferred_tax_assets || 0;
+        const balances = await Promise.all(balancePromises);
+        const incomes = await Promise.all(incomePromises);
 
-          const currentAssets = inventory + tradeReceivables + cash + shortTermInvestments + shortTermGroupReceivables;
-          const nonCurrentAssets = tangibleAssets + intangibleAssets + goodwill + realEstateInvestments + longTermInvestments + deferredTaxAssets;
-          const totalAssets = currentAssets + nonCurrentAssets;
+        // Aggregate all balance data for consolidated view
+        let inventory = 0, tradeReceivables = 0, cash = 0, shortTermInvestments = 0, shortTermGroupReceivables = 0;
+        let tangibleAssets = 0, intangibleAssets = 0, goodwill = 0, realEstateInvestments = 0, longTermInvestments = 0, deferredTaxAssets = 0;
+        let shareCapital = 0, sharePremium = 0, legalReserve = 0, voluntaryReserves = 0, retainedEarnings = 0, currentYearResult = 0, treasuryShares = 0, capitalGrants = 0;
+        let shortTermDebts = 0, tradePayables = 0, otherCreditors = 0, shortTermGroupDebts = 0, shortTermProvisions = 0;
+        let longTermDebts = 0, longTermProvisions = 0, longTermGroupDebts = 0, deferredTaxLiabilities = 0;
+        let netTurnover = 0, supplies = 0, personnelExpenses = 0, otherExpenses = 0, depreciation = 0, financialExpenses = 0, financialIncome = 0, corporateTax = 0;
 
-          const shareCapital = balance.share_capital || 0;
-          const sharePremium = balance.share_premium || 0;
-          const legalReserve = balance.legal_reserve || 0;
-          const voluntaryReserves = balance.voluntary_reserves || 0;
-          const retainedEarnings = balance.retained_earnings || 0;
-          const currentYearResult = balance.current_year_result || 0;
-          const treasuryShares = balance.treasury_shares || 0;
-          const capitalGrants = balance.capital_grants || 0;
+        let hasData = false;
 
-          const equity = shareCapital + sharePremium + legalReserve + voluntaryReserves + 
-                        retainedEarnings + currentYearResult - treasuryShares + capitalGrants;
-
-          const shortTermDebts = balance.short_term_debts || 0;
-          const tradePayables = balance.trade_payables || 0;
-          const otherCreditors = balance.other_creditors || 0;
-          const shortTermGroupDebts = balance.short_term_group_debts || 0;
-          const shortTermProvisions = balance.short_term_provisions || 0;
-
-          const longTermDebts = balance.long_term_debts || 0;
-          const longTermProvisions = balance.long_term_provisions || 0;
-          const longTermGroupDebts = balance.long_term_group_debts || 0;
-          const deferredTaxLiabilities = balance.deferred_tax_liabilities || 0;
-
-          const currentLiabilities = shortTermDebts + tradePayables + otherCreditors + shortTermGroupDebts + shortTermProvisions;
-          const nonCurrentLiabilities = longTermDebts + longTermProvisions + longTermGroupDebts + deferredTaxLiabilities;
-          const totalLiabilities = currentLiabilities + nonCurrentLiabilities;
-
-          // Income data
-          const netTurnover = income?.net_turnover || 0;
-          const supplies = Math.abs(income?.supplies || 0);
-          const personnelExpenses = Math.abs(income?.personnel_expenses || 0);
-          const otherExpenses = Math.abs(income?.other_operating_expenses || 0);
-          const depreciation = Math.abs(income?.depreciation || 0);
-          const financialExpenses = Math.abs(income?.financial_expenses || 0);
-          const financialIncome = income?.financial_income || 0;
-          const corporateTax = Math.abs(income?.corporate_tax || 0);
-
-          const grossMargin = netTurnover - supplies;
-          const ebitda = grossMargin - personnelExpenses - otherExpenses;
-          const ebit = ebitda - depreciation;
-          const netProfit = ebit - financialExpenses + financialIncome - corporateTax;
-
-          // Liquidity Ratios
-          const currentRatio = currentLiabilities > 0 ? currentAssets / currentLiabilities : 0;
-          const quickRatio = currentLiabilities > 0 ? (currentAssets - inventory) / currentLiabilities : 0;
-          const cashRatio = currentLiabilities > 0 ? cash / currentLiabilities : 0;
-          const workingCapital = currentAssets - currentLiabilities;
-
-          // Leverage Ratios
-          const debtRatio = totalAssets > 0 ? totalLiabilities / totalAssets : 0;
-          const equityRatio = totalAssets > 0 ? equity / totalAssets : 0;
-          const financialLeverage = equity > 0 ? totalAssets / equity : 0;
-          const interestCoverage = financialExpenses > 0 ? ebit / financialExpenses : Infinity;
-          const debtToEquity = equity > 0 ? totalLiabilities / equity : 0;
-
-          // Efficiency Ratios
-          const inventoryDays = supplies > 0 ? (inventory / supplies) * 365 : 0;
-          const receivablesDays = netTurnover > 0 ? (tradeReceivables / netTurnover) * 365 : 0;
-          const payablesDays = supplies > 0 ? (tradePayables / supplies) * 365 : 0;
-          const cashConversionCycle = inventoryDays + receivablesDays - payablesDays;
-          const assetTurnover = totalAssets > 0 ? netTurnover / totalAssets : 0;
-
-          // Profitability Ratios
-          const grossMarginPct = netTurnover > 0 ? (grossMargin / netTurnover) * 100 : 0;
-          const ebitdaMargin = netTurnover > 0 ? (ebitda / netTurnover) * 100 : 0;
-          const ebitMargin = netTurnover > 0 ? (ebit / netTurnover) * 100 : 0;
-          const netMarginPct = netTurnover > 0 ? (netProfit / netTurnover) * 100 : 0;
-          const roa = totalAssets > 0 ? (netProfit / totalAssets) * 100 : 0;
-          const roe = equity > 0 ? (netProfit / equity) * 100 : 0;
-          const investedCapital = equity + longTermDebts;
-          const roic = investedCapital > 0 ? (ebit * (1 - 0.25) / investedCapital) * 100 : 0;
-
-          // Basel III / EBA Approximations (simplified for non-financial companies)
-          const tier1Ratio = equity > 0 ? (equity / (totalAssets * 0.08)) * 100 : 0; // Simplified
-          const totalCapitalRatio = equity > 0 ? ((equity + longTermDebts * 0.5) / (totalAssets * 0.08)) * 100 : 0;
-          const lcr = currentLiabilities > 0 ? ((cash + shortTermInvestments) / (currentLiabilities * 0.3)) * 100 : 0; // Liquidity Coverage Ratio proxy
-          const nsfr = (nonCurrentLiabilities + equity) > 0 ? ((equity + longTermDebts) / (nonCurrentAssets * 1.1)) * 100 : 0; // Net Stable Funding Ratio proxy
-
-          // Z-Score (Altman)
-          const x1 = totalAssets > 0 ? workingCapital / totalAssets : 0;
-          const x2 = totalAssets > 0 ? retainedEarnings / totalAssets : 0;
-          const x3 = totalAssets > 0 ? ebit / totalAssets : 0;
-          const x4 = totalLiabilities > 0 ? equity / totalLiabilities : 0;
-          const x5 = totalAssets > 0 ? netTurnover / totalAssets : 0;
-          const zScore = 1.2 * x1 + 1.4 * x2 + 3.3 * x3 + 0.6 * x4 + 1.0 * x5;
-
-          // Probability of Default (simplified logistic model)
-          const pd = 1 / (1 + Math.exp(0.5 * zScore - 1.5));
-          const lgd = 0.45; // Standard EBA assumption
-          const expectedLoss = pd * lgd * totalLiabilities;
-
-          // IFRS 9 Staging
-          let ifrs9Stage: 1 | 2 | 3 = 1;
-          if (zScore < 1.8) ifrs9Stage = 3;
-          else if (zScore < 2.99) ifrs9Stage = 2;
-
-          const ecl12Month = pd * lgd * totalLiabilities * 0.1; // 12-month expected credit loss
-          const eclLifetime = pd * lgd * totalLiabilities; // Lifetime ECL
-
-          metrics.push({
-            year: stmt.fiscal_year,
-            totalAssets,
-            currentAssets,
-            nonCurrentAssets,
-            inventory,
-            tradeReceivables,
-            cash,
-            currentLiabilities,
-            nonCurrentLiabilities,
-            totalLiabilities,
-            equity,
-            shareCapital,
-            retainedEarnings,
-            tradePayables,
-            netTurnover,
-            grossMargin,
-            ebitda,
-            ebit,
-            financialExpenses,
-            netProfit,
-            supplies,
-            personnelExpenses,
-            depreciation,
-            currentRatio,
-            quickRatio,
-            cashRatio,
-            workingCapital,
-            debtRatio,
-            equityRatio,
-            financialLeverage,
-            interestCoverage,
-            debtToEquity,
-            inventoryDays,
-            receivablesDays,
-            payablesDays,
-            cashConversionCycle,
-            assetTurnover,
-            grossMarginPct,
-            ebitdaMargin,
-            ebitMargin,
-            netMarginPct,
-            roa,
-            roe,
-            roic,
-            tier1Ratio,
-            totalCapitalRatio,
-            lcr,
-            nsfr,
-            zScore,
-            probabilityOfDefault: pd * 100,
-            lossGivenDefault: lgd * 100,
-            expectedLoss,
-            ifrs9Stage,
-            ecl12Month,
-            eclLifetime
-          });
+        for (const { data: balance } of balances) {
+          if (balance) {
+            hasData = true;
+            inventory += balance.inventory || 0;
+            tradeReceivables += balance.trade_receivables || 0;
+            cash += balance.cash_equivalents || 0;
+            shortTermInvestments += balance.short_term_financial_investments || 0;
+            shortTermGroupReceivables += balance.short_term_group_receivables || 0;
+            tangibleAssets += balance.tangible_assets || 0;
+            intangibleAssets += balance.intangible_assets || 0;
+            goodwill += balance.goodwill || 0;
+            realEstateInvestments += balance.real_estate_investments || 0;
+            longTermInvestments += balance.long_term_financial_investments || 0;
+            deferredTaxAssets += balance.deferred_tax_assets || 0;
+            shareCapital += balance.share_capital || 0;
+            sharePremium += balance.share_premium || 0;
+            legalReserve += balance.legal_reserve || 0;
+            voluntaryReserves += balance.voluntary_reserves || 0;
+            retainedEarnings += balance.retained_earnings || 0;
+            currentYearResult += balance.current_year_result || 0;
+            treasuryShares += balance.treasury_shares || 0;
+            capitalGrants += balance.capital_grants || 0;
+            shortTermDebts += balance.short_term_debts || 0;
+            tradePayables += balance.trade_payables || 0;
+            otherCreditors += balance.other_creditors || 0;
+            shortTermGroupDebts += balance.short_term_group_debts || 0;
+            shortTermProvisions += balance.short_term_provisions || 0;
+            longTermDebts += balance.long_term_debts || 0;
+            longTermProvisions += balance.long_term_provisions || 0;
+            longTermGroupDebts += balance.long_term_group_debts || 0;
+            deferredTaxLiabilities += balance.deferred_tax_liabilities || 0;
+          }
         }
+
+        for (const { data: income } of incomes) {
+          if (income) {
+            netTurnover += income.net_turnover || 0;
+            supplies += Math.abs(income.supplies || 0);
+            personnelExpenses += Math.abs(income.personnel_expenses || 0);
+            otherExpenses += Math.abs(income.other_operating_expenses || 0);
+            depreciation += Math.abs(income.depreciation || 0);
+            financialExpenses += Math.abs(income.financial_expenses || 0);
+            financialIncome += income.financial_income || 0;
+            corporateTax += Math.abs(income.corporate_tax || 0);
+          }
+        }
+
+        if (!hasData) continue;
+
+        const currentAssets = inventory + tradeReceivables + cash + shortTermInvestments + shortTermGroupReceivables;
+        const nonCurrentAssets = tangibleAssets + intangibleAssets + goodwill + realEstateInvestments + longTermInvestments + deferredTaxAssets;
+        const totalAssets = currentAssets + nonCurrentAssets;
+
+        const equity = shareCapital + sharePremium + legalReserve + voluntaryReserves + 
+                      retainedEarnings + currentYearResult - treasuryShares + capitalGrants;
+
+        const currentLiabilities = shortTermDebts + tradePayables + otherCreditors + shortTermGroupDebts + shortTermProvisions;
+        const nonCurrentLiabilities = longTermDebts + longTermProvisions + longTermGroupDebts + deferredTaxLiabilities;
+        const totalLiabilities = currentLiabilities + nonCurrentLiabilities;
+
+        const grossMargin = netTurnover - supplies;
+        const ebitda = grossMargin - personnelExpenses - otherExpenses;
+        const ebit = ebitda - depreciation;
+        const netProfit = ebit - financialExpenses + financialIncome - corporateTax;
+
+        // Liquidity Ratios
+        const currentRatio = currentLiabilities > 0 ? currentAssets / currentLiabilities : 0;
+        const quickRatio = currentLiabilities > 0 ? (currentAssets - inventory) / currentLiabilities : 0;
+        const cashRatio = currentLiabilities > 0 ? cash / currentLiabilities : 0;
+        const workingCapital = currentAssets - currentLiabilities;
+
+        // Leverage Ratios
+        const debtRatio = totalAssets > 0 ? totalLiabilities / totalAssets : 0;
+        const equityRatio = totalAssets > 0 ? equity / totalAssets : 0;
+        const financialLeverage = equity > 0 ? totalAssets / equity : 0;
+        const interestCoverage = financialExpenses > 0 ? ebit / financialExpenses : Infinity;
+        const debtToEquity = equity > 0 ? totalLiabilities / equity : 0;
+
+        // Efficiency Ratios
+        const inventoryDays = supplies > 0 ? (inventory / supplies) * 365 : 0;
+        const receivablesDays = netTurnover > 0 ? (tradeReceivables / netTurnover) * 365 : 0;
+        const payablesDays = supplies > 0 ? (tradePayables / supplies) * 365 : 0;
+        const cashConversionCycle = inventoryDays + receivablesDays - payablesDays;
+        const assetTurnover = totalAssets > 0 ? netTurnover / totalAssets : 0;
+
+        // Profitability Ratios
+        const grossMarginPct = netTurnover > 0 ? (grossMargin / netTurnover) * 100 : 0;
+        const ebitdaMargin = netTurnover > 0 ? (ebitda / netTurnover) * 100 : 0;
+        const ebitMargin = netTurnover > 0 ? (ebit / netTurnover) * 100 : 0;
+        const netMarginPct = netTurnover > 0 ? (netProfit / netTurnover) * 100 : 0;
+        const roa = totalAssets > 0 ? (netProfit / totalAssets) * 100 : 0;
+        const roe = equity > 0 ? (netProfit / equity) * 100 : 0;
+        const investedCapital = equity + longTermDebts;
+        const roic = investedCapital > 0 ? (ebit * (1 - 0.25) / investedCapital) * 100 : 0;
+
+        // Basel III / EBA Approximations
+        const tier1Ratio = equity > 0 ? (equity / (totalAssets * 0.08)) * 100 : 0;
+        const totalCapitalRatio = equity > 0 ? ((equity + longTermDebts * 0.5) / (totalAssets * 0.08)) * 100 : 0;
+        const lcr = currentLiabilities > 0 ? ((cash + shortTermInvestments) / (currentLiabilities * 0.3)) * 100 : 0;
+        const nsfr = (nonCurrentLiabilities + equity) > 0 ? ((equity + longTermDebts) / (nonCurrentAssets * 1.1)) * 100 : 0;
+
+        // Z-Score (Altman)
+        const x1 = totalAssets > 0 ? workingCapital / totalAssets : 0;
+        const x2 = totalAssets > 0 ? retainedEarnings / totalAssets : 0;
+        const x3 = totalAssets > 0 ? ebit / totalAssets : 0;
+        const x4 = totalLiabilities > 0 ? equity / totalLiabilities : 0;
+        const x5 = totalAssets > 0 ? netTurnover / totalAssets : 0;
+        const zScore = 1.2 * x1 + 1.4 * x2 + 3.3 * x3 + 0.6 * x4 + 1.0 * x5;
+
+        // Probability of Default
+        const pd = 1 / (1 + Math.exp(0.5 * zScore - 1.5));
+        const lgd = 0.45;
+        const expectedLoss = pd * lgd * totalLiabilities;
+
+        // IFRS 9 Staging
+        let ifrs9Stage: 1 | 2 | 3 = 1;
+        if (zScore < 1.8) ifrs9Stage = 3;
+        else if (zScore < 2.99) ifrs9Stage = 2;
+
+        const ecl12Month = pd * lgd * totalLiabilities * 0.1;
+        const eclLifetime = pd * lgd * totalLiabilities;
+
+        metrics.push({
+          year: parseInt(year),
+          totalAssets,
+          currentAssets,
+          nonCurrentAssets,
+          inventory,
+          tradeReceivables,
+          cash,
+          currentLiabilities,
+          nonCurrentLiabilities,
+          totalLiabilities,
+          equity,
+          shareCapital,
+          retainedEarnings,
+          tradePayables,
+          netTurnover,
+          grossMargin,
+          ebitda,
+          ebit,
+          financialExpenses,
+          netProfit,
+          supplies,
+          personnelExpenses,
+          depreciation,
+          currentRatio,
+          quickRatio,
+          cashRatio,
+          workingCapital,
+          debtRatio,
+          equityRatio,
+          financialLeverage,
+          interestCoverage,
+          debtToEquity,
+          inventoryDays,
+          receivablesDays,
+          payablesDays,
+          cashConversionCycle,
+          assetTurnover,
+          grossMarginPct,
+          ebitdaMargin,
+          ebitMargin,
+          netMarginPct,
+          roa,
+          roe,
+          roic,
+          tier1Ratio,
+          totalCapitalRatio,
+          lcr,
+          nsfr,
+          zScore,
+          probabilityOfDefault: pd * 100,
+          lossGivenDefault: lgd * 100,
+          expectedLoss,
+          ifrs9Stage,
+          ecl12Month,
+          eclLifetime
+        });
       }
 
+      // Sort by year
+      metrics.sort((a, b) => a.year - b.year);
       setData(metrics);
     } catch (error) {
       console.error("Error fetching data:", error);
