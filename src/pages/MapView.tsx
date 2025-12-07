@@ -87,6 +87,7 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
   const [routePolyline, setRoutePolyline] = useState<string | null>(null);
   const [routePlannerCompany, setRoutePlannerCompany] = useState<CompanyWithDetails | null>(null);
   const [isSelectingPins, setIsSelectingPins] = useState(false);
+  const [routeSelectedIds, setRouteSelectedIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -387,6 +388,7 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
               focusCompanyId={focusCompanyId}
               onFocusCompanyHandled={() => setFocusCompanyId(null)}
               routePolyline={routePolyline}
+              routeSelectedIds={routeSelectedIds}
             />
 
             {showRoutePlanner && (
@@ -400,10 +402,12 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
                   setRoutePolyline(null);
                   setRoutePlannerCompany(null);
                   setIsSelectingPins(false);
+                  setRouteSelectedIds([]);
                 }}
                 selectedCompanyFromMap={routePlannerCompany}
                 isSelectingMode={isSelectingPins}
                 onSelectingModeChange={setIsSelectingPins}
+                onSelectedCompaniesChange={setRouteSelectedIds}
               />
             )}
           </div>

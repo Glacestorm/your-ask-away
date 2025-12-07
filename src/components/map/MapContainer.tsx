@@ -129,6 +129,7 @@ interface MapContainerProps {
   onFocusCompanyHandled?: () => void;
   routePolyline?: string | null;
   routeWaypoints?: { id: string; name: string; latitude: number; longitude: number }[];
+  routeSelectedIds?: string[];
 }
 
 interface TooltipConfig {
@@ -163,6 +164,7 @@ export function MapContainer({
   onFocusCompanyHandled,
   routePolyline,
   routeWaypoints,
+  routeSelectedIds = [],
 }: MapContainerProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
@@ -1031,6 +1033,11 @@ export function MapContainer({
           // Add pulse animation if this is the focused marker
           if (focusedMarkerId === company.id) {
             el.classList.add('marker-pulse-focus');
+          }
+          
+          // Add blink animation if this marker is selected for route
+          if (routeSelectedIds.includes(company.id)) {
+            el.classList.add('marker-route-selected');
           }
           
           const color = getMarkerColor();
