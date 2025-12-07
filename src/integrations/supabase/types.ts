@@ -3080,6 +3080,10 @@ export type Database = {
         Args: { _alert_id: string; _user_id: string }
         Returns: boolean
       }
+      can_view_alert_history: {
+        Args: { _alert_history_id: string; _user_id: string }
+        Returns: boolean
+      }
       can_view_profile: {
         Args: { _profile_id: string; _viewer_id: string }
         Returns: boolean
