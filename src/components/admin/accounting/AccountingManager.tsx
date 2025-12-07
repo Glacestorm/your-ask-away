@@ -1516,6 +1516,7 @@ const AccountingManager = () => {
                 statementId={currentStatement.id} 
                 isLocked={currentStatement.status === 'approved'}
                 fiscalYear={selectedYear}
+                companyId={selectedCompany.id}
               />
             )}
           </TabsContent>
