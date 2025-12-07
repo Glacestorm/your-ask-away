@@ -113,12 +113,15 @@ const AccountingManager = () => {
   }, [selectedCompany?.id, selectedYear]);
 
   const handleSelectCompany = (company: Company) => {
+    console.log('handleSelectCompany called with:', company.name);
     setSelectedCompany(company);
     setBp(company.bp || '');
     setShowCompanyIndex(false);
+    setCurrentMenuSection(null); // Clear section to show company detail view
   };
   
   const handleSelectFromIndex = (companyId: string) => {
+    console.log('handleSelectFromIndex called with:', companyId);
     // Fetch company details and select
     supabase
       .from('companies')
@@ -148,6 +151,8 @@ const AccountingManager = () => {
   };
 
   const handleMenuNavigate = (section: string) => {
+    console.log('handleMenuNavigate called with section:', section);
+    
     // Handle special navigation cases first
     if (section === 'menu' || section === 'inicio') {
       handleBackToMainMenu();
@@ -155,13 +160,15 @@ const AccountingManager = () => {
     }
     
     if (section === 'empresas') {
-      setCurrentMenuSection(section);
+      setCurrentMenuSection('empresas');
       setShowCompanyIndex(true);
       setShowMainMenu(false);
+      setSelectedCompany(null);
       return;
     }
     
-    if (section === 'consolidacion') {
+    // For consolidation and other special sections that don't need company
+    if (section === 'consolidacion' || section === 'copia-seguridad') {
       setCurrentMenuSection(section);
       setShowCompanyIndex(false);
       setShowMainMenu(false);
@@ -169,6 +176,7 @@ const AccountingManager = () => {
     }
     
     // For all other sections, show the content directly
+    console.log('Setting currentMenuSection to:', section);
     setCurrentMenuSection(section);
     setShowMainMenu(false);
     setShowCompanyIndex(false);
@@ -1062,6 +1070,21 @@ const AccountingManager = () => {
           </SectionWrapper>
         );
 
+      // EMPRESAS - shows company index
+      case 'empresas':
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handleBackToMainMenu}>
+                <Home className="w-4 h-4 mr-2" />
+                Menú Principal
+              </Button>
+              <span className="text-lg font-semibold">Índice de Empresas</span>
+            </div>
+            <AccountingCompanyIndex onSelectCompany={handleSelectFromIndex} />
+          </div>
+        );
+
       // DATOS GENERALES - Secciones adicionales
       case 'introduccion-datos':
         if (needsCompanySelection) return <CompanySelectionPrompt />;
@@ -1200,6 +1223,9 @@ const AccountingManager = () => {
     }
   };
 
+  // Debug: Log current state
+  console.log('AccountingManager render:', { showMainMenu, currentMenuSection, showCompanyIndex, selectedCompany: selectedCompany?.name });
+
   return (
     <div className="space-y-6">
 
@@ -1209,8 +1235,8 @@ const AccountingManager = () => {
           onNavigate={handleMenuNavigate}
           currentSection={currentMenuSection || undefined}
         />
-      ) : currentMenuSection && !showCompanyIndex ? (
-        // Render section-specific content
+      ) : currentMenuSection ? (
+        // Render section-specific content based on currentMenuSection
         renderSectionContent()
       ) : showCompanyIndex && !selectedCompany ? (
         <>
