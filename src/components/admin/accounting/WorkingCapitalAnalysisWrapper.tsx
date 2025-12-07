@@ -14,7 +14,10 @@ const WorkingCapitalAnalysisWrapper: React.FC<WorkingCapitalAnalysisWrapperProps
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!companyId) return;
+      if (!companyId) {
+        setLoading(false);
+        return;
+      }
       setLoading(true);
 
       try {
