@@ -86,6 +86,7 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
   const [showRoutePlanner, setShowRoutePlanner] = useState(false);
   const [routePolyline, setRoutePolyline] = useState<string | null>(null);
   const [routePlannerCompany, setRoutePlannerCompany] = useState<CompanyWithDetails | null>(null);
+  const [isSelectingPins, setIsSelectingPins] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -358,8 +359,8 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
               statusColors={statusColors}
               filters={filters}
               onSelectCompany={(company) => {
-                if (showRoutePlanner && company) {
-                  // When route planner is open, add company to route
+                if (isSelectingPins && company) {
+                  // When selecting pins for route, add company to route
                   setRoutePlannerCompany(company);
                 } else {
                   setSelectedCompany(company);
@@ -398,8 +399,11 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
                   setShowRoutePlanner(false);
                   setRoutePolyline(null);
                   setRoutePlannerCompany(null);
+                  setIsSelectingPins(false);
                 }}
                 selectedCompanyFromMap={routePlannerCompany}
+                isSelectingMode={isSelectingPins}
+                onSelectingModeChange={setIsSelectingPins}
               />
             )}
           </div>
