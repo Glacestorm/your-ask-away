@@ -381,9 +381,14 @@ export function MapContainer({
             sources: {
               'satellite': {
                 type: 'raster',
-                tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+                tiles: [
+                  'https://mt0.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+                  'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+                  'https://mt2.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+                  'https://mt3.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+                ],
                 tileSize: 256,
-                attribution: '© Esri',
+                attribution: '© Google',
               },
             },
             layers: [{
@@ -391,7 +396,7 @@ export function MapContainer({
               type: 'raster',
               source: 'satellite',
               minzoom: 0,
-              maxzoom: 19,
+              maxzoom: 20,
             }],
           };
         
@@ -470,9 +475,14 @@ export function MapContainer({
             sources: {
               'base': {
                 type: 'raster',
-                tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+                tiles: [
+                  'https://mt0.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+                  'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+                  'https://mt2.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+                  'https://mt3.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+                ],
                 tileSize: 256,
-                attribution: '© Esri',
+                attribution: '© Google',
               },
             },
             layers: [{
@@ -480,7 +490,7 @@ export function MapContainer({
               type: 'raster',
               source: 'base',
               minzoom: 0,
-              maxzoom: 19,
+              maxzoom: 20,
             }],
           };
           break;
