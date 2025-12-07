@@ -121,7 +121,8 @@ const AnalyticalPLChart: React.FC<AnalyticalPLChartProps> = ({ companyId, compan
       });
 
       const results = await Promise.all(dataPromises);
-      setYearsData(results.filter(r => r.income !== null));
+      // Always show all 5 years, even if they don't have data
+      setYearsData(results);
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
