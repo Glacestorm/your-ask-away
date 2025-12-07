@@ -8,6 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 import { 
   Database, 
   Activity, 
@@ -18,6 +19,7 @@ import {
   BarChart3,
   Shield,
   AlertCircle,
+  AlertTriangle,
   CheckCircle,
   XCircle,
   Loader2,
@@ -32,7 +34,8 @@ import {
   ArrowDownRight,
   Scale,
   Landmark,
-  Building2
+  Building2,
+  Plus
 } from 'lucide-react';
 import { VisitSheetAuditViewer } from './VisitSheetAuditViewer';
 import { AuditTab } from './accounting/AuditTab';
@@ -120,6 +123,11 @@ interface Company {
   tax_id: string | null;
 }
 
+interface ConsolidatedCompany {
+  id: string;
+  name: string;
+}
+
 export function AuditorDashboard() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<AuditStats>({
@@ -144,6 +152,11 @@ export function AuditorDashboard() {
   const [itemsPerPage, setItemsPerPage] = useState(25);
   const [totalLogs, setTotalLogs] = useState(0);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+  const [isConsolidatedMode, setIsConsolidatedMode] = useState(false);
+  const [consolidatedCompanies, setConsolidatedCompanies] = useState<ConsolidatedCompany[]>([]);
+  const [searchCompanyTerm, setSearchCompanyTerm] = useState('');
+  const [searchResults, setSearchResults] = useState<Company[]>([]);
+  const [searchingCompanies, setSearchingCompanies] = useState(false);
 
   useEffect(() => {
     fetchAllData();
@@ -152,6 +165,48 @@ export function AuditorDashboard() {
   useEffect(() => {
     fetchFullLogs();
   }, [currentPage, itemsPerPage]);
+
+  // Search companies for consolidated mode
+  useEffect(() => {
+    const searchCompanies = async () => {
+      if (searchCompanyTerm.length < 2) {
+        setSearchResults([]);
+        return;
+      }
+      setSearchingCompanies(true);
+      try {
+        const { data } = await supabase
+          .from('companies')
+          .select('id, name, bp, tax_id')
+          .or(`name.ilike.%${searchCompanyTerm}%,bp.ilike.%${searchCompanyTerm}%,tax_id.ilike.%${searchCompanyTerm}%`)
+          .limit(10);
+        setSearchResults(data || []);
+      } catch (error) {
+        console.error('Error searching companies:', error);
+      } finally {
+        setSearchingCompanies(false);
+      }
+    };
+
+    const debounce = setTimeout(searchCompanies, 300);
+    return () => clearTimeout(debounce);
+  }, [searchCompanyTerm]);
+
+  const addToConsolidated = (company: Company) => {
+    if (consolidatedCompanies.length >= 15) return;
+    if (consolidatedCompanies.find(c => c.id === company.id)) return;
+    setConsolidatedCompanies([...consolidatedCompanies, { id: company.id, name: company.name }]);
+    setSearchCompanyTerm('');
+    setSearchResults([]);
+  };
+
+  const removeFromConsolidated = (companyId: string) => {
+    setConsolidatedCompanies(consolidatedCompanies.filter(c => c.id !== companyId));
+  };
+
+  const clearConsolidated = () => {
+    setConsolidatedCompanies([]);
+  };
 
   const fetchAllData = async () => {
     try {
@@ -737,26 +792,166 @@ export function AuditorDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="mb-6">
-                <label className="text-sm font-medium mb-2 block">Selecciona una empresa per analitzar</label>
-                <CompanySearchBar 
-                  onSelectCompany={(company) => setSelectedCompany(company)} 
-                  selectedCompanyId={selectedCompany?.id || ''}
-                />
+              {/* Mode Toggle */}
+              <div className="flex items-center gap-4 mb-6 p-4 rounded-lg bg-muted/50 border">
+                <div className="flex gap-2">
+                  <Button 
+                    variant={!isConsolidatedMode ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => {
+                      setIsConsolidatedMode(false);
+                      setConsolidatedCompanies([]);
+                    }}
+                    className="gap-2"
+                  >
+                    <Building2 className="h-4 w-4" />
+                    Empresa Individual
+                  </Button>
+                  <Button 
+                    variant={isConsolidatedMode ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => {
+                      setIsConsolidatedMode(true);
+                      setSelectedCompany(null);
+                    }}
+                    className="gap-2"
+                  >
+                    <Landmark className="h-4 w-4" />
+                    Consolidat (fins 15 empreses)
+                  </Button>
+                </div>
               </div>
+
+              {/* Individual Company Selection */}
+              {!isConsolidatedMode && (
+                <div className="mb-6">
+                  <label className="text-sm font-medium mb-2 block">Selecciona una empresa per analitzar</label>
+                  <CompanySearchBar 
+                    onSelectCompany={(company) => setSelectedCompany(company)} 
+                    selectedCompanyId={selectedCompany?.id || ''}
+                  />
+                </div>
+              )}
+
+              {/* Consolidated Companies Selection */}
+              {isConsolidatedMode && (
+                <div className="mb-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">Selecciona empreses per consolidar (màx. 15)</label>
+                    {consolidatedCompanies.length > 0 && (
+                      <Button variant="ghost" size="sm" onClick={clearConsolidated} className="text-destructive">
+                        <XCircle className="h-4 w-4 mr-1" />
+                        Netejar tot
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Selected Companies */}
+                  {consolidatedCompanies.length > 0 && (
+                    <div className="flex flex-wrap gap-2 p-3 border rounded-lg bg-background">
+                      {consolidatedCompanies.map((company, idx) => (
+                        <Badge 
+                          key={company.id} 
+                          variant="secondary" 
+                          className="gap-2 py-1.5 px-3"
+                        >
+                          <span className="text-xs bg-primary/20 rounded-full w-5 h-5 flex items-center justify-center">
+                            {idx + 1}
+                          </span>
+                          {company.name}
+                          <button 
+                            onClick={() => removeFromConsolidated(company.id)}
+                            className="hover:bg-destructive/20 rounded-full p-0.5"
+                          >
+                            <XCircle className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Search Input */}
+                  {consolidatedCompanies.length < 15 && (
+                    <div className="relative">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Cerca per nom, BP o NRT..."
+                          value={searchCompanyTerm}
+                          onChange={(e) => setSearchCompanyTerm(e.target.value)}
+                          className="pl-10"
+                        />
+                        {searchingCompanies && (
+                          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin" />
+                        )}
+                      </div>
+
+                      {/* Search Results Dropdown */}
+                      {searchResults.length > 0 && (
+                        <div className="absolute z-50 w-full mt-1 bg-popover border rounded-lg shadow-lg max-h-60 overflow-auto">
+                          {searchResults.map((company) => {
+                            const isAlreadySelected = consolidatedCompanies.find(c => c.id === company.id);
+                            return (
+                              <button
+                                key={company.id}
+                                onClick={() => !isAlreadySelected && addToConsolidated(company)}
+                                disabled={!!isAlreadySelected}
+                                className={cn(
+                                  "w-full text-left px-4 py-3 hover:bg-muted/50 flex items-center justify-between border-b last:border-0",
+                                  isAlreadySelected && "opacity-50 cursor-not-allowed"
+                                )}
+                              >
+                                <div>
+                                  <p className="font-medium">{company.name}</p>
+                                  <div className="flex gap-3 text-xs text-muted-foreground">
+                                    {company.bp && <span>BP: {company.bp}</span>}
+                                    {company.tax_id && <span>NRT: {company.tax_id}</span>}
+                                  </div>
+                                </div>
+                                {isAlreadySelected ? (
+                                  <Badge variant="outline" className="text-xs">Seleccionada</Badge>
+                                ) : (
+                                  <Plus className="h-4 w-4 text-primary" />
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {consolidatedCompanies.length >= 15 && (
+                    <p className="text-sm text-amber-600 flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4" />
+                      Has assolit el màxim de 15 empreses per consolidar
+                    </p>
+                  )}
+                </div>
+              )}
               
-              {selectedCompany ? (
+              {/* Render Audit Tab */}
+              {!isConsolidatedMode && selectedCompany ? (
                 <AuditTab 
                   companyId={selectedCompany.id} 
                   companyName={selectedCompany.name} 
                 />
+              ) : isConsolidatedMode && consolidatedCompanies.length > 0 ? (
+                <AuditTab 
+                  isConsolidated={true}
+                  consolidatedCompanies={consolidatedCompanies}
+                />
               ) : (
                 <div className="text-center py-12 border rounded-xl bg-muted/30">
                   <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Selecciona una Empresa</h3>
+                  <h3 className="text-lg font-semibold mb-2">
+                    {isConsolidatedMode ? "Selecciona Empreses per Consolidar" : "Selecciona una Empresa"}
+                  </h3>
                   <p className="text-muted-foreground max-w-md mx-auto">
-                    Utilitza el cercador per seleccionar una empresa i veure l'anàlisi normatiu complet 
-                    incloent ràtios de liquiditat, solvència, risc de crèdit, Z-Score, IFRS 9 i més.
+                    {isConsolidatedMode 
+                      ? "Utilitza el cercador per afegir fins a 15 empreses i veure l'anàlisi normatiu consolidat amb ràtios agregats."
+                      : "Utilitza el cercador per seleccionar una empresa i veure l'anàlisi normatiu complet incloent ràtios de liquiditat, solvència, risc de crèdit, Z-Score, IFRS 9 i més."
+                    }
                   </p>
                 </div>
               )}
