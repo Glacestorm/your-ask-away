@@ -239,6 +239,8 @@ export function MapContainer({
 
   // Ref to store current route polyline for re-adding after style changes
   const currentRoutePolylineRef = useRef<string | null>(null);
+  // Ref for route markers (HTML markers are more reliable than layers)
+  const routeMarkersRef = useRef<maplibregl.Marker[]>([]);
   
   // Update ref when routePolyline changes
   useEffect(() => {
@@ -288,10 +290,16 @@ export function MapContainer({
     }
   }, [focusCompanyId, companies, mapLoaded, view3D, onFocusCompanyHandled]);
 
-  // Effect to draw route polyline on map - SIMPLIFIED VERSION
+  // Effect to draw route polyline on map with HTML markers as fallback
   useEffect(() => {
     const mapInstance = map.current;
     
+    // Cleanup existing route markers
+    const cleanupMarkers = () => {
+      routeMarkersRef.current.forEach(m => m.remove());
+      routeMarkersRef.current = [];
+    };
+
     // Early exit conditions
     if (!mapInstance || !mapLoaded) {
       return;
@@ -300,36 +308,41 @@ export function MapContainer({
     const SOURCE_ID = 'route-line-source';
     const LAYER_ID = 'route-line-layer';
     const OUTLINE_ID = 'route-outline-layer';
-    const START_SOURCE = 'route-start-source';
-    const END_SOURCE = 'route-end-source';
-    const START_LAYER = 'route-start-layer';
-    const END_LAYER = 'route-end-layer';
 
     // Remove existing route elements
-    const cleanup = () => {
-      [LAYER_ID, OUTLINE_ID, START_LAYER, END_LAYER].forEach(id => {
-        if (mapInstance.getLayer(id)) mapInstance.removeLayer(id);
-      });
-      [SOURCE_ID, START_SOURCE, END_SOURCE].forEach(id => {
-        if (mapInstance.getSource(id)) mapInstance.removeSource(id);
-      });
+    const cleanupLayers = () => {
+      try {
+        if (mapInstance.getLayer(LAYER_ID)) mapInstance.removeLayer(LAYER_ID);
+        if (mapInstance.getLayer(OUTLINE_ID)) mapInstance.removeLayer(OUTLINE_ID);
+        if (mapInstance.getSource(SOURCE_ID)) mapInstance.removeSource(SOURCE_ID);
+      } catch (e) {
+        console.warn('Cleanup error:', e);
+      }
     };
 
     // If no polyline, just cleanup and exit
     if (!routePolyline) {
-      cleanup();
+      cleanupLayers();
+      cleanupMarkers();
       return;
     }
 
     // Draw the route
     const drawRoute = () => {
       try {
-        cleanup();
+        cleanupLayers();
+        cleanupMarkers();
         
         const coords = decodePolyline(routePolyline);
-        if (coords.length < 2) return;
+        if (coords.length < 2) {
+          console.warn('Not enough coordinates:', coords.length);
+          return;
+        }
 
-        // Add route line
+        console.log('Drawing route with', coords.length, 'coordinates');
+        console.log('First coord:', coords[0], 'Last coord:', coords[coords.length - 1]);
+
+        // Add route line source
         mapInstance.addSource(SOURCE_ID, {
           type: 'geojson',
           data: {
@@ -339,33 +352,13 @@ export function MapContainer({
           }
         });
 
-        // Add start point
-        mapInstance.addSource(START_SOURCE, {
-          type: 'geojson',
-          data: {
-            type: 'Feature',
-            properties: {},
-            geometry: { type: 'Point', coordinates: coords[0] }
-          }
-        });
-
-        // Add end point
-        mapInstance.addSource(END_SOURCE, {
-          type: 'geojson',
-          data: {
-            type: 'Feature',
-            properties: {},
-            geometry: { type: 'Point', coordinates: coords[coords.length - 1] }
-          }
-        });
-
         // Outline layer (black border)
         mapInstance.addLayer({
           id: OUTLINE_ID,
           type: 'line',
           source: SOURCE_ID,
           layout: { 'line-join': 'round', 'line-cap': 'round' },
-          paint: { 'line-color': '#000', 'line-width': 12 }
+          paint: { 'line-color': '#1a1a2e', 'line-width': 10 }
         });
 
         // Main route layer (blue)
@@ -374,57 +367,77 @@ export function MapContainer({
           type: 'line',
           source: SOURCE_ID,
           layout: { 'line-join': 'round', 'line-cap': 'round' },
-          paint: { 'line-color': '#4285F4', 'line-width': 6 }
+          paint: { 'line-color': '#4285F4', 'line-width': 5 }
         });
 
-        // Start marker (green)
-        mapInstance.addLayer({
-          id: START_LAYER,
-          type: 'circle',
-          source: START_SOURCE,
-          paint: {
-            'circle-radius': 10,
-            'circle-color': '#00C853',
-            'circle-stroke-width': 3,
-            'circle-stroke-color': '#fff'
-          }
-        });
+        // Add HTML markers for start and end (these are always visible!)
+        const startEl = document.createElement('div');
+        startEl.innerHTML = `<div style="
+          width: 24px; height: 24px; 
+          background: #00C853; 
+          border: 3px solid white; 
+          border-radius: 50%; 
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+          display: flex; align-items: center; justify-content: center;
+          color: white; font-weight: bold; font-size: 12px;
+        ">A</div>`;
+        
+        const endEl = document.createElement('div');
+        endEl.innerHTML = `<div style="
+          width: 24px; height: 24px; 
+          background: #F44336; 
+          border: 3px solid white; 
+          border-radius: 50%; 
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+          display: flex; align-items: center; justify-content: center;
+          color: white; font-weight: bold; font-size: 12px;
+        ">B</div>`;
 
-        // End marker (red)
-        mapInstance.addLayer({
-          id: END_LAYER,
-          type: 'circle',
-          source: END_SOURCE,
-          paint: {
-            'circle-radius': 10,
-            'circle-color': '#F44336',
-            'circle-stroke-width': 3,
-            'circle-stroke-color': '#fff'
-          }
-        });
+        const startMarker = new maplibregl.Marker({ element: startEl })
+          .setLngLat(coords[0] as [number, number])
+          .addTo(mapInstance);
+        
+        const endMarker = new maplibregl.Marker({ element: endEl })
+          .setLngLat(coords[coords.length - 1] as [number, number])
+          .addTo(mapInstance);
+
+        routeMarkersRef.current = [startMarker, endMarker];
 
         // Fit bounds
         const lngs = coords.map(c => c[0]);
         const lats = coords.map(c => c[1]);
-        mapInstance.fitBounds(
-          [[Math.min(...lngs), Math.min(...lats)], [Math.max(...lngs), Math.max(...lats)]],
-          { padding: { top: 80, bottom: 80, left: 80, right: 400 }, duration: 800 }
-        );
+        const bounds: [[number, number], [number, number]] = [
+          [Math.min(...lngs), Math.min(...lats)], 
+          [Math.max(...lngs), Math.max(...lats)]
+        ];
+        
+        mapInstance.fitBounds(bounds, { 
+          padding: { top: 100, bottom: 100, left: 100, right: 420 }, 
+          duration: 1000 
+        });
 
-        console.log('Route drawn successfully with', coords.length, 'points');
+        console.log('Route drawn successfully!');
       } catch (err) {
         console.error('Error drawing route:', err);
       }
     };
 
-    // Execute after short delay to ensure map is ready
-    if (mapInstance.isStyleLoaded()) {
-      setTimeout(drawRoute, 50);
-    } else {
-      mapInstance.once('style.load', () => setTimeout(drawRoute, 50));
-    }
+    // Execute after ensuring map is ready
+    const tryDraw = () => {
+      if (mapInstance.isStyleLoaded()) {
+        drawRoute();
+      } else {
+        mapInstance.once('style.load', drawRoute);
+      }
+    };
 
-    return cleanup;
+    // Small delay to ensure everything is ready
+    setTimeout(tryDraw, 100);
+
+    return () => {
+      cleanupLayers();
+      cleanupMarkers();
+    };
   }, [routePolyline, mapLoaded]);
 
   // Fetch tooltip configuration
@@ -776,13 +789,13 @@ export function MapContainer({
         const SOURCE_ID = 'route-line-source';
         const LAYER_ID = 'route-line-layer';
         const OUTLINE_ID = 'route-outline-layer';
-        const START_SOURCE = 'route-start-source';
-        const END_SOURCE = 'route-end-source';
-        const START_LAYER = 'route-start-layer';
-        const END_LAYER = 'route-end-layer';
         
         setTimeout(() => {
           try {
+            // Clean up old markers
+            routeMarkersRef.current.forEach(m => m.remove());
+            routeMarkersRef.current = [];
+            
             const coords = decodePolyline(polyline);
             if (coords.length >= 2) {
               // Add route line source
@@ -795,33 +808,13 @@ export function MapContainer({
                 }
               });
 
-              // Add start point source
-              mapInstance.addSource(START_SOURCE, {
-                type: 'geojson',
-                data: {
-                  type: 'Feature',
-                  properties: {},
-                  geometry: { type: 'Point', coordinates: coords[0] }
-                }
-              });
-
-              // Add end point source
-              mapInstance.addSource(END_SOURCE, {
-                type: 'geojson',
-                data: {
-                  type: 'Feature',
-                  properties: {},
-                  geometry: { type: 'Point', coordinates: coords[coords.length - 1] }
-                }
-              });
-
               // Outline layer
               mapInstance.addLayer({
                 id: OUTLINE_ID,
                 type: 'line',
                 source: SOURCE_ID,
                 layout: { 'line-join': 'round', 'line-cap': 'round' },
-                paint: { 'line-color': '#000', 'line-width': 12 }
+                paint: { 'line-color': '#1a1a2e', 'line-width': 10 }
               });
 
               // Main route layer
@@ -830,34 +823,41 @@ export function MapContainer({
                 type: 'line',
                 source: SOURCE_ID,
                 layout: { 'line-join': 'round', 'line-cap': 'round' },
-                paint: { 'line-color': '#4285F4', 'line-width': 6 }
+                paint: { 'line-color': '#4285F4', 'line-width': 5 }
               });
 
-              // Start marker
-              mapInstance.addLayer({
-                id: START_LAYER,
-                type: 'circle',
-                source: START_SOURCE,
-                paint: {
-                  'circle-radius': 10,
-                  'circle-color': '#00C853',
-                  'circle-stroke-width': 3,
-                  'circle-stroke-color': '#fff'
-                }
-              });
+              // Add HTML markers for start and end
+              const startEl = document.createElement('div');
+              startEl.innerHTML = `<div style="
+                width: 24px; height: 24px; 
+                background: #00C853; 
+                border: 3px solid white; 
+                border-radius: 50%; 
+                box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                display: flex; align-items: center; justify-content: center;
+                color: white; font-weight: bold; font-size: 12px;
+              ">A</div>`;
+              
+              const endEl = document.createElement('div');
+              endEl.innerHTML = `<div style="
+                width: 24px; height: 24px; 
+                background: #F44336; 
+                border: 3px solid white; 
+                border-radius: 50%; 
+                box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                display: flex; align-items: center; justify-content: center;
+                color: white; font-weight: bold; font-size: 12px;
+              ">B</div>`;
 
-              // End marker
-              mapInstance.addLayer({
-                id: END_LAYER,
-                type: 'circle',
-                source: END_SOURCE,
-                paint: {
-                  'circle-radius': 10,
-                  'circle-color': '#F44336',
-                  'circle-stroke-width': 3,
-                  'circle-stroke-color': '#fff'
-                }
-              });
+              const startMarker = new maplibregl.Marker({ element: startEl })
+                .setLngLat(coords[0] as [number, number])
+                .addTo(mapInstance);
+              
+              const endMarker = new maplibregl.Marker({ element: endEl })
+                .setLngLat(coords[coords.length - 1] as [number, number])
+                .addTo(mapInstance);
+
+              routeMarkersRef.current = [startMarker, endMarker];
             }
           } catch (e) {
             console.warn('Error re-adding route layers:', e);
