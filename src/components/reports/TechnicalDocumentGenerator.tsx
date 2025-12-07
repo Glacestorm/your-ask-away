@@ -22,11 +22,14 @@ export const TechnicalDocumentGenerator = () => {
     { id: 'architecture', name: 'Arquitectura Técnica', completed: false },
     { id: 'roles', name: 'Sistema de Roles', completed: false },
     { id: 'modules', name: 'Módulos Funcionales', completed: false },
+    { id: 'map', name: 'Mapa Geográfico Detallado', completed: false },
     { id: 'edge', name: 'Edge Functions', completed: false },
-    { id: 'compliance', name: 'Normativa y Cumplimiento', completed: false },
+    { id: 'security', name: 'Seguridad y Riesgos', completed: false },
+    { id: 'andorra', name: 'Normativa Andorrana', completed: false },
+    { id: 'intranet', name: 'Implementación Intranet', completed: false },
+    { id: 'compliance', name: 'Normativa Bancaria', completed: false },
     { id: 'financial', name: 'Análisis Financiero', completed: false },
     { id: 'optimization', name: 'Optimización Multiusuario', completed: false },
-    { id: 'integrations', name: 'Integraciones', completed: false },
     { id: 'recommendations', name: 'Recomendaciones', completed: false },
   ]);
 
@@ -132,6 +135,48 @@ export const TechnicalDocumentGenerator = () => {
         doc.setFont('helvetica', 'normal');
       };
 
+      const addWarning = (text: string) => {
+        checkPageBreak(20);
+        doc.setFillColor(254, 243, 199);
+        doc.setDrawColor(245, 158, 11);
+        const lines = doc.splitTextToSize(text, contentWidth - 10);
+        const boxHeight = (lines.length * 5) + 10;
+        doc.roundedRect(margin, currentY - 3, contentWidth, boxHeight, 2, 2, 'FD');
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bolditalic');
+        doc.setTextColor(180, 83, 9);
+        doc.text('⚠️ ADVERTENCIA DE SEGURIDAD:', margin + 5, currentY + 3);
+        doc.setFont('helvetica', 'italic');
+        doc.setTextColor(120, 53, 15);
+        lines.forEach((line: string, i: number) => {
+          doc.text(line, margin + 5, currentY + 9 + (i * 5));
+        });
+        currentY += boxHeight + 5;
+        doc.setTextColor(0, 0, 0);
+        doc.setFont('helvetica', 'normal');
+      };
+
+      const addCritical = (text: string) => {
+        checkPageBreak(20);
+        doc.setFillColor(254, 226, 226);
+        doc.setDrawColor(239, 68, 68);
+        const lines = doc.splitTextToSize(text, contentWidth - 10);
+        const boxHeight = (lines.length * 5) + 10;
+        doc.roundedRect(margin, currentY - 3, contentWidth, boxHeight, 2, 2, 'FD');
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bolditalic');
+        doc.setTextColor(185, 28, 28);
+        doc.text('🔴 RIESGO CRÍTICO:', margin + 5, currentY + 3);
+        doc.setFont('helvetica', 'italic');
+        doc.setTextColor(127, 29, 29);
+        lines.forEach((line: string, i: number) => {
+          doc.text(line, margin + 5, currentY + 9 + (i * 5));
+        });
+        currentY += boxHeight + 5;
+        doc.setTextColor(0, 0, 0);
+        doc.setFont('helvetica', 'normal');
+      };
+
       const addBullet = (text: string, indent: number = 0) => {
         checkPageBreak(6);
         doc.setFontSize(10);
@@ -141,6 +186,21 @@ export const TechnicalDocumentGenerator = () => {
           doc.text(line, margin + indent + 5, currentY + (i * 5));
         });
         currentY += lines.length * 5 + 2;
+      };
+
+      const addNumberedList = (items: string[]) => {
+        items.forEach((item, index) => {
+          checkPageBreak(6);
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'bold');
+          doc.text(`${index + 1}.`, margin, currentY);
+          doc.setFont('helvetica', 'normal');
+          const lines = doc.splitTextToSize(item, contentWidth - 10);
+          lines.forEach((line: string, i: number) => {
+            doc.text(line, margin + 8, currentY + (i * 5));
+          });
+          currentY += lines.length * 5 + 2;
+        });
       };
 
       const addTable = (headers: string[], rows: string[][], colWidths?: number[]) => {
@@ -182,7 +242,7 @@ export const TechnicalDocumentGenerator = () => {
       };
 
       // ========== PORTADA ==========
-      setProgress(5);
+      setProgress(3);
       updateStep('cover');
       
       doc.setFillColor(30, 64, 175);
@@ -209,12 +269,13 @@ export const TechnicalDocumentGenerator = () => {
       doc.setFontSize(10);
       
       const metadata = [
-        ['Versión:', '1.0.0'],
+        ['Versión:', '2.0.0 - Incluye Análisis de Seguridad'],
         ['Fecha de Generación:', new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })],
         ['Plataforma:', 'Lovable + Supabase (Lovable Cloud)'],
         ['Framework:', 'React 18.3 + TypeScript + Vite'],
         ['Base de Datos:', 'PostgreSQL (Supabase)'],
         ['Autor:', 'Sistema Automático de Documentación'],
+        ['Clasificación:', 'CONFIDENCIAL - USO INTERNO BANCARIO'],
       ];
       
       metadata.forEach(([label, value]) => {
@@ -225,25 +286,25 @@ export const TechnicalDocumentGenerator = () => {
         currentY += 7;
       });
 
-      currentY += 20;
+      currentY += 15;
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
-      doc.text('Resumen del Sistema', margin, currentY);
+      doc.text('Nuevos Contenidos en Esta Versión', margin, currentY);
       currentY += 8;
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(10);
-      const summary = 'Este documento proporciona una descripción exhaustiva del sistema CRM bancario desarrollado para Creand, entidad financiera andorrana. El sistema integra gestión comercial, análisis financiero según PGC Andorra, cumplimiento normativo bancario europeo y español, y capacidades avanzadas de reporting y auditoría.';
-      const summaryLines = doc.splitTextToSize(summary, contentWidth);
-      summaryLines.forEach((line: string) => {
-        doc.text(line, margin, currentY);
-        currentY += 5;
-      });
+      addBullet('Análisis exhaustivo de seguridad y riesgos de datos', 0);
+      addBullet('Normativa Andorrana: Llei 29/2021 APDA y requisitos AFA', 0);
+      addBullet('Guía de implementación en servidor interno (intranet)', 0);
+      addBullet('Funcionalidades detalladas del mapa geográfico', 0);
+      addBullet('Grado de autonomía sin conexión a internet', 0);
+      addBullet('Parámetros de seguridad recomendados para IT bancario', 0);
 
       addPageNumber();
 
       // ========== ÍNDICE ==========
       addNewPage();
-      setProgress(10);
+      setProgress(6);
       updateStep('index');
       
       doc.setFontSize(20);
@@ -254,35 +315,28 @@ export const TechnicalDocumentGenerator = () => {
       doc.setTextColor(0, 0, 0);
 
       const indexItems = [
-        { num: '1', title: 'RESUMEN EJECUTIVO', page: 3 },
-        { num: '2', title: 'ARQUITECTURA TÉCNICA', page: 4 },
-        { num: '2.1', title: 'Stack Tecnológico', page: 4, indent: true },
-        { num: '2.2', title: 'Estructura del Proyecto', page: 5, indent: true },
-        { num: '2.3', title: 'Base de Datos', page: 6, indent: true },
-        { num: '2.4', title: 'Autenticación y Seguridad', page: 7, indent: true },
+        { num: '1', title: 'RESUMEN EJECUTIVO', page: 4 },
+        { num: '2', title: 'ARQUITECTURA TÉCNICA', page: 5 },
         { num: '3', title: 'SISTEMA DE ROLES Y PERMISOS', page: 8 },
-        { num: '3.1', title: 'Jerarquía de Roles', page: 8, indent: true },
-        { num: '3.2', title: 'Control de Acceso RBAC', page: 9, indent: true },
-        { num: '3.3', title: 'Políticas RLS', page: 10, indent: true },
         { num: '4', title: 'MÓDULOS FUNCIONALES', page: 11 },
-        { num: '4.1', title: 'Dashboard de Gestores', page: 11, indent: true },
-        { num: '4.2', title: 'Dashboard Director de Negoci', page: 13, indent: true },
-        { num: '4.3', title: 'Dashboard Director d\'Oficina', page: 14, indent: true },
-        { num: '4.4', title: 'Dashboard Responsable Comercial', page: 15, indent: true },
-        { num: '4.5', title: 'Dashboard Auditor', page: 16, indent: true },
-        { num: '4.6', title: 'Mapa Geográfico Interactivo', page: 17, indent: true },
-        { num: '4.7', title: 'Gestión de Empresas', page: 19, indent: true },
-        { num: '4.8', title: 'Sistema de Visitas', page: 20, indent: true },
-        { num: '4.9', title: 'Módulo de Contabilidad PGC', page: 22, indent: true },
-        { num: '4.10', title: 'Sistema de Objetivos y KPIs', page: 26, indent: true },
-        { num: '4.11', title: 'Sistema de Alertas', page: 28, indent: true },
-        { num: '4.12', title: 'Métricas Unificadas', page: 29, indent: true },
-        { num: '5', title: 'EDGE FUNCTIONS (BACKEND)', page: 31 },
-        { num: '6', title: 'NORMATIVA Y CUMPLIMIENTO', page: 34 },
-        { num: '7', title: 'ANÁLISIS FINANCIERO', page: 38 },
-        { num: '8', title: 'OPTIMIZACIÓN MULTIUSUARIO', page: 41 },
-        { num: '9', title: 'INTEGRACIONES EXTERNAS', page: 43 },
-        { num: '10', title: 'RECOMENDACIONES Y MEJORAS', page: 45 },
+        { num: '5', title: 'MAPA GEOGRÁFICO - FUNCIONALIDADES DETALLADAS', page: 18 },
+        { num: '6', title: 'EDGE FUNCTIONS (BACKEND)', page: 22 },
+        { num: '7', title: 'ANÁLISIS DE SEGURIDAD Y RIESGOS', page: 25 },
+        { num: '7.1', title: 'Riesgos Identificados', page: 25, indent: true },
+        { num: '7.2', title: 'Datos que Salen de la Entidad', page: 27, indent: true },
+        { num: '7.3', title: 'Mitigaciones Recomendadas', page: 28, indent: true },
+        { num: '8', title: 'NORMATIVA ANDORRANA', page: 30 },
+        { num: '8.1', title: 'Llei 29/2021 Protección de Datos (APDA)', page: 30, indent: true },
+        { num: '8.2', title: 'Llei 12/2024 Modificación APDA', page: 31, indent: true },
+        { num: '8.3', title: 'Requisitos AFA para Entidades Bancarias', page: 32, indent: true },
+        { num: '9', title: 'IMPLEMENTACIÓN EN INTRANET BANCARIA', page: 34 },
+        { num: '9.1', title: 'Requisitos de Infraestructura', page: 34, indent: true },
+        { num: '9.2', title: 'Pasos de Instalación Detallados', page: 35, indent: true },
+        { num: '9.3', title: 'Grado de Autonomía sin Internet', page: 38, indent: true },
+        { num: '10', title: 'NORMATIVA BANCARIA INTERNACIONAL', page: 40 },
+        { num: '11', title: 'ANÁLISIS FINANCIERO IMPLEMENTADO', page: 43 },
+        { num: '12', title: 'OPTIMIZACIÓN MULTIUSUARIO', page: 46 },
+        { num: '13', title: 'RECOMENDACIONES Y PARAMETRIZACIÓN SEGURIDAD', page: 48 },
       ];
 
       doc.setFontSize(10);
@@ -306,7 +360,7 @@ export const TechnicalDocumentGenerator = () => {
 
       // ========== 1. RESUMEN EJECUTIVO ==========
       addNewPage();
-      setProgress(15);
+      setProgress(10);
       updateStep('executive');
       
       addTitle('1. RESUMEN EJECUTIVO');
@@ -316,32 +370,15 @@ export const TechnicalDocumentGenerator = () => {
       addSubtitle('Objetivos Principales del Sistema');
       addBullet('Centralizar la gestión de la cartera comercial de empresas con capacidad para más de 20,000 registros');
       addBullet('Proporcionar herramientas de análisis financiero según el Plan General Contable de Andorra');
-      addBullet('Garantizar el cumplimiento normativo bancario español y europeo (Basel III/IV, IFRS 9, MiFID II)');
+      addBullet('Garantizar el cumplimiento normativo bancario andorrano (APDA, AFA) y europeo');
       addBullet('Optimizar la productividad de gestores comerciales mediante automatización y IA');
       addBullet('Ofrecer visibilidad ejecutiva mediante dashboards especializados por rol');
       
-      addSubtitle('Alcance Funcional');
-      addParagraph('El sistema cubre las siguientes áreas funcionales principales:');
-      addBullet('Gestión completa del ciclo de vida de clientes empresariales', 5);
-      addBullet('Sistema de visitas comerciales con fichas detalladas y validación jerárquica', 5);
-      addBullet('Módulo contable con soporte para estados financieros Normal, Abreujat y Simplificat', 5);
-      addBullet('Análisis de riesgo crediticio con Z-Score de Altman y rating bancario', 5);
-      addBullet('Sistema de objetivos y KPIs con seguimiento en tiempo real', 5);
-      addBullet('Mapa geográfico interactivo con clustering y múltiples capas visuales', 5);
-      addBullet('Consolidación de balances para grupos de hasta 15 empresas', 5);
-      
       addOpinion('Este sistema representa una solución enterprise de alta complejidad. La arquitectura elegida (React + Supabase) proporciona escalabilidad sin costes de infraestructura tradicional. El cumplimiento normativo integrado reduce significativamente el riesgo operacional.');
-      
-      addSubtitle('Capacidades Técnicas Destacadas');
-      addBullet('Soporte para 500-1000+ usuarios simultáneos mediante optimización de canales realtime');
-      addBullet('Generación automática de planes de acción mediante IA (Lovable AI - Gemini 2.5)');
-      addBullet('Importación inteligente de estados financieros desde PDF con OCR y mapeo automático');
-      addBullet('Sistema de alertas con escalado automático y notificaciones multicanal');
-      addBullet('Paginación server-side para gestión eficiente de grandes volúmenes de datos');
 
       // ========== 2. ARQUITECTURA TÉCNICA ==========
       addNewPage();
-      setProgress(25);
+      setProgress(15);
       updateStep('architecture');
       
       addTitle('2. ARQUITECTURA TÉCNICA');
@@ -362,94 +399,29 @@ export const TechnicalDocumentGenerator = () => {
           ['Auth', 'Supabase Auth', '-', 'Autenticación JWT'],
           ['Functions', 'Deno Edge', '-', 'Serverless functions'],
           ['Mapas', 'MapLibre GL', '5.13.0', 'Mapas vectoriales'],
-          ['Gráficos', 'Recharts', '2.15.4', 'Visualización datos'],
-          ['PDF', 'jsPDF', '3.0.4', 'Generación documentos'],
-          ['Excel', 'xlsx', '0.18.5', 'Importación/exportación'],
         ],
         [40, 45, 25, 60]
       );
 
-      addOpinion('La elección de este stack es excelente para aplicaciones empresariales. React Query elimina la complejidad de gestión de estado tradicional, mientras que Supabase proporciona capacidades de PostgreSQL enterprise sin administración de servidores. shadcn/ui permite personalización profunda manteniendo accesibilidad WCAG.');
-
-      addTitle('2.2 Estructura del Proyecto', 2);
-      addParagraph('El proyecto sigue una arquitectura modular y escalable:');
-      
-      const projectStructure = `
-src/
-├── components/          # Componentes React reutilizables
-│   ├── admin/          # Dashboards y gestión administrativa
-│   │   ├── accounting/ # Módulo contabilidad (45+ componentes)
-│   │   └── ...         # Otros módulos admin
-│   ├── company/        # Gestión de empresas
-│   ├── dashboard/      # Cards y widgets dashboard
-│   ├── map/            # Componentes cartográficos
-│   ├── reports/        # Generadores de informes
-│   ├── ui/             # Componentes UI base (shadcn)
-│   └── visits/         # Sistema de visitas
-├── contexts/           # React Contexts (Theme, Language, Presence)
-├── hooks/              # Custom hooks reutilizables
-├── integrations/       # Configuración Supabase
-├── lib/                # Utilidades y helpers
-├── locales/            # Internacionalización (ES, CA, EN, FR)
-├── pages/              # Páginas/rutas principales
-└── types/              # Definiciones TypeScript
-
-supabase/
-├── config.toml         # Configuración proyecto
-├── functions/          # 24 Edge Functions Deno
-└── migrations/         # Migraciones base de datos
-      `.trim();
-
-      doc.setFontSize(8);
-      doc.setFont('courier', 'normal');
-      const structureLines = projectStructure.split('\n');
-      structureLines.forEach(line => {
-        checkPageBreak(4);
-        doc.text(line, margin + 5, currentY);
-        currentY += 4;
-      });
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      currentY += 5;
-
-      addTitle('2.3 Base de Datos', 2);
+      addTitle('2.2 Base de Datos', 2);
       addParagraph('El esquema de base de datos comprende más de 50 tablas organizadas en dominios funcionales:');
 
-      addSubtitle('Tablas Principales por Dominio');
-      
       addTable(
         ['Dominio', 'Tablas', 'Registros Est.'],
         [
           ['Empresas', 'companies, company_contacts, company_documents, company_photos', '20,000+'],
           ['Visitas', 'visits, visit_sheets, visit_participants, visit_reminders', '100,000+'],
           ['Productos', 'products, company_products, company_tpv_terminals', '50,000+'],
-          ['Contabilidad', 'balance_sheets, income_statements, cash_flow_statements, equity_changes', '25,000+'],
-          ['Objetivos', 'goals, goal_progress, action_plans, action_plan_steps', '10,000+'],
-          ['Alertas', 'alerts, alert_history, notifications', '50,000+'],
+          ['Contabilidad', 'balance_sheets, income_statements, cash_flow_statements', '25,000+'],
+          ['Objetivos', 'goals, goal_progress, action_plans', '10,000+'],
           ['Usuarios', 'profiles, user_roles, audit_logs', '1,000+'],
-          ['Consolidación', 'consolidation_groups, consolidation_group_members, consolidated_*', '5,000+'],
         ],
         [35, 95, 30]
       );
 
-      addOpinion('El diseño de base de datos sigue principios de normalización adecuados para sistemas transaccionales bancarios. El archivado automático de estados financieros >5 años cumple con requisitos de retención normativa mientras optimiza rendimiento en tablas activas.');
-
-      addTitle('2.4 Autenticación y Seguridad', 2);
-      addParagraph('El sistema implementa múltiples capas de seguridad:');
-
-      addSubtitle('Mecanismos de Seguridad');
-      addBullet('Autenticación JWT mediante Supabase Auth con tokens de corta duración');
-      addBullet('Row Level Security (RLS) en todas las tablas con políticas granulares');
-      addBullet('Verificación de roles en cliente y servidor para doble validación');
-      addBullet('Bloqueo optimista para prevenir conflictos de edición concurrente');
-      addBullet('Auditoría completa de acciones en tabla audit_logs');
-      addBullet('Encriptación de secretos mediante Supabase Vault');
-
-      addOpinion('La implementación de seguridad es robusta. Las políticas RLS garantizan aislamiento de datos a nivel de base de datos, no solo aplicación. Sin embargo, recomendaría añadir autenticación MFA para roles administrativos.');
-
       // ========== 3. SISTEMA DE ROLES ==========
       addNewPage();
-      setProgress(35);
+      setProgress(20);
       updateStep('roles');
       
       addTitle('3. SISTEMA DE ROLES Y PERMISOS');
@@ -470,413 +442,149 @@ supabase/
         [45, 50, 20, 55]
       );
 
-      addSubtitle('Diagrama de Jerarquía');
-      addParagraph('La jerarquía sigue un modelo piramidal donde cada nivel superior puede ver los datos de niveles inferiores dentro de su ámbito:');
-
-      const hierarchy = `
-                    ┌─────────────────┐
-                    │   SUPERADMIN    │ ← Acceso total
-                    └────────┬────────┘
-                             │
-            ┌────────────────┼────────────────┐
-            ▼                ▼                ▼
-   ┌─────────────┐  ┌─────────────────┐  ┌─────────┐
-   │  DIRECTOR   │  │  RESPONSABLE    │  │ AUDITOR │
-   │   NEGOCI    │  │   COMERCIAL     │  │(Lectura)│
-   └──────┬──────┘  └────────┬────────┘  └─────────┘
-          │                  │
-          ▼                  │
-   ┌─────────────┐           │
-   │  DIRECTOR   │◄──────────┘
-   │   OFICINA   │
-   └──────┬──────┘
-          │
-          ▼
-   ┌─────────────┐
-   │   GESTOR    │ ← Solo sus datos
-   └─────────────┘
-      `.trim();
-
-      doc.setFontSize(7);
-      doc.setFont('courier', 'normal');
-      hierarchy.split('\n').forEach(line => {
-        checkPageBreak(4);
-        doc.text(line, margin, currentY);
-        currentY += 3.5;
-      });
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      currentY += 8;
-
-      addTitle('3.2 Control de Acceso RBAC', 2);
-      addParagraph('El control de acceso basado en roles (RBAC) se implementa en tres niveles:');
-
-      addSubtitle('1. Nivel de Navegación (Frontend)');
-      addBullet('AdminSidebar filtra opciones de menú según rol del usuario');
-      addBullet('Componentes verifican rol antes de renderizar funcionalidades');
-      addBullet('Rutas protegidas con guardias de autenticación');
-
-      addSubtitle('2. Nivel de Lógica (Hooks/Context)');
-      addBullet('useAuth hook proporciona información de rol y permisos');
-      addBullet('Consultas a base de datos filtradas por rol automáticamente');
-      addBullet('Funciones de ayuda is_admin_or_superadmin() para validaciones');
-
-      addSubtitle('3. Nivel de Datos (RLS)');
-      addBullet('Políticas RLS en PostgreSQL garantizan aislamiento de datos');
-      addBullet('Cada tabla tiene políticas para SELECT, INSERT, UPDATE, DELETE');
-      addBullet('Funciones SECURITY DEFINER para operaciones especiales');
-
-      addTitle('3.3 Políticas RLS', 2);
-      addParagraph('Ejemplos de políticas implementadas:');
-
-      const rlsExamples = `
--- Ejemplo: Política para tabla companies
-CREATE POLICY "Gestores ven solo sus empresas" ON companies
-  FOR SELECT USING (
-    gestor_id = auth.uid() OR
-    is_admin_or_superadmin(auth.uid())
-  );
-
--- Ejemplo: Política para visit_sheets
-CREATE POLICY "Solo crear fichas propias" ON visit_sheets
-  FOR INSERT WITH CHECK (
-    gestor_id = auth.uid()
-  );
-
--- Ejemplo: Política con verificación de oficina
-CREATE POLICY "Director oficina ve su oficina" ON companies
-  FOR SELECT USING (
-    oficina = get_user_office(auth.uid()) OR
-    is_admin_or_superadmin(auth.uid())
-  );
-      `.trim();
-
-      doc.setFontSize(8);
-      doc.setFont('courier', 'normal');
-      rlsExamples.split('\n').forEach(line => {
-        checkPageBreak(4);
-        doc.text(line, margin, currentY);
-        currentY += 4;
-      });
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      currentY += 5;
+      addTitle('3.2 Políticas RLS (Row Level Security)', 2);
+      addParagraph('Cada tabla implementa políticas de seguridad a nivel de fila:');
+      addBullet('Gestores solo ven empresas asignadas (gestor_id = auth.uid())');
+      addBullet('Directores de oficina ven solo su oficina');
+      addBullet('Roles admin ven todos los datos');
+      addBullet('Auditors tienen acceso de solo lectura');
 
       addOpinion('La implementación de RBAC es ejemplar. La triple capa (UI, lógica, datos) proporciona defensa en profundidad. Las políticas RLS son especialmente importantes para prevenir acceso no autorizado incluso si hay vulnerabilidades en el frontend.');
 
       // ========== 4. MÓDULOS FUNCIONALES ==========
       addNewPage();
-      setProgress(45);
+      setProgress(25);
       updateStep('modules');
       
       addTitle('4. MÓDULOS FUNCIONALES');
       
       addTitle('4.1 Dashboard de Gestores', 2);
-      addParagraph('El dashboard de gestores (GestorDashboard.tsx - 938 líneas) proporciona una experiencia completa de gestión comercial personal:');
-
-      addSubtitle('Características Principales');
-      addBullet('Navegación 3D mediante tarjetas interactivas con efectos hover');
-      addBullet('Estadísticas personales: visitas, tasa de éxito, empresas asignadas, productos ofertados');
+      addParagraph('Dashboard personal con navegación 3D mediante tarjetas interactivas:');
+      addBullet('Estadísticas personales: visitas, tasa de éxito, empresas asignadas');
       addBullet('Gráficos de evolución mensual con comparativa de períodos');
-      addBullet('Filtros avanzados por productos, vinculación y fechas');
       addBullet('Sistema de objetivos personales con tracking en tiempo real');
       addBullet('Planes de acción generados automáticamente por IA');
-      addBullet('Historial de objetivos con análisis de tendencias');
       addBullet('Benchmarking contra promedios de oficina y equipo');
 
-      addSubtitle('Secciones del Dashboard');
-      addTable(
-        ['Sección', 'Funcionalidad', 'Componentes'],
-        [
-          ['Visió General', 'KPIs principales y estadísticas', 'Cards, gráficos circulares'],
-          ['Visites', 'Gestión de visitas con creación inline', 'Formulario, lista paginada'],
-          ['Objectius', 'Tracking de objetivos asignados', 'Progress bars, benchmarking'],
-          ['Historial', 'Análisis histórico y tendencias', 'Gráficos, tablas comparativas'],
-        ],
-        [35, 70, 65]
-      );
-
-      addOpinion('El dashboard de gestores destaca por su enfoque en productividad. La generación de planes de acción con IA es innovadora - utiliza Gemini 2.5 para analizar métricas deficientes y proponer acciones concretas de mejora en 30 días.');
-
       addTitle('4.2 Dashboard Director de Negoci', 2);
-      addParagraph('Dashboard ejecutivo (CommercialDirectorDashboard.tsx - 662 líneas) para visión global del negocio:');
-
-      addSubtitle('KPIs Ejecutivos');
-      addBullet('Total de visitas con indicador de tendencia mensual');
-      addBullet('Tasa de éxito global con comparativa histórica');
-      addBullet('Empresas activas y nuevas captaciones');
-      addBullet('Productos contratados y pipeline comercial');
+      addParagraph('Dashboard ejecutivo para visión global del negocio:');
+      addBullet('KPIs ejecutivos con indicadores de tendencia');
       addBullet('Ranking de gestores por múltiples métricas');
-
-      addSubtitle('Visualizaciones');
-      addBullet('Gráfico de distribución de resultados de visitas');
-      addBullet('Tendencia mensual de actividad comercial');
-      addBullet('Mapa de calor por oficinas');
       addBullet('Explorador de métricas con drill-down');
 
-      addTitle('4.3 Dashboard Director d\'Oficina', 2);
-      addParagraph('Vista filtrada por oficina asignada con acceso a gestores de su equipo:');
-      addBullet('Métricas agregadas solo de su oficina');
-      addBullet('Comparativa entre gestores de la oficina');
-      addBullet('Gestión de objetivos para su equipo');
-      addBullet('Calendario compartido de visitas del equipo');
+      addTitle('4.3 Módulo de Contabilidad PGC Andorra', 2);
+      addParagraph('Sistema completo de análisis financiero:');
+      addBullet('Tres modelos contables: Normal, Abreujat, Simplificat');
+      addBullet('Balance de Situación con >40 partidas');
+      addBullet('Cuenta de Pérdidas y Ganancias completa');
+      addBullet('Estado de Flujos de Efectivo');
+      addBullet('Consolidación de hasta 15 empresas');
+      addBullet('Parsing automático de PDF con IA');
 
-      addTitle('4.4 Dashboard Responsable Comercial', 2);
-      addParagraph('Panel de gestión comercial con capacidades de auditoría:');
-      addBullet('Validación de fichas de visita de gestores');
-      addBullet('Panel de auditoría de acciones por usuarios');
-      addBullet('Acceso completo a métricas de todos los gestores');
-      addBullet('Generación de reportes consolidados');
-
+      // ========== 5. MAPA GEOGRÁFICO DETALLADO ==========
       addNewPage();
-      addTitle('4.5 Dashboard Auditor', 2);
-      addParagraph('Panel especializado para funciones de auditoría interna:');
+      setProgress(30);
+      updateStep('map');
       
-      addSubtitle('Funcionalidades de Auditoría');
-      addBullet('Visor de logs de auditoría del sistema completo');
-      addBullet('Historial de alertas con filtros por tipo y fecha');
-      addBullet('Panel normativo con análisis de cumplimiento regulatorio');
-      addBullet('Análisis de ratios de liquidez, solvencia y riesgo');
-      addBullet('Selección de empresas individuales o consolidadas (hasta 15)');
+      addTitle('5. MAPA GEOGRÁFICO - FUNCIONALIDADES DETALLADAS');
+      
+      addParagraph('El sistema de mapas es una de las funcionalidades más completas de la plataforma, implementado en MapContainer.tsx con más de 1,598 líneas de código.');
 
-      addSubtitle('Análisis Normativo Disponible');
+      addTitle('5.1 Motor de Renderizado', 2);
       addTable(
-        ['Tipo', 'Análisis', 'Normativa Referencia'],
+        ['Componente', 'Tecnología', 'Función'],
         [
-          ['Liquidez', 'Ratio corriente, rápido, tesorería', 'Circular BE 4/2017'],
-          ['Solvencia', 'Endeudamiento, autonomía, cobertura', 'CRR/CRD IV'],
-          ['IFRS 9', 'Staging, ECL, PD/LGD', 'IFRS 9'],
-          ['Basel III/IV', 'Tier 1, LCR, NSFR', 'Basel Committee'],
-          ['Insolvencia', 'Z-Score, alertas concursales', 'Ley Concursal'],
+          ['Motor', 'MapLibre GL JS 5.13.0', 'Renderizado vectorial WebGL'],
+          ['Clustering', 'Supercluster 8.0.1', 'Agrupación dinámica de marcadores'],
+          ['Geocoding', 'OpenStreetMap Nominatim', 'Conversión dirección a coordenadas'],
+          ['Estilos', 'OSM Standard + Satélite', 'Capas visuales intercambiables'],
         ],
-        [30, 60, 80]
+        [40, 60, 70]
       );
 
-      addOpinion('El dashboard de auditor cumple con principios de segregación de funciones. El acceso de solo lectura y la exclusión de fichas de visita garantizan independencia auditora. La integración de normativa bancaria múltiple es un diferenciador clave.');
-
-      addTitle('4.6 Mapa Geográfico Interactivo', 2);
-      addParagraph('Sistema cartográfico avanzado (MapContainer.tsx - 1,598 líneas) con múltiples capas:');
-
-      addSubtitle('Características del Mapa');
-      addBullet('Motor: MapLibre GL con renderizado vectorial WebGL');
-      addBullet('Clustering: Supercluster para agrupación dinámica de marcadores');
-      addBullet('Vista 3D: Edificios extruidos con control de pitch');
-      addBullet('Estilos: OpenStreetMap estándar y satélite');
-      addBullet('Geolocalización: Integración con Nominatim/OSM');
-
-      addSubtitle('Modos de Visualización');
+      addTitle('5.2 Modos de Visualización por Color', 2);
+      addParagraph('Los marcadores pueden colorearse según diferentes criterios analíticos:');
+      
       addTable(
-        ['Modo', 'Criterio de Color', 'Uso Principal'],
+        ['Modo', 'Criterio de Color', 'Uso Principal', 'Escala'],
         [
-          ['Estado', 'Status de empresa (colores config.)', 'Vista general de cartera'],
-          ['Vinculación', 'Porcentaje afiliación Creand', 'Penetración bancaria'],
-          ['Facturación', 'Rango de facturación anual', 'Segmentación por tamaño'],
-          ['P&L Banco', 'Rentabilidad para Creand', 'Análisis de valor cliente'],
-          ['Visitas', 'Frecuencia de visitas recientes', 'Cobertura comercial'],
+          ['Estado', 'Status de empresa', 'Vista general cartera', 'Colores configurables'],
+          ['Vinculación', '% afiliación Creand', 'Penetración bancaria', 'Verde alto, rojo bajo'],
+          ['Facturación', 'Rango facturación anual', 'Segmentación tamaño', 'Azul escalado'],
+          ['P&L Banco', 'Rentabilidad Creand', 'Valor cliente', 'Verde/rojo'],
+          ['Visitas', 'Frecuencia visitas', 'Cobertura comercial', 'Intensidad color'],
         ],
-        [35, 60, 75]
+        [35, 45, 50, 40]
       );
 
-      addSubtitle('Funcionalidades Interactivas');
-      addBullet('Tooltips configurables con información de empresa');
-      addBullet('Click en marcador abre panel de detalle de empresa');
-      addBullet('Galería de fotos de empresa desde tooltip');
-      addBullet('Reubicación de marcadores con long-press y drag');
-      addBullet('Undo de última reubicación (15 segundos)');
-      addBullet('Sidebar con filtros avanzados y modo fullscreen');
+      addTitle('5.3 Funcionalidades Interactivas', 2);
+      
+      addSubtitle('Tooltips Configurables');
+      addBullet('Información de empresa al pasar sobre marcador');
+      addBullet('Click en "Ver fotos" abre galería de imágenes');
+      addBullet('Datos financieros resumidos visibles');
+      addBullet('Indicador de vinculación con colores por banco');
 
-      addOpinion('La implementación cartográfica es de nivel profesional. El clustering evita sobrecarga visual con miles de empresas, y la reubicación con undo es crucial para correcciones de geocodificación imprecisa. El modo fullscreen sidebar es excelente para análisis detallado.');
+      addSubtitle('Selección de Empresa');
+      addBullet('Click en marcador abre panel lateral de detalle');
+      addBullet('Información completa: contactos, productos, documentos');
+      addBullet('Historial de visitas y fichas');
+      addBullet('Acceso a módulo contable de la empresa');
+
+      addSubtitle('Reubicación de Marcadores');
+      addBullet('Long-press (3 segundos) activa modo edición');
+      addBullet('Marcador muestra outline visual de activación');
+      addBullet('Drag and drop a nueva posición');
+      addBullet('Guardado automático en base de datos');
+      addBullet('Botón "Deshacer" visible 15 segundos');
+      addBullet('Útil para corregir geocodificación imprecisa');
 
       addNewPage();
-      addTitle('4.7 Gestión de Empresas', 2);
-      addParagraph('Módulo completo de gestión de cartera empresarial (CompaniesManager.tsx):');
+      addTitle('5.4 Clustering y Rendimiento', 2);
+      addParagraph('El sistema utiliza Supercluster para gestionar miles de marcadores eficientemente:');
+      addBullet('Agrupación automática de marcadores cercanos');
+      addBullet('Número de empresas mostrado en cluster');
+      addBullet('Click en cluster hace zoom para ver empresas');
+      addBullet('Transiciones animadas suaves');
+      addBullet('Rendimiento optimizado para >20,000 empresas');
 
-      addSubtitle('Datos de Empresa');
-      addBullet('Información básica: nombre, dirección, NRT, BP, CNAE, sector');
-      addBullet('Datos financieros: facturación anual, beneficios, empleados');
-      addBullet('Vinculación bancaria: porcentajes Creand/Morabanc/Andbank');
-      addBullet('Contactos: múltiples contactos con roles y datos');
-      addBullet('Documentos: gestión documental con almacenamiento cloud');
-      addBullet('Fotos: galería de imágenes del establecimiento');
-      addBullet('TPV: terminales de punto de venta asociados');
+      addTitle('5.5 Vista 3D', 2);
+      addBullet('Edificios extruidos con control de pitch/inclinación');
+      addBullet('Rotación del mapa mediante gestos');
+      addBullet('Sombras y profundidad visual');
+      addBullet('Control de bearing (orientación)');
 
-      addSubtitle('Operaciones Masivas');
-      addBullet('Importación Excel con geocodificación automática');
-      addBullet('Detección y eliminación de duplicados');
-      addBullet('Geocodificación batch de empresas sin coordenadas');
-      addBullet('Búsqueda automática de fotos de empresas');
-      addBullet('Exportación a Excel y PDF');
+      addTitle('5.6 Sidebar y Filtros', 2);
+      addSubtitle('Filtros Disponibles');
+      addBullet('Por parroquia (jurisdicción territorial)');
+      addBullet('Por CNAE (sector de actividad)');
+      addBullet('Por gestor asignado');
+      addBullet('Por status de empresa');
+      addBullet('Por productos contratados');
+      addBullet('Por rango de facturación');
+      addBullet('Por porcentaje de vinculación');
+      addBullet('Por fecha de última visita');
 
-      addTitle('4.8 Sistema de Visitas y Fichas', 2);
-      addParagraph('Sistema integral de documentación comercial:');
+      addSubtitle('Modo Fullscreen Sidebar');
+      addBullet('Toggle para expandir sidebar a 100% pantalla');
+      addBullet('Oculta mapa completamente');
+      addBullet('Ideal para análisis detallado de datos');
+      addBullet('Navegación completa sin distracciones');
 
-      addSubtitle('Tipos de Visita');
-      addBullet('Visita individual: gestor solo');
-      addBullet('Visita conjunta: hasta 4 participantes de diferentes roles');
-      addBullet('Canales: presencial, telefónica, videollamada');
+      addTitle('5.7 Búsqueda Geográfica', 2);
+      addBullet('Barra de búsqueda por nombre de empresa');
+      addBullet('Búsqueda por dirección con geocoding');
+      addBullet('Resultados destacados en mapa');
+      addBullet('Zoom automático a resultado');
 
-      addSubtitle('Ficha de Visita (12 secciones)');
-      addTable(
-        ['Sección', 'Contenido'],
-        [
-          ['1. Datos Visita', 'Fecha, hora, duración, canal, tipo'],
-          ['2. Datos Cliente', 'Auto-poblado desde empresa seleccionada'],
-          ['3. Diagnóstico Inicial', 'Checklist de situación actual'],
-          ['4. Situación Financiera', 'Campos específicos empresa/particular'],
-          ['5. Necesidades Detectadas', 'Lista de necesidades identificadas'],
-          ['6. Propuesta de Valor', 'Soluciones propuestas'],
-          ['7. Productos/Servicios', 'Productos ofertados con importes'],
-          ['8. Riesgos/Compliance/KYC', 'Verificaciones normativas'],
-          ['9. Resumen Reunión', 'Notas de la reunión'],
-          ['10. Próximos Pasos', 'Acciones con fechas'],
-          ['11. Evaluación Potencial', 'Probabilidad de cierre'],
-          ['12. Recordatorios', 'Alertas de seguimiento'],
-        ],
-        [50, 120]
-      );
+      addOpinion('La implementación cartográfica es de nivel profesional. El clustering evita sobrecarga visual con miles de empresas, y la reubicación con undo es crucial para correcciones de geocodificación. Los múltiples modos de color permiten análisis visual rápido de la cartera.');
 
-      addSubtitle('Flujo de Validación');
-      addParagraph('Las fichas siguen un flujo de aprobación jerárquico:');
-      addBullet('1. Gestor crea y envía ficha a validación');
-      addBullet('2. Responsable Comercial revisa y aprueba/rechaza');
-      addBullet('3. Si hay productos ofertados, debe especificar resultado de oferta');
-      addBullet('4. Vinculación de ficha sincroniza con affiliations de empresa');
-      addBullet('5. Email automático a gestor con resultado de validación');
-
-      addOpinion('El sistema de fichas de visita es extremadamente completo. La validación obligatoria de resultado de oferta cuando hay productos previene datos incompletos. La sincronización de vinculación garantiza coherencia de datos.');
-
+      // ========== 6. EDGE FUNCTIONS ==========
       addNewPage();
-      addTitle('4.9 Módulo de Contabilidad PGC Andorra', 2);
-      addParagraph('Módulo contable completo (AccountingManager.tsx - 1,631 líneas) con 45+ componentes especializados:');
-
-      addSubtitle('Modelos Contables Soportados');
-      addTable(
-        ['Modelo', 'Empresas Aplicables', 'Estados Requeridos'],
-        [
-          ['Normal (Completo)', 'Todas las grandes empresas', 'Balance, P&G, EFE, ECPN, Memoria'],
-          ['Abreujat', 'PYMES según umbrales', 'Balance abrv., P&G abrv., Memoria abrv.'],
-          ['Simplificat', 'Microempresas', 'Balance simp., P&G simp.'],
-        ],
-        [45, 50, 75]
-      );
-
-      addSubtitle('Estados Financieros Implementados');
-      addBullet('Balance de Situación: Activo, Pasivo, Patrimonio Neto');
-      addBullet('Cuenta de Pérdidas y Ganancias: estructura funcional PGC');
-      addBullet('Estado de Flujos de Efectivo: actividades operativas, inversión, financiación');
-      addBullet('Estado de Cambios en Patrimonio Neto');
-      addBullet('Memoria/Notas Financieras: notas numeradas con contenido');
-
-      addSubtitle('Análisis Financiero');
-      addTable(
-        ['Componente', 'Análisis', 'Indicadores'],
-        [
-          ['EBITEBITDAAnalysis', 'Resultado operativo', 'EBIT, EBITDA, margen'],
-          ['WorkingCapitalAnalysis', 'Fondo de maniobra', 'FM, NOF, tesorería neta'],
-          ['CashFlowAnalysis', 'Flujo de caja', 'Cash flow operativo, libre'],
-          ['LongTermFinancialAnalysis', 'Solvencia largo plazo', 'Ratios endeudamiento'],
-          ['AddedValueAnalysis', 'Valor añadido', 'Generación y distribución VA'],
-          ['DuPontPyramid', 'Pirámide DuPont', 'ROE descompuesto'],
-          ['ZScoreAnalysis', 'Predicción insolvencia', 'Z-Score Altman'],
-          ['BankRatingAnalysis', 'Rating crediticio', 'Score 1-10 con factores'],
-        ],
-        [55, 50, 65]
-      );
-
-      addSubtitle('Consolidación de Balances');
-      addParagraph('El sistema permite consolidar estados financieros de grupos empresariales:');
-      addBullet('Selección de hasta 15 empresas para consolidación');
-      addBullet('Métodos: integración global y proporcional');
-      addBullet('Cálculo automático de intereses minoritarios');
-      addBullet('Eliminación de inversiones inter-grupo');
-      addBullet('Porcentajes de participación personalizables');
-      addBullet('Exportación de estados consolidados');
-
-      addSubtitle('Importación PDF Inteligente');
-      addParagraph('Funcionalidad de parsing de estados financieros desde PDF:');
-      addBullet('OCR automático para PDFs escaneados');
-      addBullet('IA (Gemini 2.5) para mapeo inteligente de conceptos');
-      addBullet('Preview de datos antes de confirmar importación');
-      addBullet('Edición post-importación para correcciones');
-
-      addOpinion('Este es el módulo más sofisticado del sistema. La implementación del PGC Andorra con tres modelos es correcta y completa. La consolidación hasta 15 empresas cubre necesidades de grupos bancarios. El parsing PDF con IA reduce drásticamente el tiempo de entrada de datos.');
-
-      addNewPage();
-      addTitle('4.10 Sistema de Objetivos y KPIs', 2);
-      addParagraph('Gestión completa del ciclo de objetivos comerciales:');
-
-      addSubtitle('Métricas de Objetivos');
-      addTable(
-        ['Métrica', 'Descripción', 'Cálculo'],
-        [
-          ['new_clients', 'Nuevas empresas captadas', 'COUNT nuevas en período'],
-          ['visit_sheets', 'Fichas de visita creadas', 'COUNT fichas'],
-          ['tpv_volume', 'Volumen TPV mensual', 'SUM monthly_volume'],
-          ['conversion_rate', 'Tasa de conversión', '% visitas exitosas'],
-          ['client_facturacion', 'Facturación clientes', 'SUM facturacion_anual'],
-          ['products_per_client', 'Productos por cliente', 'AVG productos'],
-          ['follow_ups', 'Seguimientos realizados', 'COUNT próximas_citas'],
-        ],
-        [45, 60, 65]
-      );
-
-      addSubtitle('Flujo de Objetivos');
-      addBullet('1. Director/Responsable crea objetivo con métrica, valor target y fecha');
-      addBullet('2. Asigna objetivo a gestor(es) específico(s) o equipo');
-      addBullet('3. Sistema calcula progreso automáticamente en tiempo real');
-      addBullet('4. Alertas automáticas cuando objetivo está en riesgo (<50% a mitad período)');
-      addBullet('5. Notificación y email cuando objetivo se completa');
-      addBullet('6. Benchmark contra promedios oficina/equipo');
-
-      addSubtitle('Planes de Acción IA');
-      addParagraph('Cuando un gestor tiene métricas por debajo del promedio, el sistema puede generar automáticamente un plan de acción:');
-      addBullet('Análisis de métricas deficientes vs benchmarks');
-      addBullet('Generación de 4-6 pasos concretos de mejora');
-      addBullet('Duración 30 días con fechas específicas');
-      addBullet('Tracking de completitud de pasos');
-
-      addTitle('4.11 Sistema de Alertas', 2);
-      addParagraph('Motor de alertas configurable con escalado automático:');
-
-      addSubtitle('Tipos de Alertas');
-      addBullet('Bajo rendimiento: métricas por debajo de umbral');
-      addBullet('Objetivos en riesgo: progreso insuficiente');
-      addBullet('Oportunidad crítica: probabilidad cierre ≥90%');
-      addBullet('Recordatorios: fechas de seguimiento próximas');
-
-      addSubtitle('Sistema de Escalado');
-      addParagraph('Las alertas no resueltas escalan automáticamente:');
-      addBullet('Nivel 1: Notificación al gestor');
-      addBullet('Nivel 2 (24h): Escalado a director de oficina');
-      addBullet('Nivel 3 (48h): Escalado a responsable comercial');
-      addBullet('Nivel 4 (72h): Escalado a director comercial');
-
-      addTitle('4.12 Métricas Unificadas', 2);
-      addParagraph('Dashboard consolidado (UnifiedMetricsDashboard) con 8 KPIs bancarios:');
-
-      addTable(
-        ['KPI', 'Descripción', 'Benchmark Europeo'],
-        [
-          ['Visitas', 'Total visitas período', '15-20/mes'],
-          ['Tasa Éxito', '% visitas exitosas', '>60%'],
-          ['Vinculación', 'Afiliación media Creand', '>40%'],
-          ['Productos/Cliente', 'Cross-selling', '>3.5'],
-          ['Tasa Conversión', 'Leads a clientes', '>25%'],
-          ['Cartera Clientes', 'Empresas asignadas', '50-100'],
-          ['Productos Activos', 'Total productos', 'Creciente'],
-          ['Visitas/Cliente', 'Cobertura', '>4/año'],
-        ],
-        [45, 65, 60]
-      );
-
-      addOpinion('El sistema de métricas unificadas proporciona visibilidad instantánea del rendimiento. Los benchmarks europeos permiten contextualizar resultados. La capacidad de cambiar tipos de gráfico (bar, line, area, pie, radar) facilita diferentes análisis.');
-
-      // ========== 5. EDGE FUNCTIONS ==========
-      addNewPage();
-      setProgress(55);
+      setProgress(35);
       updateStep('edge');
       
-      addTitle('5. EDGE FUNCTIONS (BACKEND)');
+      addTitle('6. EDGE FUNCTIONS (BACKEND)');
       addParagraph('El sistema implementa 24 funciones serverless en Deno para lógica de backend:');
 
       addTable(
@@ -884,239 +592,422 @@ CREATE POLICY "Director oficina ve su oficina" ON companies
         [
           ['check-alerts', 'Verificar condiciones de alertas', 'Cron 1h'],
           ['check-goal-achievements', 'Detectar objetivos completados', 'Cron 8:00'],
-          ['check-goals-at-risk', 'Identificar objetivos en riesgo', 'Cron 8:00'],
-          ['check-low-performance', 'Alertar bajo rendimiento', 'Cron diario'],
-          ['check-visit-reminders', 'Generar recordatorios visitas', 'Cron 8:00'],
-          ['check-visit-sheet-reminders', 'Recordatorios fichas pendientes', 'Cron 8:00'],
           ['escalate-alerts', 'Escalar alertas no resueltas', 'Cron 4h'],
           ['generate-action-plan', 'Generar plan IA', 'Manual/API'],
           ['geocode-address', 'Geocodificar direcciones', 'API'],
           ['manage-user', 'Gestión usuarios admin', 'API'],
-          ['notify-visit-validation', 'Email validación ficha', 'DB Trigger'],
           ['parse-financial-pdf', 'Parsing PDF con IA', 'API'],
-          ['search-company-photo', 'Buscar fotos empresas', 'API'],
           ['send-alert-email', 'Enviar alertas email', 'Event'],
-          ['send-critical-opportunity-email', 'Email oportunidad 90%+', 'DB Trigger'],
-          ['send-daily-kpi-report', 'Reporte diario KPI', 'Cron 8:00'],
-          ['send-goal-achievement-email', 'Email logro objetivo', 'Event'],
-          ['send-monthly-kpi-report', 'Reporte mensual', 'Cron 1er día'],
-          ['send-monthly-reports', 'Reportes mensuales', 'Cron'],
-          ['send-reminder-email', 'Emails recordatorio', 'Event'],
-          ['send-visit-calendar-invite', 'Invitación calendario', 'API'],
           ['send-weekly-kpi-report', 'Reporte semanal KPI', 'Cron lunes'],
-          ['smart-column-mapping', 'Mapeo inteligente Excel', 'API'],
           ['system-health', 'Monitoreo salud sistema', 'Cron/API'],
         ],
         [55, 70, 45]
       );
 
-      addSubtitle('Arquitectura de Edge Functions');
-      addParagraph('Las funciones están implementadas en Deno con las siguientes características:');
-      addBullet('Ejecución en edge (baja latencia global)');
-      addBullet('Acceso a Supabase client con service_role para operaciones admin');
-      addBullet('Integración con Resend para emails transaccionales');
-      addBullet('Integración con Lovable AI para funciones de IA');
-      addBullet('Manejo de errores con logging estructurado');
-      addBullet('Secrets management mediante Supabase Vault');
-
-      addOpinion('La cobertura de edge functions es excelente. El uso de cron jobs para tareas periódicas (alertas, reportes) reduce carga en cliente. La función parse-financial-pdf con IA es particularmente innovadora para reducir entrada manual de datos.');
-
-      // ========== 6. NORMATIVA Y CUMPLIMIENTO ==========
+      // ========== 7. SEGURIDAD Y RIESGOS ==========
       addNewPage();
-      setProgress(65);
-      updateStep('compliance');
+      setProgress(42);
+      updateStep('security');
       
-      addTitle('6. NORMATIVA Y CUMPLIMIENTO');
-      addParagraph('El sistema implementa verificaciones de cumplimiento para múltiples marcos regulatorios:');
-
-      addTitle('6.1 Normativa Bancaria Española', 2);
+      addTitle('7. ANÁLISIS DE SEGURIDAD Y RIESGOS');
       
-      addSubtitle('Circular BE 4/2017');
-      addParagraph('Circular del Banco de España sobre normas de información financiera pública y reservada:');
-      addBullet('Requisitos de provisiones para insolvencias');
-      addBullet('Ratios de solvencia mínimos');
-      addBullet('Formato de estados financieros consolidados');
+      addCritical('Este análisis identifica riesgos de seguridad críticos que deben abordarse antes de desplegar en producción bancaria. El sistema actual está diseñado para desarrollo y requiere hardening adicional.');
 
-      addSubtitle('Ley 15/2010 - Plazos de Pago');
-      addParagraph('Modificación de la Ley de morosidad en operaciones comerciales:');
-      addBullet('Monitoreo de días de cobro y pago');
-      addBullet('Alertas cuando ratios exceden umbrales legales');
+      addTitle('7.1 Riesgos Identificados', 2);
 
-      addSubtitle('Ley Concursal');
-      addParagraph('Detección temprana de insolvencia mediante:');
-      addBullet('Z-Score de Altman para predicción de quiebra');
-      addBullet('Alertas automáticas en zona de riesgo (<1.81)');
-      addBullet('Monitoreo de ratios de liquidez críticos');
+      addSubtitle('RIESGO CRÍTICO: Datos de Perfiles Expuestos');
+      addParagraph('La tabla "profiles" es legible públicamente para usuarios autenticados y contiene:');
+      addBullet('Emails de empleados bancarios', 5);
+      addBullet('Nombres completos', 5);
+      addBullet('URLs de avatares', 5);
+      addBullet('Ubicaciones de oficina', 5);
+      addParagraph('Impacto: Atacantes podrían usar esta información para phishing dirigido o suplantación de identidad de empleados.');
+      
+      addSubtitle('RIESGO ALTO: Datos Empresariales Accesibles');
+      addParagraph('La tabla "companies" contiene información sensible accesible a todos los usuarios autenticados:');
+      addBullet('Teléfonos y emails de clientes empresariales', 5);
+      addBullet('Datos financieros: facturación, beneficios', 5);
+      addBullet('NIFs/NRTs e identificadores fiscales', 5);
+      addBullet('Relaciones bancarias con competidores', 5);
+      addParagraph('Impacto: Competidores con acceso (ej. exempleado) podrían robar cartera de clientes.');
 
-      addTitle('6.2 Normativa Europea', 2);
+      addSubtitle('RIESGO MEDIO: Estados Financieros');
+      addParagraph('Las tablas de contabilidad (balance_sheets, income_statements) contienen datos financieros detallados de clientes. Aunque protegidas por RLS, un gestor con cuenta comprometida tendría acceso a todos los datos de sus empresas asignadas.');
 
-      addSubtitle('CRR/CRD IV (Capital Requirements)');
-      addTable(
-        ['Ratio', 'Mínimo', 'Cálculo Implementado'],
-        [
-          ['Common Equity Tier 1', '4.5%', 'CET1 / RWA'],
-          ['Tier 1 Capital', '6.0%', 'Tier1 / RWA'],
-          ['Total Capital', '8.0%', '(Tier1 + Tier2) / RWA'],
-          ['Leverage Ratio', '3.0%', 'Tier1 / Total Exposure'],
-        ],
-        [55, 30, 85]
-      );
+      addSubtitle('RIESGO MEDIO: Logs de Auditoría');
+      addParagraph('Los usuarios pueden ver sus propios registros de auditoría, lo que podría ayudar a atacantes a entender qué acciones son monitoreadas y cómo evitar detección.');
 
-      addSubtitle('Basel III/IV');
-      addParagraph('Implementación de ratios de liquidez:');
-      addBullet('LCR (Liquidity Coverage Ratio): Activos líquidos / Salidas netas 30 días ≥ 100%');
-      addBullet('NSFR (Net Stable Funding Ratio): Financiación estable / Activos que requieren financiación ≥ 100%');
-      addBullet('Sistema calcula proxies basados en datos de balance disponibles');
-
-      addTitle('6.3 IFRS 9 - Instrumentos Financieros', 2);
-      addParagraph('Modelo de pérdidas crediticias esperadas (ECL):');
-
-      addSubtitle('Sistema de Staging');
-      addTable(
-        ['Stage', 'Criterio', 'Provisión'],
-        [
-          ['Stage 1', 'Sin deterioro significativo', 'ECL 12 meses'],
-          ['Stage 2', 'Incremento significativo riesgo crédito', 'ECL lifetime'],
-          ['Stage 3', 'Evidencia objetiva de deterioro', 'ECL lifetime + write-off'],
-        ],
-        [30, 70, 70]
-      );
-
-      addSubtitle('Parámetros ECL');
-      addBullet('PD (Probability of Default): estimada por scoring interno');
-      addBullet('LGD (Loss Given Default): % pérdida en caso de impago');
-      addBullet('EAD (Exposure at Default): exposición estimada en impago');
-      addBullet('ECL = PD × LGD × EAD × Discount Factor');
-
-      addTitle('6.4 MiFID II', 2);
-      addParagraph('Directiva sobre mercados de instrumentos financieros:');
-      addBullet('Registro de interacciones con clientes (fichas de visita)');
-      addBullet('Documentación de productos ofertados');
-      addBullet('Trazabilidad completa de operaciones comerciales');
-      addBullet('Separación de funciones (roles segregados)');
-
-      addOpinion('La implementación normativa es sólida para un CRM comercial. Los cálculos de Basel III/IV y IFRS 9 son aproximaciones razonables dado que no tenemos acceso a datos granulares de exposiciones. Para uso regulatorio real, se necesitarían integraciones con sistemas core bancarios.');
-
-      // ========== 7. ANÁLISIS FINANCIERO ==========
       addNewPage();
-      setProgress(75);
-      updateStep('financial');
+      addTitle('7.2 Datos que Salen de la Entidad Bancaria', 2);
       
-      addTitle('7. ANÁLISIS FINANCIERO IMPLEMENTADO');
+      addWarning('Los siguientes datos viajan a servidores externos (Supabase Cloud, Resend, OpenStreetMap). Evaluar si es aceptable según políticas internas de Creand.');
 
-      addTitle('7.1 Ratios de Liquidez', 2);
       addTable(
-        ['Ratio', 'Fórmula', 'Interpretación'],
+        ['Servicio Externo', 'Datos Enviados', 'Ubicación Servidores', 'Riesgo'],
         [
-          ['Ratio Corriente', 'Activo Corriente / Pasivo Corriente', '>1.5 ideal, <1 riesgo'],
-          ['Ratio Rápido (Acid Test)', '(AC - Inventarios) / PC', '>1 ideal'],
-          ['Ratio de Tesorería', 'Efectivo / Pasivo Corriente', '>0.2 ideal'],
-          ['Días de Caja', 'Efectivo / (Gastos Operativos/365)', '>30 días ideal'],
+          ['Supabase Cloud', 'TODOS los datos del CRM', 'AWS (variable)', 'ALTO'],
+          ['Resend (email)', 'Emails empleados, nombres, contenido alertas', 'USA', 'MEDIO'],
+          ['OpenStreetMap', 'Direcciones de empresas', 'Voluntarios globales', 'BAJO'],
+          ['Lovable AI (Gemini)', 'PDFs financieros, métricas gestores', 'Google Cloud', 'ALTO'],
         ],
-        [45, 70, 55]
+        [40, 55, 45, 30]
       );
 
-      addTitle('7.2 Ratios de Solvencia', 2);
-      addTable(
-        ['Ratio', 'Fórmula', 'Interpretación'],
-        [
-          ['Endeudamiento', 'Pasivo Total / Activo Total', '<0.6 ideal'],
-          ['Autonomía Financiera', 'Patrimonio Neto / Activo Total', '>0.4 ideal'],
-          ['Cobertura Intereses', 'EBIT / Gastos Financieros', '>3 ideal'],
-          ['Deuda/EBITDA', 'Deuda Financiera / EBITDA', '<3 ideal'],
-        ],
-        [45, 70, 55]
-      );
+      addSubtitle('Datos Específicos Expuestos a Terceros');
+      addBullet('Supabase: Base de datos completa, incluyendo datos financieros de clientes');
+      addBullet('Resend: Nombres de empleados, eventos de sistema, métricas de rendimiento');
+      addBullet('Lovable AI: Contenido de PDFs financieros durante parsing, datos de métricas');
+      addBullet('OpenStreetMap: Direcciones completas de clientes para geocodificación');
 
-      addTitle('7.3 Z-Score de Altman', 2);
-      addParagraph('Modelo predictivo de quiebra empresarial (1968):');
+      addTitle('7.3 Mitigaciones Recomendadas', 2);
       
-      addSubtitle('Fórmula');
-      const zFormula = 'Z = 1.2×X1 + 1.4×X2 + 3.3×X3 + 0.6×X4 + 1.0×X5';
-      doc.setFont('courier', 'bold');
-      doc.setFontSize(11);
-      doc.text(zFormula, margin + 20, currentY);
-      currentY += 10;
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
+      addSubtitle('Inmediatas (Antes de Producción)');
+      addNumberedList([
+        'Restringir políticas RLS de profiles para que usuarios solo vean su propio perfil',
+        'Implementar políticas RLS en companies para que gestores solo vean sus empresas asignadas',
+        'Eliminar política que permite a usuarios ver sus propios audit_logs',
+        'Activar "Leaked Password Protection" en Supabase Auth',
+        'Mover extensiones de schema "public" a schema dedicado',
+        'Implementar MFA obligatorio para roles administrativos',
+      ]);
 
+      addSubtitle('A Medio Plazo');
+      addNumberedList([
+        'Implementar cifrado a nivel de campo para datos financieros sensibles',
+        'Añadir re-autenticación para operaciones críticas (cambios contables)',
+        'Configurar alertas de seguridad para accesos anómalos',
+        'Implementar logging de seguridad más granular',
+        'Realizar penetration testing externo',
+      ]);
+
+      addSubtitle('Para Máxima Seguridad (Intranet)');
+      addParagraph('Si los requisitos de seguridad bancarios no permiten datos en cloud externo, se recomienda migrar a Supabase self-hosted en infraestructura interna (ver sección 9).');
+
+      // ========== 8. NORMATIVA ANDORRANA ==========
+      addNewPage();
+      setProgress(50);
+      updateStep('andorra');
+      
+      addTitle('8. NORMATIVA ANDORRANA APLICABLE');
+      
+      addTitle('8.1 Llei 29/2021 - Protección de Datos Personales (APDA)', 2);
+      addParagraph('La Llei 29/2021, del 28 de octubre, cualificada de protección de datos personales, adapta el ordenamiento jurídico andorrano al RGPD europeo. Esta ley es administrada por la APDA (Agència de Protecció de Dades d\'Andorra).');
+
+      addSubtitle('Requisitos Clave para el CRM');
+      addBullet('Base legal para tratamiento: El sistema debe documentar la base legal para cada tipo de tratamiento de datos (contrato, interés legítimo, etc.)');
+      addBullet('Derechos ARSOPOL: Implementar mecanismos para ejercicio de derechos de Acceso, Rectificación, Supresión, Oposición, Portabilidad, Olvido, Limitación');
+      addBullet('Registro de actividades de tratamiento: Mantener registro actualizado de todos los tratamientos');
+      addBullet('Evaluación de impacto (EIPD): Obligatoria para tratamientos de alto riesgo como datos financieros bancarios');
+      addBullet('Notificación de brechas: Obligación de notificar brechas de seguridad a APDA en 72 horas');
+      addBullet('Delegado de Protección de Datos (DPD): Obligatorio para entidades bancarias');
+
+      addSubtitle('Cumplimiento del Sistema');
       addTable(
-        ['Variable', 'Cálculo', 'Representa'],
+        ['Requisito APDA', 'Estado Actual', 'Acción Requerida'],
         [
-          ['X1', 'Working Capital / Total Assets', 'Liquidez'],
-          ['X2', 'Retained Earnings / Total Assets', 'Rentabilidad acumulada'],
-          ['X3', 'EBIT / Total Assets', 'Productividad'],
-          ['X4', 'Market Value Equity / Total Liabilities', 'Solvencia'],
-          ['X5', 'Sales / Total Assets', 'Rotación activos'],
+          ['Registro tratamientos', 'PARCIAL', 'Documentar en módulo auditoría'],
+          ['Derechos ARSOPOL', 'NO IMPLEMENTADO', 'Añadir módulo de solicitudes'],
+          ['Base legal documentada', 'NO', 'Revisar políticas de privacidad'],
+          ['EIPD', 'NO REALIZADA', 'Contratar evaluación externa'],
+          ['Notificación brechas', 'PARCIAL', 'Procedimiento formal + alertas'],
+          ['DPD designado', 'DEPENDE BANCO', 'Verificar designación Creand'],
         ],
-        [25, 70, 75]
+        [50, 40, 80]
       );
 
-      addSubtitle('Zonas de Interpretación');
-      addBullet('Z > 2.99: Zona Segura (baja probabilidad quiebra)');
-      addBullet('1.81 ≤ Z ≤ 2.99: Zona Gris (precaución)');
-      addBullet('Z < 1.81: Zona de Riesgo (alta probabilidad quiebra)');
+      addTitle('8.2 Llei 12/2024 - Modificación APDA', 2);
+      addParagraph('La Llei 12/2024, del 15 de julio, introduce modificaciones a la ley de protección de datos, reforzando requisitos de seguridad y adaptándose a nuevas tecnologías.');
 
-      addTitle('7.4 Rating Bancario Interno', 2);
-      addParagraph('Sistema de scoring crediticio basado en múltiples factores:');
+      addSubtitle('Nuevos Requisitos Relevantes');
+      addBullet('Tratamiento de datos por IA: Requisitos específicos para sistemas que utilizan inteligencia artificial');
+      addBullet('Transferencias internacionales reforzadas: Mayor control sobre envío de datos fuera de Andorra');
+      addBullet('Sanciones actualizadas: Incremento en multas por incumplimiento');
 
+      addWarning('El uso de Lovable AI (Gemini) para parsing de PDFs financieros constituye tratamiento de datos con IA y requiere evaluación específica según Llei 12/2024.');
+
+      addNewPage();
+      addTitle('8.3 Requisitos AFA para Entidades Bancarias', 2);
+      addParagraph('La AFA (Autoritat Financera Andorrana) establece requisitos específicos para sistemas informáticos de entidades bancarias:');
+
+      addSubtitle('Comunicat Tècnic 283/18 - Seguretat Informàtica');
+      addBullet('Política de seguridad de la información documentada');
+      addBullet('Clasificación de activos de información');
+      addBullet('Control de acceso basado en principio de mínimo privilegio');
+      addBullet('Registro y monitorización de accesos');
+      addBullet('Gestión de incidentes de seguridad');
+      addBullet('Plan de continuidad de negocio');
+      addBullet('Pruebas de seguridad periódicas');
+
+      addSubtitle('Cumplimiento del Sistema');
       addTable(
-        ['Factor', 'Peso', 'Indicadores'],
+        ['Requisito AFA', 'Implementación CRM', 'Nivel'],
         [
-          ['Liquidez', '20%', 'Ratio corriente, acid test, días caja'],
-          ['Solvencia', '25%', 'Endeudamiento, autonomía, cobertura'],
-          ['Rentabilidad', '25%', 'ROE, ROA, margen neto'],
-          ['Actividad', '15%', 'Rotación activos, días cobro/pago'],
-          ['Tamaño/Estabilidad', '15%', 'Años operación, facturación, empleados'],
+          ['Control acceso', 'RBAC + RLS', 'ALTO'],
+          ['Registro accesos', 'audit_logs', 'MEDIO'],
+          ['Mínimo privilegio', 'Roles granulares', 'ALTO'],
+          ['Monitorización', 'system-health edge function', 'MEDIO'],
+          ['Gestión incidentes', 'Alertas + escalado', 'MEDIO'],
+          ['Continuidad negocio', 'Depende infraestructura', 'PENDIENTE'],
         ],
-        [45, 20, 105]
+        [50, 70, 50]
       );
 
-      addSubtitle('Escala de Rating');
-      addBullet('9-10: Excelente - Riesgo mínimo');
-      addBullet('7-8: Bueno - Riesgo bajo');
-      addBullet('5-6: Aceptable - Riesgo moderado');
-      addBullet('3-4: Vigilar - Riesgo elevado');
-      addBullet('1-2: Crítico - Riesgo muy alto');
+      addOpinion('El cumplimiento normativo andorrano requiere trabajo adicional. Se recomienda contratar auditoría especializada en normativa APDA/AFA para validar implementación antes de producción.');
 
-      addTitle('7.5 Pirámide DuPont', 2);
-      addParagraph('Descomposición del ROE en factores contributivos:');
+      // ========== 9. IMPLEMENTACIÓN INTRANET ==========
+      addNewPage();
+      setProgress(58);
+      updateStep('intranet');
+      
+      addTitle('9. IMPLEMENTACIÓN EN INTRANET BANCARIA');
+      
+      addParagraph('Para máxima seguridad y cumplimiento normativo, el sistema puede desplegarse completamente en infraestructura interna del banco, eliminando dependencias de servicios cloud externos.');
 
-      const dupont = `
-                         ROE
-                          │
-          ┌───────────────┼───────────────┐
-          │               │               │
-     Margen Neto    ×  Rotación   ×  Apalancamiento
-    (Beneficio/       Activos        Financiero
-      Ventas)       (Ventas/       (Activos/
-                     Activos)      Patrimonio)
+      addTitle('9.1 Requisitos de Infraestructura', 2);
+      
+      addSubtitle('Hardware Mínimo Recomendado');
+      addTable(
+        ['Componente', 'Especificación Mínima', 'Recomendado'],
+        [
+          ['Servidor Aplicación', '4 vCPU, 8GB RAM', '8 vCPU, 16GB RAM'],
+          ['Servidor Base Datos', '4 vCPU, 16GB RAM, SSD', '8 vCPU, 32GB RAM, NVMe'],
+          ['Almacenamiento', '100GB SSD', '500GB NVMe + backups'],
+          ['Red', '1 Gbps interno', '10 Gbps + segregación'],
+        ],
+        [50, 60, 60]
+      );
+
+      addSubtitle('Software Requerido');
+      addTable(
+        ['Componente', 'Tecnología', 'Versión Mínima'],
+        [
+          ['Sistema Operativo', 'Ubuntu Server LTS / RHEL', '22.04 / 8.x'],
+          ['Contenedores', 'Docker + Docker Compose', '24.x + 2.x'],
+          ['Base de Datos', 'PostgreSQL', '15.x'],
+          ['Proxy Reverso', 'Nginx / Traefik', '1.24+ / 2.x'],
+          ['Runtime Edge', 'Deno', '1.40+'],
+          ['Servidor Email', 'Postfix / SMTP interno', '-'],
+        ],
+        [50, 60, 60]
+      );
+
+      addNewPage();
+      addTitle('9.2 Pasos de Instalación Detallados', 2);
+      
+      addSubtitle('Paso 1: Preparación del Entorno');
+      const step1 = `
+# Actualizar sistema
+sudo apt update && sudo apt upgrade -y
+
+# Instalar Docker
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER
+
+# Instalar Docker Compose
+sudo apt install docker-compose-plugin
+
+# Crear directorio del proyecto
+sudo mkdir -p /opt/creand-crm
+cd /opt/creand-crm
       `.trim();
 
       doc.setFontSize(8);
       doc.setFont('courier', 'normal');
-      dupont.split('\n').forEach(line => {
+      step1.split('\n').forEach(line => {
         checkPageBreak(4);
-        doc.text(line, margin + 20, currentY);
+        doc.text(line, margin + 5, currentY);
         currentY += 4;
       });
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(10);
-      currentY += 8;
+      currentY += 5;
 
-      addOpinion('El arsenal de análisis financiero es completo para evaluación crediticia. El Z-Score de Altman tiene limitaciones conocidas (modelo de 1968, sesgo hacia manufacturas) pero sigue siendo útil como indicador de alerta temprana. Recomendaría añadir modelos más modernos como Ohlson O-Score.');
+      addSubtitle('Paso 2: Clonar Supabase Self-Hosted');
+      const step2 = `
+# Clonar repositorio Supabase
+git clone --depth 1 https://github.com/supabase/supabase
+cd supabase/docker
 
-      // ========== 8. OPTIMIZACIÓN MULTIUSUARIO ==========
+# Copiar configuración ejemplo
+cp .env.example .env
+
+# Editar configuración
+nano .env
+# Configurar: POSTGRES_PASSWORD, JWT_SECRET, ANON_KEY, SERVICE_ROLE_KEY
+# SITE_URL=https://crm.creand.internal
+# SMTP_HOST=smtp.creand.internal
+# SMTP_PORT=587
+      `.trim();
+
+      doc.setFontSize(8);
+      doc.setFont('courier', 'normal');
+      step2.split('\n').forEach(line => {
+        checkPageBreak(4);
+        doc.text(line, margin + 5, currentY);
+        currentY += 4;
+      });
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      currentY += 5;
+
+      addSubtitle('Paso 3: Configurar Base de Datos');
+      addBullet('Aplicar migraciones desde carpeta supabase/migrations/');
+      addBullet('Crear funciones de base de datos (triggers, RLS)');
+      addBullet('Configurar usuarios iniciales');
+      addBullet('Importar datos existentes si es necesario');
+
+      addSubtitle('Paso 4: Desplegar Frontend');
+      const step4 = `
+# Clonar código frontend
+git clone [repositorio-crm] /opt/creand-crm/frontend
+cd /opt/creand-crm/frontend
+
+# Configurar variables de entorno
+echo "VITE_SUPABASE_URL=https://api.crm.creand.internal" > .env
+echo "VITE_SUPABASE_PUBLISHABLE_KEY=[anon-key]" >> .env
+
+# Build de producción
+npm install
+npm run build
+
+# Servir con Nginx
+sudo cp -r dist/* /var/www/crm.creand.internal/
+      `.trim();
+
+      doc.setFontSize(8);
+      doc.setFont('courier', 'normal');
+      step4.split('\n').forEach(line => {
+        checkPageBreak(4);
+        doc.text(line, margin + 5, currentY);
+        currentY += 4;
+      });
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      currentY += 5;
+
       addNewPage();
-      setProgress(85);
+      addSubtitle('Paso 5: Configurar Edge Functions');
+      addBullet('Instalar Deno runtime en servidor');
+      addBullet('Copiar carpeta supabase/functions/');
+      addBullet('Configurar secrets localmente (sin Supabase Vault cloud)');
+      addBullet('Desplegar con supabase functions deploy --local');
+
+      addSubtitle('Paso 6: Configurar SSL/TLS');
+      addBullet('Generar certificados internos o usar CA corporativo');
+      addBullet('Configurar Nginx con SSL');
+      addBullet('Forzar HTTPS en toda la aplicación');
+
+      addSubtitle('Paso 7: Configurar Email Interno');
+      addBullet('Modificar edge functions para usar SMTP interno');
+      addBullet('Eliminar dependencia de Resend');
+      addBullet('Configurar plantillas de email');
+
+      addSubtitle('Paso 8: Alternativa a OpenStreetMap');
+      addBullet('Opción A: Instalar servidor Nominatim local con datos de Andorra');
+      addBullet('Opción B: Usar API de geocodificación interna si existe');
+      addBullet('Opción C: Importar coordenadas manualmente/Excel');
+
+      addTitle('9.3 Grado de Autonomía sin Internet', 2);
+      
+      addTable(
+        ['Funcionalidad', 'Sin Internet', 'Requiere Internet', 'Alternativa Local'],
+        [
+          ['Login/Auth', '✅ Local', '-', 'Supabase self-hosted'],
+          ['CRUD Empresas', '✅ Local', '-', 'PostgreSQL local'],
+          ['Mapa visualización', '⚠️ Parcial', 'Tiles mapa base', 'Servir tiles localmente'],
+          ['Geocodificación', '❌', 'Nominatim API', 'Nominatim local'],
+          ['Envío emails', '❌', 'SMTP externo', 'SMTP interno'],
+          ['IA parsing PDF', '❌', 'Lovable AI', 'Sin IA o LLM local'],
+          ['Generación planes IA', '❌', 'Lovable AI', 'Sin IA o LLM local'],
+        ],
+        [45, 35, 45, 45]
+      );
+
+      addSubtitle('Configuración 100% Offline');
+      addParagraph('Para operación completamente sin internet:');
+      addBullet('Instalar servidor de tiles de mapa local (ej. TileServer GL con datos OSM Andorra)');
+      addBullet('Instalar Nominatim local con datos OSM de Andorra (~500MB)');
+      addBullet('Eliminar funciones de IA o instalar LLM local (ej. Ollama con Llama 3)');
+      addBullet('Usar SMTP interno del banco para emails');
+      addBullet('Resultado: Sistema 100% autónomo sin dependencias externas');
+
+      addOpinion('Para máxima seguridad bancaria, recomiendo instalación self-hosted completa. El esfuerzo inicial de configuración (estimado 2-3 semanas) se compensa con control total de datos y cumplimiento normativo simplificado.');
+
+      // ========== 10. NORMATIVA BANCARIA INTERNACIONAL ==========
+      addNewPage();
+      setProgress(65);
+      updateStep('compliance');
+      
+      addTitle('10. NORMATIVA BANCARIA INTERNACIONAL');
+      addParagraph('El sistema implementa verificaciones de cumplimiento para múltiples marcos regulatorios:');
+
+      addTitle('10.1 Basel III/IV', 2);
+      addParagraph('Implementación de ratios de liquidez:');
+      addBullet('LCR (Liquidity Coverage Ratio): ≥ 100%');
+      addBullet('NSFR (Net Stable Funding Ratio): ≥ 100%');
+      addBullet('Tier 1 Capital Ratio: ≥ 6%');
+
+      addTitle('10.2 IFRS 9 - Instrumentos Financieros', 2);
+      addTable(
+        ['Stage', 'Criterio', 'Provisión'],
+        [
+          ['Stage 1', 'Sin deterioro significativo', 'ECL 12 meses'],
+          ['Stage 2', 'Incremento significativo riesgo', 'ECL lifetime'],
+          ['Stage 3', 'Evidencia objetiva deterioro', 'ECL lifetime + write-off'],
+        ],
+        [30, 70, 70]
+      );
+
+      addTitle('10.3 MiFID II', 2);
+      addBullet('Registro de interacciones con clientes (fichas de visita)');
+      addBullet('Documentación de productos ofertados');
+      addBullet('Trazabilidad completa de operaciones comerciales');
+
+      addTitle('10.4 DORA - Resiliencia Operativa Digital', 2);
+      addParagraph('El Reglamento (UE) 2022/2554 establece requisitos de ciberseguridad para entidades financieras:');
+      addBullet('Gestión de riesgos TIC');
+      addBullet('Notificación de incidentes graves');
+      addBullet('Pruebas de resiliencia operativa digital');
+      addBullet('Gestión de riesgos de terceros TIC');
+
+      // ========== 11. ANÁLISIS FINANCIERO ==========
+      addNewPage();
+      setProgress(72);
+      updateStep('financial');
+      
+      addTitle('11. ANÁLISIS FINANCIERO IMPLEMENTADO');
+
+      addTitle('11.1 Z-Score de Altman', 2);
+      addParagraph('Modelo predictivo de quiebra empresarial:');
+      addBullet('Z > 2.99: Zona Segura');
+      addBullet('1.81 ≤ Z ≤ 2.99: Zona Gris');
+      addBullet('Z < 1.81: Zona de Riesgo');
+
+      addTitle('11.2 Rating Bancario Interno', 2);
+      addTable(
+        ['Factor', 'Peso', 'Indicadores'],
+        [
+          ['Liquidez', '20%', 'Ratio corriente, acid test'],
+          ['Solvencia', '25%', 'Endeudamiento, autonomía'],
+          ['Rentabilidad', '25%', 'ROE, ROA, margen neto'],
+          ['Actividad', '15%', 'Rotación activos'],
+          ['Tamaño', '15%', 'Facturación, empleados'],
+        ],
+        [45, 20, 105]
+      );
+
+      addTitle('11.3 Pirámide DuPont', 2);
+      addParagraph('Descomposición del ROE: Margen Neto × Rotación Activos × Apalancamiento');
+
+      // ========== 12. OPTIMIZACIÓN MULTIUSUARIO ==========
+      addNewPage();
+      setProgress(80);
       updateStep('optimization');
       
-      addTitle('8. OPTIMIZACIÓN MULTIUSUARIO');
+      addTitle('12. OPTIMIZACIÓN MULTIUSUARIO');
       addParagraph('Arquitectura diseñada para soportar 500-1000+ usuarios simultáneos:');
 
-      addTitle('8.1 Canales Realtime Consolidados', 2);
-      addParagraph('Optimización de suscripciones Supabase Realtime:');
-
+      addTitle('12.1 Canales Realtime Consolidados', 2);
       addTable(
         ['Canal', 'Tablas Monitoreadas', 'Eventos'],
         [
@@ -1128,164 +1019,92 @@ CREATE POLICY "Director oficina ve su oficina" ON companies
         [50, 60, 60]
       );
 
-      addSubtitle('Hook useRealtimeChannel');
-      addBullet('Centraliza gestión de suscripciones');
-      addBullet('Debouncing automático (300ms) para evitar re-renders excesivos');
-      addBullet('Cleanup automático en unmount');
-      addBullet('Reconexión automática en pérdida de conexión');
+      addTitle('12.2 React Query Caché', 2);
+      addBullet('staleTime: 5 minutos');
+      addBullet('gcTime: 30 minutos');
+      addBullet('Invalidación inteligente con realtime');
 
-      addTitle('8.2 Sistema de Presencia', 2);
-      addParagraph('Indicadores de usuarios online en tiempo real:');
-      addBullet('PresenceContext mantiene lista de usuarios activos');
-      addBullet('usePresence hook para acceder a estado de presencia');
-      addBullet('OnlineUsersIndicator muestra avatares en header');
-      addBullet('Información de rol y última actividad por usuario');
-      addBullet('Heartbeat cada 30 segundos para detectar desconexiones');
+      addTitle('12.3 Bloqueo Optimista', 2);
+      addBullet('Prevención de conflictos de edición concurrente');
+      addBullet('ConflictDialog para resolución de conflictos');
 
-      addTitle('8.3 Bloqueo Optimista', 2);
-      addParagraph('Prevención de conflictos de edición concurrente:');
+      // ========== 13. RECOMENDACIONES ==========
+      addNewPage();
+      setProgress(90);
+      updateStep('recommendations');
+      
+      addTitle('13. RECOMENDACIONES Y PARAMETRIZACIÓN SEGURIDAD');
 
-      addSubtitle('Tablas con Bloqueo');
-      addBullet('companies - edición de datos de empresa');
-      addBullet('visit_sheets - edición de fichas');
-      addBullet('balance_sheets, income_statements - datos contables');
-      addBullet('goals, alerts - configuración de objetivos y alertas');
+      addTitle('13.1 Parámetros de Seguridad Recomendados para IT', 2);
+      
+      addSubtitle('Configuración Supabase Auth');
+      addTable(
+        ['Parámetro', 'Valor Recomendado', 'Justificación'],
+        [
+          ['JWT expiry', '3600 (1 hora)', 'Balance seguridad/UX'],
+          ['Refresh token rotation', 'Enabled', 'Limitar tokens robados'],
+          ['Leaked password protection', 'Enabled', 'Prevenir credenciales comprometidas'],
+          ['MFA', 'Obligatorio admins', 'Protección cuentas privilegiadas'],
+          ['Password min length', '12 caracteres', 'Estándar bancario'],
+          ['Password requirements', 'Mayús+minús+núm+especial', 'Complejidad'],
+        ],
+        [55, 50, 65]
+      );
 
-      addSubtitle('Mecanismo');
-      addBullet('1. Al cargar registro, se guarda version/updated_at');
-      addBullet('2. Al guardar, se verifica que version no haya cambiado');
-      addBullet('3. Si hay conflicto, ConflictDialog muestra opciones');
-      addBullet('4. Usuario puede: sobrescribir, recargar, o cancelar');
-
-      addTitle('8.4 React Query Caché', 2);
-      addParagraph('Configuración optimizada de caché cliente:');
-
+      addSubtitle('Configuración PostgreSQL');
       addTable(
         ['Parámetro', 'Valor', 'Propósito'],
         [
-          ['staleTime', '5 minutos', 'Datos frescos sin refetch'],
-          ['gcTime', '30 minutos', 'Retención en memoria'],
-          ['refetchOnWindowFocus', 'false', 'Evitar refetch innecesarios'],
-          ['retry', '3', 'Reintentos en error de red'],
+          ['log_statement', 'all', 'Auditoría completa'],
+          ['log_connections', 'on', 'Rastrear accesos'],
+          ['ssl', 'on', 'Cifrado en tránsito'],
+          ['password_encryption', 'scram-sha-256', 'Hash robusto'],
         ],
-        [50, 40, 80]
+        [60, 50, 60]
       );
 
-      addSubtitle('Invalidación Inteligente');
-      addBullet('Eventos realtime invalidan queries específicas');
-      addBullet('Mutaciones optimistas actualizan UI inmediatamente');
-      addBullet('Rollback automático si servidor rechaza cambio');
+      addSubtitle('Headers de Seguridad HTTP');
+      addBullet('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+      addBullet('X-Content-Type-Options: nosniff');
+      addBullet('X-Frame-Options: DENY');
+      addBullet('Content-Security-Policy: default-src \'self\'');
+      addBullet('X-XSS-Protection: 1; mode=block');
 
-      addOpinion('La arquitectura multiusuario es robusta. El bloqueo optimista es la solución correcta para edición colaborativa - evita bloqueos pesimistas que degradan UX. La consolidación de canales realtime reduce significativamente uso de conexiones websocket.');
-
-      // ========== 9. INTEGRACIONES ==========
       addNewPage();
-      setProgress(90);
-      updateStep('integrations');
+      addTitle('13.2 Checklist Pre-Producción', 2);
       
-      addTitle('9. INTEGRACIONES EXTERNAS');
-
-      addTitle('9.1 Resend (Email Transaccional)', 2);
-      addParagraph('Servicio de email para notificaciones y reportes:');
-      addBullet('Emails de alerta y escalado');
-      addBullet('Reportes KPI diarios, semanales y mensuales');
-      addBullet('Notificaciones de validación de fichas');
-      addBullet('Recordatorios de visitas y seguimientos');
-      addBullet('Celebración de logros de objetivos');
-
-      addSubtitle('Configuración');
-      addBullet('API Key almacenada en Supabase Secrets');
-      addBullet('Dominio configurado para entregas fiables');
-      addBullet('Templates HTML personalizados por tipo');
-
-      addTitle('9.2 OpenStreetMap / Nominatim', 2);
-      addParagraph('Geocodificación gratuita de direcciones:');
-      addBullet('Conversión de direcciones a coordenadas lat/lng');
-      addBullet('Geocodificación batch para importaciones masivas');
-      addBullet('Integración en edge function geocode-address');
-      addBullet('Rate limiting respetando políticas de uso');
-
-      addTitle('9.3 Lovable AI (Gemini 2.5)', 2);
-      addParagraph('Integración con modelos de IA para funcionalidades inteligentes:');
-
-      addSubtitle('Modelos Utilizados');
       addTable(
-        ['Modelo', 'Uso', 'Características'],
+        ['Verificación', 'Responsable', 'Estado'],
         [
-          ['gemini-2.5-flash', 'Generación planes acción', 'Rápido, económico'],
-          ['gemini-2.5-pro', 'Parsing PDF financiero', 'Alta precisión OCR+NLP'],
+          ['Políticas RLS revisadas', 'DBA + Seguridad', '☐ Pendiente'],
+          ['MFA configurado para admins', 'IT', '☐ Pendiente'],
+          ['Leaked password protection ON', 'IT', '☐ Pendiente'],
+          ['Auditoría APDA realizada', 'DPD + Legal', '☐ Pendiente'],
+          ['EIPD completada', 'DPD', '☐ Pendiente'],
+          ['Penetration test externo', 'Seguridad', '☐ Pendiente'],
+          ['Backup strategy definida', 'IT', '☐ Pendiente'],
+          ['Plan continuidad documentado', 'IT + Negocio', '☐ Pendiente'],
+          ['Formación usuarios completada', 'RRHH', '☐ Pendiente'],
+          ['Certificados SSL instalados', 'IT', '☐ Pendiente'],
         ],
-        [50, 55, 65]
+        [70, 50, 50]
       );
 
-      addSubtitle('Funcionalidades IA');
-      addBullet('generate-action-plan: Analiza métricas deficientes y genera plan de mejora personalizado');
-      addBullet('parse-financial-pdf: Extrae datos de estados financieros PDF y mapea a campos de base de datos');
-      addBullet('smart-column-mapping: Mapeo inteligente de columnas Excel durante importación');
-
-      addOpinion('Las integraciones son estratégicas y bien elegidas. Resend proporciona entregas fiables de email. Nominatim evita costes de APIs de geocodificación comerciales. Lovable AI con Gemini 2.5 es potente y no requiere gestión de API keys propias.');
-
-      // ========== 10. RECOMENDACIONES ==========
-      addNewPage();
-      setProgress(95);
-      updateStep('recommendations');
-      
-      addTitle('10. RECOMENDACIONES Y MEJORAS');
-
-      addTitle('10.1 Mejoras Funcionales Sugeridas', 2);
-      
-      addSubtitle('Módulo de Auditoría');
-      addBullet('Añadir análisis de cohortes por antigüedad de cartera crediticia');
-      addBullet('Implementar test de estrés financiero automatizado');
-      addBullet('Scoring crediticio interno con machine learning');
-      addBullet('Integración con registros de morosidad externos');
-
-      addSubtitle('Cumplimiento Normativo');
-      addBullet('Reporting EBA COREP/FINREP automático');
-      addBullet('Dashboard ESG con indicadores básicos');
-      addBullet('Análisis AML/KYC integrado en fichas de visita');
-      addBullet('Alertas de PEPs (Personas Expuestas Políticamente)');
-
-      addSubtitle('Productividad Comercial');
-      addBullet('Integración con calendario corporativo (Outlook/Google)');
-      addBullet('App móvil para gestores en campo');
-      addBullet('Firma digital de documentos en fichas');
-      addBullet('Chatbot interno para consultas rápidas');
-
-      addTitle('10.2 Mejoras Técnicas', 2);
-
-      addSubtitle('Rendimiento');
-      addBullet('Implementar paginación virtual para tablas >1000 filas');
-      addBullet('Service Worker para funcionamiento offline básico');
-      addBullet('Pre-carga predictiva de datos frecuentes');
-      addBullet('Compresión de imágenes antes de upload');
-
-      addSubtitle('Seguridad');
-      addBullet('Autenticación MFA para roles administrativos');
-      addBullet('Logging de seguridad más granular');
-      addBullet('Revisión periódica de políticas RLS');
-      addBullet('Penetration testing externo');
-
-      addSubtitle('Mantenibilidad');
-      addBullet('Tests unitarios con Vitest');
-      addBullet('Tests E2E con Playwright');
-      addBullet('Documentación API automática (OpenAPI)');
-      addBullet('Storybook para componentes UI');
-
-      addTitle('10.3 Priorización de Mejoras', 2);
+      addTitle('13.3 Priorización de Mejoras', 2);
       addTable(
         ['Prioridad', 'Mejora', 'Impacto', 'Esfuerzo'],
         [
-          ['Alta', 'MFA para admins', 'Seguridad crítica', 'Bajo'],
-          ['Alta', 'Tests E2E críticos', 'Calidad', 'Medio'],
-          ['Media', 'App móvil básica', 'Productividad', 'Alto'],
-          ['Media', 'ESG básico', 'Cumplimiento', 'Medio'],
-          ['Baja', 'ML para scoring', 'Innovación', 'Alto'],
+          ['CRÍTICA', 'Restringir RLS profiles/companies', 'Seguridad', 'Bajo'],
+          ['CRÍTICA', 'Activar leaked password protection', 'Seguridad', 'Bajo'],
+          ['ALTA', 'MFA para admins', 'Seguridad', 'Medio'],
+          ['ALTA', 'Migrar a self-hosted', 'Cumplimiento', 'Alto'],
+          ['MEDIA', 'Módulo derechos ARSOPOL', 'Legal', 'Medio'],
+          ['MEDIA', 'Tests E2E críticos', 'Calidad', 'Medio'],
         ],
-        [30, 55, 45, 40]
+        [30, 65, 40, 35]
       );
 
-      addOpinion('Las recomendaciones priorizadas se basan en análisis de riesgo/beneficio. MFA es crítico para seguridad bancaria. Los tests automatizados previenen regresiones en sistema complejo. La app móvil aumentaría significativamente adopción por gestores en campo.');
+      addOpinion('Las recomendaciones priorizadas se basan en análisis de riesgo/beneficio. Los items CRÍTICOS deben implementarse antes de cualquier despliegue en producción. La migración a self-hosted, aunque de alto esfuerzo, es la única forma de garantizar que ningún dato sale del perímetro bancario.');
 
       // Página final
       addNewPage();
@@ -1298,7 +1117,7 @@ CREATE POLICY "Director oficina ve su oficina" ON companies
       doc.text('DOCUMENTO GENERADO', pageWidth / 2, 25, { align: 'center' });
       doc.setFontSize(12);
       doc.setFont('helvetica', 'normal');
-      doc.text('Sistema CRM Bancario Creand - Documentación Técnico-Funcional', pageWidth / 2, 40, { align: 'center' });
+      doc.text('Sistema CRM Bancario Creand - Documentación Técnico-Funcional v2.0', pageWidth / 2, 40, { align: 'center' });
       doc.text(new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }), pageWidth / 2, 50, { align: 'center' });
 
       currentY = 80;
@@ -1312,12 +1131,11 @@ CREATE POLICY "Director oficina ve su oficina" ON companies
       doc.setFont('helvetica', 'normal');
       const finalInfo = [
         ['Total de páginas:', String(pageNumber)],
-        ['Secciones:', '10 principales + subsecciones'],
-        ['Tablas:', '25+'],
-        ['Opiniones profesionales:', '15'],
-        ['Componentes documentados:', '100+'],
-        ['Edge Functions:', '24'],
-        ['Tablas de base de datos:', '50+'],
+        ['Secciones:', '13 principales + subsecciones'],
+        ['Análisis de seguridad:', 'Incluido con riesgos y mitigaciones'],
+        ['Normativa andorrana:', 'APDA, AFA documentadas'],
+        ['Guía intranet:', 'Pasos detallados de instalación'],
+        ['Funcionalidades mapa:', 'Documentación extendida'],
       ];
 
       finalInfo.forEach(([label, value]) => {
@@ -1331,11 +1149,11 @@ CREATE POLICY "Director oficina ve su oficina" ON companies
       currentY += 15;
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
-      doc.text('Aviso Legal', margin, currentY);
+      doc.text('Aviso Legal y Confidencialidad', margin, currentY);
       currentY += 8;
       doc.setFontSize(9);
       doc.setFont('helvetica', 'normal');
-      const disclaimer = 'Este documento ha sido generado automáticamente y representa el estado actual del sistema en el momento de su creación. La información contenida es de carácter técnico y funcional, destinada a uso interno. Las opiniones expresadas son análisis profesionales basados en mejores prácticas de la industria.';
+      const disclaimer = 'DOCUMENTO CONFIDENCIAL - USO INTERNO BANCARIO. Este documento contiene información técnica sensible sobre la arquitectura de seguridad del sistema. Su distribución fuera de Creand Banc requiere autorización expresa. El análisis de riesgos incluido debe ser validado por el equipo de seguridad antes de tomar decisiones de despliegue.';
       const disclaimerLines = doc.splitTextToSize(disclaimer, contentWidth);
       disclaimerLines.forEach((line: string) => {
         doc.text(line, margin, currentY);
@@ -1345,7 +1163,7 @@ CREATE POLICY "Director oficina ve su oficina" ON companies
       setProgress(100);
       
       // Save PDF
-      const filename = `Documentacion_Tecnico_Funcional_Creand_${new Date().toISOString().split('T')[0]}.pdf`;
+      const filename = `Documentacion_Tecnico_Funcional_Creand_v2_${new Date().toISOString().split('T')[0]}.pdf`;
       doc.save(filename);
       
       toast.success('Documento PDF generado correctamente', {
@@ -1367,11 +1185,11 @@ CREATE POLICY "Director oficina ve su oficina" ON companies
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <FileText className="h-6 w-6 text-primary" />
-          Generador de Documentación Técnico-Funcional
+          Generador de Documentación Técnico-Funcional v2.0
         </CardTitle>
         <CardDescription>
-          Genera un documento PDF completo con toda la documentación del sistema, 
-          incluyendo arquitectura, módulos, normativa y recomendaciones.
+          Genera un documento PDF completo con documentación del sistema, 
+          análisis de seguridad, normativa andorrana y guía de implementación en intranet.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -1396,7 +1214,7 @@ CREATE POLICY "Director oficina ve su oficina" ON companies
                   ) : (
                     <div className="h-4 w-4 rounded-full border-2 border-current" />
                   )}
-                  <span>{step.name}</span>
+                  <span className="truncate">{step.name}</span>
                 </div>
               ))}
             </div>
@@ -1406,16 +1224,17 @@ CREATE POLICY "Director oficina ve su oficina" ON companies
         <div className="bg-muted/30 rounded-lg p-4 space-y-2">
           <h4 className="font-medium">El documento incluirá:</h4>
           <ul className="text-sm text-muted-foreground space-y-1">
-            <li>• Índice general con 10 secciones principales</li>
+            <li>• Índice general con 13 secciones principales</li>
             <li>• Arquitectura técnica y stack tecnológico</li>
             <li>• Sistema de roles y políticas RLS</li>
-            <li>• 12+ módulos funcionales detallados</li>
-            <li>• 24 Edge Functions documentadas</li>
-            <li>• Normativa bancaria (Basel III/IV, IFRS 9, MiFID II)</li>
-            <li>• Análisis financiero (Z-Score, DuPont, ratios)</li>
-            <li>• Optimización multiusuario</li>
-            <li>• 15+ opiniones profesionales</li>
-            <li>• Recomendaciones priorizadas</li>
+            <li>• <strong>Mapa geográfico - funcionalidades detalladas</strong></li>
+            <li>• <strong>Análisis de seguridad con riesgos y mitigaciones</strong></li>
+            <li>• <strong>Normativa Andorrana (APDA, AFA)</strong></li>
+            <li>• <strong>Guía implementación en intranet bancaria</strong></li>
+            <li>• <strong>Grado de autonomía sin internet</strong></li>
+            <li>• <strong>Parámetros seguridad para IT</strong></li>
+            <li>• Normativa bancaria internacional (Basel, IFRS9, MiFID II)</li>
+            <li>• Recomendaciones priorizadas con checklist</li>
           </ul>
         </div>
 
@@ -1433,7 +1252,7 @@ CREATE POLICY "Director oficina ve su oficina" ON companies
           ) : (
             <>
               <Download className="mr-2 h-5 w-5" />
-              Generar Documento PDF (~50 páginas)
+              Generar Documento PDF v2.0 (~60 páginas)
             </>
           )}
         </Button>
