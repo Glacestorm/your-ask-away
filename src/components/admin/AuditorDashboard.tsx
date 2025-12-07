@@ -29,9 +29,14 @@ import {
   LineChart as LineChartIcon,
   PieChart as PieChartIcon,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  Scale,
+  Landmark,
+  Building2
 } from 'lucide-react';
 import { VisitSheetAuditViewer } from './VisitSheetAuditViewer';
+import { AuditTab } from './accounting/AuditTab';
+import CompanySearchBar from './accounting/CompanySearchBar';
 import { 
   BarChart, 
   Bar, 
@@ -108,6 +113,13 @@ interface FullLog {
 
 const CHART_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
+interface Company {
+  id: string;
+  name: string;
+  bp: string | null;
+  tax_id: string | null;
+}
+
 export function AuditorDashboard() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<AuditStats>({
@@ -131,6 +143,7 @@ export function AuditorDashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
   const [totalLogs, setTotalLogs] = useState(0);
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
 
   useEffect(() => {
     fetchAllData();
@@ -449,6 +462,10 @@ export function AuditorDashboard() {
             <ClipboardList className="h-4 w-4" />
             Fitxes
           </TabsTrigger>
+          <TabsTrigger value="regulatory" className="inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
+            <Scale className="h-4 w-4" />
+            Normativa
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="timeline" className="space-y-6 animate-in fade-in-50 duration-300">
@@ -706,6 +723,45 @@ export function AuditorDashboard() {
 
         <TabsContent value="visit-sheets" className="space-y-6 animate-in fade-in-50 duration-300">
           <VisitSheetAuditViewer />
+        </TabsContent>
+
+        <TabsContent value="regulatory" className="space-y-6 animate-in fade-in-50 duration-300">
+          <Card className="shadow-lg border-0">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Scale className="h-5 w-5 text-primary" />
+                Auditoria Normativa i Regulatòria
+              </CardTitle>
+              <CardDescription>
+                Anàlisi de compliment segons normativa espanyola (BE, LSC), europea (CRR/CRD, EBA) i internacional (Basel III/IV, IFRS 9)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="mb-6">
+                <label className="text-sm font-medium mb-2 block">Selecciona una empresa per analitzar</label>
+                <CompanySearchBar 
+                  onSelectCompany={(company) => setSelectedCompany(company)} 
+                  selectedCompanyId={selectedCompany?.id || ''}
+                />
+              </div>
+              
+              {selectedCompany ? (
+                <AuditTab 
+                  companyId={selectedCompany.id} 
+                  companyName={selectedCompany.name} 
+                />
+              ) : (
+                <div className="text-center py-12 border rounded-xl bg-muted/30">
+                  <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Selecciona una Empresa</h3>
+                  <p className="text-muted-foreground max-w-md mx-auto">
+                    Utilitza el cercador per seleccionar una empresa i veure l'anàlisi normatiu complet 
+                    incloent ràtios de liquiditat, solvència, risc de crèdit, Z-Score, IFRS 9 i més.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
