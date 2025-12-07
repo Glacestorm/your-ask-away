@@ -29,23 +29,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [roleLoading, setRoleLoading] = useState(false);
 
+  // Priority order for roles (highest privilege first)
+  const getRolePriority = (role: string): number => {
+    const priorities: Record<string, number> = {
+      'superadmin': 100,
+      'director_comercial': 90,
+      'responsable_comercial': 80,
+      'director_oficina': 70,
+      'admin': 60,
+      'auditor': 50,
+      'gestor': 40,
+      'user': 10,
+    };
+    return priorities[role] || 0;
+  };
+
   const fetchUserRole = async (userId: string) => {
     try {
       setRoleLoading(true);
       console.log('🔍 Fetching role for user:', userId);
+      
+      // Fetch all roles for the user (they may have multiple)
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
-        .eq('user_id', userId)
-        .order('role', { ascending: false }) // superadmin > admin > user
-        .limit(1)
-        .maybeSingle();
+        .eq('user_id', userId);
 
       console.log('📦 Role query result:', { data, error });
       
       if (error) throw error;
       
-      const role = (data?.role as AppRole) || 'user';
+      // If user has multiple roles, select the highest privilege one
+      let role: AppRole = 'user';
+      if (data && data.length > 0) {
+        const sortedRoles = data.sort((a, b) => 
+          getRolePriority(b.role) - getRolePriority(a.role)
+        );
+        role = sortedRoles[0].role as AppRole;
+      }
+      
       console.log('✅ Setting user role to:', role);
       setUserRole(role);
     } catch (error) {
