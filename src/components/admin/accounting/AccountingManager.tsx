@@ -116,8 +116,7 @@ const AccountingManager = () => {
     console.log('handleSelectCompany called with:', company.name);
     setSelectedCompany(company);
     setBp(company.bp || '');
-    setShowCompanyIndex(false);
-    setCurrentMenuSection(null); // Clear section to show company detail view
+    // Don't clear menu section - keep it so user can navigate with company selected
   };
   
   const handleSelectFromIndex = (companyId: string) => {
@@ -146,7 +145,7 @@ const AccountingManager = () => {
   const handleBackToMainMenu = () => {
     setShowMainMenu(true);
     setShowCompanyIndex(false);
-    setSelectedCompany(null);
+    // Keep selectedCompany - don't clear it when navigating back to menu
     setCurrentMenuSection(null);
   };
 
