@@ -3,6 +3,7 @@ import { ChevronDown, ChevronRight, Home, Building2, FileInput, FileOutput, Data
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import CompanySearchBar from './CompanySearchBar';
 
 interface MenuItem {
   id: string;
@@ -21,9 +22,18 @@ interface MenuCategory {
   items: MenuItem[];
 }
 
+interface Company {
+  id: string;
+  name: string;
+  bp: string | null;
+  tax_id: string | null;
+}
+
 interface AccountingMainMenuProps {
   onNavigate: (section: string) => void;
+  onSelectCompany?: (company: Company) => void;
   currentSection?: string;
+  selectedCompanyId?: string;
 }
 
 const menuCategories: MenuCategory[] = [
@@ -294,7 +304,7 @@ const sectionMappings: Record<string, string> = {
   'capitalizacion': 'capitalizacion',
 };
 
-export function AccountingMainMenu({ onNavigate, currentSection }: AccountingMainMenuProps) {
+export function AccountingMainMenu({ onNavigate, onSelectCompany, currentSection, selectedCompanyId }: AccountingMainMenuProps) {
   const [expandedCategories, setExpandedCategories] = useState<string[]>(['datos-generales', 'balances']);
 
   const toggleCategory = (categoryId: string) => {
@@ -311,11 +321,27 @@ export function AccountingMainMenu({ onNavigate, currentSection }: AccountingMai
     onNavigate(targetSection);
   };
 
+  const handleCompanySelect = (company: Company) => {
+    if (onSelectCompany) {
+      onSelectCompany(company);
+    }
+  };
+
   return (
     <div className="w-full min-h-[600px] bg-gradient-to-br from-background via-muted/20 to-background rounded-2xl border border-border/30 shadow-lg overflow-hidden">
 
+      {/* Company Search Bar */}
+      <div className="p-4 md:p-6 pb-0 border-b border-border/30 bg-muted/10">
+        <div className="max-w-2xl">
+          <CompanySearchBar
+            onSelectCompany={handleCompanySelect}
+            selectedCompanyId={selectedCompanyId || ''}
+          />
+        </div>
+      </div>
+
       {/* Menu Grid */}
-      <ScrollArea className="h-[520px] p-4 md:p-6">
+      <ScrollArea className="h-[460px] p-4 md:p-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {menuCategories.map((category) => {
             const isExpanded = expandedCategories.includes(category.id);

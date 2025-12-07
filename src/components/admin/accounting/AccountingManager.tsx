@@ -1233,7 +1233,9 @@ const AccountingManager = () => {
       {showMainMenu ? (
         <AccountingMainMenu 
           onNavigate={handleMenuNavigate}
+          onSelectCompany={handleSelectCompany}
           currentSection={currentMenuSection || undefined}
+          selectedCompanyId={selectedCompany?.id || ''}
         />
       ) : currentMenuSection ? (
         // Render section-specific content based on currentMenuSection
