@@ -11,13 +11,17 @@ import {
   Play,
   RotateCcw,
   Loader2,
-  ChevronDown,
-  ChevronUp,
   Car,
   Search,
   Plus,
   Trash2,
-  ExternalLink
+  ExternalLink,
+  MousePointer2,
+  ChevronUp,
+  ChevronDown,
+  Minimize2,
+  Maximize2,
+  Eye
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -37,17 +41,12 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface RouteSegment {
   start_address: string;
@@ -77,12 +76,16 @@ export interface OptimizedRoute {
   bounds: { northeast: { lat: number; lng: number }; southwest: { lat: number; lng: number } };
 }
 
+type PlannerMode = 'minimized' | 'selecting' | 'panel' | 'results';
+
 interface RoutePlannerProps {
   companies: CompanyWithDetails[];
   onRouteCalculated: (route: OptimizedRoute | null) => void;
   onClose: () => void;
   userLocation?: { latitude: number; longitude: number } | null;
   selectedCompanyFromMap?: CompanyWithDetails | null;
+  isSelectingMode?: boolean;
+  onSelectingModeChange?: (selecting: boolean) => void;
 }
 
 export function RoutePlanner({ 
@@ -90,7 +93,9 @@ export function RoutePlanner({
   onRouteCalculated, 
   onClose,
   userLocation,
-  selectedCompanyFromMap
+  selectedCompanyFromMap,
+  isSelectingMode = false,
+  onSelectingModeChange
 }: RoutePlannerProps) {
   const [selectedCompanies, setSelectedCompanies] = useState<CompanyWithDetails[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -98,6 +103,8 @@ export function RoutePlanner({
   const [origin, setOrigin] = useState<{ latitude: number; longitude: number } | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [mode, setMode] = useState<PlannerMode>('panel');
+  const [showDirections, setShowDirections] = useState(false);
 
   // Get user location on mount
   useEffect(() => {
@@ -123,10 +130,15 @@ export function RoutePlanner({
 
   // Add company from map click
   useEffect(() => {
-    if (selectedCompanyFromMap) {
+    if (selectedCompanyFromMap && mode === 'selecting') {
       addCompanyToRoute(selectedCompanyFromMap);
     }
-  }, [selectedCompanyFromMap]);
+  }, [selectedCompanyFromMap, mode]);
+
+  // Notify parent about selecting mode changes
+  useEffect(() => {
+    onSelectingModeChange?.(mode === 'selecting');
+  }, [mode, onSelectingModeChange]);
 
   const addCompanyToRoute = (company: CompanyWithDetails) => {
     setSelectedCompanies(prev => {
@@ -184,6 +196,7 @@ export function RoutePlanner({
       if (data.success && data.route) {
         setOptimizedRoute(data.route);
         onRouteCalculated(data.route);
+        setMode('results');
         toast.success(`Ruta optimizada: ${data.route.total_distance.text} en ${data.route.total_duration.text}`);
       } else {
         throw new Error(data.error || 'Error al calcular la ruta');
@@ -201,6 +214,13 @@ export function RoutePlanner({
     setSelectedCompanies([]);
     setOptimizedRoute(null);
     onRouteCalculated(null);
+    setMode('panel');
+  };
+
+  const handleClose = () => {
+    setOptimizedRoute(null);
+    onRouteCalculated(null);
+    onClose();
   };
 
   const openInGoogleMaps = () => {
@@ -237,26 +257,221 @@ export function RoutePlanner({
     );
   }).slice(0, 50);
 
+  // Minimized floating badge when in selecting mode or showing results
+  if (mode === 'minimized') {
+    return (
+      <div className="absolute bottom-4 right-4 z-50">
+        <Card className="shadow-xl border-2 border-primary bg-card">
+          <CardContent className="p-3">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Route className="h-5 w-5 text-primary" />
+                <span className="font-medium">{selectedCompanies.length} paradas</span>
+              </div>
+              <Button size="sm" variant="outline" onClick={() => setMode('panel')}>
+                <Maximize2 className="h-4 w-4 mr-1" />
+                Abrir
+              </Button>
+              <Button size="sm" variant="ghost" onClick={handleClose}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Selecting mode: Small floating indicator
+  if (mode === 'selecting') {
+    return (
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50">
+        <Card className="shadow-xl border-2 border-primary bg-card animate-pulse">
+          <CardContent className="p-4">
+            <div className="flex flex-col items-center gap-3">
+              <div className="flex items-center gap-2 text-primary">
+                <MousePointer2 className="h-5 w-5" />
+                <span className="font-medium">Haz clic en las chinchetas para seleccionar empresas</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Badge variant="secondary" className="text-sm">
+                  {selectedCompanies.length}/10 seleccionadas
+                </Badge>
+                <Button 
+                  size="sm" 
+                  onClick={() => setMode('panel')}
+                  disabled={selectedCompanies.length === 0}
+                >
+                  <ChevronUp className="h-4 w-4 mr-1" />
+                  Continuar ({selectedCompanies.length})
+                </Button>
+                <Button size="sm" variant="ghost" onClick={handleClose}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              {selectedCompanies.length > 0 && (
+                <div className="flex flex-wrap gap-1 max-w-md justify-center">
+                  {selectedCompanies.map((c, i) => (
+                    <Badge key={c.id} variant="outline" className="text-xs">
+                      {i + 1}. {c.name.substring(0, 15)}{c.name.length > 15 ? '...' : ''}
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); removeCompanyFromRoute(c.id); }}
+                        className="ml-1 hover:text-destructive"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Results mode: Floating mini-panel with route info
+  if (mode === 'results' && optimizedRoute) {
+    return (
+      <div className="absolute bottom-4 right-4 z-50 w-80">
+        <Card className="shadow-xl border-2 border-primary bg-card">
+          <CardHeader className="p-3 pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Route className="h-4 w-4 text-primary" />
+                Ruta Calculada
+              </CardTitle>
+              <div className="flex gap-1">
+                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => setMode('panel')}>
+                  <Maximize2 className="h-3 w-3" />
+                </Button>
+                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={handleClose}>
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-3 pt-0 space-y-3">
+            {/* Summary */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="bg-primary/10 rounded-lg p-2 text-center">
+                <Car className="h-4 w-4 mx-auto mb-1 text-primary" />
+                <p className="text-sm font-bold">{optimizedRoute.total_distance.text}</p>
+                <p className="text-xs text-muted-foreground">Distancia</p>
+              </div>
+              <div className="bg-primary/10 rounded-lg p-2 text-center">
+                <Clock className="h-4 w-4 mx-auto mb-1 text-primary" />
+                <p className="text-sm font-bold">{optimizedRoute.total_duration.text}</p>
+                <p className="text-xs text-muted-foreground">Tiempo</p>
+              </div>
+            </div>
+
+            {/* Stops */}
+            <div className="space-y-1 max-h-40 overflow-y-auto">
+              {optimizedRoute.optimized_order.map((waypoint, index) => (
+                <div 
+                  key={waypoint.id}
+                  className="flex items-center gap-2 p-1.5 bg-muted/50 rounded text-xs"
+                >
+                  <Badge variant="secondary" className="h-5 w-5 p-0 flex items-center justify-center text-xs">
+                    {index + 1}
+                  </Badge>
+                  <span className="truncate flex-1">{waypoint.name}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-2">
+              <Button size="sm" className="flex-1" onClick={openInGoogleMaps}>
+                <ExternalLink className="h-3 w-3 mr-1" />
+                Google Maps
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleReset}>
+                <RotateCcw className="h-3 w-3 mr-1" />
+                Nueva
+              </Button>
+            </div>
+
+            {/* Toggle directions */}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="w-full text-xs"
+              onClick={() => setShowDirections(!showDirections)}
+            >
+              {showDirections ? <ChevronUp className="h-3 w-3 mr-1" /> : <ChevronDown className="h-3 w-3 mr-1" />}
+              {showDirections ? 'Ocultar indicaciones' : 'Ver indicaciones'}
+            </Button>
+
+            {showDirections && (
+              <ScrollArea className="h-48 border rounded-md p-2">
+                <div className="space-y-2 text-xs">
+                  {optimizedRoute.segments.map((segment, segIndex) => (
+                    <div key={segIndex} className="space-y-1">
+                      <div className="font-medium text-primary flex items-center gap-1">
+                        <Badge variant="outline" className="h-4 text-xs px-1">{segIndex + 1}</Badge>
+                        {segment.end_address.split(',')[0]}
+                      </div>
+                      <div className="pl-4 space-y-0.5 text-muted-foreground">
+                        {segment.steps.slice(0, 3).map((step, stepIndex) => (
+                          <p key={stepIndex} dangerouslySetInnerHTML={{ __html: step.instruction }} />
+                        ))}
+                        {segment.steps.length > 3 && (
+                          <p className="italic">+{segment.steps.length - 3} más pasos</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Full panel mode
   return (
-    <Sheet open={true} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="right" className="w-full sm:w-[480px] sm:max-w-[480px] p-0 overflow-hidden">
-        <SheetHeader className="p-4 pb-2 border-b bg-card">
+    <div className="absolute top-20 right-4 z-40 w-96">
+      <Card className="shadow-xl border bg-card max-h-[calc(100vh-120px)] flex flex-col">
+        <CardHeader className="p-4 pb-2 border-b shrink-0">
           <div className="flex items-center justify-between">
-            <SheetTitle className="flex items-center gap-2 text-lg">
+            <CardTitle className="flex items-center gap-2 text-base">
               <Route className="h-5 w-5 text-primary" />
               Planificador de Rutas
-            </SheetTitle>
+            </CardTitle>
+            <div className="flex gap-1">
+              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => setMode('minimized')}>
+                <Minimize2 className="h-4 w-4" />
+              </Button>
+              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleClose}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
           {origin && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Navigation2 className="h-4 w-4" />
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Navigation2 className="h-3 w-3" />
               <span>Origen: Tu ubicación actual</span>
             </div>
           )}
-        </SheetHeader>
+        </CardHeader>
 
-        <ScrollArea className="h-[calc(100vh-80px)]">
-          <div className="p-4 space-y-4">
+        <ScrollArea className="flex-1 p-4">
+          <div className="space-y-4">
+            {/* Select from map button */}
+            <Button 
+              variant="outline"
+              className="w-full"
+              onClick={() => setMode('selecting')}
+            >
+              <MousePointer2 className="h-4 w-4 mr-2" />
+              Seleccionar chinchetas en el mapa
+            </Button>
+
             {/* Search and Add Companies */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -285,7 +500,7 @@ export function RoutePlanner({
                     </span>
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[440px] p-0 bg-popover border-border" align="start">
+                <PopoverContent className="w-[360px] p-0 bg-popover border-border" align="start" side="bottom">
                   <Command>
                     <CommandInput 
                       placeholder="Buscar por nombre, dirección, BP o NRT..." 
@@ -330,11 +545,6 @@ export function RoutePlanner({
                   </Command>
                 </PopoverContent>
               </Popover>
-
-              {/* Hint for map selection */}
-              <p className="text-xs text-muted-foreground text-center bg-muted/50 p-2 rounded-md">
-                💡 También puedes hacer clic en las chinchetas del mapa para añadir empresas
-              </p>
 
               {/* Selected Companies List */}
               {selectedCompanies.length > 0 && (
@@ -438,66 +648,46 @@ export function RoutePlanner({
                     <AccordionContent className="px-4 pb-4">
                       <div className="space-y-3">
                         {optimizedRoute.segments.map((segment, segIndex) => (
-                          <Accordion type="single" collapsible key={segIndex} className="border rounded-md">
-                            <AccordionItem value={`segment-${segIndex}`} className="border-0">
-                              <AccordionTrigger className="px-3 py-2 hover:no-underline hover:bg-muted/50 rounded-md">
-                                <div className="flex items-center justify-between w-full mr-2">
-                                  <div className="flex items-center gap-2">
-                                    <Badge variant="outline" className="shrink-0">{segIndex + 1}</Badge>
-                                    <span className="text-sm font-medium truncate max-w-[200px]">
-                                      {segment.end_address.split(',')[0]}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                    <span>{segment.distance.text}</span>
-                                    <span>•</span>
-                                    <span>{segment.duration.text}</span>
-                                  </div>
-                                </div>
-                              </AccordionTrigger>
-                              <AccordionContent className="px-3 pb-3">
-                                <div className="pl-4 space-y-2 border-l-2 border-primary/30 ml-2">
-                                  {segment.steps.map((step, stepIndex) => (
-                                    <div 
-                                      key={stepIndex}
-                                      className="text-sm p-2 bg-muted/50 rounded flex items-start gap-2"
-                                    >
-                                      <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                                        <span className="text-xs text-primary font-medium">{stepIndex + 1}</span>
-                                      </div>
-                                      <div className="flex-1">
-                                        <span dangerouslySetInnerHTML={{ __html: step.instruction }} />
-                                        <span className="text-xs text-muted-foreground ml-2">
-                                          ({step.distance.text})
-                                        </span>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </AccordionContent>
-                            </AccordionItem>
-                          </Accordion>
+                          <div key={segIndex} className="border rounded-md p-3 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="shrink-0">{segIndex + 1}</Badge>
+                                <span className="text-sm font-medium truncate">
+                                  {segment.end_address.split(',')[0]}
+                                </span>
+                              </div>
+                              <span className="text-xs text-muted-foreground">
+                                {segment.distance.text} · {segment.duration.text}
+                              </span>
+                            </div>
+                            <div className="pl-6 space-y-1 text-xs text-muted-foreground">
+                              {segment.steps.map((step, stepIndex) => (
+                                <p key={stepIndex} dangerouslySetInnerHTML={{ __html: step.instruction }} />
+                              ))}
+                            </div>
+                          </div>
                         ))}
                       </div>
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
 
-                {/* Open in Google Maps */}
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  size="lg"
-                  onClick={openInGoogleMaps}
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Abrir en Google Maps
-                </Button>
+                {/* Actions */}
+                <div className="flex gap-2">
+                  <Button className="flex-1" onClick={openInGoogleMaps}>
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Abrir en Google Maps
+                  </Button>
+                  <Button variant="outline" onClick={() => setMode('results')}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    Ver en mapa
+                  </Button>
+                </div>
               </div>
             )}
           </div>
         </ScrollArea>
-      </SheetContent>
-    </Sheet>
+      </Card>
+    </div>
   );
 }
