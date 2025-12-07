@@ -514,7 +514,7 @@ const BalanceSheetForm = ({ statementId, isLocked, fiscalYear, companyId }: Bala
                               <Input
                                 type="number"
                                 step="0.01"
-                                value={value || ''}
+                                value={value}
                                 onChange={(e) => handleChange(yearIdx, row.field!, e.target.value)}
                                 className="w-full text-right h-8 px-2"
                                 placeholder="0.00"
