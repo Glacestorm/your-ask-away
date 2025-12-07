@@ -452,16 +452,17 @@
    ======================================== */
 @keyframes marker-route-blink {
   0%, 100% {
-    filter: drop-shadow(0 0 6px hsl(145 55% 45%)) brightness(1);
-    transform: scale(1);
+    box-shadow: 0 0 6px 3px hsl(145 55% 45%);
+    opacity: 1;
   }
   50% {
-    filter: drop-shadow(0 0 16px hsl(145 55% 55%)) brightness(1.2);
-    transform: scale(1.1);
+    box-shadow: 0 0 20px 8px hsl(145 55% 55%);
+    opacity: 0.85;
   }
 }
 
 .marker-route-selected {
   animation: marker-route-blink 1.2s ease-in-out infinite;
   z-index: 9998 !important;
+  border-radius: 50%;
 }

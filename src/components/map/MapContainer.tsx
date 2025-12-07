@@ -243,7 +243,12 @@ export function MapContainer({
 
   // Effect to draw route polyline on map
   useEffect(() => {
-    if (!map.current || !mapLoaded) return;
+    console.log('Route effect triggered, polyline:', routePolyline?.substring(0, 30), 'mapLoaded:', mapLoaded);
+    
+    if (!map.current || !mapLoaded) {
+      console.log('Map not ready yet');
+      return;
+    }
 
     const mapInstance = map.current;
     const sourceId = 'route-source';
@@ -252,15 +257,21 @@ export function MapContainer({
 
     // Function to add route layers
     const addRouteLayers = () => {
+      console.log('Adding route layers...');
+      
       // Remove existing route layers and source
-      if (mapInstance.getLayer(layerId)) {
-        mapInstance.removeLayer(layerId);
-      }
-      if (mapInstance.getLayer(outlineLayerId)) {
-        mapInstance.removeLayer(outlineLayerId);
-      }
-      if (mapInstance.getSource(sourceId)) {
-        mapInstance.removeSource(sourceId);
+      try {
+        if (mapInstance.getLayer(layerId)) {
+          mapInstance.removeLayer(layerId);
+        }
+        if (mapInstance.getLayer(outlineLayerId)) {
+          mapInstance.removeLayer(outlineLayerId);
+        }
+        if (mapInstance.getSource(sourceId)) {
+          mapInstance.removeSource(sourceId);
+        }
+      } catch (e) {
+        console.warn('Error removing existing layers:', e);
       }
 
       if (routePolyline) {
@@ -268,7 +279,8 @@ export function MapContainer({
           // Decode Google's encoded polyline
           const decodedCoords = decodePolyline(routePolyline);
           
-          console.log('Drawing route with', decodedCoords.length, 'coordinates');
+          console.log('Decoded route with', decodedCoords.length, 'coordinates');
+          console.log('First coord:', decodedCoords[0], 'Last coord:', decodedCoords[decodedCoords.length - 1]);
           
           if (decodedCoords.length > 0) {
             // Add source with route geometry
@@ -316,7 +328,7 @@ export function MapContainer({
               },
             });
 
-            console.log('Route layers added successfully');
+            console.log('Route layers added successfully!');
 
             // Fit map to route bounds
             const bounds = decodedCoords.reduce(
@@ -329,6 +341,7 @@ export function MapContainer({
               [[Infinity, Infinity], [-Infinity, -Infinity]] as [[number, number], [number, number]]
             );
 
+            console.log('Fitting bounds:', bounds);
             mapInstance.fitBounds(bounds as [[number, number], [number, number]], {
               padding: { top: 100, bottom: 100, left: 100, right: 450 },
               duration: 1000,
@@ -344,6 +357,7 @@ export function MapContainer({
     if (mapInstance.isStyleLoaded()) {
       addRouteLayers();
     } else {
+      console.log('Waiting for style to load...');
       mapInstance.once('styledata', addRouteLayers);
     }
   }, [routePolyline, mapLoaded]);
