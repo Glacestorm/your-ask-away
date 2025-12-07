@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Save, TrendingUp, TrendingDown, Receipt, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { useOptimisticLock } from '@/hooks/useOptimisticLock';
+import { ConflictDialog } from '@/components/ui/ConflictDialog';
 
 interface IncomeStatementFormProps {
   statementId: string;
@@ -52,6 +54,16 @@ const IncomeStatementForm = ({ statementId, isLocked, fiscalYear }: IncomeStatem
   const [data, setData] = useState<IncomeStatementData>({ ...defaultData, statement_id: statementId });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showConflictDialog, setShowConflictDialog] = useState(false);
+  
+  // Optimistic locking for concurrent edit detection
+  const {
+    updateWithLock,
+    forceUpdate,
+    reloadRecord,
+    conflict,
+    isUpdating,
+  } = useOptimisticLock({ table: 'income_statements' });
 
   useEffect(() => {
     fetchData();
@@ -83,17 +95,56 @@ const IncomeStatementForm = ({ statementId, isLocked, fiscalYear }: IncomeStatem
   const handleSave = async () => {
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('income_statements')
-        .upsert({ ...data, statement_id: statementId }, { onConflict: 'statement_id' });
-      
-      if (error) throw error;
+      if (data.id) {
+        // Use optimistic locking for updates
+        const result = await updateWithLock(
+          data.id,
+          { ...data, statement_id: statementId },
+          new Date((data as any).updated_at || Date.now())
+        );
+        
+        if (!result.success) {
+          if (result.conflict) {
+            setShowConflictDialog(true);
+            return;
+          }
+          throw new Error('Error updating income statement');
+        }
+        setData(result.data as unknown as IncomeStatementData);
+      } else {
+        const { error } = await supabase
+          .from('income_statements')
+          .upsert({ ...data, statement_id: statementId }, { onConflict: 'statement_id' });
+        
+        if (error) throw error;
+      }
       toast.success('Compte de resultats guardat correctament');
     } catch (error) {
       console.error('Error saving income statement:', error);
       toast.error('Error guardant compte de resultats');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleReloadData = async () => {
+    if (data.id) {
+      const reloaded = await reloadRecord(data.id);
+      if (reloaded) {
+        setData(reloaded as unknown as IncomeStatementData);
+        setShowConflictDialog(false);
+        toast.success('Dades recarregades correctament');
+      }
+    }
+  };
+
+  const handleForceUpdate = async () => {
+    if (data.id && conflict) {
+      const result = await forceUpdate(data.id, conflict.attemptedData);
+      if (result.success) {
+        setData(result.data as unknown as IncomeStatementData);
+        setShowConflictDialog(false);
+      }
     }
   };
 
@@ -256,12 +307,21 @@ const IncomeStatementForm = ({ statementId, isLocked, fiscalYear }: IncomeStatem
 
       {!isLocked && (
         <div className="flex justify-end">
-          <Button onClick={handleSave} disabled={saving} size="lg">
+          <Button onClick={handleSave} disabled={saving || isUpdating} size="lg">
             <Save className="w-4 h-4 mr-2" />
-            {saving ? 'Guardant...' : 'Guardar Compte de Resultats'}
+            {saving || isUpdating ? 'Guardant...' : 'Guardar Compte de Resultats'}
           </Button>
         </div>
       )}
+      
+      <ConflictDialog
+        conflict={conflict}
+        open={showConflictDialog}
+        onOpenChange={setShowConflictDialog}
+        onReload={handleReloadData}
+        onForceUpdate={handleForceUpdate}
+        isUpdating={isUpdating}
+      />
     </div>
   );
 };
