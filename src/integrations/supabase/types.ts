@@ -1917,6 +1917,30 @@ export type Database = {
           },
         ]
       }
+      geocode_rate_limits: {
+        Row: {
+          created_at: string | null
+          id: string
+          ip_address: string
+          request_count: number | null
+          window_start: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          ip_address: string
+          request_count?: number | null
+          window_start?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          ip_address?: string
+          request_count?: number | null
+          window_start?: string | null
+        }
+        Relationships: []
+      }
       goals: {
         Row: {
           assigned_to: string | null
@@ -2604,6 +2628,45 @@ export type Database = {
           },
         ]
       }
+      security_audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          ip_address: string | null
+          resource_id: string | null
+          resource_type: string
+          severity: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          resource_id?: string | null
+          resource_type: string
+          severity?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          severity?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       status_colors: {
         Row: {
           color_hex: string
@@ -3013,6 +3076,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_view_alert: {
+        Args: { _alert_id: string; _user_id: string }
+        Returns: boolean
+      }
+      can_view_profile: {
+        Args: { _profile_id: string; _viewer_id: string }
+        Returns: boolean
+      }
+      can_view_visit_sheet: {
+        Args: { _user_id: string; _visit_sheet_id: string }
+        Returns: boolean
+      }
+      cleanup_rate_limits: { Args: never; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -3028,6 +3104,16 @@ export type Database = {
       is_visit_participant: {
         Args: { _user_id: string; _visit_id: string }
         Returns: boolean
+      }
+      log_security_event: {
+        Args: {
+          _action: string
+          _details?: Json
+          _resource_id?: string
+          _resource_type: string
+          _severity?: string
+        }
+        Returns: undefined
       }
     }
     Enums: {
