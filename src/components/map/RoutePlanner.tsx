@@ -3,26 +3,41 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import { 
   Route, 
   MapPin, 
   Clock, 
   Navigation2, 
   X, 
-  GripVertical,
   Play,
   RotateCcw,
   Loader2,
   ChevronDown,
   ChevronUp,
-  Car
+  Car,
+  Search,
+  Plus,
+  Trash2
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { CompanyWithDetails } from '@/types/database';
 import { cn } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface RouteSegment {
   start_address: string;
@@ -57,19 +72,24 @@ interface RoutePlannerProps {
   onRouteCalculated: (route: OptimizedRoute | null) => void;
   onClose: () => void;
   userLocation?: { latitude: number; longitude: number } | null;
+  onCompanyClick?: (companyId: string) => void;
+  selectedCompanyFromMap?: CompanyWithDetails | null;
 }
 
 export function RoutePlanner({ 
   companies, 
   onRouteCalculated, 
   onClose,
-  userLocation 
+  userLocation,
+  selectedCompanyFromMap
 }: RoutePlannerProps) {
   const [selectedCompanies, setSelectedCompanies] = useState<CompanyWithDetails[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [optimizedRoute, setOptimizedRoute] = useState<OptimizedRoute | null>(null);
   const [expandedSegment, setExpandedSegment] = useState<number | null>(null);
   const [origin, setOrigin] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Get user location on mount
   useEffect(() => {
@@ -89,22 +109,41 @@ export function RoutePlanner({
           setOrigin({ latitude: 42.5063, longitude: 1.5218 });
         }
       );
+    } else {
+      // Default fallback
+      setOrigin({ latitude: 42.5063, longitude: 1.5218 });
     }
   }, [userLocation]);
 
-  const handleCompanyToggle = (company: CompanyWithDetails) => {
+  // Add company from map click
+  useEffect(() => {
+    if (selectedCompanyFromMap) {
+      addCompanyToRoute(selectedCompanyFromMap);
+    }
+  }, [selectedCompanyFromMap]);
+
+  const addCompanyToRoute = (company: CompanyWithDetails) => {
     setSelectedCompanies(prev => {
       const isSelected = prev.some(c => c.id === company.id);
       if (isSelected) {
-        return prev.filter(c => c.id !== company.id);
+        toast.info(`${company.name} ya está en la ruta`);
+        return prev;
       }
       if (prev.length >= 10) {
         toast.error('Máximo 10 empresas por ruta');
         return prev;
       }
+      toast.success(`${company.name} añadida a la ruta`);
       return [...prev, company];
     });
-    // Reset route when selection changes
+    setOptimizedRoute(null);
+    onRouteCalculated(null);
+    setSearchOpen(false);
+    setSearchQuery('');
+  };
+
+  const removeCompanyFromRoute = (companyId: string) => {
+    setSelectedCompanies(prev => prev.filter(c => c.id !== companyId));
     setOptimizedRoute(null);
     onRouteCalculated(null);
   };
@@ -143,9 +182,10 @@ export function RoutePlanner({
       } else {
         throw new Error(data.error || 'Error al calcular la ruta');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error calculating route:', error);
-      toast.error(error.message || 'Error al calcular la ruta');
+      const errorMessage = error instanceof Error ? error.message : 'Error al calcular la ruta';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -179,8 +219,20 @@ export function RoutePlanner({
     window.open(url, '_blank');
   };
 
+  // Filter companies based on search query
+  const filteredCompanies = companies.filter(company => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      company.name.toLowerCase().includes(query) ||
+      company.address?.toLowerCase().includes(query) ||
+      company.bp?.toLowerCase().includes(query) ||
+      company.tax_id?.toLowerCase().includes(query)
+    );
+  }).slice(0, 50);
+
   return (
-    <Card className="absolute top-4 right-4 w-96 max-h-[calc(100vh-2rem)] z-50 shadow-xl">
+    <Card className="absolute top-4 right-4 w-96 max-h-[calc(100vh-2rem)] z-50 shadow-xl bg-card border-border">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-lg">
@@ -200,10 +252,10 @@ export function RoutePlanner({
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* Company Selection */}
+        {/* Search and Add Companies */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Selecciona empresas ({selectedCompanies.length}/10)</span>
+            <span className="text-sm font-medium">Empresas en ruta ({selectedCompanies.length}/10)</span>
             {selectedCompanies.length > 0 && (
               <Button variant="ghost" size="sm" onClick={handleReset}>
                 <RotateCcw className="h-3 w-3 mr-1" />
@@ -212,49 +264,109 @@ export function RoutePlanner({
             )}
           </div>
           
-          <ScrollArea className="h-48 border rounded-lg p-2">
-            {companies.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No hay empresas disponibles
-              </p>
-            ) : (
+          {/* Company Search Dropdown */}
+          <Popover open={searchOpen} onOpenChange={setSearchOpen}>
+            <PopoverTrigger asChild>
+              <Button 
+                variant="outline" 
+                className="w-full justify-start text-left font-normal"
+                disabled={selectedCompanies.length >= 10}
+              >
+                <Search className="mr-2 h-4 w-4" />
+                <span className="text-muted-foreground">
+                  {selectedCompanies.length >= 10 
+                    ? 'Máximo alcanzado' 
+                    : 'Buscar y añadir empresa...'}
+                </span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[360px] p-0 bg-popover border-border" align="start">
+              <Command>
+                <CommandInput 
+                  placeholder="Buscar por nombre, dirección, BP o NRT..." 
+                  value={searchQuery}
+                  onValueChange={setSearchQuery}
+                />
+                <CommandList>
+                  <CommandEmpty>No se encontraron empresas</CommandEmpty>
+                  <CommandGroup heading="Empresas disponibles">
+                    <ScrollArea className="h-64">
+                      {filteredCompanies.map((company) => {
+                        const isSelected = selectedCompanies.some(c => c.id === company.id);
+                        return (
+                          <CommandItem
+                            key={company.id}
+                            value={company.id}
+                            onSelect={() => addCompanyToRoute(company)}
+                            disabled={isSelected}
+                            className={cn(
+                              "cursor-pointer",
+                              isSelected && "opacity-50"
+                            )}
+                          >
+                            <div className="flex items-center gap-2 w-full">
+                              <MapPin className="h-4 w-4 text-primary shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">{company.name}</p>
+                                <p className="text-xs text-muted-foreground truncate">{company.address}</p>
+                              </div>
+                              {isSelected ? (
+                                <Badge variant="secondary" className="shrink-0">En ruta</Badge>
+                              ) : (
+                                <Plus className="h-4 w-4 text-muted-foreground shrink-0" />
+                              )}
+                            </div>
+                          </CommandItem>
+                        );
+                      })}
+                    </ScrollArea>
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+
+          {/* Hint for map selection */}
+          <p className="text-xs text-muted-foreground text-center">
+            💡 También puedes hacer clic en las chinchetas del mapa para añadir empresas
+          </p>
+
+          {/* Selected Companies List */}
+          {selectedCompanies.length > 0 && (
+            <ScrollArea className="h-40 border rounded-lg p-2 bg-muted/30">
               <div className="space-y-1">
-                {companies.slice(0, 50).map((company, index) => (
+                {selectedCompanies.map((company, index) => (
                   <div
                     key={company.id}
-                    className={cn(
-                      "flex items-center gap-2 p-2 rounded-md cursor-pointer transition-colors",
-                      selectedCompanies.some(c => c.id === company.id)
-                        ? "bg-primary/10 border border-primary/30"
-                        : "hover:bg-muted"
-                    )}
-                    onClick={() => handleCompanyToggle(company)}
+                    className="flex items-center gap-2 p-2 rounded-md bg-background border"
                   >
-                    <Checkbox 
-                      checked={selectedCompanies.some(c => c.id === company.id)}
-                      className="pointer-events-none"
-                    />
+                    <Badge variant="secondary" className="shrink-0 w-6 h-6 flex items-center justify-center p-0">
+                      {index + 1}
+                    </Badge>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{company.name}</p>
                       <p className="text-xs text-muted-foreground truncate">{company.address}</p>
                     </div>
-                    {selectedCompanies.some(c => c.id === company.id) && (
-                      <Badge variant="secondary" className="shrink-0">
-                        {selectedCompanies.findIndex(c => c.id === company.id) + 1}
-                      </Badge>
-                    )}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => removeCompanyFromRoute(company.id)}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
                   </div>
                 ))}
               </div>
-            )}
-          </ScrollArea>
+            </ScrollArea>
+          )}
         </div>
 
         {/* Calculate Button */}
         <Button 
           className="w-full" 
           onClick={handleCalculateRoute}
-          disabled={selectedCompanies.length === 0 || isLoading || !origin}
+          disabled={selectedCompanies.length === 0 || isLoading}
         >
           {isLoading ? (
             <>
@@ -264,7 +376,7 @@ export function RoutePlanner({
           ) : (
             <>
               <Play className="h-4 w-4 mr-2" />
-              Calcular Ruta Óptima
+              Calcular Ruta Óptima ({selectedCompanies.length} {selectedCompanies.length === 1 ? 'parada' : 'paradas'})
             </>
           )}
         </Button>

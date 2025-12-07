@@ -85,6 +85,7 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
   const [sidebarFullscreen, setSidebarFullscreen] = useState(false);
   const [showRoutePlanner, setShowRoutePlanner] = useState(false);
   const [routePolyline, setRoutePolyline] = useState<string | null>(null);
+  const [routePlannerCompany, setRoutePlannerCompany] = useState<CompanyWithDetails | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -357,9 +358,14 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
               statusColors={statusColors}
               filters={filters}
               onSelectCompany={(company) => {
-                setSelectedCompany(company);
-                if (company) {
-                  setSidebarOpen(true);
+                if (showRoutePlanner && company) {
+                  // When route planner is open, add company to route
+                  setRoutePlannerCompany(company);
+                } else {
+                  setSelectedCompany(company);
+                  if (company) {
+                    setSidebarOpen(true);
+                  }
                 }
               }}
               onUpdateCompanyLocation={handleUpdateCompanyLocation}
@@ -390,7 +396,9 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
                 onClose={() => {
                   setShowRoutePlanner(false);
                   setRoutePolyline(null);
+                  setRoutePlannerCompany(null);
                 }}
+                selectedCompanyFromMap={routePlannerCompany}
               />
             )}
           </div>
