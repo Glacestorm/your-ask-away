@@ -62,13 +62,11 @@ const AddedValueAnalysis: React.FC<AddedValueAnalysisProps> = ({
     fetchData();
   }, [companyId]);
 
-  // Get sorted years (most recent first)
+  // Always show 5 years (current year and 4 previous), regardless of data availability
   const sortedYears = useMemo(() => {
-    return statements
-      .map(s => s.fiscal_year)
-      .sort((a, b) => b - a)
-      .slice(0, 5);
-  }, [statements]);
+    const currentYear = new Date().getFullYear();
+    return [currentYear, currentYear - 1, currentYear - 2, currentYear - 3, currentYear - 4];
+  }, []);
 
   // Calculate added value data for each year
   const yearlyData = useMemo(() => {
