@@ -706,6 +706,21 @@ const Admin = () => {
                   </div>
                 </CardContent>
               </Card>
+              {/* Technical Documentation */}
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-all border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-emerald-500/10"
+                onClick={() => handleSectionChange('technical-docs')}
+              >
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                    <Activity className="h-5 w-5 text-emerald-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-emerald-700 dark:text-emerald-400">Documentació Tècnica</h3>
+                    <p className="text-sm text-muted-foreground">Generar PDF tècnico-funcional complet</p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         );
