@@ -288,234 +288,143 @@ export function MapContainer({
     }
   }, [focusCompanyId, companies, mapLoaded, view3D, onFocusCompanyHandled]);
 
-  // Effect to draw route polyline on map
+  // Effect to draw route polyline on map - SIMPLIFIED VERSION
   useEffect(() => {
-    console.log('=== ROUTE EFFECT TRIGGERED ===');
-    console.log('mapLoaded:', mapLoaded);
-    console.log('routePolyline exists:', !!routePolyline);
-    console.log('routePolyline length:', routePolyline?.length);
-    console.log('map.current exists:', !!map.current);
-    
-    if (!map.current) {
-      console.warn('No map instance available');
-      return;
-    }
-    
-    if (!mapLoaded) {
-      console.warn('Map not loaded yet');
-      return;
-    }
-
     const mapInstance = map.current;
-    const sourceId = 'route-source';
-    const layerId = 'route-layer';
-    const outlineLayerId = 'route-outline-layer';
-    const pointsSourceId = 'route-points-source';
-    const pointsLayerId = 'route-points-layer';
+    
+    // Early exit conditions
+    if (!mapInstance || !mapLoaded) {
+      return;
+    }
 
-    // Cleanup function to remove all route-related elements
-    const cleanupRoute = () => {
-      console.log('Cleaning up route layers...');
-      try {
-        if (mapInstance.getLayer(layerId)) {
-          mapInstance.removeLayer(layerId);
-          console.log('Removed layer:', layerId);
-        }
-        if (mapInstance.getLayer(outlineLayerId)) {
-          mapInstance.removeLayer(outlineLayerId);
-          console.log('Removed layer:', outlineLayerId);
-        }
-        if (mapInstance.getLayer(pointsLayerId)) {
-          mapInstance.removeLayer(pointsLayerId);
-          console.log('Removed layer:', pointsLayerId);
-        }
-        if (mapInstance.getSource(sourceId)) {
-          mapInstance.removeSource(sourceId);
-          console.log('Removed source:', sourceId);
-        }
-        if (mapInstance.getSource(pointsSourceId)) {
-          mapInstance.removeSource(pointsSourceId);
-          console.log('Removed source:', pointsSourceId);
-        }
-      } catch (e) {
-        console.warn('Error during cleanup:', e);
-      }
+    const SOURCE_ID = 'route-line-source';
+    const LAYER_ID = 'route-line-layer';
+    const OUTLINE_ID = 'route-outline-layer';
+    const START_SOURCE = 'route-start-source';
+    const END_SOURCE = 'route-end-source';
+    const START_LAYER = 'route-start-layer';
+    const END_LAYER = 'route-end-layer';
+
+    // Remove existing route elements
+    const cleanup = () => {
+      [LAYER_ID, OUTLINE_ID, START_LAYER, END_LAYER].forEach(id => {
+        if (mapInstance.getLayer(id)) mapInstance.removeLayer(id);
+      });
+      [SOURCE_ID, START_SOURCE, END_SOURCE].forEach(id => {
+        if (mapInstance.getSource(id)) mapInstance.removeSource(id);
+      });
     };
 
-    // Function to add route layers
-    const addRouteLayers = () => {
-      console.log('=== ADDING ROUTE LAYERS ===');
-      
-      // First cleanup any existing route
-      cleanupRoute();
+    // If no polyline, just cleanup and exit
+    if (!routePolyline) {
+      cleanup();
+      return;
+    }
 
-      if (!routePolyline || routePolyline.length === 0) {
-        console.log('No polyline to draw, exiting');
-        return;
-      }
-
+    // Draw the route
+    const drawRoute = () => {
       try {
-        console.log('Decoding polyline of length:', routePolyline.length);
-        console.log('Polyline first 100 chars:', routePolyline.substring(0, 100));
+        cleanup();
         
-        // Decode Google's encoded polyline
-        const decodedCoords = decodePolyline(routePolyline);
-        
-        console.log('Decoded coordinates count:', decodedCoords.length);
-        console.log('First coord:', decodedCoords[0]);
-        console.log('Last coord:', decodedCoords[decodedCoords.length - 1]);
-        
-        if (decodedCoords.length < 2) {
-          console.warn('Not enough coordinates to draw route:', decodedCoords.length);
-          return;
-        }
+        const coords = decodePolyline(routePolyline);
+        if (coords.length < 2) return;
 
-        // Check if source already exists
-        if (mapInstance.getSource(sourceId)) {
-          console.log('Source already exists, removing...');
-          cleanupRoute();
-        }
-
-        console.log('Adding route source...');
-        // Add line source
-        mapInstance.addSource(sourceId, {
+        // Add route line
+        mapInstance.addSource(SOURCE_ID, {
           type: 'geojson',
           data: {
             type: 'Feature',
             properties: {},
-            geometry: {
-              type: 'LineString',
-              coordinates: decodedCoords,
-            },
-          },
+            geometry: { type: 'LineString', coordinates: coords }
+          }
         });
-        console.log('Route source added successfully');
 
-        console.log('Adding points source...');
-        // Add points source for start/end markers
-        mapInstance.addSource(pointsSourceId, {
+        // Add start point
+        mapInstance.addSource(START_SOURCE, {
           type: 'geojson',
           data: {
-            type: 'FeatureCollection',
-            features: [
-              {
-                type: 'Feature',
-                properties: { type: 'start' },
-                geometry: { type: 'Point', coordinates: decodedCoords[0] },
-              },
-              {
-                type: 'Feature',
-                properties: { type: 'end' },
-                geometry: { type: 'Point', coordinates: decodedCoords[decodedCoords.length - 1] },
-              },
-            ],
-          },
+            type: 'Feature',
+            properties: {},
+            geometry: { type: 'Point', coordinates: coords[0] }
+          }
         });
-        console.log('Points source added successfully');
 
-        console.log('Adding outline layer...');
-        // Add outline layer (casing)
+        // Add end point
+        mapInstance.addSource(END_SOURCE, {
+          type: 'geojson',
+          data: {
+            type: 'Feature',
+            properties: {},
+            geometry: { type: 'Point', coordinates: coords[coords.length - 1] }
+          }
+        });
+
+        // Outline layer (black border)
         mapInstance.addLayer({
-          id: outlineLayerId,
+          id: OUTLINE_ID,
           type: 'line',
-          source: sourceId,
-          layout: {
-            'line-join': 'round',
-            'line-cap': 'round',
-          },
-          paint: {
-            'line-color': '#000000',
-            'line-width': 14,
-            'line-opacity': 1,
-          },
+          source: SOURCE_ID,
+          layout: { 'line-join': 'round', 'line-cap': 'round' },
+          paint: { 'line-color': '#000', 'line-width': 12 }
         });
-        console.log('Outline layer added');
 
-        console.log('Adding main route layer...');
-        // Add main route layer
+        // Main route layer (blue)
         mapInstance.addLayer({
-          id: layerId,
+          id: LAYER_ID,
           type: 'line',
-          source: sourceId,
-          layout: {
-            'line-join': 'round',
-            'line-cap': 'round',
-          },
-          paint: {
-            'line-color': '#ff0000',
-            'line-width': 8,
-            'line-opacity': 1,
-          },
+          source: SOURCE_ID,
+          layout: { 'line-join': 'round', 'line-cap': 'round' },
+          paint: { 'line-color': '#4285F4', 'line-width': 6 }
         });
-        console.log('Main route layer added');
 
-        console.log('Adding route points layer...');
-        // Add route points layer
+        // Start marker (green)
         mapInstance.addLayer({
-          id: pointsLayerId,
+          id: START_LAYER,
           type: 'circle',
-          source: pointsSourceId,
+          source: START_SOURCE,
           paint: {
-            'circle-radius': 12,
-            'circle-color': ['case', 
-              ['==', ['get', 'type'], 'start'], '#00ff00',
-              '#ff0000'
-            ],
-            'circle-stroke-width': 4,
-            'circle-stroke-color': '#ffffff',
-          },
-        });
-        console.log('Points layer added');
-
-        // Verify layers were added
-        console.log('Layer exists check - outline:', !!mapInstance.getLayer(outlineLayerId));
-        console.log('Layer exists check - main:', !!mapInstance.getLayer(layerId));
-        console.log('Layer exists check - points:', !!mapInstance.getLayer(pointsLayerId));
-
-        // Fit map to route bounds
-        const lngs = decodedCoords.map(c => c[0]);
-        const lats = decodedCoords.map(c => c[1]);
-        
-        const bounds: [[number, number], [number, number]] = [
-          [Math.min(...lngs), Math.min(...lats)], 
-          [Math.max(...lngs), Math.max(...lats)]
-        ];
-        console.log('Fitting bounds:', bounds);
-        
-        mapInstance.fitBounds(bounds, { 
-          padding: { top: 100, bottom: 100, left: 100, right: 450 }, 
-          duration: 1000 
+            'circle-radius': 10,
+            'circle-color': '#00C853',
+            'circle-stroke-width': 3,
+            'circle-stroke-color': '#fff'
+          }
         });
 
-        console.log('=== ROUTE LAYERS ADDED SUCCESSFULLY ===');
+        // End marker (red)
+        mapInstance.addLayer({
+          id: END_LAYER,
+          type: 'circle',
+          source: END_SOURCE,
+          paint: {
+            'circle-radius': 10,
+            'circle-color': '#F44336',
+            'circle-stroke-width': 3,
+            'circle-stroke-color': '#fff'
+          }
+        });
 
-      } catch (error) {
-        console.error('Error drawing route:', error);
+        // Fit bounds
+        const lngs = coords.map(c => c[0]);
+        const lats = coords.map(c => c[1]);
+        mapInstance.fitBounds(
+          [[Math.min(...lngs), Math.min(...lats)], [Math.max(...lngs), Math.max(...lats)]],
+          { padding: { top: 80, bottom: 80, left: 80, right: 400 }, duration: 800 }
+        );
+
+        console.log('Route drawn successfully with', coords.length, 'points');
+      } catch (err) {
+        console.error('Error drawing route:', err);
       }
     };
 
-    // Wait for style to be ready
-    const styleLoaded = mapInstance.isStyleLoaded();
-    console.log('Style loaded:', styleLoaded);
-    
-    if (styleLoaded) {
-      console.log('Style is loaded, adding layers with small delay...');
-      setTimeout(addRouteLayers, 100);
+    // Execute after short delay to ensure map is ready
+    if (mapInstance.isStyleLoaded()) {
+      setTimeout(drawRoute, 50);
     } else {
-      console.log('Waiting for style to load...');
-      mapInstance.once('style.load', () => {
-        console.log('Style loaded event fired, adding layers...');
-        setTimeout(addRouteLayers, 100);
-      });
+      mapInstance.once('style.load', () => setTimeout(drawRoute, 50));
     }
 
-    // Cleanup on unmount or when polyline changes
-    return () => {
-      console.log('Cleanup effect running, routePolyline:', !!routePolyline);
-      if (map.current && !routePolyline) {
-        cleanupRoute();
-      }
-    };
+    return cleanup;
   }, [routePolyline, mapLoaded]);
 
   // Fetch tooltip configuration
@@ -864,64 +773,90 @@ export function MapContainer({
       if (currentRoutePolylineRef.current && currentRoutePolylineRef.current.length > 0) {
         const polyline = currentRoutePolylineRef.current;
         const mapInstance = map.current;
-        const sourceId = 'route-source';
-        const layerId = 'route-layer';
-        const outlineLayerId = 'route-outline-layer';
-        const pointsSourceId = 'route-points-source';
-        const pointsLayerId = 'route-points-layer';
+        const SOURCE_ID = 'route-line-source';
+        const LAYER_ID = 'route-line-layer';
+        const OUTLINE_ID = 'route-outline-layer';
+        const START_SOURCE = 'route-start-source';
+        const END_SOURCE = 'route-end-source';
+        const START_LAYER = 'route-start-layer';
+        const END_LAYER = 'route-end-layer';
         
         setTimeout(() => {
           try {
-            const decodedCoords = decodePolyline(polyline);
-            if (decodedCoords.length >= 2) {
-              // Add line source
-              mapInstance.addSource(sourceId, {
+            const coords = decodePolyline(polyline);
+            if (coords.length >= 2) {
+              // Add route line source
+              mapInstance.addSource(SOURCE_ID, {
                 type: 'geojson',
                 data: {
                   type: 'Feature',
                   properties: {},
-                  geometry: { type: 'LineString', coordinates: decodedCoords },
-                },
+                  geometry: { type: 'LineString', coordinates: coords }
+                }
               });
 
-              // Add points source
-              mapInstance.addSource(pointsSourceId, {
+              // Add start point source
+              mapInstance.addSource(START_SOURCE, {
                 type: 'geojson',
                 data: {
-                  type: 'FeatureCollection',
-                  features: [
-                    { type: 'Feature', properties: { type: 'start' }, geometry: { type: 'Point', coordinates: decodedCoords[0] } },
-                    { type: 'Feature', properties: { type: 'end' }, geometry: { type: 'Point', coordinates: decodedCoords[decodedCoords.length - 1] } },
-                  ],
-                },
+                  type: 'Feature',
+                  properties: {},
+                  geometry: { type: 'Point', coordinates: coords[0] }
+                }
               });
 
+              // Add end point source
+              mapInstance.addSource(END_SOURCE, {
+                type: 'geojson',
+                data: {
+                  type: 'Feature',
+                  properties: {},
+                  geometry: { type: 'Point', coordinates: coords[coords.length - 1] }
+                }
+              });
+
+              // Outline layer
               mapInstance.addLayer({
-                id: outlineLayerId,
+                id: OUTLINE_ID,
                 type: 'line',
-                source: sourceId,
+                source: SOURCE_ID,
                 layout: { 'line-join': 'round', 'line-cap': 'round' },
-                paint: { 'line-color': '#1e40af', 'line-width': 12, 'line-opacity': 0.8 },
+                paint: { 'line-color': '#000', 'line-width': 12 }
               });
 
+              // Main route layer
               mapInstance.addLayer({
-                id: layerId,
+                id: LAYER_ID,
                 type: 'line',
-                source: sourceId,
+                source: SOURCE_ID,
                 layout: { 'line-join': 'round', 'line-cap': 'round' },
-                paint: { 'line-color': '#3b82f6', 'line-width': 6, 'line-opacity': 1 },
+                paint: { 'line-color': '#4285F4', 'line-width': 6 }
               });
 
+              // Start marker
               mapInstance.addLayer({
-                id: pointsLayerId,
+                id: START_LAYER,
                 type: 'circle',
-                source: pointsSourceId,
+                source: START_SOURCE,
                 paint: {
                   'circle-radius': 10,
-                  'circle-color': ['case', ['==', ['get', 'type'], 'start'], '#22c55e', '#ef4444'],
+                  'circle-color': '#00C853',
                   'circle-stroke-width': 3,
-                  'circle-stroke-color': '#ffffff',
-                },
+                  'circle-stroke-color': '#fff'
+                }
+              });
+
+              // End marker
+              mapInstance.addLayer({
+                id: END_LAYER,
+                type: 'circle',
+                source: END_SOURCE,
+                paint: {
+                  'circle-radius': 10,
+                  'circle-color': '#F44336',
+                  'circle-stroke-width': 3,
+                  'circle-stroke-color': '#fff'
+                }
               });
             }
           } catch (e) {
