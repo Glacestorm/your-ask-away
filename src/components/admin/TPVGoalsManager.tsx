@@ -12,6 +12,8 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, Plus, Pencil, Trash2, Target } from 'lucide-react';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { useOptimisticLock } from '@/hooks/useOptimisticLock';
+import { ConflictDialog } from '@/components/ui/ConflictDialog';
 
 const goalSchema = z.object({
   metric_type: z.enum(['tpv_revenue', 'tpv_affiliation', 'tpv_commission'], {
@@ -42,6 +44,7 @@ export function TPVGoalsManager() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState<TPVGoal | null>(null);
+  const [showConflictDialog, setShowConflictDialog] = useState(false);
   const [formData, setFormData] = useState<GoalFormData>({
     metric_type: 'tpv_revenue',
     target_value: 0,
@@ -51,6 +54,15 @@ export function TPVGoalsManager() {
     description: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const {
+    updateWithLock,
+    forceUpdate,
+    reloadRecord,
+    isUpdating,
+    conflict,
+    clearConflict,
+  } = useOptimisticLock({ table: 'goals' });
 
   useEffect(() => {
     fetchGoals();
@@ -101,32 +113,35 @@ export function TPVGoalsManager() {
     }
 
     try {
-      if (editingGoal) {
-        const { error } = await supabase
-          .from('goals')
-          .update({
-            metric_type: formData.metric_type,
-            target_value: formData.target_value,
-            period_type: formData.period_type,
-            period_start: formData.period_start,
-            period_end: formData.period_end,
-            description: formData.description || null,
-          })
-          .eq('id', editingGoal.id);
+      const dataToSave = {
+        metric_type: formData.metric_type,
+        target_value: formData.target_value,
+        period_type: formData.period_type,
+        period_start: formData.period_start,
+        period_end: formData.period_end,
+        description: formData.description || null,
+      };
 
-        if (error) throw error;
+      if (editingGoal) {
+        // Use optimistic locking for updates
+        const result = await updateWithLock(
+          editingGoal.id,
+          dataToSave,
+          editingGoal.created_at // Using created_at as fallback since goals may not have updated_at
+        );
+
+        if (result.conflict) {
+          setShowConflictDialog(true);
+          return;
+        }
+
+        if (!result.success) return;
+
         toast.success('Objetivo actualizado correctamente');
       } else {
         const { error } = await supabase
           .from('goals')
-          .insert({
-            metric_type: formData.metric_type,
-            target_value: formData.target_value,
-            period_type: formData.period_type,
-            period_start: formData.period_start,
-            period_end: formData.period_end,
-            description: formData.description || null,
-          });
+          .insert(dataToSave);
 
         if (error) throw error;
         toast.success('Objetivo creado correctamente');
@@ -138,6 +153,46 @@ export function TPVGoalsManager() {
     } catch (error: any) {
       console.error('Error saving goal:', error);
       toast.error('Error al guardar el objetivo');
+    }
+  };
+
+  const handleReloadGoal = async () => {
+    if (!editingGoal) return;
+    const reloaded = await reloadRecord(editingGoal.id);
+    if (reloaded) {
+      const goalData = reloaded as unknown as TPVGoal;
+      setEditingGoal(goalData);
+      setFormData({
+        metric_type: goalData.metric_type as GoalFormData['metric_type'],
+        target_value: goalData.target_value,
+        period_type: goalData.period_type,
+        period_start: goalData.period_start,
+        period_end: goalData.period_end,
+        description: goalData.description || '',
+      });
+      setShowConflictDialog(false);
+      clearConflict();
+      toast.success('Dades recarregades');
+    }
+  };
+
+  const handleForceUpdateGoal = async () => {
+    if (!editingGoal) return;
+    const dataToSave = {
+      metric_type: formData.metric_type,
+      target_value: formData.target_value,
+      period_type: formData.period_type,
+      period_start: formData.period_start,
+      period_end: formData.period_end,
+      description: formData.description || null,
+    };
+    const result = await forceUpdate(editingGoal.id, dataToSave);
+    if (result.success) {
+      setShowConflictDialog(false);
+      clearConflict();
+      setDialogOpen(false);
+      resetForm();
+      fetchGoals();
     }
   };
 
@@ -424,6 +479,15 @@ export function TPVGoalsManager() {
           </TableBody>
         </Table>
       </CardContent>
+
+      <ConflictDialog
+        conflict={conflict}
+        open={showConflictDialog}
+        onOpenChange={setShowConflictDialog}
+        onReload={handleReloadGoal}
+        onForceUpdate={handleForceUpdateGoal}
+        isUpdating={isUpdating}
+      />
     </Card>
   );
 }
