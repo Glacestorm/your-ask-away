@@ -527,12 +527,12 @@ supabase/
       
       doc.setFontSize(10);
       const metadata = [
-        ['📅 Fecha de Generación:', new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })],
-        ['🔧 Componentes React:', `${codebaseAnalysis.codeStats.totalComponents} componentes`],
-        ['⚡ Edge Functions:', `${codebaseAnalysis.codeStats.totalEdgeFunctions} funciones serverless`],
-        ['📊 Líneas de Código:', `~${codebaseAnalysis.codeStats.linesOfCode.toLocaleString()}`],
-        ['💰 Valor de Mercado:', `${codebaseAnalysis.marketValuation.marketValue?.toLocaleString() || (codebaseAnalysis.marketValuation.totalCost * 2.5).toLocaleString()}€`],
-        ['🔒 Clasificación:', 'CONFIDENCIAL - PROPUESTA COMERCIAL'],
+        ['Fecha de Generacion:', new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })],
+        ['Componentes React:', `${codebaseAnalysis.codeStats.totalComponents} componentes`],
+        ['Edge Functions:', `${codebaseAnalysis.codeStats.totalEdgeFunctions} funciones serverless`],
+        ['Lineas de Codigo:', `~${codebaseAnalysis.codeStats.linesOfCode.toLocaleString()}`],
+        ['Valor de Mercado:', `${codebaseAnalysis.marketValuation.marketValue?.toLocaleString() || (codebaseAnalysis.marketValuation.totalCost * 2.5).toLocaleString()} EUR`],
+        ['Clasificacion:', 'CONFIDENCIAL - PROPUESTA COMERCIAL'],
       ];
       
       metadata.forEach(([label, value]) => {
@@ -544,8 +544,8 @@ supabase/
       });
 
       currentY += 10;
-      addHighlightBox('🤖 DOCUMENTO GENERADO CON INTELIGENCIA ARTIFICIAL', 
-        'Este documento ha sido generado mediante análisis automático del código fuente usando Lovable AI (Gemini 2.5 Pro). Incluye valoración económica de mercado, análisis de competidores reales del sector bancario español y europeo, estrategia de pricing, y evaluación de viabilidad comercial.',
+      addHighlightBox('DOCUMENTO GENERADO CON INTELIGENCIA ARTIFICIAL', 
+        'Este documento ha sido generado mediante analisis automatico del codigo fuente usando Lovable AI (Gemini 2.5 Pro). Incluye valoracion economica de mercado, analisis de competidores reales del sector bancario espanol y europeo, estrategia de pricing, y evaluacion de viabilidad comercial.',
         'info');
 
       addPageNumber();
@@ -665,7 +665,7 @@ supabase/
         addParagraph(module.description);
         
         if (module.businessValue) {
-          addHighlightBox('💰 Valor de Negocio', module.businessValue, 'success');
+          addHighlightBox('VALOR DE NEGOCIO', module.businessValue, 'success');
         }
         
         addProgressBar('Completitud', module.completionPercentage);
@@ -704,7 +704,7 @@ supabase/
       addTitle('4.1 Puntos Fuertes Únicos (USP)', 2);
       if (marketing?.uniqueSellingPoints) {
         marketing.uniqueSellingPoints.forEach((usp, i) => {
-          addBullet(`${i + 1}. ${usp}`, 0, '🎯');
+          addBullet(`${i + 1}. ${usp}`, 0, '>');
         });
       }
 
@@ -712,7 +712,7 @@ supabase/
       addTitle('4.2 Ventajas Competitivas', 2);
       if (marketing?.competitiveAdvantages) {
         marketing.competitiveAdvantages.forEach(adv => {
-          addBullet(adv, 0, '✅');
+          addBullet(adv, 0, '+');
         });
       }
 
@@ -729,14 +729,14 @@ supabase/
       addTitle('4.4 Audiencia Objetivo', 2);
       if (marketing?.targetAudience) {
         marketing.targetAudience.forEach(aud => {
-          addBullet(aud, 0, '👤');
+          addBullet(aud, 0, '-');
         });
       }
 
       addTitle('4.5 Tendencias de la Industria', 2);
       if (marketing?.industryTrends) {
         marketing.industryTrends.forEach(trend => {
-          addBullet(trend, 0, '📈');
+          addBullet(trend, 0, '>');
         });
       }
 
@@ -744,7 +744,7 @@ supabase/
       addTitle('4.6 Testimonios Potenciales', 2);
       if (marketing?.testimonialPotential) {
         marketing.testimonialPotential.forEach(test => {
-          addHighlightBox('💬 Testimonio Potencial', test, 'info');
+          addHighlightBox('Testimonio Potencial', test, 'info');
         });
       }
 
@@ -783,15 +783,15 @@ supabase/
       addTitle('5.3 ROI y Comparativa con Competidores', 2);
       
       if (codebaseAnalysis.marketValuation.roi5Years) {
-        addHighlightBox('📊 ROI Estimado a 5 Años', codebaseAnalysis.marketValuation.roi5Years, 'success');
+        addHighlightBox('ROI Estimado a 5 Anos', codebaseAnalysis.marketValuation.roi5Years, 'success');
       }
       
       if (codebaseAnalysis.marketValuation.comparisonWithCompetitors) {
-        addHighlightBox('⚖️ Posicionamiento vs Competencia', codebaseAnalysis.marketValuation.comparisonWithCompetitors, 'info');
+        addHighlightBox('Posicionamiento vs Competencia', codebaseAnalysis.marketValuation.comparisonWithCompetitors, 'info');
       }
 
-      addHighlightBox('💡 NOTA SOBRE VALORACIÓN',
-        `El coste de desarrollo (${codebaseAnalysis.marketValuation.totalCost.toLocaleString()}€) refleja la inversión desde cero. El valor de mercado como producto terminado (incluyendo know-how, testing, documentación, soporte y propiedad intelectual) se sitúa entre ${(codebaseAnalysis.marketValuation.totalCost * 2).toLocaleString()}€ y ${(codebaseAnalysis.marketValuation.totalCost * 3).toLocaleString()}€.`,
+      addHighlightBox('NOTA SOBRE VALORACION',
+        `El coste de desarrollo (${codebaseAnalysis.marketValuation.totalCost.toLocaleString()} EUR) refleja la inversion desde cero. El valor de mercado como producto terminado (incluyendo know-how, testing, documentacion, soporte y propiedad intelectual) se situa entre ${(codebaseAnalysis.marketValuation.totalCost * 2).toLocaleString()} EUR y ${(codebaseAnalysis.marketValuation.totalCost * 3).toLocaleString()} EUR.`,
         'warning');
 
       // ==================== 6. COMPARATIVA COMPETIDORES ====================
@@ -835,7 +835,7 @@ supabase/
         competitor.cons.slice(0, 4).forEach(con => addBullet(con, 3, '✗'));
         
         if (competitor.comparisonVsCreand) {
-          addHighlightBox('📊 Comparación vs Creand CRM', competitor.comparisonVsCreand, 'info');
+          addHighlightBox('Comparacion vs Creand CRM', competitor.comparisonVsCreand, 'info');
         }
 
         currentY += 5;
@@ -863,8 +863,8 @@ supabase/
         [32, 32, 28, 25, 25, 28]
       );
 
-      addHighlightBox('📊 CONCLUSIÓN COMPARATIVA',
-        `Creand CRM ofrece el mejor TCO (Total Cost of Ownership) a 5 años, con un ahorro estimado del 60-80% respecto a soluciones comerciales enterprise como Salesforce FSC o SAP S/4HANA, además de control total sobre el código, personalización ilimitada y tiempo de implementación 4-6x más rápido.`,
+      addHighlightBox('CONCLUSION COMPARATIVA',
+        `Creand CRM ofrece el mejor TCO (Total Cost of Ownership) a 5 anos, con un ahorro estimado del 60-80% respecto a soluciones comerciales enterprise como Salesforce FSC o SAP S/4HANA, ademas de control total sobre el codigo, personalizacion ilimitada y tiempo de implementacion 4-6x mas rapido.`,
         'success');
 
       // ==================== 7. ESTRATEGIA DE PRICING ====================
@@ -877,7 +877,7 @@ supabase/
       const pricing = codebaseAnalysis.pricingStrategy;
 
       if (pricing?.recommendedModel) {
-        addHighlightBox('🎯 MODELO RECOMENDADO', pricing.recommendedModel, 'success');
+        addHighlightBox('MODELO RECOMENDADO', pricing.recommendedModel, 'success');
       }
 
       addTitle('7.1 Opción A: Licencia Única (Perpetua)', 2);
@@ -953,37 +953,37 @@ supabase/
 
       addTitle('8.1 Mercado Español', 2);
       if (feasibility?.spanishMarket) {
-        addHighlightBox('📊 Viabilidad', feasibility.spanishMarket.viability, 'success');
+        addHighlightBox('Viabilidad', feasibility.spanishMarket.viability, 'success');
         
-        addParagraph(`Tamaño de Mercado: ${feasibility.spanishMarket.marketSize}`);
+        addParagraph(`Tamano de Mercado: ${feasibility.spanishMarket.marketSize}`);
         
         addSubtitle('Barreras de Entrada');
-        feasibility.spanishMarket.barriers.forEach(bar => addBullet(bar, 3, '⚠️'));
+        feasibility.spanishMarket.barriers.forEach(bar => addBullet(bar, 3, '!'));
         
         addSubtitle('Oportunidades');
-        feasibility.spanishMarket.opportunities.forEach(opp => addBullet(opp, 3, '✅'));
+        feasibility.spanishMarket.opportunities.forEach(opp => addBullet(opp, 3, '+'));
         
         addSubtitle('Competidores Locales');
-        feasibility.spanishMarket.competitors.forEach(comp => addBullet(comp, 3, '🏢'));
+        feasibility.spanishMarket.competitors.forEach(comp => addBullet(comp, 3, '-'));
         
-        addHighlightBox('🎯 Recomendación España', feasibility.spanishMarket.recommendation, 'info');
+        addHighlightBox('Recomendacion Espana', feasibility.spanishMarket.recommendation, 'info');
       }
 
       addNewPage();
       addTitle('8.2 Mercado Europeo', 2);
       if (feasibility?.europeanMarket) {
-        addHighlightBox('📊 Viabilidad', feasibility.europeanMarket.viability, 'info');
+        addHighlightBox('Viabilidad', feasibility.europeanMarket.viability, 'info');
         
-        addSubtitle('Países Objetivo');
-        feasibility.europeanMarket.targetCountries.forEach(country => addBullet(country, 3, '🌍'));
+        addSubtitle('Paises Objetivo');
+        feasibility.europeanMarket.targetCountries.forEach(country => addBullet(country, 3, '-'));
         
         addSubtitle('Regulaciones a Considerar');
-        feasibility.europeanMarket.regulations.forEach(reg => addBullet(reg, 3, '📋'));
+        feasibility.europeanMarket.regulations.forEach(reg => addBullet(reg, 3, '*'));
         
         addSubtitle('Oportunidades');
-        feasibility.europeanMarket.opportunities.forEach(opp => addBullet(opp, 3, '✅'));
+        feasibility.europeanMarket.opportunities.forEach(opp => addBullet(opp, 3, '+'));
         
-        addHighlightBox('🎯 Recomendación Europa', feasibility.europeanMarket.recommendation, 'info');
+        addHighlightBox('Recomendacion Europa', feasibility.europeanMarket.recommendation, 'info');
       }
 
       addNewPage();
@@ -1026,8 +1026,8 @@ supabase/
           ['Penetración Estimada Año 1', client.marketPenetration || 'N/A'],
         ], [65, 105]);
 
-        addSubtitle('Personalizaciones Típicas');
-        client.customizations.forEach(custom => addBullet(custom, 3, '🔧'));
+        addSubtitle('Personalizaciones Tipicas');
+        client.customizations.forEach(custom => addBullet(custom, 3, '*'));
         
         currentY += 5;
       });
@@ -1049,8 +1049,8 @@ supabase/
         [50, 45, 40, 35]
       );
 
-      addHighlightBox('🎯 ESTRATEGIA GO-TO-MARKET RECOMENDADA',
-        '1) Piloto con 2-3 entidades en Andorra (6 meses). 2) Expansión a cooperativas de crédito España (12 meses). 3) Banca privada Luxemburgo y Portugal (18 meses). 4) Partnerships con consultoras financieras locales para escalado europeo (24+ meses).',
+      addHighlightBox('ESTRATEGIA GO-TO-MARKET RECOMENDADA',
+        '1) Piloto con 2-3 entidades en Andorra (6 meses). 2) Expansion a cooperativas de credito Espana (12 meses). 3) Banca privada Luxemburgo y Portugal (18 meses). 4) Partnerships con consultoras financieras locales para escalado europeo (24+ meses).',
         'success');
 
       // ==================== 10. CONCLUSIONES ====================
@@ -1060,8 +1060,8 @@ supabase/
       
       addMainTitle('10. CONCLUSIONES Y RECOMENDACIONES');
 
-      addHighlightBox('✅ CONCLUSIÓN PRINCIPAL',
-        `CRM Bancario Creand representa una oportunidad comercial significativa en el mercado bancario español y europeo. Con un valor de desarrollo de ${codebaseAnalysis.marketValuation.totalCost.toLocaleString()}€ y un valor de mercado estimado de ${(codebaseAnalysis.marketValuation.marketValue || codebaseAnalysis.marketValuation.totalCost * 2.5).toLocaleString()}€, ofrece un TCO 60-80% inferior a alternativas enterprise como Salesforce o SAP, con tiempo de implementación 4-6x más rápido.`,
+      addHighlightBox('CONCLUSION PRINCIPAL',
+        `CRM Bancario Creand representa una oportunidad comercial significativa en el mercado bancario espanol y europeo. Con un valor de desarrollo de ${codebaseAnalysis.marketValuation.totalCost.toLocaleString()} EUR y un valor de mercado estimado de ${(codebaseAnalysis.marketValuation.marketValue || codebaseAnalysis.marketValuation.totalCost * 2.5).toLocaleString()} EUR, ofrece un TCO 60-80% inferior a alternativas enterprise como Salesforce o SAP, con tiempo de implementacion 4-6x mas rapido.`,
         'success');
 
       addTitle('10.1 Puntos Fuertes Principales', 2);
@@ -1088,8 +1088,8 @@ supabase/
       addSubtitle('Inversiones Prioritarias');
       addParagraph('1) App móvil offline, 2) Certificación ISO 27001, 3) Equipo comercial especializado banca, 4) Partnerships con consultoras financieras.');
 
-      addHighlightBox('💰 POTENCIAL DE INGRESOS ESTIMADO',
-        'Año 1: 400-600K€ (5-7 clientes). Año 2: 1-1.5M€ (12-18 clientes). Año 3: 2-3M€ (25-35 clientes). Break-even: Mes 9-12. Margen bruto objetivo: 65-75%.',
+      addHighlightBox('POTENCIAL DE INGRESOS ESTIMADO',
+        'Ano 1: 400-600K EUR (5-7 clientes). Ano 2: 1-1.5M EUR (12-18 clientes). Ano 3: 2-3M EUR (25-35 clientes). Break-even: Mes 9-12. Margen bruto objetivo: 65-75%.',
         'success');
 
       // ==================== ANEXO A: FUNCIONALIDADES PENDIENTES ====================
@@ -1100,8 +1100,8 @@ supabase/
         addBullet(`${index + 1}. ${feature}`, 0, '○');
       });
 
-      addHighlightBox('📋 PRIORIZACIÓN RECOMENDADA',
-        'Las funcionalidades pendientes deben priorizarse según: impacto en usuario final, requisitos de clientes potenciales, complejidad técnica y diferenciación competitiva.',
+      addHighlightBox('PRIORIZACION RECOMENDADA',
+        'Las funcionalidades pendientes deben priorizarse segun: impacto en usuario final, requisitos de clientes potenciales, complejidad tecnica y diferenciacion competitiva.',
         'info');
 
       // ==================== ANEXO B: HALLAZGOS DE SEGURIDAD ====================
@@ -1109,11 +1109,11 @@ supabase/
       addMainTitle('ANEXO B: HALLAZGOS DE SEGURIDAD');
       
       codebaseAnalysis.securityFindings.forEach((finding, index) => {
-        addBullet(`${index + 1}. ${finding}`, 0, '🔒');
+        addBullet(`${index + 1}. ${finding}`, 0, '*');
       });
 
-      addHighlightBox('🔒 RECOMENDACIÓN DE SEGURIDAD',
-        'Antes de cualquier despliegue comercial, se recomienda: 1) Auditoría de seguridad externa, 2) Pruebas de penetración, 3) Certificación ISO 27001, 4) Revisión de compliance GDPR/DORA.',
+      addHighlightBox('RECOMENDACION DE SEGURIDAD',
+        'Antes de cualquier despliegue comercial, se recomienda: 1) Auditoria de seguridad externa, 2) Pruebas de penetracion, 3) Certificacion ISO 27001, 4) Revision de compliance GDPR/DORA.',
         'warning');
 
       // ==================== PÁGINA FINAL ====================

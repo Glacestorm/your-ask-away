@@ -47,6 +47,8 @@ import MapView from './MapView';
 import AccountingManager from '@/components/admin/accounting/AccountingManager';
 import { UnifiedMetricsDashboard } from '@/components/dashboard/UnifiedMetricsDashboard';
 import { DynamicTechnicalDocGenerator } from '@/components/reports/DynamicTechnicalDocGenerator';
+import { CompetitorGapAnalysisGenerator } from '@/components/reports/CompetitorGapAnalysisGenerator';
+import { AppDetailedStatusGenerator } from '@/components/reports/AppDetailedStatusGenerator';
 import { GeocodingRecalculator } from '@/components/admin/GeocodingRecalculator';
 
 const Admin = () => {
@@ -148,6 +150,8 @@ const Admin = () => {
       case 'administration': return 'Administració';
       case 'role-selector': return 'Selector de Visió';
       case 'geocoding': return 'Recalcular Geolocalització';
+      case 'competitor-gap': return 'Anàlisi Competència i Millores';
+      case 'app-status': return 'Estat Detallat de l\'Aplicació';
       default: return '';
     }
   };
@@ -510,6 +514,28 @@ const Admin = () => {
           );
         }
         return <DynamicTechnicalDocGenerator />;
+      case 'competitor-gap':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <CompetitorGapAnalysisGenerator />;
+      case 'app-status':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <AppDetailedStatusGenerator />;
       case 'administration':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
           return (
@@ -710,6 +736,36 @@ const Admin = () => {
                   <div>
                     <h3 className="font-semibold text-emerald-700 dark:text-emerald-400">Documentació Tècnica</h3>
                     <p className="text-sm text-muted-foreground">Generar PDF tècnico-funcional complet</p>
+                  </div>
+                </CardContent>
+              </Card>
+              {/* Competitor Gap Analysis */}
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-all border-2 border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-purple-500/10"
+                onClick={() => handleSectionChange('competitor-gap')}
+              >
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                    <Activity className="h-5 w-5 text-purple-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-purple-700 dark:text-purple-400">Anàlisi de Competència</h3>
+                    <p className="text-sm text-muted-foreground">Comparar amb competidors i pla de millores</p>
+                  </div>
+                </CardContent>
+              </Card>
+              {/* App Detailed Status */}
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-all border-2 border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-blue-500/10"
+                onClick={() => handleSectionChange('app-status')}
+              >
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                    <Activity className="h-5 w-5 text-blue-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-blue-700 dark:text-blue-400">Estat de l'Aplicació</h3>
+                    <p className="text-sm text-muted-foreground">Detall de mòduls complerts i pendents</p>
                   </div>
                 </CardContent>
               </Card>
