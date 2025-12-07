@@ -4,10 +4,10 @@ project_id = "avaugfnqvvqcilhiudlf"
 verify_jwt = false
 
 [functions.geocode-address]
-verify_jwt = false
+verify_jwt = true
 
 [functions.generate-action-plan]
-verify_jwt = false
+verify_jwt = true
 
 [functions.send-reminder-email]
 verify_jwt = false
@@ -43,4 +43,4 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.parse-financial-pdf]
-verify_jwt = false
+verify_jwt = true
