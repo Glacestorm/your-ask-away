@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useOptimisticLock } from '@/hooks/useOptimisticLock';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,6 +16,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { ConflictDialog } from '@/components/ui/ConflictDialog';
 import { Calendar as CalendarIcon, Save, FileText, Package, PackagePlus, CheckCircle2, XCircle, Clock, AlertTriangle, Send, User, History } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -61,6 +63,19 @@ export function VisitSheetForm({ visitId, companyId, open, onOpenChange, onSaved
   const [loading, setLoading] = useState(false);
   const [company, setCompany] = useState<CompanyData | null>(null);
   const [existingSheet, setExistingSheet] = useState<any>(null);
+  
+  // Optimistic locking for concurrent edit detection
+  const {
+    updateWithLock,
+    forceUpdate,
+    reloadRecord,
+    conflict,
+    clearConflict,
+    hasConflict,
+    isUpdating,
+  } = useOptimisticLock({ table: 'visit_sheets' });
+  
+  const [showConflictDialog, setShowConflictDialog] = useState(false);
 
   // Datos de la visita
   const [fecha, setFecha] = useState<Date>(new Date());
@@ -397,11 +412,24 @@ export function VisitSheetForm({ visitId, companyId, open, onOpenChange, onSaved
     };
 
     if (existingSheet) {
-      const { error } = await supabase
-        .from('visit_sheets')
-        .update(sheetData)
-        .eq('id', existingSheet.id);
-      if (error) throw error;
+      // Use optimistic locking for updates
+      const result = await updateWithLock(
+        existingSheet.id,
+        sheetData,
+        new Date(existingSheet.updated_at)
+      );
+      
+      if (!result.success) {
+        if (result.conflict) {
+          // Conflict detected - show dialog
+          setShowConflictDialog(true);
+          return;
+        }
+        throw new Error('Error updating visit sheet');
+      }
+      
+      // Update local state with new version
+      setExistingSheet(result.data);
     } else {
       const { data: insertedSheet, error } = await supabase
         .from('visit_sheets')
@@ -504,6 +532,7 @@ export function VisitSheetForm({ visitId, companyId, open, onOpenChange, onSaved
   ];
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-5xl max-h-[90vh]">
         <DialogHeader>
@@ -1505,5 +1534,34 @@ export function VisitSheetForm({ visitId, companyId, open, onOpenChange, onSaved
         </div>
       </DialogContent>
     </Dialog>
+    
+    {/* Conflict Resolution Dialog */}
+    <ConflictDialog
+      conflict={conflict}
+      open={showConflictDialog}
+      onOpenChange={setShowConflictDialog}
+      onReload={async () => {
+        if (existingSheet?.id) {
+          const reloadedData = await reloadRecord(existingSheet.id);
+          if (reloadedData) {
+            setExistingSheet(reloadedData);
+            loadSheetData(reloadedData);
+            setShowConflictDialog(false);
+            toast.success('Dades recarregades correctament');
+          }
+        }
+      }}
+      onForceUpdate={async () => {
+        if (existingSheet?.id && conflict) {
+          const result = await forceUpdate(existingSheet.id, conflict.attemptedData);
+          if (result.success) {
+            setExistingSheet(result.data);
+            setShowConflictDialog(false);
+          }
+        }
+      }}
+      isUpdating={isUpdating}
+    />
+    </>
   );
 }
