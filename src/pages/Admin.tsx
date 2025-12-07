@@ -46,7 +46,7 @@ import ContractedProductsReport from '@/components/admin/ContractedProductsRepor
 import MapView from './MapView';
 import AccountingManager from '@/components/admin/accounting/AccountingManager';
 import { UnifiedMetricsDashboard } from '@/components/dashboard/UnifiedMetricsDashboard';
-import { TechnicalDocumentGenerator } from '@/components/reports/TechnicalDocumentGenerator';
+import { DynamicTechnicalDocGenerator } from '@/components/reports/DynamicTechnicalDocGenerator';
 
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
@@ -507,17 +507,7 @@ const Admin = () => {
             </Card>
           );
         }
-        return (
-          <div className="rounded-lg border bg-card p-6">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold">Documentació Tècnico-Funcional</h2>
-              <p className="text-sm text-muted-foreground">
-                Genera un document PDF complet amb tota la documentació del sistema
-              </p>
-            </div>
-            <TechnicalDocumentGenerator />
-          </div>
-        );
+        return <DynamicTechnicalDocGenerator />;
       case 'administration':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
           return (
