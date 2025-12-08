@@ -699,12 +699,12 @@ export function ApplicationStateAnalyzer() {
                           </ul>
                         </AccordionContent>
                       </AccordionItem>
-                      {module.pendingFeatures?.length > 0 && (
+                      {module.pendingFeatures && module.pendingFeatures.length > 0 && (
                         <AccordionItem value="pending">
                           <AccordionTrigger className="text-sm">
                             <span className="flex items-center gap-2">
                               <AlertTriangle className="h-4 w-4 text-yellow-500" />
-                              Pendents ({module.pendingFeatures.length})
+                              Pendents ({module.pendingFeatures?.length || 0})
                             </span>
                           </AccordionTrigger>
                           <AccordionContent>
