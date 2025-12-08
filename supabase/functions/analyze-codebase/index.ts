@@ -206,50 +206,65 @@ GENERA UN ANÁLISIS COMPLETO con:
 - Desglose completo de costes del proyecto (desarrollo, infraestructura, licencias, operacional)
 - Precios REALES de competidores con URLs`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-        max_tokens: 15000,
-      }),
-    });
+    // Use AbortController for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000); // 25 second timeout
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limits exceeded" }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Payment required" }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      throw new Error(`AI gateway error: ${response.status}`);
-    }
-
-    const aiResponse = await response.json();
-    let content = aiResponse.choices?.[0]?.message?.content || "";
-    content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    
     let analysis: CodebaseAnalysis;
+    
     try {
-      analysis = JSON.parse(content);
-      analysis.generationDate = new Date().toISOString();
-    } catch (parseError) {
-      console.error("Failed to parse AI response:", content);
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt }
+          ],
+          max_tokens: 8000,
+        }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        if (response.status === 429) {
+          return new Response(JSON.stringify({ error: "Rate limits exceeded" }), {
+            status: 429,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        if (response.status === 402) {
+          return new Response(JSON.stringify({ error: "Payment required" }), {
+            status: 402,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        console.error("AI gateway error:", response.status);
+        // Fall back to default analysis on error
+        analysis = getDefaultAnalysis(componentsList, hooksList, edgeFunctions, pagesList);
+      } else {
+        const aiResponse = await response.json();
+        let content = aiResponse.choices?.[0]?.message?.content || "";
+        content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        
+        try {
+          analysis = JSON.parse(content);
+          analysis.generationDate = new Date().toISOString();
+        } catch (parseError) {
+          console.error("Failed to parse AI response");
+          analysis = getDefaultAnalysis(componentsList, hooksList, edgeFunctions, pagesList);
+        }
+      }
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      console.error("Fetch error (timeout or network):", fetchError);
+      // Return default analysis on timeout/network error
       analysis = getDefaultAnalysis(componentsList, hooksList, edgeFunctions, pagesList);
     }
 
