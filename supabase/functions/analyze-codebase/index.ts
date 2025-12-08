@@ -310,13 +310,13 @@ function getDefaultAnalysis(componentsList: string[], hooksList: string[], edgeF
       },
       {
         name: "GIS Bancario Enterprise",
-        description: "Sistema GIS para visualización geográfica de cartera con 20.000+ empresas, clustering inteligente y rutas.",
-        implementedFeatures: ["Mapa 20.000+ empresas", "Clustering Supercluster", "Capas OSM/Satélite/3D", "Filtros vinculación", "Drag&drop", "Planificador rutas"],
-        pendingFeatures: ["Google OR-Tools routing", "Heatmaps oportunidad"],
-        completionPercentage: 88,
+        description: "Sistema GIS para visualización geográfica de cartera con 20.000+ empresas, clustering inteligente, rutas optimizadas y heatmaps de oportunidad.",
+        implementedFeatures: ["Mapa 20.000+ empresas", "Clustering Supercluster", "Capas OSM/Satélite/3D", "Filtros vinculación", "Drag&drop", "Planificador rutas", "Optimización OR-Tools", "Heatmaps oportunidad"],
+        pendingFeatures: [],
+        completionPercentage: 100,
         files: componentsList?.filter((f: string) => f.includes('map') || f.includes('Map')) || [],
         businessValue: "Optimiza visitas 35%",
-        differentiators: ["20.000 empresas sin degradación", "Vinculación visual"]
+        differentiators: ["20.000 empresas sin degradación", "Vinculación visual", "Heatmaps ML", "Rutas optimizadas"]
       },
       {
         name: "Gestión Visitas Comerciales",
