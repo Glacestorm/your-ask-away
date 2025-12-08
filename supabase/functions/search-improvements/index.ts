@@ -184,16 +184,19 @@ Prioriza mejoras específicas para banca andorrana/española con valor de negoci
       finalImprovements = [...finalImprovements, ...newImprovements];
     }
 
+    // SIEMPRE usar los datos por defecto que reflejan el estado REAL del proyecto
+    // Los datos de IA pueden estar desactualizados o no conocer las implementaciones reales
     const analysis: ImprovementsAnalysis = {
       generationDate: new Date().toISOString(),
       improvements: finalImprovements,
-      technologyTrends: aiAnalysis?.technologyTrends || defaultImprovements.technologyTrends,
-      securityUpdates: aiAnalysis?.securityUpdates || defaultImprovements.securityUpdates,
-      performanceOptimizations: aiAnalysis?.performanceOptimizations || defaultImprovements.performanceOptimizations,
-      uxEnhancements: aiAnalysis?.uxEnhancements || defaultImprovements.uxEnhancements,
-      aiIntegrations: aiAnalysis?.aiIntegrations || defaultImprovements.aiIntegrations,
-      complianceUpdates: aiAnalysis?.complianceUpdates || defaultImprovements.complianceUpdates,
-      summary: aiAnalysis?.summary || defaultImprovements.summary
+      // CRÍTICO: Siempre usar defaults para reflejar estado real del proyecto
+      technologyTrends: defaultImprovements.technologyTrends,
+      securityUpdates: defaultImprovements.securityUpdates,
+      performanceOptimizations: defaultImprovements.performanceOptimizations,
+      uxEnhancements: defaultImprovements.uxEnhancements,
+      aiIntegrations: defaultImprovements.aiIntegrations,
+      complianceUpdates: defaultImprovements.complianceUpdates,
+      summary: defaultImprovements.summary
     };
 
     return new Response(JSON.stringify(analysis), {
