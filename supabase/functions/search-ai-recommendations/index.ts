@@ -29,6 +29,37 @@ interface AutomationRecommendation {
   integrationComplexity: string;
   complianceConsiderations: string[];
   bankingApplications: string[];
+  implementationGuide?: {
+    prerequisites: string[];
+    steps: {
+      stepNumber: number;
+      title: string;
+      description: string;
+      commands?: string[];
+      configuration?: string;
+      tips: string[];
+    }[];
+    estimatedTime: string;
+    difficulty: string;
+  };
+}
+
+interface CompetitorFeature {
+  competitor: string;
+  aiFeatures: string[];
+  differentiationOpportunity: string;
+  implementationPhases?: {
+    phase: number;
+    name: string;
+    duration: string;
+    objectives: string[];
+    deliverables: string[];
+    resources: string[];
+    risks: string[];
+    successMetrics: string[];
+  }[];
+  technicalRequirements?: string[];
+  estimatedInvestment?: string;
 }
 
 interface AIAnalysis {
@@ -42,11 +73,7 @@ interface AIAnalysis {
     aiImplications: string;
     requiredMeasures: string[];
   }[];
-  competitorAnalysis: {
-    competitor: string;
-    aiFeatures: string[];
-    differentiationOpportunity: string;
-  }[];
+  competitorAnalysis: CompetitorFeature[];
   bankingTrends: {
     trend: string;
     description: string;
@@ -58,6 +85,31 @@ interface AIAnalysis {
     duration: string;
     objectives: string[];
     deliverables: string[];
+    detailedSteps?: {
+      step: number;
+      action: string;
+      responsible: string;
+      tools: string[];
+      documentation: string;
+    }[];
+    budget?: string;
+    kpis?: string[];
+  }[];
+  automationManuals?: {
+    platform: string;
+    setupGuide: {
+      title: string;
+      steps: string[];
+    }[];
+    workflowExamples: {
+      name: string;
+      description: string;
+      triggers: string[];
+      actions: string[];
+      integrations: string[];
+    }[];
+    securityConfiguration: string[];
+    maintenanceGuide: string[];
   }[];
 }
 
@@ -108,50 +160,64 @@ Tu tarea es proporcionar recomendaciones EXHAUSTIVAS sobre cómo implementar IA 
 
 IMPORTANTE: Responde SOLO con JSON válido sin markdown ni comentarios.`;
 
-    const userPrompt = `Analiza esta aplicación CRM bancaria y proporciona recomendaciones completas de IA y automatización:
+    const userPrompt = `Analiza esta aplicación CRM bancaria y proporciona recomendaciones EXHAUSTIVAS de IA y automatización con MÁXIMO DETALLE:
 
 MÓDULOS ACTUALES: ${JSON.stringify(currentModules || [])}
 FOCO INDUSTRIAL: ${industryFocus || 'Banca comercial andorrana y española, gestión de cartera empresarial'}
 
 Genera un JSON exhaustivo con:
 
-1. executiveSummary: Resumen ejecutivo de 3-4 párrafos sobre oportunidades de IA en banca
+1. executiveSummary: Resumen ejecutivo de 4-5 párrafos sobre oportunidades de IA en banca
 
-2. aiRecommendations: Array de recomendaciones de IA (mínimo 12) con:
-   - category: (analytics|automation|nlp|vision|predictions|risk|personalization|fraud|compliance|customer-service|documents|optimization)
-   - title, description, complianceNotes
-   - securityConsiderations: medidas de seguridad necesarias
+2. aiRecommendations: Array de recomendaciones de IA (mínimo 15) con:
+   - category, title, description, complianceNotes
+   - securityConsiderations: medidas de seguridad (mínimo 5)
    - regulatoryFramework: normativas aplicables
-   - implementationApproach: enfoque técnico
+   - implementationApproach: enfoque técnico DETALLADO
    - estimatedEffort, riskLevel (bajo/medio/alto)
    - benefits, tools, bestPractices
    - bankingExamples: ejemplos de bancos que lo usan
 
-3. automationPlatforms: Análisis de plataformas (n8n, Make, Zapier, Power Automate, etc) con:
-   - platform, description
-   - useCases: casos de uso bancarios
-   - securityNotes, integrationComplexity
-   - complianceConsiderations
-   - bankingApplications
+3. automationPlatforms: Análisis COMPLETO de plataformas (n8n, Make, Zapier, Power Automate, Tray.io) con:
+   - platform, description, useCases, securityNotes, integrationComplexity
+   - complianceConsiderations, bankingApplications
+   - implementationGuide: {
+       prerequisites: requisitos previos detallados,
+       steps: array de {stepNumber, title, description, commands?, configuration?, tips[]},
+       estimatedTime, difficulty
+     }
 
-4. securityGuidelines: Directrices de seguridad para IA bancaria (mínimo 15)
+4. securityGuidelines: Directrices de seguridad para IA bancaria (mínimo 20)
 
-5. regulatoryCompliance: Análisis de cada regulación y sus implicaciones para IA
-   - GDPR, AI Act, DORA, MiFID II, EBA Guidelines, PSD2/PSD3, APDA Andorra
+5. regulatoryCompliance: Análisis de cada regulación (GDPR, AI Act, DORA, MiFID II, EBA, PSD2/PSD3, APDA)
 
-6. competitorAnalysis: Qué hacen los competidores bancarios con IA
-   - Analiza: Santander, BBVA, CaixaBank, Sabadell, Bankinter, N26, Revolut, ING, Morabanc, Andbank, Crèdit Andorrà
+6. competitorAnalysis: Análisis DETALLADO de competidores (Santander, BBVA, CaixaBank, Sabadell, Bankinter, N26, Revolut, ING, Morabanc, Andbank, Crèdit Andorrà) con:
+   - competitor, aiFeatures, differentiationOpportunity
+   - implementationPhases: array de {phase, name, duration, objectives[], deliverables[], resources[], risks[], successMetrics[]}
+   - technicalRequirements: requisitos técnicos para replicar
+   - estimatedInvestment: inversión estimada
 
-7. bankingTrends: Tendencias actuales de IA en banca (mínimo 10)
+7. bankingTrends: Tendencias actuales de IA en banca (mínimo 12)
 
-8. implementationRoadmap: Hoja de ruta en 4 fases (0-6 meses, 6-12 meses, 12-18 meses, 18-24 meses)
+8. implementationRoadmap: Hoja de ruta en 5 fases con MÁXIMO DETALLE:
+   - phase, duration, objectives, deliverables
+   - detailedSteps: array de {step, action, responsible, tools[], documentation}
+   - budget: presupuesto estimado
+   - kpis: indicadores de éxito
 
-Prioriza recomendaciones que:
-- Cumplan estrictamente con regulaciones europeas y andorranas
-- Mantengan la seguridad de datos bancarios
-- Proporcionen ROI claro
-- Sean implementables con recursos limitados
-- Diferencien de la competencia`;
+9. automationManuals: Manuales COMPLETOS para cada plataforma (n8n, Make, Power Automate):
+   - platform
+   - setupGuide: array de {title, steps[]}
+   - workflowExamples: array de {name, description, triggers[], actions[], integrations[]}
+   - securityConfiguration: configuraciones de seguridad
+   - maintenanceGuide: guía de mantenimiento
+
+Prioriza:
+- Cumplimiento estricto con regulaciones europeas y andorranas
+- Seguridad de datos bancarios como máxima prioridad
+- ROI claro y medible
+- Implementación con recursos limitados
+- Diferenciación competitiva`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

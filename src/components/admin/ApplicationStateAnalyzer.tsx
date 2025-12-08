@@ -89,12 +89,88 @@ interface AIAnalysis {
   generationDate: string;
   executiveSummary: string;
   aiRecommendations: AIRecommendation[];
-  automationPlatforms: any[];
+  automationPlatforms: {
+    platform: string;
+    description: string;
+    useCases: string[];
+    securityNotes: string;
+    integrationComplexity: string;
+    complianceConsiderations: string[];
+    bankingApplications: string[];
+    implementationGuide?: {
+      prerequisites: string[];
+      steps: {
+        stepNumber: number;
+        title: string;
+        description: string;
+        commands?: string[];
+        configuration?: string;
+        tips: string[];
+      }[];
+      estimatedTime: string;
+      difficulty: string;
+    };
+  }[];
   securityGuidelines: string[];
-  regulatoryCompliance: any[];
-  competitorAnalysis: any[];
-  bankingTrends: any[];
-  implementationRoadmap: any[];
+  regulatoryCompliance: {
+    regulation: string;
+    aiImplications: string;
+    requiredMeasures: string[];
+  }[];
+  competitorAnalysis: {
+    competitor: string;
+    aiFeatures: string[];
+    differentiationOpportunity: string;
+    implementationPhases?: {
+      phase: number;
+      name: string;
+      duration: string;
+      objectives: string[];
+      deliverables: string[];
+      resources: string[];
+      risks: string[];
+      successMetrics: string[];
+    }[];
+    technicalRequirements?: string[];
+    estimatedInvestment?: string;
+  }[];
+  bankingTrends: {
+    trend: string;
+    description: string;
+    adoptionStatus: string;
+    recommendation: string;
+  }[];
+  implementationRoadmap: {
+    phase: string;
+    duration: string;
+    objectives: string[];
+    deliverables: string[];
+    detailedSteps?: {
+      step: number;
+      action: string;
+      responsible: string;
+      tools: string[];
+      documentation: string;
+    }[];
+    budget?: string;
+    kpis?: string[];
+  }[];
+  automationManuals?: {
+    platform: string;
+    setupGuide: {
+      title: string;
+      steps: string[];
+    }[];
+    workflowExamples: {
+      name: string;
+      description: string;
+      triggers: string[];
+      actions: string[];
+      integrations: string[];
+    }[];
+    securityConfiguration: string[];
+    maintenanceGuide: string[];
+  }[];
 }
 
 const CATEGORY_ICONS: Record<string, any> = {
@@ -966,84 +1042,410 @@ export function ApplicationStateAnalyzer() {
                   </CardContent>
                 </Card>
 
-                {/* Plataformas de Automatización */}
+                {/* Plataformas de Automatización con Guías de Implementación */}
                 <Card>
                   <CardHeader>
                     <div className="flex items-center gap-2">
                       <Workflow className="h-5 w-5 text-orange-500" />
-                      <CardTitle>Plataformes d'Automatització</CardTitle>
+                      <CardTitle>Plataformes d'Automatització - Guies Detallades</CardTitle>
                     </div>
-                    <CardDescription>n8n, Make, Power Automate - Anàlisi de seguretat</CardDescription>
+                    <CardDescription>n8n, Make, Power Automate - Manuals d'implementació pas a pas</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <Accordion type="single" collapsible className="w-full">
                       {aiAnalysis.automationPlatforms?.map((platform, idx) => (
-                        <Card key={idx} className="border-dashed">
-                          <CardHeader className="pb-2">
-                            <CardTitle className="text-base">{platform.platform}</CardTitle>
-                          </CardHeader>
-                          <CardContent className="text-sm space-y-2">
-                            <p className="text-muted-foreground">{platform.description}</p>
-                            <div className="p-2 rounded bg-yellow-500/10 text-xs">
-                              <strong>Seguretat:</strong> {platform.securityNotes}
+                        <AccordionItem key={idx} value={`platform-${idx}`}>
+                          <AccordionTrigger className="hover:no-underline">
+                            <div className="flex items-center gap-3 text-left">
+                              <Workflow className="h-5 w-5 text-orange-500 flex-shrink-0" />
+                              <div className="flex-1">
+                                <div className="font-medium">{platform.platform}</div>
+                                <div className="text-xs text-muted-foreground">{platform.integrationComplexity}</div>
+                              </div>
                             </div>
-                          </CardContent>
-                        </Card>
+                          </AccordionTrigger>
+                          <AccordionContent className="space-y-4 pt-4">
+                            <p className="text-sm">{platform.description}</p>
+                            
+                            <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                              <div className="flex items-center gap-2 font-medium text-yellow-700 dark:text-yellow-400 mb-2">
+                                <Shield className="h-4 w-4" />
+                                Notes de Seguretat
+                              </div>
+                              <p className="text-sm text-muted-foreground">{platform.securityNotes}</p>
+                            </div>
+
+                            <div className="grid gap-3 md:grid-cols-2">
+                              <div>
+                                <div className="font-medium text-sm mb-2">Casos d'Ús Bancaris</div>
+                                <ul className="text-xs space-y-1">
+                                  {platform.bankingApplications?.map((app, i) => (
+                                    <li key={i} className="text-muted-foreground">• {app}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                              <div>
+                                <div className="font-medium text-sm mb-2">Consideracions Compliance</div>
+                                <ul className="text-xs space-y-1">
+                                  {platform.complianceConsiderations?.map((c, i) => (
+                                    <li key={i} className="text-muted-foreground">• {c}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            </div>
+
+                            {platform.implementationGuide && (
+                              <div className="mt-4 p-4 rounded-lg bg-muted/50 border">
+                                <div className="font-medium text-sm mb-3 flex items-center gap-2">
+                                  <FileText className="h-4 w-4 text-primary" />
+                                  Guia d'Implementació
+                                </div>
+                                <div className="grid gap-2 md:grid-cols-2 mb-4 text-xs">
+                                  <div><strong>Temps estimat:</strong> {platform.implementationGuide.estimatedTime}</div>
+                                  <div><strong>Dificultat:</strong> {platform.implementationGuide.difficulty}</div>
+                                </div>
+                                
+                                {platform.implementationGuide.prerequisites?.length > 0 && (
+                                  <div className="mb-4">
+                                    <div className="text-xs font-medium mb-2">Prerequisits:</div>
+                                    <ul className="text-xs space-y-1">
+                                      {platform.implementationGuide.prerequisites.map((p, i) => (
+                                        <li key={i} className="text-muted-foreground">✓ {p}</li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                )}
+
+                                {platform.implementationGuide.steps?.length > 0 && (
+                                  <div>
+                                    <div className="text-xs font-medium mb-2">Passos d'Implementació:</div>
+                                    <div className="space-y-3">
+                                      {platform.implementationGuide.steps.map((step, i) => (
+                                        <div key={i} className="p-3 rounded border bg-background">
+                                          <div className="flex items-center gap-2 mb-2">
+                                            <Badge variant="outline" className="text-xs">{step.stepNumber}</Badge>
+                                            <span className="font-medium text-sm">{step.title}</span>
+                                          </div>
+                                          <p className="text-xs text-muted-foreground mb-2">{step.description}</p>
+                                          {step.commands && step.commands.length > 0 && (
+                                            <div className="bg-muted p-2 rounded font-mono text-xs mb-2">
+                                              {step.commands.map((cmd, ci) => (
+                                                <div key={ci}>{cmd}</div>
+                                              ))}
+                                            </div>
+                                          )}
+                                          {step.tips?.length > 0 && (
+                                            <div className="flex flex-wrap gap-1">
+                                              {step.tips.map((tip, ti) => (
+                                                <Badge key={ti} variant="secondary" className="text-xs">💡 {tip}</Badge>
+                                              ))}
+                                            </div>
+                                          )}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </AccordionContent>
+                        </AccordionItem>
                       ))}
-                    </div>
+                    </Accordion>
                   </CardContent>
                 </Card>
 
-                {/* Análisis Competencia */}
+                {/* Análisis Competencia con Fases de Implementación */}
                 {aiAnalysis.competitorAnalysis?.length > 0 && (
                   <Card>
                     <CardHeader>
                       <div className="flex items-center gap-2">
                         <Building2 className="h-5 w-5 text-blue-500" />
-                        <CardTitle>Anàlisi de Competència - IA Bancària</CardTitle>
+                        <CardTitle>Anàlisi de Competència - Fases d'Implementació</CardTitle>
                       </div>
+                      <CardDescription>Què fan els competidors i com replicar-ho pas a pas</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid gap-3 md:grid-cols-2">
-                        {aiAnalysis.competitorAnalysis.slice(0, 6).map((comp, idx) => (
-                          <div key={idx} className="p-3 rounded-lg border">
-                            <div className="font-medium mb-2">{comp.competitor}</div>
-                            <ul className="text-xs space-y-1 mb-2">
-                              {comp.aiFeatures?.slice(0, 3).map((f: string, i: number) => (
-                                <li key={i} className="text-muted-foreground">• {f}</li>
-                              ))}
-                            </ul>
-                            <p className="text-xs text-primary">{comp.differentiationOpportunity}</p>
-                          </div>
+                      <Accordion type="single" collapsible className="w-full">
+                        {aiAnalysis.competitorAnalysis.map((comp, idx) => (
+                          <AccordionItem key={idx} value={`comp-${idx}`}>
+                            <AccordionTrigger className="hover:no-underline">
+                              <div className="flex items-center gap-3 text-left">
+                                <Building2 className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                                <div className="flex-1">
+                                  <div className="font-medium">{comp.competitor}</div>
+                                  <div className="text-xs text-muted-foreground">{comp.aiFeatures?.length || 0} funcionalitats IA</div>
+                                </div>
+                              </div>
+                            </AccordionTrigger>
+                            <AccordionContent className="space-y-4 pt-4">
+                              <div className="grid gap-3 md:grid-cols-2">
+                                <div>
+                                  <div className="font-medium text-sm mb-2">Funcionalitats IA</div>
+                                  <ul className="text-xs space-y-1">
+                                    {comp.aiFeatures?.map((f, i) => (
+                                      <li key={i} className="text-muted-foreground">• {f}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                                <div>
+                                  <div className="font-medium text-sm mb-2">Oportunitat de Diferenciació</div>
+                                  <p className="text-xs text-primary">{comp.differentiationOpportunity}</p>
+                                  {comp.technicalRequirements && (
+                                    <div className="mt-3">
+                                      <div className="text-xs font-medium mb-1">Requisits Tècnics:</div>
+                                      <ul className="text-xs space-y-1">
+                                        {comp.technicalRequirements.map((r, i) => (
+                                          <li key={i} className="text-muted-foreground">• {r}</li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  )}
+                                  {comp.estimatedInvestment && (
+                                    <div className="mt-2 text-xs">
+                                      <strong>Inversió estimada:</strong> {comp.estimatedInvestment}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              {comp.implementationPhases && comp.implementationPhases.length > 0 && (
+                                <div className="mt-4 p-4 rounded-lg bg-muted/50 border">
+                                  <div className="font-medium text-sm mb-3 flex items-center gap-2">
+                                    <Map className="h-4 w-4 text-green-500" />
+                                    Fases d'Implementació per Replicar
+                                  </div>
+                                  <div className="space-y-4">
+                                    {comp.implementationPhases.map((phase, pi) => (
+                                      <div key={pi} className="p-3 rounded border bg-background">
+                                        <div className="flex items-center gap-2 mb-2">
+                                          <Badge className="bg-blue-500">{phase.phase}</Badge>
+                                          <span className="font-medium text-sm">{phase.name}</span>
+                                          <span className="text-xs text-muted-foreground">({phase.duration})</span>
+                                        </div>
+                                        <div className="grid gap-3 md:grid-cols-2 text-xs">
+                                          <div>
+                                            <div className="font-medium mb-1">Objectius:</div>
+                                            <ul className="space-y-0.5">
+                                              {phase.objectives?.map((o, oi) => (
+                                                <li key={oi} className="text-muted-foreground">• {o}</li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                          <div>
+                                            <div className="font-medium mb-1">Entregables:</div>
+                                            <ul className="space-y-0.5">
+                                              {phase.deliverables?.map((d, di) => (
+                                                <li key={di} className="text-muted-foreground">✓ {d}</li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                        </div>
+                                        {phase.resources && phase.resources.length > 0 && (
+                                          <div className="mt-2 flex flex-wrap gap-1">
+                                            {phase.resources.map((r, ri) => (
+                                              <Badge key={ri} variant="outline" className="text-xs">{r}</Badge>
+                                            ))}
+                                          </div>
+                                        )}
+                                        {phase.successMetrics && phase.successMetrics.length > 0 && (
+                                          <div className="mt-2 text-xs">
+                                            <strong>KPIs:</strong> {phase.successMetrics.join(', ')}
+                                          </div>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </AccordionContent>
+                          </AccordionItem>
                         ))}
-                      </div>
+                      </Accordion>
                     </CardContent>
                   </Card>
                 )}
 
-                {/* Roadmap */}
+                {/* Roadmap Detallado */}
                 {aiAnalysis.implementationRoadmap?.length > 0 && (
                   <Card>
                     <CardHeader>
                       <div className="flex items-center gap-2">
                         <Map className="h-5 w-5 text-green-500" />
-                        <CardTitle>Roadmap d'Implementació IA</CardTitle>
+                        <CardTitle>Roadmap Detallat d'Implementació IA</CardTitle>
                       </div>
+                      <CardDescription>Fases amb passos detallats, pressupost i KPIs</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                      <Accordion type="single" collapsible className="w-full">
                         {aiAnalysis.implementationRoadmap.map((phase, idx) => (
-                          <div key={idx} className="p-4 rounded-lg border bg-muted/30">
-                            <div className="font-medium text-sm mb-1">{phase.phase}</div>
-                            <div className="text-xs text-muted-foreground mb-3">{phase.duration}</div>
-                            <ul className="text-xs space-y-1">
-                              {phase.objectives?.slice(0, 3).map((obj: string, i: number) => (
-                                <li key={i}>• {obj}</li>
-                              ))}
-                            </ul>
-                          </div>
+                          <AccordionItem key={idx} value={`roadmap-${idx}`}>
+                            <AccordionTrigger className="hover:no-underline">
+                              <div className="flex items-center gap-3 text-left w-full">
+                                <div className="h-8 w-8 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-bold flex-shrink-0">
+                                  {idx + 1}
+                                </div>
+                                <div className="flex-1">
+                                  <div className="font-medium">{phase.phase}</div>
+                                  <div className="text-xs text-muted-foreground">{phase.duration}</div>
+                                </div>
+                                {phase.budget && (
+                                  <Badge variant="outline" className="text-xs">{phase.budget}</Badge>
+                                )}
+                              </div>
+                            </AccordionTrigger>
+                            <AccordionContent className="space-y-4 pt-4">
+                              <div className="grid gap-3 md:grid-cols-2">
+                                <div>
+                                  <div className="font-medium text-sm mb-2">Objectius</div>
+                                  <ul className="text-xs space-y-1">
+                                    {phase.objectives?.map((o, i) => (
+                                      <li key={i} className="text-muted-foreground">• {o}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                                <div>
+                                  <div className="font-medium text-sm mb-2">Entregables</div>
+                                  <ul className="text-xs space-y-1">
+                                    {phase.deliverables?.map((d, i) => (
+                                      <li key={i} className="text-muted-foreground">✓ {d}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              </div>
+
+                              {phase.kpis && phase.kpis.length > 0 && (
+                                <div className="flex flex-wrap gap-1">
+                                  <span className="text-xs font-medium mr-2">KPIs:</span>
+                                  {phase.kpis.map((kpi, i) => (
+                                    <Badge key={i} className="bg-green-500/20 text-green-700 dark:text-green-400 text-xs">{kpi}</Badge>
+                                  ))}
+                                </div>
+                              )}
+
+                              {phase.detailedSteps && phase.detailedSteps.length > 0 && (
+                                <div className="mt-4 p-4 rounded-lg bg-muted/50 border">
+                                  <div className="font-medium text-sm mb-3">Passos Detallats</div>
+                                  <div className="space-y-3">
+                                    {phase.detailedSteps.map((step, si) => (
+                                      <div key={si} className="flex gap-3 p-3 rounded border bg-background">
+                                        <div className="h-6 w-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold flex-shrink-0">
+                                          {step.step}
+                                        </div>
+                                        <div className="flex-1">
+                                          <div className="font-medium text-sm">{step.action}</div>
+                                          <div className="text-xs text-muted-foreground mt-1">
+                                            <strong>Responsable:</strong> {step.responsible}
+                                          </div>
+                                          {step.tools && step.tools.length > 0 && (
+                                            <div className="flex flex-wrap gap-1 mt-2">
+                                              {step.tools.map((t, ti) => (
+                                                <Badge key={ti} variant="outline" className="text-xs">{t}</Badge>
+                                              ))}
+                                            </div>
+                                          )}
+                                          {step.documentation && (
+                                            <div className="text-xs text-primary mt-1">📄 {step.documentation}</div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </AccordionContent>
+                          </AccordionItem>
                         ))}
+                      </Accordion>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Manuales de Automatización */}
+                {aiAnalysis.automationManuals && aiAnalysis.automationManuals.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-5 w-5 text-purple-500" />
+                        <CardTitle>Manuals d'Automatització</CardTitle>
                       </div>
+                      <CardDescription>Guies completes per configurar cada plataforma</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Accordion type="single" collapsible className="w-full">
+                        {aiAnalysis.automationManuals.map((manual, idx) => (
+                          <AccordionItem key={idx} value={`manual-${idx}`}>
+                            <AccordionTrigger className="hover:no-underline">
+                              <div className="flex items-center gap-3 text-left">
+                                <FileText className="h-5 w-5 text-purple-500 flex-shrink-0" />
+                                <div className="font-medium">{manual.platform}</div>
+                              </div>
+                            </AccordionTrigger>
+                            <AccordionContent className="space-y-4 pt-4">
+                              {manual.setupGuide && manual.setupGuide.length > 0 && (
+                                <div>
+                                  <div className="font-medium text-sm mb-2">Guia de Configuració</div>
+                                  {manual.setupGuide.map((guide, gi) => (
+                                    <div key={gi} className="mb-3 p-3 rounded border">
+                                      <div className="font-medium text-sm mb-2">{guide.title}</div>
+                                      <ol className="text-xs space-y-1 list-decimal list-inside">
+                                        {guide.steps?.map((s, si) => (
+                                          <li key={si} className="text-muted-foreground">{s}</li>
+                                        ))}
+                                      </ol>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+
+                              {manual.workflowExamples && manual.workflowExamples.length > 0 && (
+                                <div>
+                                  <div className="font-medium text-sm mb-2">Exemples de Workflows</div>
+                                  <div className="grid gap-3 md:grid-cols-2">
+                                    {manual.workflowExamples.map((wf, wi) => (
+                                      <div key={wi} className="p-3 rounded border bg-muted/30">
+                                        <div className="font-medium text-sm mb-1">{wf.name}</div>
+                                        <p className="text-xs text-muted-foreground mb-2">{wf.description}</p>
+                                        <div className="text-xs">
+                                          <strong>Triggers:</strong> {wf.triggers?.join(', ')}
+                                        </div>
+                                        <div className="text-xs mt-1">
+                                          <strong>Accions:</strong> {wf.actions?.join(', ')}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {manual.securityConfiguration && manual.securityConfiguration.length > 0 && (
+                                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                                  <div className="font-medium text-sm mb-2 flex items-center gap-2">
+                                    <Lock className="h-4 w-4 text-red-500" />
+                                    Configuració de Seguretat
+                                  </div>
+                                  <ul className="text-xs space-y-1">
+                                    {manual.securityConfiguration.map((sc, sci) => (
+                                      <li key={sci} className="text-muted-foreground">• {sc}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+
+                              {manual.maintenanceGuide && manual.maintenanceGuide.length > 0 && (
+                                <div>
+                                  <div className="font-medium text-sm mb-2">Guia de Manteniment</div>
+                                  <ul className="text-xs space-y-1">
+                                    {manual.maintenanceGuide.map((mg, mgi) => (
+                                      <li key={mgi} className="text-muted-foreground">• {mg}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                            </AccordionContent>
+                          </AccordionItem>
+                        ))}
+                      </Accordion>
                     </CardContent>
                   </Card>
                 )}
