@@ -928,10 +928,10 @@ export function MapSidebar({
   return (
     <aside 
       className={cn(
-        "bg-card shadow-xl flex flex-col animate-in duration-300",
+        "bg-card shadow-xl flex flex-col",
         fullscreen 
           ? "fixed top-0 left-0 right-0 bottom-0 w-screen h-screen z-[9999] border-0" 
-          : "w-[380px] h-full border-l shrink-0 z-10 slide-in-from-right"
+          : "w-[380px] h-full border-l shrink-0 z-10"
       )}
       style={fullscreen ? { position: 'fixed', width: '100vw', height: '100vh', top: 0, left: 0 } : undefined}
     >
