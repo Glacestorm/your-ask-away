@@ -360,6 +360,7 @@ export type Database = {
           challenge_code: string | null
           challenge_type: Database["public"]["Enums"]["auth_factor_type"]
           created_at: string | null
+          email_sent_at: string | null
           expires_at: string
           id: string
           max_attempts: number | null
@@ -372,6 +373,7 @@ export type Database = {
           challenge_code?: string | null
           challenge_type: Database["public"]["Enums"]["auth_factor_type"]
           created_at?: string | null
+          email_sent_at?: string | null
           expires_at: string
           id?: string
           max_attempts?: number | null
@@ -384,6 +386,7 @@ export type Database = {
           challenge_code?: string | null
           challenge_type?: Database["public"]["Enums"]["auth_factor_type"]
           created_at?: string | null
+          email_sent_at?: string | null
           expires_at?: string
           id?: string
           max_attempts?: number | null
@@ -3234,6 +3237,8 @@ export type Database = {
           created_at: string | null
           device_fingerprint_id: string | null
           id: string
+          ip_address: string | null
+          location_data: Json | null
           location_id: string | null
           requires_step_up: boolean | null
           risk_factors: Json | null
@@ -3249,6 +3254,8 @@ export type Database = {
           created_at?: string | null
           device_fingerprint_id?: string | null
           id?: string
+          ip_address?: string | null
+          location_data?: Json | null
           location_id?: string | null
           requires_step_up?: boolean | null
           risk_factors?: Json | null
@@ -3266,6 +3273,8 @@ export type Database = {
           created_at?: string | null
           device_fingerprint_id?: string | null
           id?: string
+          ip_address?: string | null
+          location_data?: Json | null
           location_id?: string | null
           requires_step_up?: boolean | null
           risk_factors?: Json | null
@@ -3446,6 +3455,50 @@ export type Database = {
         }
         Relationships: []
       }
+      trusted_devices: {
+        Row: {
+          created_at: string
+          device_fingerprint_id: string | null
+          device_name: string | null
+          id: string
+          is_active: boolean | null
+          trusted_at: string
+          trusted_by: string | null
+          trusted_until: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_fingerprint_id?: string | null
+          device_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          trusted_at?: string
+          trusted_by?: string | null
+          trusted_until?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_fingerprint_id?: string | null
+          device_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          trusted_at?: string
+          trusted_by?: string | null
+          trusted_until?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trusted_devices_device_fingerprint_id_fkey"
+            columns: ["device_fingerprint_id"]
+            isOneToOne: false
+            referencedRelation: "user_device_fingerprints"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_behavior_patterns: {
         Row: {
           avg_session_duration: number | null
@@ -3494,6 +3547,8 @@ export type Database = {
           id: string
           is_trusted: boolean | null
           language: string | null
+          last_ip: string | null
+          last_location: string | null
           last_seen_at: string | null
           login_count: number | null
           os_info: Json | null
@@ -3510,6 +3565,8 @@ export type Database = {
           id?: string
           is_trusted?: boolean | null
           language?: string | null
+          last_ip?: string | null
+          last_location?: string | null
           last_seen_at?: string | null
           login_count?: number | null
           os_info?: Json | null
@@ -3526,6 +3583,8 @@ export type Database = {
           id?: string
           is_trusted?: boolean | null
           language?: string | null
+          last_ip?: string | null
+          last_location?: string | null
           last_seen_at?: string | null
           login_count?: number | null
           os_info?: Json | null
@@ -3568,6 +3627,54 @@ export type Database = {
           is_vpn?: boolean | null
           latitude?: number | null
           longitude?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_login_locations: {
+        Row: {
+          city: string | null
+          country: string | null
+          country_code: string | null
+          created_at: string
+          id: string
+          ip_address: string | null
+          is_proxy: boolean | null
+          is_vpn: boolean | null
+          isp: string | null
+          latitude: number | null
+          longitude: number | null
+          region: string | null
+          user_id: string
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          country_code?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          is_proxy?: boolean | null
+          is_vpn?: boolean | null
+          isp?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          region?: string | null
+          user_id: string
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          country_code?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          is_proxy?: boolean | null
+          is_vpn?: boolean | null
+          isp?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          region?: string | null
           user_id?: string
         }
         Relationships: []

@@ -174,7 +174,7 @@ serve(async (req) => {
         }
 
         // Store current login location
-        await supabase.from("user_login_locations").insert({
+        const { error: locError } = await supabase.from("user_login_locations").insert({
           user_id: userId,
           ip_address: ipAddress,
           country: locationData.country,
@@ -186,7 +186,11 @@ serve(async (req) => {
           is_vpn: locationData.isVpn,
           is_proxy: locationData.isProxy,
           isp: locationData.isp,
-        }).catch(err => console.error("Error storing location:", err));
+        });
+        
+        if (locError) {
+          console.error("Error storing location:", locError);
+        }
       }
     }
 
