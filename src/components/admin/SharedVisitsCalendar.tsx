@@ -16,6 +16,7 @@ import { Users, User, Calendar as CalendarIcon, FileText, Plus, Edit, Send, Load
 import { toast } from 'sonner';
 import { VisitSheetForm } from '@/components/visits/VisitSheetForm';
 import { ParticipantsSelector } from '@/components/visits/ParticipantsSelector';
+import CompanySearchBar from '@/components/admin/accounting/CompanySearchBar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 const locales = {
@@ -908,18 +909,10 @@ export function SharedVisitsCalendar({ hideOfficeFilter = false }: SharedVisitsC
           <div className="space-y-4">
             <div className="space-y-2">
               <Label>Empresa *</Label>
-              <Select value={selectedCompanyId} onValueChange={setSelectedCompanyId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecciona una empresa" />
-                </SelectTrigger>
-                <SelectContent>
-                  {companies.map(company => (
-                    <SelectItem key={company.id} value={company.id}>
-                      {company.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <CompanySearchBar
+                onSelectCompany={(company) => setSelectedCompanyId(company.id)}
+                selectedCompanyId={selectedCompanyId}
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
