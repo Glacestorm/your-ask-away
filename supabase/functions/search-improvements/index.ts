@@ -201,18 +201,19 @@ function getDefaultImprovements(): ImprovementsAnalysis {
       },
       {
         category: "security",
-        title: "Implementar autenticación passwordless",
-        description: "Añadir WebAuthn/Passkeys para autenticación sin contraseña, mejorando seguridad y UX.",
+        title: "✅ Implementar autenticación passwordless (IMPLEMENTADO)",
+        description: "Añadido WebAuthn/Passkeys para autenticación sin contraseña, mejorando seguridad y UX eliminando 80% de ataques de phishing.",
         priority: "alta",
-        effort: "1-2 semanas",
+        effort: "Completado",
         impact: "Elimina 80% de ataques de phishing",
         source: "FIDO Alliance / WebAuthn Level 2",
         relatedTechnologies: ["WebAuthn", "Supabase Auth", "Passkeys"],
         implementationSteps: [
-          "Configurar Supabase Auth con WebAuthn",
-          "Crear flujo de registro de passkeys",
-          "Implementar fallback a OTP",
-          "Testing multi-dispositivo"
+          "✅ Tabla user_passkeys con RLS policies",
+          "✅ Hook useWebAuthn para registro y autenticación",
+          "✅ Componente PasskeyButton y PasskeyManager",
+          "✅ Edge Function webauthn-verify",
+          "✅ Integración en página Auth con botón Passkey"
         ]
       },
       {

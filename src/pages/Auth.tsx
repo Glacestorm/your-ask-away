@@ -7,12 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPin, Loader2, Eye, EyeOff, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { MapPin, Loader2, Eye, EyeOff, AlertTriangle, CheckCircle2, Fingerprint } from 'lucide-react';
 import { z } from 'zod';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useWebAuthn } from '@/hooks/useWebAuthn';
 
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
@@ -24,6 +25,45 @@ const passwordSchema = z.string()
   .regex(/[a-z]/, 'Requereix almenys una minúscula')
   .regex(/[0-9]/, 'Requereix almenys un número')
   .regex(/[^A-Za-z0-9]/, 'Requereix almenys un caràcter especial');
+
+// Passkey Login Button Component
+function PasskeyLoginButton({ disabled, onSuccess }: { disabled?: boolean; onSuccess?: () => void }) {
+  const { isSupported, isAuthenticating, authenticateWithPasskey } = useWebAuthn();
+
+  if (!isSupported) return null;
+
+  const handlePasskeyLogin = async () => {
+    const success = await authenticateWithPasskey('');
+    if (success && onSuccess) {
+      onSuccess();
+    }
+  };
+
+  return (
+    <div className="relative">
+      <div className="absolute inset-0 flex items-center">
+        <span className="w-full border-t" />
+      </div>
+      <div className="relative flex justify-center text-xs uppercase">
+        <span className="bg-background px-2 text-muted-foreground">O bé</span>
+      </div>
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full mt-4 gap-2 border-primary/20 hover:border-primary/50 hover:bg-primary/5"
+        onClick={handlePasskeyLogin}
+        disabled={disabled || isAuthenticating}
+      >
+        {isAuthenticating ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Fingerprint className="h-4 w-4" />
+        )}
+        Iniciar amb Passkey
+      </Button>
+    </div>
+  );
+}
 
 const Auth = () => {
   const [activeTab, setActiveTab] = useState<'login' | 'signup' | 'forgot'>('login');
@@ -333,6 +373,11 @@ const Auth = () => {
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {t('auth.login')}
                 </Button>
+
+                <PasskeyLoginButton 
+                  disabled={loading || (lockoutUntil !== null && lockoutUntil > Date.now())}
+                  onSuccess={() => navigate('/home')}
+                />
               </form>
             </TabsContent>
             
