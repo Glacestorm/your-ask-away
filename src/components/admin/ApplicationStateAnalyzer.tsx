@@ -879,9 +879,15 @@ export function ApplicationStateAnalyzer() {
                   </CardHeader>
                   <CardContent>
                     <ul className="text-sm space-y-1">
-                      {improvementsAnalysis.aiIntegrations.map((ai, i) => (
-                        <li key={i} className="text-muted-foreground">• {ai}</li>
-                      ))}
+                      {improvementsAnalysis.aiIntegrations.map((ai, i) => {
+                        const aiItem = ai as unknown as string | { integration?: string; description?: string };
+                        const displayText = typeof aiItem === 'string' 
+                          ? aiItem 
+                          : (aiItem?.integration || aiItem?.description || JSON.stringify(aiItem));
+                        return (
+                          <li key={i} className="text-muted-foreground">• {displayText}</li>
+                        );
+                      })}
                     </ul>
                   </CardContent>
                 </Card>
