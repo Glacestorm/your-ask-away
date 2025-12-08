@@ -70,26 +70,33 @@ MÓDULOS ACTUALES: ${JSON.stringify(currentModules || [])}
 TECNOLOGÍAS: ${JSON.stringify(currentTechnologies || ['React', 'TypeScript', 'Supabase', 'Tailwind CSS', 'MapLibre GL'])}
 FOCO: ${industryFocus || 'Banca comercial y gestión de cartera empresarial'}
 
-Genera un análisis JSON con:
+Genera un análisis JSON con EXACTAMENTE esta estructura:
 1. improvements: Array de mejoras sugeridas con:
    - category: (ux|performance|security|ai|compliance|integrations|devops)
    - title, description, priority (alta/media/baja), effort, impact
    - source: fuente o estándar que lo respalda
    - relatedTechnologies, implementationSteps
 
-2. technologyTrends: Tendencias tecnológicas relevantes para adoptar
+2. technologyTrends: Array de objetos con EXACTAMENTE estos campos (OBLIGATORIO):
+   - name: nombre de la tecnología
+   - relevance: descripción de la relevancia para el proyecto
+   - adoptionRate: nivel de adopción en el mercado (ej: "Alta en enterprise", "Emergente", "Estable")
+   - recommendation: recomendación específica de acción (ej: "Evaluar migración", "Implementar gradualmente")
+   - integrationPotential: potencial de integración (ej: "Alto - compatible", "Medio - requiere cambios")
 
-3. securityUpdates: Actualizaciones de seguridad recomendadas
+3. securityUpdates: Array de strings con actualizaciones de seguridad
 
-4. performanceOptimizations: Optimizaciones de rendimiento específicas
+4. performanceOptimizations: Array de strings con optimizaciones de rendimiento
 
-5. uxEnhancements: Mejoras de experiencia de usuario
+5. uxEnhancements: Array de strings con mejoras de experiencia de usuario
 
-6. aiIntegrations: Posibles integraciones con IA
+6. aiIntegrations: Array de strings con posibles integraciones con IA
 
-7. complianceUpdates: Actualizaciones de normativas
+7. complianceUpdates: Array de strings con actualizaciones de normativas
 
 8. summary: Resumen ejecutivo de 2-3 párrafos
+
+IMPORTANTE: Para technologyTrends, TODOS los campos (name, relevance, adoptionRate, recommendation, integrationPotential) son OBLIGATORIOS y deben tener valores descriptivos, nunca vacíos.
 
 Prioriza mejoras específicas para banca andorrana/española con valor de negocio claro.`;
 
