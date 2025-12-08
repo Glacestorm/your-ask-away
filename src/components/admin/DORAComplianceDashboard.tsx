@@ -15,7 +15,8 @@ import { toast } from "sonner";
 import { 
   Shield, AlertTriangle, CheckCircle, Clock, FileText, 
   Users, Server, Activity, Plus, RefreshCw, Download,
-  AlertCircle, Target, Zap, Building2, ExternalLink
+  AlertCircle, Target, Zap, Building2, ExternalLink, Play, 
+  Loader2, CheckCircle2, XCircle, AlertOctagon
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -75,6 +76,21 @@ interface ThirdPartyProvider {
   sla_compliance_rate: number | null;
 }
 
+interface StressTestSimulation {
+  id: string;
+  simulation_name: string;
+  simulation_type: string;
+  scenario_description: string | null;
+  target_systems: string[] | null;
+  execution_mode: string;
+  status: string;
+  last_execution: string | null;
+  passed: boolean | null;
+  results: Record<string, unknown>[] | null;
+  metrics: Record<string, number> | null;
+  execution_duration_seconds: number | null;
+}
+
 export function DORAComplianceDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const [complianceItems, setComplianceItems] = useState<ComplianceItem[]>([]);
@@ -82,11 +98,14 @@ export function DORAComplianceDashboard() {
   const [riskAssessments, setRiskAssessments] = useState<RiskAssessment[]>([]);
   const [resilienceTests, setResilienceTests] = useState<ResilienceTest[]>([]);
   const [thirdPartyProviders, setThirdPartyProviders] = useState<ThirdPartyProvider[]>([]);
+  const [stressTests, setStressTests] = useState<StressTestSimulation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [runningTest, setRunningTest] = useState<string | null>(null);
   const [showNewIncidentDialog, setShowNewIncidentDialog] = useState(false);
   const [showNewRiskDialog, setShowNewRiskDialog] = useState(false);
   const [showNewTestDialog, setShowNewTestDialog] = useState(false);
   const [showNewProviderDialog, setShowNewProviderDialog] = useState(false);
+  const [showNewStressTestDialog, setShowNewStressTestDialog] = useState(false);
 
   useEffect(() => {
     loadAllData();
@@ -99,9 +118,66 @@ export function DORAComplianceDashboard() {
       loadIncidents(),
       loadRiskAssessments(),
       loadResilienceTests(),
-      loadThirdPartyProviders()
+      loadThirdPartyProviders(),
+      loadStressTests()
     ]);
     setLoading(false);
+  };
+
+  const loadStressTests = async () => {
+    const { data, error } = await supabase
+      .from('stress_test_simulations')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (!error && data) setStressTests(data as unknown as StressTestSimulation[]);
+  };
+
+  const runStressTest = async (simulationId: string) => {
+    setRunningTest(simulationId);
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/run-stress-test`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.session?.access_token}`
+          },
+          body: JSON.stringify({ simulation_id: simulationId })
+        }
+      );
+
+      const result = await response.json();
+      
+      if (result.success) {
+        toast.success(`Test completado: ${result.passed ? 'PASADO' : 'FALLIDO'}`);
+        loadStressTests();
+      } else {
+        toast.error(result.error || 'Error ejecutando test');
+      }
+    } catch (error) {
+      console.error('Error running stress test:', error);
+      toast.error('Error ejecutando stress test');
+    } finally {
+      setRunningTest(null);
+    }
+  };
+
+  const runAllStressTests = async () => {
+    const automatedTests = stressTests.filter(t => t.execution_mode === 'automated');
+    if (automatedTests.length === 0) {
+      toast.info('No hay tests automatizados configurados');
+      return;
+    }
+    
+    toast.info(`Ejecutando ${automatedTests.length} tests automatizados...`);
+    
+    for (const test of automatedTests) {
+      await runStressTest(test.id);
+    }
+    
+    toast.success('Todos los tests automatizados completados');
   };
 
   const loadComplianceItems = async () => {
@@ -326,11 +402,12 @@ export function DORAComplianceDashboard() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview">Cumplimiento</TabsTrigger>
           <TabsTrigger value="incidents">Incidentes</TabsTrigger>
           <TabsTrigger value="risks">Riesgos</TabsTrigger>
           <TabsTrigger value="tests">Pruebas</TabsTrigger>
+          <TabsTrigger value="stress">Stress Test</TabsTrigger>
           <TabsTrigger value="providers">Terceros</TabsTrigger>
         </TabsList>
 
@@ -739,6 +816,141 @@ export function DORAComplianceDashboard() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* Stress Tests Tab */}
+        <TabsContent value="stress" className="space-y-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Simulaciones de Stress Test Automatizadas</CardTitle>
+                <CardDescription>
+                  Pruebas automatizadas de resiliencia del sistema según Art. 24-27 DORA
+                </CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={runAllStressTests} variant="default" size="sm">
+                  <Play className="h-4 w-4 mr-2" />
+                  Ejecutar Todos
+                </Button>
+                <Dialog open={showNewStressTestDialog} onOpenChange={setShowNewStressTestDialog}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" variant="outline">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Nueva Simulación
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Nueva Simulación de Stress Test</DialogTitle>
+                    </DialogHeader>
+                    <StressTestForm 
+                      onSuccess={() => {
+                        setShowNewStressTestDialog(false);
+                        loadStressTests();
+                      }} 
+                    />
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {stressTests.map(test => (
+                  <Card key={test.id} className="relative overflow-hidden">
+                    <div className={`absolute top-0 left-0 right-0 h-1 ${
+                      test.status === 'completed' && test.passed ? 'bg-green-500' :
+                      test.status === 'failed' || (test.status === 'completed' && !test.passed) ? 'bg-destructive' :
+                      test.status === 'running' ? 'bg-blue-500' : 'bg-muted'
+                    }`} />
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-base">{test.simulation_name}</CardTitle>
+                        <Badge variant="outline" className="text-xs">
+                          {test.execution_mode === 'automated' ? 'Auto' : 
+                           test.execution_mode === 'scheduled' ? 'Progr.' : 'Manual'}
+                        </Badge>
+                      </div>
+                      <CardDescription className="text-xs">
+                        {test.scenario_description?.slice(0, 80)}...
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge className={
+                          test.simulation_type === 'cyber_attack' ? 'bg-destructive text-destructive-foreground' :
+                          test.simulation_type === 'failover' ? 'bg-orange-500 text-white' :
+                          test.simulation_type === 'availability' ? 'bg-blue-500 text-white' :
+                          'bg-muted text-muted-foreground'
+                        }>
+                          {test.simulation_type.replace(/_/g, ' ')}
+                        </Badge>
+                        {test.passed !== null && (
+                          <Badge className={test.passed ? 'bg-green-500 text-white' : 'bg-destructive text-destructive-foreground'}>
+                            {test.passed ? 'PASADO' : 'FALLIDO'}
+                          </Badge>
+                        )}
+                      </div>
+
+                      {test.target_systems && (
+                        <div className="flex flex-wrap gap-1">
+                          {test.target_systems.map((sys, idx) => (
+                            <Badge key={idx} variant="secondary" className="text-xs">
+                              {sys}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+
+                      {test.metrics && (
+                        <div className="text-xs text-muted-foreground space-y-1">
+                          <div className="flex justify-between">
+                            <span>Éxito:</span>
+                            <span className="font-medium">{test.metrics.success_rate?.toFixed(1)}%</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Duración:</span>
+                            <span className="font-medium">{test.execution_duration_seconds}s</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {test.last_execution && (
+                        <p className="text-xs text-muted-foreground">
+                          Última: {format(new Date(test.last_execution), 'dd/MM/yyyy HH:mm', { locale: es })}
+                        </p>
+                      )}
+
+                      <Button 
+                        onClick={() => runStressTest(test.id)} 
+                        disabled={runningTest === test.id}
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full"
+                      >
+                        {runningTest === test.id ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Ejecutando...
+                          </>
+                        ) : (
+                          <>
+                            <Play className="h-4 w-4 mr-2" />
+                            Ejecutar Test
+                          </>
+                        )}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+                {stressTests.length === 0 && (
+                  <div className="col-span-full text-center py-8 text-muted-foreground">
+                    No hay simulaciones de stress test configuradas
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );
@@ -1129,6 +1341,129 @@ function ThirdPartyProviderForm({ onSuccess }: { onSuccess: () => void }) {
       </div>
       <Button type="submit" className="w-full" disabled={saving}>
         {saving ? "Guardando..." : "Registrar Proveedor"}
+      </Button>
+    </form>
+  );
+}
+
+function StressTestForm({ onSuccess }: { onSuccess: () => void }) {
+  const [formData, setFormData] = useState({
+    simulation_name: '',
+    simulation_type: 'availability',
+    scenario_description: '',
+    target_systems: [] as string[],
+    execution_mode: 'manual'
+  });
+  const [saving, setSaving] = useState(false);
+
+  const systemOptions = [
+    'database', 'api', 'backend', 'frontend', 'storage', 
+    'network', 'firewall', 'cdn', 'load_balancer', 'microservices'
+  ];
+
+  const handleSystemToggle = (system: string) => {
+    setFormData(prev => ({
+      ...prev,
+      target_systems: prev.target_systems.includes(system)
+        ? prev.target_systems.filter(s => s !== system)
+        : [...prev.target_systems, system]
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    
+    const { data: userData } = await supabase.auth.getUser();
+    
+    const { error } = await supabase.from('stress_test_simulations').insert({
+      ...formData,
+      created_by: userData.user?.id,
+      success_criteria: {
+        max_response_time_ms: 500,
+        min_success_rate: 99
+      }
+    });
+    
+    if (error) {
+      toast.error("Error al crear simulación");
+      console.error(error);
+    } else {
+      toast.success("Simulación creada");
+      onSuccess();
+    }
+    setSaving(false);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Nombre de la simulación</label>
+        <Input 
+          value={formData.simulation_name}
+          onChange={(e) => setFormData({...formData, simulation_name: e.target.value})}
+          placeholder="Ej: Test de carga de base de datos"
+          required
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Tipo de simulación</label>
+          <select 
+            value={formData.simulation_type} 
+            onChange={(e) => setFormData({...formData, simulation_type: e.target.value})}
+            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          >
+            <option value="availability">Disponibilidad</option>
+            <option value="capacity">Capacidad</option>
+            <option value="recovery">Recuperación</option>
+            <option value="failover">Failover</option>
+            <option value="cyber_attack">Ciberataque</option>
+            <option value="data_loss">Pérdida de datos</option>
+            <option value="network_outage">Interrupción de red</option>
+            <option value="custom">Personalizado</option>
+          </select>
+        </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Modo de ejecución</label>
+          <select 
+            value={formData.execution_mode} 
+            onChange={(e) => setFormData({...formData, execution_mode: e.target.value})}
+            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          >
+            <option value="manual">Manual</option>
+            <option value="scheduled">Programado</option>
+            <option value="automated">Automatizado</option>
+          </select>
+        </div>
+      </div>
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Descripción del escenario</label>
+        <Textarea 
+          value={formData.scenario_description}
+          onChange={(e) => setFormData({...formData, scenario_description: e.target.value})}
+          placeholder="Describa el escenario de prueba..."
+          required
+          rows={3}
+        />
+      </div>
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Sistemas objetivo</label>
+        <div className="flex flex-wrap gap-2">
+          {systemOptions.map(system => (
+            <Badge 
+              key={system}
+              variant={formData.target_systems.includes(system) ? "default" : "outline"}
+              className="cursor-pointer"
+              onClick={() => handleSystemToggle(system)}
+            >
+              {system}
+            </Badge>
+          ))}
+        </div>
+      </div>
+      <Button type="submit" className="w-full" disabled={saving || formData.target_systems.length === 0}>
+        {saving ? "Guardando..." : "Crear Simulación"}
       </Button>
     </form>
   );

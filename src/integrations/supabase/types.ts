@@ -3335,6 +3335,119 @@ export type Database = {
         }
         Relationships: []
       }
+      stress_test_executions: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          executed_by: string | null
+          execution_end: string | null
+          execution_start: string
+          id: string
+          metrics: Json | null
+          passed: boolean | null
+          results: Json | null
+          simulation_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          executed_by?: string | null
+          execution_end?: string | null
+          execution_start?: string
+          id?: string
+          metrics?: Json | null
+          passed?: boolean | null
+          results?: Json | null
+          simulation_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          executed_by?: string | null
+          execution_end?: string | null
+          execution_start?: string
+          id?: string
+          metrics?: Json | null
+          passed?: boolean | null
+          results?: Json | null
+          simulation_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stress_test_executions_simulation_id_fkey"
+            columns: ["simulation_id"]
+            isOneToOne: false
+            referencedRelation: "stress_test_simulations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stress_test_simulations: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          execution_duration_seconds: number | null
+          execution_mode: string
+          id: string
+          last_execution: string | null
+          metrics: Json | null
+          next_execution: string | null
+          passed: boolean | null
+          results: Json | null
+          scenario_description: string | null
+          schedule_cron: string | null
+          simulation_name: string
+          simulation_type: string
+          status: string
+          success_criteria: Json | null
+          target_systems: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          execution_duration_seconds?: number | null
+          execution_mode?: string
+          id?: string
+          last_execution?: string | null
+          metrics?: Json | null
+          next_execution?: string | null
+          passed?: boolean | null
+          results?: Json | null
+          scenario_description?: string | null
+          schedule_cron?: string | null
+          simulation_name: string
+          simulation_type: string
+          status?: string
+          success_criteria?: Json | null
+          target_systems?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          execution_duration_seconds?: number | null
+          execution_mode?: string
+          id?: string
+          last_execution?: string | null
+          metrics?: Json | null
+          next_execution?: string | null
+          passed?: boolean | null
+          results?: Json | null
+          scenario_description?: string | null
+          schedule_cron?: string | null
+          simulation_name?: string
+          simulation_type?: string
+          status?: string
+          success_criteria?: Json | null
+          target_systems?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       system_diagnostic_logs: {
         Row: {
           checks: Json

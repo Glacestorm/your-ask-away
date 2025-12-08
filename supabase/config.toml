@@ -83,3 +83,6 @@ verify_jwt = true
 
 [functions.webauthn-verify]
 verify_jwt = false
+
+[functions.run-stress-test]
+verify_jwt = true
