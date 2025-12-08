@@ -363,7 +363,7 @@ export function MapContainer({
           // If no symbol layer found, don't specify (add at top)
           console.log('[Route] Inserting route before layer:', insertBeforeId || '(top of stack)');
 
-          // Add outline layer (dark border)
+          // Add outline layer (dark border) - NO insertBeforeId to put it on top
           mapInstance.addLayer({
             id: 'route-line-outline',
             type: 'line',
@@ -374,13 +374,13 @@ export function MapContainer({
               'visibility': 'visible'
             },
             paint: {
-              'line-color': '#1e3a5f',
-              'line-width': 12,
+              'line-color': '#000000',
+              'line-width': 14,
               'line-opacity': 1
             }
-          }, insertBeforeId);
+          });
 
-          // Add main route line on top of outline
+          // Add main route line on top of outline - bright color for visibility
           mapInstance.addLayer({
             id: 'route-line',
             type: 'line',
@@ -391,11 +391,13 @@ export function MapContainer({
               'visibility': 'visible'
             },
             paint: {
-              'line-color': '#3b82f6',
-              'line-width': 8,
+              'line-color': '#ff0000',
+              'line-width': 10,
               'line-opacity': 1
             }
-          }, insertBeforeId);
+          });
+          
+          console.log('[Route] GeoJSON coordinates sample:', coords.slice(0, 3), '...', coords.slice(-2));
           
           console.log('[Route] Route layers added');
           
