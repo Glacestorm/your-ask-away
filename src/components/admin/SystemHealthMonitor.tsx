@@ -3,11 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, RefreshCw, Database, Server, HardDrive, Shield, AlertTriangle, CheckCircle2, XCircle, Stethoscope, Layers, Settings2 } from 'lucide-react';
+import { Loader2, RefreshCw, Database, Server, HardDrive, Shield, AlertTriangle, CheckCircle2, XCircle, Stethoscope, Layers, Settings2, Brain, History, Clock, Mail, Undo2, Play, X, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface HealthData {
   overall: {
@@ -57,6 +59,31 @@ interface ModuleDiagnostic {
   lastRun?: string;
 }
 
+interface AIIntervention {
+  id: string;
+  diagnostic_log_id: string | null;
+  issue_description: string;
+  ai_analysis: string;
+  proposed_solution: string;
+  status: 'pending' | 'approved' | 'executed' | 'reverted' | 'rejected';
+  auto_execute_at: string | null;
+  executed_at: string | null;
+  executed_by: string | null;
+  created_at: string;
+}
+
+interface ScheduledCheck {
+  id: string;
+  check_type: 'morning' | 'night';
+  overall_status: string;
+  total_modules: number;
+  healthy_modules: number;
+  warning_modules: number;
+  error_modules: number;
+  email_sent: boolean;
+  created_at: string;
+}
+
 const APPLICATION_MODULES = [
   { key: 'auth', name: 'Autenticación y Roles', icon: Shield },
   { key: 'companies', name: 'Gestión de Empresas', icon: Database },
@@ -76,6 +103,53 @@ export function SystemHealthMonitor() {
   const [moduleDiagnostics, setModuleDiagnostics] = useState<Record<string, ModuleDiagnostic>>({});
   const [globalDiagnosticProgress, setGlobalDiagnosticProgress] = useState(0);
   const [isRunningGlobalDiagnostic, setIsRunningGlobalDiagnostic] = useState(false);
+  const [aiInterventions, setAiInterventions] = useState<AIIntervention[]>([]);
+  const [scheduledChecks, setScheduledChecks] = useState<ScheduledCheck[]>([]);
+  const [loadingInterventions, setLoadingInterventions] = useState(false);
+  const [processingIntervention, setProcessingIntervention] = useState<string | null>(null);
+
+  const fetchAIInterventions = async () => {
+    try {
+      const { data } = await supabase
+        .from('ai_interventions')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(20);
+      setAiInterventions((data as AIIntervention[]) || []);
+    } catch (e) {
+      console.error('Error fetching interventions:', e);
+    }
+  };
+
+  const fetchScheduledChecks = async () => {
+    try {
+      const { data } = await supabase
+        .from('scheduled_health_checks')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
+      setScheduledChecks((data as ScheduledCheck[]) || []);
+    } catch (e) {
+      console.error('Error fetching scheduled checks:', e);
+    }
+  };
+
+  const handleInterventionAction = async (interventionId: string, action: 'approve' | 'reject' | 'revert') => {
+    setProcessingIntervention(interventionId);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error } = await supabase.functions.invoke('analyze-system-issues', {
+        body: { interventionId, action, userId: user?.id }
+      });
+      if (error) throw error;
+      toast.success(`Intervención ${action === 'approve' ? 'aprobada' : action === 'reject' ? 'rechazada' : 'revertida'}`);
+      fetchAIInterventions();
+    } catch (e: any) {
+      toast.error(`Error: ${e.message}`);
+    } finally {
+      setProcessingIntervention(null);
+    }
+  };
 
   const fetchHealthData = async (isRefresh = false) => {
     try {
@@ -216,9 +290,14 @@ export function SystemHealthMonitor() {
 
   useEffect(() => {
     fetchHealthData();
+    fetchAIInterventions();
+    fetchScheduledChecks();
     
     // Auto-refresh every 30 seconds
-    const interval = setInterval(() => fetchHealthData(true), 30000);
+    const interval = setInterval(() => {
+      fetchHealthData(true);
+      fetchAIInterventions();
+    }, 30000);
     
     return () => clearInterval(interval);
   }, []);
