@@ -127,7 +127,7 @@ interface MapContainerProps {
   onMinZoomVinculacionChange?: (zoom: number) => void;
   focusCompanyId?: string | null;
   onFocusCompanyHandled?: () => void;
-  routePolyline?: string | null;
+  
   routeWaypoints?: { id: string; name: string; latitude: number; longitude: number }[];
   routeOrigin?: { latitude: number; longitude: number; name: string } | null;
   routeSelectedIds?: string[];
@@ -163,7 +163,7 @@ export function MapContainer({
   onMinZoomVinculacionChange,
   focusCompanyId,
   onFocusCompanyHandled,
-  routePolyline,
+  
   routeWaypoints,
   routeOrigin,
   routeSelectedIds = [],
@@ -246,46 +246,7 @@ export function MapContainer({
     }
   }, [focusCompanyId, companies, mapLoaded, view3D, onFocusCompanyHandled]);
 
-  // Decode Google encoded polyline
-  const decodePolyline = useCallback((encoded: string): [number, number][] => {
-    const coords: [number, number][] = [];
-    let index = 0;
-    let lat = 0;
-    let lng = 0;
-
-    while (index < encoded.length) {
-      let b;
-      let shift = 0;
-      let result = 0;
-
-      do {
-        b = encoded.charCodeAt(index++) - 63;
-        result |= (b & 0x1f) << shift;
-        shift += 5;
-      } while (b >= 0x20);
-
-      const dlat = result & 1 ? ~(result >> 1) : result >> 1;
-      lat += dlat;
-
-      shift = 0;
-      result = 0;
-
-      do {
-        b = encoded.charCodeAt(index++) - 63;
-        result |= (b & 0x1f) << shift;
-        shift += 5;
-      } while (b >= 0x20);
-
-      const dlng = result & 1 ? ~(result >> 1) : result >> 1;
-      lng += dlng;
-
-      coords.push([lng / 1e5, lat / 1e5]);
-    }
-
-    return coords;
-  }, []);
-
-  // Function to draw route line and markers - can be called from effect or style change
+  // Function to draw route markers only (no polyline)
   const drawRouteOnMap = useCallback(() => {
     if (!map.current || !mapLoaded) return;
 
@@ -295,153 +256,13 @@ export function MapContainer({
     routeMarkersRef.current.forEach(marker => marker.remove());
     routeMarkersRef.current = [];
 
-    // Clean up previous route layers and source
-    try {
-      if (mapInstance.getLayer('route-line')) {
-        mapInstance.removeLayer('route-line');
-      }
-      if (mapInstance.getLayer('route-line-outline')) {
-        mapInstance.removeLayer('route-line-outline');
-      }
-      if (mapInstance.getSource('route-source')) {
-        mapInstance.removeSource('route-source');
-      }
-    } catch (e) {
-      // Layers might not exist, ignore
-    }
-
-    console.log('[Route] drawRouteOnMap called');
-    console.log('[Route] routePolyline:', routePolyline ? `${routePolyline.substring(0, 50)}... (${routePolyline.length} chars)` : 'null/empty');
-    console.log('[Route] routeWaypoints:', routeWaypoints?.length || 0, 'points');
-    
     // If no waypoints at all, exit early
     if (!routeWaypoints || routeWaypoints.length === 0) {
-      console.log('[Route] No waypoints, exiting');
       return;
     }
 
-    // Decode polyline and draw route line - only if we have polyline data
-    if (routePolyline && routePolyline.length > 0) {
-      try {
-        const coords = decodePolyline(routePolyline);
-        console.log('[Route] Decoded polyline coords:', coords.length);
-        console.log('[Route] First coord:', coords[0], 'Last coord:', coords[coords.length - 1]);
-        
-        if (coords.length >= 2) {
-          const geojsonData: GeoJSON.Feature<GeoJSON.LineString> = {
-            type: 'Feature',
-            properties: {},
-            geometry: {
-              type: 'LineString',
-              coordinates: coords
-            }
-          };
-          
-          console.log('[Route] Adding route source and layers...');
-
-          // Add route source
-          mapInstance.addSource('route-source', {
-            type: 'geojson',
-            data: geojsonData
-          });
-
-          // Get all layers to find the best position for our route
-          const allLayers = mapInstance.getStyle()?.layers || [];
-          console.log('[Route] Total layers in map:', allLayers.length);
-          
-          // Find a good layer to insert before - we want to be ABOVE road labels but below markers
-          // Look for the first symbol layer which is usually labels
-          let insertBeforeId: string | undefined;
-          for (const layer of allLayers) {
-            // Insert before symbol layers (text labels) to be visible but below markers
-            if (layer.id.includes('label') || layer.id.includes('text') || layer.type === 'symbol') {
-              insertBeforeId = layer.id;
-              break;
-            }
-          }
-          
-          // If no symbol layer found, don't specify (add at top)
-          console.log('[Route] Inserting route before layer:', insertBeforeId || '(top of stack)');
-
-          // Add outline layer (dark border) - NO insertBeforeId to put it on top
-          mapInstance.addLayer({
-            id: 'route-line-outline',
-            type: 'line',
-            source: 'route-source',
-            layout: {
-              'line-join': 'round',
-              'line-cap': 'round',
-              'visibility': 'visible'
-            },
-            paint: {
-              'line-color': '#000000',
-              'line-width': 14,
-              'line-opacity': 1
-            }
-          });
-
-          // Add main route line on top of outline - bright color for visibility
-          mapInstance.addLayer({
-            id: 'route-line',
-            type: 'line',
-            source: 'route-source',
-            layout: {
-              'line-join': 'round',
-              'line-cap': 'round',
-              'visibility': 'visible'
-            },
-            paint: {
-              'line-color': '#ff0000',
-              'line-width': 10,
-              'line-opacity': 1
-            }
-          });
-          
-          console.log('[Route] GeoJSON coordinates sample:', coords.slice(0, 3), '...', coords.slice(-2));
-          
-          // Force move layers to absolute top
-          try {
-            mapInstance.moveLayer('route-line-outline');
-            mapInstance.moveLayer('route-line');
-            console.log('[Route] Moved route layers to top');
-          } catch (e) {
-            console.log('[Route] Could not move layers:', e);
-          }
-          
-          console.log('[Route] Route layers added at TOP');
-          
-          // Verify after a delay and list ALL layers
-          setTimeout(() => {
-            const allLayersAfter = mapInstance.getStyle()?.layers || [];
-            console.log('[Route] ALL LAYERS:', allLayersAfter.map(l => l.id).join(', '));
-            
-            if (mapInstance.getSource('route-source')) {
-              console.log('[Route] VERIFIED: source exists');
-              // Try to query the source data
-              const features = mapInstance.querySourceFeatures('route-source');
-              console.log('[Route] Source has', features.length, 'features');
-            }
-            if (mapInstance.getLayer('route-line')) {
-              console.log('[Route] VERIFIED: route-line layer exists at index', 
-                allLayersAfter.findIndex(l => l.id === 'route-line'), 'of', allLayersAfter.length);
-              
-              // Force repaint
-              mapInstance.triggerRepaint();
-            }
-          }, 500);
-        }
-      } catch (e) {
-        console.error('[Route] Error adding route layers:', e);
-      }
-    } else {
-      console.log('[Route] No polyline data to draw');
-    }
-
     // Create waypoint markers - include origin as A
-    const allPoints: { id: string; name: string; latitude: number; longitude: number; isOrigin?: boolean; order?: number }[] = [];
-    
-    console.log('[Route] routeOrigin:', routeOrigin);
-    console.log('[Route] routeWaypoints:', routeWaypoints);
+    const allPoints: { id: string; name: string; latitude: number; longitude: number; isOrigin?: boolean }[] = [];
     
     // Add origin as first point
     if (routeOrigin) {
@@ -458,9 +279,6 @@ export function MapContainer({
     routeWaypoints.forEach(wp => {
       allPoints.push(wp);
     });
-
-    console.log('[Route] All points to render:', allPoints);
-    console.log('[Route] Creating markers for', allPoints.length, 'points');
 
     allPoints.forEach((point, index) => {
       const isFirst = index === 0; // Origin (A)
@@ -503,8 +321,6 @@ export function MapContainer({
         z-index: 9999;
       `;
       el.textContent = label;
-      
-      console.log(`[Route] Added marker ${label} at ${point.latitude} ${point.longitude}`);
 
       const marker = new maplibregl.Marker({ element: el })
         .setLngLat([point.longitude, point.latitude])
@@ -514,7 +330,7 @@ export function MapContainer({
     });
 
     // Fit bounds to show all route points
-    if (allPoints.length > 0 && routePolyline) {
+    if (allPoints.length > 1) {
       const lats = allPoints.map(p => p.latitude);
       const lngs = allPoints.map(p => p.longitude);
       
@@ -528,47 +344,18 @@ export function MapContainer({
         duration: 1000
       });
     }
-  }, [mapLoaded, routePolyline, routeWaypoints, routeOrigin, decodePolyline]);
+  }, [mapLoaded, routeWaypoints, routeOrigin]);
 
-  // Effect to draw route and handle style changes
+  // Effect to draw route markers
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
 
-    const mapInstance = map.current;
-
-    // Draw route initially with delay to ensure map is ready
-    const initialTimer = setTimeout(() => {
+    const timer = setTimeout(() => {
       drawRouteOnMap();
-    }, 500);
+    }, 300);
 
-    // Re-draw route when map style changes (layers get cleared on style change)
-    const handleStyleLoad = () => {
-      console.log('[Route] Style loaded/changed, redrawing route...');
-      setTimeout(() => {
-        drawRouteOnMap();
-      }, 300);
-    };
-
-    // Also redraw when map finishes rendering (idle state)
-    const handleIdle = () => {
-      console.log('[Route] Map idle, checking route visibility...');
-      if (routePolyline && routeWaypoints && routeWaypoints.length > 0) {
-        if (!mapInstance.getLayer('route-line')) {
-          console.log('[Route] Route layer missing after idle, redrawing...');
-          drawRouteOnMap();
-        }
-      }
-    };
-
-    mapInstance.on('style.load', handleStyleLoad);
-    mapInstance.once('idle', handleIdle);
-
-    return () => {
-      clearTimeout(initialTimer);
-      mapInstance.off('style.load', handleStyleLoad);
-      mapInstance.off('idle', handleIdle);
-    };
-  }, [mapLoaded, drawRouteOnMap, routePolyline, routeWaypoints]);
+    return () => clearTimeout(timer);
+  }, [mapLoaded, drawRouteOnMap, routeWaypoints]);
 
   // Fetch tooltip configuration
   useEffect(() => {
