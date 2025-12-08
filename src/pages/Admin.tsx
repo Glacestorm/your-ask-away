@@ -50,6 +50,7 @@ import { DynamicTechnicalDocGenerator } from '@/components/reports/DynamicTechni
 import { CompetitorGapAnalysisGenerator } from '@/components/reports/CompetitorGapAnalysisGenerator';
 import { AppDetailedStatusGenerator } from '@/components/reports/AppDetailedStatusGenerator';
 import { GeocodingRecalculator } from '@/components/admin/GeocodingRecalculator';
+import { CascadeGoalsManager } from '@/components/admin/CascadeGoalsManager';
 
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
@@ -152,6 +153,7 @@ const Admin = () => {
       case 'geocoding': return 'Recalcular Geolocalització';
       case 'competitor-gap': return 'Anàlisi Competència i Millores';
       case 'app-status': return 'Estat Detallat de l\'Aplicació';
+      case 'cascade-goals': return 'Objectius en Cascada';
       default: return '';
     }
   };
@@ -536,6 +538,17 @@ const Admin = () => {
           );
         }
         return <AppDetailedStatusGenerator />;
+      case 'cascade-goals':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager && !isOfficeDirector) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <CascadeGoalsManager />;
       case 'administration':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
           return (
