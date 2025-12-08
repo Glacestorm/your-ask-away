@@ -8,6 +8,7 @@ import { ThemeSelector } from '@/components/ThemeSelector';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { MapButton } from '@/components/dashboard/MapButton';
 import { OnlineUsersIndicator } from '@/components/presence/OnlineUsersIndicator';
+import { OfflineSyncIndicator } from '@/components/dashboard/OfflineSyncIndicator';
 
 interface GlobalNavHeaderProps {
   title?: string;
@@ -85,6 +86,9 @@ export function GlobalNavHeader({
       )}
       
       <div className="flex items-center gap-2">
+        {/* Offline Sync Indicator */}
+        <OfflineSyncIndicator />
+        
         {/* Online Users Indicator */}
         <OnlineUsersIndicator />
         
