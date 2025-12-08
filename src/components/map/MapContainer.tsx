@@ -315,6 +315,8 @@ export function MapContainer({
     const coords = decodePolyline(routePolyline);
     console.log('[Route] Decoded polyline coords:', coords.length);
     
+    console.log('[Route] First coord:', coords[0], 'Last coord:', coords[coords.length - 1]);
+    
     if (coords.length >= 2) {
       // Add route source
       mapInstance.addSource('route-source', {
@@ -329,7 +331,18 @@ export function MapContainer({
         }
       });
 
-      // Add outline layer (dark border)
+      // Find first symbol layer to insert route layers below markers
+      const layers = mapInstance.getStyle()?.layers || [];
+      let firstSymbolId: string | undefined;
+      for (const layer of layers) {
+        if (layer.type === 'symbol') {
+          firstSymbolId = layer.id;
+          break;
+        }
+      }
+      console.log('[Route] Inserting route layers before:', firstSymbolId || 'top');
+
+      // Add outline layer (dark border) - insert before symbols so markers are on top
       mapInstance.addLayer({
         id: 'route-line-outline',
         type: 'line',
@@ -340,9 +353,9 @@ export function MapContainer({
         },
         paint: {
           'line-color': '#1a1a2e',
-          'line-width': 10
+          'line-width': 12
         }
-      });
+      }, firstSymbolId);
 
       // Add main route line
       mapInstance.addLayer({
@@ -355,14 +368,19 @@ export function MapContainer({
         },
         paint: {
           'line-color': '#4285F4',
-          'line-width': 6
+          'line-width': 7
         }
-      });
-      console.log('[Route] Route line layers added');
+      }, firstSymbolId);
+      
+      console.log('[Route] Route line layers added successfully');
+      console.log('[Route] Source data:', mapInstance.getSource('route-source'));
     }
 
     // Create waypoint markers - include origin as A
     const allPoints: { id: string; name: string; latitude: number; longitude: number; isOrigin?: boolean }[] = [];
+    
+    console.log('[Route] routeOrigin:', routeOrigin);
+    console.log('[Route] routeWaypoints:', routeWaypoints);
     
     // Add origin as first point
     if (routeOrigin) {
@@ -380,6 +398,7 @@ export function MapContainer({
       allPoints.push(wp);
     });
 
+    console.log('[Route] All points to render:', allPoints);
     console.log('[Route] Creating markers for', allPoints.length, 'points');
 
     allPoints.forEach((point, index) => {
