@@ -7,6 +7,29 @@
     <meta name="description" content="Plataforma CRM per a la gestió comercial bancària de Creand. Optimitzada per a Core Web Vitals." />
     <meta name="author" content="Creand" />
     
+    <!-- OWASP Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+    <meta http-equiv="Permissions-Policy" content="geolocation=(self), camera=(self), microphone=()" />
+    
+    <!-- Content Security Policy (CSP) - OWASP Top 10 2024 & PSD3 Compliance -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com data:;
+      img-src 'self' data: blob: https: http:;
+      connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.ipify.org https://nominatim.openstreetmap.org https://api.maptiler.com https://fonts.googleapis.com https://fonts.gstatic.com;
+      frame-src 'self';
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+      frame-ancestors 'none';
+      upgrade-insecure-requests;
+    " />
+    
     <!-- DNS Prefetch for external resources -->
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
@@ -68,14 +91,16 @@
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
     
     <!-- Professional Typography with font-display: swap for CLS prevention -->
+    <!-- SRI (Subresource Integrity) not available for dynamic Google Fonts CSS, using CSP instead -->
     <link 
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Crimson+Pro:wght@400;600;700&display=swap" 
       rel="stylesheet"
       media="print"
       onload="this.media='all'"
+      crossorigin="anonymous"
     >
     <noscript>
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Crimson+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Crimson+Pro:wght@400;600;700&display=swap" rel="stylesheet" crossorigin="anonymous">
     </noscript>
     
     <!-- Theme initialization to prevent flash (FOUC prevention) -->
