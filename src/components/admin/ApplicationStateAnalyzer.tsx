@@ -1000,71 +1000,85 @@ export function ApplicationStateAnalyzer() {
                     <CardDescription>Casos d'ús prioritzats per compliment normatiu i seguretat</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Accordion type="single" collapsible className="w-full">
-                      {aiAnalysis.aiRecommendations?.slice(0, 8).map((rec, idx) => {
-                        const Icon = CATEGORY_ICONS[rec.category] || Brain;
-                        return (
-                          <AccordionItem key={idx} value={`ai-${idx}`}>
-                            <AccordionTrigger className="hover:no-underline">
-                              <div className="flex items-center gap-3 text-left">
-                                <Icon className="h-5 w-5 text-primary flex-shrink-0" />
-                                <div className="flex-1">
-                                  <div className="font-medium">{rec.title}</div>
-                                  <div className="text-xs text-muted-foreground">{rec.category}</div>
+                    {(!aiAnalysis.aiRecommendations || aiAnalysis.aiRecommendations.length === 0) ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Bot className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                        <p>No s'han trobat recomanacions d'IA.</p>
+                        <p className="text-sm mt-1">Prova a executar "Recomanacions IA" de nou.</p>
+                      </div>
+                    ) : (
+                      <Accordion type="single" collapsible className="w-full">
+                        {aiAnalysis.aiRecommendations.slice(0, 8).map((rec, idx) => {
+                          const Icon = CATEGORY_ICONS[rec?.category] || Brain;
+                          return (
+                            <AccordionItem key={idx} value={`ai-${idx}`}>
+                              <AccordionTrigger className="hover:no-underline">
+                                <div className="flex items-center gap-3 text-left">
+                                  <Icon className="h-5 w-5 text-primary flex-shrink-0" />
+                                  <div className="flex-1">
+                                    <div className="font-medium">{rec?.title || 'Sense títol'}</div>
+                                    <div className="text-xs text-muted-foreground">{rec?.category || 'general'}</div>
+                                  </div>
+                                  <Badge className={RISK_COLORS[rec?.riskLevel] || 'bg-gray-500'}>
+                                    Risc: {rec?.riskLevel || 'desconegut'}
+                                  </Badge>
                                 </div>
-                                <Badge className={RISK_COLORS[rec.riskLevel]}>
-                                  Risc: {rec.riskLevel}
-                                </Badge>
-                              </div>
-                            </AccordionTrigger>
-                            <AccordionContent className="space-y-4 pt-4">
-                              <p className="text-sm">{rec.description}</p>
-                              
-                              <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-                                <div className="flex items-center gap-2 font-medium text-green-700 dark:text-green-400 mb-2">
-                                  <Lock className="h-4 w-4" />
-                                  Notes de Compliment
-                                </div>
-                                <p className="text-sm text-muted-foreground">{rec.complianceNotes}</p>
-                              </div>
+                              </AccordionTrigger>
+                              <AccordionContent className="space-y-4 pt-4">
+                                <p className="text-sm">{rec?.description || 'Sense descripció'}</p>
+                                
+                                {rec?.complianceNotes && (
+                                  <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                                    <div className="flex items-center gap-2 font-medium text-green-700 dark:text-green-400 mb-2">
+                                      <Lock className="h-4 w-4" />
+                                      Notes de Compliment
+                                    </div>
+                                    <p className="text-sm text-muted-foreground">{rec.complianceNotes}</p>
+                                  </div>
+                                )}
 
-                              <div className="grid gap-3 md:grid-cols-2">
-                                <div>
-                                  <div className="font-medium text-sm mb-2 flex items-center gap-1">
-                                    <Shield className="h-3 w-3" /> Seguretat
+                                <div className="grid gap-3 md:grid-cols-2">
+                                  <div>
+                                    <div className="font-medium text-sm mb-2 flex items-center gap-1">
+                                      <Shield className="h-3 w-3" /> Seguretat
+                                    </div>
+                                    <ul className="text-xs space-y-1">
+                                      {(rec?.securityConsiderations || []).map((s, i) => (
+                                        <li key={i} className="text-muted-foreground">• {typeof s === 'string' ? s : JSON.stringify(s)}</li>
+                                      ))}
+                                    </ul>
                                   </div>
-                                  <ul className="text-xs space-y-1">
-                                    {rec.securityConsiderations?.map((s, i) => (
-                                      <li key={i} className="text-muted-foreground">• {s}</li>
-                                    ))}
-                                  </ul>
+                                  <div>
+                                    <div className="font-medium text-sm mb-2 flex items-center gap-1">
+                                      <Scale className="h-3 w-3" /> Normatives
+                                    </div>
+                                    <div className="flex flex-wrap gap-1">
+                                      {(rec?.regulatoryFramework || []).map((r, i) => (
+                                        <Badge key={i} variant="outline" className="text-xs">{typeof r === 'string' ? r : JSON.stringify(r)}</Badge>
+                                      ))}
+                                    </div>
+                                  </div>
                                 </div>
-                                <div>
-                                  <div className="font-medium text-sm mb-2 flex items-center gap-1">
-                                    <Scale className="h-3 w-3" /> Normatives
+
+                                {rec?.estimatedEffort && (
+                                  <div className="text-sm">
+                                    <span className="font-medium">Esforç estimat:</span> {rec.estimatedEffort}
                                   </div>
+                                )}
+
+                                {rec?.tools && rec.tools.length > 0 && (
                                   <div className="flex flex-wrap gap-1">
-                                    {rec.regulatoryFramework?.map((r, i) => (
-                                      <Badge key={i} variant="outline" className="text-xs">{r}</Badge>
+                                    {rec.tools.map((t, i) => (
+                                      <Badge key={i} variant="secondary" className="text-xs">{typeof t === 'string' ? t : JSON.stringify(t)}</Badge>
                                     ))}
                                   </div>
-                                </div>
-                              </div>
-
-                              <div className="text-sm">
-                                <span className="font-medium">Esforç estimat:</span> {rec.estimatedEffort}
-                              </div>
-
-                              <div className="flex flex-wrap gap-1">
-                                {rec.tools?.map((t, i) => (
-                                  <Badge key={i} variant="secondary" className="text-xs">{t}</Badge>
-                                ))}
-                              </div>
-                            </AccordionContent>
-                          </AccordionItem>
-                        );
-                      })}
-                    </Accordion>
+                                )}
+                              </AccordionContent>
+                            </AccordionItem>
+                          );
+                        })}
+                      </Accordion>
+                    )}
                   </CardContent>
                 </Card>
 
@@ -1078,8 +1092,15 @@ export function ApplicationStateAnalyzer() {
                     <CardDescription>n8n, Make, Power Automate - Manuals d'implementació pas a pas</CardDescription>
                   </CardHeader>
                   <CardContent>
+                    {(!aiAnalysis.automationPlatforms || aiAnalysis.automationPlatforms.length === 0) ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Workflow className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                        <p>No s'han trobat plataformes d'automatització.</p>
+                        <p className="text-sm mt-1">Prova a executar "Recomanacions IA" de nou.</p>
+                      </div>
+                    ) : (
                     <Accordion type="single" collapsible className="w-full">
-                      {aiAnalysis.automationPlatforms?.map((platform, idx) => (
+                      {aiAnalysis.automationPlatforms.map((platform, idx) => (
                         <AccordionItem key={idx} value={`platform-${idx}`}>
                           <AccordionTrigger className="hover:no-underline">
                             <div className="flex items-center gap-3 text-left">
@@ -1178,6 +1199,7 @@ export function ApplicationStateAnalyzer() {
                         </AccordionItem>
                       ))}
                     </Accordion>
+                    )}
                   </CardContent>
                 </Card>
 
