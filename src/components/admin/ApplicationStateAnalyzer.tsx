@@ -632,7 +632,7 @@ export function ApplicationStateAnalyzer() {
               )}
 
               {/* Hallazgos de seguridad */}
-              {codebaseAnalysis.securityFindings?.length > 0 && (
+              {codebaseAnalysis.securityFindings && codebaseAnalysis.securityFindings.length > 0 && (
                 <Card>
                   <CardHeader>
                     <div className="flex items-center gap-2">
@@ -770,7 +770,7 @@ export function ApplicationStateAnalyzer() {
                           </div>
                         </div>
 
-                        {imp.relatedTechnologies?.length > 0 && (
+                        {imp.relatedTechnologies && imp.relatedTechnologies.length > 0 && (
                           <div className="flex flex-wrap gap-1 mb-4">
                             {imp.relatedTechnologies.map((tech, i) => (
                               <Badge key={i} variant="outline" className="text-xs">
@@ -780,7 +780,7 @@ export function ApplicationStateAnalyzer() {
                           </div>
                         )}
 
-                        {imp.implementationSteps?.length > 0 && (
+                        {imp.implementationSteps && imp.implementationSteps.length > 0 && (
                           <Accordion type="single" collapsible>
                             <AccordionItem value="steps">
                               <AccordionTrigger className="text-sm">
@@ -851,7 +851,7 @@ export function ApplicationStateAnalyzer() {
           {/* Otras listas */}
           {improvementsAnalysis && (
             <div className="grid gap-4 md:grid-cols-2">
-              {improvementsAnalysis.performanceOptimizations?.length > 0 && (
+              {improvementsAnalysis.performanceOptimizations && improvementsAnalysis.performanceOptimizations.length > 0 && (
                 <Card>
                   <CardHeader>
                     <div className="flex items-center gap-2">
@@ -869,7 +869,7 @@ export function ApplicationStateAnalyzer() {
                 </Card>
               )}
 
-              {improvementsAnalysis.aiIntegrations?.length > 0 && (
+              {improvementsAnalysis.aiIntegrations && improvementsAnalysis.aiIntegrations.length > 0 && (
                 <Card>
                   <CardHeader>
                     <div className="flex items-center gap-2">
@@ -916,7 +916,7 @@ export function ApplicationStateAnalyzer() {
                 </CardContent>
               </Card>
 
-              {improvementsAnalysis.securityUpdates?.length > 0 && (
+              {improvementsAnalysis.securityUpdates && improvementsAnalysis.securityUpdates.length > 0 && (
                 <Card>
                   <CardHeader>
                     <div className="flex items-center gap-2">
@@ -1105,7 +1105,7 @@ export function ApplicationStateAnalyzer() {
                                   <div><strong>Dificultat:</strong> {platform.implementationGuide.difficulty}</div>
                                 </div>
                                 
-                                {platform.implementationGuide.prerequisites?.length > 0 && (
+                                {platform.implementationGuide.prerequisites && platform.implementationGuide.prerequisites.length > 0 && (
                                   <div className="mb-4">
                                     <div className="text-xs font-medium mb-2">Prerequisits:</div>
                                     <ul className="text-xs space-y-1">
@@ -1116,7 +1116,7 @@ export function ApplicationStateAnalyzer() {
                                   </div>
                                 )}
 
-                                {platform.implementationGuide.steps?.length > 0 && (
+                                {platform.implementationGuide.steps && platform.implementationGuide.steps.length > 0 && (
                                   <div>
                                     <div className="text-xs font-medium mb-2">Passos d'Implementació:</div>
                                     <div className="space-y-3">
@@ -1156,7 +1156,7 @@ export function ApplicationStateAnalyzer() {
                 </Card>
 
                 {/* Análisis Competencia con Fases de Implementación */}
-                {aiAnalysis.competitorAnalysis?.length > 0 && (
+                {aiAnalysis.competitorAnalysis && aiAnalysis.competitorAnalysis.length > 0 && (
                   <Card>
                     <CardHeader>
                       <div className="flex items-center gap-2">
@@ -1209,7 +1209,7 @@ export function ApplicationStateAnalyzer() {
                                 </div>
                               </div>
 
-                              {comp.implementationPhases && comp.implementationPhases.length > 0 && (
+                              {comp.implementationPhases && Array.isArray(comp.implementationPhases) && comp.implementationPhases.length > 0 && (
                                 <div className="mt-4 p-4 rounded-lg bg-muted/50 border">
                                   <div className="font-medium text-sm mb-3 flex items-center gap-2">
                                     <Map className="h-4 w-4 text-green-500" />
@@ -1241,14 +1241,14 @@ export function ApplicationStateAnalyzer() {
                                             </ul>
                                           </div>
                                         </div>
-                                        {phase.resources && phase.resources.length > 0 && (
+                                        {phase.resources && Array.isArray(phase.resources) && phase.resources.length > 0 && (
                                           <div className="mt-2 flex flex-wrap gap-1">
                                             {phase.resources.map((r, ri) => (
                                               <Badge key={ri} variant="outline" className="text-xs">{r}</Badge>
                                             ))}
                                           </div>
                                         )}
-                                        {phase.successMetrics && phase.successMetrics.length > 0 && (
+                                        {phase.successMetrics && Array.isArray(phase.successMetrics) && phase.successMetrics.length > 0 && (
                                           <div className="mt-2 text-xs">
                                             <strong>KPIs:</strong> {phase.successMetrics.join(', ')}
                                           </div>
@@ -1267,7 +1267,7 @@ export function ApplicationStateAnalyzer() {
                 )}
 
                 {/* Roadmap Detallado */}
-                {aiAnalysis.implementationRoadmap?.length > 0 && (
+                {aiAnalysis.implementationRoadmap && Array.isArray(aiAnalysis.implementationRoadmap) && aiAnalysis.implementationRoadmap.length > 0 && (
                   <Card>
                     <CardHeader>
                       <div className="flex items-center gap-2">
@@ -1314,7 +1314,7 @@ export function ApplicationStateAnalyzer() {
                                 </div>
                               </div>
 
-                              {phase.kpis && phase.kpis.length > 0 && (
+                              {phase.kpis && Array.isArray(phase.kpis) && phase.kpis.length > 0 && (
                                 <div className="flex flex-wrap gap-1">
                                   <span className="text-xs font-medium mr-2">KPIs:</span>
                                   {phase.kpis.map((kpi, i) => (
@@ -1323,7 +1323,7 @@ export function ApplicationStateAnalyzer() {
                                 </div>
                               )}
 
-                              {phase.detailedSteps && phase.detailedSteps.length > 0 && (
+                              {phase.detailedSteps && Array.isArray(phase.detailedSteps) && phase.detailedSteps.length > 0 && (
                                 <div className="mt-4 p-4 rounded-lg bg-muted/50 border">
                                   <div className="font-medium text-sm mb-3">Passos Detallats</div>
                                   <div className="space-y-3">
@@ -1362,7 +1362,7 @@ export function ApplicationStateAnalyzer() {
                 )}
 
                 {/* Manuales de Automatización */}
-                {aiAnalysis.automationManuals && aiAnalysis.automationManuals.length > 0 && (
+                {aiAnalysis.automationManuals && Array.isArray(aiAnalysis.automationManuals) && aiAnalysis.automationManuals.length > 0 && (
                   <Card>
                     <CardHeader>
                       <div className="flex items-center gap-2">
@@ -1382,7 +1382,7 @@ export function ApplicationStateAnalyzer() {
                               </div>
                             </AccordionTrigger>
                             <AccordionContent className="space-y-4 pt-4">
-                              {manual.setupGuide && manual.setupGuide.length > 0 && (
+                              {manual.setupGuide && Array.isArray(manual.setupGuide) && manual.setupGuide.length > 0 && (
                                 <div>
                                   <div className="font-medium text-sm mb-2">Guia de Configuració</div>
                                   {manual.setupGuide.map((guide, gi) => (
@@ -1398,7 +1398,7 @@ export function ApplicationStateAnalyzer() {
                                 </div>
                               )}
 
-                              {manual.workflowExamples && manual.workflowExamples.length > 0 && (
+                              {manual.workflowExamples && Array.isArray(manual.workflowExamples) && manual.workflowExamples.length > 0 && (
                                 <div>
                                   <div className="font-medium text-sm mb-2">Exemples de Workflows</div>
                                   <div className="grid gap-3 md:grid-cols-2">
@@ -1418,7 +1418,7 @@ export function ApplicationStateAnalyzer() {
                                 </div>
                               )}
 
-                              {manual.securityConfiguration && manual.securityConfiguration.length > 0 && (
+                              {manual.securityConfiguration && Array.isArray(manual.securityConfiguration) && manual.securityConfiguration.length > 0 && (
                                 <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
                                   <div className="font-medium text-sm mb-2 flex items-center gap-2">
                                     <Lock className="h-4 w-4 text-red-500" />
@@ -1432,7 +1432,7 @@ export function ApplicationStateAnalyzer() {
                                 </div>
                               )}
 
-                              {manual.maintenanceGuide && manual.maintenanceGuide.length > 0 && (
+                              {manual.maintenanceGuide && Array.isArray(manual.maintenanceGuide) && manual.maintenanceGuide.length > 0 && (
                                 <div>
                                   <div className="font-medium text-sm mb-2">Guia de Manteniment</div>
                                   <ul className="text-xs space-y-1">
@@ -1451,7 +1451,7 @@ export function ApplicationStateAnalyzer() {
                 )}
 
                 {/* Directrices de Seguridad */}
-                {aiAnalysis.securityGuidelines?.length > 0 && (
+                {aiAnalysis.securityGuidelines && Array.isArray(aiAnalysis.securityGuidelines) && aiAnalysis.securityGuidelines.length > 0 && (
                   <Card>
                     <CardHeader>
                       <div className="flex items-center gap-2">
