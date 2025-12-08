@@ -955,6 +955,21 @@ const Admin = () => {
                   </div>
                 </CardContent>
               </Card>
+              {/* AMA - Autenticación Multifactor Adaptativa */}
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-all hover:border-cyan-500/50 border-2 border-cyan-500/30 bg-gradient-to-br from-cyan-500/5 to-cyan-500/10"
+                onClick={() => handleSectionChange('adaptive-auth')}
+              >
+                <CardContent className="p-6 flex flex-col items-center text-center gap-3">
+                  <div className="h-14 w-14 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center shadow-lg">
+                    <Shield className="h-7 w-7 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg text-cyan-700 dark:text-cyan-400">AMA</h3>
+                    <p className="text-sm text-muted-foreground">Autenticació Multifactor Adaptativa</p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
         );
