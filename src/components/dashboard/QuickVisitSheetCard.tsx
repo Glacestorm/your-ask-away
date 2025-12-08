@@ -20,8 +20,12 @@ import { cn } from '@/lib/utils';
 import { 
   FileText, X, Building2, User, CreditCard, Landmark, Shield, TrendingUp, BarChart3,
   Target, Save, ChevronRight, AlertCircle, Calendar, Edit2, RefreshCw, Download,
-  ZoomIn, ZoomOut, RotateCcw, Printer, ChevronLeft, ChevronDown, Maximize2, Minimize2, Search, ClipboardCheck
+  ZoomIn, ZoomOut, RotateCcw, Printer, ChevronLeft, ChevronDown, Maximize2, Minimize2, Search, ClipboardCheck,
+  PenTool, Camera, FileStack
 } from 'lucide-react';
+import { SignaturePad } from '@/components/visits/SignaturePad';
+import { VisitSheetPhotos } from '@/components/visits/VisitSheetPhotos';
+import { VisitSheetTemplateSelector } from '@/components/visits/VisitSheetTemplateSelector';
 import { format } from 'date-fns';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -203,6 +207,13 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
     productoOfrecido: '',
     importePropuesto: '',
   });
+
+  // Extras: Firma, Fotos, Plantillas
+  const [firmaDigital, setFirmaDigital] = useState<string | null>(null);
+  const [firmaNombreFirmante, setFirmaNombreFirmante] = useState<string>('');
+  const [visitPhotos, setVisitPhotos] = useState<Array<{id: string; photo_url: string; photo_caption: string | null; uploaded_at: string}>>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+  const [existingSheetId, setExistingSheetId] = useState<string | null>(null);
 
   // Load edit data when provided
   useEffect(() => {
@@ -1865,6 +1876,69 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
                         </Select>
                       </div>
                     </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* 8. Extras: Firma, Fotos, Plantillas */}
+              <AccordionItem value="extras" className="border rounded-lg px-4 dark:border-border/50 dark:bg-card/50">
+                <AccordionTrigger className="hover:no-underline py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1">
+                      <PenTool className="h-5 w-5 text-violet-500 dark:text-violet-400" />
+                      <Camera className="h-5 w-5 text-violet-500 dark:text-violet-400" />
+                      <FileStack className="h-5 w-5 text-violet-500 dark:text-violet-400" />
+                    </div>
+                    <span className="font-semibold text-foreground">8. Firma, Fotos y Plantillas</span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="pb-4">
+                  <div className="space-y-6">
+                    {/* Plantillas */}
+                    <VisitSheetTemplateSelector
+                      selectedTemplateId={selectedTemplateId}
+                      onTemplateSelect={(template) => {
+                        if (template) {
+                          setSelectedTemplateId(template.id);
+                          const data = template.template_data;
+                          if (data.tipoVisita) setFormData(p => ({ ...p, tipoVisita: data.tipoVisita }));
+                          if (data.necesidadPrincipal) setObservaciones(p => ({ ...p, necesidadPrincipal: data.necesidadPrincipal }));
+                        } else {
+                          setSelectedTemplateId(null);
+                        }
+                      }}
+                      currentFormData={{
+                        tipoVisita: formData.tipoVisita,
+                        canal: formData.tipoVisita,
+                        diagnosticoInicial: [],
+                        necesidadesDetectadas: [observaciones.necesidadPrincipal],
+                        propuestaValor: [observaciones.productoOfrecido],
+                        riesgosCumplimiento: [],
+                        nivelRiesgo: 'Bajo',
+                        nivelVinculacionRecomendado: 'Medio',
+                        duracion: 60
+                      }}
+                      canManageTemplates={isCommercialManager}
+                    />
+
+                    {/* Fotos */}
+                    <VisitSheetPhotos
+                      visitSheetId={existingSheetId || editSheetId}
+                      photos={visitPhotos}
+                      onPhotosChange={setVisitPhotos}
+                      disabled={false}
+                    />
+
+                    {/* Firma Digital */}
+                    <SignaturePad
+                      onSignatureChange={(signature, name) => {
+                        setFirmaDigital(signature);
+                        setFirmaNombreFirmante(name);
+                      }}
+                      existingSignature={firmaDigital}
+                      existingSignerName={firmaNombreFirmante}
+                      disabled={false}
+                    />
                   </div>
                 </AccordionContent>
               </AccordionItem>
