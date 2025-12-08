@@ -258,12 +258,46 @@ Prioriza:
     content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     
     let analysis: AIAnalysis;
+    const defaults = getDefaultAIRecommendations();
+    
     try {
-      analysis = JSON.parse(content);
-      analysis.generationDate = new Date().toISOString();
+      const parsed = JSON.parse(content);
+      
+      // Merge parsed data with defaults to ensure all arrays exist
+      analysis = {
+        generationDate: new Date().toISOString(),
+        executiveSummary: parsed.executiveSummary || defaults.executiveSummary,
+        aiRecommendations: Array.isArray(parsed.aiRecommendations) && parsed.aiRecommendations.length > 0 
+          ? parsed.aiRecommendations 
+          : defaults.aiRecommendations,
+        automationPlatforms: Array.isArray(parsed.automationPlatforms) && parsed.automationPlatforms.length > 0 
+          ? parsed.automationPlatforms 
+          : defaults.automationPlatforms,
+        securityGuidelines: Array.isArray(parsed.securityGuidelines) && parsed.securityGuidelines.length > 0 
+          ? parsed.securityGuidelines 
+          : defaults.securityGuidelines,
+        regulatoryCompliance: Array.isArray(parsed.regulatoryCompliance) && parsed.regulatoryCompliance.length > 0 
+          ? parsed.regulatoryCompliance 
+          : defaults.regulatoryCompliance,
+        competitorAnalysis: Array.isArray(parsed.competitorAnalysis) && parsed.competitorAnalysis.length > 0 
+          ? parsed.competitorAnalysis 
+          : defaults.competitorAnalysis,
+        bankingTrends: Array.isArray(parsed.bankingTrends) && parsed.bankingTrends.length > 0 
+          ? parsed.bankingTrends 
+          : defaults.bankingTrends,
+        implementationRoadmap: Array.isArray(parsed.implementationRoadmap) && parsed.implementationRoadmap.length > 0 
+          ? parsed.implementationRoadmap 
+          : defaults.implementationRoadmap,
+        automationManuals: Array.isArray(parsed.automationManuals) && parsed.automationManuals.length > 0 
+          ? parsed.automationManuals 
+          : defaults.automationManuals,
+      };
+      
+      console.log("AI recommendations parsed successfully, aiRecommendations count:", analysis.aiRecommendations?.length);
+      console.log("automationPlatforms count:", analysis.automationPlatforms?.length);
     } catch (parseError) {
-      console.error("Failed to parse AI response:", content);
-      analysis = getDefaultAIRecommendations();
+      console.error("Failed to parse AI response, using defaults:", parseError);
+      analysis = defaults;
     }
 
     console.log("AI recommendations generated successfully");
