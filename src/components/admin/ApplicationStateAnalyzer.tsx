@@ -607,7 +607,7 @@ export function ApplicationStateAnalyzer() {
       )}
 
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="grid grid-cols-6 w-full">
+        <TabsList className="grid grid-cols-7 w-full">
           <TabsTrigger value="overview">Visió General</TabsTrigger>
           <TabsTrigger value="modules">Mòduls</TabsTrigger>
           <TabsTrigger value="improvements">Millores</TabsTrigger>
@@ -616,6 +616,10 @@ export function ApplicationStateAnalyzer() {
           <TabsTrigger value="ai" className="flex items-center gap-1">
             <Brain className="h-3 w-3" />
             IA
+          </TabsTrigger>
+          <TabsTrigger value="performance" className="flex items-center gap-1">
+            <Gauge className="h-3 w-3" />
+            Rendiment
           </TabsTrigger>
         </TabsList>
 
