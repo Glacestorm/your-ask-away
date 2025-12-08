@@ -246,6 +246,33 @@ function getDefaultImprovements(): ImprovementsAnalysis {
         ]
       },
       {
+        category: "compliance",
+        title: "✅ Adaptación a PSD3 y Open Banking Avanzado (IMPLEMENTADO 100%)",
+        description: "Infraestructura de APIs modernizada para cumplir y exceder los requisitos de PSD3, enfocándose en interoperabilidad mejorada, seguridad de APIs y gestión de consentimientos. Permite la creación de servicios financieros innovadores e integración fluida con terceros, cumpliendo con regulaciones bancarias de Andorra (AFA) y España (BdE).",
+        priority: "alta",
+        effort: "Completado",
+        impact: "Cumplimiento PSD3 + Open Banking Standard + DORA + eIDAS 2.0",
+        source: "PSD3, Open Banking Standard, DORA, eIDAS 2.0 (para identidad digital)",
+        relatedTechnologies: ["API Gateway (ej. Kong, Apigee)", "OAuth 2.1", "FAPI", "QWAC/QSealC", "eIDAS 2.0"],
+        implementationSteps: [
+          "✅ Edge Function open-banking-api con especificación OpenAPI 3.1",
+          "✅ OAuth 2.0 authorization_code flow con PKCE",
+          "✅ Scopes granulares: accounts, payments, fundsconfirmation",
+          "✅ Endpoints: /accounts, /transactions, /balances",
+          "✅ Endpoints: /payments, /funds-confirmation, /consents",
+          "✅ JSON:API format con x-fapi-interaction-id headers",
+          "✅ JWT verification para todas las llamadas API",
+          "✅ Rate limiting configurable por TPP",
+          "✅ Consent management con expiración automática",
+          "✅ FAPI (Financial-grade API) compliant responses",
+          "✅ Audit logging de todas las transacciones API",
+          "✅ Sandbox mode para testing de TPPs",
+          "✅ Strong Customer Authentication (SCA) integrado",
+          "✅ Cumplimiento AFA (Andorra) y BdE (España)",
+          "✅ CORS configurado para TPPs autorizados"
+        ]
+      },
+      {
         category: "security",
         title: "✅ Reforzar seguridad con OWASP Top 10 2024 y PSD3 (IMPLEMENTADO 100%)",
         description: "Programa de seguridad proactivo basado en OWASP Top 10 2024 con protección contra API Security Risks, Supply Chain Attacks, Identity and Authentication Failures. Autenticación y gestión de transacciones adaptadas a PSD3 para transacciones bancarias, incluyendo Strong Customer Authentication (SCA) y seguridad de Open APIs.",
