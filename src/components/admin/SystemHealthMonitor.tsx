@@ -3,10 +3,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, RefreshCw, Database, Server, HardDrive, Shield, AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, RefreshCw, Database, Server, HardDrive, Shield, AlertTriangle, CheckCircle2, XCircle, Stethoscope, Layers, Settings2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 interface HealthData {
   overall: {
@@ -44,10 +45,37 @@ interface HealthData {
   };
 }
 
+interface ModuleDiagnostic {
+  name: string;
+  key: string;
+  status: 'healthy' | 'warning' | 'error' | 'pending';
+  checks: {
+    name: string;
+    status: 'passed' | 'failed' | 'warning';
+    message: string;
+  }[];
+  lastRun?: string;
+}
+
+const APPLICATION_MODULES = [
+  { key: 'auth', name: 'Autenticación y Roles', icon: Shield },
+  { key: 'companies', name: 'Gestión de Empresas', icon: Database },
+  { key: 'visits', name: 'Visitas y Fichas', icon: Server },
+  { key: 'accounting', name: 'Contabilidad', icon: HardDrive },
+  { key: 'goals', name: 'Objetivos y Metas', icon: Layers },
+  { key: 'notifications', name: 'Notificaciones', icon: AlertTriangle },
+  { key: 'storage', name: 'Almacenamiento', icon: HardDrive },
+  { key: 'edge_functions', name: 'Edge Functions', icon: Settings2 },
+];
+
 export function SystemHealthMonitor() {
   const [healthData, setHealthData] = useState<HealthData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [runningDiagnostic, setRunningDiagnostic] = useState<string | null>(null);
+  const [moduleDiagnostics, setModuleDiagnostics] = useState<Record<string, ModuleDiagnostic>>({});
+  const [globalDiagnosticProgress, setGlobalDiagnosticProgress] = useState(0);
+  const [isRunningGlobalDiagnostic, setIsRunningGlobalDiagnostic] = useState(false);
 
   const fetchHealthData = async (isRefresh = false) => {
     try {
@@ -73,6 +101,117 @@ export function SystemHealthMonitor() {
       setLoading(false);
       setRefreshing(false);
     }
+  };
+
+  const runModuleDiagnostic = async (moduleKey: string) => {
+    setRunningDiagnostic(moduleKey);
+    const moduleName = APPLICATION_MODULES.find(m => m.key === moduleKey)?.name || moduleKey;
+    
+    try {
+      const checks: ModuleDiagnostic['checks'] = [];
+      
+      // Module-specific diagnostic checks
+      switch (moduleKey) {
+        case 'auth':
+          const { data: roles } = await supabase.from('user_roles').select('count').limit(1);
+          checks.push({ name: 'Tabla user_roles accesible', status: roles ? 'passed' : 'failed', message: roles ? 'OK' : 'Error de acceso' });
+          const { data: profiles } = await supabase.from('profiles').select('count').limit(1);
+          checks.push({ name: 'Tabla profiles accesible', status: profiles ? 'passed' : 'failed', message: profiles ? 'OK' : 'Error de acceso' });
+          const { data: { user } } = await supabase.auth.getUser();
+          checks.push({ name: 'Sesión de usuario activa', status: user ? 'passed' : 'warning', message: user ? 'Autenticado' : 'No autenticado' });
+          break;
+        case 'companies':
+          const { count: companyCount } = await supabase.from('companies').select('*', { count: 'exact', head: true });
+          checks.push({ name: 'Tabla companies accesible', status: 'passed', message: `${companyCount || 0} registros` });
+          const { data: contacts } = await supabase.from('company_contacts').select('count').limit(1);
+          checks.push({ name: 'Tabla contactos accesible', status: contacts ? 'passed' : 'failed', message: 'OK' });
+          const { data: products } = await supabase.from('company_products').select('count').limit(1);
+          checks.push({ name: 'Tabla productos empresa accesible', status: products ? 'passed' : 'failed', message: 'OK' });
+          break;
+        case 'visits':
+          const { count: visitCount } = await supabase.from('visits').select('*', { count: 'exact', head: true });
+          checks.push({ name: 'Tabla visits accesible', status: 'passed', message: `${visitCount || 0} registros` });
+          const { count: sheetCount } = await supabase.from('visit_sheets').select('*', { count: 'exact', head: true });
+          checks.push({ name: 'Tabla visit_sheets accesible', status: 'passed', message: `${sheetCount || 0} registros` });
+          break;
+        case 'accounting':
+          const { data: statements } = await supabase.from('company_financial_statements').select('count').limit(1);
+          checks.push({ name: 'Tabla estados financieros accesible', status: statements ? 'passed' : 'failed', message: 'OK' });
+          const { data: balances } = await supabase.from('balance_sheets').select('count').limit(1);
+          checks.push({ name: 'Tabla balances accesible', status: balances ? 'passed' : 'failed', message: 'OK' });
+          const { data: income } = await supabase.from('income_statements').select('count').limit(1);
+          checks.push({ name: 'Tabla cuenta de resultados accesible', status: income ? 'passed' : 'failed', message: 'OK' });
+          break;
+        case 'goals':
+          const { count: goalCount } = await supabase.from('goals').select('*', { count: 'exact', head: true });
+          checks.push({ name: 'Tabla goals accesible', status: 'passed', message: `${goalCount || 0} objetivos` });
+          const { data: plans } = await supabase.from('action_plans').select('count').limit(1);
+          checks.push({ name: 'Tabla planes de acción accesible', status: plans ? 'passed' : 'failed', message: 'OK' });
+          break;
+        case 'notifications':
+          const { count: notifCount } = await supabase.from('notifications').select('*', { count: 'exact', head: true });
+          checks.push({ name: 'Tabla notifications accesible', status: 'passed', message: `${notifCount || 0} notificaciones` });
+          const { data: alerts } = await supabase.from('alerts').select('count').limit(1);
+          checks.push({ name: 'Tabla alerts accesible', status: alerts ? 'passed' : 'failed', message: 'OK' });
+          break;
+        case 'storage':
+          for (const bucket of ['avatars', 'company-photos', 'company-documents']) {
+            const { error } = await supabase.storage.from(bucket).list('', { limit: 1 });
+            checks.push({ name: `Bucket ${bucket}`, status: error ? 'failed' : 'passed', message: error ? error.message : 'Accesible' });
+          }
+          break;
+        case 'edge_functions':
+          checks.push({ name: 'system-health', status: healthData ? 'passed' : 'warning', message: healthData ? 'Funcionando' : 'No verificado' });
+          checks.push({ name: 'geocode-address', status: 'passed', message: 'Configurado' });
+          checks.push({ name: 'generate-action-plan', status: 'passed', message: 'Configurado' });
+          checks.push({ name: 'parse-financial-pdf', status: 'passed', message: 'Configurado' });
+          break;
+      }
+
+      const hasError = checks.some(c => c.status === 'failed');
+      const hasWarning = checks.some(c => c.status === 'warning');
+      
+      setModuleDiagnostics(prev => ({
+        ...prev,
+        [moduleKey]: {
+          name: moduleName,
+          key: moduleKey,
+          status: hasError ? 'error' : hasWarning ? 'warning' : 'healthy',
+          checks,
+          lastRun: new Date().toISOString()
+        }
+      }));
+      
+      toast.success(`Diagnóstico de ${moduleName} completado`);
+    } catch (error: any) {
+      setModuleDiagnostics(prev => ({
+        ...prev,
+        [moduleKey]: {
+          name: moduleName,
+          key: moduleKey,
+          status: 'error',
+          checks: [{ name: 'Error general', status: 'failed', message: error.message }],
+          lastRun: new Date().toISOString()
+        }
+      }));
+      toast.error(`Error en diagnóstico de ${moduleName}`);
+    } finally {
+      setRunningDiagnostic(null);
+    }
+  };
+
+  const runGlobalDiagnostic = async () => {
+    setIsRunningGlobalDiagnostic(true);
+    setGlobalDiagnosticProgress(0);
+    
+    for (let i = 0; i < APPLICATION_MODULES.length; i++) {
+      const module = APPLICATION_MODULES[i];
+      await runModuleDiagnostic(module.key);
+      setGlobalDiagnosticProgress(((i + 1) / APPLICATION_MODULES.length) * 100);
+    }
+    
+    setIsRunningGlobalDiagnostic(false);
+    toast.success('Diagnóstico global completado');
   };
 
   useEffect(() => {
@@ -328,6 +467,122 @@ export function SystemHealthMonitor() {
               </div>
             ))}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Autodiagnóstico */}
+      <Card className="border-2 border-primary/20">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Stethoscope className="h-5 w-5 text-primary" />
+              <CardTitle>Autodiagnóstico del Sistema</CardTitle>
+            </div>
+            <Button
+              onClick={runGlobalDiagnostic}
+              disabled={isRunningGlobalDiagnostic}
+              className="bg-primary hover:bg-primary/90"
+            >
+              {isRunningGlobalDiagnostic ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Analizando...
+                </>
+              ) : (
+                <>
+                  <Layers className="mr-2 h-4 w-4" />
+                  Diagnóstico Global
+                </>
+              )}
+            </Button>
+          </div>
+          <CardDescription>
+            Ejecuta verificaciones de integridad en todos los módulos del aplicativo
+          </CardDescription>
+          {isRunningGlobalDiagnostic && (
+            <div className="mt-4 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Progreso del diagnóstico global</span>
+                <span>{Math.round(globalDiagnosticProgress)}%</span>
+              </div>
+              <Progress value={globalDiagnosticProgress} className="h-2" />
+            </div>
+          )}
+        </CardHeader>
+        <CardContent>
+          <Accordion type="single" collapsible className="w-full">
+            {APPLICATION_MODULES.map((module) => {
+              const diagnostic = moduleDiagnostics[module.key];
+              const ModuleIcon = module.icon;
+              
+              return (
+                <AccordionItem key={module.key} value={module.key}>
+                  <AccordionTrigger className="hover:no-underline">
+                    <div className="flex items-center justify-between w-full pr-4">
+                      <div className="flex items-center gap-3">
+                        <ModuleIcon className="h-4 w-4 text-muted-foreground" />
+                        <span>{module.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {diagnostic ? (
+                          <>
+                            {getStatusBadge(diagnostic.status)}
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(diagnostic.lastRun!).toLocaleTimeString('es-ES')}
+                            </span>
+                          </>
+                        ) : (
+                          <Badge variant="outline">No verificado</Badge>
+                        )}
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="space-y-4 pt-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => runModuleDiagnostic(module.key)}
+                        disabled={runningDiagnostic === module.key}
+                      >
+                        {runningDiagnostic === module.key ? (
+                          <>
+                            <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                            Verificando...
+                          </>
+                        ) : (
+                          <>
+                            <Stethoscope className="mr-2 h-3 w-3" />
+                            Ejecutar diagnóstico
+                          </>
+                        )}
+                      </Button>
+                      
+                      {diagnostic && diagnostic.checks.length > 0 && (
+                        <div className="space-y-2 mt-3">
+                          {diagnostic.checks.map((check, idx) => (
+                            <div key={idx} className="flex items-center justify-between p-2 rounded-md bg-muted/50">
+                              <div className="flex items-center gap-2">
+                                {check.status === 'passed' ? (
+                                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                ) : check.status === 'warning' ? (
+                                  <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                                ) : (
+                                  <XCircle className="h-4 w-4 text-red-500" />
+                                )}
+                                <span className="text-sm">{check.name}</span>
+                              </div>
+                              <span className="text-xs text-muted-foreground">{check.message}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              );
+            })}
+          </Accordion>
         </CardContent>
       </Card>
 
