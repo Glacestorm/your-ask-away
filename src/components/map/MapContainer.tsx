@@ -399,26 +399,34 @@ export function MapContainer({
           
           console.log('[Route] GeoJSON coordinates sample:', coords.slice(0, 3), '...', coords.slice(-2));
           
+          // Force move layers to absolute top
+          try {
+            mapInstance.moveLayer('route-line-outline');
+            mapInstance.moveLayer('route-line');
+            console.log('[Route] Moved route layers to top');
+          } catch (e) {
+            console.log('[Route] Could not move layers:', e);
+          }
+          
           console.log('[Route] Route layers added at TOP');
           
           // Verify after a delay and list ALL layers
           setTimeout(() => {
             const allLayersAfter = mapInstance.getStyle()?.layers || [];
-            console.log('[Route] ALL LAYERS after adding route:', allLayersAfter.map(l => `${l.id}(${l.type})`).join(', '));
+            console.log('[Route] ALL LAYERS:', allLayersAfter.map(l => l.id).join(', '));
             
             if (mapInstance.getSource('route-source')) {
               console.log('[Route] VERIFIED: source exists');
-              const src = mapInstance.getSource('route-source') as maplibregl.GeoJSONSource;
-              console.log('[Route] Source data:', src);
+              // Try to query the source data
+              const features = mapInstance.querySourceFeatures('route-source');
+              console.log('[Route] Source has', features.length, 'features');
             }
             if (mapInstance.getLayer('route-line')) {
-              console.log('[Route] VERIFIED: route-line layer exists');
-              const routeIndex = allLayersAfter.findIndex(l => l.id === 'route-line');
-              console.log('[Route] route-line is at layer index:', routeIndex, 'of', allLayersAfter.length);
+              console.log('[Route] VERIFIED: route-line layer exists at index', 
+                allLayersAfter.findIndex(l => l.id === 'route-line'), 'of', allLayersAfter.length);
               
-              // Check if layer is actually visible at current zoom
-              const visibility = mapInstance.getLayoutProperty('route-line', 'visibility');
-              console.log('[Route] route-line visibility:', visibility);
+              // Force repaint
+              mapInstance.triggerRepaint();
             }
           }, 500);
         }
