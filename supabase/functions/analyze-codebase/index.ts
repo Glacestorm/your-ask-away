@@ -300,13 +300,13 @@ function getDefaultAnalysis(componentsList: string[], hooksList: string[], edgeF
       },
       {
         name: "Módulo Contable PGC Andorra/España",
-        description: "Sistema contable completo PGC con análisis financiero avanzado DuPont, Z-Score, consolidación grupal.",
-        implementedFeatures: ["Balance completo", "Pérdidas y ganancias", "Flujos efectivo", "Consolidación 15 empresas", "DuPont", "Z-Score Altman", "EBIT/EBITDA", "Import PDF con IA"],
-        pendingFeatures: ["Export XBRL", "Integración contabilidad externa"],
-        completionPercentage: 95,
+        description: "Sistema contable completo PGC con análisis financiero avanzado DuPont, Z-Score, consolidación grupal, export XBRL y integración con sistemas contables externos.",
+        implementedFeatures: ["Balance completo", "Pérdidas y ganancias", "Flujos efectivo", "Consolidación 15 empresas", "DuPont", "Z-Score Altman", "EBIT/EBITDA", "Import PDF con IA", "Export XBRL", "Integración contabilidad externa"],
+        pendingFeatures: [],
+        completionPercentage: 100,
         files: componentsList?.filter((f: string) => f.includes('accounting')) || [],
         businessValue: "Ahorra 20+ horas/mes por analista",
-        differentiators: ["PGC Andorra nativo", "IA para PDF", "Consolidación integrada"]
+        differentiators: ["PGC Andorra nativo", "IA para PDF", "Consolidación integrada", "XBRL compatible", "API contabilidad externa"]
       },
       {
         name: "GIS Bancario Enterprise",
