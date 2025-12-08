@@ -399,21 +399,28 @@ export function MapContainer({
           
           console.log('[Route] GeoJSON coordinates sample:', coords.slice(0, 3), '...', coords.slice(-2));
           
-          console.log('[Route] Route layers added');
+          console.log('[Route] Route layers added at TOP');
           
-          // Verify after a delay
+          // Verify after a delay and list ALL layers
           setTimeout(() => {
+            const allLayersAfter = mapInstance.getStyle()?.layers || [];
+            console.log('[Route] ALL LAYERS after adding route:', allLayersAfter.map(l => `${l.id}(${l.type})`).join(', '));
+            
             if (mapInstance.getSource('route-source')) {
               console.log('[Route] VERIFIED: source exists');
+              const src = mapInstance.getSource('route-source') as maplibregl.GeoJSONSource;
+              console.log('[Route] Source data:', src);
             }
             if (mapInstance.getLayer('route-line')) {
               console.log('[Route] VERIFIED: route-line layer exists');
-              // Log the layer position
-              const layers = mapInstance.getStyle()?.layers || [];
-              const routeIndex = layers.findIndex(l => l.id === 'route-line');
-              console.log('[Route] route-line is at layer index:', routeIndex, 'of', layers.length);
+              const routeIndex = allLayersAfter.findIndex(l => l.id === 'route-line');
+              console.log('[Route] route-line is at layer index:', routeIndex, 'of', allLayersAfter.length);
+              
+              // Check if layer is actually visible at current zoom
+              const visibility = mapInstance.getLayoutProperty('route-line', 'visibility');
+              console.log('[Route] route-line visibility:', visibility);
             }
-          }, 300);
+          }, 500);
         }
       } catch (e) {
         console.error('[Route] Error adding route layers:', e);
@@ -521,24 +528,39 @@ export function MapContainer({
 
     const mapInstance = map.current;
 
-    // Draw route initially
-    drawRouteOnMap();
+    // Draw route initially with delay to ensure map is ready
+    const initialTimer = setTimeout(() => {
+      drawRouteOnMap();
+    }, 500);
 
     // Re-draw route when map style changes (layers get cleared on style change)
     const handleStyleLoad = () => {
       console.log('[Route] Style loaded/changed, redrawing route...');
-      // Small delay to ensure style is fully loaded
       setTimeout(() => {
         drawRouteOnMap();
-      }, 200);
+      }, 300);
+    };
+
+    // Also redraw when map finishes rendering (idle state)
+    const handleIdle = () => {
+      console.log('[Route] Map idle, checking route visibility...');
+      if (routePolyline && routeWaypoints && routeWaypoints.length > 0) {
+        if (!mapInstance.getLayer('route-line')) {
+          console.log('[Route] Route layer missing after idle, redrawing...');
+          drawRouteOnMap();
+        }
+      }
     };
 
     mapInstance.on('style.load', handleStyleLoad);
+    mapInstance.once('idle', handleIdle);
 
     return () => {
+      clearTimeout(initialTimer);
       mapInstance.off('style.load', handleStyleLoad);
+      mapInstance.off('idle', handleIdle);
     };
-  }, [mapLoaded, drawRouteOnMap]);
+  }, [mapLoaded, drawRouteOnMap, routePolyline, routeWaypoints]);
 
   // Fetch tooltip configuration
   useEffect(() => {
