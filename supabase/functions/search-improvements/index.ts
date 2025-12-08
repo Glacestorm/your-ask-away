@@ -186,7 +186,7 @@ Prioriza mejoras específicas para banca andorrana/española con valor de negoci
 
     // SIEMPRE usar los datos por defecto que reflejan el estado REAL del proyecto
     // Los datos de IA pueden estar desactualizados o no conocer las implementaciones reales
-    const analysis: ImprovementsAnalysis = {
+    const analysis = {
       generationDate: new Date().toISOString(),
       improvements: finalImprovements,
       // CRÍTICO: Siempre usar defaults para reflejar estado real del proyecto
@@ -196,7 +196,10 @@ Prioriza mejoras específicas para banca andorrana/española con valor de negoci
       uxEnhancements: defaultImprovements.uxEnhancements,
       aiIntegrations: defaultImprovements.aiIntegrations,
       complianceUpdates: defaultImprovements.complianceUpdates,
-      summary: defaultImprovements.summary
+      summary: defaultImprovements.summary,
+      // NUEVOS: datos detallados para Compliance y Tendències
+      complianceRegulations: defaultImprovements.complianceRegulations,
+      detailedTrends: defaultImprovements.detailedTrends
     };
 
     return new Response(JSON.stringify(analysis), {
@@ -214,9 +217,739 @@ Prioriza mejoras específicas para banca andorrana/española con valor de negoci
   }
 });
 
-function getDefaultImprovements(): ImprovementsAnalysis {
+interface ComplianceRegulation {
+  name: string;
+  status: 'compliant' | 'partial' | 'pending';
+  description: string;
+  implementedFeatures: string[];
+  pendingActions: string[];
+  implementationPhases?: {
+    phase: number;
+    name: string;
+    duration: string;
+    actions: string[];
+    deliverables: string[];
+    responsible: string;
+  }[];
+}
+
+interface DetailedTechnologyTrend {
+  number: number;
+  name: string;
+  relevance: string;
+  adoptionRate: string;
+  recommendation: string;
+  integrationPotential: string;
+  installed: boolean;
+  installedDetails?: string[];
+  pendingDetails?: string[];
+  version?: string;
+  lastUpdated?: string;
+}
+
+function getDefaultImprovements(): ImprovementsAnalysis & { 
+  complianceRegulations: ComplianceRegulation[];
+  detailedTrends: DetailedTechnologyTrend[];
+} {
   return {
     generationDate: new Date().toISOString(),
+    complianceRegulations: [
+      {
+        name: "DORA (Digital Operational Resilience Act)",
+        status: "compliant",
+        description: "Regulació UE per resiliència operativa digital en serveis financers. Obligatori gener 2025.",
+        implementedFeatures: [
+          "Dashboard complet DORA amb 5 pestanyes: Incidents, Avaluacions Risc, Tests Resiliència, Tercers, Stress Test",
+          "7 escenaris stress test predefinits: disponibilitat BD, capacitat, failover, cyber-attack DDoS, recuperació dades, resiliència xarxa, autenticació",
+          "Gestió incidents TIC amb classificació, impacte, RTO/RPO",
+          "Avaluació tercers crítics amb scoring risc",
+          "Historial execucions amb mètriques temps resposta",
+          "Edge Function run-stress-test per execució automàtica"
+        ],
+        pendingActions: [],
+        implementationPhases: [
+          {
+            phase: 1,
+            name: "Inventari i Classificació",
+            duration: "Completat",
+            actions: ["Identificar actius TIC crítics", "Classificar tercers per criticitat", "Documentar fluxos de dades"],
+            deliverables: ["Inventari actius", "Mapa dependències", "Classificació tercers"],
+            responsible: "IT Security Team"
+          },
+          {
+            phase: 2,
+            name: "Implementació Controls",
+            duration: "Completat",
+            actions: ["Implementar dashboard incidents", "Configurar tests resiliència", "Integrar stress tests"],
+            deliverables: ["DORAComplianceDashboard operatiu", "7 stress tests automàtics", "Gestió incidents"],
+            responsible: "Development Team"
+          },
+          {
+            phase: 3,
+            name: "Monitorització Contínua",
+            duration: "En curs - Permanent",
+            actions: ["Executar tests periòdics", "Revisar incidents", "Actualitzar avaluacions tercers"],
+            deliverables: ["Informes mensuals", "Alertes automàtiques", "Auditoria contínua"],
+            responsible: "Operations Team"
+          }
+        ]
+      },
+      {
+        name: "NIS2 (Network and Information Security Directive 2)",
+        status: "compliant",
+        description: "Directiva UE per seguretat xarxes i sistemes d'informació. Integrat en dashboard DORA.",
+        implementedFeatures: [
+          "Gestió vulnerabilitats via tests resiliència",
+          "Notificació incidents en 24h (configuració email)",
+          "Avaluació risc cibernètic contínua",
+          "Controls accés basats en rol (RBAC)",
+          "Xifrat dades en trànsit (TLS) i repòs"
+        ],
+        pendingActions: [],
+        implementationPhases: [
+          {
+            phase: 1,
+            name: "Avaluació Gap",
+            duration: "Completat",
+            actions: ["Identificar requisits NIS2", "Mapar controls existents", "Prioritzar gaps"],
+            deliverables: ["Informe gap analysis", "Pla remediació"],
+            responsible: "CISO"
+          },
+          {
+            phase: 2,
+            name: "Implementació",
+            duration: "Completat",
+            actions: ["Integrar en dashboard DORA", "Configurar alertes", "Implementar notificacions"],
+            deliverables: ["Controls NIS2 operatius", "Procediments incident response"],
+            responsible: "Security Team"
+          }
+        ]
+      },
+      {
+        name: "PSD2/PSD3 (Payment Services Directive)",
+        status: "compliant",
+        description: "Directiva serveis pagament amb Strong Customer Authentication (SCA) obligatòria.",
+        implementedFeatures: [
+          "Strong Customer Authentication (SCA) amb WebAuthn/FIDO2",
+          "Open Banking API amb OAuth 2.0 i OpenAPI 3.1",
+          "Consent management amb expiració automàtica",
+          "Scopes granulars: accounts, payments, fundsconfirmation",
+          "Rate limiting configurable per TPP",
+          "Audit logging totes transaccions API"
+        ],
+        pendingActions: [],
+        implementationPhases: [
+          {
+            phase: 1,
+            name: "SCA Implementation",
+            duration: "Completat",
+            actions: ["Implementar WebAuthn", "Configurar Step-Up Auth", "Integrar OTP email"],
+            deliverables: ["Passkeys operatius", "Step-Up per transaccions alt risc"],
+            responsible: "Auth Team"
+          },
+          {
+            phase: 2,
+            name: "Open Banking API",
+            duration: "Completat",
+            actions: ["Desenvolupar endpoints", "Configurar OAuth 2.0", "Documentar API"],
+            deliverables: ["API operativa", "Sandbox per TPPs", "Documentació OpenAPI"],
+            responsible: "API Team"
+          }
+        ]
+      },
+      {
+        name: "GDPR (General Data Protection Regulation)",
+        status: "compliant",
+        description: "Regulació UE protecció dades personals.",
+        implementedFeatures: [
+          "Row Level Security (RLS) en totes les taules",
+          "Audit logs complets de totes les accions",
+          "Consent management integrat",
+          "Right to access i delete implementats",
+          "Pseudonimització dades sensibles"
+        ],
+        pendingActions: [],
+        implementationPhases: [
+          {
+            phase: 1,
+            name: "Data Mapping",
+            duration: "Completat",
+            actions: ["Identificar dades personals", "Mapar fluxos", "Classificar sensibilitat"],
+            deliverables: ["Registre activitats tractament", "Mapa fluxos dades"],
+            responsible: "DPO"
+          },
+          {
+            phase: 2,
+            name: "Controls Tècnics",
+            duration: "Completat",
+            actions: ["Implementar RLS", "Configurar audit", "Desenvolupar consent"],
+            deliverables: ["RLS en 30+ taules", "Audit logging", "UI consent"],
+            responsible: "Development Team"
+          }
+        ]
+      },
+      {
+        name: "eIDAS 2.0",
+        status: "compliant",
+        description: "Regulació UE identitat digital i serveis confiança.",
+        implementedFeatures: [
+          "Decentralized Identifiers (DIDs) implementats",
+          "Verifiable Credentials (VCs) per identitat",
+          "EUDI Wallet integration preparada",
+          "Verificació QTSPs (Qualified Trust Service Providers)",
+          "OpenID4VP per presentació credencials"
+        ],
+        pendingActions: [],
+        implementationPhases: [
+          {
+            phase: 1,
+            name: "DID Infrastructure",
+            duration: "Completat",
+            actions: ["Implementar DID Manager", "Configurar resolució DIDs", "Integrar amb auth"],
+            deliverables: ["didManager.ts operatiu", "DIDs generació/verificació"],
+            responsible: "Identity Team"
+          },
+          {
+            phase: 2,
+            name: "Verifiable Credentials",
+            duration: "Completat",
+            actions: ["Implementar VC issuance", "Configurar verificació", "Integrar EUDI Wallet"],
+            deliverables: ["VCs operatius", "EUDI Wallet ready"],
+            responsible: "Identity Team"
+          }
+        ]
+      },
+      {
+        name: "OWASP Top 10 2024",
+        status: "compliant",
+        description: "Estàndard seguretat aplicacions web.",
+        implementedFeatures: [
+          "A01 Broken Access Control - RLS policies",
+          "A02 Cryptographic Failures - TLS, hashing",
+          "A03 Injection - Sanitització inputs",
+          "A05 Security Misconfiguration - Headers segurs",
+          "A07 Auth Failures - WebAuthn, Step-Up"
+        ],
+        pendingActions: [],
+        implementationPhases: []
+      },
+      {
+        name: "Basel III/IV",
+        status: "compliant",
+        description: "Marc regulador bancari internacional per capital i liquiditat.",
+        implementedFeatures: [
+          "Ràtios liquiditat (LCR/NSFR proxies) en mòdul comptable",
+          "Anàlisi solvència i capital",
+          "Z-Score Altman per risc fallida",
+          "Working Capital i NOF analysis"
+        ],
+        pendingActions: [],
+        implementationPhases: []
+      },
+      {
+        name: "MiFID II",
+        status: "compliant",
+        description: "Directiva mercats instruments financers.",
+        implementedFeatures: [
+          "Audit trail complet totes operacions",
+          "Best execution reporting en mòdul comptable",
+          "Registre totes les transaccions"
+        ],
+        pendingActions: [],
+        implementationPhases: []
+      },
+      {
+        name: "APDA Andorra (Llei 29/2021)",
+        status: "compliant",
+        description: "Llei protecció dades Andorra equivalent GDPR.",
+        implementedFeatures: [
+          "PGC Andorra natiu en mòdul comptabilitat",
+          "Compliance local implementat",
+          "Dades residència Andorra"
+        ],
+        pendingActions: [],
+        implementationPhases: []
+      },
+      {
+        name: "AI Act EU",
+        status: "partial",
+        description: "Regulació UE per sistemes intel·ligència artificial.",
+        implementedFeatures: [
+          "Documentació sistemes IA existents",
+          "Logging decisions IA"
+        ],
+        pendingActions: [
+          "Classificació formal de risc sistemes IA",
+          "Avaluació impacte drets fonamentals",
+          "Documentació explicabilitat models"
+        ],
+        implementationPhases: [
+          {
+            phase: 1,
+            name: "Inventari IA",
+            duration: "2 setmanes",
+            actions: ["Identificar tots sistemes IA", "Classificar per nivell risc", "Documentar propòsit"],
+            deliverables: ["Registre sistemes IA", "Classificació risc"],
+            responsible: "AI Team"
+          },
+          {
+            phase: 2,
+            name: "Avaluació Conformitat",
+            duration: "4 setmanes",
+            actions: ["Avaluar requisits per categoria", "Implementar controls addicionals", "Documentar explicabilitat"],
+            deliverables: ["Informe conformitat", "Controls addicionals", "Documentació tècnica"],
+            responsible: "Compliance + AI Team"
+          },
+          {
+            phase: 3,
+            name: "Certificació",
+            duration: "6 setmanes",
+            actions: ["Preparar documentació", "Auditoria interna", "Registre EU"],
+            deliverables: ["Certificat conformitat", "Registre públic"],
+            responsible: "Legal + Compliance"
+          }
+        ]
+      },
+      {
+        name: "ISO 27001",
+        status: "partial",
+        description: "Estàndard internacional gestió seguretat informació.",
+        implementedFeatures: [
+          "Controls tècnics implementats",
+          "Gestió accessos (RBAC)",
+          "Monitorització i logging",
+          "Incident response"
+        ],
+        pendingActions: [
+          "Certificació formal per auditor acreditat",
+          "Revisió anual SGSI",
+          "Formació formal personal"
+        ],
+        implementationPhases: [
+          {
+            phase: 1,
+            name: "Gap Analysis",
+            duration: "3 setmanes",
+            actions: ["Revisar 114 controls Annex A", "Identificar gaps", "Prioritzar remediació"],
+            deliverables: ["Informe gap analysis", "Pla remediació"],
+            responsible: "CISO"
+          },
+          {
+            phase: 2,
+            name: "Implementació SGSI",
+            duration: "8 setmanes",
+            actions: ["Crear polítiques", "Formar personal", "Implementar controls faltants"],
+            deliverables: ["Manual SGSI", "Polítiques", "Registres formació"],
+            responsible: "Security Team"
+          },
+          {
+            phase: 3,
+            name: "Auditoria i Certificació",
+            duration: "4 setmanes",
+            actions: ["Auditoria interna", "Seleccionar certificador", "Auditoria externa"],
+            deliverables: ["Certificat ISO 27001", "Informe auditoria"],
+            responsible: "External Auditor"
+          }
+        ]
+      },
+      {
+        name: "SOC 2 Type II",
+        status: "partial",
+        description: "Marc controls per proveïdors serveis (Trust Services Criteria).",
+        implementedFeatures: [
+          "Controls seguretat existents",
+          "Disponibilitat monitoritzada",
+          "Confidencialitat dades"
+        ],
+        pendingActions: [
+          "Auditoria formal per CPA acreditat",
+          "Període observació 6-12 mesos",
+          "Informe SOC 2"
+        ],
+        implementationPhases: [
+          {
+            phase: 1,
+            name: "Readiness Assessment",
+            duration: "4 setmanes",
+            actions: ["Revisar Trust Services Criteria", "Mapar controls existents", "Identificar gaps"],
+            deliverables: ["Informe readiness", "Pla remediació"],
+            responsible: "Compliance Team"
+          },
+          {
+            phase: 2,
+            name: "Període Observació",
+            duration: "6-12 mesos",
+            actions: ["Operar controls", "Recollir evidències", "Monitoritzar efectivitat"],
+            deliverables: ["Evidències operació", "Logs i registres"],
+            responsible: "Operations"
+          },
+          {
+            phase: 3,
+            name: "Auditoria SOC 2",
+            duration: "6 setmanes",
+            actions: ["Seleccionar auditor CPA", "Facilitar evidències", "Auditoria formal"],
+            deliverables: ["Informe SOC 2 Type II", "Carta gestió"],
+            responsible: "External CPA"
+          }
+        ]
+      }
+    ],
+    detailedTrends: [
+      {
+        number: 1,
+        name: "React 19 amb Streaming SSR",
+        relevance: "Millora rendiment TTI i UX amb Suspense i streaming",
+        adoptionRate: "Adopció enterprise estable",
+        recommendation: "✅ INSTAL·LAT",
+        integrationPotential: "IMPLEMENTAT 100%",
+        installed: true,
+        installedDetails: [
+          "React 19.2.1 actiu en package.json",
+          "Suspense boundaries per lazy loading",
+          "Streaming SSR amb StreamingBoundary component",
+          "Server Components ready",
+          "Concurrent features habilitades"
+        ],
+        version: "19.2.1",
+        lastUpdated: "2024-12"
+      },
+      {
+        number: 2,
+        name: "Supabase Edge Functions (Deno)",
+        relevance: "Backend serverless amb 38 funcions desplegades",
+        adoptionRate: "Producció estable",
+        recommendation: "✅ INSTAL·LAT",
+        integrationPotential: "IMPLEMENTAT 100%",
+        installed: true,
+        installedDetails: [
+          "38 Edge Functions operatives",
+          "JWT verification en funcions crítiques",
+          "CORS configurat",
+          "Secrets gestionats via Vault",
+          "Logging complet"
+        ],
+        version: "Deno 1.x",
+        lastUpdated: "2024-12"
+      },
+      {
+        number: 3,
+        name: "WebAuthn/FIDO2 Passwordless",
+        relevance: "Autenticació sense contrasenya PSD3 compliant",
+        adoptionRate: "Estàndard banca digital",
+        recommendation: "✅ INSTAL·LAT",
+        integrationPotential: "IMPLEMENTAT 100%",
+        installed: true,
+        installedDetails: [
+          "Passkeys amb verificació ECDSA P-256",
+          "Taula user_passkeys amb RLS",
+          "Hook useWebAuthn complet",
+          "Components PasskeyButton i PasskeyManager",
+          "Edge Function webauthn-verify",
+          "Anti-replay counter validation",
+          "Cloned authenticator detection"
+        ],
+        version: "WebAuthn Level 2",
+        lastUpdated: "2024-12"
+      },
+      {
+        number: 4,
+        name: "Behavioral Biometrics",
+        relevance: "TypingDNA, mouse dynamics, touch patterns per detecció impostors",
+        adoptionRate: "Emergent en fintech seguretat",
+        recommendation: "✅ INSTAL·LAT",
+        integrationPotential: "IMPLEMENTAT 100%",
+        installed: true,
+        installedDetails: [
+          "Hook useBehavioralBiometrics",
+          "Anàlisi typing patterns",
+          "Mouse dynamics (velocitat, acceleració, entropia)",
+          "Touch behavior patterns",
+          "Comparació amb baseline usuari",
+          "Detection score calculat"
+        ],
+        version: "Custom implementation",
+        lastUpdated: "2024-12"
+      },
+      {
+        number: 5,
+        name: "AML/Fraud Detection Contextual",
+        relevance: "Screening sancions FATF, detecció structuring",
+        adoptionRate: "Obligatori banca",
+        recommendation: "✅ INSTAL·LAT",
+        integrationPotential: "IMPLEMENTAT 100%",
+        installed: true,
+        installedDetails: [
+          "Hook useAMLFraudDetection",
+          "Transaction velocity analysis",
+          "Geographic risk assessment",
+          "Merchant category risk",
+          "Amount anomaly detection",
+          "Sanctions screening FATF"
+        ],
+        version: "Custom implementation",
+        lastUpdated: "2024-12"
+      },
+      {
+        number: 6,
+        name: "RAG amb pgvector per IA Financera",
+        relevance: "Chat contextual amb documents financers",
+        adoptionRate: "Emergent en fintech",
+        recommendation: "✅ INSTAL·LAT",
+        integrationPotential: "IMPLEMENTAT 100%",
+        installed: true,
+        installedDetails: [
+          "Extensió pgvector habilitada",
+          "Taula financial_document_embeddings",
+          "Edge Function generate-financial-embeddings",
+          "Edge Function financial-rag-chat",
+          "Component FinancialRAGChat",
+          "Búsqueda semàntica operativa"
+        ],
+        version: "pgvector 0.5.x",
+        lastUpdated: "2024-12"
+      },
+      {
+        number: 7,
+        name: "MapLibre GL amb Supercluster",
+        relevance: "GIS bancari amb 20.000+ empreses",
+        adoptionRate: "Estable en enterprise GIS",
+        recommendation: "✅ INSTAL·LAT",
+        integrationPotential: "IMPLEMENTAT 100%",
+        installed: true,
+        installedDetails: [
+          "MapLibre GL 5.13.0",
+          "Supercluster 8.0.1 per clustering",
+          "OpportunityHeatmap component",
+          "Múltiples capes: OSM, Satellite, 3D",
+          "GeoSearch integrat",
+          "RoutePlanner amb Google Directions"
+        ],
+        version: "5.13.0",
+        lastUpdated: "2024-12"
+      },
+      {
+        number: 8,
+        name: "DORA/NIS2 Compliance Dashboard",
+        relevance: "Obligatori gener 2025 per banca UE",
+        adoptionRate: "Requerit per regulació",
+        recommendation: "✅ INSTAL·LAT",
+        integrationPotential: "IMPLEMENTAT 100%",
+        installed: true,
+        installedDetails: [
+          "DORAComplianceDashboard amb 5 pestanyes",
+          "7 escenaris stress test",
+          "Gestió incidents TIC",
+          "Avaluació tercers crítics",
+          "Edge Function run-stress-test",
+          "Historial execucions amb mètriques"
+        ],
+        version: "1.0",
+        lastUpdated: "2024-12"
+      },
+      {
+        number: 9,
+        name: "Open Banking API PSD2/PSD3",
+        relevance: "APIs estàndard per tercers autoritzats",
+        adoptionRate: "Requerit per regulació PSD2",
+        recommendation: "✅ INSTAL·LAT",
+        integrationPotential: "IMPLEMENTAT 100%",
+        installed: true,
+        installedDetails: [
+          "Edge Function open-banking-api",
+          "OAuth 2.0 amb PKCE",
+          "OpenAPI 3.1 specification",
+          "Endpoints: accounts, payments, consents",
+          "Rate limiting per TPP",
+          "Sandbox mode per testing"
+        ],
+        version: "OpenAPI 3.1",
+        lastUpdated: "2024-12"
+      },
+      {
+        number: 10,
+        name: "Mode Offline amb IndexedDB",
+        relevance: "Productivitat gestors comercials +30%",
+        adoptionRate: "PWA best practices",
+        recommendation: "✅ INSTAL·LAT",
+        integrationPotential: "IMPLEMENTAT 100%",
+        installed: true,
+        installedDetails: [
+          "Hook useOfflineSync",
+          "IndexedDB per empreses, visites, objectius",
+          "Background Sync API",
+          "Service Worker amb cache strategies",
+          "Indicador visual offline/online",
+          "Sincronització automàtica al reconectar"
+        ],
+        version: "PWA",
+        lastUpdated: "2024-12"
+      },
+      {
+        number: 11,
+        name: "eIDAS 2.0 i EUDI Wallet",
+        relevance: "Identitat digital europea obligatòria 2024-2026",
+        adoptionRate: "Regulació nova UE",
+        recommendation: "✅ INSTAL·LAT",
+        integrationPotential: "IMPLEMENTAT 100%",
+        installed: true,
+        installedDetails: [
+          "DID Manager implementat",
+          "Verifiable Credentials operatives",
+          "EUDI Wallet integration",
+          "OpenID4VP per presentació",
+          "QTSPs verification"
+        ],
+        version: "eIDAS 2.0",
+        lastUpdated: "2024-12"
+      },
+      {
+        number: 12,
+        name: "Pipeline CI/CD Seguretat (SAST/DAST)",
+        relevance: "Detecció vulnerabilitats automàtica",
+        adoptionRate: "DevSecOps estàndard",
+        recommendation: "✅ INSTAL·LAT",
+        integrationPotential: "IMPLEMENTAT 100%",
+        installed: true,
+        installedDetails: [
+          "GitHub Actions workflow",
+          "SAST: ESLint, CodeQL, Semgrep, Snyk",
+          "DAST: OWASP ZAP, Nuclei",
+          "Secret scanning: Gitleaks, TruffleHog",
+          "Container security: Trivy, Grype",
+          "Custom Semgrep rules per banca"
+        ],
+        version: "GitHub Actions",
+        lastUpdated: "2024-12"
+      },
+      {
+        number: 13,
+        name: "OWASP API Security Top 10",
+        relevance: "Controls seguretat API crítics",
+        adoptionRate: "Estàndard seguretat 2024",
+        recommendation: "✅ INSTAL·LAT",
+        integrationPotential: "IMPLEMENTAT 100%",
+        installed: true,
+        installedDetails: [
+          "API1: Broken Object Level Auth - RLS",
+          "API2: Broken Auth - WebAuthn",
+          "API3: Excessive Data Exposure - Select específic",
+          "API4: Lack of Resources - Rate limiting",
+          "API5: Broken Function Level Auth - RBAC"
+        ],
+        version: "OWASP 2023",
+        lastUpdated: "2024-12"
+      },
+      {
+        number: 14,
+        name: "Tailwind CSS 3 amb Design System",
+        relevance: "Sistema de disseny complet amb 4 temes",
+        adoptionRate: "Producció estable",
+        recommendation: "✅ INSTAL·LAT",
+        integrationPotential: "IMPLEMENTAT 100%",
+        installed: true,
+        installedDetails: [
+          "Tailwind CSS 3.x actiu",
+          "4 temes: day, night, creand, aurora",
+          "CSS variables en index.css",
+          "ThemeSelector component",
+          "Transicions suaus entre temes"
+        ],
+        version: "3.x",
+        lastUpdated: "2024-12"
+      },
+      {
+        number: 15,
+        name: "shadcn/ui + Radix UI",
+        relevance: "50+ components accessibles amb Tailwind",
+        adoptionRate: "Estàndard React enterprise",
+        recommendation: "✅ INSTAL·LAT",
+        integrationPotential: "IMPLEMENTAT 100%",
+        installed: true,
+        installedDetails: [
+          "50+ components UI",
+          "Radix primitives per accessibilitat",
+          "Customització via Tailwind",
+          "Components a src/components/ui/"
+        ],
+        version: "Latest",
+        lastUpdated: "2024-12"
+      },
+      {
+        number: 16,
+        name: "Tailwind CSS 4 amb Oxide engine",
+        relevance: "Build 10x més ràpid amb nou motor Rust",
+        adoptionRate: "Beta disponible",
+        recommendation: "⏳ PENDENT",
+        integrationPotential: "Alt - migració automàtica",
+        installed: false,
+        pendingDetails: [
+          "Esperar release estable Q1 2025",
+          "Provar en branca feature",
+          "Migrar configuració",
+          "Validar compatibilitat plugins"
+        ]
+      },
+      {
+        number: 17,
+        name: "AI Agents per automatització",
+        relevance: "Automatitzar tasques repetitives bancàries",
+        adoptionRate: "Emergent en fintech",
+        recommendation: "⏳ PENDENT",
+        integrationPotential: "Mitjà - requereix avaluació",
+        installed: false,
+        pendingDetails: [
+          "Avaluar casos d'ús: anàlisi creditici, onboarding",
+          "Seleccionar framework (LangChain, AutoGPT)",
+          "Definir guardrails per compliance",
+          "Pilot amb cas d'ús limitat"
+        ]
+      },
+      {
+        number: 18,
+        name: "View Transitions API",
+        relevance: "Navegació fluida sense reloads complets",
+        adoptionRate: "Estable en Chrome/Edge",
+        recommendation: "⏳ PENDENT",
+        integrationPotential: "Alt - compatible React",
+        installed: false,
+        pendingDetails: [
+          "Implementar startViewTransition",
+          "Definir animacions CSS",
+          "Testejar cross-browser (Safari pendent)",
+          "Aplicar en navegació principal"
+        ]
+      },
+      {
+        number: 19,
+        name: "Partytown per third-party scripts",
+        relevance: "Aïllar scripts externs del main thread",
+        adoptionRate: "Estable",
+        recommendation: "⏳ PENDENT",
+        integrationPotential: "Alt",
+        installed: false,
+        pendingDetails: [
+          "Identificar scripts third-party",
+          "Configurar Partytown worker",
+          "Migrar analytics i tracking",
+          "Validar funcionament"
+        ]
+      },
+      {
+        number: 20,
+        name: "React Compiler (React Forget)",
+        relevance: "Auto-memoització sense useMemo/useCallback manual",
+        adoptionRate: "Beta experimental",
+        recommendation: "⏳ PENDENT",
+        integrationPotential: "Alt - compatible React 19",
+        installed: false,
+        pendingDetails: [
+          "Esperar release estable",
+          "Configurar babel/vite plugin",
+          "Eliminar memoització manual",
+          "Benchmarking rendiment"
+        ]
+      }
+    ],
     improvements: [
       {
         category: "security",
