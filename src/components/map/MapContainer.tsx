@@ -290,7 +290,7 @@ export function MapContainer({
     }
   }, [focusCompanyId, companies, mapLoaded, view3D, onFocusCompanyHandled]);
 
-  // Effect to draw route polyline on map with HTML markers as fallback
+  // Effect to draw route polyline on map with HTML markers for waypoints
   useEffect(() => {
     const mapInstance = map.current;
     
@@ -320,8 +320,8 @@ export function MapContainer({
       }
     };
 
-    // If no polyline, just cleanup and exit
-    if (!routePolyline) {
+    // If no polyline or no waypoints, just cleanup and exit
+    if (!routePolyline || !routeWaypoints || routeWaypoints.length === 0) {
       cleanupLayers();
       cleanupMarkers();
       return;
@@ -339,8 +339,8 @@ export function MapContainer({
           return;
         }
 
-        console.log('Drawing route with', coords.length, 'coordinates');
-        console.log('First coord:', coords[0], 'Last coord:', coords[coords.length - 1]);
+        console.log('Drawing route with', coords.length, 'polyline points');
+        console.log('Waypoints:', routeWaypoints.map(w => `${w.name}: [${w.longitude}, ${w.latitude}]`));
 
         // Add route line source
         mapInstance.addSource(SOURCE_ID, {
@@ -367,48 +367,49 @@ export function MapContainer({
           type: 'line',
           source: SOURCE_ID,
           layout: { 'line-join': 'round', 'line-cap': 'round' },
-          paint: { 'line-color': '#4285F4', 'line-width': 5 }
+          paint: { 'line-color': '#4285F4', 'line-width': 6 }
         });
 
-        // Add HTML markers for start and end (these are always visible!)
-        const startEl = document.createElement('div');
-        startEl.innerHTML = `<div style="
-          width: 24px; height: 24px; 
-          background: #00C853; 
-          border: 3px solid white; 
-          border-radius: 50%; 
-          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-          display: flex; align-items: center; justify-content: center;
-          color: white; font-weight: bold; font-size: 12px;
-        ">A</div>`;
+        // Add numbered markers for each waypoint at THEIR ACTUAL COORDINATES
+        const createdMarkers: maplibregl.Marker[] = [];
         
-        const endEl = document.createElement('div');
-        endEl.innerHTML = `<div style="
-          width: 24px; height: 24px; 
-          background: #F44336; 
-          border: 3px solid white; 
-          border-radius: 50%; 
-          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-          display: flex; align-items: center; justify-content: center;
-          color: white; font-weight: bold; font-size: 12px;
-        ">B</div>`;
+        routeWaypoints.forEach((waypoint, index) => {
+          const isFirst = index === 0;
+          const isLast = index === routeWaypoints.length - 1;
+          const label = isFirst ? 'A' : isLast && routeWaypoints.length > 1 ? 'B' : String(index + 1);
+          const bgColor = isFirst ? '#00C853' : isLast && routeWaypoints.length > 1 ? '#F44336' : '#FF9800';
+          
+          const markerEl = document.createElement('div');
+          markerEl.innerHTML = `
+            <div style="
+              width: 28px; height: 28px; 
+              background: ${bgColor}; 
+              border: 3px solid white; 
+              border-radius: 50%; 
+              box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+              display: flex; align-items: center; justify-content: center;
+              color: white; font-weight: bold; font-size: 12px;
+              cursor: pointer;
+              z-index: 1000;
+            " title="${waypoint.name}">${label}</div>
+          `;
+          
+          // Use the WAYPOINT coordinates, not polyline coordinates!
+          const marker = new maplibregl.Marker({ element: markerEl })
+            .setLngLat([waypoint.longitude, waypoint.latitude])
+            .addTo(mapInstance);
+          
+          createdMarkers.push(marker);
+        });
 
-        const startMarker = new maplibregl.Marker({ element: startEl })
-          .setLngLat(coords[0] as [number, number])
-          .addTo(mapInstance);
-        
-        const endMarker = new maplibregl.Marker({ element: endEl })
-          .setLngLat(coords[coords.length - 1] as [number, number])
-          .addTo(mapInstance);
+        routeMarkersRef.current = createdMarkers;
 
-        routeMarkersRef.current = [startMarker, endMarker];
-
-        // Fit bounds
-        const lngs = coords.map(c => c[0]);
-        const lats = coords.map(c => c[1]);
+        // Fit bounds using waypoint coordinates
+        const allLngs = routeWaypoints.map(w => w.longitude);
+        const allLats = routeWaypoints.map(w => w.latitude);
         const bounds: [[number, number], [number, number]] = [
-          [Math.min(...lngs), Math.min(...lats)], 
-          [Math.max(...lngs), Math.max(...lats)]
+          [Math.min(...allLngs) - 0.01, Math.min(...allLats) - 0.01], 
+          [Math.max(...allLngs) + 0.01, Math.max(...allLats) + 0.01]
         ];
         
         mapInstance.fitBounds(bounds, { 
@@ -416,7 +417,7 @@ export function MapContainer({
           duration: 1000 
         });
 
-        console.log('Route drawn successfully!');
+        console.log('Route drawn successfully with', routeWaypoints.length, 'waypoint markers!');
       } catch (err) {
         console.error('Error drawing route:', err);
       }
@@ -438,7 +439,7 @@ export function MapContainer({
       cleanupLayers();
       cleanupMarkers();
     };
-  }, [routePolyline, mapLoaded]);
+  }, [routePolyline, routeWaypoints, mapLoaded]);
 
   // Fetch tooltip configuration
   useEffect(() => {
