@@ -780,40 +780,32 @@ function IncidentForm({ onSuccess }: { onSuccess: () => void }) {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <label className="text-sm font-medium">Tipo de incidente</label>
-          <Select 
+          <select 
             value={formData.incident_type} 
-            onValueChange={(v) => setFormData({...formData, incident_type: v})}
+            onChange={(e) => setFormData({...formData, incident_type: e.target.value})}
+            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="z-[9999] bg-popover">
-              <SelectItem value="cyber_attack">Ciberataque</SelectItem>
-              <SelectItem value="data_breach">Brecha de datos</SelectItem>
-              <SelectItem value="system_failure">Fallo de sistema</SelectItem>
-              <SelectItem value="third_party_incident">Incidente de terceros</SelectItem>
-              <SelectItem value="fraud">Fraude</SelectItem>
-              <SelectItem value="operational_disruption">Interrupción operativa</SelectItem>
-              <SelectItem value="other">Otro</SelectItem>
-            </SelectContent>
-          </Select>
+            <option value="cyber_attack">Ciberataque</option>
+            <option value="data_breach">Brecha de datos</option>
+            <option value="system_failure">Fallo de sistema</option>
+            <option value="third_party_incident">Incidente de terceros</option>
+            <option value="fraud">Fraude</option>
+            <option value="operational_disruption">Interrupción operativa</option>
+            <option value="other">Otro</option>
+          </select>
         </div>
         <div className="space-y-2">
           <label className="text-sm font-medium">Severidad</label>
-          <Select 
+          <select 
             value={formData.severity} 
-            onValueChange={(v) => setFormData({...formData, severity: v})}
+            onChange={(e) => setFormData({...formData, severity: e.target.value})}
+            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="z-[9999] bg-popover">
-              <SelectItem value="critical">Crítico</SelectItem>
-              <SelectItem value="high">Alto</SelectItem>
-              <SelectItem value="medium">Medio</SelectItem>
-              <SelectItem value="low">Bajo</SelectItem>
-            </SelectContent>
-          </Select>
+            <option value="critical">Crítico</option>
+            <option value="high">Alto</option>
+            <option value="medium">Medio</option>
+            <option value="low">Bajo</option>
+          </select>
         </div>
       </div>
       <div className="space-y-2">
@@ -892,21 +884,17 @@ function RiskAssessmentForm({ onSuccess }: { onSuccess: () => void }) {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <label className="text-sm font-medium">Tipo</label>
-          <Select 
+          <select 
             value={formData.assessment_type} 
-            onValueChange={(v) => setFormData({...formData, assessment_type: v})}
+            onChange={(e) => setFormData({...formData, assessment_type: e.target.value})}
+            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="z-[9999] bg-popover">
-              <SelectItem value="ict_risk">Riesgo TIC</SelectItem>
-              <SelectItem value="third_party_risk">Riesgo de terceros</SelectItem>
-              <SelectItem value="operational_risk">Riesgo operacional</SelectItem>
-              <SelectItem value="cyber_risk">Riesgo cibernético</SelectItem>
-              <SelectItem value="compliance_risk">Riesgo de cumplimiento</SelectItem>
-            </SelectContent>
-          </Select>
+            <option value="ict_risk">Riesgo TIC</option>
+            <option value="third_party_risk">Riesgo de terceros</option>
+            <option value="operational_risk">Riesgo operacional</option>
+            <option value="cyber_risk">Riesgo cibernético</option>
+            <option value="compliance_risk">Riesgo de cumplimiento</option>
+          </select>
         </div>
         <div className="space-y-2">
           <label className="text-sm font-medium">Fecha</label>
@@ -987,24 +975,20 @@ function ResilienceTestForm({ onSuccess }: { onSuccess: () => void }) {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <label className="text-sm font-medium">Tipo</label>
-          <Select 
+          <select 
             value={formData.test_type} 
-            onValueChange={(v) => setFormData({...formData, test_type: v})}
+            onChange={(e) => setFormData({...formData, test_type: e.target.value})}
+            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="z-[9999] bg-popover">
-              <SelectItem value="penetration_test">Pentest</SelectItem>
-              <SelectItem value="red_team">Red Team</SelectItem>
-              <SelectItem value="blue_team">Blue Team</SelectItem>
-              <SelectItem value="purple_team">Purple Team</SelectItem>
-              <SelectItem value="vulnerability_scan">Escaneo de vulnerabilidades</SelectItem>
-              <SelectItem value="disaster_recovery">Disaster Recovery</SelectItem>
-              <SelectItem value="business_continuity">Continuidad de negocio</SelectItem>
-              <SelectItem value="tabletop_exercise">Ejercicio tabletop</SelectItem>
-            </SelectContent>
-          </Select>
+            <option value="penetration_test">Pentest</option>
+            <option value="red_team">Red Team</option>
+            <option value="blue_team">Blue Team</option>
+            <option value="purple_team">Purple Team</option>
+            <option value="vulnerability_scan">Escaneo de vulnerabilidades</option>
+            <option value="disaster_recovery">Disaster Recovery</option>
+            <option value="business_continuity">Continuidad de negocio</option>
+            <option value="tabletop_exercise">Ejercicio tabletop</option>
+          </select>
         </div>
         <div className="space-y-2">
           <label className="text-sm font-medium">Fecha</label>
@@ -1093,58 +1077,46 @@ function ThirdPartyProviderForm({ onSuccess }: { onSuccess: () => void }) {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <label className="text-sm font-medium">Tipo</label>
-          <Select 
+          <select 
             value={formData.provider_type} 
-            onValueChange={(v) => setFormData({...formData, provider_type: v})}
+            onChange={(e) => setFormData({...formData, provider_type: e.target.value})}
+            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="z-[9999] bg-popover">
-              <SelectItem value="cloud_service">Servicio cloud</SelectItem>
-              <SelectItem value="ict_service">Servicio TIC</SelectItem>
-              <SelectItem value="data_processor">Procesador de datos</SelectItem>
-              <SelectItem value="software_vendor">Proveedor software</SelectItem>
-              <SelectItem value="infrastructure">Infraestructura</SelectItem>
-              <SelectItem value="consulting">Consultoría</SelectItem>
-              <SelectItem value="other">Otro</SelectItem>
-            </SelectContent>
-          </Select>
+            <option value="cloud_service">Servicio cloud</option>
+            <option value="ict_service">Servicio TIC</option>
+            <option value="data_processor">Procesador de datos</option>
+            <option value="software_vendor">Proveedor software</option>
+            <option value="infrastructure">Infraestructura</option>
+            <option value="consulting">Consultoría</option>
+            <option value="other">Otro</option>
+          </select>
         </div>
         <div className="space-y-2">
           <label className="text-sm font-medium">Criticidad</label>
-          <Select 
+          <select 
             value={formData.criticality} 
-            onValueChange={(v) => setFormData({...formData, criticality: v})}
+            onChange={(e) => setFormData({...formData, criticality: e.target.value})}
+            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="z-[9999] bg-popover">
-              <SelectItem value="critical">Crítico</SelectItem>
-              <SelectItem value="important">Importante</SelectItem>
-              <SelectItem value="standard">Estándar</SelectItem>
-              <SelectItem value="low">Bajo</SelectItem>
-            </SelectContent>
-          </Select>
+            <option value="critical">Crítico</option>
+            <option value="important">Importante</option>
+            <option value="standard">Estándar</option>
+            <option value="low">Bajo</option>
+          </select>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <label className="text-sm font-medium">Nivel de acceso a datos</label>
-          <Select 
+          <select 
             value={formData.data_access_level} 
-            onValueChange={(v) => setFormData({...formData, data_access_level: v})}
+            onChange={(e) => setFormData({...formData, data_access_level: e.target.value})}
+            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="z-[9999] bg-popover">
-              <SelectItem value="full">Completo</SelectItem>
-              <SelectItem value="limited">Limitado</SelectItem>
-              <SelectItem value="none">Ninguno</SelectItem>
-            </SelectContent>
-          </Select>
+            <option value="full">Completo</option>
+            <option value="limited">Limitado</option>
+            <option value="none">Ninguno</option>
+          </select>
         </div>
         <div className="space-y-2">
           <label className="text-sm font-medium">Email de contacto</label>
