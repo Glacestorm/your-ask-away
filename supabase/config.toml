@@ -68,3 +68,9 @@ verify_jwt = true
 
 [functions.generate-ml-predictions]
 verify_jwt = true
+
+[functions.generate-financial-embeddings]
+verify_jwt = true
+
+[functions.financial-rag-chat]
+verify_jwt = true
