@@ -553,6 +553,14 @@ function getDefaultImprovements(): ImprovementsAnalysis {
         installed: true
       },
       {
+        name: "shadcn/ui + Radix UI Components",
+        relevance: "50+ components accessibles amb Tailwind",
+        adoptionRate: "Estàndard React enterprise",
+        recommendation: "INSTAL·LAT - Sistema UI complet",
+        integrationPotential: "IMPLEMENTAT 100%",
+        installed: true
+      },
+      {
         name: "Tailwind CSS 4 amb Oxide engine",
         relevance: "Build 10x més ràpid",
         adoptionRate: "Beta disponible",
@@ -582,6 +590,54 @@ function getDefaultImprovements(): ImprovementsAnalysis {
         adoptionRate: "Estable",
         recommendation: "Pendent - millorar Core Web Vitals",
         integrationPotential: "Alt",
+        installed: false
+      },
+      {
+        name: "Bun Runtime per Edge Functions",
+        relevance: "3x més ràpid que Node.js",
+        adoptionRate: "Emergent en serverless",
+        recommendation: "Pendent - avaluar compatibilitat Deno",
+        integrationPotential: "Mitjà - requereix migració",
+        installed: false
+      },
+      {
+        name: "React Compiler (React Forget)",
+        relevance: "Auto-memoització sense useMemo/useCallback",
+        adoptionRate: "Beta experimental",
+        recommendation: "Pendent - esperar release estable",
+        integrationPotential: "Alt - compatible React 19",
+        installed: false
+      },
+      {
+        name: "TanStack Router",
+        relevance: "Type-safe routing amb data loaders",
+        adoptionRate: "Creixent en enterprise",
+        recommendation: "Pendent - avaluar migració des de react-router",
+        integrationPotential: "Mitjà - requereix refactor",
+        installed: false
+      },
+      {
+        name: "Zustand per State Management",
+        relevance: "Alternativa lleugera a Redux/Context",
+        adoptionRate: "Popular en React",
+        recommendation: "Pendent - per estat global complex",
+        integrationPotential: "Alt - fàcil integració",
+        installed: false
+      },
+      {
+        name: "Million.js Virtual DOM Optimizer",
+        relevance: "10x faster rendering per llistes grans",
+        adoptionRate: "Emergent",
+        recommendation: "Pendent - optimitzar mapes i taules",
+        integrationPotential: "Alt - drop-in replacement",
+        installed: false
+      },
+      {
+        name: "Electric SQL per Sync Local-First",
+        relevance: "Sync en temps real amb SQLite local",
+        adoptionRate: "Emergent en offline-first",
+        recommendation: "Pendent - avaluar per mode offline avançat",
+        integrationPotential: "Mitjà - complement a IndexedDB",
         installed: false
       }
     ],
