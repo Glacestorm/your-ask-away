@@ -1470,12 +1470,17 @@ security/
         { num: '13', title: 'VIABILIDAD ESPAÑA Y EUROPA', page: 17 },
         { num: '13.1', title: 'Mercado Español', page: 18 },
         { num: '13.2', title: 'Mercado Europeo', page: 20 },
-        { num: '14', title: 'CLIENTES POTENCIALES', page: 22 },
-        { num: '15', title: 'INTEGRACIÓN TEMENOS', page: 26 },
-        { num: '16', title: 'DESGLOSE DE COSTES', page: 29 },
-        { num: '17', title: 'CONCLUSIONES', page: 32 },
-        { num: 'A', title: 'ANEXO: FUNCIONALIDADES PENDIENTES', page: 34 },
-        { num: 'B', title: 'ANEXO: HALLAZGOS SEGURIDAD', page: 35 },
+        { num: '13.3', title: 'MERCADO SUDAMERICANO (LATAM)', page: 22 },
+        { num: '13.3.1', title: 'Análisis Detallado por País LATAM', page: 24 },
+        { num: '13.3.2', title: 'Costes de Entrada LATAM', page: 26 },
+        { num: '13.3.3', title: 'Ahorro Clientes LATAM', page: 27 },
+        { num: '13.4', title: 'Otros Mercados Internacionales', page: 29 },
+        { num: '14', title: 'CLIENTES POTENCIALES', page: 31 },
+        { num: '15', title: 'INTEGRACIÓN TEMENOS', page: 35 },
+        { num: '16', title: 'DESGLOSE DE COSTES', page: 38 },
+        { num: '17', title: 'CONCLUSIONES', page: 41 },
+        { num: 'A', title: 'ANEXO: FUNCIONALIDADES PENDIENTES', page: 43 },
+        { num: 'B', title: 'ANEXO: HALLAZGOS SEGURIDAD', page: 44 },
       ];
 
       doc.setFontSize(9);
@@ -1659,6 +1664,120 @@ security/
         feasibility.europeanMarket.opportunities.forEach(opp => h.addBullet(opp, 3, '+'));
 
         h.addHighlightBox('Recomendación Europa', feasibility.europeanMarket.recommendation, 'info');
+      }
+
+      // 13.3 MERCADO SUDAMÉRICA
+      if (feasibility?.latamMarket) {
+        h.addNewPage();
+        h.addTitle('13.3 Mercado Sudamericano (LATAM)', 2);
+        h.addHighlightBox('Viabilidad', feasibility.latamMarket.viability, 'success');
+        h.addParagraph(`Tamaño de Mercado: ${feasibility.latamMarket.marketSize}`);
+        
+        h.addSubtitle('Países Objetivo Prioritarios');
+        h.addParagraph(feasibility.latamMarket.targetCountries.join(', '));
+        
+        h.addSubtitle('Marco Regulatorio');
+        feasibility.latamMarket.regulations.forEach(reg => h.addBullet(reg, 3, '📋'));
+        
+        h.addSubtitle('Oportunidades de Mercado');
+        feasibility.latamMarket.opportunities.forEach(opp => h.addBullet(opp, 3, '+'));
+
+        h.addHighlightBox('Recomendación LATAM', feasibility.latamMarket.recommendation, 'info');
+
+        // Tabla detallada por país LATAM
+        h.addNewPage();
+        h.addTitle('13.3.1 Análisis Detallado por País LATAM', 2);
+        
+        const latamCountryAnalysis = [
+          { country: 'México', population: '130M', banks: '52', opportunity: 'Alta', investment: '25.000€', timeline: '6 meses', notes: 'Banca móvil en expansión, regulación CNBV favorable' },
+          { country: 'Brasil', population: '215M', banks: '178', opportunity: 'Muy Alta', investment: '40.000€', timeline: '9 meses', notes: 'Mayor mercado LATAM, fintechs activas, BCB progresista' },
+          { country: 'Colombia', population: '52M', banks: '29', opportunity: 'Alta', investment: '18.000€', timeline: '4 meses', notes: 'Marco regulatorio moderno, Open Banking en desarrollo' },
+          { country: 'Chile', population: '19M', banks: '19', opportunity: 'Media-Alta', investment: '15.000€', timeline: '4 meses', notes: 'Mercado maduro, alta penetración digital' },
+          { country: 'Argentina', population: '46M', banks: '78', opportunity: 'Media', investment: '12.000€', timeline: '5 meses', notes: 'Volatilidad económica, oportunidad cooperativas' },
+          { country: 'Perú', population: '34M', banks: '17', opportunity: 'Media-Alta', investment: '14.000€', timeline: '4 meses', notes: 'Crecimiento fintech, regulación SBS favorable' },
+          { country: 'Uruguay', population: '3.5M', banks: '11', opportunity: 'Media', investment: '8.000€', timeline: '3 meses', notes: 'Hub fintech regional, regulación moderna' },
+          { country: 'Paraguay', population: '7M', banks: '17', opportunity: 'Media', investment: '8.000€', timeline: '3 meses', notes: 'Mercado en crecimiento, baja competencia' },
+        ];
+
+        h.addTable(
+          ['País', 'Población', 'Bancos', 'Oportunidad', 'Inversión', 'Timeline'],
+          latamCountryAnalysis.map(c => [c.country, c.population, c.banks, c.opportunity, c.investment, c.timeline]),
+          [30, 25, 22, 28, 30, 28]
+        );
+
+        h.addNewPage();
+        h.addTitle('13.3.2 Notas por País LATAM', 2);
+        latamCountryAnalysis.forEach(c => {
+          h.addBullet(`${c.country}: ${c.notes}`, 0, '🌎');
+        });
+
+        h.addTitle('13.3.3 Costes de Entrada LATAM', 2);
+        const latamEntryCosts = [
+          { concept: 'Localización idioma (español regional)', cost: '8.000€', notes: 'Adaptación terminología bancaria local' },
+          { concept: 'Compliance regulatorio por país', cost: '12.000€-25.000€/país', notes: 'Auditoría y certificación local' },
+          { concept: 'Adaptación contable local', cost: '15.000€/país', notes: 'PCGA locales vs PGC Andorra' },
+          { concept: 'Partner local / representante', cost: '3.000€-8.000€/mes', notes: 'Soporte comercial y técnico' },
+          { concept: 'Infraestructura cloud regional', cost: '500€-2.000€/mes', notes: 'AWS São Paulo / Azure Brasil' },
+          { concept: 'Marketing y eventos', cost: '15.000€-40.000€/año', notes: 'Ferias bancarias regionales' },
+        ];
+
+        h.addTable(
+          ['Concepto', 'Coste', 'Notas'],
+          latamEntryCosts.map(c => [c.concept, c.cost, c.notes]),
+          [60, 45, 65]
+        );
+
+        h.addHighlightBox('💰 INVERSIÓN TOTAL LATAM (3 países prioritarios)', 
+          'México + Colombia + Chile: 95.000€ - 150.000€ primer año | ROI esperado: 280% a 3 años | Time-to-market: 6-9 meses',
+          'warning');
+
+        // Ahorro para clientes LATAM
+        h.addNewPage();
+        h.addTitle('13.3.4 Ahorro para Clientes Bancarios LATAM', 2);
+        
+        const latamSavings = [
+          { type: 'Banco Comercial Mediano (México)', current: 850000, creand: 320000, savings: 530000, roi: 165, breakeven: 14 },
+          { type: 'Cooperativa Crédito (Colombia)', current: 380000, creand: 145000, savings: 235000, roi: 162, breakeven: 12 },
+          { type: 'Banco Digital (Brasil)', current: 620000, creand: 240000, savings: 380000, roi: 158, breakeven: 15 },
+          { type: 'Caja Rural (Chile)', current: 290000, creand: 115000, savings: 175000, roi: 152, breakeven: 11 },
+          { type: 'Fintech B2B (Argentina)', current: 280000, creand: 120000, savings: 160000, roi: 133, breakeven: 13 },
+          { type: 'Banca Privada (Uruguay)', current: 420000, creand: 160000, savings: 260000, roi: 163, breakeven: 10 },
+        ];
+
+        h.addTable(
+          ['Tipo Cliente LATAM', 'Coste Actual (5 años)', 'Coste Creand', 'Ahorro', 'ROI %', 'Breakeven'],
+          latamSavings.map(s => [
+            s.type,
+            `$${s.current.toLocaleString()} USD`,
+            `$${s.creand.toLocaleString()} USD`,
+            `$${s.savings.toLocaleString()} USD`,
+            `${s.roi}%`,
+            `${s.breakeven} meses`
+          ]),
+          [50, 35, 32, 35, 20, 28]
+        );
+
+        const totalLatamSavings = latamSavings.reduce((a, b) => a + b.savings, 0);
+        h.addHighlightBox('📊 AHORRO TOTAL POTENCIAL CLIENTES LATAM', 
+          `$${totalLatamSavings.toLocaleString()} USD en 5 años para 6 tipos de clientes típicos | Promedio ROI: ${Math.round(latamSavings.reduce((a, b) => a + b.roi, 0) / latamSavings.length)}%`,
+          'success');
+      }
+
+      // 13.4 OTROS MERCADOS INTERNACIONALES
+      if (feasibility?.otherMarkets && feasibility.otherMarkets.length > 0) {
+        h.addNewPage();
+        h.addTitle('13.4 Otros Mercados Internacionales', 2);
+        
+        feasibility.otherMarkets.forEach((market, idx) => {
+          h.checkPageBreak(40);
+          h.addSubtitle(`${market.region}`);
+          h.addHighlightBox('Viabilidad', market.viability, market.viability.includes('Alta') ? 'success' : 'info');
+          h.addParagraph(`Tamaño de Mercado: ${market.marketSize}`);
+          h.addParagraph(`Países: ${market.countries.join(', ')}`);
+          h.addSubtitle('Oportunidades');
+          market.opportunities.forEach(opp => h.addBullet(opp, 3, '+'));
+          h.currentY += 5;
+        });
       }
 
       if (feasibility?.implementationRisks) {
@@ -2730,12 +2849,65 @@ security/
           opportunities: ["Fragmentación mercado", "Open Banking"],
           recommendation: "Expansión gradual: Luxemburgo → Portugal → Francia."
         },
+        latamMarket: {
+          viability: "Alta - Mercado en expansión con baja penetración de CRM bancarios especializados",
+          targetCountries: ["México", "Brasil", "Colombia", "Chile", "Perú", "Argentina", "Uruguay", "Paraguay"],
+          regulations: [
+            "CNBV México - Regulación bancaria federal",
+            "BCB Brasil - Banco Central do Brasil + Open Banking Phase 4",
+            "SFC Colombia - Superintendencia Financiera + Sandbox regulatorio",
+            "CMF Chile - Comisión para el Mercado Financiero",
+            "BCRA Argentina - Banco Central República Argentina",
+            "SBS Perú - Superintendencia de Banca y Seguros",
+            "BCU Uruguay - Banco Central del Uruguay"
+          ],
+          opportunities: [
+            "Digitalización bancaria acelerada post-COVID con inversión 2.5B USD/año",
+            "Open Banking en expansión (Brasil líder mundial en adopción)",
+            "Fintechs creciendo 35% anual, necesitan CRM especializado",
+            "Baja competencia de CRM bancarios especializados locales",
+            "Cooperativas de crédito y cajas rurales sin digitalización",
+            "Banca privada creciente por wealth migration regional",
+            "Acuerdos comerciales Mercosur facilitan expansión",
+            "Idioma español (80% mercado) reduce costes localización"
+          ],
+          marketSize: "1.200M USD mercado CRM financiero LATAM (CAGR 18% 2024-2028)",
+          recommendation: "Estrategia hub: México como entrada (regulación CNBV favorable, proximidad USA) → Colombia (sandbox regulatorio progresista) → Chile (mercado maduro, alta penetración digital). Brasil requiere inversión mayor por portugués pero mayor potencial (40% mercado LATAM)."
+        },
+        otherMarkets: [
+          {
+            region: "Medio Oriente (GCC)",
+            viability: "Media - Mercado premium pero cultural complejo",
+            countries: ["UAE", "Arabia Saudita", "Qatar", "Bahréin", "Kuwait"],
+            opportunities: ["Banca islámica en crecimiento", "Altos márgenes", "Digitalización Vision 2030"],
+            marketSize: "350M USD CRM financiero GCC",
+            recommendation: "Entrada vía UAE como hub, partner local obligatorio, adaptación banca islámica"
+          },
+          {
+            region: "África Norte",
+            viability: "Media-Baja - Mercado emergente con potencial largo plazo",
+            countries: ["Marruecos", "Egipto", "Túnez"],
+            opportunities: ["Proximidad Europa", "Francés como idioma", "Banca móvil creciente"],
+            marketSize: "120M USD CRM financiero Magreb",
+            recommendation: "Marruecos primero por proximidad y regulación francesa, largo plazo 3-5 años"
+          },
+          {
+            region: "Asia-Pacífico (Tier 2)",
+            viability: "Baja - Competencia local fuerte",
+            countries: ["Filipinas", "Vietnam", "Indonesia"],
+            opportunities: ["Fintechs en auge", "Población joven bancarizable"],
+            marketSize: "800M USD pero dominado por vendors locales",
+            recommendation: "No prioritario, evaluar en 5+ años cuando mercados primarios consolidados"
+          }
+        ],
         implementationRisks: [
           { risk: "Rechazo tecnológico usuarios", probability: "Media", mitigation: "Change management + formación" },
-          { risk: "Integración legacy fallida", probability: "Baja", mitigation: "APIs REST + middleware" }
+          { risk: "Integración legacy fallida", probability: "Baja", mitigation: "APIs REST + middleware" },
+          { risk: "Volatilidad económica LATAM", probability: "Media-Alta", mitigation: "Pricing en USD, contratos cortos renovables" },
+          { risk: "Regulación local cambiante", probability: "Media", mitigation: "Partner local + auditoría regulatoria semestral" }
         ],
-        successFactors: ["Especialización bancaria demostrable", "Precio competitivo TCO"],
-        timeToMarket: "6-9 meses para mercado español"
+        successFactors: ["Especialización bancaria demostrable", "Precio competitivo TCO", "Partner local en cada país", "Soporte idioma nativo"],
+        timeToMarket: "6-9 meses para mercado español, 12-18 meses para LATAM (3 países)"
       },
       iso27001Compliance: {
         currentMaturity: 4,
