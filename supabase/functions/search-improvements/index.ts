@@ -139,14 +139,61 @@ Prioriza mejoras específicas para banca andorrana/española con valor de negoci
     let content = aiResponse.choices?.[0]?.message?.content || "";
     content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     
-    let analysis: ImprovementsAnalysis;
+    // Siempre usar las mejoras implementadas como base
+    const defaultImprovements = getDefaultImprovements();
+    
+    let aiAnalysis: ImprovementsAnalysis | null = null;
     try {
-      analysis = JSON.parse(content);
-      analysis.generationDate = new Date().toISOString();
+      aiAnalysis = JSON.parse(content);
     } catch (parseError) {
       console.error("Failed to parse AI response:", content);
-      analysis = getDefaultImprovements();
     }
+
+    // Combinar: mejoras implementadas primero + nuevas de IA que no estén ya implementadas
+    const implementedTitles = defaultImprovements.improvements
+      .filter(imp => imp.title.includes("IMPLEMENTADO"))
+      .map(imp => imp.title.toLowerCase().replace(/[✅🔄]/g, '').trim());
+    
+    let finalImprovements = [...defaultImprovements.improvements];
+    
+    if (aiAnalysis?.improvements) {
+      const newImprovements = aiAnalysis.improvements.filter(imp => {
+        const normalizedTitle = imp.title.toLowerCase().replace(/[✅🔄]/g, '').trim();
+        // No incluir si ya está implementado o es similar a algo implementado
+        const isAlreadyImplemented = implementedTitles.some(t => 
+          normalizedTitle.includes(t.substring(0, 20)) || 
+          t.includes(normalizedTitle.substring(0, 20)) ||
+          (normalizedTitle.includes('react 19') && t.includes('react 19')) ||
+          (normalizedTitle.includes('streaming') && t.includes('streaming')) ||
+          (normalizedTitle.includes('webauthn') && t.includes('webauthn')) ||
+          (normalizedTitle.includes('fido') && t.includes('fido')) ||
+          (normalizedTitle.includes('passwordless') && t.includes('passwordless')) ||
+          (normalizedTitle.includes('behavioral') && t.includes('behavioral')) ||
+          (normalizedTitle.includes('biometric') && t.includes('biometric')) ||
+          (normalizedTitle.includes('aml') && t.includes('aml')) ||
+          (normalizedTitle.includes('fraud') && t.includes('fraud')) ||
+          (normalizedTitle.includes('dora') && t.includes('dora')) ||
+          (normalizedTitle.includes('nis2') && t.includes('nis2')) ||
+          (normalizedTitle.includes('rag') && t.includes('rag')) ||
+          (normalizedTitle.includes('gis') && t.includes('gis')) ||
+          (normalizedTitle.includes('core web vitals') && t.includes('core web vitals'))
+        );
+        return !isAlreadyImplemented;
+      });
+      finalImprovements = [...finalImprovements, ...newImprovements];
+    }
+
+    const analysis: ImprovementsAnalysis = {
+      generationDate: new Date().toISOString(),
+      improvements: finalImprovements,
+      technologyTrends: aiAnalysis?.technologyTrends || defaultImprovements.technologyTrends,
+      securityUpdates: aiAnalysis?.securityUpdates || defaultImprovements.securityUpdates,
+      performanceOptimizations: aiAnalysis?.performanceOptimizations || defaultImprovements.performanceOptimizations,
+      uxEnhancements: aiAnalysis?.uxEnhancements || defaultImprovements.uxEnhancements,
+      aiIntegrations: aiAnalysis?.aiIntegrations || defaultImprovements.aiIntegrations,
+      complianceUpdates: aiAnalysis?.complianceUpdates || defaultImprovements.complianceUpdates,
+      summary: aiAnalysis?.summary || defaultImprovements.summary
+    };
 
     return new Response(JSON.stringify(analysis), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
