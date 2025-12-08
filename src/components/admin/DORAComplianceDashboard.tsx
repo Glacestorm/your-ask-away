@@ -1054,18 +1054,28 @@ function ThirdPartyProviderForm({ onSuccess }: { onSuccess: () => void }) {
     e.preventDefault();
     setSaving(true);
     
-    const { data: userData } = await supabase.auth.getUser();
-    
-    const { error } = await supabase.from('third_party_providers').insert({
-      ...formData,
-      created_by: userData.user?.id
-    });
-    
-    if (error) {
-      toast.error("Error al crear proveedor");
-    } else {
-      toast.success("Proveedor registrado");
-      onSuccess();
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      
+      const { error } = await supabase.from('third_party_providers').insert({
+        provider_name: formData.provider_name,
+        provider_type: formData.provider_type,
+        criticality: formData.criticality,
+        data_access_level: formData.data_access_level,
+        contact_email: formData.contact_email || null,
+        created_by: userData.user?.id
+      });
+      
+      if (error) {
+        console.error('Error creating provider:', error);
+        toast.error(`Error al crear proveedor: ${error.message}`);
+      } else {
+        toast.success("Proveedor registrado");
+        onSuccess();
+      }
+    } catch (err) {
+      console.error('Exception creating provider:', err);
+      toast.error("Error inesperado al crear proveedor");
     }
     setSaving(false);
   };
