@@ -232,7 +232,7 @@ export function AdminSidebar({
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       onClick={() => onSectionChange('administration')}
-                      isActive={isActive('administration') || isActive('users') || isActive('products') || isActive('tpv-goals') || isActive('bulk-goals') || isActive('goals-progress') || isActive('concepts') || isActive('templates') || isActive('colors') || isActive('alerts') || isActive('notifications') || isActive('map-config') || isActive('tpv')}
+                      isActive={isActive('administration') || isActive('users') || isActive('products') || isActive('tpv-goals') || isActive('bulk-goals') || isActive('goals-progress') || isActive('cascade-goals') || isActive('concepts') || isActive('templates') || isActive('colors') || isActive('alerts') || isActive('notifications') || isActive('map-config') || isActive('tpv')}
                       className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
                       tooltip={!open ? {
                         children: 'Admin',
