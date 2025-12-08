@@ -316,7 +316,7 @@ export function MapContainer({
         if (mapInstance.getLayer(OUTLINE_ID)) mapInstance.removeLayer(OUTLINE_ID);
         if (mapInstance.getSource(SOURCE_ID)) mapInstance.removeSource(SOURCE_ID);
       } catch (e) {
-        console.warn('Cleanup error:', e);
+        // Ignore cleanup errors
       }
     };
 
@@ -335,12 +335,8 @@ export function MapContainer({
         
         const coords = decodePolyline(routePolyline);
         if (coords.length < 2) {
-          console.warn('Not enough coordinates:', coords.length);
           return;
         }
-
-        console.log('Drawing route with', coords.length, 'polyline points');
-        console.log('Waypoints:', routeWaypoints.map(w => `${w.name}: [${w.longitude}, ${w.latitude}]`));
 
         // Add route line source
         mapInstance.addSource(SOURCE_ID, {
@@ -352,7 +348,7 @@ export function MapContainer({
           }
         });
 
-        // Outline layer (black border)
+        // Outline layer (dark border for visibility)
         mapInstance.addLayer({
           id: OUTLINE_ID,
           type: 'line',
@@ -372,29 +368,47 @@ export function MapContainer({
 
         // Add numbered markers for each waypoint at THEIR ACTUAL COORDINATES
         const createdMarkers: maplibregl.Marker[] = [];
+        const waypointCount = routeWaypoints.length;
         
         routeWaypoints.forEach((waypoint, index) => {
           const isFirst = index === 0;
-          const isLast = index === routeWaypoints.length - 1;
-          const label = isFirst ? 'A' : isLast && routeWaypoints.length > 1 ? 'B' : String(index + 1);
-          const bgColor = isFirst ? '#00C853' : isLast && routeWaypoints.length > 1 ? '#F44336' : '#FF9800';
+          const isLast = index === waypointCount - 1;
+          
+          // Labels: A for first, B for last, numbers for intermediate
+          let label: string;
+          if (isFirst) {
+            label = 'A';
+          } else if (isLast && waypointCount > 1) {
+            label = 'B';
+          } else {
+            label = String(index);
+          }
+          
+          // Colors: Green for A, Red for B, Orange for intermediate
+          let bgColor: string;
+          if (isFirst) {
+            bgColor = '#00C853'; // Green
+          } else if (isLast && waypointCount > 1) {
+            bgColor = '#F44336'; // Red
+          } else {
+            bgColor = '#FF9800'; // Orange
+          }
           
           const markerEl = document.createElement('div');
+          markerEl.style.cssText = 'z-index: 9999;';
           markerEl.innerHTML = `
             <div style="
-              width: 28px; height: 28px; 
+              width: 32px; height: 32px; 
               background: ${bgColor}; 
               border: 3px solid white; 
               border-radius: 50%; 
-              box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+              box-shadow: 0 3px 10px rgba(0,0,0,0.5);
               display: flex; align-items: center; justify-content: center;
-              color: white; font-weight: bold; font-size: 12px;
+              color: white; font-weight: bold; font-size: 14px;
               cursor: pointer;
-              z-index: 1000;
             " title="${waypoint.name}">${label}</div>
           `;
           
-          // Use the WAYPOINT coordinates, not polyline coordinates!
           const marker = new maplibregl.Marker({ element: markerEl })
             .setLngLat([waypoint.longitude, waypoint.latitude])
             .addTo(mapInstance);
@@ -404,27 +418,27 @@ export function MapContainer({
 
         routeMarkersRef.current = createdMarkers;
 
-        // Fit bounds using waypoint coordinates
-        const allLngs = routeWaypoints.map(w => w.longitude);
-        const allLats = routeWaypoints.map(w => w.latitude);
-        const bounds: [[number, number], [number, number]] = [
-          [Math.min(...allLngs) - 0.01, Math.min(...allLats) - 0.01], 
-          [Math.max(...allLngs) + 0.01, Math.max(...allLats) + 0.01]
-        ];
-        
-        mapInstance.fitBounds(bounds, { 
-          padding: { top: 100, bottom: 100, left: 100, right: 420 }, 
-          duration: 1000 
-        });
-
-        console.log('Route drawn successfully with', routeWaypoints.length, 'waypoint markers!');
+        // Fit bounds to show all waypoints
+        if (routeWaypoints.length > 0) {
+          const allLngs = routeWaypoints.map(w => w.longitude);
+          const allLats = routeWaypoints.map(w => w.latitude);
+          const bounds: [[number, number], [number, number]] = [
+            [Math.min(...allLngs) - 0.01, Math.min(...allLats) - 0.01], 
+            [Math.max(...allLngs) + 0.01, Math.max(...allLats) + 0.01]
+          ];
+          
+          mapInstance.fitBounds(bounds, { 
+            padding: { top: 100, bottom: 100, left: 100, right: 450 }, 
+            duration: 1000 
+          });
+        }
       } catch (err) {
         console.error('Error drawing route:', err);
       }
     };
 
-    // Execute after ensuring map is ready
-    const tryDraw = () => {
+    // Execute after ensuring map style is loaded
+    const executeDrawRoute = () => {
       if (mapInstance.isStyleLoaded()) {
         drawRoute();
       } else {
@@ -432,12 +446,25 @@ export function MapContainer({
       }
     };
 
-    // Small delay to ensure everything is ready
-    setTimeout(tryDraw, 100);
+    // Initial draw
+    executeDrawRoute();
+
+    // Also listen for style changes to redraw route
+    const handleStyleData = () => {
+      // Small delay to ensure style is fully loaded
+      setTimeout(() => {
+        if (routePolyline && routeWaypoints && routeWaypoints.length > 0) {
+          drawRoute();
+        }
+      }, 100);
+    };
+    
+    mapInstance.on('styledata', handleStyleData);
 
     return () => {
       cleanupLayers();
       cleanupMarkers();
+      mapInstance.off('styledata', handleStyleData);
     };
   }, [routePolyline, routeWaypoints, mapLoaded]);
 
@@ -783,88 +810,8 @@ export function MapContainer({
       // Re-add 3D buildings layer after style change
       add3DBuildingsLayer(map.current);
       
-      // Re-add route layers if there's a current route
-      if (currentRoutePolylineRef.current && currentRoutePolylineRef.current.length > 0) {
-        const polyline = currentRoutePolylineRef.current;
-        const mapInstance = map.current;
-        const SOURCE_ID = 'route-line-source';
-        const LAYER_ID = 'route-line-layer';
-        const OUTLINE_ID = 'route-outline-layer';
-        
-        setTimeout(() => {
-          try {
-            // Clean up old markers
-            routeMarkersRef.current.forEach(m => m.remove());
-            routeMarkersRef.current = [];
-            
-            const coords = decodePolyline(polyline);
-            if (coords.length >= 2) {
-              // Add route line source
-              mapInstance.addSource(SOURCE_ID, {
-                type: 'geojson',
-                data: {
-                  type: 'Feature',
-                  properties: {},
-                  geometry: { type: 'LineString', coordinates: coords }
-                }
-              });
-
-              // Outline layer
-              mapInstance.addLayer({
-                id: OUTLINE_ID,
-                type: 'line',
-                source: SOURCE_ID,
-                layout: { 'line-join': 'round', 'line-cap': 'round' },
-                paint: { 'line-color': '#1a1a2e', 'line-width': 10 }
-              });
-
-              // Main route layer
-              mapInstance.addLayer({
-                id: LAYER_ID,
-                type: 'line',
-                source: SOURCE_ID,
-                layout: { 'line-join': 'round', 'line-cap': 'round' },
-                paint: { 'line-color': '#4285F4', 'line-width': 5 }
-              });
-
-              // Add HTML markers for start and end
-              const startEl = document.createElement('div');
-              startEl.innerHTML = `<div style="
-                width: 24px; height: 24px; 
-                background: #00C853; 
-                border: 3px solid white; 
-                border-radius: 50%; 
-                box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-                display: flex; align-items: center; justify-content: center;
-                color: white; font-weight: bold; font-size: 12px;
-              ">A</div>`;
-              
-              const endEl = document.createElement('div');
-              endEl.innerHTML = `<div style="
-                width: 24px; height: 24px; 
-                background: #F44336; 
-                border: 3px solid white; 
-                border-radius: 50%; 
-                box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-                display: flex; align-items: center; justify-content: center;
-                color: white; font-weight: bold; font-size: 12px;
-              ">B</div>`;
-
-              const startMarker = new maplibregl.Marker({ element: startEl })
-                .setLngLat(coords[0] as [number, number])
-                .addTo(mapInstance);
-              
-              const endMarker = new maplibregl.Marker({ element: endEl })
-                .setLngLat(coords[coords.length - 1] as [number, number])
-                .addTo(mapInstance);
-
-              routeMarkersRef.current = [startMarker, endMarker];
-            }
-          } catch (e) {
-            console.warn('Error re-adding route layers:', e);
-          }
-        }, 200);
-      }
+      // Re-add route - trigger re-render by forcing the route effect to run
+      // The main route effect will handle this automatically
     });
 
     map.current.easeTo({
