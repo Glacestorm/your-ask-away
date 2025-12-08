@@ -216,7 +216,7 @@ function getDefaultImprovements(): ImprovementsAnalysis {
     improvements: [
       {
         category: "ai",
-        title: "✅ RAG para documentos financieros (IMPLEMENTADO)",
+        title: "✅ RAG para documentos financieros (IMPLEMENTADO 100%)",
         description: "Sistema de Retrieval-Augmented Generation con pgvector para analizar y responder preguntas sobre documentos financieros usando IA contextual.",
         priority: "alta",
         effort: "Completado",
@@ -232,7 +232,7 @@ function getDefaultImprovements(): ImprovementsAnalysis {
       },
       {
         category: "security",
-        title: "✅ Autenticación Continua Adaptativa (IMPLEMENTADO)",
+        title: "✅ Autenticación Continua Adaptativa (IMPLEMENTADO 100%)",
         description: "Sistema de autenticación adaptativa que evalúa riesgo en tiempo real basándose en dispositivo, ubicación, patrones de uso y contexto de transacción, solicitando step-up auth cuando necesario.",
         priority: "alta",
         effort: "Completado",
@@ -243,8 +243,10 @@ function getDefaultImprovements(): ImprovementsAnalysis {
           "✅ Tablas: device_fingerprints, location_history, risk_assessments, auth_challenges, behavior_patterns",
           "✅ Edge Function: evaluate-session-risk (evaluación riesgo)",
           "✅ Edge Function: verify-step-up-challenge (verificación OTP)",
+          "✅ Edge Function: send-step-up-otp (envío OTP por email)",
           "✅ Hook React: useAdaptiveAuth",
-          "✅ UI: StepUpAuthDialog para desafíos"
+          "✅ UI: StepUpAuthDialog para desafíos",
+          "✅ UI: AdaptiveAuthDashboard para administración"
         ]
       },
       {
@@ -315,7 +317,7 @@ function getDefaultImprovements(): ImprovementsAnalysis {
       },
       {
         category: "performance",
-        title: "✅ Optimización del GIS Bancario con Streaming/Lazy Loading (IMPLEMENTADO)",
+        title: "✅ Optimización del GIS Bancario con Streaming/Lazy Loading (IMPLEMENTADO 100%)",
         description: "Carga diferida y optimizada del módulo GIS (MapLibre GL) utilizando React.lazy, Suspense y requestIdleCallback para mejorar TTI y LCP.",
         priority: "alta",
         effort: "Completado",
@@ -392,7 +394,7 @@ function getDefaultImprovements(): ImprovementsAnalysis {
       },
       {
         category: "compliance",
-        title: "✅ DORA/NIS2 Compliance con Stress Tests (IMPLEMENTADO)",
+        title: "✅ DORA/NIS2 Compliance con Stress Tests (IMPLEMENTADO 100%)",
         description: "Panel de cumplimiento normativo DORA y NIS2 completo con gestión de incidentes, pruebas de resiliencia, terceros TIC, y simulaciones de stress test automatizadas.",
         priority: "alta",
         effort: "Completado",
