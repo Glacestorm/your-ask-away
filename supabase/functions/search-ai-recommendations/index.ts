@@ -219,21 +219,40 @@ Prioriza:
 - Implementación con recursos limitados
 - Diferenciación competitiva`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-        max_tokens: 12000,
-      }),
-    });
+    // Add timeout to prevent hanging
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+    let response;
+    try {
+      response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt }
+          ],
+          max_tokens: 8000,
+        }),
+        signal: controller.signal,
+      });
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      console.error("Fetch error (timeout or network):", fetchError);
+      // Return defaults on timeout/network error
+      const defaults = getDefaultAIRecommendations();
+      console.log("Returning default recommendations due to fetch error");
+      return new Response(JSON.stringify(defaults), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       if (response.status === 429) {
@@ -250,54 +269,75 @@ Prioriza:
       }
       const errorText = await response.text();
       console.error("AI gateway error:", response.status, errorText);
-      throw new Error(`AI gateway error: ${response.status}`);
+      // Return defaults on gateway error
+      const defaults = getDefaultAIRecommendations();
+      console.log("Returning default recommendations due to gateway error");
+      return new Response(JSON.stringify(defaults), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    const aiResponse = await response.json();
+    let aiResponse;
+    try {
+      aiResponse = await response.json();
+    } catch (jsonError) {
+      console.error("Failed to parse AI gateway response:", jsonError);
+      const defaults = getDefaultAIRecommendations();
+      console.log("Returning default recommendations due to JSON parse error");
+      return new Response(JSON.stringify(defaults), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     let content = aiResponse.choices?.[0]?.message?.content || "";
     content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     
     let analysis: AIAnalysis;
     const defaults = getDefaultAIRecommendations();
     
-    try {
-      const parsed = JSON.parse(content);
-      
-      // Merge parsed data with defaults to ensure all arrays exist
-      analysis = {
-        generationDate: new Date().toISOString(),
-        executiveSummary: parsed.executiveSummary || defaults.executiveSummary,
-        aiRecommendations: Array.isArray(parsed.aiRecommendations) && parsed.aiRecommendations.length > 0 
-          ? parsed.aiRecommendations 
-          : defaults.aiRecommendations,
-        automationPlatforms: Array.isArray(parsed.automationPlatforms) && parsed.automationPlatforms.length > 0 
-          ? parsed.automationPlatforms 
-          : defaults.automationPlatforms,
-        securityGuidelines: Array.isArray(parsed.securityGuidelines) && parsed.securityGuidelines.length > 0 
-          ? parsed.securityGuidelines 
-          : defaults.securityGuidelines,
-        regulatoryCompliance: Array.isArray(parsed.regulatoryCompliance) && parsed.regulatoryCompliance.length > 0 
-          ? parsed.regulatoryCompliance 
-          : defaults.regulatoryCompliance,
-        competitorAnalysis: Array.isArray(parsed.competitorAnalysis) && parsed.competitorAnalysis.length > 0 
-          ? parsed.competitorAnalysis 
-          : defaults.competitorAnalysis,
-        bankingTrends: Array.isArray(parsed.bankingTrends) && parsed.bankingTrends.length > 0 
-          ? parsed.bankingTrends 
-          : defaults.bankingTrends,
-        implementationRoadmap: Array.isArray(parsed.implementationRoadmap) && parsed.implementationRoadmap.length > 0 
-          ? parsed.implementationRoadmap 
-          : defaults.implementationRoadmap,
-        automationManuals: Array.isArray(parsed.automationManuals) && parsed.automationManuals.length > 0 
-          ? parsed.automationManuals 
-          : defaults.automationManuals,
-      };
-      
-      console.log("AI recommendations parsed successfully, aiRecommendations count:", analysis.aiRecommendations?.length);
-      console.log("automationPlatforms count:", analysis.automationPlatforms?.length);
-    } catch (parseError) {
-      console.error("Failed to parse AI response, using defaults:", parseError);
+    if (!content) {
+      console.log("Empty AI response, using defaults");
       analysis = defaults;
+    } else {
+      try {
+        const parsed = JSON.parse(content);
+        
+        // Merge parsed data with defaults to ensure all arrays exist
+        analysis = {
+          generationDate: new Date().toISOString(),
+          executiveSummary: parsed.executiveSummary || defaults.executiveSummary,
+          aiRecommendations: Array.isArray(parsed.aiRecommendations) && parsed.aiRecommendations.length > 0 
+            ? parsed.aiRecommendations 
+            : defaults.aiRecommendations,
+          automationPlatforms: Array.isArray(parsed.automationPlatforms) && parsed.automationPlatforms.length > 0 
+            ? parsed.automationPlatforms 
+            : defaults.automationPlatforms,
+          securityGuidelines: Array.isArray(parsed.securityGuidelines) && parsed.securityGuidelines.length > 0 
+            ? parsed.securityGuidelines 
+            : defaults.securityGuidelines,
+          regulatoryCompliance: Array.isArray(parsed.regulatoryCompliance) && parsed.regulatoryCompliance.length > 0 
+            ? parsed.regulatoryCompliance 
+            : defaults.regulatoryCompliance,
+          competitorAnalysis: Array.isArray(parsed.competitorAnalysis) && parsed.competitorAnalysis.length > 0 
+            ? parsed.competitorAnalysis 
+            : defaults.competitorAnalysis,
+          bankingTrends: Array.isArray(parsed.bankingTrends) && parsed.bankingTrends.length > 0 
+            ? parsed.bankingTrends 
+            : defaults.bankingTrends,
+          implementationRoadmap: Array.isArray(parsed.implementationRoadmap) && parsed.implementationRoadmap.length > 0 
+            ? parsed.implementationRoadmap 
+            : defaults.implementationRoadmap,
+          automationManuals: Array.isArray(parsed.automationManuals) && parsed.automationManuals.length > 0 
+            ? parsed.automationManuals 
+            : defaults.automationManuals,
+        };
+        
+        console.log("AI recommendations parsed successfully, aiRecommendations count:", analysis.aiRecommendations?.length);
+        console.log("automationPlatforms count:", analysis.automationPlatforms?.length);
+      } catch (parseError) {
+        console.error("Failed to parse AI response content, using defaults:", parseError);
+        analysis = defaults;
+      }
     }
 
     console.log("AI recommendations generated successfully");
