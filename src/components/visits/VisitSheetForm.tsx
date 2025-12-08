@@ -587,9 +587,10 @@ export function VisitSheetForm({ visitId, companyId, open, onOpenChange, onSaved
               <TabsTrigger value="productos">Productos</TabsTrigger>
               <TabsTrigger value="evaluacion">Evaluación</TabsTrigger>
               <TabsTrigger value="seguimiento">Seguimiento</TabsTrigger>
-              <TabsTrigger value="extras" className="flex items-center gap-1">
+              <TabsTrigger value="extras" className="flex items-center gap-1 text-primary">
                 <PenTool className="h-3 w-3" />
-                Extras
+                <Camera className="h-3 w-3" />
+                <FileStack className="h-3 w-3" />
               </TabsTrigger>
             </TabsList>
 
