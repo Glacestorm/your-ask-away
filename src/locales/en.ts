@@ -1,4 +1,12 @@
 export default {
+  // Themes
+  'theme.day': 'Day',
+  'theme.night': 'Night',
+  'theme.creand': 'Creand',
+  'theme.aurora': 'Aurora',
+  'theme.system': 'System',
+  'theme.label': 'Theme',
+
   // Auth page
   'auth.title': 'Andorra Business Map',
   'auth.subtitle': 'Business management and visualization system',

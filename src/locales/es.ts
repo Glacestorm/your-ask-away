@@ -1,4 +1,12 @@
 export default {
+  // Themes
+  'theme.day': 'Día',
+  'theme.night': 'Noche',
+  'theme.creand': 'Creand',
+  'theme.aurora': 'Aurora',
+  'theme.system': 'Sistema',
+  'theme.label': 'Tema',
+
   // Auth page
   'auth.title': 'Mapa Empresarial Andorra',
   'auth.subtitle': 'Sistema de gestión y visualización de empresas',

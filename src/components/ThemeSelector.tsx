@@ -1,4 +1,4 @@
-import { Sun, Moon, Building2, Sparkles } from 'lucide-react';
+import { Sun, Moon, Building2, Sparkles, Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -9,19 +9,25 @@ import {
 import { useTheme, ThemeMode } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 
-const themes = [
-  { value: 'day' as ThemeMode, label: 'Día', icon: Sun },
-  { value: 'night' as ThemeMode, label: 'Noche', icon: Moon },
-  { value: 'creand' as ThemeMode, label: 'Creand', icon: Building2 },
-  { value: 'aurora' as ThemeMode, label: 'Aurora', icon: Sparkles },
+const themes: { value: ThemeMode; labelKey: string; icon: typeof Sun }[] = [
+  { value: 'system', labelKey: 'theme.system', icon: Monitor },
+  { value: 'day', labelKey: 'theme.day', icon: Sun },
+  { value: 'night', labelKey: 'theme.night', icon: Moon },
+  { value: 'creand', labelKey: 'theme.creand', icon: Building2 },
+  { value: 'aurora', labelKey: 'theme.aurora', icon: Sparkles },
 ];
 
 export function ThemeSelector() {
-  const { theme, setTheme } = useTheme();
+  const { theme, resolvedTheme, setTheme } = useTheme();
   const { t } = useLanguage();
 
-  const currentTheme = themes.find(t => t.value === theme) || themes[0];
-  const Icon = currentTheme.icon;
+  const currentTheme = themes.find(th => th.value === theme) || themes[0];
+  
+  // Show resolved theme icon when in system mode
+  const displayIcon = theme === 'system' 
+    ? (resolvedTheme === 'night' ? Moon : Sun)
+    : currentTheme.icon;
+  const Icon = displayIcon;
 
   return (
     <DropdownMenu>
@@ -30,7 +36,7 @@ export function ThemeSelector() {
           <Icon className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="bg-background border-border">
         {themes.map((themeOption) => {
           const ThemeIcon = themeOption.icon;
           return (
@@ -40,7 +46,7 @@ export function ThemeSelector() {
               className="cursor-pointer"
             >
               <ThemeIcon className="mr-2 h-4 w-4" />
-              {themeOption.label}
+              {t(themeOption.labelKey)}
               {theme === themeOption.value && (
                 <span className="ml-auto text-primary">✓</span>
               )}
