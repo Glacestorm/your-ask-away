@@ -94,9 +94,38 @@ interface PricingStrategy {
 interface FeasibilityAnalysis {
   spanishMarket: { viability: string; barriers: string[]; opportunities: string[]; competitors: string[]; marketSize: string; recommendation: string };
   europeanMarket: { viability: string; targetCountries: string[]; regulations: string[]; opportunities: string[]; recommendation: string };
+  latamMarket?: { viability: string; targetCountries: string[]; regulations: string[]; opportunities: string[]; marketSize: string; recommendation: string };
+  otherMarkets?: { region: string; viability: string; countries: string[]; opportunities: string[]; marketSize: string; recommendation: string }[];
   implementationRisks: { risk: string; probability: string; mitigation: string }[];
   successFactors: string[];
   timeToMarket: string;
+}
+
+interface ClientCostSavings {
+  clientType: string;
+  currentCost: number;
+  creandCost: number;
+  savings: number;
+  savingsPercentage: number;
+  breakEvenMonths: number;
+  roi5Years: number;
+  details: string;
+}
+
+interface MarketingPlan {
+  executiveSummary: string;
+  missionVision: { mission: string; vision: string };
+  swotAnalysis: { strengths: string[]; weaknesses: string[]; opportunities: string[]; threats: string[] };
+  targetSegments: { segment: string; size: string; penetration: string; priority: number }[];
+  positioningStrategy: string;
+  valuePropositions: { segment: string; proposition: string; keyBenefits: string[] }[];
+  pricingPsychology: { strategy: string; anchoring: string; bundling: string[] };
+  salesStrategy: { channel: string; approach: string; cycle: string; conversion: string }[];
+  marketingChannels: { channel: string; investment: string; expectedROI: string; timeline: string }[];
+  kpis: { metric: string; target: string; measurement: string }[];
+  budget: { category: string; amount: number; percentage: number }[];
+  timeline: { phase: string; duration: string; activities: string[]; milestones: string[] }[];
+  competitiveAdvantages: { advantage: string; impact: string; sustainability: string }[];
 }
 
 interface ISO27001Control {
@@ -213,6 +242,8 @@ interface CodebaseAnalysis {
   gapAnalysis?: GapAnalysis;
   temenosIntegration?: TemenosIntegration;
   projectCosts?: ProjectCosts;
+  clientCostSavings?: ClientCostSavings[];
+  marketingPlan?: MarketingPlan;
 }
 
 const COMPONENTS_LIST = [
@@ -331,7 +362,7 @@ const PAGES_LIST = [
   'MapView.tsx', 'NotFound.tsx', 'Profile.tsx', 'VisitSheets.tsx',
 ];
 
-type PDFPart = 'part1' | 'part2' | 'part3';
+type PDFPart = 'part1' | 'part2' | 'part3' | 'part4';
 
 export const DynamicTechnicalDocGenerator = () => {
   const [analyzing, setAnalyzing] = useState(false);
@@ -1883,16 +1914,16 @@ security/
 
       h.currentY += 10;
       h.addHighlightBox('DOCUMENTACIÓN COMPLETA', 
-        'Las 3 partes del documento contienen más de 100 páginas de análisis exhaustivo: Parte 1 (Resumen, Módulos, Marketing, Valoración), Parte 2 (TCO, Competidores, ISO 27001, Normativas), Parte 3 (BCP, Gap Analysis, Estrategia, Conclusiones).',
+        'Las 4 partes del documento contienen más de 140 páginas de análisis exhaustivo: Parte 1 (Resumen, Módulos, Valoración), Parte 2 (TCO, ISO 27001, Normativas), Parte 3 (BCP, Gap Analysis, Mercados Globales), Parte 4 (Marketing y Ventas).',
         'success');
 
       setProgress(100);
       
-      const filename = `CRM_Creand_PARTE3_BCP_Estrategia_v${analysis.version}_${new Date().toISOString().split('T')[0]}.pdf`;
+      const filename = `CRM_Creand_PARTE3_BCP_Mercados_v${analysis.version}_${new Date().toISOString().split('T')[0]}.pdf`;
       doc.save(filename);
       
       toast.success('Parte 3 generada', {
-        description: `${h.pageNumber} páginas - BCP, Gap Analysis, Estrategia, Conclusiones`,
+        description: `${h.pageNumber} páginas - BCP, Gap Analysis, Mercados Globales`,
       });
 
     } catch (error) {
@@ -1902,6 +1933,524 @@ security/
       setGeneratingPart(null);
     }
   };
+
+  // PART 4: Plan de Marketing y Ventas (~35 páginas)
+  const generatePart4 = async () => {
+    if (!analysis) return;
+    setGeneratingPart('part4');
+    setProgress(0);
+
+    try {
+      const doc = new jsPDF('p', 'mm', 'a4');
+      const h = createPDFHelpers(doc, analysis);
+
+      // PORTADA PARTE 4
+      setProgress(5);
+      doc.setFillColor(139, 69, 19);
+      doc.rect(0, 0, h.pageWidth, 90, 'F');
+      doc.setFillColor(160, 82, 45);
+      doc.rect(0, 60, h.pageWidth, 30, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(28);
+      doc.setFont('helvetica', 'bold');
+      doc.text('CRM BANCARIO CREAND', h.pageWidth / 2, 35, { align: 'center' });
+      
+      doc.setFontSize(14);
+      doc.text('PARTE 4: Plan de Marketing y Ventas', h.pageWidth / 2, 50, { align: 'center' });
+      
+      doc.setFontSize(18);
+      doc.text(`Versión ${analysis.version}`, h.pageWidth / 2, 75, { align: 'center' });
+      
+      doc.setTextColor(0, 0, 0);
+      h.currentY = 105;
+      
+      h.addHighlightBox('DOCUMENTO COMERCIAL SEDUCTOR', 
+        'Este documento presenta las ventajas competitivas, el ahorro de costes cuantificado, la estrategia de go-to-market y el plan de ventas diseñado para convencer a cualquier comprador potencial de la superioridad del CRM Bancario Creand.',
+        'success');
+
+      h.addPageNumber();
+
+      // ÍNDICE PARTE 4
+      h.addNewPage();
+      setProgress(8);
+      
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(139, 69, 19);
+      doc.text('ÍNDICE - PARTE 4', h.pageWidth / 2, h.currentY, { align: 'center' });
+      h.currentY += 12;
+      doc.setTextColor(0, 0, 0);
+
+      const indexItems = [
+        { num: '18', title: 'RESUMEN EJECUTIVO COMERCIAL', page: 3 },
+        { num: '19', title: 'ANÁLISIS DE AHORRO POR TIPO CLIENTE', page: 5 },
+        { num: '19.1', title: 'Bancos Retail Medianos', page: 6 },
+        { num: '19.2', title: 'Cooperativas de Crédito', page: 8 },
+        { num: '19.3', title: 'Banca Privada/Family Offices', page: 10 },
+        { num: '19.4', title: 'Fintechs B2B', page: 12 },
+        { num: '19.5', title: 'Cajas Rurales', page: 14 },
+        { num: '20', title: 'ANÁLISIS SWOT', page: 16 },
+        { num: '21', title: 'PROPUESTA DE VALOR POR SEGMENTO', page: 18 },
+        { num: '22', title: 'ESTRATEGIA DE PRICING', page: 20 },
+        { num: '23', title: 'CANALES DE VENTA', page: 22 },
+        { num: '24', title: 'PLAN DE MARKETING', page: 24 },
+        { num: '25', title: 'KPIs Y MÉTRICAS', page: 27 },
+        { num: '26', title: 'PRESUPUESTO MARKETING', page: 29 },
+        { num: '27', title: 'TIMELINE GO-TO-MARKET', page: 31 },
+        { num: '28', title: 'VENTAJAS COMPETITIVAS SOSTENIBLES', page: 33 },
+      ];
+
+      doc.setFontSize(9);
+      indexItems.forEach(item => {
+        doc.setFont('helvetica', 'bold');
+        doc.text(item.num, h.margin, h.currentY);
+        doc.text(item.title, h.margin + 12, h.currentY);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(0, 0, 0);
+        doc.text(String(item.page), h.pageWidth - h.margin, h.currentY, { align: 'right' });
+        h.currentY += 5.5;
+      });
+
+      h.addPageNumber();
+
+      // 18. RESUMEN EJECUTIVO COMERCIAL
+      h.addNewPage();
+      setProgress(15);
+      
+      h.addMainTitle('18. RESUMEN EJECUTIVO COMERCIAL');
+
+      const marketing = analysis.marketingPlan;
+      h.addParagraph(marketing?.executiveSummary || 'CRM Bancario Creand representa una oportunidad única en el mercado de software bancario: una solución enterprise con TCO 60-80% inferior a competidores, implementación 4-6x más rápida, y cumplimiento normativo ISO 27001/DORA/PSD3 integrado de serie. Diseñado específicamente para entidades bancarias de tamaño pequeño y mediano que buscan competir con los grandes sin los costes asociados.');
+
+      h.addHighlightBox('💰 PROPUESTA ECONÓMICA IRRESISTIBLE', 
+        `AHORRO MEDIO: 450.000€ a 5 años vs Salesforce FSC | ROI: 420% | Break-even: 18 meses | Implementación: 3 meses vs 18 meses competencia`,
+        'success');
+
+      h.addSubtitle('Por qué elegirnos');
+      const reasons = [
+        '✓ Único CRM bancario con contabilidad PGC Andorra/España NATIVA (no plugin)',
+        '✓ GIS enterprise para 20.000+ empresas SIN degradación de rendimiento',
+        '✓ WebAuthn/FIDO2 + Step-Up + AMA PSD3 integrados NATIVAMENTE',
+        '✓ DORA/NIS2 compliance con 7 stress tests AUTOMATIZADOS',
+        '✓ IA Gemini 2.5 para análisis financiero y parsing PDF INTELIGENTE',
+        '✓ Propiedad TOTAL del código sin vendor lock-in',
+        '✓ Soporte multi-idioma nativo (ES, CA, EN, FR)',
+      ];
+      reasons.forEach(r => h.addBullet(r, 0, ''));
+
+      // 19. ANÁLISIS DE AHORRO POR TIPO CLIENTE
+      h.addNewPage();
+      setProgress(25);
+      
+      h.addMainTitle('19. ANÁLISIS DE AHORRO POR TIPO CLIENTE');
+      
+      h.addParagraph('A continuación se presenta un análisis detallado del ahorro que cada tipo de cliente potencial obtendría al contratar CRM Bancario Creand versus su situación actual o alternativas del mercado.');
+
+      const costSavings = analysis.clientCostSavings || getDefaultCostSavings();
+      
+      // Tabla resumen
+      h.addHighlightBox('📊 RESUMEN AHORRO TODOS LOS CLIENTES', 
+        `Ahorro medio: ${Math.round(costSavings.reduce((a, c) => a + c.savingsPercentage, 0) / costSavings.length)}% | Ahorro total 5 años: ${costSavings.reduce((a, c) => a + c.savings, 0).toLocaleString()}€ (promedio por cliente)`,
+        'success');
+
+      h.addTable(
+        ['Tipo Cliente', 'Coste Actual', 'Coste Creand', 'Ahorro', '% Ahorro', 'ROI 5 Años'],
+        costSavings.map(c => [
+          c.clientType,
+          `${c.currentCost.toLocaleString()}€`,
+          `${c.creandCost.toLocaleString()}€`,
+          `${c.savings.toLocaleString()}€`,
+          `${c.savingsPercentage}%`,
+          `${c.roi5Years}%`
+        ]),
+        [40, 30, 30, 30, 20, 20]
+      );
+
+      // Detalle por cliente
+      costSavings.forEach((client, index) => {
+        h.addNewPage();
+        h.addTitle(`19.${index + 1} ${client.clientType}`, 2);
+        
+        h.addHighlightBox(`💵 AHORRO: ${client.savings.toLocaleString()}€ (${client.savingsPercentage}%)`, client.details, 'success');
+
+        h.addTable(['Métrica', 'Valor'], [
+          ['Coste Actual (5 años)', `${client.currentCost.toLocaleString()}€`],
+          ['Coste CRM Creand (5 años)', `${client.creandCost.toLocaleString()}€`],
+          ['AHORRO TOTAL', `${client.savings.toLocaleString()}€`],
+          ['Porcentaje Ahorro', `${client.savingsPercentage}%`],
+          ['Meses hasta Break-Even', `${client.breakEvenMonths} meses`],
+          ['ROI a 5 años', `${client.roi5Years}%`],
+        ], [80, 90]);
+
+        h.currentY += 5;
+        h.addSubtitle('Desglose del ahorro');
+        const desglose = [
+          `• Licencias: Ahorro ${Math.round(client.savings * 0.4).toLocaleString()}€ (licencia perpetua vs suscripción)`,
+          `• Implementación: Ahorro ${Math.round(client.savings * 0.25).toLocaleString()}€ (3 meses vs 12-18 meses)`,
+          `• Mantenimiento: Ahorro ${Math.round(client.savings * 0.2).toLocaleString()}€ (18% vs 25-30% anual)`,
+          `• Formación: Ahorro ${Math.round(client.savings * 0.1).toLocaleString()}€ (interfaz intuitiva)`,
+          `• Consultoría: Ahorro ${Math.round(client.savings * 0.05).toLocaleString()}€ (menor dependencia externa)`,
+        ];
+        desglose.forEach(d => h.addParagraph(d));
+      });
+
+      // 20. ANÁLISIS SWOT
+      h.addNewPage();
+      setProgress(40);
+      
+      h.addMainTitle('20. ANÁLISIS SWOT ESTRATÉGICO');
+
+      const swot = marketing?.swotAnalysis || {
+        strengths: ['TCO 60-80% inferior a competencia', 'Especialización bancaria exclusiva', 'Contabilidad PGC nativa', 'DORA/ISO 27001 integrado', 'Propiedad código total'],
+        weaknesses: ['Marca menos conocida que Salesforce', 'Equipo comercial pequeño', 'Sin app móvil nativa (aún)'],
+        opportunities: ['62 cooperativas España sin CRM especializado', 'DORA obligatorio enero 2025', 'Open Banking PSD3', 'Expansión Latam'],
+        threats: ['Competidores con más recursos marketing', 'Ciclos venta largos en banca', 'Resistencia al cambio']
+      };
+
+      h.addTitle('Fortalezas (Strengths)', 2);
+      doc.setFillColor(220, 252, 231);
+      doc.roundedRect(h.margin, h.currentY - 3, h.contentWidth, swot.strengths.length * 6 + 10, 2, 2, 'F');
+      swot.strengths.forEach(s => h.addBullet(s, 3, '✓'));
+
+      h.currentY += 5;
+      h.addTitle('Debilidades (Weaknesses)', 2);
+      doc.setFillColor(254, 226, 226);
+      doc.roundedRect(h.margin, h.currentY - 3, h.contentWidth, swot.weaknesses.length * 6 + 10, 2, 2, 'F');
+      swot.weaknesses.forEach(w => h.addBullet(w, 3, '○'));
+
+      h.addNewPage();
+      h.addTitle('Oportunidades (Opportunities)', 2);
+      doc.setFillColor(219, 234, 254);
+      doc.roundedRect(h.margin, h.currentY - 3, h.contentWidth, swot.opportunities.length * 6 + 10, 2, 2, 'F');
+      swot.opportunities.forEach(o => h.addBullet(o, 3, '★'));
+
+      h.currentY += 5;
+      h.addTitle('Amenazas (Threats)', 2);
+      doc.setFillColor(254, 249, 195);
+      doc.roundedRect(h.margin, h.currentY - 3, h.contentWidth, swot.threats.length * 6 + 10, 2, 2, 'F');
+      swot.threats.forEach(t => h.addBullet(t, 3, '⚠'));
+
+      // 21. PROPUESTA DE VALOR POR SEGMENTO
+      h.addNewPage();
+      setProgress(50);
+      
+      h.addMainTitle('21. PROPUESTA DE VALOR POR SEGMENTO');
+
+      const valueProps = marketing?.valuePropositions || [
+        { segment: 'Bancos Retail Medianos', proposition: 'Enterprise sin precio enterprise', keyBenefits: ['TCO 65% inferior', 'Implementación 4x más rápida', 'DORA compliance incluido'] },
+        { segment: 'Cooperativas de Crédito', proposition: 'Digitalización accesible', keyBenefits: ['Precio adaptado', 'Contabilidad PGC', 'Soporte en español'] },
+        { segment: 'Banca Privada', proposition: 'Exclusividad y control total', keyBenefits: ['Personalización completa', 'Código propietario', 'Sin vendor lock-in'] },
+        { segment: 'Fintechs B2B', proposition: 'Escala sin límites', keyBenefits: ['API-first', 'SaaS flexible', 'Integración rápida'] },
+      ];
+
+      valueProps.forEach(vp => {
+        h.checkPageBreak(40);
+        h.addTitle(vp.segment, 2);
+        h.addHighlightBox('💡 Propuesta', vp.proposition, 'info');
+        h.addSubtitle('Beneficios Clave');
+        vp.keyBenefits.forEach(b => h.addBullet(b, 3, '★'));
+        h.currentY += 5;
+      });
+
+      // 22. ESTRATEGIA DE PRICING
+      h.addNewPage();
+      setProgress(55);
+      
+      h.addMainTitle('22. ESTRATEGIA DE PRICING COMPETITIVO');
+
+      h.addHighlightBox('🎯 POSICIONAMIENTO PRECIO', 
+        'Premium asequible: Funcionalidades enterprise al 20-40% del precio de Salesforce/SAP, con propiedad total del código',
+        'success');
+
+      const pricingData = [
+        ['Licencia Perpetua (Recomendado)', '180.000€ - 350.000€', 'Propiedad total, amortización 3 años'],
+        ['SaaS Starter (25 usuarios)', '1.500€/mes', 'CRM + Dashboard + GIS'],
+        ['SaaS Professional (50 usuarios)', '4.500€/mes', '+ Contabilidad PGC + Alertas'],
+        ['SaaS Enterprise (100+ usuarios)', '8.000€/mes', 'Todas funcionalidades + SLA 99.9%'],
+        ['Mantenimiento Anual', '18% licencia', 'Actualizaciones + Soporte L2'],
+      ];
+
+      h.addTable(['Modelo', 'Precio', 'Incluye'], pricingData, [55, 50, 65]);
+
+      h.addSubtitle('Comparativa Precio vs Competencia');
+      h.addTable(
+        ['Competidor', 'Precio 50 usuarios/año', 'vs Creand'],
+        [
+          ['Salesforce FSC', '180.000€ - 360.000€', 'Creand 70% más barato'],
+          ['Microsoft Dynamics', '126.000€ - 216.000€', 'Creand 60% más barato'],
+          ['SAP Banking', '250.000€+', 'Creand 80% más barato'],
+          ['CRM Creand SaaS', '54.000€', 'REFERENCIA'],
+        ],
+        [55, 55, 60]
+      );
+
+      // 23. CANALES DE VENTA
+      h.addNewPage();
+      setProgress(60);
+      
+      h.addMainTitle('23. CANALES Y ESTRATEGIA DE VENTAS');
+
+      const salesChannels = marketing?.salesStrategy || [
+        { channel: 'Venta Directa', approach: 'Account-based marketing a bancos tier 2-3', cycle: '6-12 meses', conversion: '25%' },
+        { channel: 'Partners Consultoras', approach: 'Acuerdos con Big4 y boutiques bancarias', cycle: '3-6 meses', conversion: '35%' },
+        { channel: 'Eventos Sector', approach: 'Presencia en SIBOS, EBAday, Finovate', cycle: '9-15 meses', conversion: '15%' },
+        { channel: 'Inbound Digital', approach: 'SEO/SEM + Content Marketing especializado', cycle: '4-8 meses', conversion: '20%' },
+      ];
+
+      h.addTable(
+        ['Canal', 'Enfoque', 'Ciclo Venta', 'Conversión'],
+        salesChannels.map(c => [c.channel, c.approach, c.cycle, c.conversion]),
+        [40, 70, 30, 30]
+      );
+
+      h.addSubtitle('Estrategia por Canal');
+      salesChannels.forEach(c => {
+        h.addBullet(`${c.channel}: ${c.approach}. Ciclo: ${c.cycle}, conversión esperada: ${c.conversion}`, 0, '→');
+      });
+
+      // 24. PLAN DE MARKETING
+      h.addNewPage();
+      setProgress(70);
+      
+      h.addMainTitle('24. PLAN DE MARKETING DIGITAL');
+
+      const marketingChannels = marketing?.marketingChannels || [
+        { channel: 'LinkedIn Ads', investment: '24.000€/año', expectedROI: '350%', timeline: 'Continuo' },
+        { channel: 'Google Ads (sector)', investment: '18.000€/año', expectedROI: '280%', timeline: 'Continuo' },
+        { channel: 'Content Marketing', investment: '15.000€/año', expectedROI: '450%', timeline: '6-12 meses' },
+        { channel: 'Eventos Sector', investment: '40.000€/año', expectedROI: '200%', timeline: 'Trimestral' },
+        { channel: 'Webinars/Demos', investment: '8.000€/año', expectedROI: '500%', timeline: 'Mensual' },
+        { channel: 'PR Especializado', investment: '12.000€/año', expectedROI: '180%', timeline: 'Continuo' },
+      ];
+
+      h.addTable(
+        ['Canal', 'Inversión Anual', 'ROI Esperado', 'Timeline'],
+        marketingChannels.map(c => [c.channel, c.investment, c.expectedROI, c.timeline]),
+        [45, 40, 40, 45]
+      );
+
+      h.addHighlightBox('💰 INVERSIÓN TOTAL MARKETING', 
+        `${marketingChannels.reduce((a, c) => a + parseInt(c.investment.replace(/\D/g, '')), 0).toLocaleString()}€/año | ROI Promedio Esperado: ${Math.round(marketingChannels.reduce((a, c) => a + parseInt(c.expectedROI), 0) / marketingChannels.length)}%`,
+        'info');
+
+      // 25. KPIs
+      h.addNewPage();
+      setProgress(80);
+      
+      h.addMainTitle('25. KPIs Y MÉTRICAS DE ÉXITO');
+
+      const kpis = marketing?.kpis || [
+        { metric: 'Leads Cualificados/mes', target: '25-40', measurement: 'CRM + Analytics' },
+        { metric: 'Demos Realizadas/mes', target: '12-20', measurement: 'Calendario comercial' },
+        { metric: 'Propuestas Enviadas/mes', target: '8-15', measurement: 'Pipeline CRM' },
+        { metric: 'Tasa Conversión Lead→Cliente', target: '8-12%', measurement: 'Funnel análisis' },
+        { metric: 'Valor Medio Contrato', target: '85.000€-150.000€', measurement: 'Revenue tracking' },
+        { metric: 'Tiempo Medio Cierre', target: '4-8 meses', measurement: 'Sales cycle' },
+        { metric: 'NPS Clientes', target: '>70', measurement: 'Encuestas trimestrales' },
+        { metric: 'Churn Rate', target: '<5%', measurement: 'Retención anual' },
+      ];
+
+      h.addTable(
+        ['Métrica', 'Objetivo', 'Medición'],
+        kpis.map(k => [k.metric, k.target, k.measurement]),
+        [60, 50, 60]
+      );
+
+      // 26. PRESUPUESTO
+      h.addNewPage();
+      setProgress(85);
+      
+      h.addMainTitle('26. PRESUPUESTO MARKETING Y VENTAS');
+
+      const budget = marketing?.budget || [
+        { category: 'Publicidad Digital', amount: 42000, percentage: 28 },
+        { category: 'Eventos y Ferias', amount: 40000, percentage: 27 },
+        { category: 'Content Marketing', amount: 15000, percentage: 10 },
+        { category: 'Equipo Comercial', amount: 35000, percentage: 23 },
+        { category: 'Herramientas/CRM', amount: 8000, percentage: 5 },
+        { category: 'PR y Comunicación', amount: 10000, percentage: 7 },
+      ];
+
+      const totalBudget = budget.reduce((a, b) => a + b.amount, 0);
+
+      h.addTable(
+        ['Categoría', 'Presupuesto', '% del Total'],
+        budget.map(b => [b.category, `${b.amount.toLocaleString()}€`, `${b.percentage}%`]),
+        [70, 50, 50]
+      );
+
+      h.addHighlightBox('💶 PRESUPUESTO TOTAL ANUAL', 
+        `${totalBudget.toLocaleString()}€ | ROI Objetivo: 350% | Nuevos clientes objetivo: 8-12/año`,
+        'success');
+
+      // 27. TIMELINE
+      h.addNewPage();
+      setProgress(90);
+      
+      h.addMainTitle('27. TIMELINE GO-TO-MARKET');
+
+      const timeline = marketing?.timeline || [
+        { phase: 'Q1 2025', duration: '3 meses', activities: ['Lanzamiento campaña Andorra/España', 'Primeras demos'], milestones: ['5 leads cualificados', '2 propuestas'] },
+        { phase: 'Q2 2025', duration: '3 meses', activities: ['Expansión LinkedIn Ads', 'Primer evento SIBOS'], milestones: ['15 leads', '5 propuestas', '1-2 cierres'] },
+        { phase: 'Q3 2025', duration: '3 meses', activities: ['Programa partners', 'Content hub'], milestones: ['25 leads', '10 propuestas', '3-4 cierres'] },
+        { phase: 'Q4 2025', duration: '3 meses', activities: ['Expansión Europa', 'Case studies'], milestones: ['40 leads', '15 propuestas', '5-6 cierres'] },
+      ];
+
+      timeline.forEach(t => {
+        h.checkPageBreak(35);
+        h.addTitle(t.phase, 2);
+        h.addSubtitle('Actividades');
+        t.activities.forEach(a => h.addBullet(a, 3, '→'));
+        h.addSubtitle('Hitos');
+        t.milestones.forEach(m => h.addBullet(m, 3, '★'));
+        h.currentY += 5;
+      });
+
+      // 28. VENTAJAS COMPETITIVAS
+      h.addNewPage();
+      setProgress(95);
+      
+      h.addMainTitle('28. VENTAJAS COMPETITIVAS SOSTENIBLES');
+
+      const advantages = marketing?.competitiveAdvantages || [
+        { advantage: 'Especialización Bancaria Exclusiva', impact: 'Único CRM con contabilidad PGC nativa', sustainability: 'Alta - 2+ años ventaja' },
+        { advantage: 'TCO Disruptivo', impact: '60-80% menor que competencia', sustainability: 'Alta - Arquitectura eficiente' },
+        { advantage: 'Time-to-Value', impact: 'Implementación 4-6x más rápida', sustainability: 'Alta - Diseño modular' },
+        { advantage: 'Compliance Integrado', impact: 'ISO 27001/DORA/PSD3 de serie', sustainability: 'Media - Competidores adaptándose' },
+        { advantage: 'Sin Vendor Lock-in', impact: 'Propiedad total código', sustainability: 'Alta - Diferenciador estructural' },
+        { advantage: 'IA Nativa', impact: 'Gemini 2.5 para análisis financiero', sustainability: 'Media - Evolución rápida IA' },
+      ];
+
+      h.addTable(
+        ['Ventaja', 'Impacto', 'Sostenibilidad'],
+        advantages.map(a => [a.advantage, a.impact, a.sustainability]),
+        [55, 60, 55]
+      );
+
+      // PÁGINA FINAL SEDUCTORA
+      h.addNewPage();
+      setProgress(98);
+      
+      doc.setFillColor(139, 69, 19);
+      doc.rect(0, 0, h.pageWidth, 80, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(22);
+      doc.setFont('helvetica', 'bold');
+      doc.text('¿POR QUÉ ELEGIR CRM CREAND?', h.pageWidth / 2, 25, { align: 'center' });
+      
+      doc.setFontSize(12);
+      doc.text('La decisión inteligente para su entidad bancaria', h.pageWidth / 2, 40, { align: 'center' });
+
+      const finalPoints = [
+        '💰 AHORRE 450.000€+ a 5 años',
+        '⚡ IMPLEMENTE en 3 meses, no 18',
+        '🔒 CUMPLA DORA/ISO 27001 de serie',
+        '🎯 POSEA 100% del código',
+      ];
+      
+      let yPos = 52;
+      finalPoints.forEach(point => {
+        doc.setFontSize(11);
+        doc.text(point, h.pageWidth / 2, yPos, { align: 'center' });
+        yPos += 7;
+      });
+
+      h.currentY = 95;
+      doc.setTextColor(0, 0, 0);
+
+      h.addHighlightBox('🤝 PRÓXIMO PASO', 
+        'Solicite una demo personalizada sin compromiso. En 60 minutos le mostraremos cómo CRM Creand transformará la gestión comercial de su entidad.',
+        'success');
+
+      h.addHighlightBox('📞 CONTACTO', 
+        'comercial@creand.ad | +376 XXX XXX | www.crmcreand.com',
+        'info');
+
+      h.addHighlightBox('🎁 OFERTA ESPECIAL', 
+        'Piloto 3 meses con 30% descuento + Implementación incluida para los primeros 5 clientes 2025',
+        'warning');
+
+      setProgress(100);
+      
+      const filename = `CRM_Creand_PARTE4_Marketing_Ventas_v${analysis.version}_${new Date().toISOString().split('T')[0]}.pdf`;
+      doc.save(filename);
+      
+      toast.success('Parte 4 generada', {
+        description: `${h.pageNumber} páginas - Plan de Marketing y Ventas`,
+      });
+
+    } catch (error) {
+      console.error('Error generating Part 4:', error);
+      toast.error('Error al generar Parte 4');
+    } finally {
+      setGeneratingPart(null);
+    }
+  };
+
+  const getDefaultCostSavings = (): ClientCostSavings[] => [
+    {
+      clientType: 'Banco Retail Mediano (200 empleados)',
+      currentCost: 1250000,
+      creandCost: 497000,
+      savings: 753000,
+      savingsPercentage: 60,
+      breakEvenMonths: 18,
+      roi5Years: 520,
+      details: 'Comparado con Salesforce Financial Services Cloud. Incluye licencias, implementación 18 meses, mantenimiento 25% anual, consultoría externa y formación. CRM Creand reduce significativamente todos estos costes.'
+    },
+    {
+      clientType: 'Cooperativa de Crédito (50 empleados)',
+      currentCost: 480000,
+      creandCost: 185000,
+      savings: 295000,
+      savingsPercentage: 61,
+      breakEvenMonths: 14,
+      roi5Years: 490,
+      details: 'Comparado con solución genérica + módulos personalizados. CRM Creand incluye contabilidad PGC, funcionalidad específica cooperativas y soporte en español sin coste adicional.'
+    },
+    {
+      clientType: 'Banca Privada/Family Office (30 empleados)',
+      currentCost: 650000,
+      creandCost: 220000,
+      savings: 430000,
+      savingsPercentage: 66,
+      breakEvenMonths: 12,
+      roi5Years: 580,
+      details: 'Comparado con Microsoft Dynamics 365 Finance + personalizaciones. CRM Creand ofrece código propietario, máxima confidencialidad y personalización sin dependencia de terceros.'
+    },
+    {
+      clientType: 'Fintech B2B (100 usuarios)',
+      currentCost: 380000,
+      creandCost: 162000,
+      savings: 218000,
+      savingsPercentage: 57,
+      breakEvenMonths: 10,
+      roi5Years: 420,
+      details: 'Comparado con solución SaaS escalable genérica. CRM Creand ofrece API-first, integración Open Banking, y escalabilidad sin límites de usuarios ni funcionalidades.'
+    },
+    {
+      clientType: 'Caja Rural (80 empleados)',
+      currentCost: 520000,
+      creandCost: 195000,
+      savings: 325000,
+      savingsPercentage: 63,
+      breakEvenMonths: 15,
+      roi5Years: 510,
+      details: 'Comparado con software legacy + mantenimiento + actualizaciones regulatorias. CRM Creand incluye cumplimiento DORA/ISO 27001 de serie, eliminando costes de compliance externos.'
+    },
+    {
+      clientType: 'Banco Digital / Neobank (150 usuarios)',
+      currentCost: 720000,
+      creandCost: 285000,
+      savings: 435000,
+      savingsPercentage: 60,
+      breakEvenMonths: 16,
+      roi5Years: 480,
+      details: 'Comparado con stack tecnológico fragmentado (CRM + contabilidad + compliance separados). CRM Creand unifica todo en una plataforma integrada con IA.'
+    },
+  ];
 
   const getDefaultRegulations = (): OtherRegulation[] => [
     {
@@ -2348,15 +2897,15 @@ security/
           Generador de Documentación Comercial Exhaustiva con IA
         </CardTitle>
         <CardDescription>
-          Genera documentación técnico-comercial de 100+ páginas dividida en 3 PDFs independientes
+          Genera documentación técnico-comercial de 140+ páginas dividida en 4 PDFs independientes
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Features Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <div className="flex items-center gap-2 text-sm">
             <Shield className="h-4 w-4 text-green-500" />
-            <span>ISO 27001 (114)</span>
+            <span>ISO 27001</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <Database className="h-4 w-4 text-blue-500" />
@@ -2364,20 +2913,25 @@ security/
           </div>
           <div className="flex items-center gap-2 text-sm">
             <Server className="h-4 w-4 text-purple-500" />
-            <span>BCP (RTO/RPO)</span>
+            <span>BCP</span>
           </div>
           <div className="flex items-center gap-2 text-sm">
-            <ClipboardCheck className="h-4 w-4 text-orange-500" />
-            <span>Gap Analysis</span>
+            <Globe className="h-4 w-4 text-cyan-500" />
+            <span>Latam/Global</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm">
+            <Target className="h-4 w-4 text-orange-500" />
+            <span>Marketing</span>
           </div>
         </div>
 
         {/* Badges */}
         <div className="flex flex-wrap gap-2">
-          <Badge variant="outline">3 PDFs Independientes</Badge>
+          <Badge variant="outline">4 PDFs Independientes</Badge>
           <Badge variant="outline">~35 páginas cada uno</Badge>
-          <Badge variant="outline">100+ páginas total</Badge>
+          <Badge variant="outline">140+ páginas total</Badge>
           <Badge variant="outline">Gemini 2.5 Pro</Badge>
+          <Badge variant="outline">Ahorro por Cliente</Badge>
         </div>
 
         {/* Analyze Steps Progress */}
@@ -2411,7 +2965,7 @@ security/
           <div className="space-y-2">
             <Progress value={progress} className="w-full" />
             <p className="text-sm text-muted-foreground text-center">
-              Generando {generatingPart === 'part1' ? 'Parte 1' : generatingPart === 'part2' ? 'Parte 2' : 'Parte 3'}... {progress}%
+              Generando {generatingPart === 'part1' ? 'Parte 1' : generatingPart === 'part2' ? 'Parte 2' : generatingPart === 'part3' ? 'Parte 3' : 'Parte 4'}... {progress}%
             </p>
           </div>
         )}
@@ -2449,8 +3003,8 @@ security/
           </div>
         )}
 
-        {/* Three PDF Buttons */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        {/* Four PDF Buttons */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <Button
             onClick={generatePart1}
             disabled={!isAnalysisComplete || analyzing || generatingPart !== null}
@@ -2463,7 +3017,7 @@ security/
               <BookOpen className="h-5 w-5 mb-1" />
             )}
             <span className="font-medium">Parte 1</span>
-            <span className="text-xs opacity-80">Resumen, Módulos, Valoración</span>
+            <span className="text-xs opacity-80">Resumen, Módulos</span>
           </Button>
 
           <Button
@@ -2478,7 +3032,7 @@ security/
               <BarChart3 className="h-5 w-5 mb-1" />
             )}
             <span className="font-medium">Parte 2</span>
-            <span className="text-xs opacity-80">TCO, ISO 27001, Normativas</span>
+            <span className="text-xs opacity-80">TCO, ISO 27001</span>
           </Button>
 
           <Button
@@ -2490,17 +3044,32 @@ security/
             {generatingPart === 'part3' ? (
               <Loader2 className="h-5 w-5 animate-spin mb-1" />
             ) : (
-              <Building2 className="h-5 w-5 mb-1" />
+              <Globe className="h-5 w-5 mb-1" />
             )}
             <span className="font-medium">Parte 3</span>
-            <span className="text-xs opacity-80">BCP, Gap, Estrategia</span>
+            <span className="text-xs opacity-80">BCP, Mercados</span>
+          </Button>
+
+          <Button
+            onClick={generatePart4}
+            disabled={!isAnalysisComplete || analyzing || generatingPart !== null}
+            variant={isAnalysisComplete ? "default" : "outline"}
+            className="flex flex-col h-auto py-4"
+          >
+            {generatingPart === 'part4' ? (
+              <Loader2 className="h-5 w-5 animate-spin mb-1" />
+            ) : (
+              <Target className="h-5 w-5 mb-1" />
+            )}
+            <span className="font-medium">Parte 4</span>
+            <span className="text-xs opacity-80">Marketing, Ventas</span>
           </Button>
         </div>
 
         {/* Hint when not analyzed */}
         {!isAnalysisComplete && !analyzing && (
           <p className="text-xs text-muted-foreground text-center">
-            Haz clic en "Analitzar Codi" para habilitar la generación de los 3 PDFs
+            Haz clic en "Analitzar Codi" para habilitar la generación de los 4 PDFs
           </p>
         )}
       </CardContent>
