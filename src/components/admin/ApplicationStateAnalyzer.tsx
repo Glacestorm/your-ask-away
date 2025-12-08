@@ -258,39 +258,152 @@ export function ApplicationStateAnalyzer() {
     try {
       // Simular progreso mientras se procesa
       const progressInterval = setInterval(() => {
-        setAnalysisProgress(prev => Math.min(prev + 10, 90));
-      }, 500);
+        setAnalysisProgress(prev => Math.min(prev + 5, 90));
+      }, 300);
 
-      // Obtener estructura del código
+      // Lista COMPLETA y EXHAUSTIVA de todos los componentes del proyecto
       const componentsList = [
-        'Dashboard.tsx', 'MapView.tsx', 'CompaniesManager.tsx', 'VisitSheetForm.tsx',
-        'AccountingManager.tsx', 'GoalsProgressTracker.tsx', 'SystemHealthMonitor.tsx',
-        'UnifiedMetricsDashboard.tsx', 'CommercialDirectorDashboard.tsx', 'OfficeDirectorDashboard.tsx',
-        'GestorDashboard.tsx', 'AuditorDashboard.tsx', 'BalanceSheetForm.tsx', 'IncomeStatementForm.tsx',
-        'CashFlowForm.tsx', 'EquityChangesForm.tsx', 'WorkingCapitalAnalysis.tsx', 'DuPontPyramid.tsx',
-        'ZScoreAnalysis.tsx', 'RoutePlanner.tsx', 'MapContainer.tsx', 'MapSidebar.tsx'
+        // Admin components
+        'AdaptiveAuthDashboard.tsx', 'AdminSidebar.tsx', 'AdvancedCompanyFilters.tsx', 
+        'AlertHistoryViewer.tsx', 'ApplicationStateAnalyzer.tsx', 'AuditLogsViewer.tsx',
+        'AuditorDashboard.tsx', 'BulkGoalsAssignment.tsx', 'CascadeGoalsManager.tsx',
+        'CommercialDirectorDashboard.tsx', 'CommercialManagerAudit.tsx', 'CommercialManagerDashboard.tsx',
+        'CompaniesManager.tsx', 'CompaniesPagination.tsx', 'CompanyDataCompleteness.tsx',
+        'CompanyExportButton.tsx', 'ConceptsManager.tsx', 'ContractedProductsReport.tsx',
+        'DORAComplianceDashboard.tsx', 'DirectorAlertsPanel.tsx', 'EmailTemplatesManager.tsx',
+        'EnhancedCompanyCard.tsx', 'ExcelImporter.tsx', 'GeocodingRecalculator.tsx',
+        'GestorDashboard.tsx', 'GestoresMetrics.tsx', 'GoalsKPIDashboard.tsx',
+        'GoalsProgressTracker.tsx', 'ImportHistoryViewer.tsx', 'KPIReportHistory.tsx',
+        'MapTooltipConfig.tsx', 'MetricsExplorer.tsx', 'OfficeDirectorDashboard.tsx',
+        'ProductsManager.tsx', 'ProductsMetrics.tsx', 'SharedVisitsCalendar.tsx',
+        'StatusColorsManager.tsx', 'SystemHealthMonitor.tsx', 'TPVGoalsManager.tsx',
+        'TPVManager.tsx', 'UsersManager.tsx', 'VinculacionMetrics.tsx',
+        'VisitSheetAuditViewer.tsx', 'VisitSheetValidationPanel.tsx', 
+        'VisitSheetsGestorComparison.tsx', 'VisitsMetrics.tsx',
+        // Accounting components
+        'AccountingCompanyIndex.tsx', 'AccountingGroupsChart.tsx', 'AccountingMainMenu.tsx',
+        'AccountingManager.tsx', 'AddedValueAnalysis.tsx', 'AnalyticalPLChart.tsx',
+        'AuditTab.tsx', 'BalanceAnalysisArea.tsx', 'BalanceSheetForm.tsx',
+        'BankRatingAnalysis.tsx', 'CashFlowAnalysis.tsx', 'CashFlowAnalysisWrapper.tsx',
+        'CashFlowForm.tsx', 'CompanySearchBar.tsx', 'ConsolidatedStatementsManager.tsx',
+        'DuPontPyramid.tsx', 'EBITEBITDAAnalysis.tsx', 'EconomicFinancialDashboard.tsx',
+        'EnhancedCompanyHeader.tsx', 'EquityChangesForm.tsx', 'FinancialAnalysisTab.tsx',
+        'FinancialNotesManager.tsx', 'FinancialRAGChat.tsx', 'FinancialStatementsHistory.tsx',
+        'FinancingStatement.tsx', 'IncomeStatementChart.tsx', 'IncomeStatementForm.tsx',
+        'LiquidityDebtRatios.tsx', 'LongTermFinancialAnalysis.tsx', 
+        'LongTermFinancialAnalysisWrapper.tsx', 'MovingAnnualTrendChart.tsx',
+        'MultiYearComparison.tsx', 'PDFImportDialog.tsx', 'PeriodYearSelector.tsx',
+        'ProfitabilityTab.tsx', 'ProvisionalStatementsManager.tsx', 'RatiosPyramid.tsx',
+        'ReportsTab.tsx', 'SectorSimulator.tsx', 'SectoralRatiosAnalysis.tsx',
+        'TreasuryMovements.tsx', 'ValuationTab.tsx', 'WorkingCapitalAnalysis.tsx',
+        'WorkingCapitalAnalysisWrapper.tsx', 'WorkingCapitalNOF.tsx', 'ZScoreAnalysis.tsx',
+        // Auth components
+        'PasskeyButton.tsx', 'PasskeyManager.tsx', 'StepUpAuthDialog.tsx',
+        // Company components
+        'BankAffiliationsManager.tsx', 'CompanyDetail.tsx', 'CompanyPhotosManager.tsx',
+        'CompanyPrintReport.tsx', 'ContactsManager.tsx', 'DocumentsManager.tsx',
+        'ExcelExportDialog.tsx', 'PDFExportDialog.tsx', 'TPVTerminalsManager.tsx',
+        'VisitSheetsHistory.tsx',
+        // Dashboard components
+        'AccountingDashboardCard.tsx', 'ActionPlanManager.tsx', 'ActivityStatistics.tsx',
+        'AdvancedAnalyticsDashboardCard.tsx', 'AlertHistoryDashboardCard.tsx', 'AlertsManager.tsx',
+        'AnalisisCohortes.tsx', 'AnalisisEmbudo.tsx', 'AnalisisGeografico.tsx',
+        'BestPracticeComments.tsx', 'BestPracticesPanel.tsx', 'CompaniesDashboardCard.tsx',
+        'ComparativaTemporales.tsx', 'ContractedProductsDashboardCard.tsx', 'DashboardExportButton.tsx',
+        'DateRangeFilter.tsx', 'EmailReminderPreferences.tsx', 'FilteredMetricsWrapper.tsx',
+        'GestorComparison.tsx', 'GestorDashboardCard.tsx', 'GestorEvolutionTimeline.tsx',
+        'GestorFilterSelector.tsx', 'GestorOverviewSection.tsx', 'GestoresLeaderboard.tsx',
+        'GoalsAlertsDashboardCard.tsx', 'KPIDashboardCard.tsx', 'MLPredictions.tsx',
+        'MapButton.tsx', 'MapDashboardCard.tsx', 'MetricsCardsSection.tsx',
+        'MetricsDashboardCard.tsx', 'NotificationPreferences.tsx', 'NotificationService.tsx',
+        'NotificationsPanel.tsx', 'ObjetivosYMetas.tsx', 'PersonalActivityHistory.tsx',
+        'PersonalGoalsDetailedAnalysis.tsx', 'PersonalGoalsHistory.tsx', 'PersonalGoalsTracker.tsx',
+        'PersonalKPIsDashboard.tsx', 'PowerBIExport.tsx', 'PrediccionesFuturas.tsx',
+        'PushNotifications.tsx', 'QuickActionsPanel.tsx', 'QuickVisitManager.tsx',
+        'QuickVisitSheetCard.tsx', 'RealtimeNotificationsBadge.tsx', 'ResumenEjecutivo.tsx',
+        'TPVGestorRanking.tsx', 'TPVGoalsComparison.tsx', 'TPVGoalsDashboard.tsx',
+        'TPVGoalsHistory.tsx', 'UnifiedMetricsDashboard.tsx', 'UpcomingVisitsWidget.tsx',
+        'VisitReminders.tsx',
+        // Map components
+        'CompanyPhotosDialog.tsx', 'GeoSearch.tsx', 'LazyMapContainer.tsx',
+        'MapContainer.tsx', 'MapContainerTypes.ts', 'MapExportButton.tsx',
+        'MapHeader.tsx', 'MapLayersControl.tsx', 'MapLegend.tsx',
+        'MapSidebar.tsx', 'MapSkeleton.tsx', 'MapStatisticsPanel.tsx',
+        'OpportunityHeatmap.tsx', 'RoutePlanner.tsx', 'SectorStats.tsx',
+        'VisitsPanel.tsx', 'markerIcons.tsx', 'markerStyles.tsx',
+        // Visit components
+        'ParticipantsSelector.tsx', 'SignaturePad.tsx', 'VisitSheetForm.tsx',
+        'VisitSheetPhotos.tsx', 'VisitSheetTemplateSelector.tsx',
+        // Reports
+        'AppDetailedStatusGenerator.tsx', 'CodebaseIndexGenerator.tsx',
+        'CompetitorGapAnalysisGenerator.tsx', 'DynamicTechnicalDocGenerator.tsx',
+        'ReportGenerator.tsx', 'TechnicalDocumentGenerator.tsx',
+        // UI components
+        'ConflictDialog.tsx', 'PerformanceMonitor.tsx', 'OptimizedImage.tsx',
+        'OnlineUsersIndicator.tsx', 'ErrorBoundary.tsx', 'GlobalNavHeader.tsx',
+        'LanguageSelector.tsx', 'LanguageSelectorHeader.tsx', 'NavLink.tsx', 'ThemeSelector.tsx'
       ];
       
+      // Lista COMPLETA de todos los hooks
       const hooksList = [
         'useAuth', 'useGoalsQuery', 'useVisitsQuery', 'useNotifications', 
-        'usePresence', 'useRealtimeChannel', 'useCompaniesServerPagination'
+        'useNotificationsQuery', 'usePresence', 'useRealtimeChannel', 
+        'useCompaniesServerPagination', 'useCompanyPhotosLazy', 'useDeferredValue',
+        'useNavigationHistory', 'useOptimisticLock', 'useWebAuthn', 'useWebVitals',
+        'useCelebration', 'useAdaptiveAuth', 'use-mobile', 'use-toast'
       ];
       
+      // Lista COMPLETA de todas las Edge Functions (37 total)
       const edgeFunctions = [
-        'system-health', 'scheduled-health-check', 'analyze-system-issues', 'analyze-codebase',
-        'search-improvements', 'geocode-address', 'generate-action-plan', 'parse-financial-pdf',
-        'send-alert-email', 'send-daily-kpi-report', 'optimize-route'
+        'analyze-codebase', 'analyze-system-issues', 'check-alerts', 
+        'check-goal-achievements', 'check-goals-at-risk', 'check-low-performance',
+        'check-visit-reminders', 'check-visit-sheet-reminders', 'escalate-alerts',
+        'evaluate-session-risk', 'financial-rag-chat', 'generate-action-plan',
+        'generate-financial-embeddings', 'generate-ml-predictions', 'geocode-address',
+        'manage-user', 'notify-visit-validation', 'optimize-route',
+        'parse-financial-pdf', 'scheduled-health-check', 'search-ai-recommendations',
+        'search-company-photo', 'search-improvements', 'send-alert-email',
+        'send-critical-opportunity-email', 'send-daily-kpi-report', 'send-goal-achievement-email',
+        'send-monthly-kpi-report', 'send-monthly-reports', 'send-reminder-email',
+        'send-step-up-otp', 'send-visit-calendar-invite', 'send-weekly-kpi-report',
+        'smart-column-mapping', 'system-health', 'verify-step-up-challenge', 'webauthn-verify'
       ];
       
-      const pagesList = ['Dashboard', 'MapView', 'Admin', 'Profile', 'VisitSheets', 'Home', 'Auth'];
+      const pagesList = ['Dashboard', 'MapView', 'Admin', 'Profile', 'VisitSheets', 'Home', 'Auth', 'Index', 'NotFound'];
+
+      // Información de seguridad implementada
+      const securityFeatures = [
+        'RLS (Row Level Security) en todas las tablas críticas',
+        'JWT verification en Edge Functions críticas',
+        'Autenticación Multifactor Adaptativa (AMA) - PSD2/PSD3 compliant',
+        'WebAuthn/Passkeys para autenticación sin contraseña',
+        'Step-Up Authentication con OTP por email',
+        'Evaluación de riesgo de sesión con geolocalización IP',
+        'Detección de VPN/Proxy en autenticación',
+        'Dispositivos de confianza con fingerprinting',
+        'Rate limiting en APIs (100 req/hora geocoding)',
+        'Sanitización XSS con DOMPurify',
+        'Optimistic locking para edición concurrente',
+        'TLS 1.3 en tránsito',
+        'Secrets via Supabase Vault',
+        'Auditoría completa de acciones (audit_logs)',
+        'DORA/NIS2 compliance dashboard',
+        'Autenticación basada en roles (RBAC)',
+        'Session risk scoring automático'
+      ];
 
       const { data, error } = await supabase.functions.invoke('analyze-codebase', {
         body: {
-          fileStructure: 'src/components, src/hooks, src/pages, supabase/functions',
+          fileStructure: 'src/components (100+ componentes), src/hooks (18 hooks), src/pages (9 páginas), supabase/functions (37 edge functions)',
           componentsList,
           hooksList,
           edgeFunctions,
-          pagesList
+          pagesList,
+          securityFeatures,
+          totalComponents: componentsList.length,
+          totalHooks: hooksList.length,
+          totalEdgeFunctions: edgeFunctions.length,
+          totalPages: pagesList.length
         }
       });
 
@@ -300,7 +413,7 @@ export function ApplicationStateAnalyzer() {
       if (error) throw error;
 
       setCodebaseAnalysis(data);
-      toast.success('Análisis del código completado');
+      toast.success('Anàlisi exhaustiu del codi completat');
     } catch (error: any) {
       console.error('Error analyzing codebase:', error);
       toast.error(`Error: ${error.message}`);
