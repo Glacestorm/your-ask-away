@@ -8,12 +8,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { CompanyWithDetails, StatusColor } from '@/types/database';
-import { Download, FileSpreadsheet, FileText, Map, Loader2 } from 'lucide-react';
+import { Download, FileSpreadsheet, FileText, Map, Loader2, Lock, BarChart3, List, Settings } from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { createEnhancedPDF } from '@/lib/pdfUtils';
 
 interface MapExportButtonProps {
   companies: CompanyWithDetails[];
@@ -21,6 +30,13 @@ interface MapExportButtonProps {
   statusColors: StatusColor[];
   isOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
+}
+
+interface PDFOptions {
+  includeCharts: boolean;
+  includeTOC: boolean;
+  addWatermark: boolean;
+  password: string;
 }
 
 export function MapExportButton({
@@ -31,6 +47,14 @@ export function MapExportButton({
   onOpenChange,
 }: MapExportButtonProps) {
   const [exporting, setExporting] = useState(false);
+  const [showOptions, setShowOptions] = useState(false);
+  const [pendingExport, setPendingExport] = useState<{ data: CompanyWithDetails[]; filename: string } | null>(null);
+  const [pdfOptions, setPdfOptions] = useState<PDFOptions>({
+    includeCharts: true,
+    includeTOC: true,
+    addWatermark: false,
+    password: '',
+  });
 
   const getStatusName = (statusId: string | null) => {
     if (!statusId) return 'Sense estat';
@@ -98,34 +122,107 @@ export function MapExportButton({
     }
   };
 
-  const exportToPDF = async (data: CompanyWithDetails[], filename: string) => {
-    setExporting(true);
-    try {
-      const doc = new jsPDF('l', 'mm', 'a4');
-      
-      // Title
-      doc.setFontSize(18);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Informe de Mapa Empresarial', 14, 22);
-      
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`Data: ${new Date().toLocaleDateString('ca-ES')}`, 14, 30);
-      doc.text(`Total empreses: ${data.length}`, 14, 36);
+  const openPDFOptions = (data: CompanyWithDetails[], filename: string) => {
+    setPendingExport({ data, filename });
+    setShowOptions(true);
+  };
 
-      // Statistics summary
+  const exportToPDF = async () => {
+    if (!pendingExport) return;
+    
+    const { data, filename } = pendingExport;
+    setExporting(true);
+    
+    try {
+      const pdf = createEnhancedPDF('l', 'a4');
+      
+      // Header
+      let y = pdf.addHeader('Informe de Mapa Empresarial', `${data.length} empreses`);
+
+      // Statistics section
+      if (pdfOptions.includeTOC) {
+        pdf.addTOCEntry('Estadístiques', 1);
+      }
+      y = pdf.addSectionHeader('Estadístiques Generals', y, 1);
+      
       const withGeo = data.filter(c => c.latitude && c.longitude).length;
       const avgVinculacion = data.reduce((sum, c) => {
         const v = ((c.vinculacion_entidad_1 || 0) + (c.vinculacion_entidad_2 || 0) + (c.vinculacion_entidad_3 || 0)) / 3;
         return sum + v;
       }, 0) / (data.length || 1);
       const totalFacturacion = data.reduce((sum, c) => sum + (c.turnover || 0), 0);
+      
+      const doc = pdf.getDoc();
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Total empreses: ${data.length}`, 14, y);
+      doc.text(`Geolocalitzades: ${withGeo} (${((withGeo / data.length) * 100).toFixed(1)}%)`, 100, y);
+      doc.text(`Vinculació mitjana: ${avgVinculacion.toFixed(1)}%`, 180, y);
+      y += 6;
+      doc.text(`Facturació total: ${formatCurrency(totalFacturacion)}`, 14, y);
+      y += 15;
 
-      doc.text(`Geolocalitzades: ${withGeo} (${((withGeo / data.length) * 100).toFixed(1)}%)`, 100, 30);
-      doc.text(`Vinculació mitjana: ${avgVinculacion.toFixed(1)}%`, 100, 36);
-      doc.text(`Facturació total: ${formatCurrency(totalFacturacion)}`, 180, 30);
+      // Charts
+      if (pdfOptions.includeCharts) {
+        if (pdfOptions.includeTOC) {
+          pdf.addTOCEntry('Gràfics', 1);
+        }
+        y = pdf.addSectionHeader('Distribució per Parròquia', y, 1);
+        
+        const parroquiaCount = data.reduce((acc, c) => {
+          acc[c.parroquia] = (acc[c.parroquia] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>);
+        
+        const chartData = Object.entries(parroquiaCount)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 10)
+          .map(([label, value]) => ({ label, value }));
+        
+        pdf.drawBarChart({
+          type: 'bar',
+          title: 'Empreses per Parròquia',
+          data: chartData,
+          y: y,
+          height: 50
+        });
+        y += 65;
+
+        // Status distribution pie chart
+        const statusCount = data.reduce((acc, c) => {
+          const status = getStatusName(c.status_id);
+          acc[status] = (acc[status] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>);
+        
+        const pieData = Object.entries(statusCount)
+          .slice(0, 6)
+          .map(([label, value], i) => ({
+            label,
+            value,
+            color: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'][i]
+          }));
+        
+        y = pdf.checkPageBreak(y, 80);
+        pdf.drawPieChart({
+          type: 'pie',
+          title: 'Distribució per Estat',
+          data: pieData,
+          x: pdf.getPageWidth() / 4,
+          y: y + 40,
+          width: 30
+        });
+        y += 100;
+      }
 
       // Table
+      if (pdfOptions.includeTOC) {
+        pdf.addTOCEntry('Llistat d\'Empreses', 1);
+      }
+      y = pdf.checkPageBreak(y, 50);
+      y = pdf.addSectionHeader('Llistat d\'Empreses', y, 1);
+      
       const tableData = data.map(company => [
         company.name?.substring(0, 25) || '-',
         getStatusName(company.status_id),
@@ -137,17 +234,34 @@ export function MapExportButton({
         company.latitude && company.longitude ? 'Sí' : 'No',
       ]);
 
-      autoTable(doc, {
-        head: [['Nom', 'Estat', 'Parròquia', 'Sector', 'Tipus', 'Facturació', 'Vinc.', 'Geo']],
-        body: tableData,
-        startY: 44,
-        styles: { fontSize: 8, cellPadding: 2 },
-        headStyles: { fillColor: [59, 130, 246], textColor: 255 },
-        alternateRowStyles: { fillColor: [245, 247, 250] },
-      });
+      pdf.addTable(
+        ['Nom', 'Estat', 'Parròquia', 'Sector', 'Tipus', 'Facturació', 'Vinc.', 'Geo'],
+        tableData,
+        y
+      );
 
-      doc.save(`${filename}.pdf`);
+      // Generate TOC
+      if (pdfOptions.includeTOC) {
+        pdf.generateTOC(50);
+      }
+
+      // Apply watermark if enabled
+      if (pdfOptions.addWatermark) {
+        pdf.addWatermark('CONFIDENCIAL');
+      }
+
+      // Apply protection if password provided
+      if (pdfOptions.password) {
+        pdf.applyProtection(pdfOptions.password);
+      }
+
+      // Footer
+      pdf.addFooter();
+
+      pdf.save(`${filename}.pdf`);
       toast.success(`Informe PDF generat amb ${data.length} empreses`);
+      setShowOptions(false);
+      setPendingExport(null);
     } catch (error) {
       console.error('Error exporting to PDF:', error);
       toast.error('Error en generar el PDF');
@@ -208,54 +322,142 @@ export function MapExportButton({
   };
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={exporting}
-          className="h-7 text-xs"
-        >
-          {exporting ? (
-            <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-          ) : (
-            <Download className="mr-1 h-3 w-3" />
-          )}
-          Exportar
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56 bg-card">
-        <DropdownMenuLabel className="text-xs">Empreses Visibles ({filteredCompanies.length})</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => exportToExcel(filteredCompanies, `mapa_empreses_filtrades_${new Date().toISOString().split('T')[0]}`)}>
-          <FileSpreadsheet className="mr-2 h-4 w-4 text-green-600" />
-          Excel (Visibles)
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => exportToPDF(filteredCompanies, `informe_mapa_${new Date().toISOString().split('T')[0]}`)}>
-          <FileText className="mr-2 h-4 w-4 text-red-600" />
-          PDF (Visibles)
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => exportGeoJSON(filteredCompanies, `empreses_geo_${new Date().toISOString().split('T')[0]}`)}>
-          <Map className="mr-2 h-4 w-4 text-blue-600" />
-          GeoJSON (Visibles)
-        </DropdownMenuItem>
-        
-        <DropdownMenuSeparator />
-        <DropdownMenuLabel className="text-xs">Totes les Empreses ({companies.length})</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => exportToExcel(companies, `totes_empreses_${new Date().toISOString().split('T')[0]}`)}>
-          <FileSpreadsheet className="mr-2 h-4 w-4 text-green-600" />
-          Excel (Totes)
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => exportToPDF(companies, `informe_complet_${new Date().toISOString().split('T')[0]}`)}>
-          <FileText className="mr-2 h-4 w-4 text-red-600" />
-          PDF (Totes)
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => exportGeoJSON(companies, `totes_empreses_geo_${new Date().toISOString().split('T')[0]}`)}>
-          <Map className="mr-2 h-4 w-4 text-blue-600" />
-          GeoJSON (Totes)
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={exporting}
+            className="h-7 text-xs"
+          >
+            {exporting ? (
+              <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+            ) : (
+              <Download className="mr-1 h-3 w-3" />
+            )}
+            Exportar
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56 bg-card">
+          <DropdownMenuLabel className="text-xs">Empreses Visibles ({filteredCompanies.length})</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => exportToExcel(filteredCompanies, `mapa_empreses_filtrades_${new Date().toISOString().split('T')[0]}`)}>
+            <FileSpreadsheet className="mr-2 h-4 w-4 text-green-600" />
+            Excel (Visibles)
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => openPDFOptions(filteredCompanies, `informe_mapa_${new Date().toISOString().split('T')[0]}`)}>
+            <FileText className="mr-2 h-4 w-4 text-red-600" />
+            PDF (Visibles)
+            <Settings className="h-3 w-3 ml-auto text-muted-foreground" />
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => exportGeoJSON(filteredCompanies, `empreses_geo_${new Date().toISOString().split('T')[0]}`)}>
+            <Map className="mr-2 h-4 w-4 text-blue-600" />
+            GeoJSON (Visibles)
+          </DropdownMenuItem>
+          
+          <DropdownMenuSeparator />
+          <DropdownMenuLabel className="text-xs">Totes les Empreses ({companies.length})</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => exportToExcel(companies, `totes_empreses_${new Date().toISOString().split('T')[0]}`)}>
+            <FileSpreadsheet className="mr-2 h-4 w-4 text-green-600" />
+            Excel (Totes)
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => openPDFOptions(companies, `informe_complet_${new Date().toISOString().split('T')[0]}`)}>
+            <FileText className="mr-2 h-4 w-4 text-red-600" />
+            PDF (Totes)
+            <Settings className="h-3 w-3 ml-auto text-muted-foreground" />
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => exportGeoJSON(companies, `totes_empreses_geo_${new Date().toISOString().split('T')[0]}`)}>
+            <Map className="mr-2 h-4 w-4 text-blue-600" />
+            GeoJSON (Totes)
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <Dialog open={showOptions} onOpenChange={setShowOptions}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Opcions d'Exportació PDF
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="mapIncludeCharts"
+                checked={pdfOptions.includeCharts}
+                onCheckedChange={(checked) =>
+                  setPdfOptions({ ...pdfOptions, includeCharts: checked as boolean })
+                }
+              />
+              <Label htmlFor="mapIncludeCharts" className="font-normal flex items-center gap-1">
+                <BarChart3 className="h-4 w-4" />
+                Incloure gràfics
+              </Label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="mapIncludeTOC"
+                checked={pdfOptions.includeTOC}
+                onCheckedChange={(checked) =>
+                  setPdfOptions({ ...pdfOptions, includeTOC: checked as boolean })
+                }
+              />
+              <Label htmlFor="mapIncludeTOC" className="font-normal flex items-center gap-1">
+                <List className="h-4 w-4" />
+                Taula de continguts interactiva
+              </Label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="mapAddWatermark"
+                checked={pdfOptions.addWatermark}
+                onCheckedChange={(checked) =>
+                  setPdfOptions({ ...pdfOptions, addWatermark: checked as boolean })
+                }
+              />
+              <Label htmlFor="mapAddWatermark" className="font-normal">
+                Afegir marca d'aigua "CONFIDENCIAL"
+              </Label>
+            </div>
+
+            <div className="space-y-2 border-t pt-3">
+              <Label className="text-sm font-medium flex items-center gap-1">
+                <Lock className="h-4 w-4" />
+                Protecció del Document
+              </Label>
+              <Input
+                type="password"
+                placeholder="Contrasenya (opcional)"
+                value={pdfOptions.password}
+                onChange={(e) => setPdfOptions({ ...pdfOptions, password: e.target.value })}
+              />
+              <p className="text-xs text-muted-foreground">
+                Deixa en blanc per no protegir el document
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowOptions(false)}>
+              Cancel·lar
+            </Button>
+            <Button onClick={exportToPDF} disabled={exporting}>
+              {exporting ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="mr-2 h-4 w-4" />
+              )}
+              Exportar PDF
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
