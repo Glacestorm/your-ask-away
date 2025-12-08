@@ -64,6 +64,11 @@ interface RouteSegment {
 export interface OptimizedRoute {
   total_distance: { value: number; text: string };
   total_duration: { value: number; text: string };
+  origin?: {
+    latitude: number;
+    longitude: number;
+    name: string;
+  };
   optimized_order: {
     order: number;
     id: string;
