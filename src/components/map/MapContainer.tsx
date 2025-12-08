@@ -285,34 +285,40 @@ export function MapContainer({
     return coords;
   }, []);
 
-  // Draw route line and waypoint markers
-  useEffect(() => {
+  // Function to draw route line and markers - can be called from effect or style change
+  const drawRouteOnMap = useCallback(() => {
     if (!map.current || !mapLoaded) return;
+
+    const mapInstance = map.current;
 
     // Clean up previous route markers
     routeMarkersRef.current.forEach(marker => marker.remove());
     routeMarkersRef.current = [];
 
-    // Clean up previous route line
-    if (map.current.getLayer('route-line')) {
-      map.current.removeLayer('route-line');
-    }
-    if (map.current.getLayer('route-line-outline')) {
-      map.current.removeLayer('route-line-outline');
-    }
-    if (map.current.getSource('route-source')) {
-      map.current.removeSource('route-source');
+    // Clean up previous route layers and source
+    try {
+      if (mapInstance.getLayer('route-line')) {
+        mapInstance.removeLayer('route-line');
+      }
+      if (mapInstance.getLayer('route-line-outline')) {
+        mapInstance.removeLayer('route-line-outline');
+      }
+      if (mapInstance.getSource('route-source')) {
+        mapInstance.removeSource('route-source');
+      }
+    } catch (e) {
+      // Layers might not exist, ignore
     }
 
+    console.log('[Route] drawRouteOnMap called');
     console.log('[Route] routePolyline:', routePolyline ? `${routePolyline.substring(0, 50)}... (${routePolyline.length} chars)` : 'null/empty');
+    console.log('[Route] routeWaypoints:', routeWaypoints?.length || 0, 'points');
     
     // If no waypoints at all, exit early
     if (!routeWaypoints || routeWaypoints.length === 0) {
       console.log('[Route] No waypoints, exiting');
       return;
     }
-
-    const mapInstance = map.current;
 
     // Decode polyline and draw route line - only if we have polyline data
     if (routePolyline && routePolyline.length > 0) {
@@ -335,18 +341,7 @@ export function MapContainer({
             }
           });
 
-          // Find first symbol layer to insert route layers below markers
-          const layers = mapInstance.getStyle()?.layers || [];
-          let firstSymbolId: string | undefined;
-          for (const layer of layers) {
-            if (layer.type === 'symbol') {
-              firstSymbolId = layer.id;
-              break;
-            }
-          }
-          console.log('[Route] Inserting route layers before:', firstSymbolId || 'top');
-
-          // Add outline layer (dark border) - insert before symbols so markers are on top
+          // Add outline layer (dark border) - add at top level for visibility
           mapInstance.addLayer({
             id: 'route-line-outline',
             type: 'line',
@@ -357,11 +352,12 @@ export function MapContainer({
             },
             paint: {
               'line-color': '#1a1a2e',
-              'line-width': 12
+              'line-width': 12,
+              'line-opacity': 1
             }
-          }, firstSymbolId);
+          });
 
-          // Add main route line
+          // Add main route line on top
           mapInstance.addLayer({
             id: 'route-line',
             type: 'line',
@@ -372,11 +368,21 @@ export function MapContainer({
             },
             paint: {
               'line-color': '#4285F4',
-              'line-width': 7
+              'line-width': 7,
+              'line-opacity': 1
             }
-          }, firstSymbolId);
+          });
           
           console.log('[Route] Route line layers added successfully');
+          
+          // Verify layers exist
+          setTimeout(() => {
+            if (mapInstance.getLayer('route-line')) {
+              console.log('[Route] VERIFIED: route-line layer exists');
+            } else {
+              console.error('[Route] ERROR: route-line layer NOT FOUND after add');
+            }
+          }, 100);
         }
       } catch (e) {
         console.error('[Route] Error adding route layers:', e);
@@ -386,7 +392,7 @@ export function MapContainer({
     }
 
     // Create waypoint markers - include origin as A
-    const allPoints: { id: string; name: string; latitude: number; longitude: number; isOrigin?: boolean }[] = [];
+    const allPoints: { id: string; name: string; latitude: number; longitude: number; isOrigin?: boolean; order?: number }[] = [];
     
     console.log('[Route] routeOrigin:', routeOrigin);
     console.log('[Route] routeWaypoints:', routeWaypoints);
@@ -448,23 +454,23 @@ export function MapContainer({
         font-weight: bold;
         font-size: 18px;
         cursor: pointer;
-        z-index: 1000;
+        z-index: 9999;
       `;
       el.textContent = label;
-      el.title = point.name;
+      
+      console.log(`[Route] Added marker ${label} at ${point.latitude} ${point.longitude}`);
 
       const marker = new maplibregl.Marker({ element: el })
         .setLngLat([point.longitude, point.latitude])
         .addTo(mapInstance);
-
+        
       routeMarkersRef.current.push(marker);
-      console.log('[Route] Added marker', label, 'at', point.latitude, point.longitude);
     });
 
-    // Fit bounds to show all points
-    if (allPoints.length > 0) {
-      const lngs = allPoints.map(p => p.longitude);
+    // Fit bounds to show all route points
+    if (allPoints.length > 0 && routePolyline) {
       const lats = allPoints.map(p => p.latitude);
+      const lngs = allPoints.map(p => p.longitude);
       
       const bounds = new maplibregl.LngLatBounds(
         [Math.min(...lngs), Math.min(...lats)],
@@ -476,20 +482,32 @@ export function MapContainer({
         duration: 1000
       });
     }
+  }, [mapLoaded, routePolyline, routeWaypoints, routeOrigin, decodePolyline]);
 
-    // Handle style changes - redraw route when style loads
-    const handleStyleData = () => {
-      // After style change, route layers may be gone, trigger re-render
-      if (!mapInstance.getSource('route-source') && routePolyline) {
-        // The effect will re-run due to dependencies
-      }
+  // Effect to draw route and handle style changes
+  useEffect(() => {
+    if (!map.current || !mapLoaded) return;
+
+    const mapInstance = map.current;
+
+    // Draw route initially
+    drawRouteOnMap();
+
+    // Re-draw route when map style changes (layers get cleared on style change)
+    const handleStyleLoad = () => {
+      console.log('[Route] Style loaded/changed, redrawing route...');
+      // Small delay to ensure style is fully loaded
+      setTimeout(() => {
+        drawRouteOnMap();
+      }, 200);
     };
-    mapInstance.on('styledata', handleStyleData);
+
+    mapInstance.on('style.load', handleStyleLoad);
 
     return () => {
-      mapInstance.off('styledata', handleStyleData);
+      mapInstance.off('style.load', handleStyleLoad);
     };
-  }, [mapLoaded, routePolyline, routeWaypoints, routeOrigin, decodePolyline]);
+  }, [mapLoaded, drawRouteOnMap]);
 
   // Fetch tooltip configuration
   useEffect(() => {
