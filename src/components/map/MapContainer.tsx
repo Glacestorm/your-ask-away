@@ -326,19 +326,18 @@ export function MapContainer({
         const coords = decodePolyline(routePolyline);
         console.log('[Route] Decoded polyline coords:', coords.length);
         console.log('[Route] First coord:', coords[0], 'Last coord:', coords[coords.length - 1]);
-        console.log('[Route] Sample coords (first 5):', coords.slice(0, 5));
         
         if (coords.length >= 2) {
-          const geojsonData = {
-            type: 'Feature' as const,
+          const geojsonData: GeoJSON.Feature<GeoJSON.LineString> = {
+            type: 'Feature',
             properties: {},
             geometry: {
-              type: 'LineString' as const,
+              type: 'LineString',
               coordinates: coords
             }
           };
           
-          console.log('[Route] GeoJSON data prepared, coords count:', geojsonData.geometry.coordinates.length);
+          console.log('[Route] Adding route source and layers...');
 
           // Add route source
           mapInstance.addSource('route-source', {
@@ -346,66 +345,73 @@ export function MapContainer({
             data: geojsonData
           });
 
-          // Add outline layer (dark border) at top level
+          // Get all layers to find the best position for our route
+          const allLayers = mapInstance.getStyle()?.layers || [];
+          console.log('[Route] Total layers in map:', allLayers.length);
+          
+          // Find a good layer to insert before - we want to be ABOVE road labels but below markers
+          // Look for the first symbol layer which is usually labels
+          let insertBeforeId: string | undefined;
+          for (const layer of allLayers) {
+            // Insert before symbol layers (text labels) to be visible but below markers
+            if (layer.id.includes('label') || layer.id.includes('text') || layer.type === 'symbol') {
+              insertBeforeId = layer.id;
+              break;
+            }
+          }
+          
+          // If no symbol layer found, don't specify (add at top)
+          console.log('[Route] Inserting route before layer:', insertBeforeId || '(top of stack)');
+
+          // Add outline layer (dark border)
           mapInstance.addLayer({
             id: 'route-line-outline',
             type: 'line',
             source: 'route-source',
             layout: {
               'line-join': 'round',
-              'line-cap': 'round'
+              'line-cap': 'round',
+              'visibility': 'visible'
             },
             paint: {
-              'line-color': '#000000',
-              'line-width': 10,
-              'line-opacity': 0.8
+              'line-color': '#1e3a5f',
+              'line-width': 12,
+              'line-opacity': 1
             }
-          });
+          }, insertBeforeId);
 
-          // Add main route line on top
+          // Add main route line on top of outline
           mapInstance.addLayer({
             id: 'route-line',
             type: 'line',
             source: 'route-source',
             layout: {
               'line-join': 'round',
-              'line-cap': 'round'
+              'line-cap': 'round',
+              'visibility': 'visible'
             },
             paint: {
-              'line-color': '#2563eb',
-              'line-width': 6,
+              'line-color': '#3b82f6',
+              'line-width': 8,
               'line-opacity': 1
             }
-          });
+          }, insertBeforeId);
           
-          console.log('[Route] Route line layers added successfully');
+          console.log('[Route] Route layers added');
           
-          // Verify layers exist and have data
+          // Verify after a delay
           setTimeout(() => {
-            const source = mapInstance.getSource('route-source') as maplibregl.GeoJSONSource;
-            const layer = mapInstance.getLayer('route-line');
-            
-            if (layer) {
-              console.log('[Route] VERIFIED: route-line layer exists, visibility:', mapInstance.getLayoutProperty('route-line', 'visibility'));
-            } else {
-              console.error('[Route] ERROR: route-line layer NOT FOUND after add');
+            if (mapInstance.getSource('route-source')) {
+              console.log('[Route] VERIFIED: source exists');
             }
-            
-            if (source) {
-              console.log('[Route] VERIFIED: route-source exists');
-            } else {
-              console.error('[Route] ERROR: route-source NOT FOUND after add');
+            if (mapInstance.getLayer('route-line')) {
+              console.log('[Route] VERIFIED: route-line layer exists');
+              // Log the layer position
+              const layers = mapInstance.getStyle()?.layers || [];
+              const routeIndex = layers.findIndex(l => l.id === 'route-line');
+              console.log('[Route] route-line is at layer index:', routeIndex, 'of', layers.length);
             }
-            
-            // Force layer to be visible
-            if (layer) {
-              mapInstance.setLayoutProperty('route-line', 'visibility', 'visible');
-              mapInstance.setLayoutProperty('route-line-outline', 'visibility', 'visible');
-              mapInstance.moveLayer('route-line-outline');
-              mapInstance.moveLayer('route-line');
-              console.log('[Route] Forced visibility and moved layers to top');
-            }
-          }, 200);
+          }, 300);
         }
       } catch (e) {
         console.error('[Route] Error adding route layers:', e);
