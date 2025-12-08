@@ -1878,6 +1878,63 @@ export type Database = {
           },
         ]
       }
+      financial_document_embeddings: {
+        Row: {
+          chunk_index: number
+          company_id: string
+          content: string
+          created_at: string
+          document_type: string
+          embedding: string | null
+          fiscal_year: number
+          id: string
+          metadata: Json | null
+          statement_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          chunk_index?: number
+          company_id: string
+          content: string
+          created_at?: string
+          document_type: string
+          embedding?: string | null
+          fiscal_year: number
+          id?: string
+          metadata?: Json | null
+          statement_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          chunk_index?: number
+          company_id?: string
+          content?: string
+          created_at?: string
+          document_type?: string
+          embedding?: string | null
+          fiscal_year?: number
+          id?: string
+          metadata?: Json | null
+          statement_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_document_embeddings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_document_embeddings_statement_id_fkey"
+            columns: ["statement_id"]
+            isOneToOne: false
+            referencedRelation: "company_financial_statements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       financial_notes: {
         Row: {
           created_at: string
@@ -1912,6 +1969,76 @@ export type Database = {
             columns: ["statement_id"]
             isOneToOne: false
             referencedRelation: "company_financial_statements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_rag_conversations: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          id: string
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_rag_conversations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_rag_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          role: string
+          sources: Json | null
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          role: string
+          sources?: Json | null
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          role?: string
+          sources?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_rag_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "financial_rag_conversations"
             referencedColumns: ["id"]
           },
         ]
@@ -3370,6 +3497,25 @@ export type Database = {
           _severity?: string
         }
         Returns: undefined
+      }
+      search_financial_embeddings: {
+        Args: {
+          filter_company_id?: string
+          filter_fiscal_year?: number
+          match_count?: number
+          match_threshold?: number
+          query_embedding: string
+        }
+        Returns: {
+          company_id: string
+          content: string
+          document_type: string
+          fiscal_year: number
+          id: string
+          metadata: Json
+          similarity: number
+          statement_id: string
+        }[]
       }
     }
     Enums: {

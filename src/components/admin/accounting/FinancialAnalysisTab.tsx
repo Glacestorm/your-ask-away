@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, TrendingUp, TrendingDown, Activity, DollarSign, BarChart3, PieChart, AlertTriangle } from "lucide-react";
+import { Loader2, TrendingUp, TrendingDown, Activity, DollarSign, BarChart3, PieChart, AlertTriangle, Sparkles } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, AreaChart, Area } from "recharts";
 import { ZScoreAnalysis } from "./ZScoreAnalysis";
 import EBITEBITDAAnalysis from "./EBITEBITDAAnalysis";
@@ -17,6 +17,7 @@ import RatiosPyramid from "./RatiosPyramid";
 import DuPontPyramid from "./DuPontPyramid";
 import BalanceAnalysisArea from "./BalanceAnalysisArea";
 import { BankRatingAnalysis } from "./BankRatingAnalysis";
+import { FinancialRAGChat } from "./FinancialRAGChat";
 
 interface FinancialAnalysisTabProps {
   companyId: string;
@@ -216,6 +217,10 @@ export function FinancialAnalysisTab({ companyId, companyName }: FinancialAnalys
           <TabsTrigger value="dupont-pyramid" className="text-xs">Pirámide DuPont</TabsTrigger>
           <TabsTrigger value="balance-analysis" className="text-xs">Área Análisis</TabsTrigger>
           <TabsTrigger value="bank-rating" className="text-xs">Calificación Bancaria</TabsTrigger>
+          <TabsTrigger value="rag-chat" className="text-xs">
+            <Sparkles className="w-3 h-3 mr-1" />
+            Chat IA
+          </TabsTrigger>
           <TabsTrigger value="dashboard" className="text-xs">Dashboard</TabsTrigger>
         </TabsList>
 
@@ -595,6 +600,14 @@ export function FinancialAnalysisTab({ companyId, companyName }: FinancialAnalys
 
         <TabsContent value="bank-rating">
           <BankRatingAnalysis companyId={companyId} companyName={companyName} />
+        </TabsContent>
+
+        <TabsContent value="rag-chat">
+          <FinancialRAGChat 
+            companyId={companyId} 
+            companyName={companyName}
+            fiscalYear={latestData?.year}
+          />
         </TabsContent>
       </Tabs>
     </div>
