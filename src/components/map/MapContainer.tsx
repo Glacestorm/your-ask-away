@@ -326,22 +326,27 @@ export function MapContainer({
         const coords = decodePolyline(routePolyline);
         console.log('[Route] Decoded polyline coords:', coords.length);
         console.log('[Route] First coord:', coords[0], 'Last coord:', coords[coords.length - 1]);
+        console.log('[Route] Sample coords (first 5):', coords.slice(0, 5));
         
         if (coords.length >= 2) {
+          const geojsonData = {
+            type: 'Feature' as const,
+            properties: {},
+            geometry: {
+              type: 'LineString' as const,
+              coordinates: coords
+            }
+          };
+          
+          console.log('[Route] GeoJSON data prepared, coords count:', geojsonData.geometry.coordinates.length);
+
           // Add route source
           mapInstance.addSource('route-source', {
             type: 'geojson',
-            data: {
-              type: 'Feature',
-              properties: {},
-              geometry: {
-                type: 'LineString',
-                coordinates: coords
-              }
-            }
+            data: geojsonData
           });
 
-          // Add outline layer (dark border) - add at top level for visibility
+          // Add outline layer (dark border) at top level
           mapInstance.addLayer({
             id: 'route-line-outline',
             type: 'line',
@@ -351,9 +356,9 @@ export function MapContainer({
               'line-cap': 'round'
             },
             paint: {
-              'line-color': '#1a1a2e',
-              'line-width': 12,
-              'line-opacity': 1
+              'line-color': '#000000',
+              'line-width': 10,
+              'line-opacity': 0.8
             }
           });
 
@@ -367,22 +372,40 @@ export function MapContainer({
               'line-cap': 'round'
             },
             paint: {
-              'line-color': '#4285F4',
-              'line-width': 7,
+              'line-color': '#2563eb',
+              'line-width': 6,
               'line-opacity': 1
             }
           });
           
           console.log('[Route] Route line layers added successfully');
           
-          // Verify layers exist
+          // Verify layers exist and have data
           setTimeout(() => {
-            if (mapInstance.getLayer('route-line')) {
-              console.log('[Route] VERIFIED: route-line layer exists');
+            const source = mapInstance.getSource('route-source') as maplibregl.GeoJSONSource;
+            const layer = mapInstance.getLayer('route-line');
+            
+            if (layer) {
+              console.log('[Route] VERIFIED: route-line layer exists, visibility:', mapInstance.getLayoutProperty('route-line', 'visibility'));
             } else {
               console.error('[Route] ERROR: route-line layer NOT FOUND after add');
             }
-          }, 100);
+            
+            if (source) {
+              console.log('[Route] VERIFIED: route-source exists');
+            } else {
+              console.error('[Route] ERROR: route-source NOT FOUND after add');
+            }
+            
+            // Force layer to be visible
+            if (layer) {
+              mapInstance.setLayoutProperty('route-line', 'visibility', 'visible');
+              mapInstance.setLayoutProperty('route-line-outline', 'visibility', 'visible');
+              mapInstance.moveLayer('route-line-outline');
+              mapInstance.moveLayer('route-line');
+              console.log('[Route] Forced visibility and moved layers to top');
+            }
+          }, 200);
         }
       } catch (e) {
         console.error('[Route] Error adding route layers:', e);
