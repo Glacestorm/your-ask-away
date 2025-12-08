@@ -130,22 +130,109 @@ export const prefetchQueries = {
       staleTime: 10 * 60 * 1000, // 10 minutes for company details
     });
   },
+
+  // Prefetch map data for faster map loading
+  prefetchMapData: async () => {
+    await queryClient.prefetchQuery({
+      queryKey: queryKeys.companies.all,
+      staleTime: 5 * 60 * 1000,
+    });
+  },
+
+  // Prefetch accounting data
+  prefetchAccountingData: async (companyId: string) => {
+    await queryClient.prefetchQuery({
+      queryKey: queryKeys.accounting.statements(companyId),
+      staleTime: 15 * 60 * 1000,
+    });
+  },
 };
 
-// Optimistic update helpers
+// Optimistic update helpers for better perceived performance
 export const optimisticUpdates = {
-  // Optimistic update for visit creation
-  addVisitOptimistically: <T extends { id: string }>(
+  // Optimistic update for adding items
+  addItemOptimistically: <T extends { id: string }>(
     queryKey: QueryKey,
     newItem: T
   ) => {
+    const previousData = queryClient.getQueryData<T[]>(queryKey);
     queryClient.setQueryData(queryKey, (old: T[] | undefined) => {
       return old ? [...old, newItem] : [newItem];
     });
+    return previousData;
   },
-  
+
+  // Optimistic update for updating items
+  updateItemOptimistically: <T extends { id: string }>(
+    queryKey: QueryKey,
+    updatedItem: Partial<T> & { id: string }
+  ) => {
+    const previousData = queryClient.getQueryData<T[]>(queryKey);
+    queryClient.setQueryData(queryKey, (old: T[] | undefined) => {
+      return old?.map((item) =>
+        item.id === updatedItem.id ? { ...item, ...updatedItem } : item
+      );
+    });
+    return previousData;
+  },
+
+  // Optimistic update for removing items
+  removeItemOptimistically: <T extends { id: string }>(
+    queryKey: QueryKey,
+    itemId: string
+  ) => {
+    const previousData = queryClient.getQueryData<T[]>(queryKey);
+    queryClient.setQueryData(queryKey, (old: T[] | undefined) => {
+      return old?.filter((item) => item.id !== itemId);
+    });
+    return previousData;
+  },
+
   // Rollback helper
-  rollbackOptimisticUpdate: <T>(queryKey: QueryKey, previousData: T) => {
-    queryClient.setQueryData(queryKey, previousData);
+  rollbackOptimisticUpdate: <T>(queryKey: QueryKey, previousData: T | undefined) => {
+    if (previousData !== undefined) {
+      queryClient.setQueryData(queryKey, previousData);
+    }
+  },
+};
+
+// Request deduplication - prevents duplicate requests
+const pendingRequests = new Map<string, Promise<unknown>>();
+
+export const deduplicatedFetch = async <T>(
+  key: string,
+  fetchFn: () => Promise<T>
+): Promise<T> => {
+  const existing = pendingRequests.get(key);
+  if (existing) {
+    return existing as Promise<T>;
+  }
+
+  const promise = fetchFn().finally(() => {
+    pendingRequests.delete(key);
+  });
+
+  pendingRequests.set(key, promise);
+  return promise;
+};
+
+// Batch query helper for reducing network requests
+export const batchedQueries = {
+  // Batch multiple company fetches into single request
+  batchCompanyIds: new Set<string>(),
+  batchTimeout: null as NodeJS.Timeout | null,
+
+  addToBatch: (companyId: string, callback: () => void) => {
+    batchedQueries.batchCompanyIds.add(companyId);
+    
+    if (batchedQueries.batchTimeout) {
+      clearTimeout(batchedQueries.batchTimeout);
+    }
+
+    batchedQueries.batchTimeout = setTimeout(() => {
+      // Execute batch after 50ms of no new additions
+      callback();
+      batchedQueries.batchCompanyIds.clear();
+    }, 50);
   },
 };
