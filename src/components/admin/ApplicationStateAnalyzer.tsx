@@ -971,51 +971,115 @@ export function ApplicationStateAnalyzer() {
         {/* Tendencias */}
         <TabsContent value="trends" className="space-y-4">
           {improvementsAnalysis?.technologyTrends && Array.isArray(improvementsAnalysis.technologyTrends) && improvementsAnalysis.technologyTrends.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2">
-              {improvementsAnalysis.technologyTrends.map((trend, idx) => {
-                // Handle both expected structure and alternative field names from AI
-                const trendObj = trend as unknown as Record<string, unknown>;
-                const name = trendObj.name || trendObj.technology || trendObj.title || 'Tecnologia';
-                const relevance = trendObj.relevance || trendObj.relevancia || trendObj.description || trendObj.descripcion || '-';
-                const adoption = trendObj.adoptionRate || trendObj.adoption || trendObj.adopcion || trendObj.adoption_rate || '-';
-                const recommendation = trendObj.recommendation || trendObj.recomendacion || trendObj.recommended || trendObj.accion || '-';
-                const integration = trendObj.integrationPotential || trendObj.integration || trendObj.integracion || trendObj.potential || trendObj.potencial || '-';
-                
-                const isInstalled = trendObj.installed === true || 
-                  String(recommendation).toLowerCase().includes('instal·lat') ||
-                  String(integration).toLowerCase().includes('implementat');
-                
-                return (
-                  <Card key={idx} className={isInstalled ? 'border-green-500/50 bg-green-500/5' : ''}>
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg">{String(name)}</CardTitle>
-                        {isInstalled && (
-                          <Badge className="bg-green-500 text-white">
-                            <CheckCircle2 className="h-3 w-3 mr-1" />
-                            INSTAL·LAT
-                          </Badge>
-                        )}
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-2 text-sm">
+            <>
+              {/* Estadísticas de instalación */}
+              <div className="grid gap-4 md:grid-cols-3 mb-4">
+                <Card className="border-green-500/50 bg-green-500/10">
+                  <CardContent className="pt-4">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
                       <div>
-                        <span className="font-medium">Rellevància:</span> {String(relevance)}
+                        <p className="text-2xl font-bold text-green-600">
+                          {improvementsAnalysis.technologyTrends.filter(t => {
+                            const obj = t as unknown as Record<string, unknown>;
+                            return obj.installed === true || String(obj.recommendation || '').includes('INSTAL·LAT');
+                          }).length}
+                        </p>
+                        <p className="text-sm text-muted-foreground">Tecnologies Instal·lades</p>
                       </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="border-yellow-500/50 bg-yellow-500/10">
+                  <CardContent className="pt-4">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="h-5 w-5 text-yellow-500" />
                       <div>
-                        <span className="font-medium">Adopció:</span> {String(adoption)}
+                        <p className="text-2xl font-bold text-yellow-600">
+                          {improvementsAnalysis.technologyTrends.filter(t => {
+                            const obj = t as unknown as Record<string, unknown>;
+                            return obj.installed !== true && !String(obj.recommendation || '').includes('INSTAL·LAT');
+                          }).length}
+                        </p>
+                        <p className="text-sm text-muted-foreground">Pendents d'Avaluació</p>
                       </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-4">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="h-5 w-5 text-blue-500" />
                       <div>
-                        <span className="font-medium">Recomanació:</span> {String(recommendation)}
+                        <p className="text-2xl font-bold">
+                          {improvementsAnalysis.technologyTrends.length}
+                        </p>
+                        <p className="text-sm text-muted-foreground">Total Tecnologies</p>
                       </div>
-                      <div>
-                        <span className="font-medium">Potencial d'integració:</span> {String(integration)}
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                {improvementsAnalysis.technologyTrends.map((trend, idx) => {
+                  const trendObj = trend as unknown as Record<string, unknown>;
+                  const name = trendObj.name || trendObj.technology || trendObj.title || 'Tecnologia';
+                  const relevance = trendObj.relevance || trendObj.relevancia || trendObj.description || '-';
+                  const adoption = trendObj.adoptionRate || trendObj.adoption || '-';
+                  const recommendation = trendObj.recommendation || trendObj.recomendacion || '-';
+                  const integration = trendObj.integrationPotential || trendObj.integration || '-';
+                  
+                  const isInstalled = trendObj.installed === true || 
+                    String(recommendation).toLowerCase().includes('instal·lat');
+                  const isPending = String(recommendation).toLowerCase().includes('pendent');
+                  
+                  return (
+                    <Card key={idx} className={
+                      isInstalled 
+                        ? 'border-green-500/50 bg-green-500/5' 
+                        : isPending 
+                          ? 'border-yellow-500/30 bg-yellow-500/5' 
+                          : ''
+                    }>
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <CardTitle className="text-base font-semibold">{String(name)}</CardTitle>
+                          {isInstalled ? (
+                            <Badge className="bg-green-500 text-white shrink-0">
+                              <CheckCircle2 className="h-3 w-3 mr-1" />
+                              INSTAL·LAT
+                            </Badge>
+                          ) : isPending ? (
+                            <Badge variant="outline" className="border-yellow-500 text-yellow-600 shrink-0">
+                              ⏳ PENDENT
+                            </Badge>
+                          ) : null}
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-2 text-sm">
+                        <div>
+                          <span className="font-medium text-muted-foreground">Rellevància:</span>{' '}
+                          <span>{String(relevance)}</span>
+                        </div>
+                        <div>
+                          <span className="font-medium text-muted-foreground">Adopció:</span>{' '}
+                          <span>{String(adoption)}</span>
+                        </div>
+                        <div className={isInstalled ? 'text-green-600 font-medium' : isPending ? 'text-yellow-600' : ''}>
+                          <span className="font-medium">Recomanació:</span>{' '}
+                          <span>{String(recommendation)}</span>
+                        </div>
+                        <div>
+                          <span className="font-medium text-muted-foreground">Integració:</span>{' '}
+                          <span>{String(integration)}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </>
           ) : (
             <Card>
               <CardContent className="py-10 text-center">
@@ -1024,25 +1088,53 @@ export function ApplicationStateAnalyzer() {
             </Card>
           )}
 
-          {/* Otras listas */}
+          {/* Otras listas - Rendiment i IA */}
           {improvementsAnalysis && (
             <div className="grid gap-4 md:grid-cols-2">
               {improvementsAnalysis.performanceOptimizations && improvementsAnalysis.performanceOptimizations.length > 0 && (
                 <Card>
                   <CardHeader>
-                    <div className="flex items-center gap-2">
-                      <Zap className="h-5 w-5 text-yellow-500" />
-                      <CardTitle className="text-lg">Optimitzacions de Rendiment</CardTitle>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Zap className="h-5 w-5 text-yellow-500" />
+                        <CardTitle className="text-lg">Optimitzacions de Rendiment</CardTitle>
+                      </div>
+                      <Badge variant="outline">
+                        {improvementsAnalysis.performanceOptimizations.filter(o => String(o).includes('✅')).length}/{improvementsAnalysis.performanceOptimizations.length}
+                      </Badge>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <ul className="text-sm space-y-1">
+                    <div className="space-y-2">
                       {improvementsAnalysis.performanceOptimizations.map((opt, i) => {
-                        const item = opt as unknown as string | Record<string, unknown>;
-                        const text = typeof item === 'string' ? item : (item?.title || item?.description || item?.name || JSON.stringify(item));
-                        return <li key={i} className="text-muted-foreground">• {String(text)}</li>;
+                        const text = String(opt);
+                        const isInstalled = text.includes('✅ INSTAL·LAT');
+                        const isPending = text.includes('PENDENT');
+                        
+                        return (
+                          <div 
+                            key={i} 
+                            className={`flex items-start gap-2 p-2 rounded text-sm ${
+                              isInstalled ? 'bg-green-500/10' : isPending ? 'bg-yellow-500/10' : ''
+                            }`}
+                          >
+                            {isInstalled ? (
+                              <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            ) : isPending ? (
+                              <AlertTriangle className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                            ) : (
+                              <Zap className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                            )}
+                            <span className={
+                              isInstalled ? 'text-green-700 dark:text-green-400' : 
+                              isPending ? 'text-yellow-700 dark:text-yellow-400' : 'text-muted-foreground'
+                            }>
+                              {text}
+                            </span>
+                          </div>
+                        );
                       })}
-                    </ul>
+                    </div>
                   </CardContent>
                 </Card>
               )}
@@ -1050,23 +1142,47 @@ export function ApplicationStateAnalyzer() {
               {improvementsAnalysis.aiIntegrations && improvementsAnalysis.aiIntegrations.length > 0 && (
                 <Card>
                   <CardHeader>
-                    <div className="flex items-center gap-2">
-                      <Brain className="h-5 w-5 text-purple-500" />
-                      <CardTitle className="text-lg">Integracions IA</CardTitle>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Brain className="h-5 w-5 text-purple-500" />
+                        <CardTitle className="text-lg">Integracions IA</CardTitle>
+                      </div>
+                      <Badge variant="outline">
+                        {improvementsAnalysis.aiIntegrations.filter(a => String(a).includes('✅')).length}/{improvementsAnalysis.aiIntegrations.length}
+                      </Badge>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <ul className="text-sm space-y-1">
+                    <div className="space-y-2">
                       {improvementsAnalysis.aiIntegrations.map((ai, i) => {
-                        const aiItem = ai as unknown as string | { integration?: string; description?: string };
-                        const displayText = typeof aiItem === 'string' 
-                          ? aiItem 
-                          : (aiItem?.integration || aiItem?.description || JSON.stringify(aiItem));
+                        const text = String(ai);
+                        const isInstalled = text.includes('✅ INSTAL·LAT');
+                        const isPending = text.includes('PENDENT');
+                        
                         return (
-                          <li key={i} className="text-muted-foreground">• {displayText}</li>
+                          <div 
+                            key={i} 
+                            className={`flex items-start gap-2 p-2 rounded text-sm ${
+                              isInstalled ? 'bg-purple-500/10' : isPending ? 'bg-yellow-500/10' : ''
+                            }`}
+                          >
+                            {isInstalled ? (
+                              <CheckCircle2 className="h-4 w-4 text-purple-500 mt-0.5 flex-shrink-0" />
+                            ) : isPending ? (
+                              <AlertTriangle className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                            ) : (
+                              <Brain className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                            )}
+                            <span className={
+                              isInstalled ? 'text-purple-700 dark:text-purple-400' : 
+                              isPending ? 'text-yellow-700 dark:text-yellow-400' : 'text-muted-foreground'
+                            }>
+                              {text}
+                            </span>
+                          </div>
                         );
                       })}
-                    </ul>
+                    </div>
                   </CardContent>
                 </Card>
               )}
@@ -1078,25 +1194,102 @@ export function ApplicationStateAnalyzer() {
         <TabsContent value="compliance" className="space-y-4">
           {improvementsAnalysis?.complianceUpdates && Array.isArray(improvementsAnalysis.complianceUpdates) && improvementsAnalysis.complianceUpdates.length > 0 ? (
             <>
+              {/* Estadísticas de compliance */}
+              <div className="grid gap-4 md:grid-cols-3 mb-4">
+                <Card className="border-green-500/50 bg-green-500/10">
+                  <CardContent className="pt-4">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                      <div>
+                        <p className="text-2xl font-bold text-green-600">
+                          {improvementsAnalysis.complianceUpdates.filter(u => 
+                            String(u).includes('✅ COMPLINT')
+                          ).length}
+                        </p>
+                        <p className="text-sm text-muted-foreground">Normatives Complertes</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="border-yellow-500/50 bg-yellow-500/10">
+                  <CardContent className="pt-4">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                      <div>
+                        <p className="text-2xl font-bold text-yellow-600">
+                          {improvementsAnalysis.complianceUpdates.filter(u => 
+                            String(u).includes('⏳ PARCIAL')
+                          ).length}
+                        </p>
+                        <p className="text-sm text-muted-foreground">Parcial / En Progrés</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-4">
+                    <div className="flex items-center gap-2">
+                      <Scale className="h-5 w-5 text-blue-500" />
+                      <div>
+                        <p className="text-2xl font-bold">
+                          {improvementsAnalysis.complianceUpdates.length}
+                        </p>
+                        <p className="text-sm text-muted-foreground">Total Normatives</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
               <Card>
                 <CardHeader>
                   <div className="flex items-center gap-2">
                     <Scale className="h-5 w-5 text-blue-500" />
-                    <CardTitle>Actualitzacions Normatives</CardTitle>
+                    <CardTitle>Estat de Compliment Normatiu</CardTitle>
                   </div>
                   <CardDescription>
-                    Normatives i regulacions a tenir en compte
+                    Estat actual de cada normativa i regulació aplicable
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     {improvementsAnalysis.complianceUpdates.map((update, idx) => {
-                      const item = update as unknown as string | Record<string, unknown>;
-                      const text = typeof item === 'string' ? item : (item?.title || item?.description || item?.regulation || JSON.stringify(item));
+                      const text = String(update);
+                      const isCompliant = text.includes('✅ COMPLINT');
+                      const isPartial = text.includes('⏳ PARCIAL');
+                      
                       return (
-                        <div key={idx} className="flex items-start gap-2 p-3 rounded-lg bg-muted/50">
-                          <AlertTriangle className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-sm">{String(text)}</span>
+                        <div 
+                          key={idx} 
+                          className={`flex items-start gap-3 p-4 rounded-lg border ${
+                            isCompliant 
+                              ? 'bg-green-500/10 border-green-500/30' 
+                              : isPartial 
+                                ? 'bg-yellow-500/10 border-yellow-500/30' 
+                                : 'bg-muted/50 border-muted'
+                          }`}
+                        >
+                          {isCompliant ? (
+                            <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                          ) : isPartial ? (
+                            <AlertTriangle className="h-5 w-5 text-yellow-500 mt-0.5 flex-shrink-0" />
+                          ) : (
+                            <Scale className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                          )}
+                          <div className="flex-1">
+                            <span className={`text-sm ${
+                              isCompliant ? 'text-green-700 dark:text-green-400' : 
+                              isPartial ? 'text-yellow-700 dark:text-yellow-400' : ''
+                            }`}>
+                              {text}
+                            </span>
+                          </div>
+                          {isCompliant && (
+                            <Badge className="bg-green-500 text-white shrink-0">COMPLERT</Badge>
+                          )}
+                          {isPartial && (
+                            <Badge variant="outline" className="border-yellow-500 text-yellow-600 shrink-0">EN PROGRÉS</Badge>
+                          )}
                         </div>
                       );
                     })}
@@ -1109,22 +1302,40 @@ export function ApplicationStateAnalyzer() {
                   <CardHeader>
                     <div className="flex items-center gap-2">
                       <Shield className="h-5 w-5 text-green-500" />
-                      <CardTitle>Actualitzacions de Seguretat</CardTitle>
+                      <CardTitle>Estat de Seguretat</CardTitle>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <ul className="space-y-2">
+                    <div className="space-y-2">
                       {improvementsAnalysis.securityUpdates.map((update, idx) => {
-                        const item = update as unknown as string | Record<string, unknown>;
-                        const text = typeof item === 'string' ? item : (item?.element || item?.title || item?.description || item?.recommendation || JSON.stringify(item));
+                        const text = String(update);
+                        const isInstalled = text.includes('✅ INSTAL·LAT');
+                        const isPending = text.includes('PENDENT');
+                        
                         return (
-                          <li key={idx} className="text-sm text-muted-foreground flex items-center gap-2">
-                            <CheckCircle2 className="h-4 w-4 text-green-500" />
-                            {String(text)}
-                          </li>
+                          <div 
+                            key={idx} 
+                            className={`flex items-center gap-2 p-2 rounded ${
+                              isInstalled ? 'bg-green-500/10' : isPending ? 'bg-yellow-500/10' : ''
+                            }`}
+                          >
+                            {isInstalled ? (
+                              <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+                            ) : isPending ? (
+                              <AlertTriangle className="h-4 w-4 text-yellow-500 flex-shrink-0" />
+                            ) : (
+                              <Shield className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                            )}
+                            <span className={`text-sm ${
+                              isInstalled ? 'text-green-700 dark:text-green-400' : 
+                              isPending ? 'text-yellow-700 dark:text-yellow-400' : 'text-muted-foreground'
+                            }`}>
+                              {text}
+                            </span>
+                          </div>
                         );
                       })}
-                    </ul>
+                    </div>
                   </CardContent>
                 </Card>
               )}
