@@ -1944,42 +1944,57 @@ export type Database = {
       goals: {
         Row: {
           assigned_to: string | null
+          contributes_to_parent: boolean | null
           created_at: string | null
           created_by: string | null
           description: string | null
+          goal_level: string | null
           id: string
           metric_type: string
+          office: string | null
+          parent_goal_id: string | null
           period_end: string
           period_start: string
           period_type: string
           target_value: number
           updated_at: string | null
+          weight: number | null
         }
         Insert: {
           assigned_to?: string | null
+          contributes_to_parent?: boolean | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
+          goal_level?: string | null
           id?: string
           metric_type: string
+          office?: string | null
+          parent_goal_id?: string | null
           period_end: string
           period_start: string
           period_type: string
           target_value: number
           updated_at?: string | null
+          weight?: number | null
         }
         Update: {
           assigned_to?: string | null
+          contributes_to_parent?: boolean | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
+          goal_level?: string | null
           id?: string
           metric_type?: string
+          office?: string | null
+          parent_goal_id?: string | null
           period_end?: string
           period_start?: string
           period_type?: string
           target_value?: number
           updated_at?: string | null
+          weight?: number | null
         }
         Relationships: [
           {
@@ -1994,6 +2009,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goals_parent_goal_id_fkey"
+            columns: ["parent_goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
             referencedColumns: ["id"]
           },
         ]
@@ -2822,6 +2844,80 @@ export type Database = {
           },
         ]
       }
+      visit_sheet_photos: {
+        Row: {
+          created_at: string
+          id: string
+          photo_caption: string | null
+          photo_url: string
+          uploaded_at: string
+          uploaded_by: string | null
+          visit_sheet_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          photo_caption?: string | null
+          photo_url: string
+          uploaded_at?: string
+          uploaded_by?: string | null
+          visit_sheet_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          photo_caption?: string | null
+          photo_url?: string
+          uploaded_at?: string
+          uploaded_by?: string | null
+          visit_sheet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visit_sheet_photos_visit_sheet_id_fkey"
+            columns: ["visit_sheet_id"]
+            isOneToOne: false
+            referencedRelation: "visit_sheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      visit_sheet_templates: {
+        Row: {
+          active: boolean | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_default: boolean | null
+          name: string
+          template_data: Json
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          name: string
+          template_data?: Json
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          template_data?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       visit_sheets: {
         Row: {
           acciones_acordadas: Json | null
@@ -2840,6 +2936,9 @@ export type Database = {
           endeudamiento_total: number | null
           facturacion_anual: number | null
           fecha: string
+          firma_digital: string | null
+          firma_fecha: string | null
+          firma_nombre_firmante: string | null
           gestor_id: string
           hora: string | null
           id: string
@@ -2865,6 +2964,7 @@ export type Database = {
           riesgos_cumplimiento: Json | null
           situacion_laboral: string | null
           telefono_contacto: string | null
+          template_id: string | null
           tipo_cliente: string | null
           tipo_visita: string | null
           tpv_volumen_mensual: number | null
@@ -2892,6 +2992,9 @@ export type Database = {
           endeudamiento_total?: number | null
           facturacion_anual?: number | null
           fecha: string
+          firma_digital?: string | null
+          firma_fecha?: string | null
+          firma_nombre_firmante?: string | null
           gestor_id: string
           hora?: string | null
           id?: string
@@ -2917,6 +3020,7 @@ export type Database = {
           riesgos_cumplimiento?: Json | null
           situacion_laboral?: string | null
           telefono_contacto?: string | null
+          template_id?: string | null
           tipo_cliente?: string | null
           tipo_visita?: string | null
           tpv_volumen_mensual?: number | null
@@ -2944,6 +3048,9 @@ export type Database = {
           endeudamiento_total?: number | null
           facturacion_anual?: number | null
           fecha?: string
+          firma_digital?: string | null
+          firma_fecha?: string | null
+          firma_nombre_firmante?: string | null
           gestor_id?: string
           hora?: string | null
           id?: string
@@ -2969,6 +3076,7 @@ export type Database = {
           riesgos_cumplimiento?: Json | null
           situacion_laboral?: string | null
           telefono_contacto?: string | null
+          template_id?: string | null
           tipo_cliente?: string | null
           tipo_visita?: string | null
           tpv_volumen_mensual?: number | null
@@ -2999,6 +3107,13 @@ export type Database = {
             columns: ["responsable_seguimiento"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "visit_sheets_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "visit_sheet_templates"
             referencedColumns: ["id"]
           },
           {
