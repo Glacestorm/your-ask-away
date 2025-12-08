@@ -301,14 +301,61 @@ self.addEventListener('notificationclose', (event) => {
 self.addEventListener('sync', (event) => {
   console.log('[SW] Background sync:', event.tag);
   
-  if (event.tag === 'sync-visits') {
-    event.waitUntil(syncVisits());
+  if (event.tag === 'sync-visits' || event.tag === 'sync-offline-operations') {
+    event.waitUntil(syncOfflineOperations());
   }
 });
 
-async function syncVisits() {
-  // Placeholder for syncing offline visits when back online
-  console.log('[SW] Syncing visits...');
+async function syncOfflineOperations() {
+  console.log('[SW] Syncing offline operations...');
+  
+  // Open IndexedDB to get pending operations
+  const dbRequest = indexedDB.open('CreandCRM_OfflineDB', 1);
+  
+  return new Promise((resolve, reject) => {
+    dbRequest.onerror = () => reject(dbRequest.error);
+    
+    dbRequest.onsuccess = async () => {
+      const db = dbRequest.result;
+      
+      if (!db.objectStoreNames.contains('pendingOperations')) {
+        console.log('[SW] No pending operations store found');
+        resolve();
+        return;
+      }
+      
+      const transaction = db.transaction('pendingOperations', 'readonly');
+      const store = transaction.objectStore('pendingOperations');
+      const getAllRequest = store.getAll();
+      
+      getAllRequest.onsuccess = async () => {
+        const operations = getAllRequest.result.filter(
+          op => op.status === 'pending' || op.status === 'failed'
+        );
+        
+        if (operations.length === 0) {
+          console.log('[SW] No pending operations to sync');
+          resolve();
+          return;
+        }
+        
+        console.log(`[SW] Found ${operations.length} pending operations`);
+        
+        // Notify main thread to perform sync
+        const clients = await self.clients.matchAll();
+        for (const client of clients) {
+          client.postMessage({
+            type: 'SYNC_REQUIRED',
+            pendingCount: operations.length
+          });
+        }
+        
+        resolve();
+      };
+      
+      getAllRequest.onerror = () => reject(getAllRequest.error);
+    };
+  });
 }
 
 // Message handling from main thread
@@ -323,5 +370,34 @@ self.addEventListener('message', (event) => {
         return Promise.all(names.map((name) => caches.delete(name)));
       })
     );
+  }
+  
+  if (event.data && event.data.type === 'CACHE_CRITICAL_DATA') {
+    event.waitUntil(cacheCriticalData(event.data.urls || []));
+  }
+});
+
+// Cache critical URLs for offline access
+async function cacheCriticalData(urls) {
+  const cache = await caches.open(DYNAMIC_CACHE);
+  for (const url of urls) {
+    try {
+      const response = await fetch(url);
+      if (response.ok) {
+        await cache.put(url, response);
+        console.log('[SW] Cached critical URL:', url);
+      }
+    } catch (error) {
+      console.warn('[SW] Failed to cache URL:', url, error);
+    }
+  }
+}
+
+// Periodic sync for keeping data fresh (if supported)
+self.addEventListener('periodicsync', (event) => {
+  console.log('[SW] Periodic sync:', event.tag);
+  
+  if (event.tag === 'sync-data') {
+    event.waitUntil(syncOfflineOperations());
   }
 });
