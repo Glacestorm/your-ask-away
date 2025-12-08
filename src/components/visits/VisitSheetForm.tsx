@@ -17,7 +17,10 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ConflictDialog } from '@/components/ui/ConflictDialog';
-import { Calendar as CalendarIcon, Save, FileText, Package, PackagePlus, CheckCircle2, XCircle, Clock, AlertTriangle, Send, User, History } from 'lucide-react';
+import { Calendar as CalendarIcon, Save, FileText, Package, PackagePlus, CheckCircle2, XCircle, Clock, AlertTriangle, Send, User, History, PenTool, Camera, FileStack } from 'lucide-react';
+import { SignaturePad } from './SignaturePad';
+import { VisitSheetPhotos } from './VisitSheetPhotos';
+import { VisitSheetTemplateSelector } from './VisitSheetTemplateSelector';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -156,6 +159,14 @@ export function VisitSheetForm({ visitId, companyId, open, onOpenChange, onSaved
   const [validationNotes, setValidationNotes] = useState<string>('');
   const [validationHistory, setValidationHistory] = useState<ValidationHistoryData | null>(null);
 
+  // === NUEVOS CAMPOS: Firma Digital ===
+  const [firmaDigital, setFirmaDigital] = useState<string | null>(null);
+  const [firmaNombreFirmante, setFirmaNombreFirmante] = useState<string>('');
+  
+  // === NUEVOS CAMPOS: Fotos y Templates ===
+  const [visitPhotos, setVisitPhotos] = useState<Array<{id: string; photo_url: string; photo_caption: string | null; uploaded_at: string}>>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+
   useEffect(() => {
     if (open && companyId) {
       fetchCompanyData();
@@ -177,6 +188,21 @@ export function VisitSheetForm({ visitId, companyId, open, onOpenChange, onSaved
       .eq('company_id', companyId)
       .eq('active', true);
     if (data) setProductosActuales(data.map(p => p.product_id));
+  };
+
+  const fetchVisitPhotos = async (sheetId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('visit_sheet_photos')
+        .select('id, photo_url, photo_caption, uploaded_at')
+        .eq('visit_sheet_id', sheetId)
+        .order('uploaded_at', { ascending: false });
+      
+      if (error) throw error;
+      if (data) setVisitPhotos(data);
+    } catch (error) {
+      console.error('Error fetching visit photos:', error);
+    }
   };
 
   const fetchCompanyData = async () => {
@@ -234,6 +260,8 @@ export function VisitSheetForm({ visitId, companyId, open, onOpenChange, onSaved
       if (data) {
         setExistingSheet(data);
         loadSheetData(data);
+        // Load photos for this visit sheet
+        fetchVisitPhotos(data.id);
       }
     } catch (error) {
       console.error('Error fetching existing sheet:', error);
@@ -266,6 +294,10 @@ export function VisitSheetForm({ visitId, companyId, open, onOpenChange, onSaved
     if (data.resultado_oferta) setResultadoOferta(data.resultado_oferta);
     if (data.validation_status) setValidationStatus(data.validation_status);
     if (data.validation_notes) setValidationNotes(data.validation_notes);
+    
+    // Cargar firma digital
+    if (data.firma_digital) setFirmaDigital(data.firma_digital);
+    if (data.firma_nombre_firmante) setFirmaNombreFirmante(data.firma_nombre_firmante);
     
     // Load validation history if validated
     if (data.validated_at && data.validated_by) {
@@ -409,6 +441,10 @@ export function VisitSheetForm({ visitId, companyId, open, onOpenChange, onSaved
       productos_ofrecidos: productosOfrecidos,
       resultado_oferta: resultadoOferta || null,
       validation_status: status,
+      // Firma digital
+      firma_digital: firmaDigital,
+      firma_nombre_firmante: firmaNombreFirmante || null,
+      firma_fecha: firmaDigital ? new Date().toISOString() : null,
     };
 
     if (existingSheet) {
@@ -544,13 +580,17 @@ export function VisitSheetForm({ visitId, companyId, open, onOpenChange, onSaved
         
         <ScrollArea className="h-[calc(90vh-8rem)] pr-4">
           <Tabs defaultValue="datos-visita" className="w-full">
-            <TabsList className="grid grid-cols-6 w-full">
+            <TabsList className="grid grid-cols-7 w-full">
               <TabsTrigger value="datos-visita">Visita</TabsTrigger>
               <TabsTrigger value="cliente">Cliente</TabsTrigger>
               <TabsTrigger value="diagnostico">Diagnóstico</TabsTrigger>
               <TabsTrigger value="productos">Productos</TabsTrigger>
               <TabsTrigger value="evaluacion">Evaluación</TabsTrigger>
               <TabsTrigger value="seguimiento">Seguimiento</TabsTrigger>
+              <TabsTrigger value="extras" className="flex items-center gap-1">
+                <PenTool className="h-3 w-3" />
+                Extras
+              </TabsTrigger>
             </TabsList>
 
             {/* Tab 1: Datos de la Visita */}
@@ -1445,6 +1485,60 @@ export function VisitSheetForm({ visitId, companyId, open, onOpenChange, onSaved
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            {/* Tab 7: Extras - Firma, Fotos, Templates */}
+            <TabsContent value="extras" className="space-y-4">
+              {/* Template Selector */}
+              <VisitSheetTemplateSelector
+                selectedTemplateId={selectedTemplateId}
+                onTemplateSelect={(template) => {
+                  if (template) {
+                    setSelectedTemplateId(template.id);
+                    const data = template.template_data;
+                    if (data.tipo_visita) setTipoVisita(data.tipo_visita);
+                    if (data.canal) setCanal(data.canal);
+                    if (data.diagnostico_inicial) setDiagnosticoInicial(data.diagnostico_inicial);
+                    if (data.necesidades_detectadas) setNecesidadesDetectadas(data.necesidades_detectadas);
+                    if (data.propuesta_valor) setPropuestaValor(data.propuesta_valor);
+                    if (data.riesgos_cumplimiento) setRiesgosCumplimiento(data.riesgos_cumplimiento);
+                    if (data.nivel_riesgo) setNivelRiesgo(data.nivel_riesgo);
+                  } else {
+                    setSelectedTemplateId(null);
+                  }
+                }}
+                currentFormData={{
+                  tipoVisita,
+                  canal,
+                  diagnosticoInicial,
+                  necesidadesDetectadas,
+                  propuestaValor,
+                  riesgosCumplimiento,
+                  nivelRiesgo,
+                  nivelVinculacionRecomendado,
+                  duracion
+                }}
+                canManageTemplates={true}
+              />
+
+              {/* Photos Manager */}
+              <VisitSheetPhotos
+                visitSheetId={existingSheet?.id || null}
+                photos={visitPhotos}
+                onPhotosChange={setVisitPhotos}
+                disabled={validationStatus === 'approved'}
+              />
+
+              {/* Digital Signature */}
+              <SignaturePad
+                onSignatureChange={(signature, name) => {
+                  setFirmaDigital(signature);
+                  setFirmaNombreFirmante(name);
+                }}
+                existingSignature={firmaDigital}
+                existingSignerName={firmaNombreFirmante}
+                disabled={validationStatus === 'approved'}
+              />
             </TabsContent>
           </Tabs>
         </ScrollArea>
