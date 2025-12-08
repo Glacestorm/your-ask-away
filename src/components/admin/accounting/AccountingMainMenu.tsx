@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, Home, Building2, FileInput, FileOutput, Database, Shield, Users, FileText, BarChart3, PieChart, TrendingUp, Calculator, Landmark, ClipboardList, Target, LineChart, Scale, BookOpen, FileCheck, Search, Briefcase, Wallet, Activity, DollarSign, Gauge, Award, FileBarChart, Layers } from 'lucide-react';
+import { ChevronDown, ChevronRight, Home, Building2, FileInput, FileOutput, Database, Shield, Users, FileText, BarChart3, PieChart, TrendingUp, Calculator, Landmark, ClipboardList, Target, LineChart, Scale, BookOpen, FileCheck, Search, Briefcase, Wallet, Activity, DollarSign, Gauge, Award, FileBarChart, Layers, Sparkles, Bot, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
@@ -222,6 +222,18 @@ const menuCategories: MenuCategory[] = [
       { id: 'capitalizacion', label: 'Valores Capitalización', icon: <DollarSign className="h-4 w-4" /> },
     ]
   },
+  {
+    id: 'inteligencia-artificial',
+    title: 'INTEL·LIGÈNCIA ARTIFICIAL',
+    icon: <Sparkles className="h-5 w-5" />,
+    gradientFrom: 'from-violet-100 dark:from-violet-950/50',
+    gradientTo: 'to-violet-50 dark:to-violet-900/30',
+    accentColor: 'text-violet-700 dark:text-violet-400 border-violet-400 dark:border-violet-600',
+    items: [
+      { id: 'chat-ia-financiero', label: 'Chat IA Financer', icon: <MessageSquare className="h-4 w-4" />, description: 'Consulta intel·ligent sobre dades financeres' },
+      { id: 'analisis-ia', label: 'Anàlisi amb IA', icon: <Bot className="h-4 w-4" />, description: 'Anàlisi automàtica amb intel·ligència artificial' },
+    ]
+  },
 ];
 
 // Mapping de secciones del menú a vistas reales del sistema
@@ -302,6 +314,8 @@ const sectionMappings: Record<string, string> = {
   'eva': 'eva',
   'per': 'per',
   'capitalizacion': 'capitalizacion',
+  'chat-ia-financiero': 'chat-ia-financiero',
+  'analisis-ia': 'analisis-ia',
 };
 
 export function AccountingMainMenu({ onNavigate, onSelectCompany, currentSection, selectedCompanyId }: AccountingMainMenuProps) {
