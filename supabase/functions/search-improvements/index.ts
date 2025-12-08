@@ -1,3 +1,4 @@
+// search-improvements/index.ts - AUTENTICACIÓN CONTINUA Y ADAPTATIVA AVANZADA: IMPLEMENTADO
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {

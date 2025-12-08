@@ -14,6 +14,13 @@ interface DeviceFingerprint {
   platform: string;
   cookieEnabled: boolean;
   doNotTrack: boolean;
+  // Enhanced fingerprinting
+  webglRenderer?: string;
+  canvasHash?: string;
+  audioContext?: string;
+  hardwareConcurrency?: number;
+  deviceMemory?: number;
+  touchSupport?: boolean;
 }
 
 interface LocationData {
@@ -31,6 +38,15 @@ interface LocationData {
   org?: string;
 }
 
+interface BehaviorMetrics {
+  typingSpeed?: number;
+  mouseMovementPattern?: string;
+  scrollBehavior?: string;
+  sessionDuration?: number;
+  interactionRate?: number;
+  navigationPattern?: string[];
+}
+
 interface RiskAssessmentRequest {
   userId: string;
   sessionId: string;
@@ -38,16 +54,25 @@ interface RiskAssessmentRequest {
   action?: string;
   transactionValue?: number;
   clientIp?: string;
+  behaviorMetrics?: BehaviorMetrics;
+  continuousAuth?: boolean;
 }
 
 interface RiskFactor {
   factor: string;
   weight: number;
   description: string;
+  category: 'device' | 'location' | 'behavior' | 'transaction' | 'temporal' | 'ml_anomaly';
+}
+
+interface AnomalyScore {
+  score: number;
+  anomalies: string[];
+  confidence: number;
 }
 
 function generateDeviceHash(fp: DeviceFingerprint): string {
-  const raw = `${fp.userAgent}|${fp.platform}|${fp.language}|${fp.timezone}|${fp.screenResolution}`;
+  const raw = `${fp.userAgent}|${fp.platform}|${fp.language}|${fp.timezone}|${fp.screenResolution}|${fp.webglRenderer || ''}|${fp.canvasHash || ''}`;
   let hash = 0;
   for (let i = 0; i < raw.length; i++) {
     const char = raw.charCodeAt(i);
@@ -61,10 +86,117 @@ function getCurrentHour(): number {
   return new Date().getHours();
 }
 
+// ML-based anomaly detection using statistical analysis
+function detectBehaviorAnomalies(
+  currentMetrics: BehaviorMetrics | undefined,
+  historicalPatterns: any
+): AnomalyScore {
+  if (!currentMetrics || !historicalPatterns) {
+    return { score: 0, anomalies: [], confidence: 0.5 };
+  }
+
+  const anomalies: string[] = [];
+  let anomalyScore = 0;
+
+  // Typing speed anomaly (Z-score analysis)
+  if (currentMetrics.typingSpeed && historicalPatterns.avg_typing_speed) {
+    const zScore = Math.abs(
+      (currentMetrics.typingSpeed - historicalPatterns.avg_typing_speed) / 
+      (historicalPatterns.typing_speed_std || 1)
+    );
+    if (zScore > 2.5) {
+      anomalyScore += 20;
+      anomalies.push(`Velocidad de escritura anómala (z-score: ${zScore.toFixed(2)})`);
+    }
+  }
+
+  // Session duration anomaly
+  if (currentMetrics.sessionDuration && historicalPatterns.avg_session_duration) {
+    const durationRatio = currentMetrics.sessionDuration / historicalPatterns.avg_session_duration;
+    if (durationRatio < 0.1 || durationRatio > 10) {
+      anomalyScore += 15;
+      anomalies.push(`Duración de sesión inusual`);
+    }
+  }
+
+  // Interaction rate anomaly
+  if (currentMetrics.interactionRate && historicalPatterns.avg_interaction_rate) {
+    const rateRatio = currentMetrics.interactionRate / historicalPatterns.avg_interaction_rate;
+    if (rateRatio < 0.2 || rateRatio > 5) {
+      anomalyScore += 15;
+      anomalies.push(`Tasa de interacción anómala`);
+    }
+  }
+
+  // Navigation pattern anomaly (Jaccard similarity)
+  if (currentMetrics.navigationPattern && historicalPatterns.typical_navigation) {
+    const currentSet = new Set(currentMetrics.navigationPattern);
+    const typicalSet = new Set(historicalPatterns.typical_navigation as string[]);
+    const intersection = [...currentSet].filter(x => typicalSet.has(x)).length;
+    const union = new Set([...currentSet, ...typicalSet]).size;
+    const similarity = union > 0 ? intersection / union : 0;
+    
+    if (similarity < 0.3) {
+      anomalyScore += 10;
+      anomalies.push(`Patrón de navegación inusual (similitud: ${(similarity * 100).toFixed(0)}%)`);
+    }
+  }
+
+  const confidence = Math.min(0.95, 0.5 + (historicalPatterns.sample_count || 0) * 0.05);
+
+  return {
+    score: Math.min(50, anomalyScore),
+    anomalies,
+    confidence
+  };
+}
+
+// Velocity check - detect impossible travel
+function calculateVelocityRisk(
+  currentLocation: LocationData | null,
+  previousLocations: any[],
+  lastLoginTime: Date | null
+): { score: number; description: string } | null {
+  if (!currentLocation?.latitude || !currentLocation?.longitude || !previousLocations?.length || !lastLoginTime) {
+    return null;
+  }
+
+  const lastLocation = previousLocations[0];
+  if (!lastLocation.latitude || !lastLocation.longitude) return null;
+
+  // Haversine distance calculation
+  const R = 6371; // Earth radius in km
+  const dLat = (currentLocation.latitude! - lastLocation.latitude) * Math.PI / 180;
+  const dLon = (currentLocation.longitude! - lastLocation.longitude) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lastLocation.latitude * Math.PI / 180) * 
+    Math.cos(currentLocation.latitude * Math.PI / 180) *
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const distance = R * c;
+
+  const timeDiffHours = (Date.now() - lastLoginTime.getTime()) / (1000 * 60 * 60);
+  const velocity = distance / Math.max(timeDiffHours, 0.1);
+
+  // Max human travel speed ~900 km/h (commercial flight)
+  if (velocity > 1000 && distance > 100) {
+    return {
+      score: 35,
+      description: `Viaje imposible detectado: ${distance.toFixed(0)}km en ${timeDiffHours.toFixed(1)}h`
+    };
+  } else if (velocity > 500 && distance > 50) {
+    return {
+      score: 15,
+      description: `Cambio de ubicación rápido: ${distance.toFixed(0)}km`
+    };
+  }
+
+  return null;
+}
+
 // IP Geolocation using free ip-api.com service
 async function getIpGeolocation(ip: string): Promise<LocationData | null> {
   try {
-    // Skip private/local IPs
     if (ip.startsWith('192.168.') || ip.startsWith('10.') || ip.startsWith('127.') || ip === '::1') {
       return null;
     }
@@ -97,6 +229,31 @@ async function getIpGeolocation(ip: string): Promise<LocationData | null> {
     console.error("IP geolocation error:", error);
     return null;
   }
+}
+
+// Calculate risk adjustment based on user's historical behavior
+function calculateHistoricalTrustAdjustment(
+  totalLogins: number,
+  successfulLogins: number,
+  accountAge: number
+): number {
+  let adjustment = 0;
+
+  // Account age trust (up to -15 points for old accounts)
+  const ageInDays = accountAge / (1000 * 60 * 60 * 24);
+  if (ageInDays > 365) adjustment -= 15;
+  else if (ageInDays > 180) adjustment -= 10;
+  else if (ageInDays > 90) adjustment -= 5;
+  else if (ageInDays < 7) adjustment += 10;
+
+  // Login success rate trust
+  if (totalLogins > 10) {
+    const successRate = successfulLogins / totalLogins;
+    if (successRate > 0.95) adjustment -= 10;
+    else if (successRate < 0.7) adjustment += 15;
+  }
+
+  return adjustment;
 }
 
 serve(async (req) => {
@@ -138,7 +295,8 @@ serve(async (req) => {
           riskFactors.push({
             factor: "vpn_detected",
             weight: 30,
-            description: `Conexión VPN/Proxy detectada desde ${locationData.country || 'ubicación desconocida'}`
+            description: `Conexión VPN/Proxy detectada desde ${locationData.country || 'ubicación desconocida'}`,
+            category: 'location'
           });
         }
 
@@ -149,7 +307,8 @@ serve(async (req) => {
           riskFactors.push({
             factor: "unusual_country",
             weight: 25,
-            description: `Acceso desde país inusual: ${locationData.country}`
+            description: `Acceso desde país inusual: ${locationData.country}`,
+            category: 'location'
           });
         }
 
@@ -168,7 +327,8 @@ serve(async (req) => {
             riskFactors.push({
               factor: "new_location",
               weight: 15,
-              description: `Primera conexión desde ${locationData.city || locationData.country}`
+              description: `Primera conexión desde ${locationData.city || locationData.country}`,
+              category: 'location'
             });
           }
         }
@@ -216,7 +376,8 @@ serve(async (req) => {
       riskFactors.push({
         factor: "new_device",
         weight: 25,
-        description: "Dispositivo no reconocido detectado"
+        description: "Dispositivo no reconocido detectado",
+        category: 'device'
       });
 
       // Register new device
@@ -261,7 +422,8 @@ serve(async (req) => {
         riskFactors.push({
           factor: "trusted_device",
           weight: -10,
-          description: "Dispositivo de confianza"
+          description: "Dispositivo de confianza",
+          category: 'device'
         });
       }
 
@@ -271,34 +433,88 @@ serve(async (req) => {
         riskFactors.push({
           factor: "low_device_familiarity",
           weight: 10,
-          description: "Dispositivo con pocos accesos previos"
+          description: "Dispositivo con pocos accesos previos",
+          category: 'device'
         });
       }
     }
 
-    // 3. Check typical login hours
+    // 3. Check typical login hours and behavior patterns
     const currentHour = getCurrentHour();
     
     const { data: behaviorPattern } = await supabase
       .from("user_behavior_patterns")
-      .select("typical_login_hours")
+      .select("*")
       .eq("user_id", userId)
       .maybeSingle();
 
     if (behaviorPattern?.typical_login_hours) {
       const typicalHours = behaviorPattern.typical_login_hours as number[];
       if (typicalHours.length > 0 && !typicalHours.includes(currentHour)) {
-        // Check if within 2 hours of typical
         const nearTypical = typicalHours.some(h => Math.abs(h - currentHour) <= 2);
         if (!nearTypical) {
           riskScore += 15;
           riskFactors.push({
             factor: "unusual_hour",
             weight: 15,
-            description: `Acceso a hora inusual (${currentHour}:00)`
+            description: `Acceso a hora inusual (${currentHour}:00)`,
+            category: 'temporal'
           });
         }
       }
+
+      // ML-based behavior anomaly detection
+      const anomalyResult = detectBehaviorAnomalies(
+        (await req.json().catch(() => ({})))?.behaviorMetrics,
+        behaviorPattern
+      );
+      
+      if (anomalyResult.score > 0) {
+        riskScore += anomalyResult.score;
+        anomalyResult.anomalies.forEach(anomaly => {
+          riskFactors.push({
+            factor: "ml_anomaly",
+            weight: anomalyResult.score / anomalyResult.anomalies.length,
+            description: anomaly,
+            category: 'ml_anomaly'
+          });
+        });
+      }
+
+      // Velocity check - impossible travel detection
+      const { data: recentLocations } = await supabase
+        .from("user_login_locations")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (recentLocations?.length && locationData) {
+        const lastLoginTime = new Date(recentLocations[0].created_at);
+        const velocityRisk = calculateVelocityRisk(locationData, recentLocations, lastLoginTime);
+        
+        if (velocityRisk) {
+          riskScore += velocityRisk.score;
+          riskFactors.push({
+            factor: "impossible_travel",
+            weight: velocityRisk.score,
+            description: velocityRisk.description,
+            category: 'location'
+          });
+        }
+      }
+
+      // Update behavior patterns with new data
+      const updatedHours = [...new Set([...typicalHours, currentHour])].slice(-24);
+      await supabase
+        .from("user_behavior_patterns")
+        .update({
+          typical_login_hours: updatedHours,
+          last_analyzed_at: new Date().toISOString(),
+          total_sessions: (behaviorPattern.total_sessions || 0) + 1,
+        })
+        .eq("user_id", userId);
+
     } else {
       // First login - store behavior pattern
       await supabase
@@ -308,8 +524,51 @@ serve(async (req) => {
           typical_login_hours: [currentHour],
           typical_devices: [deviceHash],
           typical_locations: locationData?.countryCode ? [locationData.countryCode] : [],
-          last_analyzed_at: new Date().toISOString()
+          last_analyzed_at: new Date().toISOString(),
+          total_sessions: 1,
+          avg_typing_speed: null,
+          typing_speed_std: null,
+          avg_session_duration: null,
+          avg_interaction_rate: null,
+          typical_navigation: [],
+          sample_count: 0,
         });
+    }
+
+    // Historical trust adjustment
+    const { data: userStats } = await supabase
+      .from("session_risk_assessments")
+      .select("id, step_up_completed")
+      .eq("user_id", userId);
+
+    if (userStats) {
+      const totalLogins = userStats.length;
+      const successfulLogins = userStats.filter(s => !s.step_up_completed || s.step_up_completed).length;
+      
+      // Get user creation date for account age
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("created_at")
+        .eq("id", userId)
+        .single();
+
+      const accountAge = profile?.created_at 
+        ? Date.now() - new Date(profile.created_at).getTime() 
+        : 0;
+
+      const trustAdjustment = calculateHistoricalTrustAdjustment(totalLogins, successfulLogins, accountAge);
+      
+      if (trustAdjustment !== 0) {
+        riskScore += trustAdjustment;
+        riskFactors.push({
+          factor: trustAdjustment < 0 ? "historical_trust" : "low_historical_trust",
+          weight: trustAdjustment,
+          description: trustAdjustment < 0 
+            ? "Historial de confianza establecido" 
+            : "Cuenta nueva o historial limitado",
+          category: 'behavior'
+        });
+      }
     }
 
     // 4. Check for rapid successive logins (potential credential stuffing)
@@ -326,29 +585,100 @@ serve(async (req) => {
       riskFactors.push({
         factor: "rapid_logins",
         weight: 20,
-        description: "Múltiples intentos de acceso en poco tiempo"
+        description: "Múltiples intentos de acceso en poco tiempo",
+        category: 'behavior'
       });
     }
 
-    // 5. High-value transaction check
-    if (transactionValue && transactionValue > 10000) {
-      riskScore += 20;
-      riskFactors.push({
-        factor: "high_value_transaction",
-        weight: 20,
-        description: `Transacción de alto valor: ${transactionValue}€`
-      });
+    // 5. High-value transaction check with tiered risk
+    if (transactionValue) {
+      if (transactionValue > 50000) {
+        riskScore += 35;
+        riskFactors.push({
+          factor: "critical_value_transaction",
+          weight: 35,
+          description: `Transacción crítica: ${transactionValue.toLocaleString()}€`,
+          category: 'transaction'
+        });
+      } else if (transactionValue > 10000) {
+        riskScore += 20;
+        riskFactors.push({
+          factor: "high_value_transaction",
+          weight: 20,
+          description: `Transacción de alto valor: ${transactionValue.toLocaleString()}€`,
+          category: 'transaction'
+        });
+      } else if (transactionValue > 3000) {
+        riskScore += 10;
+        riskFactors.push({
+          factor: "medium_value_transaction",
+          weight: 10,
+          description: `Transacción significativa: ${transactionValue.toLocaleString()}€`,
+          category: 'transaction'
+        });
+      }
     }
 
-    // 6. Sensitive action check
-    const sensitiveActions = ["transfer", "password_change", "export_data", "delete_account", "change_email", "add_user", "delete_user"];
-    if (action && sensitiveActions.includes(action)) {
-      riskScore += 15;
-      riskFactors.push({
-        factor: "sensitive_action",
-        weight: 15,
-        description: `Acción sensible: ${action}`
-      });
+    // 6. Sensitive action check with categorization
+    const criticalActions = ["delete_account", "export_all_data", "change_admin_password"];
+    const highSensitiveActions = ["transfer", "password_change", "change_email", "add_user", "delete_user"];
+    const mediumSensitiveActions = ["export_data", "modify_permissions", "bulk_update"];
+    
+    if (action) {
+      if (criticalActions.includes(action)) {
+        riskScore += 30;
+        riskFactors.push({
+          factor: "critical_action",
+          weight: 30,
+          description: `Acción crítica: ${action}`,
+          category: 'transaction'
+        });
+      } else if (highSensitiveActions.includes(action)) {
+        riskScore += 20;
+        riskFactors.push({
+          factor: "sensitive_action",
+          weight: 20,
+          description: `Acción sensible: ${action}`,
+          category: 'transaction'
+        });
+      } else if (mediumSensitiveActions.includes(action)) {
+        riskScore += 10;
+        riskFactors.push({
+          factor: "monitored_action",
+          weight: 10,
+          description: `Acción monitoreada: ${action}`,
+          category: 'transaction'
+        });
+      }
+    }
+
+    // 7. Continuous authentication - session behavior monitoring
+    const { continuousAuth } = await req.json().catch(() => ({ continuousAuth: false }));
+    
+    if (continuousAuth) {
+      // Check for session anomalies during active session
+      const { data: sessionData } = await supabase
+        .from("session_risk_assessments")
+        .select("*")
+        .eq("session_id", sessionId)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (sessionData?.length) {
+        const lastAssessment = sessionData[0];
+        const timeSinceLastCheck = Date.now() - new Date(lastAssessment.created_at).getTime();
+        
+        // If significant time has passed, require re-evaluation
+        if (timeSinceLastCheck > 30 * 60 * 1000) { // 30 minutes
+          riskScore += 10;
+          riskFactors.push({
+            factor: "session_age",
+            weight: 10,
+            description: "Sesión activa por tiempo prolongado",
+            category: 'temporal'
+          });
+        }
+      }
     }
 
     // Determine risk level
