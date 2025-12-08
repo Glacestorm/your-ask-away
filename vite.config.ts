@@ -30,14 +30,8 @@ export default defineConfig(({ mode }) => ({
         },
       },
     },
-    // Minification for smaller bundle sizes
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: mode === 'production',
-        drop_debugger: true,
-      },
-    },
+    // Minification for smaller bundle sizes (esbuild is built-in)
+    minify: 'esbuild',
     // Enable source maps for debugging
     sourcemap: mode !== 'production',
     // Chunk size warning
