@@ -9,10 +9,13 @@ import {
   Clock, AlertTriangle, TrendingUp, Fingerprint, Globe,
   Laptop, Trash2, CheckCircle, XCircle, Eye, RefreshCw,
   Activity, Brain, Gauge, Timer, MousePointer, Keyboard,
-  Navigation, Zap, BarChart3, Radio
+  Navigation, Zap, BarChart3, Radio, Scan, DollarSign,
+  AlertOctagon, UserCheck, FileWarning, Scale, Hash, Target
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { useAdaptiveAuth } from '@/hooks/useAdaptiveAuth';
+import { useBehavioralBiometrics } from '@/hooks/useBehavioralBiometrics';
+import { useAMLFraudDetection } from '@/hooks/useAMLFraudDetection';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -237,11 +240,19 @@ export function AdaptiveAuthDashboard() {
 
       {/* Tabs */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="overview">Resumen</TabsTrigger>
           <TabsTrigger value="monitoring">
             <Radio className="h-3 w-3 mr-1 animate-pulse text-green-500" />
-            Monitorización
+            ML
+          </TabsTrigger>
+          <TabsTrigger value="biometrics">
+            <Fingerprint className="h-3 w-3 mr-1" />
+            Biometría
+          </TabsTrigger>
+          <TabsTrigger value="aml">
+            <Scale className="h-3 w-3 mr-1" />
+            AML/Fraude
           </TabsTrigger>
           <TabsTrigger value="devices">Dispositivos</TabsTrigger>
           <TabsTrigger value="locations">Ubicaciones</TabsTrigger>
@@ -328,6 +339,14 @@ export function AdaptiveAuthDashboard() {
 
         <TabsContent value="monitoring" className="space-y-4">
           <MonitoringTab assessments={assessments} />
+        </TabsContent>
+
+        <TabsContent value="biometrics" className="space-y-4">
+          <BiometricsTab />
+        </TabsContent>
+
+        <TabsContent value="aml" className="space-y-4">
+          <AMLFraudTab />
         </TabsContent>
 
         <TabsContent value="devices" className="space-y-4">
@@ -854,6 +873,582 @@ function MonitoringTab({ assessments }: { assessments: RiskAssessment[] }) {
           </Table>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+// Biometrics Tab Component - Full PSD3 Behavioral Biometrics
+function BiometricsTab() {
+  const { 
+    isCollecting, 
+    currentProfile, 
+    anomalies, 
+    matchScore,
+    startCollection, 
+    stopCollection, 
+    getTypingDNA, 
+    getMouseDNA,
+    compareWithBaseline 
+  } = useBehavioralBiometrics();
+
+  const [comparisonResult, setComparisonResult] = useState<{
+    match: boolean;
+    score: number;
+    anomalies: { type: string; severity: string; description: string }[];
+  } | null>(null);
+
+  const handleCompare = async () => {
+    const result = await compareWithBaseline();
+    setComparisonResult(result);
+    if (result.match) {
+      toast.success(`Biometría verificada: ${result.score}% coincidencia`);
+    } else {
+      toast.warning(`Anomalía detectada: ${result.score}% coincidencia`);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Collection Control */}
+      <Card className="border-2 border-dashed">
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className={`p-3 rounded-full ${isCollecting ? 'bg-green-500/20 animate-pulse' : 'bg-muted'}`}>
+                <Fingerprint className={`h-6 w-6 ${isCollecting ? 'text-green-500' : 'text-muted-foreground'}`} />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg">Biometría Comportamental PSD3</h3>
+                <p className="text-sm text-muted-foreground">
+                  TypingDNA, Mouse DNA, Touch Patterns, Navigation Behavior
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                onClick={isCollecting ? stopCollection : startCollection}
+                variant={isCollecting ? "destructive" : "default"}
+              >
+                {isCollecting ? 'Detener' : 'Iniciar'} Captura
+              </Button>
+              {currentProfile && (
+                <Button onClick={handleCompare} variant="outline">
+                  <Scan className="h-4 w-4 mr-2" />
+                  Comparar Baseline
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {isCollecting && (
+            <div className="mt-4 grid grid-cols-4 gap-4">
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
+                <Keyboard className="h-4 w-4 text-primary" />
+                <div>
+                  <p className="text-xs text-muted-foreground">TypingDNA</p>
+                  <p className="font-mono text-sm text-green-500">Capturando...</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
+                <MousePointer className="h-4 w-4 text-primary" />
+                <div>
+                  <p className="text-xs text-muted-foreground">MouseDNA</p>
+                  <p className="font-mono text-sm text-green-500">Capturando...</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
+                <Target className="h-4 w-4 text-primary" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Touch</p>
+                  <p className="font-mono text-sm text-green-500">Activo</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
+                <Navigation className="h-4 w-4 text-primary" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Navegación</p>
+                  <p className="font-mono text-sm text-green-500">Tracking</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Match Score */}
+      <div className="grid grid-cols-3 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <UserCheck className="h-4 w-4 text-green-500" />
+              Puntuación Match
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className={`text-3xl font-bold ${matchScore >= 70 ? 'text-green-500' : matchScore >= 50 ? 'text-yellow-500' : 'text-red-500'}`}>
+              {matchScore}%
+            </p>
+            <Progress value={matchScore} className="mt-2 h-2" />
+            <p className="text-xs text-muted-foreground mt-1">
+              {matchScore >= 70 ? 'Usuario verificado' : matchScore >= 50 ? 'Requiere revisión' : 'Alta discrepancia'}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-orange-500" />
+              Anomalías Detectadas
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">{anomalies.length}</p>
+            <p className="text-xs text-muted-foreground">
+              {anomalies.filter(a => a.severity === 'critical' || a.severity === 'high').length} críticas
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Activity className="h-4 w-4 text-blue-500" />
+              Estado Perfil
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-lg font-bold">
+              {currentProfile ? 'Capturado' : 'Sin datos'}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {currentProfile?.sessionMetrics?.totalDuration 
+                ? `${Math.round(currentProfile.sessionMetrics.totalDuration / 1000)}s sesión`
+                : 'Iniciar captura'}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Current Profile Details */}
+      {currentProfile && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Hash className="h-5 w-5 text-primary" />
+              Perfil Biométrico Actual
+            </CardTitle>
+            <CardDescription>Huella digital comportamental del usuario</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-6">
+              {/* Typing Metrics */}
+              <div className="space-y-3">
+                <h4 className="font-medium flex items-center gap-2">
+                  <Keyboard className="h-4 w-4" /> TypingDNA
+                </h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Intervalo promedio</span>
+                    <span className="font-mono">{currentProfile.typing.avgKeyInterval.toFixed(0)}ms</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Hold duration</span>
+                    <span className="font-mono">{currentProfile.typing.keyHoldDuration.toFixed(0)}ms</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Desviación std</span>
+                    <span className="font-mono">{currentProfile.typing.stdDeviation.toFixed(1)}ms</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Digrafos únicos</span>
+                    <span className="font-mono">{Object.keys(currentProfile.typing.digraphTimings).length}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Mouse Metrics */}
+              <div className="space-y-3">
+                <h4 className="font-medium flex items-center gap-2">
+                  <MousePointer className="h-4 w-4" /> MouseDNA
+                </h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Velocidad promedio</span>
+                    <span className="font-mono">{currentProfile.mouse.avgSpeed.toFixed(2)} px/ms</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Aceleración</span>
+                    <span className="font-mono">{currentProfile.mouse.avgAcceleration.toFixed(3)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Entropía movimiento</span>
+                    <span className={`font-mono ${currentProfile.mouse.movementEntropy < 1.5 ? 'text-red-500' : 'text-green-500'}`}>
+                      {currentProfile.mouse.movementEntropy.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Scroll velocity</span>
+                    <span className="font-mono">{currentProfile.mouse.scrollVelocity.toFixed(0)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Anomalies Table */}
+      {anomalies.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Anomalías Comportamentales</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Severidad</TableHead>
+                  <TableHead>Descripción</TableHead>
+                  <TableHead>Confianza</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {anomalies.map((anomaly, i) => (
+                  <TableRow key={i}>
+                    <TableCell>
+                      <Badge variant="outline">{anomaly.type}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={`${
+                        anomaly.severity === 'critical' ? 'bg-red-500/10 text-red-500' :
+                        anomaly.severity === 'high' ? 'bg-orange-500/10 text-orange-500' :
+                        anomaly.severity === 'medium' ? 'bg-yellow-500/10 text-yellow-500' :
+                        'bg-green-500/10 text-green-500'
+                      }`}>
+                        {anomaly.severity}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="max-w-xs truncate">{anomaly.description}</TableCell>
+                    <TableCell>
+                      <span className="font-mono">{(anomaly.confidence * 100).toFixed(0)}%</span>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// AML/Fraud Detection Tab Component
+function AMLFraudTab() {
+  const {
+    isAnalyzing,
+    fraudIndicators,
+    amlAlerts,
+    riskProfile,
+    overallFraudScore,
+    analyzeTransaction,
+    checkAMLCompliance,
+    getUserRiskProfile,
+    reportSuspiciousActivity
+  } = useAMLFraudDetection();
+
+  const [testAmount, setTestAmount] = useState(5000);
+  const [testCountry, setTestCountry] = useState('ES');
+  const [testResult, setTestResult] = useState<any>(null);
+  const [amlResult, setAmlResult] = useState<any>(null);
+
+  const handleTestTransaction = async () => {
+    const result = await analyzeTransaction({
+      amount: testAmount,
+      currency: 'EUR',
+      type: 'transfer',
+      recipientCountry: testCountry,
+      channel: 'web',
+      timestamp: new Date()
+    });
+    setTestResult(result);
+    
+    if (!result.approved) {
+      toast.error(result.blockReason || 'Transacción bloqueada');
+    } else if (result.requiresReview) {
+      toast.warning('Transacción requiere revisión manual');
+    } else {
+      toast.success('Transacción aprobada');
+    }
+  };
+
+  const handleAMLCheck = async () => {
+    const result = await checkAMLCompliance(testAmount, testCountry);
+    setAmlResult(result);
+    
+    if (!result.compliant) {
+      toast.error('Fallo de compliance AML');
+    } else if (result.requiresEnhancedDueDiligence) {
+      toast.warning('Requiere Enhanced Due Diligence');
+    } else {
+      toast.success('Cumple normativa AML');
+    }
+  };
+
+  useEffect(() => {
+    getUserRiskProfile();
+  }, []);
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <Card className="border-2 border-dashed">
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-full bg-purple-500/20">
+                <Scale className="h-6 w-6 text-purple-500" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg">Detección AML/Fraude PSD3</h3>
+                <p className="text-sm text-muted-foreground">
+                  Análisis contextual, velocidad, geolocalización, patrones de transacción
+                </p>
+              </div>
+            </div>
+            <Badge variant="outline" className={`${
+              overallFraudScore >= 80 ? 'bg-red-500/10 text-red-500' :
+              overallFraudScore >= 50 ? 'bg-orange-500/10 text-orange-500' :
+              overallFraudScore >= 25 ? 'bg-yellow-500/10 text-yellow-500' :
+              'bg-green-500/10 text-green-500'
+            }`}>
+              Score: {overallFraudScore}
+            </Badge>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Stats */}
+      <div className="grid grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <AlertOctagon className="h-4 w-4 text-red-500" />
+              Indicadores Fraude
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">{fraudIndicators.length}</p>
+            <p className="text-xs text-muted-foreground">
+              {fraudIndicators.filter(f => f.severity === 'critical').length} críticos
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <FileWarning className="h-4 w-4 text-orange-500" />
+              Alertas AML
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">{amlAlerts.length}</p>
+            <p className="text-xs text-muted-foreground">
+              {amlAlerts.filter(a => a.severity === 'critical').length} sanciones
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <UserCheck className="h-4 w-4 text-green-500" />
+              KYC Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-lg font-bold capitalize">{riskProfile?.kycStatus || 'pending'}</p>
+            <p className="text-xs text-muted-foreground">
+              PEP: {riskProfile?.pepStatus ? 'Sí' : 'No'}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Globe className="h-4 w-4 text-purple-500" />
+              Riesgo Geográfico
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">{riskProfile?.geographicRiskScore || 0}%</p>
+            <Progress value={riskProfile?.geographicRiskScore || 0} className="mt-2 h-1" />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Test Panel */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <DollarSign className="h-5 w-5 text-primary" />
+            Simulador de Transacción
+          </CardTitle>
+          <CardDescription>Prueba el análisis de fraude y AML</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-4 items-end">
+            <div className="flex-1">
+              <label className="text-sm text-muted-foreground">Monto (EUR)</label>
+              <input 
+                type="number"
+                value={testAmount}
+                onChange={(e) => setTestAmount(Number(e.target.value))}
+                className="w-full mt-1 p-2 rounded-md border bg-background"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="text-sm text-muted-foreground">País Destino</label>
+              <select 
+                value={testCountry}
+                onChange={(e) => setTestCountry(e.target.value)}
+                className="w-full mt-1 p-2 rounded-md border bg-background"
+              >
+                <option value="ES">España</option>
+                <option value="FR">Francia</option>
+                <option value="AD">Andorra</option>
+                <option value="RU">Rusia (Alto riesgo)</option>
+                <option value="IR">Irán (Sancionado)</option>
+                <option value="KP">Corea del Norte (Sancionado)</option>
+                <option value="NG">Nigeria (Alto riesgo)</option>
+              </select>
+            </div>
+            <Button onClick={handleTestTransaction} disabled={isAnalyzing}>
+              {isAnalyzing ? 'Analizando...' : 'Analizar Fraude'}
+            </Button>
+            <Button onClick={handleAMLCheck} variant="outline">
+              Check AML
+            </Button>
+          </div>
+
+          {/* Test Results */}
+          {testResult && (
+            <div className={`mt-4 p-4 rounded-lg ${
+              testResult.approved ? 'bg-green-500/10' : 'bg-red-500/10'
+            }`}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-medium">
+                  {testResult.approved ? '✓ Transacción Aprobada' : '✗ Transacción Bloqueada'}
+                </span>
+                <Badge variant="outline">Score: {testResult.score}</Badge>
+              </div>
+              {testResult.blockReason && (
+                <p className="text-sm text-red-500">{testResult.blockReason}</p>
+              )}
+              {testResult.requiresReview && (
+                <p className="text-sm text-yellow-500">⚠ Requiere revisión manual</p>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Fraud Indicators */}
+      {fraudIndicators.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Indicadores de Fraude Detectados</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Severidad</TableHead>
+                  <TableHead>Score</TableHead>
+                  <TableHead>Descripción</TableHead>
+                  <TableHead>Recomendación</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {fraudIndicators.map((indicator, i) => (
+                  <TableRow key={i}>
+                    <TableCell>
+                      <Badge variant="outline">{indicator.type}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={`${
+                        indicator.severity === 'critical' ? 'bg-red-500/10 text-red-500' :
+                        indicator.severity === 'high' ? 'bg-orange-500/10 text-orange-500' :
+                        indicator.severity === 'medium' ? 'bg-yellow-500/10 text-yellow-500' :
+                        'bg-green-500/10 text-green-500'
+                      }`}>
+                        {indicator.severity}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <span className="font-mono">{indicator.score}</span>
+                    </TableCell>
+                    <TableCell className="max-w-xs truncate">{indicator.description}</TableCell>
+                    <TableCell className="max-w-xs text-xs text-muted-foreground truncate">
+                      {indicator.recommendation}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* AML Alerts */}
+      {amlAlerts.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Alertas AML</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {amlAlerts.map((alert) => (
+                <div key={alert.id} className={`p-4 rounded-lg border ${
+                  alert.severity === 'critical' ? 'border-red-500 bg-red-500/5' :
+                  alert.severity === 'alert' ? 'border-orange-500 bg-orange-500/5' :
+                  'border-yellow-500 bg-yellow-500/5'
+                }`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Badge className={`${
+                        alert.severity === 'critical' ? 'bg-red-500' :
+                        alert.severity === 'alert' ? 'bg-orange-500' :
+                        'bg-yellow-500'
+                      } text-white`}>
+                        {alert.type.toUpperCase()}
+                      </Badge>
+                      <span className="font-medium">{alert.description}</span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">€{alert.totalAmount.toFixed(2)}</span>
+                  </div>
+                  <div className="mt-2">
+                    <p className="text-xs text-muted-foreground mb-1">Recomendaciones:</p>
+                    <ul className="text-xs space-y-1">
+                      {alert.recommendations.map((rec, i) => (
+                        <li key={i} className="flex items-center gap-1">
+                          <span className="w-1 h-1 rounded-full bg-muted-foreground" />
+                          {rec}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
