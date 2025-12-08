@@ -74,3 +74,9 @@ verify_jwt = true
 
 [functions.financial-rag-chat]
 verify_jwt = true
+
+[functions.evaluate-session-risk]
+verify_jwt = true
+
+[functions.verify-step-up-challenge]
+verify_jwt = true
