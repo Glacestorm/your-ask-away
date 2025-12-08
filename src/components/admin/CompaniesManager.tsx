@@ -22,6 +22,7 @@ import { CompaniesPagination } from './CompaniesPagination';
 import { CompanyExportButton } from './CompanyExportButton';
 import { CompanyDataCompleteness } from './CompanyDataCompleteness';
 import { AdvancedCompanyFilters } from './AdvancedCompanyFilters';
+import { EnhancedCompanyCard } from './EnhancedCompanyCard';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useCompaniesServerPagination } from '@/hooks/useCompaniesServerPagination';
@@ -1239,210 +1240,27 @@ export function CompaniesManager() {
 
         {viewMode === 'cards' ? (
           <ScrollArea className="h-[600px]">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredAndSortedCompanies.map((company) => {
-              const photoUrl = getPhoto(company.id);
-              return (
-                <Card 
-                  key={company.id} 
-                  className="group relative overflow-hidden hover:shadow-2xl transition-all duration-500 border-border/50 hover:border-primary/30 cursor-pointer"
-                >
-                  {/* Background Photo with Blur */}
-                  {photoUrl && (
-                    <div 
-                      className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-                      style={{
-                        backgroundImage: `url(${photoUrl})`,
-                        filter: 'blur(20px) brightness(0.3)',
-                      }}
-                      onClick={() => setSelectedPhoto(photoUrl)}
-                    />
-                  )}
-                  
-                  {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/85 to-background/75" />
-                  
-                  {/* Content */}
-                  <CardContent className="relative p-6 space-y-4 z-10">
-                    {/* Header */}
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-xl truncate mb-2 text-foreground drop-shadow-lg">
-                          {company.name}
-                        </h3>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {/* Status Badge */}
-                          <div 
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm"
-                            style={{ 
-                              backgroundColor: `${company.status?.color_hex || '#gray'}90`,
-                              color: '#ffffff',
-                              border: `2px solid ${company.status?.color_hex || '#gray'}`
-                            }}
-                          >
-                            <div
-                              className="h-2 w-2 rounded-full animate-pulse"
-                              style={{ backgroundColor: '#ffffff' }}
-                            />
-                            {company.status?.status_name || 'N/A'}
-                          </div>
-                          
-                          {/* Geolocation Indicator - Compact */}
-                          <div 
-                            className="inline-flex items-center justify-center w-7 h-7 rounded-full shadow-lg backdrop-blur-sm border-2"
-                            style={{
-                              backgroundColor: isGeolocated(company) ? '#10b98190' : '#ef444490',
-                              borderColor: isGeolocated(company) ? '#10b981' : '#ef4444'
-                            }}
-                            title={isGeolocated(company) ? t('companyForm.geolocated') : t('companyForm.notGeolocated')}
-                          >
-                            <MapPin className="h-4 w-4 text-white" />
-                          </div>
-
-                          {/* Client Type Badge */}
-                          {(company as any).client_type && (
-                            <div className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold shadow-lg backdrop-blur-sm ${
-                              (company as any).client_type === 'cliente' 
-                                ? 'bg-primary/90 text-white border-2 border-primary'
-                                : 'bg-muted/90 text-foreground border-2 border-muted-foreground/30'
-                            }`}>
-                              {(company as any).client_type === 'cliente' ? 'Cliente' : 'Potencial'}
-                            </div>
-                          )}
-                          
-                          {/* Data Completeness Indicator */}
-                          <CompanyDataCompleteness company={company} />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Key Info - Most Important Data */}
-                    <div className="space-y-3 text-sm">
-                      {/* Address */}
-                      <div className="flex items-start gap-2 bg-background/60 backdrop-blur-sm p-3 rounded-lg shadow-sm">
-                        <MapPin className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-foreground">{company.address}</p>
-                          <p className="text-muted-foreground text-xs mt-0.5">{company.parroquia}</p>
-                        </div>
-                      </div>
-
-                      {/* Phone - Always visible */}
-                      <div className="flex items-center gap-2 bg-background/60 backdrop-blur-sm p-3 rounded-lg shadow-sm">
-                        <Phone className="h-4 w-4 text-primary flex-shrink-0" />
-                        {(company as any).phone ? (
-                          <a 
-                            href={`tel:${(company as any).phone}`}
-                            className="text-foreground font-medium hover:text-primary transition-colors"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {(company as any).phone}
-                          </a>
-                        ) : (
-                          <span className="text-muted-foreground text-xs">{t('companyForm.noPhone')}</span>
-                        )}
-                      </div>
-
-                      {/* Vinculación Creand */}
-                      {((company as any).vinculacion_entidad_1 || (company as any).vinculacion_entidad_2 || (company as any).vinculacion_entidad_3) && (
-                        <div className="flex items-center gap-2 bg-primary/10 backdrop-blur-sm p-3 rounded-lg shadow-sm border border-primary/30">
-                          <TrendingUp className="h-4 w-4 text-primary flex-shrink-0" />
-                          <div className="flex-1">
-                            <p className="font-semibold text-primary">
-                              {t('companyForm.creandLinkage')}: {
-                                Math.round(
-                                  (
-                                    ((company as any).vinculacion_entidad_1 || 0) +
-                                    ((company as any).vinculacion_entidad_2 || 0) +
-                                    ((company as any).vinculacion_entidad_3 || 0)
-                                  ) / 3
-                                )
-                              }%
-                            </p>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Email */}
-                      {(company as any).email && (
-                        <div className="flex items-center gap-2 bg-background/60 backdrop-blur-sm p-3 rounded-lg shadow-sm">
-                          <Mail className="h-4 w-4 text-primary flex-shrink-0" />
-                          <a 
-                            href={`mailto:${(company as any).email}`}
-                            className="text-foreground truncate hover:text-primary transition-colors text-xs"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {(company as any).email}
-                          </a>
-                        </div>
-                      )}
-
-                      {/* Manager */}
-                      {company.gestor && (
-                        <div className="flex items-center gap-2 bg-background/60 backdrop-blur-sm p-3 rounded-lg shadow-sm">
-                          <Users className="h-4 w-4 text-primary flex-shrink-0" />
-                          <p className="text-foreground truncate font-medium">
-                            {company.gestor.full_name || company.gestor.email}
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Tags */}
-                      {(company as any).tags && (company as any).tags.length > 0 && (
-                        <div className="bg-background/60 backdrop-blur-sm p-3 rounded-lg shadow-sm">
-                          <div className="flex flex-wrap gap-1.5">
-                            {(company as any).tags.map((tag: string, idx: number) => (
-                              <span 
-                                key={idx}
-                                className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-primary/20 text-primary border border-primary/30"
-                              >
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex gap-2 pt-3">
-                      <Button 
-                        variant="default" 
-                        size="sm" 
-                        className="flex-1 shadow-lg backdrop-blur-sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDetailsCompany(company);
-                          handleEdit(company);
-                        }}
-                      >
-                        {canEditCompany(company) ? (
-                          <Pencil className="h-3.5 w-3.5 mr-1.5" />
-                        ) : (
-                          <Eye className="h-3.5 w-3.5 mr-1.5" />
-                        )}
-                        {canEditCompany(company) ? 'Editar' : 'Ver'}
-                      </Button>
-                      {canDeleteCompanies() && (
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="shadow-lg backdrop-blur-sm bg-background/80 hover:bg-destructive/20 text-destructive hover:text-destructive border-destructive/30"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(company.id);
-                          }}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </ScrollArea>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+              {filteredAndSortedCompanies.map((company) => {
+                const photoUrl = getPhoto(company.id);
+                return (
+                  <EnhancedCompanyCard
+                    key={company.id}
+                    company={company}
+                    photoUrl={photoUrl}
+                    canEdit={canEditCompany(company)}
+                    canDelete={canDeleteCompanies()}
+                    onEdit={() => {
+                      setDetailsCompany(company);
+                      handleEdit(company);
+                    }}
+                    onDelete={() => handleDelete(company.id)}
+                    onPhotoClick={(url) => setSelectedPhoto(url)}
+                  />
+                );
+              })}
+            </div>
+          </ScrollArea>
         ) : (
           <>
             {/* Bulk Actions Bar */}
