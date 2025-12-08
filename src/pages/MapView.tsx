@@ -8,7 +8,6 @@ import { GeoSearch } from '@/components/map/GeoSearch';
 import { RoutePlanner } from '@/components/map/RoutePlanner';
 import { MapLegend } from '@/components/map/MapLegend';
 import { MapStatisticsPanel } from '@/components/map/MapStatisticsPanel';
-import { MapExportButton } from '@/components/map/MapExportButton';
 import { CompanyWithDetails, MapFilters, StatusColor, Product, MapColorMode } from '@/types/database';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Search, Route } from 'lucide-react';
@@ -91,6 +90,8 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
   const [routePlannerCompany, setRoutePlannerCompany] = useState<CompanyWithDetails | null>(null);
   const [isSelectingPins, setIsSelectingPins] = useState(false);
   const [routeSelectedIds, setRouteSelectedIds] = useState<string[]>([]);
+  const [showLegend, setShowLegend] = useState(true);
+  const [showStatistics, setShowStatistics] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -350,6 +351,12 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
         canGoForward={canGoForward}
         onGoBack={onGoBack}
         onGoForward={onGoForward}
+        showLegend={showLegend}
+        onToggleLegend={() => setShowLegend(!showLegend)}
+        showStatistics={showStatistics}
+        onToggleStatistics={() => setShowStatistics(!showStatistics)}
+        companies={companies}
+        filteredCompanies={filteredCompanies}
       />
       
       <div className="flex flex-1 min-h-0 h-full relative">
@@ -440,6 +447,8 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
               colorMode={colorMode}
               companiesCount={companies.length}
               filteredCount={filteredCompanies.length}
+              isVisible={showLegend}
+              onClose={() => setShowLegend(false)}
             />
 
             {/* Statistics Panel */}
@@ -447,16 +456,10 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
               companies={companies}
               filteredCompanies={filteredCompanies}
               statusColors={statusColors}
+              isVisible={showStatistics}
+              onClose={() => setShowStatistics(false)}
             />
 
-            {/* Export Button in header area */}
-            <div className="absolute top-4 right-4 z-10">
-              <MapExportButton
-                companies={companies}
-                filteredCompanies={filteredCompanies}
-                statusColors={statusColors}
-              />
-            </div>
 
             {showRoutePlanner && (
               <RoutePlanner

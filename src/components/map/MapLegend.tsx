@@ -13,6 +13,8 @@ interface MapLegendProps {
   colorMode: MapColorMode;
   companiesCount: number;
   filteredCount: number;
+  isVisible: boolean;
+  onClose: () => void;
 }
 
 export function MapLegend({
@@ -20,8 +22,9 @@ export function MapLegend({
   colorMode,
   companiesCount,
   filteredCount,
+  isVisible,
+  onClose,
 }: MapLegendProps) {
-  const [isOpen, setIsOpen] = useState(false);
   const [expandedSections, setExpandedSections] = useState<string[]>(['colors']);
 
   const toggleSection = (section: string) => {
@@ -109,36 +112,27 @@ export function MapLegend({
     }
   };
 
+  if (!isVisible) return null;
+
   return (
     <div className="absolute right-4 bottom-24 z-10">
-      {!isOpen ? (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsOpen(true)}
-          className="bg-card shadow-lg hover:bg-accent"
-        >
-          <Palette className="mr-2 h-4 w-4" />
-          Llegenda
-        </Button>
-      ) : (
-        <Card className="w-72 shadow-lg bg-card/95 backdrop-blur-sm">
-          <div className="border-b p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Palette className="h-4 w-4 text-primary" />
-                <h3 className="font-semibold text-sm">Llegenda del Mapa</h3>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsOpen(false)}
-                className="h-6 w-6 p-0"
-              >
-                <X className="h-4 w-4" />
-              </Button>
+      <Card className="w-72 shadow-lg bg-card/95 backdrop-blur-sm">
+        <div className="border-b p-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Palette className="h-4 w-4 text-primary" />
+              <h3 className="font-semibold text-sm">Llegenda del Mapa</h3>
             </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onClose}
+              className="h-6 w-6 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
+        </div>
 
           <ScrollArea className="max-h-[400px]">
             <div className="p-3 space-y-3">
@@ -231,9 +225,8 @@ export function MapLegend({
                 </div>
               </div>
             </div>
-          </ScrollArea>
-        </Card>
-      )}
+        </ScrollArea>
+      </Card>
     </div>
   );
 }
