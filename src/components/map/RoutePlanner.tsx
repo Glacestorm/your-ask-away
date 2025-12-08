@@ -235,8 +235,8 @@ export function RoutePlanner({
     onClose();
   };
 
-  const openInGoogleMaps = () => {
-    if (!origin || selectedCompanies.length === 0) return;
+  const getGoogleMapsUrl = () => {
+    if (!origin || selectedCompanies.length === 0) return '';
 
     const orderedCompanies = optimizedRoute 
       ? optimizedRoute.optimized_order.map(o => selectedCompanies.find(c => c.id === o.id)!)
@@ -252,10 +252,10 @@ export function RoutePlanner({
       waypointsStr = intermediates.map(c => `${c.latitude},${c.longitude}`).join('|');
     }
 
-    const url = `https://www.google.com/maps/dir/?api=1&origin=${originStr}&destination=${destinationStr}${waypointsStr ? `&waypoints=${waypointsStr}` : ''}&travelmode=driving`;
-    
-    window.open(url, '_blank');
+    return `https://www.google.com/maps/dir/?api=1&origin=${originStr}&destination=${destinationStr}${waypointsStr ? `&waypoints=${waypointsStr}` : ''}&travelmode=driving`;
   };
+
+  const googleMapsUrl = getGoogleMapsUrl();
 
   // Filter companies based on search query
   const filteredCompanies = companies.filter(company => {
@@ -396,9 +396,11 @@ export function RoutePlanner({
 
             {/* Actions */}
             <div className="flex gap-2">
-              <Button size="sm" className="flex-1" onClick={openInGoogleMaps}>
-                <ExternalLink className="h-3 w-3 mr-1" />
-                Google Maps
+              <Button size="sm" className="flex-1" asChild>
+                <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="h-3 w-3 mr-1" />
+                  Google Maps
+                </a>
               </Button>
               <Button size="sm" variant="outline" onClick={handleReset}>
                 <RotateCcw className="h-3 w-3 mr-1" />
@@ -686,9 +688,11 @@ export function RoutePlanner({
 
                 {/* Actions */}
                 <div className="flex gap-2">
-                  <Button className="flex-1" onClick={openInGoogleMaps}>
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Abrir en Google Maps
+                  <Button className="flex-1" asChild>
+                    <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Abrir en Google Maps
+                    </a>
                   </Button>
                   <Button variant="outline" onClick={() => setMode('results')}>
                     <Eye className="h-4 w-4 mr-2" />
