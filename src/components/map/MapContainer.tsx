@@ -9,45 +9,7 @@ import { formatCnaeWithDescription } from '@/lib/cnaeDescriptions';
 import { getMarkerStyle, MarkerStyle } from './markerStyles';
 import { toast } from 'sonner';
 import { CompanyPhotosDialog } from './CompanyPhotosDialog';
-
-// Helper function to decode Google's encoded polyline
-function decodePolyline(encoded: string): [number, number][] {
-  const coords: [number, number][] = [];
-  let index = 0;
-  let lat = 0;
-  let lng = 0;
-
-  while (index < encoded.length) {
-    let b;
-    let shift = 0;
-    let result = 0;
-
-    do {
-      b = encoded.charCodeAt(index++) - 63;
-      result |= (b & 0x1f) << shift;
-      shift += 5;
-    } while (b >= 0x20);
-
-    const dlat = result & 1 ? ~(result >> 1) : result >> 1;
-    lat += dlat;
-
-    shift = 0;
-    result = 0;
-
-    do {
-      b = encoded.charCodeAt(index++) - 63;
-      result |= (b & 0x1f) << shift;
-      shift += 5;
-    } while (b >= 0x20);
-
-    const dlng = result & 1 ? ~(result >> 1) : result >> 1;
-    lng += dlng;
-
-    coords.push([lng / 1e5, lat / 1e5]);
-  }
-
-  return coords;
-}
+import { RouteOverlay } from './RouteOverlay';
 
 type CompanyPoint = {
   type: 'Feature';
@@ -237,15 +199,7 @@ export function MapContainer({
     name: string;
   } | null>(null);
 
-  // Ref to store current route polyline for re-adding after style changes
-  const currentRoutePolylineRef = useRef<string | null>(null);
-  // Ref for route markers (HTML markers are more reliable than layers)
-  const routeMarkersRef = useRef<maplibregl.Marker[]>([]);
-  
-  // Update ref when routePolyline changes
-  useEffect(() => {
-    currentRoutePolylineRef.current = routePolyline || null;
-  }, [routePolyline]);
+  // Route is now handled by RouteOverlay component
 
   // Effect to propagate prop changes to state
   useEffect(() => {
@@ -290,202 +244,7 @@ export function MapContainer({
     }
   }, [focusCompanyId, companies, mapLoaded, view3D, onFocusCompanyHandled]);
 
-  // Effect to draw route polyline on map with HTML markers for waypoints
-  useEffect(() => {
-    const mapInstance = map.current;
-    
-    // Cleanup existing route markers
-    const cleanupMarkers = () => {
-      routeMarkersRef.current.forEach(m => m.remove());
-      routeMarkersRef.current = [];
-    };
-
-    // Early exit conditions
-    if (!mapInstance || !mapLoaded) {
-      return;
-    }
-
-    const SOURCE_ID = 'route-line-source';
-    const LAYER_ID = 'route-line-layer';
-    const OUTLINE_ID = 'route-outline-layer';
-
-    // Remove existing route elements safely
-    const cleanupLayers = () => {
-      try {
-        if (mapInstance.getLayer(LAYER_ID)) mapInstance.removeLayer(LAYER_ID);
-      } catch (e) { /* ignore */ }
-      try {
-        if (mapInstance.getLayer(OUTLINE_ID)) mapInstance.removeLayer(OUTLINE_ID);
-      } catch (e) { /* ignore */ }
-      try {
-        if (mapInstance.getSource(SOURCE_ID)) mapInstance.removeSource(SOURCE_ID);
-      } catch (e) { /* ignore */ }
-    };
-
-    // If no polyline or no waypoints, just cleanup and exit
-    if (!routePolyline || !routeWaypoints || routeWaypoints.length === 0) {
-      cleanupLayers();
-      cleanupMarkers();
-      return;
-    }
-
-    // Draw the route - this function is safe to call multiple times
-    const drawRoute = () => {
-      if (!mapInstance.isStyleLoaded()) {
-        console.log('Style not loaded, waiting...');
-        return;
-      }
-      
-      try {
-        // Clean existing first
-        cleanupLayers();
-        cleanupMarkers();
-        
-        // Decode polyline to coordinates
-        const coords = decodePolyline(routePolyline);
-        console.log('Route coords decoded:', coords.length, 'points');
-        
-        if (coords.length < 2) {
-          console.warn('Not enough coordinates for route');
-          return;
-        }
-
-        // Add route line source
-        mapInstance.addSource(SOURCE_ID, {
-          type: 'geojson',
-          data: {
-            type: 'Feature',
-            properties: {},
-            geometry: { type: 'LineString', coordinates: coords }
-          }
-        });
-
-        // Outline layer (dark border for visibility)
-        mapInstance.addLayer({
-          id: OUTLINE_ID,
-          type: 'line',
-          source: SOURCE_ID,
-          layout: { 'line-join': 'round', 'line-cap': 'round' },
-          paint: { 'line-color': '#1a1a2e', 'line-width': 10 }
-        });
-
-        // Main route layer (blue)
-        mapInstance.addLayer({
-          id: LAYER_ID,
-          type: 'line',
-          source: SOURCE_ID,
-          layout: { 'line-join': 'round', 'line-cap': 'round' },
-          paint: { 'line-color': '#4285F4', 'line-width': 6 }
-        });
-        
-        console.log('Route layers added successfully');
-
-        // Add numbered markers for each waypoint at THEIR ACTUAL COORDINATES
-        const createdMarkers: maplibregl.Marker[] = [];
-        const waypointCount = routeWaypoints.length;
-        
-        console.log('Adding', waypointCount, 'waypoint markers');
-        
-        routeWaypoints.forEach((waypoint, index) => {
-          const isFirst = index === 0;
-          const isLast = index === waypointCount - 1;
-          
-          // Labels: A for first, B for last, numbers for intermediate
-          let label: string;
-          if (isFirst) {
-            label = 'A';
-          } else if (isLast && waypointCount > 1) {
-            label = 'B';
-          } else {
-            label = String(index);
-          }
-          
-          // Colors: Green for A, Red for B, Orange for intermediate
-          let bgColor: string;
-          if (isFirst) {
-            bgColor = '#00C853'; // Green
-          } else if (isLast && waypointCount > 1) {
-            bgColor = '#F44336'; // Red
-          } else {
-            bgColor = '#FF9800'; // Orange
-          }
-          
-          const markerEl = document.createElement('div');
-          markerEl.className = 'route-waypoint-marker';
-          markerEl.style.cssText = 'z-index: 9999; pointer-events: auto;';
-          markerEl.innerHTML = `
-            <div style="
-              width: 36px; height: 36px; 
-              background: ${bgColor}; 
-              border: 4px solid white; 
-              border-radius: 50%; 
-              box-shadow: 0 4px 12px rgba(0,0,0,0.6);
-              display: flex; align-items: center; justify-content: center;
-              color: white; font-weight: bold; font-size: 16px;
-              cursor: pointer;
-            " title="${waypoint.name}">${label}</div>
-          `;
-          
-          console.log(`Adding marker ${label} at [${waypoint.longitude}, ${waypoint.latitude}] for ${waypoint.name}`);
-          
-          const marker = new maplibregl.Marker({ element: markerEl })
-            .setLngLat([waypoint.longitude, waypoint.latitude])
-            .addTo(mapInstance);
-          
-          createdMarkers.push(marker);
-        });
-
-        routeMarkersRef.current = createdMarkers;
-
-        // Fit bounds to show all waypoints plus route
-        const allLngs = [...routeWaypoints.map(w => w.longitude), ...coords.map(c => c[0])];
-        const allLats = [...routeWaypoints.map(w => w.latitude), ...coords.map(c => c[1])];
-        
-        const bounds = new maplibregl.LngLatBounds(
-          [Math.min(...allLngs), Math.min(...allLats)],
-          [Math.max(...allLngs), Math.max(...allLats)]
-        );
-        
-        mapInstance.fitBounds(bounds, { 
-          padding: { top: 80, bottom: 80, left: 80, right: 420 }, 
-          duration: 1000 
-        });
-        
-        console.log('Route drawing complete');
-      } catch (err) {
-        console.error('Error drawing route:', err);
-      }
-    };
-
-    // Initial draw with small delay to ensure everything is ready
-    const initialTimeout = setTimeout(() => {
-      if (mapInstance.isStyleLoaded()) {
-        drawRoute();
-      } else {
-        mapInstance.once('load', drawRoute);
-      }
-    }, 200);
-
-    // Handle style changes - wait for full style load
-    const handleStyleData = () => {
-      setTimeout(() => {
-        if (routePolyline && routeWaypoints && routeWaypoints.length > 0 && mapInstance.isStyleLoaded()) {
-          drawRoute();
-        }
-      }, 300);
-    };
-    
-    mapInstance.on('styledata', handleStyleData);
-
-    return () => {
-      clearTimeout(initialTimeout);
-      cleanupLayers();
-      cleanupMarkers();
-      try {
-        mapInstance.off('styledata', handleStyleData);
-      } catch (e) { /* ignore */ }
-    };
-  }, [routePolyline, routeWaypoints, mapLoaded]);
+  // Route overlay is now handled by RouteOverlay component
 
   // Fetch tooltip configuration
   useEffect(() => {
@@ -1827,6 +1586,13 @@ export function MapContainer({
         onOpenChange={(open) => !open && setPhotosDialogCompany(null)}
         companyId={photosDialogCompany?.id || null}
         companyName={photosDialogCompany?.name || null}
+      />
+
+      {/* Route Overlay - Canvas-based route drawing */}
+      <RouteOverlay
+        map={map.current}
+        polyline={routePolyline || null}
+        waypoints={routeWaypoints || []}
       />
     </div>
   );
