@@ -226,6 +226,35 @@ export function ApplicationStateAnalyzer() {
     }
   };
 
+  const searchAIRecommendations = async () => {
+    setIsSearchingAI(true);
+    
+    try {
+      const currentModules = codebaseAnalysis?.modules.map(m => m.name) || [
+        'Dashboard Multi-Rol', 'Contabilidad PGC', 'GIS Bancario', 'Gestión Visitas', 'Objetivos y Metas'
+      ];
+
+      const { data, error } = await supabase.functions.invoke('search-ai-recommendations', {
+        body: {
+          currentModules,
+          currentTechnologies: ['React 18', 'TypeScript', 'Supabase', 'Tailwind CSS', 'MapLibre GL', 'Recharts'],
+          industryFocus: 'Banca comercial andorrana y española, gestión de cartera empresarial',
+          complianceRequirements: ['GDPR', 'LOPD-GDD', 'PSD2', 'MiFID II', 'DORA', 'AI Act EU', 'Basel III/IV']
+        }
+      });
+
+      if (error) throw error;
+
+      setAiAnalysis(data);
+      toast.success('Análisis de IA y automatización completado');
+    } catch (error: any) {
+      console.error('Error searching AI recommendations:', error);
+      toast.error(`Error: ${error.message}`);
+    } finally {
+      setIsSearchingAI(false);
+    }
+  };
+
   const generatePDF = async () => {
     setIsGeneratingPDF(true);
     
