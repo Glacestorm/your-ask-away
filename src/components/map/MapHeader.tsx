@@ -3,7 +3,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { ThemeSelector } from '@/components/ThemeSelector';
-import { MapPin, Menu, LogOut, Settings, BarChart3, UserCircle, Mountain, Layers, Info, Filter, Home, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MapPin, Menu, LogOut, Settings, BarChart3, UserCircle, Mountain, Layers, Info, Filter, Home, ChevronLeft, ChevronRight, Map, PieChart } from 'lucide-react';
+import { MapExportButton } from './MapExportButton';
+import { CompanyWithDetails } from '@/types/database';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -64,6 +66,14 @@ interface MapHeaderProps {
   canGoForward?: boolean;
   onGoBack?: () => void;
   onGoForward?: () => void;
+  // New props for Legend, Statistics, and Export
+  showLegend: boolean;
+  onToggleLegend: () => void;
+  showStatistics: boolean;
+  onToggleStatistics: () => void;
+  // Export data
+  companies: CompanyWithDetails[];
+  filteredCompanies: CompanyWithDetails[];
 }
 
 export function MapHeader({ 
@@ -96,6 +106,12 @@ export function MapHeader({
   canGoForward,
   onGoBack,
   onGoForward,
+  showLegend,
+  onToggleLegend,
+  showStatistics,
+  onToggleStatistics,
+  companies,
+  filteredCompanies,
 }: MapHeaderProps) {
   const { user, signOut, userRole, isAdmin } = useAuth();
   const { t } = useLanguage();
@@ -835,6 +851,54 @@ export function MapHeader({
       </div>
 
       <div className="flex items-center gap-2">
+        {/* Legend button */}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={showLegend ? 'default' : 'outline'}
+                size="sm"
+                onClick={onToggleLegend}
+                className="h-7 text-xs"
+              >
+                <Map className="mr-1 h-3 w-3" />
+                Llegenda
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>{showLegend ? 'Amagar llegenda' : 'Mostrar llegenda'}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+        {/* Export button */}
+        <MapExportButton
+          companies={companies}
+          filteredCompanies={filteredCompanies}
+          statusColors={statusColors}
+        />
+
+        {/* Statistics button */}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={showStatistics ? 'default' : 'outline'}
+                size="sm"
+                onClick={onToggleStatistics}
+                className="h-7 text-xs"
+              >
+                <PieChart className="mr-1 h-3 w-3" />
+                Estadístiques
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>{showStatistics ? 'Amagar estadístiques' : 'Mostrar estadístiques'}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+        {/* Panel button */}
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>

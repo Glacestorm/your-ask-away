@@ -19,12 +19,16 @@ interface MapExportButtonProps {
   companies: CompanyWithDetails[];
   filteredCompanies: CompanyWithDetails[];
   statusColors: StatusColor[];
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function MapExportButton({
   companies,
   filteredCompanies,
   statusColors,
+  isOpen,
+  onOpenChange,
 }: MapExportButtonProps) {
   const [exporting, setExporting] = useState(false);
 
@@ -204,7 +208,7 @@ export function MapExportButton({
   };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
