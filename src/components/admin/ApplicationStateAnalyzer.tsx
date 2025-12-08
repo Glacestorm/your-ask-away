@@ -59,6 +59,36 @@ interface CodebaseAnalysis {
   };
 }
 
+interface ComplianceRegulation {
+  name: string;
+  status: 'compliant' | 'partial' | 'pending';
+  description: string;
+  implementedFeatures: string[];
+  pendingActions: string[];
+  implementationPhases?: {
+    phase: number;
+    name: string;
+    duration: string;
+    actions: string[];
+    deliverables: string[];
+    responsible: string;
+  }[];
+}
+
+interface DetailedTechnologyTrend {
+  number: number;
+  name: string;
+  relevance: string;
+  adoptionRate: string;
+  recommendation: string;
+  integrationPotential: string;
+  installed: boolean;
+  installedDetails?: string[];
+  pendingDetails?: string[];
+  version?: string;
+  lastUpdated?: string;
+}
+
 interface ImprovementsAnalysis {
   generationDate: string;
   improvements: ImprovementSuggestion[];
@@ -69,6 +99,8 @@ interface ImprovementsAnalysis {
   aiIntegrations: string[];
   complianceUpdates: string[];
   summary: string;
+  complianceRegulations?: ComplianceRegulation[];
+  detailedTrends?: DetailedTechnologyTrend[];
 }
 
 interface AIRecommendation {
@@ -970,7 +1002,7 @@ export function ApplicationStateAnalyzer() {
 
         {/* Tendencias */}
         <TabsContent value="trends" className="space-y-4">
-          {improvementsAnalysis?.technologyTrends && Array.isArray(improvementsAnalysis.technologyTrends) && improvementsAnalysis.technologyTrends.length > 0 ? (
+          {improvementsAnalysis?.detailedTrends && Array.isArray(improvementsAnalysis.detailedTrends) && improvementsAnalysis.detailedTrends.length > 0 ? (
             <>
               {/* Estadísticas de instalación */}
               <div className="grid gap-4 md:grid-cols-3 mb-4">
@@ -980,10 +1012,7 @@ export function ApplicationStateAnalyzer() {
                       <CheckCircle2 className="h-5 w-5 text-green-500" />
                       <div>
                         <p className="text-2xl font-bold text-green-600">
-                          {improvementsAnalysis.technologyTrends.filter(t => {
-                            const obj = t as unknown as Record<string, unknown>;
-                            return obj.installed === true || String(obj.recommendation || '').includes('INSTAL·LAT');
-                          }).length}
+                          {improvementsAnalysis.detailedTrends.filter(t => t.installed).length}
                         </p>
                         <p className="text-sm text-muted-foreground">Tecnologies Instal·lades</p>
                       </div>
@@ -996,12 +1025,9 @@ export function ApplicationStateAnalyzer() {
                       <AlertTriangle className="h-5 w-5 text-yellow-500" />
                       <div>
                         <p className="text-2xl font-bold text-yellow-600">
-                          {improvementsAnalysis.technologyTrends.filter(t => {
-                            const obj = t as unknown as Record<string, unknown>;
-                            return obj.installed !== true && !String(obj.recommendation || '').includes('INSTAL·LAT');
-                          }).length}
+                          {improvementsAnalysis.detailedTrends.filter(t => !t.installed).length}
                         </p>
-                        <p className="text-sm text-muted-foreground">Pendents d'Avaluació</p>
+                        <p className="text-sm text-muted-foreground">Pendents d'Implementar</p>
                       </div>
                     </div>
                   </CardContent>
@@ -1012,7 +1038,7 @@ export function ApplicationStateAnalyzer() {
                       <TrendingUp className="h-5 w-5 text-blue-500" />
                       <div>
                         <p className="text-2xl font-bold">
-                          {improvementsAnalysis.technologyTrends.length}
+                          {improvementsAnalysis.detailedTrends.length}
                         </p>
                         <p className="text-sm text-muted-foreground">Total Tecnologies</p>
                       </div>
@@ -1021,64 +1047,113 @@ export function ApplicationStateAnalyzer() {
                 </Card>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                {improvementsAnalysis.technologyTrends.map((trend, idx) => {
-                  const trendObj = trend as unknown as Record<string, unknown>;
-                  const name = trendObj.name || trendObj.technology || trendObj.title || 'Tecnologia';
-                  const relevance = trendObj.relevance || trendObj.relevancia || trendObj.description || '-';
-                  const adoption = trendObj.adoptionRate || trendObj.adoption || '-';
-                  const recommendation = trendObj.recommendation || trendObj.recomendacion || '-';
-                  const integration = trendObj.integrationPotential || trendObj.integration || '-';
-                  
-                  const isInstalled = trendObj.installed === true || 
-                    String(recommendation).toLowerCase().includes('instal·lat');
-                  const isPending = String(recommendation).toLowerCase().includes('pendent');
-                  
-                  return (
-                    <Card key={idx} className={
-                      isInstalled 
-                        ? 'border-green-500/50 bg-green-500/5' 
-                        : isPending 
-                          ? 'border-yellow-500/30 bg-yellow-500/5' 
-                          : ''
-                    }>
-                      <CardHeader className="pb-2">
-                        <div className="flex items-center justify-between gap-2">
-                          <CardTitle className="text-base font-semibold">{String(name)}</CardTitle>
-                          {isInstalled ? (
+              {/* Sección Instaladas */}
+              <Card className="border-green-500/30">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    <CardTitle>Tecnologies Instal·lades ({improvementsAnalysis.detailedTrends.filter(t => t.installed).length})</CardTitle>
+                  </div>
+                  <CardDescription>Tecnologies completament implementades i operatives</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Accordion type="single" collapsible className="w-full">
+                    {improvementsAnalysis.detailedTrends.filter(t => t.installed).map((trend, idx) => (
+                      <AccordionItem key={idx} value={`installed-${idx}`}>
+                        <AccordionTrigger className="hover:no-underline">
+                          <div className="flex items-center gap-3 text-left w-full">
                             <Badge className="bg-green-500 text-white shrink-0">
-                              <CheckCircle2 className="h-3 w-3 mr-1" />
-                              INSTAL·LAT
+                              #{trend.number}
                             </Badge>
-                          ) : isPending ? (
+                            <div className="flex-1">
+                              <div className="font-medium">{trend.name}</div>
+                              <div className="text-xs text-muted-foreground">{trend.relevance}</div>
+                            </div>
+                            {trend.version && (
+                              <Badge variant="outline" className="shrink-0">v{trend.version}</Badge>
+                            )}
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pt-4">
+                          <div className="space-y-4">
+                            <div className="grid gap-2 md:grid-cols-2 text-sm">
+                              <div><strong>Adopció:</strong> {trend.adoptionRate}</div>
+                              <div><strong>Actualització:</strong> {trend.lastUpdated || 'N/A'}</div>
+                            </div>
+                            
+                            {trend.installedDetails && trend.installedDetails.length > 0 && (
+                              <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                                <div className="font-medium text-sm mb-2 text-green-700 dark:text-green-400">
+                                  ✅ Detall de la implementació:
+                                </div>
+                                <ul className="text-sm space-y-1">
+                                  {trend.installedDetails.map((detail, i) => (
+                                    <li key={i} className="flex items-start gap-2">
+                                      <CheckCircle2 className="h-3 w-3 mt-1 text-green-500 flex-shrink-0" />
+                                      <span className="text-muted-foreground">{detail}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                </CardContent>
+              </Card>
+
+              {/* Sección Pendientes */}
+              <Card className="border-yellow-500/30">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                    <CardTitle>Tecnologies Pendents ({improvementsAnalysis.detailedTrends.filter(t => !t.installed).length})</CardTitle>
+                  </div>
+                  <CardDescription>Tecnologies a avaluar o implementar properament</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Accordion type="single" collapsible className="w-full">
+                    {improvementsAnalysis.detailedTrends.filter(t => !t.installed).map((trend, idx) => (
+                      <AccordionItem key={idx} value={`pending-${idx}`}>
+                        <AccordionTrigger className="hover:no-underline">
+                          <div className="flex items-center gap-3 text-left w-full">
                             <Badge variant="outline" className="border-yellow-500 text-yellow-600 shrink-0">
-                              ⏳ PENDENT
+                              #{trend.number}
                             </Badge>
-                          ) : null}
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-2 text-sm">
-                        <div>
-                          <span className="font-medium text-muted-foreground">Rellevància:</span>{' '}
-                          <span>{String(relevance)}</span>
-                        </div>
-                        <div>
-                          <span className="font-medium text-muted-foreground">Adopció:</span>{' '}
-                          <span>{String(adoption)}</span>
-                        </div>
-                        <div className={isInstalled ? 'text-green-600 font-medium' : isPending ? 'text-yellow-600' : ''}>
-                          <span className="font-medium">Recomanació:</span>{' '}
-                          <span>{String(recommendation)}</span>
-                        </div>
-                        <div>
-                          <span className="font-medium text-muted-foreground">Integració:</span>{' '}
-                          <span>{String(integration)}</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
+                            <div className="flex-1">
+                              <div className="font-medium">{trend.name}</div>
+                              <div className="text-xs text-muted-foreground">{trend.relevance}</div>
+                            </div>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pt-4">
+                          <div className="space-y-4">
+                            <div className="grid gap-2 md:grid-cols-2 text-sm">
+                              <div><strong>Adopció:</strong> {trend.adoptionRate}</div>
+                              <div><strong>Potencial integració:</strong> {trend.integrationPotential}</div>
+                            </div>
+                            
+                            {trend.pendingDetails && trend.pendingDetails.length > 0 && (
+                              <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                                <div className="font-medium text-sm mb-2 text-yellow-700 dark:text-yellow-400">
+                                  ⏳ Passos per implementar:
+                                </div>
+                                <ol className="text-sm space-y-1 list-decimal list-inside">
+                                  {trend.pendingDetails.map((detail, i) => (
+                                    <li key={i} className="text-muted-foreground">{detail}</li>
+                                  ))}
+                                </ol>
+                              </div>
+                            )}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                </CardContent>
+              </Card>
             </>
           ) : (
             <Card>
@@ -1192,7 +1267,7 @@ export function ApplicationStateAnalyzer() {
 
         {/* Compliance */}
         <TabsContent value="compliance" className="space-y-4">
-          {improvementsAnalysis?.complianceUpdates && Array.isArray(improvementsAnalysis.complianceUpdates) && improvementsAnalysis.complianceUpdates.length > 0 ? (
+          {improvementsAnalysis?.complianceRegulations && Array.isArray(improvementsAnalysis.complianceRegulations) && improvementsAnalysis.complianceRegulations.length > 0 ? (
             <>
               {/* Estadísticas de compliance */}
               <div className="grid gap-4 md:grid-cols-3 mb-4">
@@ -1202,9 +1277,7 @@ export function ApplicationStateAnalyzer() {
                       <CheckCircle2 className="h-5 w-5 text-green-500" />
                       <div>
                         <p className="text-2xl font-bold text-green-600">
-                          {improvementsAnalysis.complianceUpdates.filter(u => 
-                            String(u).includes('✅ COMPLINT')
-                          ).length}
+                          {improvementsAnalysis.complianceRegulations.filter(r => r.status === 'compliant').length}
                         </p>
                         <p className="text-sm text-muted-foreground">Normatives Complertes</p>
                       </div>
@@ -1217,9 +1290,7 @@ export function ApplicationStateAnalyzer() {
                       <AlertTriangle className="h-5 w-5 text-yellow-500" />
                       <div>
                         <p className="text-2xl font-bold text-yellow-600">
-                          {improvementsAnalysis.complianceUpdates.filter(u => 
-                            String(u).includes('⏳ PARCIAL')
-                          ).length}
+                          {improvementsAnalysis.complianceRegulations.filter(r => r.status === 'partial').length}
                         </p>
                         <p className="text-sm text-muted-foreground">Parcial / En Progrés</p>
                       </div>
@@ -1232,7 +1303,7 @@ export function ApplicationStateAnalyzer() {
                       <Scale className="h-5 w-5 text-blue-500" />
                       <div>
                         <p className="text-2xl font-bold">
-                          {improvementsAnalysis.complianceUpdates.length}
+                          {improvementsAnalysis.complianceRegulations.length}
                         </p>
                         <p className="text-sm text-muted-foreground">Total Normatives</p>
                       </div>
@@ -1241,62 +1312,204 @@ export function ApplicationStateAnalyzer() {
                 </Card>
               </div>
 
-              <Card>
+              {/* Normativas Cumplidas */}
+              <Card className="border-green-500/30">
                 <CardHeader>
                   <div className="flex items-center gap-2">
-                    <Scale className="h-5 w-5 text-blue-500" />
-                    <CardTitle>Estat de Compliment Normatiu</CardTitle>
+                    <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    <CardTitle>Normatives Complertes ({improvementsAnalysis.complianceRegulations.filter(r => r.status === 'compliant').length})</CardTitle>
                   </div>
-                  <CardDescription>
-                    Estat actual de cada normativa i regulació aplicable
-                  </CardDescription>
+                  <CardDescription>Regulacions amb implementació completa</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    {improvementsAnalysis.complianceUpdates.map((update, idx) => {
-                      const text = String(update);
-                      const isCompliant = text.includes('✅ COMPLINT');
-                      const isPartial = text.includes('⏳ PARCIAL');
-                      
-                      return (
-                        <div 
-                          key={idx} 
-                          className={`flex items-start gap-3 p-4 rounded-lg border ${
-                            isCompliant 
-                              ? 'bg-green-500/10 border-green-500/30' 
-                              : isPartial 
-                                ? 'bg-yellow-500/10 border-yellow-500/30' 
-                                : 'bg-muted/50 border-muted'
-                          }`}
-                        >
-                          {isCompliant ? (
-                            <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                          ) : isPartial ? (
-                            <AlertTriangle className="h-5 w-5 text-yellow-500 mt-0.5 flex-shrink-0" />
-                          ) : (
-                            <Scale className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
-                          )}
-                          <div className="flex-1">
-                            <span className={`text-sm ${
-                              isCompliant ? 'text-green-700 dark:text-green-400' : 
-                              isPartial ? 'text-yellow-700 dark:text-yellow-400' : ''
-                            }`}>
-                              {text}
-                            </span>
-                          </div>
-                          {isCompliant && (
+                  <Accordion type="single" collapsible className="w-full">
+                    {improvementsAnalysis.complianceRegulations.filter(r => r.status === 'compliant').map((reg, idx) => (
+                      <AccordionItem key={idx} value={`compliant-${idx}`}>
+                        <AccordionTrigger className="hover:no-underline">
+                          <div className="flex items-center gap-3 text-left w-full">
                             <Badge className="bg-green-500 text-white shrink-0">COMPLERT</Badge>
-                          )}
-                          {isPartial && (
-                            <Badge variant="outline" className="border-yellow-500 text-yellow-600 shrink-0">EN PROGRÉS</Badge>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
+                            <div className="flex-1">
+                              <div className="font-medium">{reg.name}</div>
+                              <div className="text-xs text-muted-foreground">{reg.description}</div>
+                            </div>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="pt-4">
+                          <div className="space-y-4">
+                            {/* Funcionalidades Implementadas */}
+                            <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                              <div className="font-medium text-sm mb-2 text-green-700 dark:text-green-400">
+                                ✅ Funcionalitats implementades:
+                              </div>
+                              <ul className="text-sm space-y-1">
+                                {reg.implementedFeatures.map((feature, i) => (
+                                  <li key={i} className="flex items-start gap-2">
+                                    <CheckCircle2 className="h-3 w-3 mt-1 text-green-500 flex-shrink-0" />
+                                    <span className="text-muted-foreground">{feature}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+
+                            {/* Fases de Implementación (si existen) */}
+                            {reg.implementationPhases && reg.implementationPhases.length > 0 && (
+                              <div className="p-3 rounded-lg bg-muted/50 border">
+                                <div className="font-medium text-sm mb-3 flex items-center gap-2">
+                                  <Map className="h-4 w-4 text-primary" />
+                                  Fases d'implementació realitzades:
+                                </div>
+                                <div className="space-y-3">
+                                  {reg.implementationPhases.map((phase, pi) => (
+                                    <div key={pi} className="p-3 rounded border bg-background">
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <Badge className="bg-green-500">{phase.phase}</Badge>
+                                        <span className="font-medium text-sm">{phase.name}</span>
+                                        <span className="text-xs text-muted-foreground">({phase.duration})</span>
+                                      </div>
+                                      <div className="grid gap-3 md:grid-cols-2 text-xs">
+                                        <div>
+                                          <div className="font-medium mb-1">Accions:</div>
+                                          <ul className="space-y-0.5">
+                                            {phase.actions.map((a, ai) => (
+                                              <li key={ai} className="text-muted-foreground">• {a}</li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                        <div>
+                                          <div className="font-medium mb-1">Entregables:</div>
+                                          <ul className="space-y-0.5">
+                                            {phase.deliverables.map((d, di) => (
+                                              <li key={di} className="text-muted-foreground">✓ {d}</li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      </div>
+                                      <div className="mt-2 text-xs">
+                                        <strong>Responsable:</strong> {phase.responsible}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
                 </CardContent>
               </Card>
 
+              {/* Normativas Parciales */}
+              {improvementsAnalysis.complianceRegulations.filter(r => r.status === 'partial').length > 0 && (
+                <Card className="border-yellow-500/30">
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                      <CardTitle>Normatives en Progrés ({improvementsAnalysis.complianceRegulations.filter(r => r.status === 'partial').length})</CardTitle>
+                    </div>
+                    <CardDescription>Regulacions amb implementació parcial - Accions requerides</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Accordion type="single" collapsible className="w-full">
+                      {improvementsAnalysis.complianceRegulations.filter(r => r.status === 'partial').map((reg, idx) => (
+                        <AccordionItem key={idx} value={`partial-${idx}`}>
+                          <AccordionTrigger className="hover:no-underline">
+                            <div className="flex items-center gap-3 text-left w-full">
+                              <Badge variant="outline" className="border-yellow-500 text-yellow-600 shrink-0">EN PROGRÉS</Badge>
+                              <div className="flex-1">
+                                <div className="font-medium">{reg.name}</div>
+                                <div className="text-xs text-muted-foreground">{reg.description}</div>
+                              </div>
+                            </div>
+                          </AccordionTrigger>
+                          <AccordionContent className="pt-4">
+                            <div className="space-y-4">
+                              {/* Funcionalidades Implementadas */}
+                              {reg.implementedFeatures.length > 0 && (
+                                <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                                  <div className="font-medium text-sm mb-2 text-green-700 dark:text-green-400">
+                                    ✅ Ja implementat:
+                                  </div>
+                                  <ul className="text-sm space-y-1">
+                                    {reg.implementedFeatures.map((feature, i) => (
+                                      <li key={i} className="flex items-start gap-2">
+                                        <CheckCircle2 className="h-3 w-3 mt-1 text-green-500 flex-shrink-0" />
+                                        <span className="text-muted-foreground">{feature}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+
+                              {/* Acciones Pendientes */}
+                              {reg.pendingActions.length > 0 && (
+                                <div className="p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                                  <div className="font-medium text-sm mb-2 text-yellow-700 dark:text-yellow-400">
+                                    ⏳ Accions pendents per complir:
+                                  </div>
+                                  <ul className="text-sm space-y-1">
+                                    {reg.pendingActions.map((action, i) => (
+                                      <li key={i} className="flex items-start gap-2">
+                                        <AlertTriangle className="h-3 w-3 mt-1 text-yellow-500 flex-shrink-0" />
+                                        <span className="text-muted-foreground">{action}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+
+                              {/* Fases de Implementación */}
+                              {reg.implementationPhases && reg.implementationPhases.length > 0 && (
+                                <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                                  <div className="font-medium text-sm mb-3 flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                                    <Map className="h-4 w-4" />
+                                    Fases d'implementació per completar:
+                                  </div>
+                                  <div className="space-y-3">
+                                    {reg.implementationPhases.map((phase, pi) => (
+                                      <div key={pi} className="p-3 rounded border bg-background">
+                                        <div className="flex items-center gap-2 mb-2">
+                                          <Badge className="bg-blue-500">Fase {phase.phase}</Badge>
+                                          <span className="font-medium text-sm">{phase.name}</span>
+                                          <span className="text-xs text-muted-foreground">({phase.duration})</span>
+                                        </div>
+                                        <div className="grid gap-3 md:grid-cols-2 text-xs">
+                                          <div>
+                                            <div className="font-medium mb-1">Accions:</div>
+                                            <ol className="space-y-0.5 list-decimal list-inside">
+                                              {phase.actions.map((a, ai) => (
+                                                <li key={ai} className="text-muted-foreground">{a}</li>
+                                              ))}
+                                            </ol>
+                                          </div>
+                                          <div>
+                                            <div className="font-medium mb-1">Entregables:</div>
+                                            <ul className="space-y-0.5">
+                                              {phase.deliverables.map((d, di) => (
+                                                <li key={di} className="text-muted-foreground">→ {d}</li>
+                                              ))}
+                                            </ul>
+                                          </div>
+                                        </div>
+                                        <div className="mt-2 text-xs">
+                                          <strong>Responsable:</strong> {phase.responsible}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Estado de Seguridad */}
               {improvementsAnalysis.securityUpdates && improvementsAnalysis.securityUpdates.length > 0 && (
                 <Card>
                   <CardHeader>
