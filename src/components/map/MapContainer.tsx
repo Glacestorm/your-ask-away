@@ -304,76 +304,85 @@ export function MapContainer({
       map.current.removeSource('route-source');
     }
 
-    // If no route, exit
-    if (!routePolyline || !routeWaypoints || routeWaypoints.length === 0) {
+    console.log('[Route] routePolyline:', routePolyline ? `${routePolyline.substring(0, 50)}... (${routePolyline.length} chars)` : 'null/empty');
+    
+    // If no waypoints at all, exit early
+    if (!routeWaypoints || routeWaypoints.length === 0) {
+      console.log('[Route] No waypoints, exiting');
       return;
     }
 
     const mapInstance = map.current;
 
-    // Decode polyline and draw route line
-    const coords = decodePolyline(routePolyline);
-    console.log('[Route] Decoded polyline coords:', coords.length);
-    
-    console.log('[Route] First coord:', coords[0], 'Last coord:', coords[coords.length - 1]);
-    
-    if (coords.length >= 2) {
-      // Add route source
-      mapInstance.addSource('route-source', {
-        type: 'geojson',
-        data: {
-          type: 'Feature',
-          properties: {},
-          geometry: {
-            type: 'LineString',
-            coordinates: coords
+    // Decode polyline and draw route line - only if we have polyline data
+    if (routePolyline && routePolyline.length > 0) {
+      try {
+        const coords = decodePolyline(routePolyline);
+        console.log('[Route] Decoded polyline coords:', coords.length);
+        console.log('[Route] First coord:', coords[0], 'Last coord:', coords[coords.length - 1]);
+        
+        if (coords.length >= 2) {
+          // Add route source
+          mapInstance.addSource('route-source', {
+            type: 'geojson',
+            data: {
+              type: 'Feature',
+              properties: {},
+              geometry: {
+                type: 'LineString',
+                coordinates: coords
+              }
+            }
+          });
+
+          // Find first symbol layer to insert route layers below markers
+          const layers = mapInstance.getStyle()?.layers || [];
+          let firstSymbolId: string | undefined;
+          for (const layer of layers) {
+            if (layer.type === 'symbol') {
+              firstSymbolId = layer.id;
+              break;
+            }
           }
-        }
-      });
+          console.log('[Route] Inserting route layers before:', firstSymbolId || 'top');
 
-      // Find first symbol layer to insert route layers below markers
-      const layers = mapInstance.getStyle()?.layers || [];
-      let firstSymbolId: string | undefined;
-      for (const layer of layers) {
-        if (layer.type === 'symbol') {
-          firstSymbolId = layer.id;
-          break;
+          // Add outline layer (dark border) - insert before symbols so markers are on top
+          mapInstance.addLayer({
+            id: 'route-line-outline',
+            type: 'line',
+            source: 'route-source',
+            layout: {
+              'line-join': 'round',
+              'line-cap': 'round'
+            },
+            paint: {
+              'line-color': '#1a1a2e',
+              'line-width': 12
+            }
+          }, firstSymbolId);
+
+          // Add main route line
+          mapInstance.addLayer({
+            id: 'route-line',
+            type: 'line',
+            source: 'route-source',
+            layout: {
+              'line-join': 'round',
+              'line-cap': 'round'
+            },
+            paint: {
+              'line-color': '#4285F4',
+              'line-width': 7
+            }
+          }, firstSymbolId);
+          
+          console.log('[Route] Route line layers added successfully');
         }
+      } catch (e) {
+        console.error('[Route] Error adding route layers:', e);
       }
-      console.log('[Route] Inserting route layers before:', firstSymbolId || 'top');
-
-      // Add outline layer (dark border) - insert before symbols so markers are on top
-      mapInstance.addLayer({
-        id: 'route-line-outline',
-        type: 'line',
-        source: 'route-source',
-        layout: {
-          'line-join': 'round',
-          'line-cap': 'round'
-        },
-        paint: {
-          'line-color': '#1a1a2e',
-          'line-width': 12
-        }
-      }, firstSymbolId);
-
-      // Add main route line
-      mapInstance.addLayer({
-        id: 'route-line',
-        type: 'line',
-        source: 'route-source',
-        layout: {
-          'line-join': 'round',
-          'line-cap': 'round'
-        },
-        paint: {
-          'line-color': '#4285F4',
-          'line-width': 7
-        }
-      }, firstSymbolId);
-      
-      console.log('[Route] Route line layers added successfully');
-      console.log('[Route] Source data:', mapInstance.getSource('route-source'));
+    } else {
+      console.log('[Route] No polyline data to draw');
     }
 
     // Create waypoint markers - include origin as A
@@ -454,8 +463,8 @@ export function MapContainer({
 
     // Fit bounds to show all points
     if (allPoints.length > 0) {
-      const lngs = [...allPoints.map(p => p.longitude), ...coords.map(c => c[0])];
-      const lats = [...allPoints.map(p => p.latitude), ...coords.map(c => c[1])];
+      const lngs = allPoints.map(p => p.longitude);
+      const lats = allPoints.map(p => p.latitude);
       
       const bounds = new maplibregl.LngLatBounds(
         [Math.min(...lngs), Math.min(...lats)],
