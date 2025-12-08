@@ -818,27 +818,37 @@ export function ApplicationStateAnalyzer() {
         <TabsContent value="trends" className="space-y-4">
           {improvementsAnalysis?.technologyTrends && Array.isArray(improvementsAnalysis.technologyTrends) && improvementsAnalysis.technologyTrends.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2">
-              {improvementsAnalysis.technologyTrends.map((trend, idx) => (
-                <Card key={idx}>
-                  <CardHeader>
-                    <CardTitle className="text-lg">{trend.name}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2 text-sm">
-                    <div>
-                      <span className="font-medium">Rellevància:</span> {trend.relevance}
-                    </div>
-                    <div>
-                      <span className="font-medium">Adopció:</span> {trend.adoptionRate}
-                    </div>
-                    <div>
-                      <span className="font-medium">Recomanació:</span> {trend.recommendation}
-                    </div>
-                    <div>
-                      <span className="font-medium">Potencial d'integració:</span> {trend.integrationPotential}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              {improvementsAnalysis.technologyTrends.map((trend, idx) => {
+                // Handle both expected structure and alternative field names from AI
+                const trendObj = trend as unknown as Record<string, unknown>;
+                const name = trendObj.name || trendObj.technology || trendObj.title || 'Tecnologia';
+                const relevance = trendObj.relevance || trendObj.relevancia || trendObj.description || trendObj.descripcion || '-';
+                const adoption = trendObj.adoptionRate || trendObj.adoption || trendObj.adopcion || trendObj.adoption_rate || '-';
+                const recommendation = trendObj.recommendation || trendObj.recomendacion || trendObj.recommended || trendObj.accion || '-';
+                const integration = trendObj.integrationPotential || trendObj.integration || trendObj.integracion || trendObj.potential || trendObj.potencial || '-';
+                
+                return (
+                  <Card key={idx}>
+                    <CardHeader>
+                      <CardTitle className="text-lg">{String(name)}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2 text-sm">
+                      <div>
+                        <span className="font-medium">Rellevància:</span> {String(relevance)}
+                      </div>
+                      <div>
+                        <span className="font-medium">Adopció:</span> {String(adoption)}
+                      </div>
+                      <div>
+                        <span className="font-medium">Recomanació:</span> {String(recommendation)}
+                      </div>
+                      <div>
+                        <span className="font-medium">Potencial d'integració:</span> {String(integration)}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           ) : (
             <Card>
