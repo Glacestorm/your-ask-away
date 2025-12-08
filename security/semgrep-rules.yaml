@@ -1,0 +1,279 @@
+# ===========================================
+# Custom Semgrep Rules for Banking Application
+# DORA/NIS2 Compliance
+# ===========================================
+
+rules:
+  # ===========================================
+  # XSS Prevention
+  # ===========================================
+  - id: react-dangerouslysetinnerhtml-without-sanitization
+    patterns:
+      - pattern: |
+          <$COMPONENT dangerouslySetInnerHTML={{__html: $VALUE}} />
+      - pattern-not: |
+          <$COMPONENT dangerouslySetInnerHTML={{__html: DOMPurify.sanitize($VALUE)}} />
+      - pattern-not: |
+          <$COMPONENT dangerouslySetInnerHTML={{__html: sanitizeHtml($VALUE)}} />
+    message: "dangerouslySetInnerHTML used without DOMPurify sanitization. This can lead to XSS attacks."
+    languages: [typescript, javascript, tsx, jsx]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-79"
+      owasp: "A7:2017 Cross-Site Scripting (XSS)"
+      category: security
+      technology: [react]
+      compliance: [dora, nis2, pci-dss]
+
+  # ===========================================
+  # SQL Injection Prevention
+  # ===========================================
+  - id: supabase-raw-sql-execution
+    patterns:
+      - pattern: $SUPABASE.rpc('execute_sql', ...)
+      - pattern: $SUPABASE.rpc("execute_sql", ...)
+    message: "Raw SQL execution detected. Use Supabase query builder methods instead."
+    languages: [typescript, javascript]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-89"
+      owasp: "A1:2017 Injection"
+      category: security
+      technology: [supabase]
+      compliance: [dora, nis2]
+
+  # ===========================================
+  # Authentication & Authorization
+  # ===========================================
+  - id: missing-auth-check-edge-function
+    patterns:
+      - pattern: |
+          Deno.serve(async (req) => {
+            ...
+            $RESPONSE
+          })
+      - pattern-not: |
+          Deno.serve(async (req) => {
+            ...
+            validateAuthentication(...)
+            ...
+          })
+      - pattern-not: |
+          Deno.serve(async (req) => {
+            ...
+            supabase.auth.getUser(...)
+            ...
+          })
+    message: "Edge function may be missing authentication check."
+    languages: [typescript]
+    severity: WARNING
+    metadata:
+      cwe: "CWE-306"
+      owasp: "A2:2017 Broken Authentication"
+      category: security
+      technology: [supabase, deno]
+      compliance: [dora, nis2]
+
+  # ===========================================
+  # Sensitive Data Exposure
+  # ===========================================
+  - id: console-log-sensitive-data
+    patterns:
+      - pattern: console.log(..., $SENSITIVE, ...)
+      - metavariable-regex:
+          metavariable: $SENSITIVE
+          regex: (password|token|secret|apiKey|api_key|credential|ssn|creditCard|credit_card|iban|nif|dni)
+    message: "Potentially logging sensitive data to console."
+    languages: [typescript, javascript]
+    severity: WARNING
+    metadata:
+      cwe: "CWE-532"
+      owasp: "A3:2017 Sensitive Data Exposure"
+      category: security
+      compliance: [gdpr, dora]
+
+  - id: hardcoded-credentials
+    patterns:
+      - pattern: |
+          const $VAR = "$SECRET"
+      - metavariable-regex:
+          metavariable: $VAR
+          regex: (password|apiKey|api_key|secret|token|credential)
+      - metavariable-regex:
+          metavariable: $SECRET
+          regex: ^(?!.*\$\{)(?!.*process\.env)(?!.*import\.meta\.env).{8,}$
+    message: "Hardcoded credentials detected. Use environment variables instead."
+    languages: [typescript, javascript]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-798"
+      owasp: "A3:2017 Sensitive Data Exposure"
+      category: security
+      compliance: [dora, nis2, pci-dss]
+
+  # ===========================================
+  # SSRF Prevention
+  # ===========================================
+  - id: unvalidated-url-fetch
+    patterns:
+      - pattern: fetch($URL, ...)
+      - pattern-not: fetch(validateExternalUrl($URL), ...)
+      - pattern-not: fetch(`${$CONST}`, ...)
+      - metavariable-regex:
+          metavariable: $URL
+          regex: ^\$.*$
+    message: "URL used in fetch without validation. Potential SSRF vulnerability."
+    languages: [typescript, javascript]
+    severity: WARNING
+    metadata:
+      cwe: "CWE-918"
+      owasp: "A10:2021 Server-Side Request Forgery"
+      category: security
+      compliance: [dora, nis2]
+
+  # ===========================================
+  # Financial Data Handling
+  # ===========================================
+  - id: financial-data-without-encryption
+    patterns:
+      - pattern: |
+          localStorage.setItem($KEY, $VALUE)
+      - metavariable-regex:
+          metavariable: $KEY
+          regex: (balance|account|iban|transaction|credit|debit|amount|salary|income)
+    message: "Financial data stored in localStorage without encryption."
+    languages: [typescript, javascript]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-312"
+      owasp: "A3:2017 Sensitive Data Exposure"
+      category: security
+      compliance: [pci-dss, dora, gdpr]
+
+  - id: pii-logging
+    patterns:
+      - pattern: |
+          console.$METHOD(..., { ..., $FIELD: $VALUE, ... })
+      - metavariable-regex:
+          metavariable: $FIELD
+          regex: (email|phone|address|dni|nif|nie|ssn|dateOfBirth|birthDate)
+    message: "PII (Personally Identifiable Information) being logged."
+    languages: [typescript, javascript]
+    severity: WARNING
+    metadata:
+      cwe: "CWE-532"
+      category: security
+      compliance: [gdpr, dora]
+
+  # ===========================================
+  # Rate Limiting
+  # ===========================================
+  - id: missing-rate-limiting
+    patterns:
+      - pattern: |
+          Deno.serve(async (req) => {
+            ...
+            if (req.method === 'POST') {
+              ...
+            }
+          })
+      - pattern-not: |
+          Deno.serve(async (req) => {
+            ...
+            checkRateLimit(...)
+            ...
+          })
+    message: "POST endpoint without rate limiting. Consider adding rate limiting for protection against abuse."
+    languages: [typescript]
+    severity: INFO
+    metadata:
+      cwe: "CWE-770"
+      owasp: "A4:2021 Insecure Design"
+      category: security
+      technology: [deno]
+      compliance: [dora]
+
+  # ===========================================
+  # Error Handling
+  # ===========================================
+  - id: verbose-error-response
+    patterns:
+      - pattern: |
+          return new Response(JSON.stringify({ error: $ERROR.message }), ...)
+      - pattern: |
+          return new Response(JSON.stringify({ error: $ERROR.stack }), ...)
+    message: "Exposing raw error messages/stack traces in API response."
+    languages: [typescript, javascript]
+    severity: WARNING
+    metadata:
+      cwe: "CWE-209"
+      owasp: "A6:2017 Security Misconfiguration"
+      category: security
+      compliance: [dora]
+
+  # ===========================================
+  # CORS Security
+  # ===========================================
+  - id: cors-allow-all-origins
+    patterns:
+      - pattern: |
+          'Access-Control-Allow-Origin': '*'
+    message: "CORS configured to allow all origins. Consider restricting to specific domains in production."
+    languages: [typescript, javascript]
+    severity: INFO
+    metadata:
+      cwe: "CWE-942"
+      owasp: "A6:2017 Security Misconfiguration"
+      category: security
+      compliance: [dora, nis2]
+
+  # ===========================================
+  # Cryptography
+  # ===========================================
+  - id: weak-crypto-algorithm
+    patterns:
+      - pattern: crypto.createHash('md5')
+      - pattern: crypto.createHash('sha1')
+    message: "Weak cryptographic algorithm detected. Use SHA-256 or stronger."
+    languages: [typescript, javascript]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-327"
+      owasp: "A3:2017 Sensitive Data Exposure"
+      category: security
+      compliance: [dora, nis2, pci-dss]
+
+  # ===========================================
+  # Input Validation
+  # ===========================================
+  - id: missing-input-validation
+    patterns:
+      - pattern: |
+          const { $BODY } = await req.json()
+          ...
+          $SUPABASE.from($TABLE).insert($BODY)
+    message: "User input inserted into database without validation. Use Zod or similar validation."
+    languages: [typescript, javascript]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-20"
+      owasp: "A1:2017 Injection"
+      category: security
+      technology: [supabase]
+      compliance: [dora, nis2]
+
+  # ===========================================
+  # JWT Security
+  # ===========================================
+  - id: jwt-none-algorithm
+    patterns:
+      - pattern: |
+          jwt.verify($TOKEN, ..., { algorithms: [..., 'none', ...] })
+    message: "JWT verification allows 'none' algorithm. This is a critical security vulnerability."
+    languages: [typescript, javascript]
+    severity: ERROR
+    metadata:
+      cwe: "CWE-327"
+      owasp: "A2:2017 Broken Authentication"
+      category: security
+      compliance: [dora, nis2]

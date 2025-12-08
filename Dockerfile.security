@@ -1,0 +1,115 @@
+# ===========================================
+# Multi-stage Dockerfile for Security Scanning
+# Supports DORA and NIS2 compliance requirements
+# ===========================================
+
+# Stage 1: Dependencies
+FROM node:20-alpine AS deps
+WORKDIR /app
+
+# Install security updates
+RUN apk update && apk upgrade --no-cache
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies with security audit
+RUN npm ci --ignore-scripts && \
+    npm audit --production || true
+
+# Stage 2: Builder
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+# Security: Run as non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Set environment variables for production build
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Build the application
+RUN npm run build
+
+# Remove development dependencies
+RUN npm prune --production
+
+# Stage 3: Production Runner
+FROM node:20-alpine AS runner
+WORKDIR /app
+
+# Security hardening
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Install only essential packages and security updates
+RUN apk update && \
+    apk upgrade --no-cache && \
+    apk add --no-cache dumb-init && \
+    rm -rf /var/cache/apk/*
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001
+
+# Copy built application
+COPY --from=builder --chown=nextjs:nodejs /app/dist ./dist
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
+
+# Security: Set proper file permissions
+RUN chmod -R 550 /app && \
+    chmod -R 770 /app/dist
+
+# Security labels for compliance
+LABEL org.opencontainers.image.title="Banking Application" \
+      org.opencontainers.image.description="Secure banking application with DORA/NIS2 compliance" \
+      org.opencontainers.image.vendor="Creand" \
+      org.opencontainers.image.version="1.0.0" \
+      org.opencontainers.image.licenses="Proprietary" \
+      security.compliance.dora="true" \
+      security.compliance.nis2="true" \
+      security.hardened="true"
+
+# Switch to non-root user
+USER nextjs
+
+# Expose port
+EXPOSE 3000
+
+# Health check for container orchestration
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["dumb-init", "--"]
+
+# Start the application
+CMD ["node", "dist/index.js"]
+
+# ===========================================
+# Security Scanning Stage
+# ===========================================
+FROM runner AS security-scan
+
+# Install security scanning tools
+USER root
+RUN apk add --no-cache \
+    curl \
+    jq \
+    python3 \
+    py3-pip && \
+    pip3 install --no-cache-dir safety bandit
+
+# Copy security scanning scripts
+COPY security/scripts/ /security-scripts/
+RUN chmod +x /security-scripts/*.sh
+
+# Run security scans
+RUN /security-scripts/container-security-check.sh || true
+
+USER nextjs

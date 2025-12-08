@@ -1,0 +1,151 @@
+{
+  "version": "v1.25.0",
+  "language": "javascript",
+  "projectName": "banking-crm-application",
+  "org": "creand",
+  "policy": {
+    "severity-threshold": "medium",
+    "fail-on": "all",
+    "prune-repeated-subdependencies": true
+  },
+  "ignore": {
+    "SNYK-JS-INFLIGHT-6095116": {
+      "reason": "No direct exposure in our usage pattern",
+      "expires": "2025-03-01T00:00:00.000Z",
+      "created": "2024-12-08T00:00:00.000Z"
+    }
+  },
+  "patch": {},
+  "exclude": {
+    "global": [
+      "node_modules",
+      "dist",
+      "build",
+      "coverage",
+      ".git"
+    ]
+  },
+  "vulnerabilitySettings": {
+    "cvss": {
+      "minScore": 4.0,
+      "failOnExceed": true
+    },
+    "epss": {
+      "minPercentile": 0.5,
+      "failOnExceed": true
+    }
+  },
+  "licensePolicies": {
+    "high": [
+      "GPL-2.0",
+      "GPL-3.0",
+      "AGPL-1.0",
+      "AGPL-3.0",
+      "LGPL-2.0",
+      "LGPL-2.1",
+      "LGPL-3.0"
+    ],
+    "medium": [
+      "MPL-1.0",
+      "MPL-1.1",
+      "MPL-2.0",
+      "CDDL-1.0",
+      "EPL-1.0",
+      "EPL-2.0"
+    ],
+    "allowedLicenses": [
+      "MIT",
+      "Apache-2.0",
+      "BSD-2-Clause",
+      "BSD-3-Clause",
+      "ISC",
+      "0BSD",
+      "CC0-1.0",
+      "Unlicense",
+      "WTFPL"
+    ]
+  },
+  "customRules": {
+    "banking-critical-packages": {
+      "description": "Critical packages that must be scanned with high priority",
+      "packages": [
+        "@supabase/supabase-js",
+        "react-router-dom",
+        "zod",
+        "dompurify"
+      ],
+      "severity": "critical",
+      "action": "fail"
+    },
+    "financial-data-handling": {
+      "description": "Packages handling financial data",
+      "packages": [
+        "jspdf",
+        "xlsx",
+        "recharts"
+      ],
+      "severity": "high",
+      "action": "warn"
+    },
+    "authentication-packages": {
+      "description": "Authentication and security packages",
+      "packages": [
+        "@supabase/supabase-js",
+        "dompurify"
+      ],
+      "severity": "critical",
+      "action": "fail"
+    }
+  },
+  "reporting": {
+    "formats": ["json", "html", "sarif"],
+    "includeRemediation": true,
+    "includeLicenses": true,
+    "groupBy": "severity"
+  },
+  "notifications": {
+    "slack": {
+      "enabled": false,
+      "channel": "#security-alerts"
+    },
+    "email": {
+      "enabled": true,
+      "recipients": ["security@creand.ad"]
+    }
+  },
+  "compliance": {
+    "standards": ["DORA", "NIS2", "PCI-DSS", "GDPR"],
+    "requireApproval": {
+      "critical": true,
+      "high": true,
+      "medium": false,
+      "low": false
+    },
+    "auditLog": {
+      "enabled": true,
+      "retentionDays": 365
+    }
+  },
+  "integrations": {
+    "github": {
+      "enabled": true,
+      "autoFix": {
+        "enabled": true,
+        "onlyPatch": true
+      },
+      "prComments": true,
+      "statusChecks": true
+    },
+    "jira": {
+      "enabled": false,
+      "project": "SEC",
+      "issueType": "Security Vulnerability"
+    }
+  },
+  "monitoringSettings": {
+    "frequency": "daily",
+    "includeDevDependencies": true,
+    "testProduction": true,
+    "trackNewVulnerabilities": true
+  }
+}
