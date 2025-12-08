@@ -18,6 +18,7 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { Plus, CalendarIcon, Edit, Trash2, Eye, Building2, Search, Filter, X, ChevronLeft, ChevronRight, Save, Package, FileText, MapPin, Calendar as CalendarViewIcon } from 'lucide-react';
 import { SharedVisitsCalendar } from '@/components/admin/SharedVisitsCalendar';
+import CompanySearchBar from '@/components/admin/accounting/CompanySearchBar';
 import { format } from 'date-fns';
 import { ca, es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -620,34 +621,10 @@ export function QuickVisitManager({ gestorId, onVisitCreated }: QuickVisitManage
             {/* Company Selection */}
             <div className="space-y-2">
               <Label>Empresa *</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Cerca empresa..."
-                  value={companySearch}
-                  onChange={(e) => setCompanySearch(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-              <ScrollArea className="h-40 border rounded-md">
-                <div className="p-2 space-y-1">
-                  {filteredCompanies.slice(0, 50).map((company) => (
-                    <div
-                      key={company.id}
-                      className={cn(
-                        "p-3 rounded cursor-pointer transition-colors",
-                        selectedCompany === company.id 
-                          ? "bg-primary text-primary-foreground" 
-                          : "hover:bg-accent"
-                      )}
-                      onClick={() => setSelectedCompany(company.id)}
-                    >
-                      <div className="font-medium">{company.name}</div>
-                      <div className="text-sm opacity-70 truncate">{company.address}</div>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
+              <CompanySearchBar
+                onSelectCompany={(company) => setSelectedCompany(company.id)}
+                selectedCompanyId={selectedCompany}
+              />
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
