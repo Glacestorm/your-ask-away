@@ -2621,6 +2621,125 @@ export type Database = {
           },
         ]
       }
+      open_banking_audit_log: {
+        Row: {
+          consent_id: string | null
+          created_at: string
+          endpoint: string
+          id: string
+          interaction_id: string
+          ip_address: string | null
+          method: string
+          request_body: Json | null
+          request_headers: Json | null
+          response_body: Json | null
+          response_status: number | null
+          tpp_id: string
+          user_id: string | null
+        }
+        Insert: {
+          consent_id?: string | null
+          created_at?: string
+          endpoint: string
+          id?: string
+          interaction_id: string
+          ip_address?: string | null
+          method: string
+          request_body?: Json | null
+          request_headers?: Json | null
+          response_body?: Json | null
+          response_status?: number | null
+          tpp_id: string
+          user_id?: string | null
+        }
+        Update: {
+          consent_id?: string | null
+          created_at?: string
+          endpoint?: string
+          id?: string
+          interaction_id?: string
+          ip_address?: string | null
+          method?: string
+          request_body?: Json | null
+          request_headers?: Json | null
+          response_body?: Json | null
+          response_status?: number | null
+          tpp_id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      open_banking_consents: {
+        Row: {
+          authorized_at: string | null
+          consent_id: string
+          created_at: string
+          expiration_date: string
+          frequency_per_day: number | null
+          id: string
+          last_action_date: string | null
+          permissions: string[]
+          recurring_indicator: boolean | null
+          revoked_at: string | null
+          sca_status: string | null
+          status: string
+          tpp_id: string
+          transaction_from_date: string | null
+          transaction_to_date: string | null
+          updated_at: string
+          user_id: string
+          valid_until: string | null
+        }
+        Insert: {
+          authorized_at?: string | null
+          consent_id: string
+          created_at?: string
+          expiration_date: string
+          frequency_per_day?: number | null
+          id?: string
+          last_action_date?: string | null
+          permissions?: string[]
+          recurring_indicator?: boolean | null
+          revoked_at?: string | null
+          sca_status?: string | null
+          status?: string
+          tpp_id: string
+          transaction_from_date?: string | null
+          transaction_to_date?: string | null
+          updated_at?: string
+          user_id: string
+          valid_until?: string | null
+        }
+        Update: {
+          authorized_at?: string | null
+          consent_id?: string
+          created_at?: string
+          expiration_date?: string
+          frequency_per_day?: number | null
+          id?: string
+          last_action_date?: string | null
+          permissions?: string[]
+          recurring_indicator?: boolean | null
+          revoked_at?: string | null
+          sca_status?: string | null
+          status?: string
+          tpp_id?: string
+          transaction_from_date?: string | null
+          transaction_to_date?: string | null
+          updated_at?: string
+          user_id?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "open_banking_consents_tpp_id_fkey"
+            columns: ["tpp_id"]
+            isOneToOne: false
+            referencedRelation: "registered_tpps"
+            referencedColumns: ["tpp_id"]
+          },
+        ]
+      }
       products: {
         Row: {
           active: boolean | null
@@ -2934,6 +3053,72 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      registered_tpps: {
+        Row: {
+          authorization_status: string
+          authorized_at: string | null
+          contact_email: string | null
+          country_code: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          organization_id: string | null
+          qsealc_certificate: string | null
+          qwac_certificate: string | null
+          rate_limit_per_day: number | null
+          rate_limit_per_hour: number | null
+          redirect_uris: string[]
+          registration_number: string | null
+          regulatory_authority: string | null
+          services: string[]
+          tpp_id: string
+          tpp_name: string
+          updated_at: string
+        }
+        Insert: {
+          authorization_status?: string
+          authorized_at?: string | null
+          contact_email?: string | null
+          country_code?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          organization_id?: string | null
+          qsealc_certificate?: string | null
+          qwac_certificate?: string | null
+          rate_limit_per_day?: number | null
+          rate_limit_per_hour?: number | null
+          redirect_uris?: string[]
+          registration_number?: string | null
+          regulatory_authority?: string | null
+          services?: string[]
+          tpp_id: string
+          tpp_name: string
+          updated_at?: string
+        }
+        Update: {
+          authorization_status?: string
+          authorized_at?: string | null
+          contact_email?: string | null
+          country_code?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          organization_id?: string | null
+          qsealc_certificate?: string | null
+          qwac_certificate?: string | null
+          rate_limit_per_day?: number | null
+          rate_limit_per_hour?: number | null
+          redirect_uris?: string[]
+          registration_number?: string | null
+          regulatory_authority?: string | null
+          services?: string[]
+          tpp_id?: string
+          tpp_name?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       resilience_tests: {
         Row: {
@@ -3567,6 +3752,41 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      tpp_rate_limits: {
+        Row: {
+          created_at: string
+          endpoint: string
+          id: string
+          request_count: number
+          tpp_id: string
+          window_start: string
+        }
+        Insert: {
+          created_at?: string
+          endpoint: string
+          id?: string
+          request_count?: number
+          tpp_id: string
+          window_start?: string
+        }
+        Update: {
+          created_at?: string
+          endpoint?: string
+          id?: string
+          request_count?: number
+          tpp_id?: string
+          window_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tpp_rate_limits_tpp_id_fkey"
+            columns: ["tpp_id"]
+            isOneToOne: false
+            referencedRelation: "registered_tpps"
+            referencedColumns: ["tpp_id"]
+          },
+        ]
       }
       trusted_devices: {
         Row: {
@@ -4319,7 +4539,13 @@ export type Database = {
         Args: { _user_id: string; _visit_sheet_id: string }
         Returns: boolean
       }
+      check_tpp_rate_limit: {
+        Args: { p_endpoint: string; p_tpp_id: string }
+        Returns: boolean
+      }
       cleanup_rate_limits: { Args: never; Returns: undefined }
+      cleanup_tpp_rate_limits: { Args: never; Returns: undefined }
+      expire_open_banking_consents: { Args: never; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
