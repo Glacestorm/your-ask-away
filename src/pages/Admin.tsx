@@ -51,6 +51,7 @@ import { CompetitorGapAnalysisGenerator } from '@/components/reports/CompetitorG
 import { AppDetailedStatusGenerator } from '@/components/reports/AppDetailedStatusGenerator';
 import { GeocodingRecalculator } from '@/components/admin/GeocodingRecalculator';
 import { CascadeGoalsManager } from '@/components/admin/CascadeGoalsManager';
+import { CodebaseIndexGenerator } from '@/components/reports/CodebaseIndexGenerator';
 
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
@@ -153,6 +154,7 @@ const Admin = () => {
       case 'geocoding': return 'Recalcular Geolocalització';
       case 'competitor-gap': return 'Anàlisi Competència i Millores';
       case 'app-status': return 'Estat Detallat de l\'Aplicació';
+      case 'codebase-index': return 'Índex de Funcionalitats del Codi';
       case 'cascade-goals': return 'Objectius en Cascada';
       default: return '';
     }
@@ -538,6 +540,17 @@ const Admin = () => {
           );
         }
         return <AppDetailedStatusGenerator />;
+      case 'codebase-index':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <CodebaseIndexGenerator />;
       case 'cascade-goals':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager && !isOfficeDirector) {
           return (
@@ -779,6 +792,21 @@ const Admin = () => {
                   <div>
                     <h3 className="font-semibold text-blue-700 dark:text-blue-400">Estat de l'Aplicació</h3>
                     <p className="text-sm text-muted-foreground">Detall de mòduls complerts i pendents</p>
+                  </div>
+                </CardContent>
+              </Card>
+              {/* Codebase Index Generator */}
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-all border-2 border-teal-500/30 bg-gradient-to-br from-teal-500/5 to-teal-500/10"
+                onClick={() => handleSectionChange('codebase-index')}
+              >
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-teal-500/20 flex items-center justify-center">
+                    <Activity className="h-5 w-5 text-teal-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-teal-700 dark:text-teal-400">Índex Funcionalitats</h3>
+                    <p className="text-sm text-muted-foreground">Documentació detallada del codi</p>
                   </div>
                 </CardContent>
               </Card>
