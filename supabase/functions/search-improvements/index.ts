@@ -441,18 +441,20 @@ function getDefaultImprovements(): ImprovementsAnalysis {
       },
       {
         category: "integrations",
-        title: "Open Banking API (PSD2/PSD3)",
-        description: "Exponer APIs estándar para integración con terceros según normativa europea.",
+        title: "✅ Open Banking API (PSD2/PSD3) (IMPLEMENTADO 100%)",
+        description: "APIs estándar expuestas para integración con terceros según normativa europea PSD2/PSD3. Incluye OAuth 2.0, especificación OpenAPI 3.1, y formato JSON:API.",
         priority: "media",
-        effort: "4-8 semanas",
+        effort: "Completado",
         impact: "Habilita ecosistema de partners",
         source: "PSD3 Directive (propuesta 2023)",
-        relatedTechnologies: ["OpenAPI 3.1", "OAuth 2.0", "JSON:API"],
+        relatedTechnologies: ["OpenAPI 3.1", "OAuth 2.0", "JSON:API", "FAPI"],
         implementationSteps: [
-          "Diseñar schema OpenAPI",
-          "Implementar OAuth 2.0 server",
-          "Crear sandbox para desarrolladores",
-          "Documentar con Swagger UI"
+          "✅ Especificación OpenAPI 3.1 completa en /openapi.json",
+          "✅ OAuth 2.0 con authorization_code y refresh_token",
+          "✅ Endpoints: /accounts, /transactions, /balances",
+          "✅ Endpoints: /payments, /funds-confirmation, /consents",
+          "✅ JSON:API format con x-fapi-interaction-id",
+          "✅ Scopes granulares: accounts, payments, fundsconfirmation"
         ]
       },
       {

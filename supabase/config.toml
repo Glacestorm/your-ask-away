@@ -86,3 +86,6 @@ verify_jwt = false
 
 [functions.run-stress-test]
 verify_jwt = true
+
+[functions.open-banking-api]
+verify_jwt = false
