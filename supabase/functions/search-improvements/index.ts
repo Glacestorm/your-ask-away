@@ -235,34 +235,40 @@ function getDefaultImprovements(): ImprovementsAnalysis {
       },
       {
         category: "performance",
-        title: "Implementar React Server Components parciales",
-        description: "Usar streaming SSR para componentes pesados como dashboards y reportes.",
+        title: "✅ Optimización Core Web Vitals y Streaming SSR con React 19 (IMPLEMENTADO)",
+        description: "Actualizada la infraestructura frontend con React 19, lazy loading de páginas, Suspense boundaries, skeleton loaders, y monitoreo de Core Web Vitals (CLS, FCP, LCP, TTFB, INP) para mejorar Performance y UX.",
         priority: "media",
-        effort: "2-4 semanas",
-        impact: "Mejora LCP adicional en 20%",
-        source: "React 19 / Next.js 14 best practices",
-        relatedTechnologies: ["React 19", "Suspense", "use() hook"],
+        effort: "Completado",
+        impact: "Mejora LCP, TTI y INP significativamente",
+        source: "Core Web Vitals, Web Performance Best Practices, React 19",
+        relatedTechnologies: ["React 19", "React.lazy", "Suspense", "web-vitals", "Skeleton loaders"],
         implementationSteps: [
-          "Identificar componentes candidatos",
-          "Refactorizar con Suspense boundaries",
-          "Implementar skeleton loaders adicionales",
-          "Optimizar bundle splitting avanzado"
+          "✅ Lazy loading de todas las páginas con React.lazy",
+          "✅ Suspense boundaries con PageSkeleton",
+          "✅ Monitoreo web-vitals (CLS, FCP, LCP, TTFB, INP)",
+          "✅ React Query optimizado (networkMode, retryDelay exponencial)",
+          "✅ Prefetching helpers para datos críticos",
+          "✅ Optimistic updates para mejor UX",
+          "✅ StrictMode habilitado para React 19"
         ]
       },
       {
         category: "compliance",
-        title: "Preparación para DORA (2025)",
-        description: "Implementar controles de resiliencia operativa digital según regulación UE.",
+        title: "✅ DORA/NIS2 Compliance con Stress Tests (IMPLEMENTADO)",
+        description: "Panel de cumplimiento normativo DORA y NIS2 completo con gestión de incidentes, pruebas de resiliencia, terceros TIC, y simulaciones de stress test automatizadas.",
         priority: "alta",
-        effort: "4-6 semanas",
+        effort: "Completado",
         impact: "Cumplimiento obligatorio enero 2025",
         source: "Digital Operational Resilience Act (EU 2022/2554)",
-        relatedTechnologies: ["Monitoreo", "Backup", "Incident Response"],
+        relatedTechnologies: ["Edge Functions", "Stress Testing", "Incident Management"],
         implementationSteps: [
-          "Mapear activos TIC críticos",
-          "Implementar gestión de incidentes",
-          "Documentar planes de continuidad",
-          "Configurar reporting a autoridades"
+          "✅ Dashboard DORA/NIS2 completo",
+          "✅ Gestión de incidentes TIC",
+          "✅ Registro de terceros TIC críticos",
+          "✅ 7 escenarios stress test predefinidos",
+          "✅ Edge function run-stress-test",
+          "✅ Ejecución manual y automática de tests",
+          "✅ Historial de ejecuciones con métricas"
         ]
       },
       {
