@@ -6,7 +6,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
  */
 export function useDeferredValue<T>(value: T, delay: number = 100): T {
   const [deferredValue, setDeferredValue] = useState(value);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (timeoutRef.current) {

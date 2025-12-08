@@ -211,7 +211,7 @@ export function AdminSidebar({
                 </SidebarMenuButton>
               </SidebarMenuItem>
               )}
-              {(isCommercialDirector || isSuperAdmin || isCommercialManager) && (
+              {/* AMA - Autenticación Multifactor Adaptativa - visible para admin roles */}
               <SidebarMenuItem>
                 <SidebarMenuButton
                   onClick={() => onSectionChange('adaptive-auth')}
@@ -230,7 +230,6 @@ export function AdminSidebar({
                   </span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              )}
               <SidebarMenuItem>
                 <SidebarMenuButton
                   onClick={() => onSectionChange('technical-docs')}
