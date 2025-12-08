@@ -393,7 +393,7 @@ export function DORAComplianceDashboard() {
                                 <SelectTrigger className="w-[140px]">
                                   <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="z-[9999] bg-popover">
                                   <SelectItem value="not_started">No iniciado</SelectItem>
                                   <SelectItem value="in_progress">En progreso</SelectItem>
                                   <SelectItem value="implemented">Implementado</SelectItem>
@@ -787,7 +787,7 @@ function IncidentForm({ onSuccess }: { onSuccess: () => void }) {
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-[9999] bg-popover">
               <SelectItem value="cyber_attack">Ciberataque</SelectItem>
               <SelectItem value="data_breach">Brecha de datos</SelectItem>
               <SelectItem value="system_failure">Fallo de sistema</SelectItem>
@@ -807,7 +807,7 @@ function IncidentForm({ onSuccess }: { onSuccess: () => void }) {
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-[9999] bg-popover">
               <SelectItem value="critical">Crítico</SelectItem>
               <SelectItem value="high">Alto</SelectItem>
               <SelectItem value="medium">Medio</SelectItem>
@@ -899,7 +899,7 @@ function RiskAssessmentForm({ onSuccess }: { onSuccess: () => void }) {
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-[9999] bg-popover">
               <SelectItem value="ict_risk">Riesgo TIC</SelectItem>
               <SelectItem value="third_party_risk">Riesgo de terceros</SelectItem>
               <SelectItem value="operational_risk">Riesgo operacional</SelectItem>
@@ -994,7 +994,7 @@ function ResilienceTestForm({ onSuccess }: { onSuccess: () => void }) {
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-[9999] bg-popover">
               <SelectItem value="penetration_test">Pentest</SelectItem>
               <SelectItem value="red_team">Red Team</SelectItem>
               <SelectItem value="blue_team">Blue Team</SelectItem>
@@ -1100,7 +1100,7 @@ function ThirdPartyProviderForm({ onSuccess }: { onSuccess: () => void }) {
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-[9999] bg-popover">
               <SelectItem value="cloud_service">Servicio cloud</SelectItem>
               <SelectItem value="ict_service">Servicio TIC</SelectItem>
               <SelectItem value="data_processor">Procesador de datos</SelectItem>
@@ -1120,7 +1120,7 @@ function ThirdPartyProviderForm({ onSuccess }: { onSuccess: () => void }) {
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-[9999] bg-popover">
               <SelectItem value="critical">Crítico</SelectItem>
               <SelectItem value="important">Importante</SelectItem>
               <SelectItem value="standard">Estándar</SelectItem>
@@ -1139,7 +1139,7 @@ function ThirdPartyProviderForm({ onSuccess }: { onSuccess: () => void }) {
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="z-[9999] bg-popover">
               <SelectItem value="full">Completo</SelectItem>
               <SelectItem value="limited">Limitado</SelectItem>
               <SelectItem value="none">Ninguno</SelectItem>
