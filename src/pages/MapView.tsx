@@ -207,31 +207,23 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
     }
   };
 
-  if (authLoading || loading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-12 w-12 animate-spin text-primary" />
-          <p className="text-lg text-muted-foreground">Cargando mapa empresarial...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Get unique parroquias, CNAEs, and sectors from companies
-  const availableParroquias = Array.from(
-    new Set(companies.map((c) => c.parroquia).filter(Boolean))
-  ).sort();
+  // Get unique parroquias, CNAEs, and sectors from companies - must be before conditional returns
+  const availableParroquias = useMemo(() => 
+    Array.from(new Set(companies.map((c) => c.parroquia).filter(Boolean))).sort(),
+    [companies]
+  );
   
-  const availableCnaes = Array.from(
-    new Set(companies.map((c) => c.cnae).filter(Boolean))
-  ).sort();
+  const availableCnaes = useMemo(() => 
+    Array.from(new Set(companies.map((c) => c.cnae).filter(Boolean))).sort(),
+    [companies]
+  );
   
-  const availableSectors = Array.from(
-    new Set(companies.map((c) => c.sector).filter(Boolean))
-  ).sort();
+  const availableSectors = useMemo(() => 
+    Array.from(new Set(companies.map((c) => c.sector).filter(Boolean))).sort(),
+    [companies]
+  );
 
-  // Filter companies based on current filters
+  // Filter companies based on current filters - must be before conditional returns
   const filteredCompanies = useMemo(() => {
     return companies.filter(company => {
       // Status filter
@@ -267,6 +259,17 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
       return true;
     });
   }, [companies, filters]);
+
+  if (authLoading || loading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          <p className="text-lg text-muted-foreground">Cargando mapa empresarial...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleSearchResult = (result: any) => {
     if (result.type === 'company' && result.company) {
