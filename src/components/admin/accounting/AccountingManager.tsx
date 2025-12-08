@@ -24,6 +24,7 @@ import CompanySearchBar from './CompanySearchBar';
 import MultiYearComparison from './MultiYearComparison';
 import RatiosPyramid from './RatiosPyramid';
 import { FinancialAnalysisTab } from './FinancialAnalysisTab';
+import { FinancialRAGChat } from './FinancialRAGChat';
 import { ProfitabilityTab } from './ProfitabilityTab';
 import { ValuationTab } from './ValuationTab';
 import { AuditTab } from './AuditTab';
@@ -1197,6 +1198,31 @@ const AccountingManager = () => {
         return (
           <SectionWrapper title="Valores de Capitalización">
             <ValuationTab companyId={companyId} companyName={companyName} />
+          </SectionWrapper>
+        );
+
+      // INTEL·LIGÈNCIA ARTIFICIAL
+      case 'chat-ia-financiero':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Chat IA Financer">
+            <FinancialRAGChat 
+              companyId={companyId} 
+              companyName={companyName}
+              fiscalYear={selectedYear}
+            />
+          </SectionWrapper>
+        );
+
+      case 'analisis-ia':
+        if (needsCompanySelection) return <CompanySelectionPrompt />;
+        return (
+          <SectionWrapper title="Anàlisi amb Intel·ligència Artificial">
+            <FinancialRAGChat 
+              companyId={companyId} 
+              companyName={companyName}
+              fiscalYear={selectedYear}
+            />
           </SectionWrapper>
         );
 
