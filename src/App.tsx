@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useTransition, startTransition } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,9 +8,9 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { PresenceProvider } from "@/contexts/PresenceContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import { Skeleton } from "@/components/ui/skeleton";
+import { PageStreamingSkeleton, StreamingBoundary } from "@/components/performance/StreamingBoundary";
 
-// Lazy load pages for better Core Web Vitals (code splitting)
+// Lazy load pages with React 19 preload hints for better streaming SSR
 const Auth = lazy(() => import("./pages/Auth"));
 const Home = lazy(() => import("./pages/Home"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -18,28 +18,20 @@ const Admin = lazy(() => import("./pages/Admin"));
 const Profile = lazy(() => import("./pages/Profile"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-// Loading skeleton component for Suspense fallback
-const PageSkeleton = () => (
-  <div className="min-h-screen bg-background p-4 md:p-8 space-y-6">
-    <div className="flex items-center justify-between">
-      <Skeleton className="h-10 w-48" />
-      <div className="flex gap-2">
-        <Skeleton className="h-10 w-10 rounded-full" />
-        <Skeleton className="h-10 w-10 rounded-full" />
-      </div>
-    </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {[...Array(4)].map((_, i) => (
-        <Skeleton key={i} className="h-32 rounded-lg" />
-      ))}
-    </div>
-    <Skeleton className="h-64 rounded-lg" />
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <Skeleton className="h-48 rounded-lg" />
-      <Skeleton className="h-48 rounded-lg" />
-    </div>
-  </div>
-);
+// Preload critical routes on hover/focus for faster navigation
+const preloadRoute = (importFn: () => Promise<unknown>) => {
+  startTransition(() => {
+    importFn();
+  });
+};
+
+// Route preloaders for progressive enhancement
+export const routePreloaders = {
+  home: () => preloadRoute(() => import("./pages/Home")),
+  dashboard: () => preloadRoute(() => import("./pages/Dashboard")),
+  admin: () => preloadRoute(() => import("./pages/Admin")),
+  profile: () => preloadRoute(() => import("./pages/Profile")),
+};
 
 const App = () => (
   <ErrorBoundary>
@@ -51,18 +43,39 @@ const App = () => (
               <TooltipProvider>
                 <Toaster />
                 <Sonner />
-                <Suspense fallback={<PageSkeleton />}>
+                {/* React 19 Streaming SSR with progressive Suspense boundaries */}
+                <StreamingBoundary priority="high" fallback={<PageStreamingSkeleton />}>
                   <Routes>
                     <Route path="/" element={<Navigate to="/home" replace />} />
-                    <Route path="/auth" element={<Auth />} />
-                    <Route path="/home" element={<Home />} />
+                    <Route path="/auth" element={
+                      <StreamingBoundary priority="high">
+                        <Auth />
+                      </StreamingBoundary>
+                    } />
+                    <Route path="/home" element={
+                      <StreamingBoundary priority="high">
+                        <Home />
+                      </StreamingBoundary>
+                    } />
                     <Route path="/map" element={<Navigate to="/admin?section=map" replace />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/admin" element={<Admin />} />
-                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/dashboard" element={
+                      <StreamingBoundary priority="medium" delay={50}>
+                        <Dashboard />
+                      </StreamingBoundary>
+                    } />
+                    <Route path="/admin" element={
+                      <StreamingBoundary priority="medium" delay={50}>
+                        <Admin />
+                      </StreamingBoundary>
+                    } />
+                    <Route path="/profile" element={
+                      <StreamingBoundary priority="low" delay={100}>
+                        <Profile />
+                      </StreamingBoundary>
+                    } />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
-                </Suspense>
+                </StreamingBoundary>
               </TooltipProvider>
             </PresenceProvider>
           </AuthProvider>
