@@ -14,13 +14,25 @@ interface WebAuthnCredential {
   };
 }
 
+interface PasskeyRecord {
+  id: string;
+  user_id: string;
+  credential_id: string;
+  public_key: string;
+  counter: number;
+  device_name: string | null;
+  active: boolean;
+  created_at: string;
+  last_used_at: string | null;
+}
+
 interface UseWebAuthnReturn {
   isSupported: boolean;
   isRegistering: boolean;
   isAuthenticating: boolean;
   registerPasskey: (userId: string, userEmail: string, userName: string) => Promise<boolean>;
   authenticateWithPasskey: (userEmail: string) => Promise<boolean>;
-  listPasskeys: (userId: string) => Promise<any[]>;
+  listPasskeys: (userId: string) => Promise<PasskeyRecord[]>;
   removePasskey: (credentialId: string) => Promise<boolean>;
 }
 
@@ -78,7 +90,7 @@ export function useWebAuthn(): UseWebAuthnReturn {
       
       // Create PublicKeyCredentialCreationOptions
       const publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptions = {
-        challenge,
+        challenge: challenge.buffer as ArrayBuffer,
         rp: {
           name: 'Creand Banking CRM',
           id: window.location.hostname,
@@ -112,19 +124,25 @@ export function useWebAuthn(): UseWebAuthnReturn {
       }
 
       const response = credential.response as AuthenticatorAttestationResponse;
+      const publicKey = response.getPublicKey();
+
+      if (!publicKey) {
+        throw new Error('No s\'ha pogut obtenir la clau pública');
+      }
 
       // Store credential in database
-      const { error } = await supabase.from('user_passkeys').insert({
-        user_id: userId,
-        credential_id: bufferToBase64URL(credential.rawId),
-        public_key: bufferToBase64URL(response.getPublicKey()!),
-        counter: 0,
-        device_name: navigator.userAgent.includes('Mobile') ? 'Dispositiu mòbil' : 'Ordinador',
-        created_at: new Date().toISOString(),
-      });
+      const { error: insertError } = await supabase
+        .from('user_passkeys' as any)
+        .insert({
+          user_id: userId,
+          credential_id: bufferToBase64URL(credential.rawId),
+          public_key: bufferToBase64URL(publicKey),
+          counter: 0,
+          device_name: navigator.userAgent.includes('Mobile') ? 'Dispositiu mòbil' : 'Ordinador',
+        } as any);
 
-      if (error) {
-        console.error('Error storing passkey:', error);
+      if (insertError) {
+        console.error('Error storing passkey:', insertError);
         toast.error('Error al guardar la passkey');
         return false;
       }
@@ -156,10 +174,12 @@ export function useWebAuthn(): UseWebAuthnReturn {
 
     try {
       // Get user's passkeys from database
-      const { data: passkeys, error: fetchError } = await supabase
-        .from('user_passkeys')
+      const { data: passkeysRaw, error: fetchError } = await supabase
+        .from('user_passkeys' as any)
         .select('credential_id, user_id')
         .eq('active', true);
+
+      const passkeys = passkeysRaw as unknown as { credential_id: string; user_id: string }[] | null;
 
       if (fetchError || !passkeys?.length) {
         toast.error('No hi ha passkeys registrades');
@@ -171,7 +191,7 @@ export function useWebAuthn(): UseWebAuthnReturn {
 
       // Create PublicKeyCredentialRequestOptions
       const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions = {
-        challenge,
+        challenge: challenge.buffer as ArrayBuffer,
         rpId: window.location.hostname,
         timeout: 60000,
         userVerification: 'preferred',
@@ -204,11 +224,11 @@ export function useWebAuthn(): UseWebAuthnReturn {
 
       // Update counter and last used
       await supabase
-        .from('user_passkeys')
+        .from('user_passkeys' as any)
         .update({ 
           last_used_at: new Date().toISOString(),
-          counter: response.getPublicKey ? 1 : 1 // Increment counter
-        })
+          counter: 1
+        } as any)
         .eq('credential_id', credentialId);
 
       // Sign in with custom token via edge function
@@ -227,14 +247,6 @@ export function useWebAuthn(): UseWebAuthnReturn {
         return false;
       }
 
-      // Set session if token provided
-      if (authData.access_token) {
-        await supabase.auth.setSession({
-          access_token: authData.access_token,
-          refresh_token: authData.refresh_token,
-        });
-      }
-
       toast.success('Autenticació amb passkey correcta!');
       return true;
     } catch (error: any) {
@@ -250,9 +262,9 @@ export function useWebAuthn(): UseWebAuthnReturn {
     }
   }, [isSupported]);
 
-  const listPasskeys = useCallback(async (userId: string): Promise<any[]> => {
+  const listPasskeys = useCallback(async (userId: string): Promise<PasskeyRecord[]> => {
     const { data, error } = await supabase
-      .from('user_passkeys')
+      .from('user_passkeys' as any)
       .select('*')
       .eq('user_id', userId)
       .eq('active', true)
@@ -263,13 +275,13 @@ export function useWebAuthn(): UseWebAuthnReturn {
       return [];
     }
 
-    return data || [];
+    return (data as unknown as PasskeyRecord[]) || [];
   }, []);
 
   const removePasskey = useCallback(async (credentialId: string): Promise<boolean> => {
     const { error } = await supabase
-      .from('user_passkeys')
-      .update({ active: false })
+      .from('user_passkeys' as any)
+      .update({ active: false } as any)
       .eq('credential_id', credentialId);
 
     if (error) {

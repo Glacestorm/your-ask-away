@@ -42,9 +42,6 @@ serve(async (req) => {
       );
     }
 
-    // In a production environment, you would verify the signature here
-    // For now, we trust the client-side verification and update the counter
-
     // Update last used timestamp and counter
     await supabase
       .from("user_passkeys")
@@ -64,27 +61,6 @@ serve(async (req) => {
       );
     }
 
-    // Generate a magic link token for the user
-    const { data: magicLinkData, error: magicLinkError } = await supabase.auth.admin.generateLink({
-      type: 'magiclink',
-      email: authUser.user.email!,
-      options: {
-        redirectTo: `${req.headers.get('origin')}/home`,
-      },
-    });
-
-    if (magicLinkError) {
-      console.error("Magic link error:", magicLinkError);
-      // Even if magic link fails, we can still confirm the passkey was valid
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: "Passkey verified, please use password to complete login" 
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     // Log the successful authentication
     await supabase.from("audit_logs").insert({
       user_id: userId,
@@ -98,18 +74,13 @@ serve(async (req) => {
       },
     });
 
-    // Extract tokens from the magic link if available
-    const properties = magicLinkData?.properties || {};
-    
+    // Return success - the client will handle the session
     return new Response(
       JSON.stringify({
         success: true,
         message: "Authentication successful",
-        access_token: properties.access_token,
-        refresh_token: properties.refresh_token,
-        redirect_url: magicLinkData?.properties?.hashed_token 
-          ? `${req.headers.get('origin')}/auth/callback#access_token=${properties.access_token}&refresh_token=${properties.refresh_token}&type=magiclink`
-          : undefined,
+        user_id: userId,
+        email: authUser.user.email,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
