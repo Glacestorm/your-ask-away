@@ -52,6 +52,7 @@ import { AppDetailedStatusGenerator } from '@/components/reports/AppDetailedStat
 import { GeocodingRecalculator } from '@/components/admin/GeocodingRecalculator';
 import { CascadeGoalsManager } from '@/components/admin/CascadeGoalsManager';
 import { CodebaseIndexGenerator } from '@/components/reports/CodebaseIndexGenerator';
+import { ApplicationStateAnalyzer } from '@/components/admin/ApplicationStateAnalyzer';
 
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
@@ -539,7 +540,7 @@ const Admin = () => {
             </Card>
           );
         }
-        return <AppDetailedStatusGenerator />;
+        return <ApplicationStateAnalyzer />;
       case 'codebase-index':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
           return (
