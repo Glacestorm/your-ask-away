@@ -1,4 +1,12 @@
 export default {
+  // Themes
+  'theme.day': 'Jour',
+  'theme.night': 'Nuit',
+  'theme.creand': 'Creand',
+  'theme.aurora': 'Aurora',
+  'theme.system': 'Système',
+  'theme.label': 'Thème',
+
   // Auth page
   'auth.title': 'Carte d\'Entreprise Andorre',
   'auth.subtitle': 'Système de gestion et visualisation des entreprises',
