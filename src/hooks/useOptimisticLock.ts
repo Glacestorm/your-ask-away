@@ -1,10 +1,6 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import type { Database } from '@/integrations/supabase/types';
-
-type Tables = Database['public']['Tables'];
-type TableName = keyof Tables;
 
 export interface ConflictInfo {
   recordId: string;
@@ -16,7 +12,7 @@ export interface ConflictInfo {
 }
 
 interface UseOptimisticLockOptions {
-  table: TableName;
+  table: string;
   versionField?: string;
   onConflict?: (conflict: ConflictInfo) => void;
 }
@@ -40,7 +36,7 @@ export function useOptimisticLock({
 
       try {
         // First, check the current version in the database
-        const { data: currentRecord, error: fetchError } = await supabase
+        const { data: currentRecord, error: fetchError } = await (supabase as any)
           .from(table)
           .select('*')
           .eq('id', id)
@@ -57,7 +53,6 @@ export function useOptimisticLock({
         // Check if versions match (within 1 second tolerance for network delays)
         const timeDiff = Math.abs(serverVersion.getTime() - localVersion.getTime());
         if (timeDiff > 1000) {
-          // Conflict detected
           const conflictInfo: ConflictInfo = {
             recordId: id,
             table,
@@ -78,12 +73,12 @@ export function useOptimisticLock({
         }
 
         // Perform the update with new timestamp
-        const { data: updatedRecord, error: updateError } = await supabase
+        const { data: updatedRecord, error: updateError } = await (supabase as any)
           .from(table)
           .update({
             ...data,
             updated_at: new Date().toISOString(),
-          } as never)
+          })
           .eq('id', id)
           .select()
           .single();
@@ -115,12 +110,12 @@ export function useOptimisticLock({
       setConflict(null);
 
       try {
-        const { data: updatedRecord, error } = await supabase
+        const { data: updatedRecord, error } = await (supabase as any)
           .from(table)
           .update({
             ...data,
             updated_at: new Date().toISOString(),
-          } as never)
+          })
           .eq('id', id)
           .select()
           .single();
@@ -148,7 +143,7 @@ export function useOptimisticLock({
   const reloadRecord = useCallback(
     async (id: string): Promise<Record<string, unknown> | null> => {
       try {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from(table)
           .select('*')
           .eq('id', id)

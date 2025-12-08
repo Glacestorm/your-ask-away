@@ -1702,6 +1702,60 @@ export type Database = {
           },
         ]
       }
+      dora_compliance_items: {
+        Row: {
+          article: string
+          completion_date: string | null
+          created_at: string
+          evidence_description: string | null
+          evidence_url: string | null
+          id: string
+          implementation_status: string
+          notes: string | null
+          priority: string | null
+          requirement_category: string
+          requirement_description: string | null
+          requirement_title: string
+          responsible_person: string | null
+          target_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          article: string
+          completion_date?: string | null
+          created_at?: string
+          evidence_description?: string | null
+          evidence_url?: string | null
+          id?: string
+          implementation_status?: string
+          notes?: string | null
+          priority?: string | null
+          requirement_category: string
+          requirement_description?: string | null
+          requirement_title: string
+          responsible_person?: string | null
+          target_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          article?: string
+          completion_date?: string | null
+          created_at?: string
+          evidence_description?: string | null
+          evidence_url?: string | null
+          id?: string
+          implementation_status?: string
+          notes?: string | null
+          priority?: string | null
+          requirement_category?: string
+          requirement_description?: string | null
+          requirement_title?: string
+          responsible_person?: string | null
+          target_date?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       email_reminder_preferences: {
         Row: {
           created_at: string | null
@@ -2878,6 +2932,150 @@ export type Database = {
           },
         ]
       }
+      resilience_tests: {
+        Row: {
+          conducted_by: string | null
+          created_at: string
+          critical_findings_count: number | null
+          executive_summary: string | null
+          findings: Json | null
+          high_findings_count: number | null
+          id: string
+          low_findings_count: number | null
+          medium_findings_count: number | null
+          recommendations: string | null
+          remediation_deadline: string | null
+          remediation_status: string | null
+          report_url: string | null
+          reviewed_by: string | null
+          scope: string
+          status: string
+          target_systems: string[] | null
+          test_date: string
+          test_duration_hours: number | null
+          test_name: string
+          test_type: string
+          tester_certification: string | null
+          tester_organization: string | null
+          updated_at: string
+        }
+        Insert: {
+          conducted_by?: string | null
+          created_at?: string
+          critical_findings_count?: number | null
+          executive_summary?: string | null
+          findings?: Json | null
+          high_findings_count?: number | null
+          id?: string
+          low_findings_count?: number | null
+          medium_findings_count?: number | null
+          recommendations?: string | null
+          remediation_deadline?: string | null
+          remediation_status?: string | null
+          report_url?: string | null
+          reviewed_by?: string | null
+          scope: string
+          status?: string
+          target_systems?: string[] | null
+          test_date: string
+          test_duration_hours?: number | null
+          test_name: string
+          test_type: string
+          tester_certification?: string | null
+          tester_organization?: string | null
+          updated_at?: string
+        }
+        Update: {
+          conducted_by?: string | null
+          created_at?: string
+          critical_findings_count?: number | null
+          executive_summary?: string | null
+          findings?: Json | null
+          high_findings_count?: number | null
+          id?: string
+          low_findings_count?: number | null
+          medium_findings_count?: number | null
+          recommendations?: string | null
+          remediation_deadline?: string | null
+          remediation_status?: string | null
+          report_url?: string | null
+          reviewed_by?: string | null
+          scope?: string
+          status?: string
+          target_systems?: string[] | null
+          test_date?: string
+          test_duration_hours?: number | null
+          test_name?: string
+          test_type?: string
+          tester_certification?: string | null
+          tester_organization?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      risk_assessments: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          assessment_date: string
+          assessment_name: string
+          assessment_type: string
+          assessor_id: string | null
+          created_at: string
+          id: string
+          identified_risks: Json | null
+          methodology: string | null
+          mitigation_measures: Json | null
+          next_review_date: string | null
+          residual_risk_score: number | null
+          risk_level: string | null
+          risk_score: number | null
+          scope: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          assessment_date: string
+          assessment_name: string
+          assessment_type: string
+          assessor_id?: string | null
+          created_at?: string
+          id?: string
+          identified_risks?: Json | null
+          methodology?: string | null
+          mitigation_measures?: Json | null
+          next_review_date?: string | null
+          residual_risk_score?: number | null
+          risk_level?: string | null
+          risk_score?: number | null
+          scope: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          assessment_date?: string
+          assessment_name?: string
+          assessment_type?: string
+          assessor_id?: string | null
+          created_at?: string
+          id?: string
+          identified_risks?: Json | null
+          methodology?: string | null
+          mitigation_measures?: Json | null
+          next_review_date?: string | null
+          residual_risk_score?: number | null
+          risk_level?: string | null
+          risk_score?: number | null
+          scope?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       scheduled_health_checks: {
         Row: {
           check_type: string
@@ -2956,6 +3154,78 @@ export type Database = {
           severity?: string | null
           user_agent?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      security_incidents: {
+        Row: {
+          affected_data_types: string[] | null
+          affected_systems: string[] | null
+          assigned_to: string | null
+          authority_reference: string | null
+          authority_report_date: string | null
+          containment_time: string | null
+          created_at: string
+          description: string
+          detection_time: string
+          id: string
+          incident_type: string
+          lessons_learned: string | null
+          remediation_actions: string | null
+          reported_by: string | null
+          reported_to_authority: boolean | null
+          resolution_time: string | null
+          root_cause: string | null
+          severity: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          affected_data_types?: string[] | null
+          affected_systems?: string[] | null
+          assigned_to?: string | null
+          authority_reference?: string | null
+          authority_report_date?: string | null
+          containment_time?: string | null
+          created_at?: string
+          description: string
+          detection_time: string
+          id?: string
+          incident_type: string
+          lessons_learned?: string | null
+          remediation_actions?: string | null
+          reported_by?: string | null
+          reported_to_authority?: boolean | null
+          resolution_time?: string | null
+          root_cause?: string | null
+          severity: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          affected_data_types?: string[] | null
+          affected_systems?: string[] | null
+          assigned_to?: string | null
+          authority_reference?: string | null
+          authority_report_date?: string | null
+          containment_time?: string | null
+          created_at?: string
+          description?: string
+          detection_time?: string
+          id?: string
+          incident_type?: string
+          lessons_learned?: string | null
+          remediation_actions?: string | null
+          reported_by?: string | null
+          reported_to_authority?: boolean | null
+          resolution_time?: string | null
+          root_cause?: string | null
+          severity?: string
+          status?: string
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -3086,6 +3356,93 @@ export type Database = {
           module_key?: string | null
           status?: string
           triggered_by?: string | null
+        }
+        Relationships: []
+      }
+      third_party_providers: {
+        Row: {
+          certifications: string[] | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          contract_end_date: string | null
+          contract_start_date: string | null
+          created_at: string
+          created_by: string | null
+          criticality: string
+          data_access_level: string | null
+          data_location: string | null
+          exit_strategy: string | null
+          id: string
+          incident_count: number | null
+          last_audit_date: string | null
+          next_audit_date: string | null
+          notes: string | null
+          provider_name: string
+          provider_type: string
+          risk_level: string | null
+          risk_score: number | null
+          services_provided: string[] | null
+          sla_compliance_rate: number | null
+          status: string
+          substitute_provider: string | null
+          updated_at: string
+        }
+        Insert: {
+          certifications?: string[] | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          contract_end_date?: string | null
+          contract_start_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          criticality: string
+          data_access_level?: string | null
+          data_location?: string | null
+          exit_strategy?: string | null
+          id?: string
+          incident_count?: number | null
+          last_audit_date?: string | null
+          next_audit_date?: string | null
+          notes?: string | null
+          provider_name: string
+          provider_type: string
+          risk_level?: string | null
+          risk_score?: number | null
+          services_provided?: string[] | null
+          sla_compliance_rate?: number | null
+          status?: string
+          substitute_provider?: string | null
+          updated_at?: string
+        }
+        Update: {
+          certifications?: string[] | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          contract_end_date?: string | null
+          contract_start_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          criticality?: string
+          data_access_level?: string | null
+          data_location?: string | null
+          exit_strategy?: string | null
+          id?: string
+          incident_count?: number | null
+          last_audit_date?: string | null
+          next_audit_date?: string | null
+          notes?: string | null
+          provider_name?: string
+          provider_type?: string
+          risk_level?: string | null
+          risk_score?: number | null
+          services_provided?: string[] | null
+          sla_compliance_rate?: number | null
+          status?: string
+          substitute_provider?: string | null
+          updated_at?: string
         }
         Relationships: []
       }

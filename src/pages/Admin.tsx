@@ -53,6 +53,7 @@ import { GeocodingRecalculator } from '@/components/admin/GeocodingRecalculator'
 import { CascadeGoalsManager } from '@/components/admin/CascadeGoalsManager';
 import { CodebaseIndexGenerator } from '@/components/reports/CodebaseIndexGenerator';
 import { ApplicationStateAnalyzer } from '@/components/admin/ApplicationStateAnalyzer';
+import { DORAComplianceDashboard } from '@/components/admin/DORAComplianceDashboard';
 
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
@@ -552,6 +553,17 @@ const Admin = () => {
           );
         }
         return <CodebaseIndexGenerator />;
+      case 'dora-compliance':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <DORAComplianceDashboard />;
       case 'cascade-goals':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager && !isOfficeDirector) {
           return (
