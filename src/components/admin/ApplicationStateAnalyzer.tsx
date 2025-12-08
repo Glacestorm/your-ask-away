@@ -353,7 +353,7 @@ export function ApplicationStateAnalyzer() {
         'useCelebration', 'useAdaptiveAuth', 'use-mobile', 'use-toast'
       ];
       
-      // Lista COMPLETA de todas las Edge Functions (37 total)
+      // Lista COMPLETA de todas las Edge Functions (38 total)
       const edgeFunctions = [
         'analyze-codebase', 'analyze-system-issues', 'check-alerts', 
         'check-goal-achievements', 'check-goals-at-risk', 'check-low-performance',
@@ -361,7 +361,7 @@ export function ApplicationStateAnalyzer() {
         'evaluate-session-risk', 'financial-rag-chat', 'generate-action-plan',
         'generate-financial-embeddings', 'generate-ml-predictions', 'geocode-address',
         'manage-user', 'notify-visit-validation', 'optimize-route',
-        'parse-financial-pdf', 'scheduled-health-check', 'search-ai-recommendations',
+        'parse-financial-pdf', 'run-stress-test', 'scheduled-health-check', 'search-ai-recommendations',
         'search-company-photo', 'search-improvements', 'send-alert-email',
         'send-critical-opportunity-email', 'send-daily-kpi-report', 'send-goal-achievement-email',
         'send-monthly-kpi-report', 'send-monthly-reports', 'send-reminder-email',
@@ -387,14 +387,15 @@ export function ApplicationStateAnalyzer() {
         'TLS 1.3 en tránsito',
         'Secrets via Supabase Vault',
         'Auditoría completa de acciones (audit_logs)',
-        'DORA/NIS2 compliance dashboard',
+        'DORA/NIS2 compliance dashboard con stress tests automatizados',
         'Autenticación basada en roles (RBAC)',
-        'Session risk scoring automático'
+        'Session risk scoring automático',
+        'Simulaciones stress test DORA: disponibilidad, capacidad, failover, cyber-attack, recuperación, red'
       ];
 
       const { data, error } = await supabase.functions.invoke('analyze-codebase', {
         body: {
-          fileStructure: 'src/components (100+ componentes), src/hooks (18 hooks), src/pages (9 páginas), supabase/functions (37 edge functions)',
+          fileStructure: 'src/components (100+ componentes), src/hooks (18 hooks), src/pages (9 páginas), supabase/functions (38 edge functions)',
           componentsList,
           hooksList,
           edgeFunctions,

@@ -384,13 +384,13 @@ function getDefaultAnalysis(componentsList: string[], hooksList: string[], edgeF
       },
       {
         name: "DORA/NIS2 Compliance Dashboard",
-        description: "Panel de cumplimiento normativo DORA y NIS2 para entidades financieras con gestión de incidentes, pruebas resiliencia y terceros TIC.",
-        implementedFeatures: ["Gestión incidentes TIC", "Pruebas resiliencia operativa", "Registro terceros TIC", "Indicadores cumplimiento", "Alertas vencimientos", "Documentación evidencias", "Reporting regulador"],
-        pendingFeatures: ["Simulaciones stress test automatizadas"],
-        completionPercentage: 95,
-        files: componentsList?.filter((f: string) => f.toLowerCase().includes('dora') || f.toLowerCase().includes('compliance')) || [],
+        description: "Panel de cumplimiento normativo DORA y NIS2 para entidades financieras con gestión de incidentes, pruebas resiliencia, terceros TIC y simulaciones stress test automatizadas.",
+        implementedFeatures: ["Gestión incidentes TIC", "Pruebas resiliencia operativa", "Registro terceros TIC", "Indicadores cumplimiento", "Alertas vencimientos", "Documentación evidencias", "Reporting regulador", "Simulaciones stress test automatizadas", "7 escenarios stress test predefinidos", "Ejecución manual y programada", "Métricas de rendimiento en tiempo real", "Historial ejecuciones stress test", "Edge function run-stress-test", "Tests: disponibilidad, capacidad, failover, cyber-attack, recuperación, red"],
+        pendingFeatures: [],
+        completionPercentage: 100,
+        files: componentsList?.filter((f: string) => f.toLowerCase().includes('dora') || f.toLowerCase().includes('compliance') || f.toLowerCase().includes('stress')) || [],
         businessValue: "Cumplimiento regulatorio DORA enero 2025",
-        differentiators: ["Panel DORA específico banca", "NIS2 integrado", "Evidencias automáticas"]
+        differentiators: ["Panel DORA específico banca", "NIS2 integrado", "Evidencias automáticas", "Stress tests automatizados", "7 escenarios predefinidos"]
       },
       {
         name: "Monitor Salud Sistema",
