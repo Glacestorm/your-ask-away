@@ -19,11 +19,30 @@ import { CompanyWithDetails, StatusColor, Profile } from '@/types/database';
 import { ExcelImporter } from './ExcelImporter';
 import { CompanyPhotosManager } from '@/components/company/CompanyPhotosManager';
 import { CompaniesPagination } from './CompaniesPagination';
+import { CompanyExportButton } from './CompanyExportButton';
+import { CompanyDataCompleteness } from './CompanyDataCompleteness';
+import { AdvancedCompanyFilters } from './AdvancedCompanyFilters';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useCompaniesServerPagination } from '@/hooks/useCompaniesServerPagination';
 import { useCompanyPhotosLazy } from '@/hooks/useCompanyPhotosLazy';
 
+interface AdvancedFilters {
+  status?: string;
+  gestor?: string;
+  parroquia?: string;
+  oficina?: string;
+  clientType?: string;
+  hasPhone?: boolean;
+  hasEmail?: boolean;
+  hasGeolocalization?: boolean;
+  minVinculacion?: number;
+  maxVinculacion?: number;
+  minEmployees?: number;
+  maxEmployees?: number;
+  minTurnover?: number;
+  maxTurnover?: number;
+}
 interface CompanyContact {
   id: string;
   company_id: string;
@@ -136,6 +155,7 @@ export function CompaniesManager() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
   const [bulkTags, setBulkTags] = useState<string[]>([]);
+  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilters>({});
   const [visitFormData, setVisitFormData] = useState({
     visit_date: new Date().toISOString().split('T')[0],
     gestor_id: '',
@@ -1004,8 +1024,51 @@ export function CompaniesManager() {
     );
   };
 
-  // Companies are now filtered and sorted server-side, just use them directly
-  const filteredAndSortedCompanies = companies;
+  // Apply advanced filters client-side (server-side handles basic filters)
+  const filteredAndSortedCompanies = useMemo(() => {
+    return companies.filter(company => {
+      // Status filter
+      if (advancedFilters.status && company.status_id !== advancedFilters.status) return false;
+      
+      // Gestor filter
+      if (advancedFilters.gestor && company.gestor_id !== advancedFilters.gestor) return false;
+      
+      // Parroquia filter
+      if (advancedFilters.parroquia && company.parroquia !== advancedFilters.parroquia) return false;
+      
+      // Oficina filter
+      if (advancedFilters.oficina && company.oficina !== advancedFilters.oficina) return false;
+      
+      // Client type filter
+      if (advancedFilters.clientType && (company as any).client_type !== advancedFilters.clientType) return false;
+      
+      // Has phone filter
+      if (advancedFilters.hasPhone && !(company as any).phone) return false;
+      
+      // Has email filter
+      if (advancedFilters.hasEmail && !(company as any).email) return false;
+      
+      // Has geolocalization filter
+      if (advancedFilters.hasGeolocalization && (!company.latitude || !company.longitude || company.latitude === 0)) return false;
+      
+      // Vinculacion range
+      const vinc = (company as any).vinculacion_entidad_1 || 0;
+      if (advancedFilters.minVinculacion !== undefined && vinc < advancedFilters.minVinculacion) return false;
+      if (advancedFilters.maxVinculacion !== undefined && vinc > advancedFilters.maxVinculacion) return false;
+      
+      // Employees range
+      const employees = (company as any).employees || 0;
+      if (advancedFilters.minEmployees !== undefined && employees < advancedFilters.minEmployees) return false;
+      if (advancedFilters.maxEmployees !== undefined && employees > advancedFilters.maxEmployees) return false;
+      
+      // Turnover range
+      const turnover = (company as any).turnover || 0;
+      if (advancedFilters.minTurnover !== undefined && turnover < advancedFilters.minTurnover) return false;
+      if (advancedFilters.maxTurnover !== undefined && turnover > advancedFilters.maxTurnover) return false;
+      
+      return true;
+    });
+  }, [companies, advancedFilters]);
 
 
   return (
@@ -1073,6 +1136,10 @@ export function CompaniesManager() {
                 <span className="ml-2">{t('companyForm.importExcel')}</span>
               </Button>
             )}
+            <CompanyExportButton 
+              companies={companies} 
+              selectedCompanies={selectedCompanies} 
+            />
             {canAddCompany() && (
               <Button size="sm" onClick={() => { resetForm(); setDialogOpen(true); }}>
                 <Plus className="h-4 w-4" />
@@ -1144,6 +1211,13 @@ export function CompaniesManager() {
             </Select>
           </div>
           <div className="flex gap-2">
+            <AdvancedCompanyFilters
+              statusColors={statusColors}
+              gestores={gestores}
+              parroquias={parroquias}
+              oficinas={oficinas}
+              onFiltersChange={setAdvancedFilters}
+            />
             <Button
               variant={viewMode === 'cards' ? 'default' : 'outline'}
               size="icon"
@@ -1232,9 +1306,12 @@ export function CompaniesManager() {
                                 ? 'bg-primary/90 text-white border-2 border-primary'
                                 : 'bg-muted/90 text-foreground border-2 border-muted-foreground/30'
                             }`}>
-                              {(company as any).client_type === 'cliente' ? '⭐ Cliente' : '💼 Potencial'}
+                              {(company as any).client_type === 'cliente' ? 'Cliente' : 'Potencial'}
                             </div>
                           )}
+                          
+                          {/* Data Completeness Indicator */}
+                          <CompanyDataCompleteness company={company} />
                         </div>
                       </div>
                     </div>
@@ -1634,6 +1711,11 @@ export function CompaniesManager() {
               {t('companyForm.title')}
             </DialogDescription>
           </DialogHeader>
+
+          {/* Data Completeness Indicator for existing company */}
+          {editingCompany && (
+            <CompanyDataCompleteness company={editingCompany} showDetails />
+          )}
 
           <Tabs defaultValue="basic" className="w-full">
             <TabsList className="inline-flex h-auto items-center justify-start rounded-md bg-muted p-1 text-muted-foreground w-full flex-wrap gap-1">
