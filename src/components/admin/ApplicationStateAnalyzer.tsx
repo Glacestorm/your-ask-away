@@ -369,7 +369,7 @@ export function ApplicationStateAnalyzer() {
       }
 
       // Módulos analizados
-      if (codebaseAnalysis?.modules) {
+      if (codebaseAnalysis?.modules && Array.isArray(codebaseAnalysis.modules) && codebaseAnalysis.modules.length > 0) {
         if (yPos > 250) {
           doc.addPage();
           yPos = 20;
@@ -388,19 +388,19 @@ export function ApplicationStateAnalyzer() {
           
           doc.setFontSize(11);
           doc.setFont('helvetica', 'bold');
-          doc.text(`${idx + 1}. ${module.name} (${module.completionPercentage}%)`, margin, yPos);
+          doc.text(`${idx + 1}. ${module.name || 'Sin nombre'} (${module.completionPercentage || 0}%)`, margin, yPos);
           yPos += 6;
           
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
-          const descLines = doc.splitTextToSize(module.description, contentWidth - 10);
+          const descLines = doc.splitTextToSize(module.description || 'Sin descripción', contentWidth - 10);
           doc.text(descLines, margin + 5, yPos);
           yPos += descLines.length * 4 + 8;
         });
       }
 
       // Mejoras sugeridas
-      if (improvementsAnalysis?.improvements) {
+      if (improvementsAnalysis?.improvements && Array.isArray(improvementsAnalysis.improvements) && improvementsAnalysis.improvements.length > 0) {
         doc.addPage();
         yPos = 20;
         
@@ -417,22 +417,22 @@ export function ApplicationStateAnalyzer() {
           
           doc.setFontSize(11);
           doc.setFont('helvetica', 'bold');
-          doc.text(`${idx + 1}. ${imp.title} [${imp.priority.toUpperCase()}]`, margin, yPos);
+          doc.text(`${idx + 1}. ${imp.title || 'Sin título'} [${(imp.priority || 'media').toUpperCase()}]`, margin, yPos);
           yPos += 6;
           
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
-          const impLines = doc.splitTextToSize(imp.description, contentWidth - 10);
+          const impLines = doc.splitTextToSize(imp.description || 'Sin descripción', contentWidth - 10);
           doc.text(impLines, margin + 5, yPos);
           yPos += impLines.length * 4;
           
-          doc.text(`Esfuerzo: ${imp.effort} | Impacto: ${imp.impact}`, margin + 5, yPos);
+          doc.text(`Esfuerzo: ${imp.effort || 'N/A'} | Impacto: ${imp.impact || 'N/A'}`, margin + 5, yPos);
           yPos += 8;
         });
       }
 
       // Tendencias tecnológicas
-      if (improvementsAnalysis?.technologyTrends) {
+      if (improvementsAnalysis?.technologyTrends && Array.isArray(improvementsAnalysis.technologyTrends) && improvementsAnalysis.technologyTrends.length > 0) {
         doc.addPage();
         yPos = 20;
         
@@ -449,20 +449,20 @@ export function ApplicationStateAnalyzer() {
           
           doc.setFontSize(11);
           doc.setFont('helvetica', 'bold');
-          doc.text(`${idx + 1}. ${trend.name}`, margin, yPos);
+          doc.text(`${idx + 1}. ${trend.name || 'Sin nombre'}`, margin, yPos);
           yPos += 6;
           
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
-          doc.text(`Relevancia: ${trend.relevance}`, margin + 5, yPos);
+          doc.text(`Relevancia: ${trend.relevance || 'N/A'}`, margin + 5, yPos);
           yPos += 4;
-          doc.text(`Recomendación: ${trend.recommendation}`, margin + 5, yPos);
+          doc.text(`Recomendación: ${trend.recommendation || 'N/A'}`, margin + 5, yPos);
           yPos += 8;
         });
       }
 
       // Actualizaciones de compliance
-      if (improvementsAnalysis?.complianceUpdates) {
+      if (improvementsAnalysis?.complianceUpdates && Array.isArray(improvementsAnalysis.complianceUpdates) && improvementsAnalysis.complianceUpdates.length > 0) {
         doc.addPage();
         yPos = 20;
         
@@ -474,7 +474,7 @@ export function ApplicationStateAnalyzer() {
         doc.setFontSize(9);
         doc.setFont('helvetica', 'normal');
         improvementsAnalysis.complianceUpdates.forEach((update, idx) => {
-          const lines = doc.splitTextToSize(`${idx + 1}. ${update}`, contentWidth);
+          const lines = doc.splitTextToSize(`${idx + 1}. ${update || ''}`, contentWidth);
           doc.text(lines, margin, yPos);
           yPos += lines.length * 4 + 2;
         });
@@ -491,8 +491,8 @@ export function ApplicationStateAnalyzer() {
     }
   };
 
-  const overallCompletion = codebaseAnalysis?.modules
-    ? Math.round(codebaseAnalysis.modules.reduce((sum, m) => sum + m.completionPercentage, 0) / codebaseAnalysis.modules.length)
+  const overallCompletion = codebaseAnalysis?.modules && Array.isArray(codebaseAnalysis.modules) && codebaseAnalysis.modules.length > 0
+    ? Math.round(codebaseAnalysis.modules.reduce((sum, m) => sum + (m.completionPercentage || 0), 0) / codebaseAnalysis.modules.length)
     : 0;
 
   return (
@@ -601,7 +601,7 @@ export function ApplicationStateAnalyzer() {
                 <Card>
                   <CardHeader className="pb-2">
                     <CardDescription>Mòduls</CardDescription>
-                    <CardTitle className="text-3xl">{codebaseAnalysis.modules.length}</CardTitle>
+                    <CardTitle className="text-3xl">{Array.isArray(codebaseAnalysis.modules) ? codebaseAnalysis.modules.length : 0}</CardTitle>
                   </CardHeader>
                 </Card>
                 <Card>
@@ -667,7 +667,7 @@ export function ApplicationStateAnalyzer() {
 
         {/* Módulos */}
         <TabsContent value="modules" className="space-y-4">
-          {codebaseAnalysis?.modules ? (
+          {codebaseAnalysis?.modules && Array.isArray(codebaseAnalysis.modules) && codebaseAnalysis.modules.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2">
               {codebaseAnalysis.modules.map((module, idx) => (
                 <Card key={idx}>
@@ -738,7 +738,7 @@ export function ApplicationStateAnalyzer() {
 
         {/* Mejoras */}
         <TabsContent value="improvements" className="space-y-4">
-          {improvementsAnalysis?.improvements ? (
+          {improvementsAnalysis?.improvements && Array.isArray(improvementsAnalysis.improvements) && improvementsAnalysis.improvements.length > 0 ? (
             <ScrollArea className="h-[600px]">
               <div className="space-y-4 pr-4">
                 {improvementsAnalysis.improvements.map((imp, idx) => {
@@ -816,7 +816,7 @@ export function ApplicationStateAnalyzer() {
 
         {/* Tendencias */}
         <TabsContent value="trends" className="space-y-4">
-          {improvementsAnalysis?.technologyTrends ? (
+          {improvementsAnalysis?.technologyTrends && Array.isArray(improvementsAnalysis.technologyTrends) && improvementsAnalysis.technologyTrends.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2">
               {improvementsAnalysis.technologyTrends.map((trend, idx) => (
                 <Card key={idx}>
@@ -892,7 +892,7 @@ export function ApplicationStateAnalyzer() {
 
         {/* Compliance */}
         <TabsContent value="compliance" className="space-y-4">
-          {improvementsAnalysis?.complianceUpdates ? (
+          {improvementsAnalysis?.complianceUpdates && Array.isArray(improvementsAnalysis.complianceUpdates) && improvementsAnalysis.complianceUpdates.length > 0 ? (
             <>
               <Card>
                 <CardHeader>
