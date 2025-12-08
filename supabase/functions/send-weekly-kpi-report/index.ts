@@ -1,15 +1,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@4.0.0";
+import { validateCronOrServiceAuth, corsHeaders } from "../_shared/cron-auth.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
 
 interface Goal {
   id: string;
@@ -658,6 +654,17 @@ const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  // Validate authentication - allow cron, service role, or valid JWT
+  const authResult = validateCronOrServiceAuth(req);
+  if (!authResult.valid) {
+    console.error('Authentication failed:', authResult.error);
+    return new Response(
+      JSON.stringify({ error: authResult.error }),
+      { status: 401, headers: { "Content-Type": "application/json", ...corsHeaders } }
+    );
+  }
+  console.log(`Request authenticated via: ${authResult.source}`);
 
   try {
     console.log("Starting weekly performance report generation...");

@@ -27,7 +27,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { CompanyWithDetails } from '@/types/database';
-import { cn } from '@/lib/utils';
+import { cn, sanitizeHtml } from '@/lib/utils';
 import {
   Command,
   CommandEmpty,
@@ -444,7 +444,7 @@ export function RoutePlanner({
                       </div>
                       <div className="pl-4 space-y-0.5 text-muted-foreground">
                         {segment.steps.slice(0, 3).map((step, stepIndex) => (
-                          <p key={stepIndex} dangerouslySetInnerHTML={{ __html: step.instruction }} />
+                          <p key={stepIndex} dangerouslySetInnerHTML={{ __html: sanitizeHtml(step.instruction) }} />
                         ))}
                         {segment.steps.length > 3 && (
                           <p className="italic">+{segment.steps.length - 3} más pasos</p>
@@ -690,7 +690,7 @@ export function RoutePlanner({
                             </div>
                             <div className="pl-6 space-y-1 text-xs text-muted-foreground">
                               {segment.steps.map((step, stepIndex) => (
-                                <p key={stepIndex} dangerouslySetInnerHTML={{ __html: step.instruction }} />
+                                <p key={stepIndex} dangerouslySetInnerHTML={{ __html: sanitizeHtml(step.instruction) }} />
                               ))}
                             </div>
                           </div>
