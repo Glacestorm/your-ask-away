@@ -861,9 +861,11 @@ export function ApplicationStateAnalyzer() {
                   </CardHeader>
                   <CardContent>
                     <ul className="text-sm space-y-1">
-                      {improvementsAnalysis.performanceOptimizations.map((opt, i) => (
-                        <li key={i} className="text-muted-foreground">• {opt}</li>
-                      ))}
+                      {improvementsAnalysis.performanceOptimizations.map((opt, i) => {
+                        const item = opt as unknown as string | Record<string, unknown>;
+                        const text = typeof item === 'string' ? item : (item?.title || item?.description || item?.name || JSON.stringify(item));
+                        return <li key={i} className="text-muted-foreground">• {String(text)}</li>;
+                      })}
                     </ul>
                   </CardContent>
                 </Card>
@@ -912,12 +914,16 @@ export function ApplicationStateAnalyzer() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {improvementsAnalysis.complianceUpdates.map((update, idx) => (
-                      <div key={idx} className="flex items-start gap-2 p-3 rounded-lg bg-muted/50">
-                        <AlertTriangle className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm">{update}</span>
-                      </div>
-                    ))}
+                    {improvementsAnalysis.complianceUpdates.map((update, idx) => {
+                      const item = update as unknown as string | Record<string, unknown>;
+                      const text = typeof item === 'string' ? item : (item?.title || item?.description || item?.regulation || JSON.stringify(item));
+                      return (
+                        <div key={idx} className="flex items-start gap-2 p-3 rounded-lg bg-muted/50">
+                          <AlertTriangle className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-sm">{String(text)}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>
@@ -932,12 +938,16 @@ export function ApplicationStateAnalyzer() {
                   </CardHeader>
                   <CardContent>
                     <ul className="space-y-2">
-                      {improvementsAnalysis.securityUpdates.map((update, idx) => (
-                        <li key={idx} className="text-sm text-muted-foreground flex items-center gap-2">
-                          <CheckCircle2 className="h-4 w-4 text-green-500" />
-                          {update}
-                        </li>
-                      ))}
+                      {improvementsAnalysis.securityUpdates.map((update, idx) => {
+                        const item = update as unknown as string | Record<string, unknown>;
+                        const text = typeof item === 'string' ? item : (item?.element || item?.title || item?.description || item?.recommendation || JSON.stringify(item));
+                        return (
+                          <li key={idx} className="text-sm text-muted-foreground flex items-center gap-2">
+                            <CheckCircle2 className="h-4 w-4 text-green-500" />
+                            {String(text)}
+                          </li>
+                        );
+                      })}
                     </ul>
                   </CardContent>
                 </Card>
