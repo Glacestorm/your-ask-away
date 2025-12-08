@@ -309,15 +309,17 @@ export function MapContainer({
     const LAYER_ID = 'route-line-layer';
     const OUTLINE_ID = 'route-outline-layer';
 
-    // Remove existing route elements
+    // Remove existing route elements safely
     const cleanupLayers = () => {
       try {
         if (mapInstance.getLayer(LAYER_ID)) mapInstance.removeLayer(LAYER_ID);
+      } catch (e) { /* ignore */ }
+      try {
         if (mapInstance.getLayer(OUTLINE_ID)) mapInstance.removeLayer(OUTLINE_ID);
+      } catch (e) { /* ignore */ }
+      try {
         if (mapInstance.getSource(SOURCE_ID)) mapInstance.removeSource(SOURCE_ID);
-      } catch (e) {
-        // Ignore cleanup errors
-      }
+      } catch (e) { /* ignore */ }
     };
 
     // If no polyline or no waypoints, just cleanup and exit
@@ -327,14 +329,24 @@ export function MapContainer({
       return;
     }
 
-    // Draw the route
+    // Draw the route - this function is safe to call multiple times
     const drawRoute = () => {
+      if (!mapInstance.isStyleLoaded()) {
+        console.log('Style not loaded, waiting...');
+        return;
+      }
+      
       try {
+        // Clean existing first
         cleanupLayers();
         cleanupMarkers();
         
+        // Decode polyline to coordinates
         const coords = decodePolyline(routePolyline);
+        console.log('Route coords decoded:', coords.length, 'points');
+        
         if (coords.length < 2) {
+          console.warn('Not enough coordinates for route');
           return;
         }
 
@@ -365,10 +377,14 @@ export function MapContainer({
           layout: { 'line-join': 'round', 'line-cap': 'round' },
           paint: { 'line-color': '#4285F4', 'line-width': 6 }
         });
+        
+        console.log('Route layers added successfully');
 
         // Add numbered markers for each waypoint at THEIR ACTUAL COORDINATES
         const createdMarkers: maplibregl.Marker[] = [];
         const waypointCount = routeWaypoints.length;
+        
+        console.log('Adding', waypointCount, 'waypoint markers');
         
         routeWaypoints.forEach((waypoint, index) => {
           const isFirst = index === 0;
@@ -395,19 +411,22 @@ export function MapContainer({
           }
           
           const markerEl = document.createElement('div');
-          markerEl.style.cssText = 'z-index: 9999;';
+          markerEl.className = 'route-waypoint-marker';
+          markerEl.style.cssText = 'z-index: 9999; pointer-events: auto;';
           markerEl.innerHTML = `
             <div style="
-              width: 32px; height: 32px; 
+              width: 36px; height: 36px; 
               background: ${bgColor}; 
-              border: 3px solid white; 
+              border: 4px solid white; 
               border-radius: 50%; 
-              box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+              box-shadow: 0 4px 12px rgba(0,0,0,0.6);
               display: flex; align-items: center; justify-content: center;
-              color: white; font-weight: bold; font-size: 14px;
+              color: white; font-weight: bold; font-size: 16px;
               cursor: pointer;
             " title="${waypoint.name}">${label}</div>
           `;
+          
+          console.log(`Adding marker ${label} at [${waypoint.longitude}, ${waypoint.latitude}] for ${waypoint.name}`);
           
           const marker = new maplibregl.Marker({ element: markerEl })
             .setLngLat([waypoint.longitude, waypoint.latitude])
@@ -418,53 +437,53 @@ export function MapContainer({
 
         routeMarkersRef.current = createdMarkers;
 
-        // Fit bounds to show all waypoints
-        if (routeWaypoints.length > 0) {
-          const allLngs = routeWaypoints.map(w => w.longitude);
-          const allLats = routeWaypoints.map(w => w.latitude);
-          const bounds: [[number, number], [number, number]] = [
-            [Math.min(...allLngs) - 0.01, Math.min(...allLats) - 0.01], 
-            [Math.max(...allLngs) + 0.01, Math.max(...allLats) + 0.01]
-          ];
-          
-          mapInstance.fitBounds(bounds, { 
-            padding: { top: 100, bottom: 100, left: 100, right: 450 }, 
-            duration: 1000 
-          });
-        }
+        // Fit bounds to show all waypoints plus route
+        const allLngs = [...routeWaypoints.map(w => w.longitude), ...coords.map(c => c[0])];
+        const allLats = [...routeWaypoints.map(w => w.latitude), ...coords.map(c => c[1])];
+        
+        const bounds = new maplibregl.LngLatBounds(
+          [Math.min(...allLngs), Math.min(...allLats)],
+          [Math.max(...allLngs), Math.max(...allLats)]
+        );
+        
+        mapInstance.fitBounds(bounds, { 
+          padding: { top: 80, bottom: 80, left: 80, right: 420 }, 
+          duration: 1000 
+        });
+        
+        console.log('Route drawing complete');
       } catch (err) {
         console.error('Error drawing route:', err);
       }
     };
 
-    // Execute after ensuring map style is loaded
-    const executeDrawRoute = () => {
+    // Initial draw with small delay to ensure everything is ready
+    const initialTimeout = setTimeout(() => {
       if (mapInstance.isStyleLoaded()) {
         drawRoute();
       } else {
-        mapInstance.once('style.load', drawRoute);
+        mapInstance.once('load', drawRoute);
       }
-    };
+    }, 200);
 
-    // Initial draw
-    executeDrawRoute();
-
-    // Also listen for style changes to redraw route
+    // Handle style changes - wait for full style load
     const handleStyleData = () => {
-      // Small delay to ensure style is fully loaded
       setTimeout(() => {
-        if (routePolyline && routeWaypoints && routeWaypoints.length > 0) {
+        if (routePolyline && routeWaypoints && routeWaypoints.length > 0 && mapInstance.isStyleLoaded()) {
           drawRoute();
         }
-      }, 100);
+      }, 300);
     };
     
     mapInstance.on('styledata', handleStyleData);
 
     return () => {
+      clearTimeout(initialTimeout);
       cleanupLayers();
       cleanupMarkers();
-      mapInstance.off('styledata', handleStyleData);
+      try {
+        mapInstance.off('styledata', handleStyleData);
+      } catch (e) { /* ignore */ }
     };
   }, [routePolyline, routeWaypoints, mapLoaded]);
 
@@ -668,10 +687,10 @@ export function MapContainer({
       bearing: 0,
     });
 
-    // Add navigation controls
+    // Add navigation controls (top-right to avoid RoutePlanner overlap)
     map.current.addControl(new maplibregl.NavigationControl({
       visualizePitch: true,
-    }), 'bottom-right');
+    }), 'top-right');
 
     // Add scale control
     map.current.addControl(new maplibregl.ScaleControl(), 'bottom-left');
