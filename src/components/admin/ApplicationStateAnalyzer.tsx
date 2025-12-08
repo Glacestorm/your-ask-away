@@ -3,13 +3,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, FileText, Search, Download, RefreshCw, TrendingUp, Shield, Zap, Brain, Scale, Sparkles, AlertTriangle, CheckCircle2, Bot, Workflow, Lock, Building2, Map } from 'lucide-react';
+import { Loader2, FileText, Search, Download, RefreshCw, TrendingUp, Shield, Zap, Brain, Scale, Sparkles, AlertTriangle, CheckCircle2, Bot, Workflow, Lock, Building2, Map, Gauge } from 'lucide-react';
 import { toast } from 'sonner';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { PerformanceMonitor } from '@/components/performance/PerformanceMonitor';
 
 interface ModuleAnalysis {
   name: string;
@@ -1578,6 +1579,11 @@ export function ApplicationStateAnalyzer() {
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+
+        {/* Performance Tab */}
+        <TabsContent value="performance" className="space-y-4">
+          <PerformanceMonitor />
         </TabsContent>
       </Tabs>
     </div>
