@@ -19,10 +19,16 @@ interface DeviceFingerprint {
 interface LocationData {
   ip: string;
   country?: string;
+  countryCode?: string;
   city?: string;
+  region?: string;
   latitude?: number;
   longitude?: number;
   isVpn?: boolean;
+  isProxy?: boolean;
+  isTor?: boolean;
+  isp?: string;
+  org?: string;
 }
 
 interface RiskAssessmentRequest {
@@ -31,6 +37,7 @@ interface RiskAssessmentRequest {
   deviceFingerprint: DeviceFingerprint;
   action?: string;
   transactionValue?: number;
+  clientIp?: string;
 }
 
 interface RiskFactor {
@@ -54,6 +61,44 @@ function getCurrentHour(): number {
   return new Date().getHours();
 }
 
+// IP Geolocation using free ip-api.com service
+async function getIpGeolocation(ip: string): Promise<LocationData | null> {
+  try {
+    // Skip private/local IPs
+    if (ip.startsWith('192.168.') || ip.startsWith('10.') || ip.startsWith('127.') || ip === '::1') {
+      return null;
+    }
+
+    const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,message,country,countryCode,region,city,lat,lon,isp,org,proxy,hosting`, {
+      signal: AbortSignal.timeout(5000)
+    });
+
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    
+    if (data.status !== 'success') return null;
+
+    return {
+      ip,
+      country: data.country,
+      countryCode: data.countryCode,
+      city: data.city,
+      region: data.region,
+      latitude: data.lat,
+      longitude: data.lon,
+      isVpn: data.proxy || data.hosting,
+      isProxy: data.proxy,
+      isTor: false,
+      isp: data.isp,
+      org: data.org,
+    };
+  } catch (error) {
+    console.error("IP geolocation error:", error);
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -64,7 +109,7 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { userId, sessionId, deviceFingerprint, action, transactionValue } = 
+    const { userId, sessionId, deviceFingerprint, action, transactionValue, clientIp } = 
       await req.json() as RiskAssessmentRequest;
 
     if (!userId || !sessionId || !deviceFingerprint) {
@@ -77,7 +122,75 @@ serve(async (req) => {
     const riskFactors: RiskFactor[] = [];
     let riskScore = 0;
 
-    // 1. Generate device hash and check if device is known
+    // Get client IP from header or request body
+    const ipAddress = clientIp || req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
+                      req.headers.get('x-real-ip') || 'unknown';
+
+    // 1. IP Geolocation and VPN Detection
+    let locationData: LocationData | null = null;
+    if (ipAddress && ipAddress !== 'unknown') {
+      locationData = await getIpGeolocation(ipAddress);
+      
+      if (locationData) {
+        // Check for VPN/Proxy usage
+        if (locationData.isVpn || locationData.isProxy) {
+          riskScore += 30;
+          riskFactors.push({
+            factor: "vpn_detected",
+            weight: 30,
+            description: `Conexión VPN/Proxy detectada desde ${locationData.country || 'ubicación desconocida'}`
+          });
+        }
+
+        // Check for unusual countries (outside Andorra/Spain/France)
+        const allowedCountries = ['AD', 'ES', 'FR', 'PT', 'IT', 'DE', 'GB', 'BE', 'NL', 'CH'];
+        if (locationData.countryCode && !allowedCountries.includes(locationData.countryCode)) {
+          riskScore += 25;
+          riskFactors.push({
+            factor: "unusual_country",
+            weight: 25,
+            description: `Acceso desde país inusual: ${locationData.country}`
+          });
+        }
+
+        // Store location for comparison with previous logins
+        const { data: previousLocations } = await supabase
+          .from("user_login_locations")
+          .select("*")
+          .eq("user_id", userId)
+          .order("created_at", { ascending: false })
+          .limit(5);
+
+        if (previousLocations && previousLocations.length > 0 && locationData.countryCode) {
+          const knownCountries = [...new Set(previousLocations.map(l => l.country_code))];
+          if (!knownCountries.includes(locationData.countryCode)) {
+            riskScore += 15;
+            riskFactors.push({
+              factor: "new_location",
+              weight: 15,
+              description: `Primera conexión desde ${locationData.city || locationData.country}`
+            });
+          }
+        }
+
+        // Store current login location
+        await supabase.from("user_login_locations").insert({
+          user_id: userId,
+          ip_address: ipAddress,
+          country: locationData.country,
+          country_code: locationData.countryCode,
+          city: locationData.city,
+          region: locationData.region,
+          latitude: locationData.latitude,
+          longitude: locationData.longitude,
+          is_vpn: locationData.isVpn,
+          is_proxy: locationData.isProxy,
+          isp: locationData.isp,
+        }).catch(err => console.error("Error storing location:", err));
+      }
+    }
+
+    // 2. Generate device hash and check if device is known
     const deviceHash = generateDeviceHash(deviceFingerprint);
     
     const { data: existingDevice, error: deviceError } = await supabase
@@ -114,7 +227,9 @@ serve(async (req) => {
           timezone: deviceFingerprint.timezone,
           language: deviceFingerprint.language,
           is_trusted: false,
-          login_count: 1
+          login_count: 1,
+          last_ip: ipAddress,
+          last_location: locationData ? `${locationData.city}, ${locationData.country}` : null,
         })
         .select()
         .single();
@@ -130,7 +245,9 @@ serve(async (req) => {
         .from("user_device_fingerprints")
         .update({ 
           last_seen_at: new Date().toISOString(),
-          login_count: (existingDevice.login_count || 0) + 1
+          login_count: (existingDevice.login_count || 0) + 1,
+          last_ip: ipAddress,
+          last_location: locationData ? `${locationData.city}, ${locationData.country}` : null,
         })
         .eq("id", existingDevice.id);
 
@@ -155,7 +272,7 @@ serve(async (req) => {
       }
     }
 
-    // 2. Check typical login hours
+    // 3. Check typical login hours
     const currentHour = getCurrentHour();
     
     const { data: behaviorPattern } = await supabase
@@ -186,11 +303,12 @@ serve(async (req) => {
           user_id: userId,
           typical_login_hours: [currentHour],
           typical_devices: [deviceHash],
+          typical_locations: locationData?.countryCode ? [locationData.countryCode] : [],
           last_analyzed_at: new Date().toISOString()
         });
     }
 
-    // 3. Check for rapid successive logins (potential credential stuffing)
+    // 4. Check for rapid successive logins (potential credential stuffing)
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
     
     const { data: recentAssessments, error: recentError } = await supabase
@@ -208,7 +326,7 @@ serve(async (req) => {
       });
     }
 
-    // 4. High-value transaction check
+    // 5. High-value transaction check
     if (transactionValue && transactionValue > 10000) {
       riskScore += 20;
       riskFactors.push({
@@ -218,8 +336,8 @@ serve(async (req) => {
       });
     }
 
-    // 5. Sensitive action check
-    const sensitiveActions = ["transfer", "password_change", "export_data", "delete_account"];
+    // 6. Sensitive action check
+    const sensitiveActions = ["transfer", "password_change", "export_data", "delete_account", "change_email", "add_user", "delete_user"];
     if (action && sensitiveActions.includes(action)) {
       riskScore += 15;
       riskFactors.push({
@@ -260,7 +378,9 @@ serve(async (req) => {
         risk_factors: riskFactors,
         device_fingerprint_id: deviceFingerprintId,
         requires_step_up: requiresStepUp,
-        step_up_completed: false
+        step_up_completed: false,
+        ip_address: ipAddress,
+        location_data: locationData,
       })
       .select()
       .single();
@@ -296,8 +416,21 @@ serve(async (req) => {
           expiresAt: challengeData.expires_at
         };
 
-        // In production, send OTP via email/SMS here
-        console.log(`OTP code for user ${userId}: ${otpCode}`);
+        // Send OTP via email using edge function
+        try {
+          await supabase.functions.invoke('send-step-up-otp', {
+            body: {
+              userId,
+              challengeId: challengeData.id,
+              otpCode,
+              riskLevel,
+              riskFactors: riskFactors.map(f => f.description),
+            }
+          });
+        } catch (emailError) {
+          console.error("Failed to send OTP email:", emailError);
+          // Still continue - user might use backup method
+        }
       }
     }
 
@@ -309,7 +442,12 @@ serve(async (req) => {
         riskScore,
         riskFactors,
         requiresStepUp,
-        stepUpCompleted: false
+        stepUpCompleted: false,
+        location: locationData ? {
+          country: locationData.country,
+          city: locationData.city,
+          isVpn: locationData.isVpn,
+        } : null,
       },
       challenge,
       recommendations: requiresStepUp 
