@@ -1,0 +1,624 @@
+name: Security Pipeline CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run security scans daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      scan_type:
+        description: 'Type of security scan'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+          - full
+          - sast-only
+          - dast-only
+          - dependency-only
+
+env:
+  NODE_VERSION: '20'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # ===========================================
+  # SAST - Static Application Security Testing
+  # ===========================================
+  sast-eslint-security:
+    name: ESLint Security Rules
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.scan_type != 'dast-only' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint with security rules
+        run: |
+          npm run lint -- --format json --output-file eslint-security-report.json || true
+        continue-on-error: true
+
+      - name: Upload ESLint report
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint-security-report
+          path: eslint-security-report.json
+          retention-days: 30
+
+  sast-codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.scan_type != 'dast-only' }}
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-extended,security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript-typescript"
+          output: codeql-results
+          upload: true
+
+      - name: Upload CodeQL results
+        uses: actions/upload-artifact@v4
+        with:
+          name: codeql-results
+          path: codeql-results
+          retention-days: 30
+
+  sast-semgrep:
+    name: Semgrep SAST Scan
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.scan_type != 'dast-only' }}
+    container:
+      image: returntocorp/semgrep
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        run: |
+          semgrep scan \
+            --config "p/default" \
+            --config "p/security-audit" \
+            --config "p/secrets" \
+            --config "p/owasp-top-ten" \
+            --config "p/react" \
+            --config "p/typescript" \
+            --json \
+            --output semgrep-results.json \
+            . || true
+
+      - name: Upload Semgrep results
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-results
+          path: semgrep-results.json
+          retention-days: 30
+
+  sast-snyk-code:
+    name: Snyk Code Analysis
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.scan_type != 'dast-only' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Snyk
+        uses: snyk/actions/setup@master
+
+      - name: Run Snyk Code test
+        run: |
+          snyk code test \
+            --json \
+            --json-file-output=snyk-code-results.json \
+            --severity-threshold=medium \
+            . || true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        continue-on-error: true
+
+      - name: Upload Snyk Code results
+        uses: actions/upload-artifact@v4
+        with:
+          name: snyk-code-results
+          path: snyk-code-results.json
+          retention-days: 30
+
+  # ===========================================
+  # SCA - Software Composition Analysis
+  # ===========================================
+  sca-dependency-check:
+    name: Dependency Security Check
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.scan_type != 'dast-only' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: |
+          npm audit --json > npm-audit-results.json || true
+        continue-on-error: true
+
+      - name: Run Snyk dependency test
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --json-file-output=snyk-deps-results.json --severity-threshold=medium
+        continue-on-error: true
+
+      - name: Upload dependency scan results
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-scan-results
+          path: |
+            npm-audit-results.json
+            snyk-deps-results.json
+          retention-days: 30
+
+  sca-license-check:
+    name: License Compliance Check
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.scan_type != 'dast-only' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check licenses
+        run: |
+          npx license-checker --json --out license-report.json || true
+        continue-on-error: true
+
+      - name: Upload license report
+        uses: actions/upload-artifact@v4
+        with:
+          name: license-report
+          path: license-report.json
+          retention-days: 30
+
+  # ===========================================
+  # Secret Scanning
+  # ===========================================
+  secret-scan:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.scan_type != 'dast-only' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+        continue-on-error: true
+
+      - name: Run TruffleHog
+        uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --only-verified --json
+        continue-on-error: true
+
+  # ===========================================
+  # Container Security
+  # ===========================================
+  container-scan:
+    name: Container Image Scan
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.scan_type == 'full' || github.event.inputs.scan_type == '' }}
+    needs: [build-image]
+    steps:
+      - name: Download Docker image
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+          path: /tmp
+
+      - name: Load Docker image
+        run: docker load --input /tmp/app-image.tar
+
+      - name: Run Trivy container scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'app-security:latest'
+          format: 'json'
+          output: 'trivy-container-results.json'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          vuln-type: 'os,library'
+        continue-on-error: true
+
+      - name: Run Grype container scan
+        uses: anchore/scan-action@v3
+        with:
+          image: 'app-security:latest'
+          fail-build: false
+          output-format: json
+        continue-on-error: true
+
+      - name: Upload container scan results
+        uses: actions/upload-artifact@v4
+        with:
+          name: container-scan-results
+          path: |
+            trivy-container-results.json
+            *-scan-results.json
+          retention-days: 30
+
+  build-image:
+    name: Build Security Test Image
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.scan_type == 'full' || github.event.inputs.scan_type == '' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image for scanning
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.security
+          push: false
+          tags: app-security:latest
+          outputs: type=docker,dest=/tmp/app-image.tar
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Upload Docker image
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: /tmp/app-image.tar
+          retention-days: 1
+
+  # ===========================================
+  # DAST - Dynamic Application Security Testing
+  # ===========================================
+  dast-zap-baseline:
+    name: OWASP ZAP Baseline Scan
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.scan_type != 'sast-only' && github.event.inputs.scan_type != 'dependency-only' }}
+    needs: [deploy-staging]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.11.0
+        with:
+          target: ${{ secrets.STAGING_URL || 'https://staging.example.com' }}
+          rules_file_name: 'security/zap-rules.tsv'
+          cmd_options: '-a -j -l WARN'
+        continue-on-error: true
+
+      - name: Upload ZAP report
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-baseline-report
+          path: |
+            report_html.html
+            report_json.json
+            report_md.md
+          retention-days: 30
+
+  dast-zap-full:
+    name: OWASP ZAP Full Scan
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'schedule' || (github.event.inputs.scan_type == 'full' || github.event.inputs.scan_type == 'dast-only') }}
+    needs: [deploy-staging]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run ZAP Full Scan
+        uses: zaproxy/action-full-scan@v0.9.0
+        with:
+          target: ${{ secrets.STAGING_URL || 'https://staging.example.com' }}
+          rules_file_name: 'security/zap-rules.tsv'
+          cmd_options: '-a -j'
+        continue-on-error: true
+
+      - name: Upload ZAP full scan report
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-full-report
+          path: |
+            report_html.html
+            report_json.json
+          retention-days: 30
+
+  dast-nuclei:
+    name: Nuclei Vulnerability Scan
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.scan_type != 'sast-only' && github.event.inputs.scan_type != 'dependency-only' }}
+    needs: [deploy-staging]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Nuclei scan
+        uses: projectdiscovery/nuclei-action@main
+        with:
+          target: ${{ secrets.STAGING_URL || 'https://staging.example.com' }}
+          flags: "-severity critical,high,medium -json-export nuclei-results.json"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Upload Nuclei results
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuclei-results
+          path: nuclei-results.json
+          retention-days: 30
+
+  # ===========================================
+  # API Security Testing
+  # ===========================================
+  api-security-scan:
+    name: API Security Scan
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.scan_type != 'sast-only' && github.event.inputs.scan_type != 'dependency-only' }}
+    needs: [deploy-staging]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run ZAP API Scan
+        uses: zaproxy/action-api-scan@v0.7.0
+        with:
+          target: ${{ secrets.STAGING_API_URL || 'https://staging.example.com/api' }}
+          format: openapi
+          cmd_options: '-a -j'
+        continue-on-error: true
+
+      - name: Upload API scan report
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-security-report
+          path: |
+            report_html.html
+            report_json.json
+          retention-days: 30
+
+  # ===========================================
+  # Deploy Staging (for DAST)
+  # ===========================================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.scan_type != 'sast-only' && github.event.inputs.scan_type != 'dependency-only' }}
+    environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+
+      - name: Deploy to staging
+        run: |
+          echo "Deploying to staging environment..."
+          # Add your deployment commands here
+          # e.g., Vercel, Netlify, or custom deployment
+
+  # ===========================================
+  # Infrastructure as Code Security
+  # ===========================================
+  iac-security:
+    name: IaC Security Scan
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.scan_type != 'dast-only' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: .
+          framework: all
+          output_format: json
+          output_file_path: checkov-results.json
+          soft_fail: true
+
+      - name: Run KICS scan
+        uses: checkmarx/kics-github-action@v1.7.0
+        with:
+          path: .
+          output_path: kics-results
+          output_formats: 'json,sarif'
+          exclude_paths: 'node_modules,dist'
+        continue-on-error: true
+
+      - name: Upload IaC scan results
+        uses: actions/upload-artifact@v4
+        with:
+          name: iac-scan-results
+          path: |
+            checkov-results.json
+            kics-results/
+          retention-days: 30
+
+  # ===========================================
+  # Security Report Aggregation
+  # ===========================================
+  aggregate-reports:
+    name: Aggregate Security Reports
+    runs-on: ubuntu-latest
+    needs:
+      - sast-eslint-security
+      - sast-codeql
+      - sast-semgrep
+      - sast-snyk-code
+      - sca-dependency-check
+      - sca-license-check
+      - secret-scan
+      - iac-security
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: security-reports
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Generate consolidated report
+        run: |
+          node security/scripts/aggregate-reports.js
+
+      - name: Upload consolidated report
+        uses: actions/upload-artifact@v4
+        with:
+          name: consolidated-security-report
+          path: security-reports/consolidated-report.json
+          retention-days: 90
+
+      - name: Post summary to PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('security-reports/consolidated-report.json', 'utf8'));
+            
+            const summary = `
+            ## 🔒 Security Scan Summary
+            
+            | Category | Critical | High | Medium | Low |
+            |----------|----------|------|--------|-----|
+            | SAST | ${report.sast?.critical || 0} | ${report.sast?.high || 0} | ${report.sast?.medium || 0} | ${report.sast?.low || 0} |
+            | Dependencies | ${report.sca?.critical || 0} | ${report.sca?.high || 0} | ${report.sca?.medium || 0} | ${report.sca?.low || 0} |
+            | Secrets | ${report.secrets?.found || 0} | - | - | - |
+            | IaC | ${report.iac?.critical || 0} | ${report.iac?.high || 0} | ${report.iac?.medium || 0} | ${report.iac?.low || 0} |
+            
+            **Total Issues:** ${report.totalIssues || 0}
+            
+            [View Full Report](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID})
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+
+  # ===========================================
+  # Quality Gate
+  # ===========================================
+  security-gate:
+    name: Security Quality Gate
+    runs-on: ubuntu-latest
+    needs: [aggregate-reports]
+    if: always()
+    steps:
+      - name: Download consolidated report
+        uses: actions/download-artifact@v4
+        with:
+          name: consolidated-security-report
+          path: .
+
+      - name: Check security thresholds
+        id: check
+        run: |
+          if [ -f consolidated-report.json ]; then
+            CRITICAL=$(jq '.totalCritical // 0' consolidated-report.json)
+            HIGH=$(jq '.totalHigh // 0' consolidated-report.json)
+            
+            echo "Critical: $CRITICAL, High: $HIGH"
+            
+            if [ "$CRITICAL" -gt 0 ]; then
+              echo "❌ Found $CRITICAL critical vulnerabilities"
+              echo "gate_status=failed" >> $GITHUB_OUTPUT
+              exit 1
+            fi
+            
+            if [ "$HIGH" -gt 5 ]; then
+              echo "⚠️ Found $HIGH high vulnerabilities (threshold: 5)"
+              echo "gate_status=warning" >> $GITHUB_OUTPUT
+            else
+              echo "✅ Security gate passed"
+              echo "gate_status=passed" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "No report found, skipping gate check"
+            echo "gate_status=skipped" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Notify on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.setFailed('Security gate failed - critical vulnerabilities detected');

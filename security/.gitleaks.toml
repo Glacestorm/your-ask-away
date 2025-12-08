@@ -1,0 +1,152 @@
+# ===========================================
+# Gitleaks Configuration
+# Secret Detection for Banking Application
+# DORA/NIS2 Compliance
+# ===========================================
+
+title = "Banking Application Secret Detection"
+
+[extend]
+# Use default gitleaks config as base
+useDefault = true
+
+# ===========================================
+# Custom Rules for Banking Environment
+# ===========================================
+
+[[rules]]
+id = "supabase-key"
+description = "Supabase API Key"
+regex = '''(?i)(supabase[_-]?(?:anon|service|secret)[_-]?key|SUPABASE[_-]?(?:ANON|SERVICE|SECRET)[_-]?KEY)\s*[:=]\s*['"]?([a-zA-Z0-9._-]{20,})['"]?'''
+secretGroup = 2
+keywords = ["supabase"]
+
+[[rules]]
+id = "supabase-url"
+description = "Supabase Project URL with credentials"
+regex = '''https://[a-z0-9]+\.supabase\.co.*[?&](?:apikey|key)=([a-zA-Z0-9._-]+)'''
+secretGroup = 1
+keywords = ["supabase.co"]
+
+[[rules]]
+id = "resend-api-key"
+description = "Resend API Key"
+regex = '''(?i)(resend[_-]?(?:api)?[_-]?key|RESEND[_-]?(?:API)?[_-]?KEY)\s*[:=]\s*['"]?(re_[a-zA-Z0-9]{20,})['"]?'''
+secretGroup = 2
+keywords = ["resend", "re_"]
+
+[[rules]]
+id = "lovable-api-key"
+description = "Lovable API Key"
+regex = '''(?i)(lovable[_-]?(?:api)?[_-]?key|LOVABLE[_-]?(?:API)?[_-]?KEY)\s*[:=]\s*['"]?([a-zA-Z0-9._-]{20,})['"]?'''
+secretGroup = 2
+keywords = ["lovable"]
+
+[[rules]]
+id = "google-api-key"
+description = "Google API Key"
+regex = '''(?i)(google[_-]?(?:api|directions|maps)?[_-]?key|GOOGLE[_-]?(?:API|DIRECTIONS|MAPS)?[_-]?KEY)\s*[:=]\s*['"]?(AIza[0-9A-Za-z_-]{35})['"]?'''
+secretGroup = 2
+keywords = ["google", "AIza"]
+
+[[rules]]
+id = "bing-api-key"
+description = "Bing Search API Key"
+regex = '''(?i)(bing[_-]?(?:search)?[_-]?(?:api)?[_-]?key|BING[_-]?(?:SEARCH)?[_-]?(?:API)?[_-]?KEY)\s*[:=]\s*['"]?([a-f0-9]{32})['"]?'''
+secretGroup = 2
+keywords = ["bing"]
+
+[[rules]]
+id = "jwt-token"
+description = "JWT Token"
+regex = '''eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}'''
+keywords = ["eyJ"]
+
+[[rules]]
+id = "andorran-bank-iban"
+description = "Andorran IBAN (potential PII)"
+regex = '''AD\d{2}\s?\d{4}\s?\d{4}\s?[A-Z0-9]{12}'''
+keywords = ["AD"]
+
+[[rules]]
+id = "spanish-dni"
+description = "Spanish DNI/NIE (PII)"
+regex = '''[XYZ]?\d{7,8}[A-Z]'''
+keywords = ["dni", "nie", "nif"]
+
+[[rules]]
+id = "credit-card"
+description = "Credit Card Number"
+regex = '''(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|6(?:011|5[0-9]{2})[0-9]{12})'''
+keywords = ["card", "credit", "visa", "master"]
+
+[[rules]]
+id = "private-key-header"
+description = "Private Key"
+regex = '''-----BEGIN (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----'''
+keywords = ["PRIVATE KEY"]
+
+[[rules]]
+id = "database-connection-string"
+description = "Database Connection String with Password"
+regex = '''(?i)(?:postgres|mysql|mongodb|redis):\/\/[^:]+:([^@]+)@'''
+secretGroup = 1
+keywords = ["postgres", "mysql", "mongodb", "redis"]
+
+# ===========================================
+# Entropy Settings
+# ===========================================
+
+[allowlist]
+description = "Global allowlist"
+paths = [
+    '''node_modules/''',
+    '''\.git/''',
+    '''dist/''',
+    '''build/''',
+    '''coverage/''',
+    '''\.lock$''',
+    '''package-lock\.json$''',
+    '''\.svg$''',
+    '''\.png$''',
+    '''\.jpg$''',
+    '''\.jpeg$''',
+    '''\.gif$''',
+    '''\.ico$''',
+    '''\.woff2?$''',
+    '''\.ttf$''',
+    '''\.eot$'''
+]
+
+commits = [
+    # Add specific commit hashes to ignore if needed
+]
+
+regexes = [
+    # Allow example/placeholder values
+    '''(?i)example|placeholder|your[_-]?api[_-]?key|insert[_-]?here|xxx+|yyy+|zzz+|test[_-]?key''',
+    # Allow environment variable references
+    '''process\.env\.[A-Z_]+''',
+    '''import\.meta\.env\.[A-Z_]+''',
+    '''Deno\.env\.get\(['"][A-Z_]+['"]\)'''
+]
+
+# ===========================================
+# Reporting Settings
+# ===========================================
+
+[report]
+# Output format
+format = "json"
+# Path for the report file
+path = "gitleaks-report.json"
+
+# ===========================================
+# Compliance Tags
+# ===========================================
+
+# These rules are tagged for compliance tracking
+# DORA: Data protection and incident response
+# NIS2: Network and information security
+# PCI-DSS: Payment card data security
+# GDPR: Personal data protection
