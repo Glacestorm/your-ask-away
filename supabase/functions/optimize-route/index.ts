@@ -125,15 +125,37 @@ serve(async (req) => {
     });
 
     // Get optimized waypoint order if optimization was requested
+    // waypoint_order only contains indices for INTERMEDIATE waypoints, not the destination
     let optimizedOrder: number[] = [];
-    if (optimize && route.waypoint_order) {
+    if (optimize && route.waypoint_order && route.waypoint_order.length > 0) {
       optimizedOrder = route.waypoint_order;
     }
 
-    // Reorder waypoints based on optimized order
-    const orderedWaypoints = optimize && optimizedOrder.length > 0
-      ? optimizedOrder.map(i => waypoints[i])
-      : waypoints;
+    // Build the ordered waypoints list
+    // For Google Directions: origin -> intermediate waypoints (in optimized order) -> destination
+    let orderedWaypoints: Waypoint[] = [];
+    
+    if (waypoints.length === 1) {
+      // Only one waypoint, it's the destination
+      orderedWaypoints = waypoints;
+    } else {
+      // Multiple waypoints: intermediate ones can be reordered, last one is always destination
+      const intermediateWaypoints = waypoints.slice(0, -1);
+      const destination = waypoints[waypoints.length - 1];
+      
+      if (optimizedOrder.length > 0) {
+        // Reorder intermediate waypoints based on Google's optimization
+        orderedWaypoints = optimizedOrder.map(i => intermediateWaypoints[i]);
+      } else {
+        // No optimization, keep original order
+        orderedWaypoints = [...intermediateWaypoints];
+      }
+      
+      // Add destination at the end
+      orderedWaypoints.push(destination);
+    }
+    
+    console.log('Ordered waypoints count:', orderedWaypoints.length);
 
     // Decode the overview polyline for map display
     const overviewPolyline = route.overview_polyline.points;
