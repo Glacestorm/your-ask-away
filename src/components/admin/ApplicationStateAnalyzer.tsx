@@ -40,6 +40,7 @@ interface TechnologyTrend {
   adoptionRate: string;
   recommendation: string;
   integrationPotential: string;
+  installed?: boolean;
 }
 
 interface CodebaseAnalysis {
@@ -980,10 +981,22 @@ export function ApplicationStateAnalyzer() {
                 const recommendation = trendObj.recommendation || trendObj.recomendacion || trendObj.recommended || trendObj.accion || '-';
                 const integration = trendObj.integrationPotential || trendObj.integration || trendObj.integracion || trendObj.potential || trendObj.potencial || '-';
                 
+                const isInstalled = trendObj.installed === true || 
+                  String(recommendation).toLowerCase().includes('instal·lat') ||
+                  String(integration).toLowerCase().includes('implementat');
+                
                 return (
-                  <Card key={idx}>
+                  <Card key={idx} className={isInstalled ? 'border-green-500/50 bg-green-500/5' : ''}>
                     <CardHeader>
-                      <CardTitle className="text-lg">{String(name)}</CardTitle>
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg">{String(name)}</CardTitle>
+                        {isInstalled && (
+                          <Badge className="bg-green-500 text-white">
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            INSTAL·LAT
+                          </Badge>
+                        )}
+                      </div>
                     </CardHeader>
                     <CardContent className="space-y-2 text-sm">
                       <div>

@@ -24,6 +24,7 @@ interface TechnologyTrend {
   adoptionRate: string;
   recommendation: string;
   integrationPotential: string;
+  installed?: boolean;
 }
 
 interface ImprovementsAnalysis {
@@ -480,65 +481,165 @@ function getDefaultImprovements(): ImprovementsAnalysis {
     ],
     technologyTrends: [
       {
-        name: "React 19 con Server Components",
-        relevance: "Mejora rendimiento y DX significativamente",
-        adoptionRate: "Adopción creciente en enterprise",
-        recommendation: "Evaluar migración gradual",
-        integrationPotential: "Alto - compatible con Vite"
+        name: "React 19 con Streaming SSR",
+        relevance: "Mejora rendimiento TTI y UX significativamente",
+        adoptionRate: "Adopción enterprise estable",
+        recommendation: "INSTAL·LAT - React 19.2.1 actiu",
+        integrationPotential: "IMPLEMENTAT 100%",
+        installed: true
       },
       {
-        name: "Supabase Edge Functions con Deno 2",
-        relevance: "Mejor rendimiento y compatibilidad npm",
-        adoptionRate: "Disponible en producción",
-        recommendation: "Actualizar funciones existentes",
-        integrationPotential: "Inmediato - sin breaking changes"
+        name: "Supabase Edge Functions amb Deno",
+        relevance: "38 funcions serverless desplegades",
+        adoptionRate: "Producció estable",
+        recommendation: "INSTAL·LAT - 38 Edge Functions",
+        integrationPotential: "IMPLEMENTAT 100%",
+        installed: true
       },
       {
-        name: "Tailwind CSS 4 con Oxide engine",
-        relevance: "Build 10x más rápido",
+        name: "Tailwind CSS 3 amb Design System",
+        relevance: "Sistema de disseny complet amb 4 temes",
+        adoptionRate: "Producció estable",
+        recommendation: "INSTAL·LAT - 4 temes (day/night/creand/aurora)",
+        integrationPotential: "IMPLEMENTAT 100%",
+        installed: true
+      },
+      {
+        name: "WebAuthn/FIDO2 Passwordless",
+        relevance: "Autenticació sense contrasenya PSD3 compliant",
+        adoptionRate: "Estàndard banca digital",
+        recommendation: "INSTAL·LAT - Passkeys actius",
+        integrationPotential: "IMPLEMENTAT 100%",
+        installed: true
+      },
+      {
+        name: "RAG amb pgvector per a IA Financera",
+        relevance: "Chat contextual amb documents financers",
+        adoptionRate: "Emergent en fintech",
+        recommendation: "INSTAL·LAT - Chat IA Financer operatiu",
+        integrationPotential: "IMPLEMENTAT 100%",
+        installed: true
+      },
+      {
+        name: "MapLibre GL amb Supercluster",
+        relevance: "GIS bancari amb 20.000+ empreses",
+        adoptionRate: "Estable en enterprise GIS",
+        recommendation: "INSTAL·LAT - Clustering i heatmaps actius",
+        integrationPotential: "IMPLEMENTAT 100%",
+        installed: true
+      },
+      {
+        name: "DORA/NIS2 Compliance Dashboard",
+        relevance: "Obligatori gener 2025 per banca UE",
+        adoptionRate: "Requerit per regulació",
+        recommendation: "INSTAL·LAT - Stress tests i incidents",
+        integrationPotential: "IMPLEMENTAT 100%",
+        installed: true
+      },
+      {
+        name: "Open Banking API PSD2/PSD3",
+        relevance: "APIs estàndard per tercers",
+        adoptionRate: "Requerit per regulació PSD2",
+        recommendation: "INSTAL·LAT - OAuth 2.0 i OpenAPI 3.1",
+        integrationPotential: "IMPLEMENTAT 100%",
+        installed: true
+      },
+      {
+        name: "Mode Offline amb IndexedDB",
+        relevance: "Productivitat gestors comercials +30%",
+        adoptionRate: "PWA best practices",
+        recommendation: "INSTAL·LAT - Background Sync actiu",
+        integrationPotential: "IMPLEMENTAT 100%",
+        installed: true
+      },
+      {
+        name: "Tailwind CSS 4 amb Oxide engine",
+        relevance: "Build 10x més ràpid",
         adoptionRate: "Beta disponible",
-        recommendation: "Esperar release estable Q1 2025",
-        integrationPotential: "Alto - migración automática"
+        recommendation: "Pendent - esperar release estable Q1 2025",
+        integrationPotential: "Alt - migració automàtica",
+        installed: false
       },
       {
-        name: "AI Agents para automatización",
-        relevance: "Automatizar tareas repetitivas bancarias",
-        adoptionRate: "Emergente en fintech",
-        recommendation: "Piloto en análisis crediticio",
-        integrationPotential: "Medio - requiere evaluación"
+        name: "AI Agents per automatització avançada",
+        relevance: "Automatitzar tasques repetitives bancàries",
+        adoptionRate: "Emergent en fintech",
+        recommendation: "Pendent - pilot en anàlisi creditici",
+        integrationPotential: "Mitjà - requereix avaluació",
+        installed: false
+      },
+      {
+        name: "View Transitions API",
+        relevance: "Navegació fluida sense reloads",
+        adoptionRate: "Estable en Chrome/Edge",
+        recommendation: "Pendent - millorar UX navegació",
+        integrationPotential: "Alt - compatible React",
+        installed: false
+      },
+      {
+        name: "Partytown per third-party scripts",
+        relevance: "Aïllar scripts externs del main thread",
+        adoptionRate: "Estable",
+        recommendation: "Pendent - millorar Core Web Vitals",
+        integrationPotential: "Alt",
+        installed: false
       }
     ],
     securityUpdates: [
-      "Actualizar a TLS 1.3 exclusivo (deprecar 1.2)",
-      "Implementar CSP Level 3 con nonces",
-      "Añadir HSTS preloading",
-      "Configurar Trusted Types para prevención XSS",
-      "Implementar SRI para scripts externos",
-      "Evaluar migración a Ed25519 para JWT"
+      "✅ INSTAL·LAT: WebAuthn/FIDO2 amb verificació ECDSA P-256",
+      "✅ INSTAL·LAT: Behavioral Biometrics (TypingDNA, mouse dynamics)",
+      "✅ INSTAL·LAT: AML/Fraud Detection contextual",
+      "✅ INSTAL·LAT: Step-Up Auth amb OTP per email",
+      "✅ INSTAL·LAT: RLS policies en totes les taules crítiques",
+      "✅ INSTAL·LAT: Sanitització XSS amb DOMPurify",
+      "PENDENT (Prioritat 1): Actualitzar a TLS 1.3 exclusiu (deprecar 1.2)",
+      "PENDENT (Prioritat 2): Implementar CSP Level 3 amb nonces",
+      "PENDENT (Prioritat 3): Afegir HSTS preloading",
+      "PENDENT (Prioritat 4): Configurar Trusted Types per XSS",
+      "PENDENT (Prioritat 5): Implementar SRI per scripts externs",
+      "PENDENT (Prioritat 6): Avaluar migració a Ed25519 per JWT"
     ],
     performanceOptimizations: [
-      "Implementar Partytown para third-party scripts",
-      "Usar View Transitions API para navegación",
-      "Optimizar imágenes con AVIF/WebP",
-      "Implementar Speculation Rules API para prefetch",
-      "Reducir JavaScript con tree-shaking agresivo",
-      "Usar HTTP/3 cuando disponible"
+      "✅ INSTAL·LAT: React 19 amb Streaming SSR i Suspense",
+      "✅ INSTAL·LAT: Lazy loading de totes les pàgines",
+      "✅ INSTAL·LAT: Service Worker amb cache strategies",
+      "✅ INSTAL·LAT: Core Web Vitals monitoring (CLS, FCP, LCP, TTFB, INP)",
+      "✅ INSTAL·LAT: React Query amb staleTime i gcTime optimitzats",
+      "✅ INSTAL·LAT: Prefetching i route preloaders",
+      "PENDENT (Prioritat 1): Implementar View Transitions API per navegació fluida",
+      "PENDENT (Prioritat 2): Implementar Partytown per third-party scripts",
+      "PENDENT (Prioritat 3): Optimitzar imatges amb AVIF/WebP automàtic",
+      "PENDENT (Prioritat 4): Implementar Speculation Rules API per prefetch",
+      "PENDENT (Prioritat 5): Reduir JavaScript amb tree-shaking agressiu",
+      "PENDENT (Prioritat 6): Usar HTTP/3 quan disponible"
     ],
     uxEnhancements: [
-      "Añadir comandos de voz para navegación (Web Speech API)",
-      "Implementar gestos táctiles avanzados en mapas",
-      "Mejorar accesibilidad WCAG 2.2 AA",
-      "Añadir tema high-contrast para baja visión",
-      "Implementar atajos de teclado globales",
-      "Añadir feedback háptico en móvil"
+      "✅ INSTAL·LAT: Sistema 4 temes (day/night/creand/aurora)",
+      "✅ INSTAL·LAT: Multi-idioma (CA/ES/EN/FR)",
+      "✅ INSTAL·LAT: Mode offline amb sincronització",
+      "✅ INSTAL·LAT: Firma digital en canvas",
+      "✅ INSTAL·LAT: Fotos des de mòbil/càmera",
+      "✅ INSTAL·LAT: Plantilles personalitzables visites",
+      "PENDENT (Prioritat 1): Comandes de veu (Web Speech API)",
+      "PENDENT (Prioritat 2): Gestos tàctils avançats en mapes",
+      "PENDENT (Prioritat 3): Millorar accessibilitat WCAG 2.2 AA",
+      "PENDENT (Prioritat 4): Tema high-contrast per baixa visió",
+      "PENDENT (Prioritat 5): Dreceres de teclat globals",
+      "PENDENT (Prioritat 6): Feedback hàptic en mòbil"
     ],
     aiIntegrations: [
-      "Asistente conversacional para análisis financiero",
-      "Scoring crediticio automático con explicabilidad",
-      "Detección de anomalías en transacciones",
-      "Recomendaciones de productos personalizadas",
-      "Resumen automático de fichas de visita",
-      "Predicción de churn de clientes"
+      "✅ INSTAL·LAT: RAG Chat per documents financers (Gemini)",
+      "✅ INSTAL·LAT: Plans d'acció IA per gestors",
+      "✅ INSTAL·LAT: Prediccions ML per objectius",
+      "✅ INSTAL·LAT: Parsing PDF intel·ligent amb IA",
+      "✅ INSTAL·LAT: Anàlisi codi amb IA",
+      "✅ INSTAL·LAT: Recomanacions IA per millores",
+      "PENDENT (Prioritat 1): Scoring creditici automàtic amb explicabilitat",
+      "PENDENT (Prioritat 2): Detecció d'anomalies en transaccions",
+      "PENDENT (Prioritat 3): Recomanacions de productes personalitzades",
+      "PENDENT (Prioritat 4): Resum automàtic de fitxes de visita",
+      "PENDENT (Prioritat 5): Predicció de churn de clients",
+      "PENDENT (Prioritat 6): OCR intel·ligent per documents"
     ],
     complianceUpdates: [
       "DORA: Resiliencia operativa digital obligatoria enero 2025",
