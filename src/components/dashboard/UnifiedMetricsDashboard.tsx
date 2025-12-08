@@ -10,6 +10,9 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DateRangeFilter } from '@/components/dashboard/DateRangeFilter';
 import { GestorFilterSelector } from '@/components/dashboard/GestorFilterSelector';
+import { PowerBIExport } from '@/components/dashboard/PowerBIExport';
+import { MLPredictions } from '@/components/dashboard/MLPredictions';
+import { PushNotifications } from '@/components/dashboard/PushNotifications';
 import { 
   BarChart, Bar, LineChart, Line, AreaChart, Area, PieChart, Pie, Cell,
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
@@ -20,7 +23,7 @@ import {
   TrendingUp, TrendingDown, Activity, Target, Users, Building2, 
   Package, Percent, BarChart3, LineChartIcon, PieChartIcon, 
   ArrowUpRight, ArrowDownRight, Minus, Calendar, Filter,
-  Award, Zap, DollarSign, Shield, RefreshCw
+  Award, Zap, DollarSign, Shield, RefreshCw, Brain, Bell
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DateRange } from 'react-day-picker';
@@ -28,7 +31,7 @@ import { subMonths, format, startOfMonth, endOfMonth } from 'date-fns';
 import { cn } from '@/lib/utils';
 
 type ChartType = 'bar' | 'line' | 'area' | 'radar' | 'pie' | 'composed';
-type MetricCategory = 'overview' | 'commercial' | 'productivity' | 'quality' | 'benchmark';
+type MetricCategory = 'overview' | 'commercial' | 'productivity' | 'quality' | 'benchmark' | 'predictions' | 'notifications';
 
 const CHART_COLORS = [
   'hsl(var(--chart-1))',
@@ -630,6 +633,14 @@ export function UnifiedMetricsDashboard() {
                 dateRange={dateRange} 
                 onDateRangeChange={setDateRange}
               />
+              <PowerBIExport
+                datasets={[
+                  { id: 'kpis', label: 'KPIs', data: kpis },
+                  { id: 'monthly', label: 'Dades mensuals', data: monthlyData },
+                  { id: 'products', label: 'Productes', data: productData },
+                ]}
+                filename="metrics-dashboard"
+              />
               <Button 
                 variant="outline" 
                 size="sm"
@@ -733,7 +744,7 @@ export function UnifiedMetricsDashboard() {
 
       {/* Main Content Tabs */}
       <Tabs value={activeCategory} onValueChange={(v) => setActiveCategory(v as MetricCategory)} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-flex">
+        <TabsList className="grid w-full grid-cols-7 lg:w-auto lg:inline-flex">
           <TabsTrigger value="overview" className="gap-2">
             <Activity className="h-4 w-4" />
             <span className="hidden sm:inline">Resum</span>
