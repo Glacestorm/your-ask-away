@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigationHistory } from '@/hooks/useNavigationHistory';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Activity, History } from 'lucide-react';
+import { ArrowLeft, Activity, History, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import VisitSheets from '@/pages/VisitSheets';
 import { GlobalNavHeader } from '@/components/GlobalNavHeader';
@@ -927,6 +927,20 @@ const Admin = () => {
                   <div>
                     <h3 className="font-semibold text-lg">Auditor</h3>
                     <p className="text-sm text-muted-foreground">Auditoria i registres</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-all hover:border-red-500/50 border-2 border-red-500/30 bg-gradient-to-br from-red-500/5 to-red-500/10"
+                onClick={() => handleSectionChange('dora-compliance')}
+              >
+                <CardContent className="p-6 flex flex-col items-center text-center gap-3">
+                  <div className="h-14 w-14 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg">
+                    <Shield className="h-7 w-7 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg text-red-700 dark:text-red-400">DORA / NIS2</h3>
+                    <p className="text-sm text-muted-foreground">Compliment normatiu bancari</p>
                   </div>
                 </CardContent>
               </Card>
