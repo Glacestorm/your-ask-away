@@ -16,6 +16,7 @@ import {
   Plus,
   Trash2,
   ExternalLink,
+  Copy,
   MousePointer2,
   ChevronUp,
   ChevronDown,
@@ -395,16 +396,29 @@ export function RoutePlanner({
             </div>
 
             {/* Actions */}
-            <div className="flex gap-2">
-              <Button size="sm" className="flex-1" asChild>
-                <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-3 w-3 mr-1" />
-                  Google Maps
-                </a>
-              </Button>
-              <Button size="sm" variant="outline" onClick={handleReset}>
-                <RotateCcw className="h-3 w-3 mr-1" />
-                Nueva
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-2">
+                <Button size="sm" className="flex-1" asChild>
+                  <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-3 w-3 mr-1" />
+                    Google Maps
+                  </a>
+                </Button>
+                <Button size="sm" variant="outline" onClick={handleReset}>
+                  <RotateCcw className="h-3 w-3 mr-1" />
+                  Nueva
+                </Button>
+              </div>
+              <Button 
+                size="sm" 
+                variant="secondary" 
+                onClick={() => {
+                  navigator.clipboard.writeText(googleMapsUrl);
+                  toast.success('URL copiada al portapapeles');
+                }}
+              >
+                <Copy className="h-3 w-3 mr-1" />
+                Copiar URL
               </Button>
             </div>
 
@@ -687,16 +701,28 @@ export function RoutePlanner({
                 </Accordion>
 
                 {/* Actions */}
-                <div className="flex gap-2">
-                  <Button className="flex-1" asChild>
-                    <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      Abrir en Google Maps
-                    </a>
-                  </Button>
-                  <Button variant="outline" onClick={() => setMode('results')}>
-                    <Eye className="h-4 w-4 mr-2" />
-                    Ver en mapa
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    <Button className="flex-1" asChild>
+                      <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Abrir en Google Maps
+                      </a>
+                    </Button>
+                    <Button variant="outline" onClick={() => setMode('results')}>
+                      <Eye className="h-4 w-4 mr-2" />
+                      Ver en mapa
+                    </Button>
+                  </div>
+                  <Button 
+                    variant="secondary" 
+                    onClick={() => {
+                      navigator.clipboard.writeText(googleMapsUrl);
+                      toast.success('URL copiada al portapapeles');
+                    }}
+                  >
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copiar URL de Google Maps
                   </Button>
                 </div>
               </div>
