@@ -1,10 +1,19 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+// OWASP API Security Top 10 Implementation
+import {
+  SECURITY_HEADERS,
+  handleOptionsRequest,
+  createSecureResponse,
+  checkRateLimit,
+  validatePayloadSize,
+  validateExternalUrl,
+  safeExternalAPICall,
+  logSecurityEvent,
+  sanitizeInput,
+  validateAuthentication
+} from "../_shared/owasp-security.ts";
 
 interface GeocodeRequest {
   address: string;
@@ -17,49 +26,51 @@ interface GeocodeResponse {
   error?: string;
 }
 
-const RATE_LIMIT_REQUESTS = 100; // requests per hour
-const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+// API4:2023 - Rate limiting configuration
+const RATE_LIMIT_CONFIG = {
+  maxRequests: 100,
+  windowMs: 60 * 60 * 1000 // 1 hour
+};
 
-async function checkRateLimit(supabase: any, userId: string): Promise<boolean> {
-  const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString();
-  
-  // Get current request count
-  const { data, error } = await supabase
-    .from('geocode_rate_limits')
-    .select('request_count')
-    .eq('user_id', userId)
-    .gte('window_start', windowStart)
-    .single();
-  
-  if (error && error.code !== 'PGRST116') {
-    console.error('Rate limit check error:', error);
-    return true; // Allow on error
+// API8:2023 - Input validation
+function validateGeocodeInput(data: any): { valid: boolean; error?: string; sanitized?: GeocodeRequest } {
+  if (!data || typeof data !== 'object') {
+    return { valid: false, error: 'Invalid request body' };
   }
   
-  if (data && data.request_count >= RATE_LIMIT_REQUESTS) {
-    return false; // Rate limited
+  if (!data.address || typeof data.address !== 'string') {
+    return { valid: false, error: 'Address is required and must be a string' };
   }
   
-  // Upsert rate limit record
-  const { error: upsertError } = await supabase
-    .from('geocode_rate_limits')
-    .upsert({
-      user_id: userId,
-      request_count: (data?.request_count || 0) + 1,
-      window_start: data ? undefined : new Date().toISOString()
-    }, { onConflict: 'user_id' });
+  // API10:2023 - Sanitize inputs
+  const sanitizedAddress = sanitizeInput(data.address);
+  const sanitizedParroquia = data.parroquia ? sanitizeInput(data.parroquia) : undefined;
   
-  if (upsertError) {
-    console.error('Rate limit upsert error:', upsertError);
+  // Validate length limits
+  if (sanitizedAddress.length > 500) {
+    return { valid: false, error: 'Address too long (max 500 characters)' };
   }
   
-  return true;
+  if (sanitizedParroquia && sanitizedParroquia.length > 100) {
+    return { valid: false, error: 'Parroquia too long (max 100 characters)' };
+  }
+  
+  return { 
+    valid: true, 
+    sanitized: { 
+      address: sanitizedAddress, 
+      parroquia: sanitizedParroquia 
+    } 
+  };
 }
 
 serve(async (req) => {
+  // API8:2023 - Handle CORS preflight with secure headers
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return handleOptionsRequest();
   }
+
+  const clientIp = req.headers.get('x-forwarded-for') || 'unknown';
 
   try {
     // Initialize Supabase client
@@ -67,120 +78,170 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
     
-    // Get user from auth header
-    const authHeader = req.headers.get('Authorization');
-    let userId = 'anonymous';
+    // API2:2023 - Authentication validation
+    const authResult = await validateAuthentication(
+      req.headers.get('Authorization'),
+      supabase
+    );
     
-    if (authHeader) {
-      const token = authHeader.replace('Bearer ', '');
-      const { data: { user } } = await supabase.auth.getUser(token);
-      if (user) {
-        userId = user.id;
-      }
+    if (!authResult.valid) {
+      logSecurityEvent({
+        type: 'auth_failure',
+        severity: 'high',
+        ip: clientIp,
+        endpoint: '/geocode-address',
+        details: authResult.error || 'Authentication failed',
+        timestamp: new Date().toISOString()
+      });
+      
+      return createSecureResponse({ 
+        latitude: null, 
+        longitude: null, 
+        error: 'Unauthorized' 
+      }, 401);
     }
+
+    const userId = authResult.userId!;
     
-    // Check rate limit
-    const allowed = await checkRateLimit(supabase, userId);
-    if (!allowed) {
-      return new Response(
-        JSON.stringify({ 
-          latitude: null, 
-          longitude: null, 
-          error: 'Rate limit exceeded. Please try again later.' 
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 429 }
+    // API4:2023 - Rate limiting
+    const rateLimit = checkRateLimit({
+      identifier: `${userId}:geocode`,
+      maxRequests: RATE_LIMIT_CONFIG.maxRequests,
+      windowMs: RATE_LIMIT_CONFIG.windowMs
+    });
+    
+    if (!rateLimit.allowed) {
+      logSecurityEvent({
+        type: 'rate_limit',
+        severity: 'medium',
+        userId,
+        ip: clientIp,
+        endpoint: '/geocode-address',
+        details: 'Rate limit exceeded',
+        timestamp: new Date().toISOString()
+      });
+      
+      return createSecureResponse(
+        { latitude: null, longitude: null, error: 'Rate limit exceeded. Please try again later.' },
+        429,
+        { 'Retry-After': Math.ceil(rateLimit.resetIn / 1000).toString() }
       );
     }
     
-    const { address, parroquia }: GeocodeRequest = await req.json();
-
-    if (!address) {
-      return new Response(
-        JSON.stringify({ latitude: null, longitude: null, error: 'Address is required' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+    // Parse and validate request body
+    let requestBody;
+    try {
+      requestBody = await req.json();
+    } catch {
+      return createSecureResponse(
+        { latitude: null, longitude: null, error: 'Invalid JSON body' },
+        400
       );
     }
+    
+    // API4:2023 - Payload size validation
+    const payloadValidation = validatePayloadSize(requestBody);
+    if (!payloadValidation.valid) {
+      return createSecureResponse(
+        { latitude: null, longitude: null, error: payloadValidation.error },
+        400
+      );
+    }
+    
+    // API8:2023 - Input validation
+    const inputValidation = validateGeocodeInput(requestBody);
+    if (!inputValidation.valid) {
+      return createSecureResponse(
+        { latitude: null, longitude: null, error: inputValidation.error },
+        400
+      );
+    }
+    
+    const { address, parroquia } = inputValidation.sanitized!;
 
-    // Construir query de búsqueda incluyendo parroquia si está disponible
+    // Build search query
     const searchQuery = parroquia 
       ? `${address}, ${parroquia}, Andorra`
       : `${address}, Andorra`;
 
-    // Usar Nominatim de OpenStreetMap (gratuito)
+    // API7:2023 - SSRF Protection - Validate external URL
     const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1`;
     
-    const response = await fetch(nominatimUrl, {
+    const urlValidation = validateExternalUrl(nominatimUrl);
+    if (!urlValidation.valid) {
+      logSecurityEvent({
+        type: 'ssrf_attempt',
+        severity: 'critical',
+        userId,
+        ip: clientIp,
+        endpoint: '/geocode-address',
+        details: `SSRF attempt blocked: ${urlValidation.error}`,
+        timestamp: new Date().toISOString()
+      });
+      
+      return createSecureResponse(
+        { latitude: null, longitude: null, error: 'Invalid external service request' },
+        400
+      );
+    }
+    
+    // API10:2023 - Safe external API call
+    const result = await safeExternalAPICall(nominatimUrl, {
+      method: 'GET',
       headers: {
-        'User-Agent': 'GestorApp/1.0' // Nominatim requiere User-Agent
+        'User-Agent': 'CreandBankingApp/1.0'
       }
-    });
+    }, 15000);
 
-    if (!response.ok) {
-      console.error('Nominatim API error:', response.status);
-      return new Response(
-        JSON.stringify({ 
-          latitude: null, 
-          longitude: null, 
-          error: 'Geocoding service unavailable' 
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+    if (!result.success) {
+      console.error('Geocoding API error:', result.error);
+      return createSecureResponse(
+        { latitude: null, longitude: null, error: 'Geocoding service unavailable' },
+        503
       );
     }
 
-    const data = await response.json();
+    const data = result.data;
 
-    if (data && data.length > 0) {
-      const result: GeocodeResponse = {
+    if (data && Array.isArray(data) && data.length > 0) {
+      const response: GeocodeResponse = {
         latitude: parseFloat(data[0].lat),
         longitude: parseFloat(data[0].lon)
       };
 
-      return new Response(
-        JSON.stringify(result),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-      );
-    } else {
-      // Si no se encuentra, intentar solo con Andorra para obtener coordenadas por defecto
-      const fallbackUrl = `https://nominatim.openstreetmap.org/search?format=json&q=Andorra&limit=1`;
-      const fallbackResponse = await fetch(fallbackUrl, {
-        headers: {
-          'User-Agent': 'GestorApp/1.0'
-        }
-      });
+      // Log successful geocoding
+      console.log(`[GEOCODE] Success for user ${userId}: ${address}`);
 
-      if (fallbackResponse.ok) {
-        const fallbackData = await fallbackResponse.json();
-        if (fallbackData && fallbackData.length > 0) {
-          return new Response(
-            JSON.stringify({
-              latitude: parseFloat(fallbackData[0].lat),
-              longitude: parseFloat(fallbackData[0].lon),
-              error: 'Address not found, using default Andorra coordinates'
-            }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-          );
-        }
+      return createSecureResponse(response, 200);
+    } else {
+      // Fallback to default Andorra coordinates
+      const fallbackUrl = `https://nominatim.openstreetmap.org/search?format=json&q=Andorra&limit=1`;
+      const fallbackResult = await safeExternalAPICall(fallbackUrl, {
+        method: 'GET',
+        headers: { 'User-Agent': 'CreandBankingApp/1.0' }
+      }, 10000);
+
+      if (fallbackResult.success && Array.isArray(fallbackResult.data) && fallbackResult.data.length > 0) {
+        return createSecureResponse({
+          latitude: parseFloat(fallbackResult.data[0].lat),
+          longitude: parseFloat(fallbackResult.data[0].lon),
+          error: 'Address not found, using default Andorra coordinates'
+        }, 200);
       }
 
-      return new Response(
-        JSON.stringify({ 
-          latitude: null, 
-          longitude: null, 
-          error: 'Address not found' 
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 404 }
+      return createSecureResponse(
+        { latitude: null, longitude: null, error: 'Address not found' },
+        404
       );
     }
 
   } catch (error) {
     console.error('Geocoding error:', error);
-    return new Response(
-      JSON.stringify({ 
-        latitude: null, 
-        longitude: null, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+    
+    // API8:2023 - Don't expose internal error details
+    return createSecureResponse(
+      { latitude: null, longitude: null, error: 'Internal server error' },
+      500
     );
   }
 });
