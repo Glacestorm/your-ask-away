@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -206,15 +206,49 @@ const RISK_COLORS: Record<string, string> = {
   alto: 'bg-red-500',
 };
 
+const STORAGE_KEYS = {
+  codebase: 'app_analyzer_codebase',
+  improvements: 'app_analyzer_improvements',
+  ai: 'app_analyzer_ai'
+};
+
 export function ApplicationStateAnalyzer() {
-  const [codebaseAnalysis, setCodebaseAnalysis] = useState<CodebaseAnalysis | null>(null);
-  const [improvementsAnalysis, setImprovementsAnalysis] = useState<ImprovementsAnalysis | null>(null);
-  const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(null);
+  const [codebaseAnalysis, setCodebaseAnalysis] = useState<CodebaseAnalysis | null>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.codebase);
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [improvementsAnalysis, setImprovementsAnalysis] = useState<ImprovementsAnalysis | null>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.improvements);
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [aiAnalysis, setAiAnalysis] = useState<AIAnalysis | null>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.ai);
+    return saved ? JSON.parse(saved) : null;
+  });
   const [isAnalyzingCodebase, setIsAnalyzingCodebase] = useState(false);
   const [isSearchingImprovements, setIsSearchingImprovements] = useState(false);
   const [isSearchingAI, setIsSearchingAI] = useState(false);
   const [analysisProgress, setAnalysisProgress] = useState(0);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
+  // Persist data to localStorage when it changes
+  useEffect(() => {
+    if (codebaseAnalysis) {
+      localStorage.setItem(STORAGE_KEYS.codebase, JSON.stringify(codebaseAnalysis));
+    }
+  }, [codebaseAnalysis]);
+
+  useEffect(() => {
+    if (improvementsAnalysis) {
+      localStorage.setItem(STORAGE_KEYS.improvements, JSON.stringify(improvementsAnalysis));
+    }
+  }, [improvementsAnalysis]);
+
+  useEffect(() => {
+    if (aiAnalysis) {
+      localStorage.setItem(STORAGE_KEYS.ai, JSON.stringify(aiAnalysis));
+    }
+  }, [aiAnalysis]);
 
   const analyzeCodebase = async () => {
     setIsAnalyzingCodebase(true);
