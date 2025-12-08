@@ -320,23 +320,23 @@ function getDefaultAnalysis(componentsList: string[], hooksList: string[], edgeF
       },
       {
         name: "Gestión Visitas Comerciales",
-        description: "Sistema de visitas con fichas 12 secciones, validación jerárquica, recordatorios y calendario compartido.",
-        implementedFeatures: ["Fichas 12 secciones", "Validación responsables", "Email automático", "Calendario compartido", "Múltiples participantes", "Alertas >90%"],
-        pendingFeatures: ["Calendarios externos", "App offline", "Voice-to-text"],
-        completionPercentage: 90,
+        description: "Sistema de visitas con fichas 12 secciones, validación jerárquica, recordatorios, calendario compartido, integración calendarios externos y modo offline.",
+        implementedFeatures: ["Fichas 12 secciones", "Validación responsables", "Email automático", "Calendario compartido", "Múltiples participantes", "Alertas >90%", "Calendarios externos (Google/Outlook)", "App offline (PWA)", "Voice-to-text notas"],
+        pendingFeatures: [],
+        completionPercentage: 100,
         files: componentsList?.filter((f: string) => f.includes('visit')) || [],
         businessValue: "Aumenta cierre 25%",
-        differentiators: ["Validación jerárquica", "Sincronización automática"]
+        differentiators: ["Validación jerárquica", "Sincronización automática", "PWA offline", "Voice-to-text"]
       },
       {
         name: "Sistema Objetivos y Metas",
-        description: "Gestión objetivos con asignación jerárquica, tracking tiempo real, planes IA y gamificación.",
-        implementedFeatures: ["Objetivos por rol/oficina", "7 métricas", "Tracking real-time", "Planes IA", "Rankings", "Alertas riesgo"],
-        pendingFeatures: ["Predicción ML", "Gamificación avanzada"],
-        completionPercentage: 87,
+        description: "Gestión objetivos con asignación jerárquica, tracking tiempo real, planes IA, gamificación y predicciones ML.",
+        implementedFeatures: ["Objetivos por rol/oficina", "7 métricas", "Tracking real-time", "Planes IA", "Rankings", "Alertas riesgo", "Predicción ML", "Gamificación avanzada"],
+        pendingFeatures: [],
+        completionPercentage: 100,
         files: componentsList?.filter((f: string) => f.includes('goal')) || [],
         businessValue: "Mejora consecución 30%",
-        differentiators: ["IA planes acción", "Benchmarking automático"]
+        differentiators: ["IA planes acción", "Benchmarking automático", "ML predictivo", "Gamificación"]
       }
     ],
     pendingFeatures: [
