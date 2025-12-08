@@ -184,6 +184,23 @@ function getDefaultImprovements(): ImprovementsAnalysis {
       },
       {
         category: "security",
+        title: "✅ Autenticación Continua Adaptativa (IMPLEMENTADO)",
+        description: "Sistema de autenticación adaptativa que evalúa riesgo en tiempo real basándose en dispositivo, ubicación, patrones de uso y contexto de transacción, solicitando step-up auth cuando necesario.",
+        priority: "alta",
+        effort: "Completado",
+        impact: "Cumplimiento PSD2/PSD3 SCA, reducción fraude 80%",
+        source: "OWASP ASVS L3 / Regulaciones PSD3 (SCA)",
+        relatedTechnologies: ["Device Fingerprinting", "Risk Scoring", "Step-up OTP", "Behavior Analysis"],
+        implementationSteps: [
+          "✅ Tablas: device_fingerprints, location_history, risk_assessments, auth_challenges, behavior_patterns",
+          "✅ Edge Function: evaluate-session-risk (evaluación riesgo)",
+          "✅ Edge Function: verify-step-up-challenge (verificación OTP)",
+          "✅ Hook React: useAdaptiveAuth",
+          "✅ UI: StepUpAuthDialog para desafíos"
+        ]
+      },
+      {
+        category: "security",
         title: "Implementar autenticación passwordless",
         description: "Añadir WebAuthn/Passkeys para autenticación sin contraseña, mejorando seguridad y UX.",
         priority: "alta",

@@ -354,6 +354,45 @@ export type Database = {
         }
         Relationships: []
       }
+      auth_challenges: {
+        Row: {
+          attempts: number | null
+          challenge_code: string | null
+          challenge_type: Database["public"]["Enums"]["auth_factor_type"]
+          created_at: string | null
+          expires_at: string
+          id: string
+          max_attempts: number | null
+          session_id: string
+          user_id: string
+          verified_at: string | null
+        }
+        Insert: {
+          attempts?: number | null
+          challenge_code?: string | null
+          challenge_type: Database["public"]["Enums"]["auth_factor_type"]
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          max_attempts?: number | null
+          session_id: string
+          user_id: string
+          verified_at?: string | null
+        }
+        Update: {
+          attempts?: number | null
+          challenge_code?: string | null
+          challenge_type?: Database["public"]["Enums"]["auth_factor_type"]
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          max_attempts?: number | null
+          session_id?: string
+          user_id?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       balance_sheets: {
         Row: {
           accruals_assets: number | null
@@ -2920,6 +2959,73 @@ export type Database = {
         }
         Relationships: []
       }
+      session_risk_assessments: {
+        Row: {
+          created_at: string | null
+          device_fingerprint_id: string | null
+          id: string
+          location_id: string | null
+          requires_step_up: boolean | null
+          risk_factors: Json | null
+          risk_level: Database["public"]["Enums"]["auth_risk_level"]
+          risk_score: number
+          session_id: string
+          step_up_completed: boolean | null
+          step_up_factor: Database["public"]["Enums"]["auth_factor_type"] | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          device_fingerprint_id?: string | null
+          id?: string
+          location_id?: string | null
+          requires_step_up?: boolean | null
+          risk_factors?: Json | null
+          risk_level?: Database["public"]["Enums"]["auth_risk_level"]
+          risk_score?: number
+          session_id: string
+          step_up_completed?: boolean | null
+          step_up_factor?:
+            | Database["public"]["Enums"]["auth_factor_type"]
+            | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          device_fingerprint_id?: string | null
+          id?: string
+          location_id?: string | null
+          requires_step_up?: boolean | null
+          risk_factors?: Json | null
+          risk_level?: Database["public"]["Enums"]["auth_risk_level"]
+          risk_score?: number
+          session_id?: string
+          step_up_completed?: boolean | null
+          step_up_factor?:
+            | Database["public"]["Enums"]["auth_factor_type"]
+            | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_risk_assessments_device_fingerprint_id_fkey"
+            columns: ["device_fingerprint_id"]
+            isOneToOne: false
+            referencedRelation: "user_device_fingerprints"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_risk_assessments_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "user_location_history"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       status_colors: {
         Row: {
           color_hex: string
@@ -2980,6 +3086,132 @@ export type Database = {
           module_key?: string | null
           status?: string
           triggered_by?: string | null
+        }
+        Relationships: []
+      }
+      user_behavior_patterns: {
+        Row: {
+          avg_session_duration: number | null
+          created_at: string | null
+          id: string
+          last_analyzed_at: string | null
+          typical_actions_per_session: number | null
+          typical_devices: Json | null
+          typical_locations: Json | null
+          typical_login_hours: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          avg_session_duration?: number | null
+          created_at?: string | null
+          id?: string
+          last_analyzed_at?: string | null
+          typical_actions_per_session?: number | null
+          typical_devices?: Json | null
+          typical_locations?: Json | null
+          typical_login_hours?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          avg_session_duration?: number | null
+          created_at?: string | null
+          id?: string
+          last_analyzed_at?: string | null
+          typical_actions_per_session?: number | null
+          typical_devices?: Json | null
+          typical_locations?: Json | null
+          typical_login_hours?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_device_fingerprints: {
+        Row: {
+          browser_info: Json | null
+          created_at: string | null
+          device_hash: string
+          first_seen_at: string | null
+          id: string
+          is_trusted: boolean | null
+          language: string | null
+          last_seen_at: string | null
+          login_count: number | null
+          os_info: Json | null
+          screen_resolution: string | null
+          timezone: string | null
+          trust_expires_at: string | null
+          user_id: string
+        }
+        Insert: {
+          browser_info?: Json | null
+          created_at?: string | null
+          device_hash: string
+          first_seen_at?: string | null
+          id?: string
+          is_trusted?: boolean | null
+          language?: string | null
+          last_seen_at?: string | null
+          login_count?: number | null
+          os_info?: Json | null
+          screen_resolution?: string | null
+          timezone?: string | null
+          trust_expires_at?: string | null
+          user_id: string
+        }
+        Update: {
+          browser_info?: Json | null
+          created_at?: string | null
+          device_hash?: string
+          first_seen_at?: string | null
+          id?: string
+          is_trusted?: boolean | null
+          language?: string | null
+          last_seen_at?: string | null
+          login_count?: number | null
+          os_info?: Json | null
+          screen_resolution?: string | null
+          timezone?: string | null
+          trust_expires_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_location_history: {
+        Row: {
+          city: string | null
+          country_code: string | null
+          created_at: string | null
+          id: string
+          ip_address: string | null
+          is_vpn: boolean | null
+          latitude: number | null
+          longitude: number | null
+          user_id: string
+        }
+        Insert: {
+          city?: string | null
+          country_code?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          is_vpn?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          user_id: string
+        }
+        Update: {
+          city?: string | null
+          country_code?: string | null
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          is_vpn?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -3527,6 +3759,14 @@ export type Database = {
         | "director_comercial"
         | "director_oficina"
         | "responsable_comercial"
+      auth_factor_type:
+        | "password"
+        | "otp_email"
+        | "otp_sms"
+        | "device_trust"
+        | "biometric"
+        | "security_question"
+      auth_risk_level: "low" | "medium" | "high" | "critical"
       financial_data_source: "manual" | "pdf_import"
       financial_statement_status: "draft" | "submitted" | "approved"
       financial_statement_type: "normal" | "abreujat" | "simplificat"
@@ -3667,6 +3907,15 @@ export const Constants = {
         "director_oficina",
         "responsable_comercial",
       ],
+      auth_factor_type: [
+        "password",
+        "otp_email",
+        "otp_sms",
+        "device_trust",
+        "biometric",
+        "security_question",
+      ],
+      auth_risk_level: ["low", "medium", "high", "critical"],
       financial_data_source: ["manual", "pdf_import"],
       financial_statement_status: ["draft", "submitted", "approved"],
       financial_statement_type: ["normal", "abreujat", "simplificat"],
