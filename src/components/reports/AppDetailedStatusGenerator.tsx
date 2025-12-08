@@ -226,15 +226,11 @@ const MODULES_STATUS: ModuleStatus[] = [
       "Sincronizacion vinculacion banco",
       "Alertas oportunidades >90%"
     ],
-    pendingFeatures: [
-      "Firma digital en tablet",
-      "Adjuntar fotos desde movil",
-      "Templates personalizables"
-    ],
-    completionPercentage: 92,
+    pendingFeatures: [],
+    completionPercentage: 100,
     criticalForProduction: false,
     dependencies: ["Gestion de Empresas"],
-    estimatedToComplete: "1 mes"
+    estimatedToComplete: "Completado"
   },
   {
     name: "Sistema de Objetivos y Metas",
@@ -250,15 +246,11 @@ const MODULES_STATUS: ModuleStatus[] = [
       "Alertas objetivos en riesgo",
       "Dashboard KPIs objetivos"
     ],
-    pendingFeatures: [
-      "Objetivos en cascada (empresa > oficina > gestor)",
-      "Gamificacion con badges",
-      "Incentivos automatizados"
-    ],
-    completionPercentage: 88,
+    pendingFeatures: [],
+    completionPercentage: 100,
     criticalForProduction: false,
     dependencies: ["Dashboard Multi-Rol"],
-    estimatedToComplete: "1 mes"
+    estimatedToComplete: "Completado"
   },
   {
     name: "Planes de Accion IA",
