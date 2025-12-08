@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { MapContainer } from '@/components/map/MapContainer';
@@ -6,6 +6,9 @@ import { MapSidebar } from '@/components/map/MapSidebar';
 import { MapHeader, MapBaseLayers } from '@/components/map/MapHeader';
 import { GeoSearch } from '@/components/map/GeoSearch';
 import { RoutePlanner } from '@/components/map/RoutePlanner';
+import { MapLegend } from '@/components/map/MapLegend';
+import { MapStatisticsPanel } from '@/components/map/MapStatisticsPanel';
+import { MapExportButton } from '@/components/map/MapExportButton';
 import { CompanyWithDetails, MapFilters, StatusColor, Product, MapColorMode } from '@/types/database';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Search, Route } from 'lucide-react';
@@ -228,6 +231,43 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
     new Set(companies.map((c) => c.sector).filter(Boolean))
   ).sort();
 
+  // Filter companies based on current filters
+  const filteredCompanies = useMemo(() => {
+    return companies.filter(company => {
+      // Status filter
+      if (filters.statusIds.length > 0 && !filters.statusIds.includes(company.status_id || '')) {
+        return false;
+      }
+      // Parroquia filter
+      if (filters.parroquias.length > 0 && !filters.parroquias.includes(company.parroquia)) {
+        return false;
+      }
+      // Sector filter
+      if (filters.sectors.length > 0 && !filters.sectors.includes(company.sector || '')) {
+        return false;
+      }
+      // CNAE filter
+      if (filters.cnaes.length > 0 && !filters.cnaes.includes(company.cnae || '')) {
+        return false;
+      }
+      // Vinculacion range
+      const avgVinc = ((company.vinculacion_entidad_1 || 0) + (company.vinculacion_entidad_2 || 0) + (company.vinculacion_entidad_3 || 0)) / 3;
+      if (avgVinc < filters.vinculacionRange.min || avgVinc > filters.vinculacionRange.max) {
+        return false;
+      }
+      // Search term
+      if (filters.searchTerm) {
+        const term = filters.searchTerm.toLowerCase();
+        if (!company.name.toLowerCase().includes(term) &&
+            !(company.address || '').toLowerCase().includes(term) &&
+            !(company.bp || '').toLowerCase().includes(term)) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [companies, filters]);
+
   const handleSearchResult = (result: any) => {
     if (result.type === 'company' && result.company) {
       // If it's a company, select it and close search
@@ -390,6 +430,30 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
               routePolyline={routePolyline}
               routeSelectedIds={routeSelectedIds}
             />
+
+            {/* Map Legend */}
+            <MapLegend
+              statusColors={statusColors}
+              colorMode={colorMode}
+              companiesCount={companies.length}
+              filteredCount={filteredCompanies.length}
+            />
+
+            {/* Statistics Panel */}
+            <MapStatisticsPanel
+              companies={companies}
+              filteredCompanies={filteredCompanies}
+              statusColors={statusColors}
+            />
+
+            {/* Export Button in header area */}
+            <div className="absolute top-4 right-4 z-10">
+              <MapExportButton
+                companies={companies}
+                filteredCompanies={filteredCompanies}
+                statusColors={statusColors}
+              />
+            </div>
 
             {showRoutePlanner && (
               <RoutePlanner
