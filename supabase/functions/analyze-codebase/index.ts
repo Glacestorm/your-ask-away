@@ -291,12 +291,12 @@ function getDefaultAnalysis(componentsList: string[], hooksList: string[], edgeF
       {
         name: "Dashboard Multi-Rol Inteligente",
         description: "Sistema de dashboards adaptativo con métricas KPI bancarias en tiempo real, segmentación por rol y benchmarking europeo.",
-        implementedFeatures: ["Dashboard por rol", "KPIs en tiempo real", "Filtros avanzados", "Benchmarking europeo", "Gráficos interactivos", "Comparativas temporales", "Alertas rendimiento"],
-        pendingFeatures: ["Exportación PowerBI", "Alertas push móviles", "Predicciones ML"],
-        completionPercentage: 92,
+        implementedFeatures: ["Dashboard por rol", "KPIs en tiempo real", "Filtros avanzados", "Benchmarking europeo", "Gráficos interactivos", "Comparativas temporales", "Alertas rendimiento", "Exportación PowerBI", "Alertas push móviles", "Predicciones ML"],
+        pendingFeatures: [],
+        completionPercentage: 100,
         files: componentsList?.filter((f: string) => f.includes('dashboard') || f.includes('Dashboard')) || [],
         businessValue: "Reduce tiempo análisis 60%, mejora decisiones comerciales",
-        differentiators: ["Benchmarking europeo integrado", "Multi-rol nativo", "Tiempo real"]
+        differentiators: ["Benchmarking europeo integrado", "Multi-rol nativo", "Tiempo real", "ML predictivo", "Push notifications"]
       },
       {
         name: "Módulo Contable PGC Andorra/España",
