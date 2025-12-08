@@ -88,6 +88,7 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
   const [showRoutePlanner, setShowRoutePlanner] = useState(false);
   const [routePolyline, setRoutePolyline] = useState<string | null>(null);
   const [routeWaypoints, setRouteWaypoints] = useState<{ id: string; name: string; latitude: number; longitude: number }[]>([]);
+  const [routeOrigin, setRouteOrigin] = useState<{ latitude: number; longitude: number; name: string } | null>(null);
   const [routePlannerCompany, setRoutePlannerCompany] = useState<CompanyWithDetails | null>(null);
   const [isSelectingPins, setIsSelectingPins] = useState(false);
   const [routeSelectedIds, setRouteSelectedIds] = useState<string[]>([]);
@@ -440,6 +441,7 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
               onFocusCompanyHandled={() => setFocusCompanyId(null)}
               routePolyline={routePolyline}
               routeWaypoints={routeWaypoints}
+              routeOrigin={routeOrigin}
               routeSelectedIds={routeSelectedIds}
             />
 
@@ -469,11 +471,13 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
                 onRouteCalculated={(route) => {
                   setRoutePolyline(route?.polyline || null);
                   setRouteWaypoints(route?.optimized_order || []);
+                  setRouteOrigin(route?.origin || null);
                 }}
                 onClose={() => {
                   setShowRoutePlanner(false);
                   setRoutePolyline(null);
                   setRouteWaypoints([]);
+                  setRouteOrigin(null);
                   setRoutePlannerCompany(null);
                   setIsSelectingPins(false);
                   setRouteSelectedIds([]);

@@ -149,6 +149,11 @@ serve(async (req) => {
           value: totalDuration,
           text: formatDuration(totalDuration),
         },
+        origin: {
+          latitude: origin.latitude,
+          longitude: origin.longitude,
+          name: 'Tu ubicación',
+        },
         optimized_order: orderedWaypoints.map((w, i) => ({
           order: i + 1,
           id: w.id,

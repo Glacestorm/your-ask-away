@@ -129,6 +129,7 @@ interface MapContainerProps {
   onFocusCompanyHandled?: () => void;
   routePolyline?: string | null;
   routeWaypoints?: { id: string; name: string; latitude: number; longitude: number }[];
+  routeOrigin?: { latitude: number; longitude: number; name: string } | null;
   routeSelectedIds?: string[];
 }
 
@@ -164,6 +165,7 @@ export function MapContainer({
   onFocusCompanyHandled,
   routePolyline,
   routeWaypoints,
+  routeOrigin,
   routeSelectedIds = [],
 }: MapContainerProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -311,6 +313,8 @@ export function MapContainer({
 
     // Decode polyline and draw route line
     const coords = decodePolyline(routePolyline);
+    console.log('[Route] Decoded polyline coords:', coords.length);
+    
     if (coords.length >= 2) {
       // Add route source
       mapInstance.addSource('route-source', {
@@ -354,13 +358,33 @@ export function MapContainer({
           'line-width': 6
         }
       });
+      console.log('[Route] Route line layers added');
     }
 
-    // Create waypoint markers using native MapLibre markers
-    const waypointCount = routeWaypoints.length;
-    routeWaypoints.forEach((waypoint, index) => {
-      const isFirst = index === 0;
-      const isLast = index === waypointCount - 1 && waypointCount > 1;
+    // Create waypoint markers - include origin as A
+    const allPoints: { id: string; name: string; latitude: number; longitude: number; isOrigin?: boolean }[] = [];
+    
+    // Add origin as first point
+    if (routeOrigin) {
+      allPoints.push({
+        id: 'origin',
+        name: routeOrigin.name || 'Tu ubicación',
+        latitude: routeOrigin.latitude,
+        longitude: routeOrigin.longitude,
+        isOrigin: true
+      });
+    }
+    
+    // Add all waypoints
+    routeWaypoints.forEach(wp => {
+      allPoints.push(wp);
+    });
+
+    console.log('[Route] Creating markers for', allPoints.length, 'points');
+
+    allPoints.forEach((point, index) => {
+      const isFirst = index === 0; // Origin (A)
+      const isLast = index === allPoints.length - 1 && allPoints.length > 1; // Destination (B)
       
       let label: string;
       if (isFirst) {
@@ -373,11 +397,11 @@ export function MapContainer({
       
       let bgColor: string;
       if (isFirst) {
-        bgColor = '#00C853'; // green
+        bgColor = '#00C853'; // green for origin
       } else if (isLast) {
-        bgColor = '#F44336'; // red
+        bgColor = '#F44336'; // red for destination
       } else {
-        bgColor = '#FF9800'; // orange
+        bgColor = '#FF9800'; // orange for intermediate
       }
 
       // Create marker element
@@ -399,19 +423,20 @@ export function MapContainer({
         z-index: 1000;
       `;
       el.textContent = label;
-      el.title = waypoint.name;
+      el.title = point.name;
 
       const marker = new maplibregl.Marker({ element: el })
-        .setLngLat([waypoint.longitude, waypoint.latitude])
+        .setLngLat([point.longitude, point.latitude])
         .addTo(mapInstance);
 
       routeMarkersRef.current.push(marker);
+      console.log('[Route] Added marker', label, 'at', point.latitude, point.longitude);
     });
 
-    // Fit bounds to show all waypoints
-    if (routeWaypoints.length > 0) {
-      const lngs = [...routeWaypoints.map(w => w.longitude), ...coords.map(c => c[0])];
-      const lats = [...routeWaypoints.map(w => w.latitude), ...coords.map(c => c[1])];
+    // Fit bounds to show all points
+    if (allPoints.length > 0) {
+      const lngs = [...allPoints.map(p => p.longitude), ...coords.map(c => c[0])];
+      const lats = [...allPoints.map(p => p.latitude), ...coords.map(c => c[1])];
       
       const bounds = new maplibregl.LngLatBounds(
         [Math.min(...lngs), Math.min(...lats)],
@@ -436,7 +461,7 @@ export function MapContainer({
     return () => {
       mapInstance.off('styledata', handleStyleData);
     };
-  }, [mapLoaded, routePolyline, routeWaypoints, decodePolyline]);
+  }, [mapLoaded, routePolyline, routeWaypoints, routeOrigin, decodePolyline]);
 
   // Fetch tooltip configuration
   useEffect(() => {
