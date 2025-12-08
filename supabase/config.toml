@@ -62,3 +62,6 @@ verify_jwt = false
 
 [functions.search-improvements]
 verify_jwt = true
+
+[functions.search-ai-recommendations]
+verify_jwt = true
