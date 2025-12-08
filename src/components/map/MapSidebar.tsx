@@ -295,7 +295,11 @@ export function MapSidebar({
            (filters.dateRange ? 1 : 0);
   };
 
-  if (!open) return null;
+  if (!open) {
+    return (
+      <aside className="w-0 overflow-hidden shrink-0" />
+    );
+  }
 
   // Calculate pagination
   const totalPages = Math.ceil(filteredCompanies.length / pageSize);

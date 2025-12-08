@@ -361,7 +361,7 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
         filteredCompanies={filteredCompanies}
       />
       
-      <div className="flex flex-1 min-h-0 h-full relative">
+      <div className="flex flex-1 min-h-0 h-full relative transition-none">
         <MapSidebar
           open={sidebarOpen}
           companies={companies}
@@ -376,7 +376,7 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
         />
         
         {!sidebarFullscreen && (
-          <div className="relative flex-1">
+          <div className="relative flex-1 transition-none">
             {showSearch && (
               <GeoSearch
                 companies={companies}
