@@ -18,6 +18,12 @@ interface RiskFactor {
   description: string;
 }
 
+interface LocationInfo {
+  country?: string;
+  city?: string;
+  isVpn?: boolean;
+}
+
 interface RiskAssessment {
   id: string;
   riskLevel: 'low' | 'medium' | 'high' | 'critical';
@@ -25,6 +31,7 @@ interface RiskAssessment {
   riskFactors: RiskFactor[];
   requiresStepUp: boolean;
   stepUpCompleted: boolean;
+  location?: LocationInfo;
 }
 
 interface Challenge {
@@ -65,6 +72,22 @@ function generateSessionId(): string {
   return sessionId;
 }
 
+// Try to get client IP address
+async function getClientIp(): Promise<string | null> {
+  try {
+    const response = await fetch('https://api.ipify.org?format=json', {
+      signal: AbortSignal.timeout(3000)
+    });
+    if (response.ok) {
+      const data = await response.json();
+      return data.ip;
+    }
+  } catch (error) {
+    console.log('Could not fetch client IP:', error);
+  }
+  return null;
+}
+
 export function useAdaptiveAuth(): UseAdaptiveAuthReturn {
   const { user } = useAuth();
   const [riskAssessment, setRiskAssessment] = useState<RiskAssessment | null>(null);
@@ -89,6 +112,7 @@ export function useAdaptiveAuth(): UseAdaptiveAuthReturn {
 
     try {
       const deviceFingerprint = generateDeviceFingerprint();
+      const clientIp = await getClientIp();
 
       const { data, error: fnError } = await supabase.functions.invoke('evaluate-session-risk', {
         body: {
@@ -96,7 +120,8 @@ export function useAdaptiveAuth(): UseAdaptiveAuthReturn {
           sessionId,
           deviceFingerprint,
           action,
-          transactionValue
+          transactionValue,
+          clientIp
         }
       });
 

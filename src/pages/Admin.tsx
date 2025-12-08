@@ -54,7 +54,7 @@ import { CascadeGoalsManager } from '@/components/admin/CascadeGoalsManager';
 import { CodebaseIndexGenerator } from '@/components/reports/CodebaseIndexGenerator';
 import { ApplicationStateAnalyzer } from '@/components/admin/ApplicationStateAnalyzer';
 import { DORAComplianceDashboard } from '@/components/admin/DORAComplianceDashboard';
-
+import { AdaptiveAuthDashboard } from '@/components/admin/AdaptiveAuthDashboard';
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
   const { t } = useLanguage();
@@ -564,6 +564,17 @@ const Admin = () => {
           );
         }
         return <DORAComplianceDashboard />;
+      case 'adaptive-auth':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <AdaptiveAuthDashboard />;
       case 'cascade-goals':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager && !isOfficeDirector) {
           return (
