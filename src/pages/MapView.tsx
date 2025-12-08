@@ -1,8 +1,15 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, Suspense, lazy } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { MapContainer } from '@/components/map/MapContainer';
-import { MapSidebar } from '@/components/map/MapSidebar';
+import { LazyMapContainer } from '@/components/map/LazyMapContainer';
+import { MapSkeleton } from '@/components/map/MapSkeleton';
+
+// Lazy load heavy sidebar component
+const MapSidebar = lazy(() => 
+  import('@/components/map/MapSidebar').then(module => ({ 
+    default: module.MapSidebar 
+  }))
+);
 import { MapHeader, MapBaseLayers } from '@/components/map/MapHeader';
 import { GeoSearch } from '@/components/map/GeoSearch';
 import { RoutePlanner } from '@/components/map/RoutePlanner';
@@ -362,18 +369,20 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
       />
       
       <div className="flex flex-1 min-h-0 h-full relative transition-none">
-        <MapSidebar
-          open={sidebarOpen}
-          companies={companies}
-          statusColors={statusColors}
-          products={products}
-          filters={filters}
-          onFiltersChange={setFilters}
-          selectedCompany={selectedCompany}
-          onSelectCompany={setSelectedCompany}
-          fullscreen={sidebarFullscreen}
-          onFullscreenChange={setSidebarFullscreen}
-        />
+        <Suspense fallback={<div className="w-80 bg-background border-r animate-pulse" />}>
+          <MapSidebar
+            open={sidebarOpen}
+            companies={companies}
+            statusColors={statusColors}
+            products={products}
+            filters={filters}
+            onFiltersChange={setFilters}
+            selectedCompany={selectedCompany}
+            onSelectCompany={setSelectedCompany}
+            fullscreen={sidebarFullscreen}
+            onFullscreenChange={setSidebarFullscreen}
+          />
+        </Suspense>
         
         {!sidebarFullscreen && (
           <div className="relative flex-1 transition-none">
@@ -407,7 +416,7 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
               </div>
             )}
 
-            <MapContainer
+            <LazyMapContainer
               companies={companies}
               statusColors={statusColors}
               filters={filters}
