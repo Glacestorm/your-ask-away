@@ -50,3 +50,12 @@ verify_jwt = true
 
 [functions.optimize-route]
 verify_jwt = true
+
+[functions.system-health]
+verify_jwt = true
+
+[functions.scheduled-health-check]
+verify_jwt = false
+
+[functions.analyze-system-issues]
+verify_jwt = false

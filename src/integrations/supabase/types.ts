@@ -109,6 +109,68 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_interventions: {
+        Row: {
+          ai_analysis: string
+          auto_execute_at: string | null
+          created_at: string
+          diagnostic_log_id: string | null
+          executed_at: string | null
+          executed_by: string | null
+          id: string
+          issue_description: string
+          proposed_solution: string
+          reverted_at: string | null
+          reverted_by: string | null
+          rollback_data: Json | null
+          solution_code: Json | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          ai_analysis: string
+          auto_execute_at?: string | null
+          created_at?: string
+          diagnostic_log_id?: string | null
+          executed_at?: string | null
+          executed_by?: string | null
+          id?: string
+          issue_description: string
+          proposed_solution: string
+          reverted_at?: string | null
+          reverted_by?: string | null
+          rollback_data?: Json | null
+          solution_code?: Json | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          ai_analysis?: string
+          auto_execute_at?: string | null
+          created_at?: string
+          diagnostic_log_id?: string | null
+          executed_at?: string | null
+          executed_by?: string | null
+          id?: string
+          issue_description?: string
+          proposed_solution?: string
+          reverted_at?: string | null
+          reverted_by?: string | null
+          rollback_data?: Json | null
+          solution_code?: Json | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_interventions_diagnostic_log_id_fkey"
+            columns: ["diagnostic_log_id"]
+            isOneToOne: false
+            referencedRelation: "system_diagnostic_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alert_history: {
         Row: {
           alert_id: string
@@ -2650,6 +2712,48 @@ export type Database = {
           },
         ]
       }
+      scheduled_health_checks: {
+        Row: {
+          check_type: string
+          created_at: string
+          details: Json
+          email_sent: boolean | null
+          email_sent_at: string | null
+          error_modules: number
+          healthy_modules: number
+          id: string
+          overall_status: string
+          total_modules: number
+          warning_modules: number
+        }
+        Insert: {
+          check_type: string
+          created_at?: string
+          details: Json
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          error_modules: number
+          healthy_modules: number
+          id?: string
+          overall_status: string
+          total_modules: number
+          warning_modules: number
+        }
+        Update: {
+          check_type?: string
+          created_at?: string
+          details?: Json
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          error_modules?: number
+          healthy_modules?: number
+          id?: string
+          overall_status?: string
+          total_modules?: number
+          warning_modules?: number
+        }
+        Relationships: []
+      }
       security_audit_logs: {
         Row: {
           action: string
@@ -2716,6 +2820,39 @@ export type Database = {
           id?: string
           status_name?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      system_diagnostic_logs: {
+        Row: {
+          checks: Json
+          created_at: string
+          diagnostic_type: string
+          error_details: string | null
+          id: string
+          module_key: string | null
+          status: string
+          triggered_by: string | null
+        }
+        Insert: {
+          checks?: Json
+          created_at?: string
+          diagnostic_type: string
+          error_details?: string | null
+          id?: string
+          module_key?: string | null
+          status: string
+          triggered_by?: string | null
+        }
+        Update: {
+          checks?: Json
+          created_at?: string
+          diagnostic_type?: string
+          error_details?: string | null
+          id?: string
+          module_key?: string | null
+          status?: string
+          triggered_by?: string | null
         }
         Relationships: []
       }
