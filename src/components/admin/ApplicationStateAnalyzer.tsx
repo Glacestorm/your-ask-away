@@ -2731,11 +2731,10 @@ ${'═'.repeat(80)}
 
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
 
-      // =================================================================
-      // REAL SOURCE CODE - Complete file contents
-      // =================================================================
-      
-      const realSourceCode = getRealSourceCode();
+      // Import the comprehensive source code exporter
+      const { generateFullSourceExport, getProjectStats } = await import('@/lib/sourceCodeExporter');
+      const sourceContent = generateFullSourceExport();
+      const stats = getProjectStats();
 
       let sourceContent = `${'═'.repeat(100)}
                               CREAND BUSINESS SUITE v8.0.0
