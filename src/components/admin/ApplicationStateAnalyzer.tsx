@@ -2733,10 +2733,11 @@ ${'═'.repeat(80)}
 
       // Import the comprehensive source code exporter
       const { generateFullSourceExport, getProjectStats } = await import('@/lib/sourceCodeExporter');
-      const sourceContent = generateFullSourceExport();
+      const exportContent = generateFullSourceExport();
       const stats = getProjectStats();
 
-      let sourceContent = `${'═'.repeat(100)}
+      // Build final content with stats header
+      const finalContent = `${'═'.repeat(100)}
                               CREAND BUSINESS SUITE v8.0.0
                               CODI FONT REAL - EXPORTACIÓ COMPLETA
                               
@@ -2747,59 +2748,20 @@ ${'═'.repeat(100)}
 
 📊 ESTADÍSTIQUES DEL PROJECTE:
 ${'─'.repeat(50)}
-   • Línies totals: ~85,000
-   • Fitxers font: 180+
-   • Components React: 150+
-   • Edge Functions: 38
-   • Hooks personalitzats: 27
-   • Pàgines: 9
+   • Línies totals: ${stats.totalLines.toLocaleString()}
+   • Fitxers font: ${stats.totalFiles}
+   • Components React: ${stats.components}
+   • Edge Functions: ${stats.edgeFunctions}
+   • Hooks personalitzats: ${stats.hooks}
+   • Pàgines: ${stats.pages}
 
-🏗️ ARQUITECTURA:
-${'─'.repeat(50)}
-   • Frontend: React 19.2.1 + TypeScript 5.x + Vite 5.x
-   • UI: Tailwind CSS 3.x + Shadcn/UI
-   • Backend: Supabase (Lovable Cloud)
-   • Maps: MapLibre GL + Supercluster
-   • Auth: WebAuthn/FIDO2 + Adaptive MFA
+${exportContent}
 
-🛡️ SEGURETAT:
-${'─'.repeat(50)}
-   • Row Level Security (RLS)
-   • JWT verification en Edge Functions
-   • WebAuthn/FIDO2 + Passkeys
-   • PSD2/PSD3 SCA compliant
-   • DORA/NIS2 stress tests
-   • XSS sanitization (DOMPurify)
-
-`;
-
-      // Add each source file
-      for (const [filePath, content] of Object.entries(realSourceCode)) {
-        const lineCount = content.split('\n').length;
-        sourceContent += `
-${'═'.repeat(100)}
-📄 FITXER: ${filePath}
-   Línies: ${lineCount}
-${'═'.repeat(100)}
-
-${content}
-
-`;
-      }
-
-      // Add file index
-      sourceContent += getFileIndex();
-      sourceContent += getTechStack();
-      sourceContent += getComplianceInfo();
-
-      // Final section
-      sourceContent += `
 ${'═'.repeat(100)}
                               FI DE L'EXPORTACIÓ
                               
   Generat: ${new Date().toLocaleString('ca-ES')}
   Versió: 8.0.0
-  Línies totals en aquest fitxer: ~${sourceContent.split('\n').length}
 ${'═'.repeat(100)}
 `;
 
@@ -2807,7 +2769,7 @@ ${'═'.repeat(100)}
       setFullCodeProgress(100);
 
       // Create and download file
-      const blob = new Blob([sourceContent], { type: 'text/plain;charset=utf-8' });
+      const blob = new Blob([finalContent], { type: 'text/plain;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -2817,7 +2779,7 @@ ${'═'.repeat(100)}
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      toast.success(`Codi font exportat! (~${sourceContent.split('\n').length} línies)`);
+      toast.success(`Codi font exportat! (~${stats.totalLines.toLocaleString()} línies)`);
     } catch (error) {
       console.error('Error exportant codi font:', error);
       toast.error('Error en exportar el codi font');

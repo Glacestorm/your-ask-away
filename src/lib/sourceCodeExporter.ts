@@ -444,11 +444,26 @@ export const getProjectStats = () => {
     byCategory[f.category].lines += f.lines;
   });
   
+  // Count specific categories
+  const components = files.filter(f => 
+    f.category === 'Admin' || f.category === 'Dashboard' || f.category === 'Map' || 
+    f.category === 'Accounting' || f.category === 'UI' || f.category === 'Visits' ||
+    f.category === 'Company' || f.category === 'Auth' || f.category === 'Performance' ||
+    f.category === 'Reports'
+  ).length;
+  const edgeFunctions = files.filter(f => f.category === 'Edge Functions').length;
+  const hooks = files.filter(f => f.category === 'Hooks').length;
+  const pages = files.filter(f => f.category === 'Pages').length;
+  
   return {
     totalFiles: files.length,
     totalLines,
     categories: categories.length,
-    byCategory
+    byCategory,
+    components,
+    edgeFunctions,
+    hooks,
+    pages
   };
 };
 
