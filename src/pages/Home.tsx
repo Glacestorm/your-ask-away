@@ -38,6 +38,13 @@ interface MenuOption {
 // Feature menu options (excluding role-based dashboards)
 const featureMenuOptions: MenuOption[] = [
   {
+    title: 'Administració',
+    description: 'Panell d\'administració del sistema',
+    icon: Settings,
+    path: '/admin?section=administration',
+    roles: ['superadmin', 'director_comercial', 'responsable_comercial']
+  },
+  {
     title: 'Mapa',
     description: 'Visualització geogràfica d\'empreses',
     icon: Map,
@@ -223,17 +230,6 @@ const Home = () => {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              {canAccessAdmin() && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate('/admin?section=administration')}
-                  className="gap-2"
-                >
-                  <Settings className="h-4 w-4" />
-                  Admin
-                </Button>
-              )}
               <ThemeSelector />
               <LanguageSelector />
               <Button
