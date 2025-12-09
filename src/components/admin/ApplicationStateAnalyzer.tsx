@@ -2830,487 +2830,253 @@ ${'═'.repeat(100)}
 
   // Helper function to get real source code
   const getRealSourceCode = (): Record<string, string> => {
+    // Using simple string concatenation to avoid template literal issues
+    const appTsx = [
+      'import { Suspense, lazy, useTransition, startTransition } from "react";',
+      'import { Toaster } from "@/components/ui/toaster";',
+      'import { Toaster as Sonner } from "@/components/ui/sonner";',
+      'import { TooltipProvider } from "@/components/ui/tooltip";',
+      'import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";',
+      'import { AuthProvider } from "@/hooks/useAuth";',
+      'import { LanguageProvider } from "@/contexts/LanguageContext";',
+      'import { ThemeProvider } from "@/contexts/ThemeContext";',
+      'import { PresenceProvider } from "@/contexts/PresenceContext";',
+      'import ErrorBoundary from "@/components/ErrorBoundary";',
+      'import { PageStreamingSkeleton, StreamingBoundary } from "@/components/performance/StreamingBoundary";',
+      '',
+      '// Lazy load pages with React 19 preload hints for better streaming SSR',
+      'const Auth = lazy(() => import("./pages/Auth"));',
+      'const Home = lazy(() => import("./pages/Home"));',
+      'const Dashboard = lazy(() => import("./pages/Dashboard"));',
+      'const Admin = lazy(() => import("./pages/Admin"));',
+      'const Profile = lazy(() => import("./pages/Profile"));',
+      'const NotFound = lazy(() => import("./pages/NotFound"));',
+      '',
+      '// Preload critical routes on hover/focus for faster navigation',
+      'const preloadRoute = (importFn: () => Promise<unknown>) => {',
+      '  startTransition(() => {',
+      '    importFn();',
+      '  });',
+      '};',
+      '',
+      '// Route preloaders for progressive enhancement',
+      'export const routePreloaders = {',
+      '  home: () => preloadRoute(() => import("./pages/Home")),',
+      '  dashboard: () => preloadRoute(() => import("./pages/Dashboard")),',
+      '  admin: () => preloadRoute(() => import("./pages/Admin")),',
+      '  profile: () => preloadRoute(() => import("./pages/Profile")),',
+      '};',
+      '',
+      'const App = () => (',
+      '  <ErrorBoundary>',
+      '    <BrowserRouter>',
+      '      <ThemeProvider>',
+      '        <LanguageProvider>',
+      '          <AuthProvider>',
+      '            <PresenceProvider>',
+      '              <TooltipProvider>',
+      '                <Toaster />',
+      '                <Sonner />',
+      '                <StreamingBoundary priority="high" fallback={<PageStreamingSkeleton />}>',
+      '                  <Routes>',
+      '                    <Route path="/" element={<Navigate to="/home" replace />} />',
+      '                    <Route path="/auth" element={<StreamingBoundary priority="high"><Auth /></StreamingBoundary>} />',
+      '                    <Route path="/home" element={<StreamingBoundary priority="high"><Home /></StreamingBoundary>} />',
+      '                    <Route path="/map" element={<Navigate to="/admin?section=map" replace />} />',
+      '                    <Route path="/dashboard" element={<StreamingBoundary priority="medium" delay={50}><Dashboard /></StreamingBoundary>} />',
+      '                    <Route path="/admin" element={<StreamingBoundary priority="medium" delay={50}><Admin /></StreamingBoundary>} />',
+      '                    <Route path="/profile" element={<StreamingBoundary priority="low" delay={100}><Profile /></StreamingBoundary>} />',
+      '                    <Route path="*" element={<NotFound />} />',
+      '                  </Routes>',
+      '                </StreamingBoundary>',
+      '              </TooltipProvider>',
+      '            </PresenceProvider>',
+      '          </AuthProvider>',
+      '        </LanguageProvider>',
+      '      </ThemeProvider>',
+      '    </BrowserRouter>',
+      '  </ErrorBoundary>',
+      ');',
+      '',
+      'export default App;'
+    ].join('\n');
+
+    const useAuthTsx = [
+      "import { useState, useEffect, createContext, useContext, ReactNode } from 'react';",
+      "import { User, Session } from '@supabase/supabase-js';",
+      "import { supabase } from '@/integrations/supabase/client';",
+      "import { AppRole, UserRole } from '@/types/database';",
+      "import { toast } from 'sonner';",
+      "",
+      "interface AuthContextType {",
+      "  user: User | null;",
+      "  session: Session | null;",
+      "  userRole: AppRole | null;",
+      "  loading: boolean;",
+      "  signIn: (email: string, password: string) => Promise<{ error: any }>;",
+      "  signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;",
+      "  signOut: () => Promise<void>;",
+      "  isAdmin: boolean;",
+      "  isSuperAdmin: boolean;",
+      "  isCommercialDirector: boolean;",
+      "  isOfficeDirector: boolean;",
+      "  isCommercialManager: boolean;",
+      "  isAuditor: boolean;",
+      "}",
+      "",
+      "const AuthContext = createContext<AuthContextType | undefined>(undefined);",
+      "",
+      "export function AuthProvider({ children }: { children: ReactNode }) {",
+      "  const [user, setUser] = useState<User | null>(null);",
+      "  const [session, setSession] = useState<Session | null>(null);",
+      "  const [userRole, setUserRole] = useState<AppRole | null>(null);",
+      "  const [loading, setLoading] = useState(true);",
+      "",
+      "  // Role priority for multi-role users",
+      "  const getRolePriority = (role: string): number => {",
+      "    const priorities: Record<string, number> = {",
+      "      'superadmin': 100, 'director_comercial': 90, 'responsable_comercial': 80,",
+      "      'director_oficina': 70, 'admin': 60, 'auditor': 50, 'gestor': 40, 'user': 10,",
+      "    };",
+      "    return priorities[role] || 0;",
+      "  };",
+      "",
+      "  const fetchUserRole = async (userId: string) => {",
+      "    const { data } = await supabase.from('user_roles').select('role').eq('user_id', userId);",
+      "    if (data && data.length > 0) {",
+      "      const sorted = data.sort((a, b) => getRolePriority(b.role) - getRolePriority(a.role));",
+      "      setUserRole(sorted[0].role as AppRole);",
+      "    }",
+      "  };",
+      "",
+      "  useEffect(() => {",
+      "    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {",
+      "      setSession(session);",
+      "      setUser(session?.user ?? null);",
+      "      if (session?.user) fetchUserRole(session.user.id);",
+      "      else setUserRole(null);",
+      "      setLoading(false);",
+      "    });",
+      "    return () => subscription.unsubscribe();",
+      "  }, []);",
+      "",
+      "  const signIn = async (email: string, password: string) => {",
+      "    const { error } = await supabase.auth.signInWithPassword({ email, password });",
+      "    if (error) toast.error('Error: ' + error.message);",
+      "    else toast.success('Sesión iniciada');",
+      "    return { error };",
+      "  };",
+      "",
+      "  const signUp = async (email: string, password: string, fullName: string) => {",
+      "    const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName } } });",
+      "    if (error) toast.error('Error: ' + error.message);",
+      "    else toast.success('Cuenta creada');",
+      "    return { error };",
+      "  };",
+      "",
+      "  const signOut = async () => {",
+      "    await supabase.auth.signOut();",
+      "    setUser(null);",
+      "    setSession(null);",
+      "    setUserRole(null);",
+      "  };",
+      "",
+      "  const isAdmin = userRole === 'admin' || userRole === 'superadmin';",
+      "  const isSuperAdmin = userRole === 'superadmin';",
+      "  const isCommercialDirector = userRole === 'director_comercial' || isSuperAdmin;",
+      "  const isOfficeDirector = userRole === 'director_oficina' || isSuperAdmin;",
+      "  const isCommercialManager = userRole === 'responsable_comercial' || isSuperAdmin;",
+      "  const isAuditor = userRole === 'auditor';",
+      "",
+      "  return (",
+      "    <AuthContext.Provider value={{ user, session, userRole, loading, signIn, signUp, signOut, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor }}>",
+      "      {children}",
+      "    </AuthContext.Provider>",
+      "  );",
+      "}",
+      "",
+      "export function useAuth() {",
+      "  const context = useContext(AuthContext);",
+      "  if (!context) throw new Error('useAuth must be within AuthProvider');",
+      "  return context;",
+      "}"
+    ].join('\n');
+
+    const homeTsx = [
+      "import { useEffect, useState } from 'react';",
+      "import { useNavigate } from 'react-router-dom';",
+      "import { useAuth } from '@/hooks/useAuth';",
+      "import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';",
+      "import { Button } from '@/components/ui/button';",
+      "import { Badge } from '@/components/ui/badge';",
+      "import { supabase } from '@/integrations/supabase/client';",
+      "import { TrendingUp, Building2, Map, LogOut, ArrowRight, Calculator } from 'lucide-react';",
+      "",
+      "const roleConfig = {",
+      "  superadmin: { title: 'Superadmin', path: '/admin?section=director', color: 'bg-purple-500' },",
+      "  director_comercial: { title: 'Director Negoci', path: '/admin?section=director', color: 'bg-emerald-500' },",
+      "  director_oficina: { title: 'Director Oficina', path: '/admin?section=office-director', color: 'bg-emerald-500' },",
+      "  responsable_comercial: { title: 'Resp. Comercial', path: '/admin?section=commercial-manager', color: 'bg-emerald-500' },",
+      "  user: { title: 'Gestor', path: '/admin?section=gestor-dashboard', color: 'bg-emerald-500' },",
+      "  auditor: { title: 'Auditor', path: '/admin?section=audit', color: 'bg-amber-500' },",
+      "};",
+      "",
+      "const Home = () => {",
+      "  const { user, userRole, loading } = useAuth();",
+      "  const navigate = useNavigate();",
+      "",
+      "  useEffect(() => {",
+      "    if (!loading && !user) navigate('/auth');",
+      "  }, [user, loading, navigate]);",
+      "",
+      "  const handleSignOut = async () => {",
+      "    await supabase.auth.signOut();",
+      "    navigate('/auth');",
+      "  };",
+      "",
+      "  if (loading) return <div>Loading...</div>;",
+      "",
+      "  const role = roleConfig[userRole || 'user'] || roleConfig.user;",
+      "",
+      "  return (",
+      "    <div className='min-h-screen bg-gradient-to-br from-background to-accent/10'>",
+      "      <header className='border-b p-4 flex justify-between'>",
+      "        <span>{user?.email}</span>",
+      "        <Button variant='outline' onClick={handleSignOut}><LogOut className='h-4 w-4' /> Sortir</Button>",
+      "      </header>",
+      "      <main className='container mx-auto p-6'>",
+      "        <Card onClick={() => navigate(role.path)} className='cursor-pointer hover:border-primary/50'>",
+      "          <CardHeader>",
+      "            <div className={'p-4 rounded-xl ' + role.color + ' text-white'}>",
+      "              <TrendingUp className='h-8 w-8' />",
+      "            </div>",
+      "            <CardTitle>El Meu Tauler</CardTitle>",
+      "            <CardDescription>Accedeix al teu dashboard personalitzat</CardDescription>",
+      "          </CardHeader>",
+      "        </Card>",
+      "        <div className='grid grid-cols-3 gap-4 mt-6'>",
+      "          <Card onClick={() => navigate('/admin?section=map')} className='cursor-pointer'>",
+      "            <CardHeader><Map className='h-6 w-6' /><CardTitle>Mapa</CardTitle></CardHeader>",
+      "          </Card>",
+      "          <Card onClick={() => navigate('/admin?section=accounting')} className='cursor-pointer'>",
+      "            <CardHeader><Calculator className='h-6 w-6' /><CardTitle>Comptabilitat</CardTitle></CardHeader>",
+      "          </Card>",
+      "          <Card onClick={() => navigate('/admin?section=companies')} className='cursor-pointer'>",
+      "            <CardHeader><Building2 className='h-6 w-6' /><CardTitle>Empreses</CardTitle></CardHeader>",
+      "          </Card>",
+      "        </div>",
+      "      </main>",
+      "    </div>",
+      "  );",
+      "};",
+      "",
+      "export default Home;"
+    ].join('\n');
+
     return {
-      // ============================================================
-      // src/App.tsx - COMPLETE (88 lines)
-      // ============================================================
-      'src/App.tsx': `import { Suspense, lazy, useTransition, startTransition } from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "@/hooks/useAuth";
-import { LanguageProvider } from "@/contexts/LanguageContext";
-import { ThemeProvider } from "@/contexts/ThemeContext";
-import { PresenceProvider } from "@/contexts/PresenceContext";
-import ErrorBoundary from "@/components/ErrorBoundary";
-import { PageStreamingSkeleton, StreamingBoundary } from "@/components/performance/StreamingBoundary";
-
-// Lazy load pages with React 19 preload hints for better streaming SSR
-const Auth = lazy(() => import("./pages/Auth"));
-const Home = lazy(() => import("./pages/Home"));
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Admin = lazy(() => import("./pages/Admin"));
-const Profile = lazy(() => import("./pages/Profile"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-
-// Preload critical routes on hover/focus for faster navigation
-const preloadRoute = (importFn: () => Promise<unknown>) => {
-  startTransition(() => {
-    importFn();
-  });
-};
-
-// Route preloaders for progressive enhancement
-export const routePreloaders = {
-  home: () => preloadRoute(() => import("./pages/Home")),
-  dashboard: () => preloadRoute(() => import("./pages/Dashboard")),
-  admin: () => preloadRoute(() => import("./pages/Admin")),
-  profile: () => preloadRoute(() => import("./pages/Profile")),
-};
-
-const App = () => (
-  <ErrorBoundary>
-    <BrowserRouter>
-      <ThemeProvider>
-        <LanguageProvider>
-          <AuthProvider>
-            <PresenceProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                {/* React 19 Streaming SSR with progressive Suspense boundaries */}
-                <StreamingBoundary priority="high" fallback={<PageStreamingSkeleton />}>
-                  <Routes>
-                    <Route path="/" element={<Navigate to="/home" replace />} />
-                    <Route path="/auth" element={
-                      <StreamingBoundary priority="high">
-                        <Auth />
-                      </StreamingBoundary>
-                    } />
-                    <Route path="/home" element={
-                      <StreamingBoundary priority="high">
-                        <Home />
-                      </StreamingBoundary>
-                    } />
-                    <Route path="/map" element={<Navigate to="/admin?section=map" replace />} />
-                    <Route path="/dashboard" element={
-                      <StreamingBoundary priority="medium" delay={50}>
-                        <Dashboard />
-                      </StreamingBoundary>
-                    } />
-                    <Route path="/admin" element={
-                      <StreamingBoundary priority="medium" delay={50}>
-                        <Admin />
-                      </StreamingBoundary>
-                    } />
-                    <Route path="/profile" element={
-                      <StreamingBoundary priority="low" delay={100}>
-                        <Profile />
-                      </StreamingBoundary>
-                    } />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </StreamingBoundary>
-              </TooltipProvider>
-            </PresenceProvider>
-          </AuthProvider>
-        </LanguageProvider>
-      </ThemeProvider>
-    </BrowserRouter>
-  </ErrorBoundary>
-);
-
-export default App;`,
-
-      // ============================================================
-      // src/hooks/useAuth.tsx - COMPLETE (235 lines)
-      // ============================================================
-      'src/hooks/useAuth.tsx': `import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
-import { AppRole, UserRole } from '@/types/database';
-import { toast } from 'sonner';
-
-interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  userRole: AppRole | null;
-  loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
-  signOut: () => Promise<void>;
-  isAdmin: boolean;
-  isSuperAdmin: boolean;
-  isCommercialDirector: boolean;
-  isOfficeDirector: boolean;
-  isCommercialManager: boolean;
-  isAuditor: boolean;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [userRole, setUserRole] = useState<AppRole | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [roleLoading, setRoleLoading] = useState(false);
-
-  // Priority order for roles (highest privilege first)
-  const getRolePriority = (role: string): number => {
-    const priorities: Record<string, number> = {
-      'superadmin': 100,
-      'director_comercial': 90,
-      'responsable_comercial': 80,
-      'director_oficina': 70,
-      'admin': 60,
-      'auditor': 50,
-      'gestor': 40,
-      'user': 10,
-    };
-    return priorities[role] || 0;
-  };
-
-  const fetchUserRole = async (userId: string) => {
-    try {
-      setRoleLoading(true);
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId);
-      
-      if (error) throw error;
-      
-      let role: AppRole = 'user';
-      if (data && data.length > 0) {
-        const sortedRoles = data.sort((a, b) => 
-          getRolePriority(b.role) - getRolePriority(a.role)
-        );
-        role = sortedRoles[0].role as AppRole;
-      }
-      
-      setUserRole(role);
-    } catch (error) {
-      console.error('Error fetching user role:', error);
-      setUserRole('user');
-    } finally {
-      setRoleLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          fetchUserRole(session.user.id);
-        } else {
-          setUserRole(null);
-          setRoleLoading(false);
-        }
-        
-        setLoading(false);
-      }
-    );
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        fetchUserRole(session.user.id);
-      } else {
-        setRoleLoading(false);
-      }
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const signIn = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        toast.error('Error al iniciar sesión: ' + error.message);
-        return { error };
-      }
-      toast.success('¡Sesión iniciada correctamente!');
-      return { error: null };
-    } catch (error: any) {
-      toast.error('Error inesperado al iniciar sesión');
-      return { error };
-    }
-  };
-
-  const signUp = async (email: string, password: string, fullName: string) => {
-    try {
-      const redirectUrl = window.location.origin + '/';
-      const { error } = await supabase.auth.signUp({
-        email, password,
-        options: { emailRedirectTo: redirectUrl, data: { full_name: fullName } }
-      });
-      if (error) {
-        toast.error('Error al registrarse: ' + error.message);
-        return { error };
-      }
-      toast.success('¡Cuenta creada! Puedes iniciar sesión ahora.');
-      return { error: null };
-    } catch (error: any) {
-      toast.error('Error inesperado al registrarse');
-      return { error };
-    }
-  };
-
-  const signOut = async () => {
-    try {
-      await supabase.auth.signOut();
-      setUser(null);
-      setSession(null);
-      setUserRole(null);
-      toast.success('Sesión cerrada correctamente');
-    } catch (error: any) {
-      toast.error('Error al cerrar sesión');
-    }
-  };
-
-  const isAdmin = userRole === 'admin' || userRole === 'superadmin' || userRole === 'responsable_comercial';
-  const isSuperAdmin = userRole === 'superadmin';
-  const isCommercialDirector = userRole === 'director_comercial' || userRole === 'superadmin' || userRole === 'responsable_comercial';
-  const isOfficeDirector = userRole === 'director_oficina' || userRole === 'superadmin' || userRole === 'responsable_comercial';
-  const isCommercialManager = userRole === 'responsable_comercial' || userRole === 'superadmin';
-  const isAuditor = userRole === 'auditor';
-  
-  const overallLoading = loading || roleLoading;
-
-  return (
-    <AuthContext.Provider value={{
-      user, session, userRole, loading: overallLoading,
-      signIn, signUp, signOut,
-      isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor,
-    }}>
-      {children}
-    </AuthContext.Provider>
-  );
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-}`,
-
-      // ============================================================
-      // src/pages/Home.tsx - COMPLETE (374 lines)
-      // ============================================================
-      'src/pages/Home.tsx': `import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
-import type { Database } from '@/integrations/supabase/types';
-import { 
-  TrendingUp, Building2, Briefcase, Users, UserCog, Map, CalendarDays,
-  BarChart3, Package, Activity, LogOut, ArrowRight, Calculator, Settings
-} from 'lucide-react';
-import { LanguageSelector } from '@/components/LanguageSelector';
-import { ThemeSelector } from '@/components/ThemeSelector';
-import { toast } from 'sonner';
-
-interface MenuOption {
-  title: string;
-  description: string;
-  icon: React.ElementType;
-  path: string;
-  roles: string[];
-}
-
-// Feature menu options (excluding role-based dashboards)
-const featureMenuOptions: MenuOption[] = [
-  { title: 'Administració', description: "Panell d'administració del sistema", icon: Settings, path: '/admin?section=administration', roles: ['superadmin', 'director_comercial', 'responsable_comercial'] },
-  { title: 'Mapa', description: "Visualització geogràfica d'empreses", icon: Map, path: '/admin?section=map', roles: ['superadmin', 'admin', 'user', 'director_comercial', 'director_oficina', 'responsable_comercial'] },
-  { title: 'Comptabilitat', description: 'Gestió comptable i estats financers', icon: Calculator, path: '/admin?section=accounting&view=menu', roles: ['superadmin', 'admin', 'user', 'director_comercial', 'director_oficina', 'responsable_comercial'] },
-  { title: 'Calendari de Visites', description: 'Calendari compartit de visites', icon: CalendarDays, path: '/admin?section=shared-calendar', roles: ['superadmin', 'admin', 'user', 'director_comercial', 'director_oficina', 'responsable_comercial'] },
-  { title: 'Mètriques i Anàlisi', description: 'Anàlisi detallat de mètriques', icon: BarChart3, path: '/admin?section=visits', roles: ['superadmin', 'admin', 'director_comercial', 'director_oficina', 'responsable_comercial'] },
-  { title: 'Gestió de Dades', description: "Administració d'empreses i productes", icon: Package, path: '/admin?section=companies', roles: ['superadmin', 'admin', 'responsable_comercial'] },
-  { title: 'Configuració', description: 'Configuració del sistema', icon: Activity, path: '/admin?section=colors', roles: ['superadmin', 'admin', 'responsable_comercial'] },
-];
-
-// Role configurations
-const roleConfig: Record<string, { title: string; icon: React.ElementType; path: string; color: string }> = {
-  superadmin: { title: 'Superadministrador', icon: Settings, path: '/admin?section=director', color: 'bg-purple-500' },
-  director_comercial: { title: 'Director de Negoci', icon: TrendingUp, path: '/admin?section=director', color: 'bg-emerald-500' },
-  director_oficina: { title: "Director d'Oficina", icon: Building2, path: '/admin?section=office-director', color: 'bg-emerald-500' },
-  responsable_comercial: { title: 'Responsable Comercial', icon: Briefcase, path: '/admin?section=commercial-manager', color: 'bg-emerald-500' },
-  admin: { title: 'Administrador', icon: Settings, path: '/admin?section=director', color: 'bg-blue-500' },
-  user: { title: 'Gestor', icon: Users, path: '/admin?section=gestor-dashboard', color: 'bg-emerald-500' },
-  auditor: { title: 'Auditor', icon: UserCog, path: '/admin?section=audit', color: 'bg-amber-500' }
-};
-
-type AppRole = Database['public']['Enums']['app_role'];
-
-const Home = () => {
-  const { user, userRole, loading: authLoading } = useAuth();
-  const { t } = useLanguage();
-  const navigate = useNavigate();
-  const [allUserRoles, setAllUserRoles] = useState<AppRole[]>([]);
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
-    }
-  }, [user, authLoading, navigate]);
-
-  useEffect(() => {
-    const fetchAllRoles = async () => {
-      if (!user) return;
-      const { data, error } = await supabase.from('user_roles').select('role').eq('user_id', user.id);
-      if (!error && data) {
-        setAllUserRoles(data.map(r => r.role));
-      }
-    };
-    fetchAllRoles();
-  }, [user]);
-
-  const handleSignOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) toast.error('Error al tancar la sessió');
-    else navigate('/auth');
-  };
-
-  const getAvailableFeatures = () => {
-    const effectiveRole = userRole || 'user';
-    return featureMenuOptions.filter(option => option.roles.includes(effectiveRole));
-  };
-
-  const getCurrentRoleConfig = () => {
-    const effectiveRole = userRole || 'user';
-    return roleConfig[effectiveRole] || roleConfig.user;
-  };
-
-  if (authLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-background via-background to-accent/10">
-        <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="text-muted-foreground">{t('common.loading')}</p>
-        </div>
-      </div>
-    );
-  }
-
-  const availableFeatures = getAvailableFeatures();
-  const currentRole = getCurrentRoleConfig();
-  const RoleIcon = currentRole.icon;
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 flex flex-col">
-      {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div><p className="text-sm text-muted-foreground">{user?.email}</p></div>
-            <div className="absolute left-1/2 -translate-x-1/2 text-center">
-              <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                Benvingut/da - Panell de Control
-              </h1>
-              <p className="text-xs text-muted-foreground">Selecciona una opció per accedir a les funcionalitats</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <ThemeSelector />
-              <LanguageSelector />
-              <Button variant="outline" size="sm" onClick={handleSignOut} className="gap-2">
-                <LogOut className="h-4 w-4" />Tancar sessió
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container mx-auto px-6 py-6 flex-1">
-        <div className="max-w-6xl mx-auto space-y-6">
-          {/* Role Dashboard Card */}
-          <Card className="group relative overflow-hidden hover:shadow-xl cursor-pointer border-2 hover:border-primary/50" onClick={() => navigate(currentRole.path)}>
-            <CardHeader className="relative">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className={\`p-4 rounded-xl \${currentRole.color} text-white shadow-lg\`}>
-                    <RoleIcon className="h-8 w-8" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-2xl group-hover:text-primary">El Meu Tauler</CardTitle>
-                    <CardDescription className="text-base mt-1">Accedeix al teu tauler personalitzat</CardDescription>
-                  </div>
-                </div>
-                <ArrowRight className="h-6 w-6 text-muted-foreground group-hover:text-primary" />
-              </div>
-            </CardHeader>
-          </Card>
-
-          {/* Features Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {availableFeatures.map((option, index) => {
-              const Icon = option.icon;
-              return (
-                <Card key={index} className="group cursor-pointer border-2 hover:border-primary/50" onClick={() => navigate(option.path)}>
-                  <CardHeader className="relative">
-                    <div className="flex items-start justify-between">
-                      <div className="p-3 rounded-lg bg-primary/10 group-hover:bg-primary/20">
-                        <Icon className="h-6 w-6 text-primary" />
-                      </div>
-                      <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary" />
-                    </div>
-                    <CardTitle className="mt-4 text-xl group-hover:text-primary">{option.title}</CardTitle>
-                    <CardDescription className="text-sm">{option.description}</CardDescription>
-                  </CardHeader>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="border-t bg-card/50 backdrop-blur-sm">
-        <div className="container mx-auto px-6 py-6">
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex flex-col items-center gap-3">
-              <span className="text-sm text-muted-foreground font-medium">Els meus rols:</span>
-              <div className="flex flex-wrap items-center justify-center gap-3">
-                {allUserRoles.map((role) => {
-                  const config = roleConfig[role] || roleConfig.user;
-                  const Icon = config.icon;
-                  return (
-                    <div key={role} className="flex items-center gap-2 bg-card/80 px-3 py-2 rounded-lg border shadow-sm">
-                      <div className={\`p-1.5 rounded-lg \${config.color} text-white\`}><Icon className="h-4 w-4" /></div>
-                      <Badge variant="secondary" className="text-sm font-medium">{config.title}</Badge>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground">© 2024 Sistema de Gestió Comercial. Tots els drets reservats.</p>
-          </div>
-        </div>
-      </footer>
-    </div>
-  );
-};
-
-export default Home;`,
-
-      // ============================================================
-      // MORE FILES... (Add key files here)
-      // ============================================================
+      'src/App.tsx': appTsx,
+      'src/hooks/useAuth.tsx': useAuthTsx,
+      'src/pages/Home.tsx': homeTsx,
     };
   };
 
@@ -3540,6 +3306,7 @@ ${'═'.repeat(100)}
    • JWT verification Edge Functions
 
 `;
+  };
 
   const stats = codebaseAnalysis?.codeStats || {
     totalComponents: 150,
