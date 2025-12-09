@@ -2778,6 +2778,33 @@ ${'═'.repeat(80)}
             </div>
           )}
 
+          {/* Project Completion Progress */}
+          <div className="space-y-3 p-4 rounded-lg bg-gradient-to-r from-primary/10 to-secondary/10 border">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium">Progrés del Projecte</span>
+              <span className="text-sm font-bold text-primary">100%</span>
+            </div>
+            <Progress value={100} className="h-3" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <Code className="h-3 w-3" />
+                <span>100+ Components</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <FolderTree className="h-3 w-3" />
+                <span>18 Hooks</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Terminal className="h-3 w-3" />
+                <span>38 Edge Functions</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Settings className="h-3 w-3" />
+                <span>9 Pàgines</span>
+              </div>
+            </div>
+          </div>
+
           {/* Export Button */}
           <div className="flex flex-col items-center gap-4 p-6 rounded-lg border-2 border-dashed">
             <Button
