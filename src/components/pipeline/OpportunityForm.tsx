@@ -13,8 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { CalendarIcon, Building2, Check, ChevronsUpDown, Loader2 } from 'lucide-react';
+import { CalendarIcon, Building2, CreditCard, FileText, Search, X, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -44,6 +43,8 @@ interface OpportunityFormProps {
 interface Company {
   id: string;
   name: string;
+  bp: string | null;
+  tax_id: string | null;
   is_vip: boolean;
 }
 
@@ -71,8 +72,12 @@ export function OpportunityForm({
   const { user } = useAuth();
   const [companies, setCompanies] = useState<Company[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
-  const [companyOpen, setCompanyOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState<Company[]>([]);
+  const [showResults, setShowResults] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
 
   const form = useForm<OpportunityFormData>({
     resolver: zodResolver(opportunitySchema),
@@ -91,11 +96,25 @@ export function OpportunityForm({
 
   const selectedCompanyId = form.watch('company_id');
 
+  // Search companies when searchTerm changes
   useEffect(() => {
-    if (open) {
-      fetchCompanies();
+    const timer = setTimeout(() => {
+      if (searchTerm.length >= 2) {
+        searchCompanies(searchTerm);
+      } else {
+        setSearchResults([]);
+        setShowResults(false);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Fetch selected company on load
+  useEffect(() => {
+    if (selectedCompanyId && !selectedCompany) {
+      fetchSelectedCompany(selectedCompanyId);
     }
-  }, [open]);
+  }, [selectedCompanyId]);
 
   useEffect(() => {
     if (selectedCompanyId) {
@@ -120,6 +139,9 @@ export function OpportunityForm({
         contact_id: opportunity.contact_id || '',
         notes: opportunity.notes || '',
       });
+      if (opportunity.company_id) {
+        fetchSelectedCompany(opportunity.company_id);
+      }
     } else {
       form.reset({
         title: '',
@@ -132,15 +154,37 @@ export function OpportunityForm({
         contact_id: '',
         notes: '',
       });
+      if (defaultCompanyId) {
+        fetchSelectedCompany(defaultCompanyId);
+      } else {
+        setSelectedCompany(null);
+      }
     }
   }, [opportunity, defaultCompanyId, form]);
 
-  const fetchCompanies = async () => {
+  const fetchSelectedCompany = async (companyId: string) => {
     const { data } = await supabase
       .from('companies')
-      .select('id, name, is_vip')
-      .order('name');
-    if (data) setCompanies(data);
+      .select('id, name, bp, tax_id, is_vip')
+      .eq('id', companyId)
+      .single();
+    if (data) setSelectedCompany(data);
+  };
+
+  const searchCompanies = async (term: string) => {
+    setSearchLoading(true);
+    try {
+      const { data } = await supabase
+        .from('companies')
+        .select('id, name, bp, tax_id, is_vip')
+        .or(`name.ilike.%${term}%,bp.ilike.%${term}%,tax_id.ilike.%${term}%`)
+        .order('name')
+        .limit(10);
+      if (data) setSearchResults(data);
+      setShowResults(true);
+    } finally {
+      setSearchLoading(false);
+    }
   };
 
   const fetchContacts = async (companyId: string) => {
@@ -175,7 +219,21 @@ export function OpportunityForm({
     }
   };
 
-  const selectedCompany = companies.find(c => c.id === selectedCompanyId);
+  const handleSelectCompany = (company: Company) => {
+    setSelectedCompany(company);
+    form.setValue('company_id', company.id);
+    form.setValue('contact_id', '');
+    setSearchTerm('');
+    setShowResults(false);
+  };
+
+  const handleClearCompany = () => {
+    setSelectedCompany(null);
+    form.setValue('company_id', '');
+    form.setValue('contact_id', '');
+    setSearchTerm('');
+    setSearchResults([]);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -203,65 +261,100 @@ export function OpportunityForm({
               )}
             />
 
-            {/* Company Selector */}
+            {/* Company Search */}
             <FormField
               control={form.control}
               name="company_id"
-              render={({ field }) => (
+              render={() => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Empresa *</FormLabel>
-                  <Popover open={companyOpen} onOpenChange={setCompanyOpen}>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          className={cn(
-                            "w-full justify-between",
-                            !field.value && "text-muted-foreground"
+                  <div className="relative">
+                    {!selectedCompany ? (
+                      <>
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                          <Input
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            placeholder="Buscar por Nombre, BP o NRT..."
+                            className="pl-10"
+                            onFocus={() => searchTerm.length >= 2 && setShowResults(true)}
+                          />
+                          {searchLoading && (
+                            <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
                           )}
-                        >
-                          <div className="flex items-center gap-2">
-                            <Building2 className="h-4 w-4" />
-                            {selectedCompany ? selectedCompany.name : "Seleccionar empresa..."}
-                          </div>
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[400px] p-0">
-                      <Command>
-                        <CommandInput placeholder="Buscar empresa..." />
-                        <CommandList>
-                          <CommandEmpty>No se encontraron empresas.</CommandEmpty>
-                          <CommandGroup>
-                            {companies.map((company) => (
-                              <CommandItem
+                        </div>
+                        
+                        {/* Search Results */}
+                        {showResults && searchResults.length > 0 && (
+                          <div className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-[200px] overflow-auto">
+                            {searchResults.map((company) => (
+                              <button
                                 key={company.id}
-                                value={company.name}
-                                onSelect={() => {
-                                  form.setValue('company_id', company.id);
-                                  form.setValue('contact_id', '');
-                                  setCompanyOpen(false);
-                                }}
+                                type="button"
+                                onClick={() => handleSelectCompany(company)}
+                                className="w-full px-3 py-2 text-left hover:bg-accent/50 transition-colors border-b last:border-0"
                               >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    company.id === field.value ? "opacity-100" : "opacity-0"
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium">{company.name}</span>
+                                  {company.is_vip && <span className="text-amber-500">⭐</span>}
+                                </div>
+                                <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
+                                  {company.bp && (
+                                    <span className="flex items-center gap-1">
+                                      <CreditCard className="w-3 h-3" />
+                                      BP: {company.bp}
+                                    </span>
                                   )}
-                                />
-                                {company.name}
-                                {company.is_vip && (
-                                  <span className="ml-2 text-amber-500">⭐ VIP</span>
-                                )}
-                              </CommandItem>
+                                  {company.tax_id && (
+                                    <span className="flex items-center gap-1">
+                                      <FileText className="w-3 h-3" />
+                                      NRT: {company.tax_id}
+                                    </span>
+                                  )}
+                                </div>
+                              </button>
                             ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                          </div>
+                        )}
+                        
+                        {showResults && searchResults.length === 0 && searchTerm.length >= 2 && !searchLoading && (
+                          <div className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-lg p-3 text-sm text-muted-foreground text-center">
+                            No se encontraron empresas
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div className="flex items-center justify-between p-3 border rounded-md bg-primary/5 border-primary/30">
+                        <div className="flex items-center gap-3">
+                          <Building2 className="w-5 h-5 text-primary" />
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold">{selectedCompany.name}</span>
+                              {selectedCompany.is_vip && <span className="text-amber-500">⭐ VIP</span>}
+                            </div>
+                            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                              {selectedCompany.bp && (
+                                <span className="flex items-center gap-1">
+                                  <CreditCard className="w-3 h-3" />
+                                  BP: {selectedCompany.bp}
+                                </span>
+                              )}
+                              {selectedCompany.tax_id && (
+                                <span className="flex items-center gap-1">
+                                  <FileText className="w-3 h-3" />
+                                  NRT: {selectedCompany.tax_id}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <Button type="button" variant="ghost" size="icon" onClick={handleClearCompany}>
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
