@@ -59,11 +59,12 @@ export function useMFAEnforcement(): UseMFAEnforcementReturn {
       }
 
       // Check if user has WebAuthn passkeys
-      const { data: passkeys } = await supabase
-        .from('user_passkeys')
+      const passkeysResult = await supabase
+        .from('user_passkeys' as any)
         .select('id')
         .eq('user_id', user.id)
         .eq('is_active', true);
+      const passkeys = passkeysResult?.data as any[] | null;
 
       const hasPasskeys = passkeys && passkeys.length > 0;
 
