@@ -872,6 +872,7 @@ export type Database = {
           id: string
           import_batch_id: string | null
           ingresos_creand: number | null
+          is_vip: boolean | null
           latitude: number
           legal_form: string | null
           longitude: number
@@ -893,6 +894,7 @@ export type Database = {
           vinculacion_entidad_2: number | null
           vinculacion_entidad_3: number | null
           vinculacion_modo: string | null
+          vip_notes: string | null
           website: string | null
         }
         Insert: {
@@ -910,6 +912,7 @@ export type Database = {
           id?: string
           import_batch_id?: string | null
           ingresos_creand?: number | null
+          is_vip?: boolean | null
           latitude: number
           legal_form?: string | null
           longitude: number
@@ -931,6 +934,7 @@ export type Database = {
           vinculacion_entidad_2?: number | null
           vinculacion_entidad_3?: number | null
           vinculacion_modo?: string | null
+          vip_notes?: string | null
           website?: string | null
         }
         Update: {
@@ -948,6 +952,7 @@ export type Database = {
           id?: string
           import_batch_id?: string | null
           ingresos_creand?: number | null
+          is_vip?: boolean | null
           latitude?: number
           legal_form?: string | null
           longitude?: number
@@ -969,6 +974,7 @@ export type Database = {
           vinculacion_entidad_2?: number | null
           vinculacion_entidad_3?: number | null
           vinculacion_modo?: string | null
+          vip_notes?: string | null
           website?: string | null
         }
         Relationships: [
@@ -2740,6 +2746,78 @@ export type Database = {
           },
         ]
       }
+      opportunities: {
+        Row: {
+          actual_close_date: string | null
+          company_id: string
+          contact_id: string | null
+          created_at: string | null
+          description: string | null
+          estimated_close_date: string | null
+          estimated_value: number | null
+          id: string
+          lost_reason: string | null
+          notes: string | null
+          owner_id: string | null
+          probability: number | null
+          products: Json | null
+          stage: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          actual_close_date?: string | null
+          company_id: string
+          contact_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          estimated_close_date?: string | null
+          estimated_value?: number | null
+          id?: string
+          lost_reason?: string | null
+          notes?: string | null
+          owner_id?: string | null
+          probability?: number | null
+          products?: Json | null
+          stage?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          actual_close_date?: string | null
+          company_id?: string
+          contact_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          estimated_close_date?: string | null
+          estimated_value?: number | null
+          id?: string
+          lost_reason?: string | null
+          notes?: string | null
+          owner_id?: string | null
+          probability?: number | null
+          products?: Json | null
+          stage?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunities_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "opportunities_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "company_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           active: boolean | null
@@ -4255,6 +4333,10 @@ export type Database = {
           acciones_acordadas: Json | null
           actualizacion_kyc: string | null
           ahorro_inversion_disponible: number | null
+          ai_generated_at: string | null
+          ai_next_steps: string[] | null
+          ai_risks: string[] | null
+          ai_summary: string | null
           canal: string | null
           cargo_contacto: string | null
           company_id: string
@@ -4311,6 +4393,10 @@ export type Database = {
           acciones_acordadas?: Json | null
           actualizacion_kyc?: string | null
           ahorro_inversion_disponible?: number | null
+          ai_generated_at?: string | null
+          ai_next_steps?: string[] | null
+          ai_risks?: string[] | null
+          ai_summary?: string | null
           canal?: string | null
           cargo_contacto?: string | null
           company_id: string
@@ -4367,6 +4453,10 @@ export type Database = {
           acciones_acordadas?: Json | null
           actualizacion_kyc?: string | null
           ahorro_inversion_disponible?: number | null
+          ai_generated_at?: string | null
+          ai_next_steps?: string[] | null
+          ai_risks?: string[] | null
+          ai_summary?: string | null
           canal?: string | null
           cargo_contacto?: string | null
           company_id?: string
