@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_control_policies: {
+        Row: {
+          access_level: string
+          approved_by: string | null
+          conditions: Json | null
+          created_at: string | null
+          description: string | null
+          effective_from: string | null
+          effective_until: string | null
+          id: string
+          is_active: boolean | null
+          policy_name: string
+          policy_type: string
+          roles_affected: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          access_level: string
+          approved_by?: string | null
+          conditions?: Json | null
+          created_at?: string | null
+          description?: string | null
+          effective_from?: string | null
+          effective_until?: string | null
+          id?: string
+          is_active?: boolean | null
+          policy_name: string
+          policy_type: string
+          roles_affected?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          access_level?: string
+          approved_by?: string | null
+          conditions?: Json | null
+          created_at?: string | null
+          description?: string | null
+          effective_from?: string | null
+          effective_until?: string | null
+          id?: string
+          is_active?: boolean | null
+          policy_name?: string
+          policy_type?: string
+          roles_affected?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       action_plan_steps: {
         Row: {
           completed: boolean
@@ -321,35 +369,116 @@ export type Database = {
           },
         ]
       }
+      asset_inventory: {
+        Row: {
+          asset_name: string
+          asset_type: string
+          backup_policy: string | null
+          classification: string
+          created_at: string | null
+          criticality: string
+          data_types: string[] | null
+          dependencies: string[] | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          last_review_date: string | null
+          location: string | null
+          next_review_date: string | null
+          owner: string | null
+          recovery_point_objective: number | null
+          recovery_time_objective: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          asset_name: string
+          asset_type: string
+          backup_policy?: string | null
+          classification: string
+          created_at?: string | null
+          criticality: string
+          data_types?: string[] | null
+          dependencies?: string[] | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_review_date?: string | null
+          location?: string | null
+          next_review_date?: string | null
+          owner?: string | null
+          recovery_point_objective?: number | null
+          recovery_time_objective?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          asset_name?: string
+          asset_type?: string
+          backup_policy?: string | null
+          classification?: string
+          created_at?: string | null
+          criticality?: string
+          data_types?: string[] | null
+          dependencies?: string[] | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_review_date?: string | null
+          location?: string | null
+          next_review_date?: string | null
+          owner?: string | null
+          recovery_point_objective?: number | null
+          recovery_time_objective?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
+          category: string | null
           created_at: string | null
           id: string
+          ip_address: unknown
           new_data: Json | null
           old_data: Json | null
           record_id: string | null
+          request_id: string | null
+          session_id: string | null
+          severity: string | null
           table_name: string
+          user_agent: string | null
           user_id: string | null
         }
         Insert: {
           action: string
+          category?: string | null
           created_at?: string | null
           id?: string
+          ip_address?: unknown
           new_data?: Json | null
           old_data?: Json | null
           record_id?: string | null
+          request_id?: string | null
+          session_id?: string | null
+          severity?: string | null
           table_name: string
+          user_agent?: string | null
           user_id?: string | null
         }
         Update: {
           action?: string
+          category?: string | null
           created_at?: string | null
           id?: string
+          ip_address?: unknown
           new_data?: Json | null
           old_data?: Json | null
           record_id?: string | null
+          request_id?: string | null
+          session_id?: string | null
+          severity?: string | null
           table_name?: string
+          user_agent?: string | null
           user_id?: string | null
         }
         Relationships: []
@@ -393,6 +522,48 @@ export type Database = {
           session_id?: string
           user_id?: string
           verified_at?: string | null
+        }
+        Relationships: []
+      }
+      backup_verifications: {
+        Row: {
+          backup_date: string
+          backup_type: string
+          created_at: string | null
+          data_integrity_verified: boolean | null
+          id: string
+          notes: string | null
+          restoration_time_seconds: number | null
+          restored_successfully: boolean | null
+          verification_date: string | null
+          verification_result: string
+          verified_by: string | null
+        }
+        Insert: {
+          backup_date: string
+          backup_type: string
+          created_at?: string | null
+          data_integrity_verified?: boolean | null
+          id?: string
+          notes?: string | null
+          restoration_time_seconds?: number | null
+          restored_successfully?: boolean | null
+          verification_date?: string | null
+          verification_result: string
+          verified_by?: string | null
+        }
+        Update: {
+          backup_date?: string
+          backup_type?: string
+          created_at?: string | null
+          data_integrity_verified?: boolean | null
+          id?: string
+          notes?: string | null
+          restoration_time_seconds?: number | null
+          restored_successfully?: boolean | null
+          verification_date?: string | null
+          verification_result?: string
+          verified_by?: string | null
         }
         Relationships: []
       }
@@ -1831,6 +2002,42 @@ export type Database = {
         }
         Relationships: []
       }
+      encrypted_fields: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          encrypted_value: string
+          entity_id: string
+          entity_type: string
+          field_name: string
+          id: string
+          iv: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          encrypted_value: string
+          entity_id: string
+          entity_type: string
+          field_name: string
+          id?: string
+          iv: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          encrypted_value?: string
+          entity_id?: string
+          entity_type?: string
+          field_name?: string
+          id?: string
+          iv?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       equity_changes_statements: {
         Row: {
           adjusted_initial_grants: number | null
@@ -2544,6 +2751,42 @@ export type Database = {
           field_name?: string
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      mfa_requirements: {
+        Row: {
+          created_at: string | null
+          id: string
+          last_mfa_challenge: string | null
+          mfa_bypass_until: string | null
+          mfa_enabled: boolean | null
+          mfa_method: string | null
+          mfa_required: boolean | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          last_mfa_challenge?: string | null
+          mfa_bypass_until?: string | null
+          mfa_enabled?: boolean | null
+          mfa_method?: string | null
+          mfa_required?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          last_mfa_challenge?: string | null
+          mfa_bypass_until?: string | null
+          mfa_enabled?: boolean | null
+          mfa_method?: string | null
+          mfa_required?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -4644,6 +4887,10 @@ export type Database = {
         Returns: boolean
       }
       is_admin_or_superadmin: { Args: { _user_id: string }; Returns: boolean }
+      is_mfa_required_for_role: {
+        Args: { p_user_id: string }
+        Returns: boolean
+      }
       is_visit_gestor: {
         Args: { _user_id: string; _visit_id: string }
         Returns: boolean
@@ -4651,6 +4898,20 @@ export type Database = {
       is_visit_participant: {
         Args: { _user_id: string; _visit_id: string }
         Returns: boolean
+      }
+      log_audit_event: {
+        Args: {
+          p_action: string
+          p_category?: string
+          p_ip_address?: unknown
+          p_new_data?: Json
+          p_old_data?: Json
+          p_record_id?: string
+          p_severity?: string
+          p_table_name: string
+          p_user_agent?: string
+        }
+        Returns: string
       }
       log_security_event: {
         Args: {
