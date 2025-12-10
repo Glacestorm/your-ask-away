@@ -59,6 +59,7 @@ import { ISO27001Dashboard } from '@/components/admin/ISO27001Dashboard';
 import { PipelineBoard } from '@/components/pipeline/PipelineBoard';
 import { InternalAssistantChat } from '@/components/admin/InternalAssistantChat';
 import { AIIntegrationConfig } from '@/components/admin/AIIntegrationConfig';
+import { NotificationCenterManager } from '@/components/admin/NotificationCenterManager';
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
   const { t } = useLanguage();
@@ -379,6 +380,8 @@ const Admin = () => {
           </div>
         );
       case 'notifications':
+        return <NotificationCenterManager />;
+      case 'notification-preferences':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
           return (
             <Card>

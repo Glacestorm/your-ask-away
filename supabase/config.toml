@@ -92,3 +92,6 @@ verify_jwt = false
 
 [functions.internal-assistant-chat]
 verify_jwt = true
+
+[functions.dispatch-webhook]
+verify_jwt = false

@@ -5416,6 +5416,22 @@ export type Database = {
         }
         Returns: undefined
       }
+      publish_notification: {
+        Args: {
+          p_action_label?: string
+          p_action_url?: string
+          p_channel_name: string
+          p_event_type?: string
+          p_message: string
+          p_metadata?: Json
+          p_priority?: number
+          p_severity?: string
+          p_target_roles?: string[]
+          p_target_user_ids?: string[]
+          p_title: string
+        }
+        Returns: string[]
+      }
       search_financial_embeddings: {
         Args: {
           filter_company_id?: string
@@ -5434,6 +5450,14 @@ export type Database = {
           similarity: number
           statement_id: string
         }[]
+      }
+      subscribe_to_channel: {
+        Args: {
+          p_channel_name: string
+          p_delivery_methods?: string[]
+          p_user_id: string
+        }
+        Returns: string
       }
     }
     Enums: {
