@@ -55,6 +55,7 @@ import { CodebaseIndexGenerator } from '@/components/reports/CodebaseIndexGenera
 import { ApplicationStateAnalyzer } from '@/components/admin/ApplicationStateAnalyzer';
 import { DORAComplianceDashboard } from '@/components/admin/DORAComplianceDashboard';
 import { AdaptiveAuthDashboard } from '@/components/admin/AdaptiveAuthDashboard';
+import { PipelineBoard } from '@/components/pipeline/PipelineBoard';
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
   const { t } = useLanguage();
@@ -158,12 +159,15 @@ const Admin = () => {
       case 'app-status': return 'Estat Detallat de l\'Aplicació';
       case 'codebase-index': return 'Índex de Funcionalitats del Codi';
       case 'cascade-goals': return 'Objectius en Cascada';
+      case 'pipeline': return 'Pipeline de Oportunidades';
       default: return '';
     }
   };
 
   const renderContent = () => {
     switch (activeSection) {
+      case 'pipeline':
+        return <PipelineBoard />;
       case 'director':
         if (!isCommercialDirector && !isSuperAdmin && !isCommercialManager) {
           return (
