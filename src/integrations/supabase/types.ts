@@ -2733,6 +2733,89 @@ export type Database = {
           },
         ]
       }
+      internal_assistant_conversations: {
+        Row: {
+          context_type: string
+          created_at: string
+          id: string
+          is_sensitive: boolean | null
+          requires_human_review: boolean | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          context_type?: string
+          created_at?: string
+          id?: string
+          is_sensitive?: boolean | null
+          requires_human_review?: boolean | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          context_type?: string
+          created_at?: string
+          id?: string
+          is_sensitive?: boolean | null
+          requires_human_review?: boolean | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      internal_assistant_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          flagged_for_review: boolean | null
+          id: string
+          is_sensitive: boolean | null
+          metadata: Json | null
+          role: string
+          sources: Json | null
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          flagged_for_review?: boolean | null
+          id?: string
+          is_sensitive?: boolean | null
+          metadata?: Json | null
+          role: string
+          sources?: Json | null
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          flagged_for_review?: boolean | null
+          id?: string
+          is_sensitive?: boolean | null
+          metadata?: Json | null
+          role?: string
+          sources?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "internal_assistant_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "internal_assistant_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kpi_report_history: {
         Row: {
           created_at: string

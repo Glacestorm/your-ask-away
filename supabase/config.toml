@@ -89,3 +89,6 @@ verify_jwt = true
 
 [functions.open-banking-api]
 verify_jwt = false
+
+[functions.internal-assistant-chat]
+verify_jwt = true
