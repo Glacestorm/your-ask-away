@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { PresenceProvider } from "@/contexts/PresenceContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { PageStreamingSkeleton, StreamingBoundary } from "@/components/performance/StreamingBoundary";
+import { MFAEnforcementDialog } from "@/components/security/MFAEnforcementDialog";
 
 // Lazy load pages with React 19 preload hints for better streaming SSR
 const Auth = lazy(() => import("./pages/Auth"));
@@ -41,6 +42,7 @@ const App = () => (
           <AuthProvider>
             <PresenceProvider>
               <TooltipProvider>
+                <MFAEnforcementDialog />
                 <Toaster />
                 <Sonner />
                 {/* React 19 Streaming SSR with progressive Suspense boundaries */}

@@ -192,6 +192,7 @@ export function AdminSidebar({
                 </SidebarMenuButton>
               </SidebarMenuItem>
               {(isCommercialDirector || isSuperAdmin || isCommercialManager) && (
+              <>
               <SidebarMenuItem>
                 <SidebarMenuButton
                   onClick={() => onSectionChange('dora-compliance')}
@@ -210,6 +211,25 @@ export function AdminSidebar({
                   </span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => onSectionChange('iso27001')}
+                  isActive={isActive('iso27001')}
+                  className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
+                  tooltip={!open ? {
+                    children: 'ISO 27001',
+                    className: "bg-gradient-to-br from-blue-500/10 to-blue-500/5 border-blue-500/20"
+                  } : undefined}
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-blue-500/50 group-hover:rotate-3">
+                    <Shield className="h-5 w-5 text-white transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3" />
+                  </div>
+                  <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
+                    ISO 27001
+                  </span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              </>
               )}
               {/* AMA - Autenticación Multifactor Adaptativa - visible para admin roles */}
               <SidebarMenuItem>

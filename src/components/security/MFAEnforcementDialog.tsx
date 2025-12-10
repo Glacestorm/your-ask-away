@@ -1,6 +1,7 @@
 /**
  * MFA Enforcement Dialog
  * Prompts admin users to set up MFA
+ * Automatically shows when MFA is required
  */
 
 import React, { useState } from 'react';
@@ -18,32 +19,41 @@ import { Shield, Fingerprint, Smartphone, Clock, AlertTriangle } from 'lucide-re
 import { useMFAEnforcement } from '@/hooks/useMFAEnforcement';
 import { PasskeyManager } from '@/components/auth/PasskeyManager';
 
-interface MFAEnforcementDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
-
-export function MFAEnforcementDialog({ open, onOpenChange }: MFAEnforcementDialogProps) {
-  const { dismissMFAReminder, completeMFASetup } = useMFAEnforcement();
+export function MFAEnforcementDialog() {
+  const { showMFASetup, dismissMFAReminder, completeMFASetup } = useMFAEnforcement();
   const [setupMode, setSetupMode] = useState<'choose' | 'webauthn'>('choose');
   const [isLoading, setIsLoading] = useState(false);
+  const [localOpen, setLocalOpen] = useState(true);
 
   const handlePasskeyRegistered = async () => {
     setIsLoading(true);
     await completeMFASetup('webauthn');
     setIsLoading(false);
-    onOpenChange(false);
+    setLocalOpen(false);
   };
 
   const handleRemindLater = async (hours: number) => {
     setIsLoading(true);
     await dismissMFAReminder(hours);
     setIsLoading(false);
-    onOpenChange(false);
+    setLocalOpen(false);
   };
 
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      // Allow closing but remind in 1 hour
+      handleRemindLater(1);
+    }
+    setLocalOpen(open);
+  };
+
+  // Only show if MFA setup is required and dialog hasn't been dismissed
+  if (!showMFASetup || !localOpen) {
+    return null;
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={true} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -91,7 +101,7 @@ export function MFAEnforcementDialog({ open, onOpenChange }: MFAEnforcementDialo
           <div className="py-4">
             <PasskeyManager />
             <div className="mt-4 flex gap-2">
-              <Button variant="default" onClick={handlePasskeyRegistered}>
+              <Button variant="default" onClick={handlePasskeyRegistered} disabled={isLoading}>
                 He configurat la meva Passkey
               </Button>
               <Button variant="ghost" onClick={() => setSetupMode('choose')}>
