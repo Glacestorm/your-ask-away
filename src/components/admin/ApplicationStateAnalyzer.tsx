@@ -65,6 +65,10 @@ interface ComplianceRegulation {
   description: string;
   implementedFeatures: string[];
   pendingActions: string[];
+  compliancePercentage?: number;
+  totalRequirements?: number;
+  implementedRequirements?: number;
+  jurisdiction?: string;
   implementationPhases?: {
     phase: number;
     name: string;
@@ -1335,10 +1339,19 @@ export function ApplicationStateAnalyzer() {
                       <AccordionItem key={idx} value={`compliant-${idx}`}>
                         <AccordionTrigger className="hover:no-underline">
                           <div className="flex items-center gap-3 text-left w-full">
-                            <Badge className="bg-green-500 text-white shrink-0">COMPLERT</Badge>
+                            <div className="flex flex-col items-center shrink-0">
+                              <Badge className={`${reg.compliancePercentage === 100 ? 'bg-green-500' : reg.compliancePercentage && reg.compliancePercentage >= 90 ? 'bg-green-400' : 'bg-green-500'} text-white min-w-[60px] justify-center`}>
+                                {reg.compliancePercentage || 100}%
+                              </Badge>
+                              {reg.totalRequirements && (
+                                <span className="text-[10px] text-muted-foreground mt-0.5">
+                                  {reg.implementedRequirements}/{reg.totalRequirements}
+                                </span>
+                              )}
+                            </div>
                             <div className="flex-1">
                               <div className="font-medium">{reg.name}</div>
-                              <div className="text-xs text-muted-foreground">{reg.description}</div>
+                              <div className="text-xs text-muted-foreground">{reg.jurisdiction && `[${reg.jurisdiction}] `}{reg.description}</div>
                             </div>
                           </div>
                         </AccordionTrigger>
@@ -1424,11 +1437,21 @@ export function ApplicationStateAnalyzer() {
                         <AccordionItem key={idx} value={`partial-${idx}`}>
                           <AccordionTrigger className="hover:no-underline">
                             <div className="flex items-center gap-3 text-left w-full">
-                              <Badge variant="outline" className="border-yellow-500 text-yellow-600 shrink-0">EN PROGRÉS</Badge>
+                              <div className="flex flex-col items-center shrink-0">
+                                <Badge className={`${reg.compliancePercentage && reg.compliancePercentage >= 90 ? 'bg-yellow-400' : reg.compliancePercentage && reg.compliancePercentage >= 75 ? 'bg-yellow-500' : reg.compliancePercentage && reg.compliancePercentage >= 50 ? 'bg-orange-500' : 'bg-red-500'} text-white min-w-[60px] justify-center font-bold`}>
+                                  {reg.compliancePercentage || 0}%
+                                </Badge>
+                                {reg.totalRequirements && (
+                                  <span className="text-[10px] text-muted-foreground mt-0.5">
+                                    {reg.implementedRequirements}/{reg.totalRequirements}
+                                  </span>
+                                )}
+                              </div>
                               <div className="flex-1">
                                 <div className="font-medium">{reg.name}</div>
-                                <div className="text-xs text-muted-foreground">{reg.description}</div>
+                                <div className="text-xs text-muted-foreground">{reg.jurisdiction && `[${reg.jurisdiction}] `}{reg.description}</div>
                               </div>
+                              <Progress value={reg.compliancePercentage || 0} className="w-24 h-2" />
                             </div>
                           </AccordionTrigger>
                           <AccordionContent className="pt-4">
