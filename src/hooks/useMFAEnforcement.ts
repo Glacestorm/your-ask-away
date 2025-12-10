@@ -63,7 +63,7 @@ export function useMFAEnforcement(): UseMFAEnforcementReturn {
         .from('user_passkeys' as any)
         .select('id')
         .eq('user_id', user.id)
-        .eq('is_active', true);
+        .eq('active', true);
       const passkeys = passkeysResult?.data as any[] | null;
 
       const hasPasskeys = passkeys && passkeys.length > 0;
