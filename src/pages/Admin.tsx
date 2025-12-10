@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigationHistory } from '@/hooks/useNavigationHistory';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Activity, History, Shield } from 'lucide-react';
+import { ArrowLeft, Activity, History, Shield, Rocket } from 'lucide-react';
 import { toast } from 'sonner';
 import VisitSheets from '@/pages/VisitSheets';
 import { GlobalNavHeader } from '@/components/GlobalNavHeader';
@@ -621,6 +621,21 @@ const Admin = () => {
                   <div>
                     <h3 className="font-semibold">Selector de Visió</h3>
                     <p className="text-sm text-muted-foreground">Escull el rol per visualitzar</p>
+                  </div>
+                </CardContent>
+              </Card>
+              {/* Pipeline de Oportunidades */}
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-all border-2 border-orange-500/20 bg-gradient-to-br from-orange-500/5 to-orange-500/10"
+                onClick={() => handleSectionChange('pipeline')}
+              >
+                <CardContent className="p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                    <Rocket className="h-5 w-5 text-orange-500" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Pipeline d'Oportunitats</h3>
+                    <p className="text-sm text-muted-foreground">Gestiona oportunitats comercials</p>
                   </div>
                 </CardContent>
               </Card>
