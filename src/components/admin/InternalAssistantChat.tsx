@@ -7,11 +7,14 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Bot, Send, Loader2, AlertTriangle, Shield, MessageSquare,
-  Building, FileText, Package, BookOpen, History, Trash2, RotateCcw
+  Building, FileText, Package, BookOpen, History, Trash2, RotateCcw,
+  Mic, MicOff, Volume2, VolumeX, ClipboardList, Users, Settings
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { useVoiceChat } from '@/hooks/useVoiceChat';
+import { AssistantKnowledgeManager } from './AssistantKnowledgeManager';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,6 +49,8 @@ const CONTEXT_TYPES = [
   { value: 'regulations', label: 'Normativas', icon: FileText },
   { value: 'products', label: 'Productos', icon: Package },
   { value: 'procedures', label: 'Procedimientos', icon: BookOpen },
+  { value: 'internal_forms', label: 'Form. Internos', icon: ClipboardList },
+  { value: 'client_forms', label: 'Form. Clientes', icon: Users },
 ];
 
 export function InternalAssistantChat() {
@@ -53,10 +58,28 @@ export function InternalAssistantChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [contextType, setContextType] = useState('general');
+  const [contextType, setContextType] = useState('clients');
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const [autoSpeak, setAutoSpeak] = useState(false);
+  const [showKnowledgeManager, setShowKnowledgeManager] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Voice chat hook
+  const { 
+    isListening, 
+    isSpeaking, 
+    isSupported: voiceSupported,
+    transcript,
+    toggleListening,
+    speak,
+    stopSpeaking
+  } = useVoiceChat({
+    language: 'es-ES',
+    onTranscript: (text) => {
+      setInput(text);
+    },
+  });
 
   useEffect(() => {
     if (user) {
@@ -69,6 +92,13 @@ export function InternalAssistantChat() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Update input when transcript changes
+  useEffect(() => {
+    if (transcript) {
+      setInput(transcript);
+    }
+  }, [transcript]);
 
   const loadConversations = async () => {
     if (!user) return;
@@ -225,6 +255,11 @@ export function InternalAssistantChat() {
       setMessages(prev => [...prev, assistantMessage]);
       await saveMessage(convId, assistantMessage);
 
+      // Auto-speak response if enabled
+      if (autoSpeak && voiceSupported) {
+        speak(data.message);
+      }
+
       // Update conversation if sensitive
       if (data.requiresReview) {
         await supabase
@@ -290,6 +325,29 @@ export function InternalAssistantChat() {
     }
   };
 
+  const handleSpeakMessage = (content: string) => {
+    if (isSpeaking) {
+      stopSpeaking();
+    } else {
+      speak(content);
+    }
+  };
+
+  if (showKnowledgeManager) {
+    return (
+      <div className="space-y-4">
+        <Button 
+          variant="outline" 
+          onClick={() => setShowKnowledgeManager(false)}
+          className="mb-4"
+        >
+          ← Volver al Chat
+        </Button>
+        <AssistantKnowledgeManager />
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 h-[calc(100vh-12rem)]">
       {/* Sidebar - Conversations History */}
@@ -344,8 +402,17 @@ export function InternalAssistantChat() {
               </AlertDialogContent>
             </AlertDialog>
           )}
+
+          <Button 
+            variant="ghost" 
+            className="w-full mb-2 text-muted-foreground"
+            onClick={() => setShowKnowledgeManager(true)}
+          >
+            <Settings className="h-4 w-4 mr-2" />
+            Gestionar Conocimiento
+          </Button>
           
-          <ScrollArea className="h-[calc(100vh-20rem)]">
+          <ScrollArea className="h-[calc(100vh-22rem)]">
             <div className="space-y-1">
               {conversations.map((conv) => (
                 <div
@@ -387,7 +454,7 @@ export function InternalAssistantChat() {
       {/* Main Chat Area */}
       <Card className="lg:col-span-3 flex flex-col">
         <CardHeader className="py-3 border-b">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <CardTitle className="text-lg flex items-center gap-2">
               <Bot className="h-5 w-5 text-primary" />
               Asistente IA Interno
@@ -396,9 +463,25 @@ export function InternalAssistantChat() {
               </Badge>
             </CardTitle>
             
-            {/* Context Type Selector */}
+            {/* Voice Controls */}
+            {voiceSupported && (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={autoSpeak ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setAutoSpeak(!autoSpeak)}
+                  title={autoSpeak ? "Desactivar respuestas por voz" : "Activar respuestas por voz"}
+                >
+                  {autoSpeak ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+                </Button>
+              </div>
+            )}
+          </div>
+          
+          {/* Context Type Selector */}
+          <div className="mt-2">
             <Tabs value={contextType} onValueChange={setContextType}>
-              <TabsList className="h-8">
+              <TabsList className="h-8 flex-wrap">
                 {CONTEXT_TYPES.map((type) => (
                   <TabsTrigger 
                     key={type.value} 
@@ -433,8 +516,8 @@ export function InternalAssistantChat() {
                 <Bot className="h-12 w-12 mb-4 opacity-50" />
                 <h3 className="text-lg font-medium">¡Hola! Soy tu asistente interno</h3>
                 <p className="text-sm max-w-md mt-2">
-                  Puedo ayudarte a buscar información sobre clientes, normativas, productos y procedimientos. 
-                  ¿En qué puedo ayudarte hoy?
+                  Puedo ayudarte a buscar información sobre clientes, normativas, productos, procedimientos y formularios. 
+                  {voiceSupported && ' También puedes hablarme usando el micrófono.'}
                 </p>
                 <div className="grid grid-cols-2 gap-2 mt-4 max-w-lg">
                   <Button 
@@ -461,9 +544,9 @@ export function InternalAssistantChat() {
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => setInput('¿Qué dice la normativa PSD2 sobre pagos?')}
+                    onClick={() => setInput('¿Qué formularios necesita rellenar un nuevo cliente?')}
                   >
-                    Normativa PSD2
+                    Formularios cliente
                   </Button>
                 </div>
               </div>
@@ -497,6 +580,27 @@ export function InternalAssistantChat() {
                           ))}
                         </div>
                       )}
+                      {/* Voice button for assistant messages */}
+                      {message.role === 'assistant' && voiceSupported && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="mt-2 h-6 text-xs"
+                          onClick={() => handleSpeakMessage(message.content)}
+                        >
+                          {isSpeaking ? (
+                            <>
+                              <VolumeX className="h-3 w-3 mr-1" />
+                              Detener
+                            </>
+                          ) : (
+                            <>
+                              <Volume2 className="h-3 w-3 mr-1" />
+                              Escuchar
+                            </>
+                          )}
+                        </Button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -514,15 +618,36 @@ export function InternalAssistantChat() {
           {/* Input Area */}
           <div className="p-4 border-t">
             <div className="flex gap-2">
+              {/* Voice Input Button */}
+              {voiceSupported && (
+                <Button
+                  variant={isListening ? "destructive" : "outline"}
+                  size="icon"
+                  onClick={toggleListening}
+                  disabled={isLoading}
+                  title={isListening ? "Detener grabación" : "Hablar"}
+                  className={isListening ? "animate-pulse" : ""}
+                >
+                  {isListening ? (
+                    <MicOff className="h-4 w-4" />
+                  ) : (
+                    <Mic className="h-4 w-4" />
+                  )}
+                </Button>
+              )}
+              
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Escribe tu consulta..."
+                placeholder={isListening ? "Escuchando..." : "Escribe tu consulta..."}
                 disabled={isLoading}
                 className="flex-1"
               />
-              <Button onClick={sendMessage} disabled={isLoading || !input.trim()}>
+              <Button 
+                onClick={sendMessage} 
+                disabled={isLoading || !input.trim()}
+              >
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
@@ -530,9 +655,11 @@ export function InternalAssistantChat() {
                 )}
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground mt-2 text-center">
-              Todas las conversaciones son registradas para auditoría • GDPR - Uso interno • Políticas internas de seguridad
-            </p>
+            {isListening && (
+              <p className="text-xs text-muted-foreground mt-2 text-center animate-pulse">
+                🎙️ Grabando... Habla ahora
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>

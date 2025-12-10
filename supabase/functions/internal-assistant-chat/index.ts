@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,7 +20,6 @@ interface RequestBody {
   userOffice?: string;
 }
 
-// Keywords that trigger sensitive content flagging
 const SENSITIVE_KEYWORDS = [
   'contraseña', 'password', 'pin', 'clave secreta',
   'número de cuenta', 'account number', 'iban',
@@ -32,8 +32,60 @@ function detectSensitiveContent(text: string): boolean {
   return SENSITIVE_KEYWORDS.some(keyword => lowerText.includes(keyword));
 }
 
+async function getContextData(supabase: any, contextType: string, userQuery: string): Promise<string> {
+  let contextData = '';
+  
+  try {
+    if (contextType === 'clients') {
+      // Search companies based on query
+      const { data: companies } = await supabase
+        .from('companies')
+        .select('name, sector, address, phone, email, cnae, facturacion_anual, client_type')
+        .textSearch('name', userQuery.split(' ').slice(0, 3).join(' & '), { type: 'websearch' })
+        .limit(5);
+      
+      if (companies && companies.length > 0) {
+        contextData = `\n\nDATOS DE CLIENTES ENCONTRADOS:\n${JSON.stringify(companies, null, 2)}`;
+      }
+    } else if (contextType === 'products') {
+      const { data: products } = await supabase
+        .from('products')
+        .select('name, description, category, active')
+        .eq('active', true)
+        .limit(20);
+      
+      if (products && products.length > 0) {
+        contextData = `\n\nPRODUCTOS BANCARIOS DISPONIBLES:\n${JSON.stringify(products, null, 2)}`;
+      }
+    }
+    
+    // Get knowledge documents for the context type
+    const docType = contextType === 'internal_forms' ? 'formularios_internos' : 
+                   contextType === 'client_forms' ? 'formularios_clientes' :
+                   contextType === 'regulations' ? 'normativas' :
+                   contextType === 'procedures' ? 'procedimientos' :
+                   contextType === 'products' ? 'productos' : null;
+    
+    if (docType) {
+      const { data: docs } = await supabase
+        .from('assistant_knowledge_documents')
+        .select('title, description, content')
+        .eq('document_type', docType)
+        .eq('is_active', true)
+        .limit(5);
+      
+      if (docs && docs.length > 0) {
+        contextData += `\n\nDOCUMENTACIÓN RELEVANTE:\n${docs.map((d: any) => `- ${d.title}: ${d.content || d.description || ''}`).join('\n')}`;
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching context data:', error);
+  }
+  
+  return contextData;
+}
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -50,17 +102,23 @@ serve(async (req) => {
 
     console.log(`[Internal Assistant] User: ${userId}, Role: ${userRole}, Context: ${contextType}`);
 
-    // Build context-aware system prompt
-    const systemPrompt = buildSystemPrompt(userRole, contextType, userOffice);
+    // Create Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Prepare messages for AI
+    // Get context-specific data from database
+    const lastUserMessage = messages.filter(m => m.role === 'user').pop();
+    const contextData = lastUserMessage ? await getContextData(supabase, contextType, lastUserMessage.content) : '';
+
+    // Build context-aware system prompt
+    const systemPrompt = buildSystemPrompt(userRole, contextType, userOffice) + contextData;
+
     const aiMessages = [
       { role: 'system', content: systemPrompt },
       ...messages.map(m => ({ role: m.role, content: m.content }))
     ];
 
-    // Check for sensitive content in the last user message
-    const lastUserMessage = messages.filter(m => m.role === 'user').pop();
     const isSensitive = lastUserMessage ? detectSensitiveContent(lastUserMessage.content) : false;
 
     // Call Lovable AI API (Gemini)
