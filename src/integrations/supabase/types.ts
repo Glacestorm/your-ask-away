@@ -3050,6 +3050,39 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_channels: {
+        Row: {
+          channel_name: string
+          channel_type: string
+          config: Json | null
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          channel_name: string
+          channel_type?: string
+          config?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          channel_name?: string
+          channel_type?: string
+          config?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       notification_preferences: {
         Row: {
           alert_type: string
@@ -3083,11 +3116,112 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_subscriptions: {
+        Row: {
+          channel_id: string
+          created_at: string | null
+          delivery_methods: string[] | null
+          filters: Json | null
+          id: string
+          is_active: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          channel_id: string
+          created_at?: string | null
+          delivery_methods?: string[] | null
+          filters?: Json | null
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          channel_id?: string
+          created_at?: string | null
+          delivery_methods?: string[] | null
+          filters?: Json | null
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_subscriptions_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "notification_channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_webhooks: {
+        Row: {
+          channel_id: string | null
+          created_at: string | null
+          created_by: string | null
+          events: string[] | null
+          failure_count: number | null
+          headers: Json | null
+          id: string
+          is_active: boolean | null
+          last_triggered_at: string | null
+          name: string
+          retry_config: Json | null
+          secret_key: string | null
+          updated_at: string | null
+          url: string
+        }
+        Insert: {
+          channel_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          events?: string[] | null
+          failure_count?: number | null
+          headers?: Json | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          name: string
+          retry_config?: Json | null
+          secret_key?: string | null
+          updated_at?: string | null
+          url: string
+        }
+        Update: {
+          channel_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          events?: string[] | null
+          failure_count?: number | null
+          headers?: Json | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          name?: string
+          retry_config?: Json | null
+          secret_key?: string | null
+          updated_at?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_webhooks_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "notification_channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           action_label: string | null
           action_url: string | null
           alert_id: string | null
+          channel_id: string | null
           created_at: string | null
           delivery_status: Json | null
           event_type: string | null
@@ -3108,6 +3242,7 @@ export type Database = {
           action_label?: string | null
           action_url?: string | null
           alert_id?: string | null
+          channel_id?: string | null
           created_at?: string | null
           delivery_status?: Json | null
           event_type?: string | null
@@ -3128,6 +3263,7 @@ export type Database = {
           action_label?: string | null
           action_url?: string | null
           alert_id?: string | null
+          channel_id?: string | null
           created_at?: string | null
           delivery_status?: Json | null
           event_type?: string | null
@@ -3150,6 +3286,13 @@ export type Database = {
             columns: ["alert_id"]
             isOneToOne: false
             referencedRelation: "alerts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "notification_channels"
             referencedColumns: ["id"]
           },
         ]
@@ -5131,6 +5274,63 @@ export type Database = {
             columns: ["gestor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webhook_delivery_logs: {
+        Row: {
+          created_at: string | null
+          duration_ms: number | null
+          error_message: string | null
+          id: string
+          notification_id: string | null
+          payload: Json
+          response_body: string | null
+          response_status: number | null
+          retry_count: number | null
+          success: boolean | null
+          webhook_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          notification_id?: string | null
+          payload: Json
+          response_body?: string | null
+          response_status?: number | null
+          retry_count?: number | null
+          success?: boolean | null
+          webhook_id: string
+        }
+        Update: {
+          created_at?: string | null
+          duration_ms?: number | null
+          error_message?: string | null
+          id?: string
+          notification_id?: string | null
+          payload?: Json
+          response_body?: string | null
+          response_status?: number | null
+          retry_count?: number | null
+          success?: boolean | null
+          webhook_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_delivery_logs_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "webhook_delivery_logs_webhook_id_fkey"
+            columns: ["webhook_id"]
+            isOneToOne: false
+            referencedRelation: "notification_webhooks"
             referencedColumns: ["id"]
           },
         ]
