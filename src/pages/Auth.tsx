@@ -295,12 +295,14 @@ const Auth = () => {
       </div>
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-3 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-            <MapPin className="h-8 w-8 text-primary" />
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-emerald-500 shadow-lg">
+            <span className="text-2xl font-bold text-white">O</span>
           </div>
-          <CardTitle className="text-2xl font-bold">{t('auth.title')}</CardTitle>
+          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-emerald-500 bg-clip-text text-transparent">
+            ObelixIA
+          </CardTitle>
           <CardDescription>
-            {t('auth.subtitle')}
+            CRM Bancario Inteligente - Inicia sesión para continuar
           </CardDescription>
         </CardHeader>
         

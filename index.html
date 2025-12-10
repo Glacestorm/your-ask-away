@@ -1,11 +1,12 @@
 <!doctype html>
-<html lang="en" class="theme-day">
+<html lang="es" class="theme-day">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Creand CRM - Gestió Comercial Bancària</title>
-    <meta name="description" content="Plataforma CRM per a la gestió comercial bancària de Creand. Optimitzada per a Core Web Vitals." />
-    <meta name="author" content="Creand" />
+    <title>ObelixIA - CRM Bancario Inteligente</title>
+    <meta name="description" content="ObelixIA: Plataforma CRM bancaria con inteligencia artificial para gestión comercial, análisis financiero y cumplimiento normativo." />
+    <meta name="author" content="ObelixIA" />
+    <meta name="keywords" content="CRM bancario, inteligencia artificial, gestión comercial, análisis financiero, banca, fintech" />
     
     <!-- OWASP Security Headers -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
@@ -17,11 +18,11 @@
     <!-- Content Security Policy (CSP) - OWASP Top 10 2024 & PSD3 Compliance -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
-      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com;
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://plausible.io;
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       font-src 'self' https://fonts.gstatic.com data:;
       img-src 'self' data: blob: https: http:;
-      connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.ipify.org https://nominatim.openstreetmap.org https://api.maptiler.com https://fonts.googleapis.com https://fonts.gstatic.com;
+      connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.ipify.org https://nominatim.openstreetmap.org https://api.maptiler.com https://fonts.googleapis.com https://fonts.gstatic.com https://plausible.io;
       frame-src 'self';
       object-src 'none';
       base-uri 'self';
@@ -47,10 +48,11 @@
       body { 
         margin: 0; 
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        background-color: #fff;
-        color: #0a0a0a;
+        background-color: #0f172a;
+        color: #f1f5f9;
       }
-      .theme-night body { background-color: #0a0a0a; color: #fafafa; }
+      .theme-day body { background-color: #f8fafc; color: #0f172a; }
+      .theme-night body { background-color: #0f172a; color: #f1f5f9; }
       .theme-creand body { background-color: #fff; color: #222; }
       .theme-aurora body { background-color: #f5f3ff; color: #1a1040; }
       #root { min-height: 100vh; }
@@ -59,35 +61,47 @@
         position: fixed;
         inset: 0;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
         background: inherit;
         z-index: 9999;
         transition: opacity 0.3s ease;
+        gap: 16px;
       }
       .initial-loader.hidden { opacity: 0; pointer-events: none; }
+      .loader-brand {
+        font-size: 28px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #1e40af, #10b981);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        letter-spacing: -0.02em;
+      }
       .loader-spinner {
         width: 40px;
         height: 40px;
-        border: 3px solid #e5e7eb;
-        border-top-color: #3b82f6;
+        border: 3px solid #334155;
+        border-top-color: #10b981;
         border-radius: 50%;
         animation: spin 0.8s linear infinite;
       }
+      .theme-day .loader-spinner { border-color: #e2e8f0; border-top-color: #1e40af; }
       .theme-creand .loader-spinner { border-top-color: #3d9970; }
       .theme-aurora .loader-spinner { border-top-color: #8b5cf6; }
       @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 
     <!-- Open Graph -->
-    <meta property="og:title" content="Creand CRM - Gestió Comercial Bancària" />
-    <meta property="og:description" content="Plataforma CRM per a la gestió comercial bancària de Creand" />
+    <meta property="og:title" content="ObelixIA - CRM Bancario Inteligente" />
+    <meta property="og:description" content="Plataforma CRM bancaria con IA para gestión comercial y análisis financiero" />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Creand" />
+    <meta name="twitter:site" content="@ObelixIA" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
     
     <!-- Professional Typography with font-display: swap for CLS prevention -->
@@ -135,8 +149,12 @@
   <body>
     <!-- Initial loader for perceived performance -->
     <div id="initial-loader" class="initial-loader">
+      <div class="loader-brand">ObelixIA</div>
       <div class="loader-spinner"></div>
     </div>
+    
+    <!-- Plausible Analytics - Privacy-friendly -->
+    <script defer data-domain="obelixia.app" src="https://plausible.io/js/script.js"></script>
     
     <div id="root"></div>
     

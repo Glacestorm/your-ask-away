@@ -1,73 +1,127 @@
-# Welcome to your Lovable project
+# ObelixIA - CRM Bancario Inteligente
 
-## Project info
+<div align="center">
+  <h3>🏦 Plataforma CRM Bancaria con Inteligencia Artificial</h3>
+  <p>Gestión comercial, análisis financiero y cumplimiento normativo para entidades bancarias</p>
+</div>
 
-**URL**: https://lovable.dev/projects/097982c4-a8b2-4928-a288-52efa43bb59d
+---
 
-## How can I edit this code?
+## 📋 ¿Qué es ObelixIA?
 
-There are several ways of editing your application.
+**ObelixIA** es una plataforma CRM (Customer Relationship Management) diseñada específicamente para el sector bancario. Combina gestión comercial tradicional con capacidades de inteligencia artificial para optimizar la relación con clientes, el análisis financiero y el cumplimiento regulatorio.
 
-**Use Lovable**
+### Características principales
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/097982c4-a8b2-4928-a288-52efa43bb59d) and start prompting.
+- 🗺️ **Gestión Geográfica**: Visualización y gestión de clientes en mapa interactivo
+- 📊 **Análisis Financiero**: Estados financieros, ratios, y análisis de riesgo
+- 🎯 **Objetivos y Metas**: Sistema de KPIs y seguimiento de rendimiento comercial
+- 📅 **Calendario de Visitas**: Planificación y registro de visitas comerciales
+- 🔐 **Seguridad Bancaria**: Autenticación multifactor, cumplimiento PSD3, DORA/NIS2
+- 🤖 **IA Integrada**: Análisis predictivo y recomendaciones automatizadas
+- 📱 **Diseño Responsive**: Funciona en desktop, tablet y móvil
 
-Changes made via Lovable will be committed automatically to this repo.
+---
 
-**Use your preferred IDE**
+## 🛠️ Tecnología
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+| Categoría | Tecnología |
+|-----------|------------|
+| **Frontend** | React 19, TypeScript, Vite |
+| **Estilos** | Tailwind CSS, shadcn/ui |
+| **Backend** | Supabase (PostgreSQL, Auth, Edge Functions) |
+| **Mapas** | MapLibre GL |
+| **Gráficos** | Recharts |
+| **IA** | Lovable AI (Gemini 2.5) |
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+---
 
-Follow these steps:
+## 🚀 Inicio Rápido
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Prerrequisitos
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- Node.js 18+ 
+- npm o bun
 
-# Step 3: Install the necessary dependencies.
-npm i
+### Instalación local
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
+# 1. Clonar el repositorio
+git clone <URL_DEL_REPOSITORIO>
+
+# 2. Entrar al directorio
+cd obelixia
+
+# 3. Instalar dependencias
+npm install
+
+# 4. Iniciar servidor de desarrollo
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+La aplicación estará disponible en `http://localhost:5173`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Variables de entorno
 
-**Use GitHub Codespaces**
+La aplicación requiere conexión a Supabase. Las variables se configuran automáticamente en el entorno de Lovable.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+---
 
-## What technologies are used for this project?
+## 📂 Estructura del Proyecto
 
-This project is built with:
+```
+src/
+├── components/         # Componentes React reutilizables
+│   ├── admin/         # Paneles de administración
+│   ├── auth/          # Autenticación y seguridad
+│   ├── company/       # Gestión de empresas/clientes
+│   ├── dashboard/     # Dashboards y métricas
+│   ├── map/           # Componentes del mapa
+│   └── ui/            # Componentes UI base (shadcn)
+├── contexts/          # Contextos React (tema, idioma, etc.)
+├── hooks/             # Custom hooks
+├── lib/               # Utilidades y helpers
+├── locales/           # Traducciones (es, en, ca, fr)
+├── pages/             # Páginas de la aplicación
+└── integrations/      # Integraciones (Supabase)
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+supabase/
+├── functions/         # Edge Functions (backend serverless)
+└── migrations/        # Migraciones de base de datos
+```
 
-## How can I deploy this project?
+---
 
-Simply open [Lovable](https://lovable.dev/projects/097982c4-a8b2-4928-a288-52efa43bb59d) and click on Share -> Publish.
+## 🔐 Seguridad y Cumplimiento
 
-## Can I connect a custom domain to my Lovable project?
+ObelixIA implementa múltiples capas de seguridad para cumplir con normativas bancarias:
 
-Yes, you can!
+- **PSD3/SCA**: Autenticación fuerte del cliente
+- **DORA/NIS2**: Resiliencia operativa digital
+- **ISO 27001**: Marco de seguridad de la información
+- **GDPR/APDA**: Protección de datos personales
+- **Basel III/IV**: Métricas de capital y liquidez
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+---
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## 🌐 Demo
+
+Accede a la demo en: [Tu URL de Lovable]
+
+---
+
+## 📄 Licencia
+
+Propietario. Todos los derechos reservados.
+
+---
+
+## 📞 Contacto
+
+Para más información sobre ObelixIA, contacta con el equipo de desarrollo.
+
+---
+
+<div align="center">
+  <strong>ObelixIA</strong> - CRM Bancario Inteligente con IA
+</div>

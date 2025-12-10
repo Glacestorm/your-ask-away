@@ -38,50 +38,50 @@ interface MenuOption {
 // Feature menu options (excluding role-based dashboards)
 const featureMenuOptions: MenuOption[] = [
   {
-    title: 'Administració',
-    description: 'Panell d\'administració del sistema',
+    title: 'Administración',
+    description: 'Panel de administración del sistema',
     icon: Settings,
     path: '/admin?section=administration',
     roles: ['superadmin', 'director_comercial', 'responsable_comercial']
   },
   {
     title: 'Mapa',
-    description: 'Visualització geogràfica d\'empreses',
+    description: 'Visualización geográfica de clientes',
     icon: Map,
     path: '/admin?section=map',
     roles: ['superadmin', 'admin', 'user', 'director_comercial', 'director_oficina', 'responsable_comercial']
   },
   {
-    title: 'Comptabilitat',
-    description: 'Gestió comptable i estats financers',
+    title: 'Contabilidad',
+    description: 'Gestión contable y estados financieros',
     icon: Calculator,
     path: '/admin?section=accounting&view=menu',
     roles: ['superadmin', 'admin', 'user', 'director_comercial', 'director_oficina', 'responsable_comercial']
   },
   {
-    title: 'Calendari de Visites',
-    description: 'Calendari compartit de visites',
+    title: 'Calendario de Visitas',
+    description: 'Calendario compartido de visitas comerciales',
     icon: CalendarDays,
     path: '/admin?section=shared-calendar',
     roles: ['superadmin', 'admin', 'user', 'director_comercial', 'director_oficina', 'responsable_comercial']
   },
   {
-    title: 'Mètriques i Anàlisi',
-    description: 'Anàlisi detallat de mètriques',
+    title: 'Métricas y Análisis',
+    description: 'Análisis detallado de métricas comerciales',
     icon: BarChart3,
     path: '/admin?section=visits',
     roles: ['superadmin', 'admin', 'director_comercial', 'director_oficina', 'responsable_comercial']
   },
   {
-    title: 'Gestió de Dades',
-    description: 'Administració d\'empreses i productes',
+    title: 'Gestión de Datos',
+    description: 'Administración de empresas y productos',
     icon: Package,
     path: '/admin?section=companies',
     roles: ['superadmin', 'admin', 'responsable_comercial']
   },
   {
-    title: 'Configuració',
-    description: 'Configuració del sistema',
+    title: 'Configuración',
+    description: 'Configuración del sistema',
     icon: Activity,
     path: '/admin?section=colors',
     roles: ['superadmin', 'admin', 'responsable_comercial']
@@ -216,17 +216,25 @@ const Home = () => {
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">
-                {user?.email}
-              </p>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-emerald-500 flex items-center justify-center shadow-lg">
+                <span className="text-lg font-bold text-white">O</span>
+              </div>
+              <div>
+                <h2 className="text-lg font-bold bg-gradient-to-r from-primary to-emerald-500 bg-clip-text text-transparent">
+                  ObelixIA
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  {user?.email}
+                </p>
+              </div>
             </div>
-            <div className="absolute left-1/2 -translate-x-1/2 text-center">
-              <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                Benvingut/da - Panell de Control
+            <div className="text-center hidden md:block">
+              <h1 className="text-xl font-bold text-foreground">
+                Panel de Control
               </h1>
               <p className="text-xs text-muted-foreground">
-                Selecciona una opció per accedir a les funcionalitats
+                Selecciona una opción para acceder
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -239,7 +247,7 @@ const Home = () => {
                 className="gap-2"
               >
                 <LogOut className="h-4 w-4" />
-                Tancar sessió
+                <span className="hidden sm:inline">Cerrar sesión</span>
               </Button>
             </div>
           </div>
@@ -265,10 +273,10 @@ const Home = () => {
                   </div>
                   <div>
                     <CardTitle className="text-2xl group-hover:text-primary transition-colors">
-                      El Meu Tauler
+                      Mi Panel
                     </CardTitle>
                     <CardDescription className="text-base mt-1">
-                      Accedeix al teu tauler personalitzat
+                      Accede a tu panel personalizado
                     </CardDescription>
                   </div>
                 </div>
@@ -310,7 +318,7 @@ const Home = () => {
 
           {/* Quick Actions */}
           <div className="mt-16 pt-8 border-t">
-            <h3 className="text-xl font-semibold mb-6">Accions Ràpides</h3>
+            <h3 className="text-xl font-semibold mb-6">Acciones Rápidas</h3>
             <div className="flex flex-wrap gap-4">
               <Button
                 variant="outline"
@@ -318,7 +326,7 @@ const Home = () => {
                 className="gap-2"
               >
                 <BarChart3 className="h-4 w-4" />
-                Tauler General
+                Panel General
               </Button>
               <Button
                 variant="outline"
@@ -326,7 +334,7 @@ const Home = () => {
                 className="gap-2"
               >
                 <Users className="h-4 w-4" />
-                El Meu Perfil
+                Mi Perfil
               </Button>
             </div>
           </div>
@@ -338,7 +346,7 @@ const Home = () => {
         <div className="container mx-auto px-6 py-6">
           <div className="flex flex-col items-center gap-4">
             <div className="flex flex-col items-center gap-3">
-              <span className="text-sm text-muted-foreground font-medium">Els meus rols:</span>
+              <span className="text-sm text-muted-foreground font-medium">Mis roles:</span>
               <div className="flex flex-wrap items-center justify-center gap-3">
                 {allUserRoles.map((role) => {
                   const config = roleConfig[role] || roleConfig.user;
@@ -356,14 +364,15 @@ const Home = () => {
                 })}
                 {allUserRoles.length === 0 && (
                   <Badge variant="outline" className="text-sm">
-                    Carregant rols...
+                    Cargando roles...
                   </Badge>
                 )}
               </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              © 2024 Sistema de Gestió Comercial. Tots els drets reservats.
-            </p>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span className="font-semibold bg-gradient-to-r from-primary to-emerald-500 bg-clip-text text-transparent">ObelixIA</span>
+              <span>© 2024 - CRM Bancario Inteligente</span>
+            </div>
           </div>
         </div>
       </footer>
