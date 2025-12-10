@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigationHistory } from '@/hooks/useNavigationHistory';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Activity, History, Shield, Rocket, Bot } from 'lucide-react';
+import { ArrowLeft, Activity, History, Shield, Rocket, Bot, BarChart3, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import VisitSheets from '@/pages/VisitSheets';
 import { GlobalNavHeader } from '@/components/GlobalNavHeader';
@@ -60,6 +60,8 @@ import { PipelineBoard } from '@/components/pipeline/PipelineBoard';
 import { InternalAssistantChat } from '@/components/admin/InternalAssistantChat';
 import { AIIntegrationConfig } from '@/components/admin/AIIntegrationConfig';
 import { NotificationCenterManager } from '@/components/admin/NotificationCenterManager';
+import { RFMDashboard } from '@/components/admin/RFMDashboard';
+import { CustomerSegmentationPanel } from '@/components/admin/CustomerSegmentationPanel';
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
   const { t } = useLanguage();
@@ -165,6 +167,8 @@ const Admin = () => {
       case 'cascade-goals': return 'Objectius en Cascada';
       case 'pipeline': return 'Pipeline de Oportunidades';
       case 'ai-config': return 'Configuració IA Interna';
+      case 'rfm-analysis': return 'Anàlisi RFM';
+      case 'customer-segmentation': return 'Segmentació de Clients ML';
       default: return '';
     }
   };
@@ -630,6 +634,28 @@ const Admin = () => {
           );
         }
         return <AIIntegrationConfig />;
+      case 'rfm-analysis':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager && !isOfficeDirector) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <RFMDashboard />;
+      case 'customer-segmentation':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager && !isOfficeDirector) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <CustomerSegmentationPanel />;
 case 'administration':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
           return (
@@ -702,6 +728,34 @@ case 'administration':
                     <div>
                       <h4 className="font-medium text-sm">TPV</h4>
                       <p className="text-xs text-muted-foreground">Terminals i objectius</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-violet-500/20 bg-gradient-to-br from-violet-500/5 to-violet-500/10"
+                  onClick={() => handleSectionChange('rfm-analysis')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-violet-500/20 flex items-center justify-center">
+                      <BarChart3 className="h-4 w-4 text-violet-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm">Anàlisi RFM</h4>
+                      <p className="text-xs text-muted-foreground">Recency, Frequency, Monetary</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-pink-500/20 bg-gradient-to-br from-pink-500/5 to-pink-500/10"
+                  onClick={() => handleSectionChange('customer-segmentation')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-pink-500/20 flex items-center justify-center">
+                      <Users className="h-4 w-4 text-pink-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm">Segmentació ML</h4>
+                      <p className="text-xs text-muted-foreground">SVM + CART</p>
                     </div>
                   </CardContent>
                 </Card>
