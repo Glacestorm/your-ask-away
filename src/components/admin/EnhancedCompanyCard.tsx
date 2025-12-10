@@ -6,7 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { 
   MapPin, Phone, Mail, Users, TrendingUp, Eye, Trash2, Pencil, 
   Calendar, Building2, Euro, Briefcase, Globe, FileText, Clock,
-  CheckCircle2, AlertCircle, Package
+  CheckCircle2, AlertCircle, Package, Star
 } from 'lucide-react';
 import { CompanyWithDetails } from '@/types/database';
 import { CompanyDataCompleteness } from './CompanyDataCompleteness';
@@ -113,8 +113,25 @@ export function EnhancedCompanyCard({
             </div>
           </div>
 
-          {/* Status and Client Type Badges */}
+          {/* Status, VIP and Client Type Badges */}
           <div className="flex items-center gap-2 flex-wrap">
+            {/* VIP Badge */}
+            {(company as any).is_vip && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge className="text-xs font-semibold shadow-sm bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 gap-1">
+                      <Star className="h-3 w-3 fill-current" />
+                      VIP
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {(company as any).vip_notes || 'Client VIP'}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            
             <Badge 
               className="text-xs font-semibold shadow-sm"
               style={{ 

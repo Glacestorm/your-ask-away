@@ -26,6 +26,7 @@ import {
 import { SignaturePad } from '@/components/visits/SignaturePad';
 import { VisitSheetPhotos } from '@/components/visits/VisitSheetPhotos';
 import { VisitSheetTemplateSelector } from '@/components/visits/VisitSheetTemplateSelector';
+import { AISummaryButton } from '@/components/visits/AISummaryButton';
 import { format } from 'date-fns';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -1852,6 +1853,21 @@ export function QuickVisitSheetCard({ className, editSheet, onEditComplete }: Qu
                     <div className="space-y-2">
                       <Label>Notas de la Reunión</Label>
                       <Textarea value={observaciones.notasReunion} onChange={e => setObservaciones(p => ({ ...p, notasReunion: e.target.value }))} rows={3} />
+                      {/* AI Summary Button - ObelixIA */}
+                      <AISummaryButton 
+                        notes={observaciones.notasReunion || observaciones.observacionesGestor || ''}
+                        visitSheetId={existingSheetId || editSheetId || undefined}
+                        companyName={selectedCompany?.name}
+                        onSummaryGenerated={(summary, nextSteps, risks) => {
+                          setObservaciones(p => ({
+                            ...p,
+                            observacionesGestor: p.observacionesGestor 
+                              ? `${p.observacionesGestor}\n\n--- Resum ObelixIA ---\n${summary}\n\nPròxims passos:\n${nextSteps.map((s, i) => `${i+1}. ${s}`).join('\n')}\n\nRiscos:\n${risks.map((r, i) => `${i+1}. ${r}`).join('\n')}`
+                              : `--- Resum ObelixIA ---\n${summary}\n\nPròxims passos:\n${nextSteps.map((s, i) => `${i+1}. ${s}`).join('\n')}\n\nRiscos:\n${risks.map((r, i) => `${i+1}. ${r}`).join('\n')}`
+                          }));
+                          toast.success('Resum generat amb ObelixIA');
+                        }}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label>Observaciones del Gestor</Label>
