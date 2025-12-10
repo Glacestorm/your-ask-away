@@ -58,6 +58,7 @@ import { AdaptiveAuthDashboard } from '@/components/admin/AdaptiveAuthDashboard'
 import { ISO27001Dashboard } from '@/components/admin/ISO27001Dashboard';
 import { PipelineBoard } from '@/components/pipeline/PipelineBoard';
 import { InternalAssistantChat } from '@/components/admin/InternalAssistantChat';
+import { AIIntegrationConfig } from '@/components/admin/AIIntegrationConfig';
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
   const { t } = useLanguage();
@@ -162,6 +163,7 @@ const Admin = () => {
       case 'codebase-index': return 'Índex de Funcionalitats del Codi';
       case 'cascade-goals': return 'Objectius en Cascada';
       case 'pipeline': return 'Pipeline de Oportunidades';
+      case 'ai-config': return 'Configuració IA Interna';
       default: return '';
     }
   };
@@ -614,6 +616,17 @@ const Admin = () => {
           );
         }
         return <CascadeGoalsManager />;
+      case 'ai-config':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <AIIntegrationConfig />;
 case 'administration':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
           return (
@@ -783,6 +796,20 @@ case 'administration':
                     <div>
                       <h4 className="font-medium text-sm">Notificacions</h4>
                       <p className="text-xs text-muted-foreground">Preferències</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-purple-500/10"
+                  onClick={() => handleSectionChange('ai-config')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                      <Bot className="h-4 w-4 text-purple-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-purple-700 dark:text-purple-400">IA Interna</h4>
+                      <p className="text-xs text-muted-foreground">Integració model IA banc</p>
                     </div>
                   </CardContent>
                 </Card>
