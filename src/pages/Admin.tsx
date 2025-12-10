@@ -602,7 +602,7 @@ const Admin = () => {
           );
         }
         return <CascadeGoalsManager />;
-      case 'administration':
+case 'administration':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
           return (
             <Card>
@@ -613,273 +613,329 @@ const Admin = () => {
           );
         }
         return (
-          <div className="rounded-lg border bg-card p-6">
-            <div className="mb-6">
+          <div className="rounded-lg border bg-card p-6 space-y-8">
+            <div>
               <h2 className="text-2xl font-bold">Administració</h2>
               <p className="text-sm text-muted-foreground">
                 Gestió d'usuaris, productes, objectius i configuració del sistema
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* Role View Selector - Available for director_comercial and responsable_comercial */}
-              <Card 
-                className="cursor-pointer hover:shadow-md transition-all border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10"
-                onClick={() => handleSectionChange('role-selector')}
-              >
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                    <Activity className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Selector de Visió</h3>
-                    <p className="text-sm text-muted-foreground">Escull el rol per visualitzar</p>
-                  </div>
-                </CardContent>
-              </Card>
-              {/* Pipeline de Oportunidades */}
-              <Card 
-                className="cursor-pointer hover:shadow-md transition-all border-2 border-orange-500/20 bg-gradient-to-br from-orange-500/5 to-orange-500/10"
-                onClick={() => handleSectionChange('pipeline')}
-              >
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
-                    <Rocket className="h-5 w-5 text-orange-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Pipeline d'Oportunitats</h3>
-                    <p className="text-sm text-muted-foreground">Gestiona oportunitats comercials</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('map-config')}>
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                    <Activity className="h-5 w-5 text-blue-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Configuració del Mapa</h3>
-                    <p className="text-sm text-muted-foreground">Personalitzar capes i tooltip del mapa</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('users')}>
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Activity className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Gestió d'Usuaris</h3>
-                    <p className="text-sm text-muted-foreground">Administrar usuaris del sistema</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('products')}>
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Activity className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Productes</h3>
-                    <p className="text-sm text-muted-foreground">Gestionar catàleg de productes</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('tpv')}>
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                    <Activity className="h-5 w-5 text-emerald-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Gestió TPV</h3>
-                    <p className="text-sm text-muted-foreground">Administrar terminals de punt de venda</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('tpv-goals')}>
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Activity className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Objectius TPV</h3>
-                    <p className="text-sm text-muted-foreground">Configurar objectius de TPV</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('bulk-goals')}>
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Activity className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Assignar Objectius</h3>
-                    <p className="text-sm text-muted-foreground">Assignació massiva d'objectius</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('goals-progress')}>
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Activity className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Seguiment d'Objectius</h3>
-                    <p className="text-sm text-muted-foreground">Progrés en temps real</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('concepts')}>
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Activity className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Conceptes</h3>
-                    <p className="text-sm text-muted-foreground">Gestionar conceptes del sistema</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('templates')}>
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Activity className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Plantilles de Correu</h3>
-                    <p className="text-sm text-muted-foreground">Editar plantilles d'email</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('colors')}>
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Activity className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Colors d'Estat</h3>
-                    <p className="text-sm text-muted-foreground">Configurar colors per estats</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('alerts')}>
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Activity className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Alertes</h3>
-                    <p className="text-sm text-muted-foreground">Gestionar alertes automàtiques</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('notifications')}>
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Activity className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Notificacions</h3>
-                    <p className="text-sm text-muted-foreground">Preferències de notificacions</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('health')}>
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-green-500/10 flex items-center justify-center">
-                    <Activity className="h-5 w-5 text-green-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Salut del Sistema</h3>
-                    <p className="text-sm text-muted-foreground">Monitoratge de l'estat del sistema</p>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('import-history')}>
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-orange-500/10 flex items-center justify-center">
-                    <History className="h-5 w-5 text-orange-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Historial d'Importacions</h3>
-                    <p className="text-sm text-muted-foreground">Registre d'importacions d'empreses</p>
-                  </div>
-                </CardContent>
-              </Card>
-              {/* Technical Documentation */}
-              <Card 
-                className="cursor-pointer hover:shadow-md transition-all border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-emerald-500/10"
-                onClick={() => handleSectionChange('technical-docs')}
-              >
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-                    <Activity className="h-5 w-5 text-emerald-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-emerald-700 dark:text-emerald-400">Documentació Tècnica</h3>
-                    <p className="text-sm text-muted-foreground">Generar PDF tècnico-funcional complet</p>
-                  </div>
-                </CardContent>
-              </Card>
-              {/* Competitor Gap Analysis */}
-              <Card 
-                className="cursor-pointer hover:shadow-md transition-all border-2 border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-purple-500/10"
-                onClick={() => handleSectionChange('competitor-gap')}
-              >
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                    <Activity className="h-5 w-5 text-purple-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-purple-700 dark:text-purple-400">Anàlisi de Competència</h3>
-                    <p className="text-sm text-muted-foreground">Comparar amb competidors i pla de millores</p>
-                  </div>
-                </CardContent>
-              </Card>
-              {/* App Detailed Status */}
-              <Card 
-                className="cursor-pointer hover:shadow-md transition-all border-2 border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-blue-500/10"
-                onClick={() => handleSectionChange('app-status')}
-              >
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                    <Activity className="h-5 w-5 text-blue-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-blue-700 dark:text-blue-400">Estat de l'Aplicació</h3>
-                    <p className="text-sm text-muted-foreground">Detall de mòduls complerts i pendents</p>
-                  </div>
-                </CardContent>
-              </Card>
-              {/* Codebase Index Generator */}
-              <Card 
-                className="cursor-pointer hover:shadow-md transition-all border-2 border-teal-500/30 bg-gradient-to-br from-teal-500/5 to-teal-500/10"
-                onClick={() => handleSectionChange('codebase-index')}
-              >
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-teal-500/20 flex items-center justify-center">
-                    <Activity className="h-5 w-5 text-teal-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-teal-700 dark:text-teal-400">Índex Funcionalitats</h3>
-                    <p className="text-sm text-muted-foreground">Documentació detallada del codi</p>
-                  </div>
-                </CardContent>
-              </Card>
-              {/* Geocoding Recalculator */}
-              <Card 
-                className="cursor-pointer hover:shadow-md transition-all border-2 border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-amber-500/10"
-                onClick={() => handleSectionChange('geocoding')}
-              >
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                    <Activity className="h-5 w-5 text-amber-500" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-amber-700 dark:text-amber-400">Recalcular Geolocalització</h3>
-                    <p className="text-sm text-muted-foreground">Actualitzar coordenades de totes les empreses</p>
-                  </div>
-                </CardContent>
-              </Card>
+
+            {/* SECCIÓ 1: Visió i Comercial */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-primary flex items-center gap-2">
+                <Rocket className="h-5 w-5" /> Comercial i Oportunitats
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10"
+                  onClick={() => handleSectionChange('role-selector')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-primary/20 flex items-center justify-center">
+                      <Activity className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm">Selector de Visió</h4>
+                      <p className="text-xs text-muted-foreground">Escull rol</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-orange-500/20 bg-gradient-to-br from-orange-500/5 to-orange-500/10"
+                  onClick={() => handleSectionChange('pipeline')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                      <Rocket className="h-4 w-4 text-orange-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm">Pipeline Oportunitats</h4>
+                      <p className="text-xs text-muted-foreground">CRM comercial</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('bulk-goals')}>
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+                      <Activity className="h-4 w-4 text-indigo-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm">Objectius</h4>
+                      <p className="text-xs text-muted-foreground">Assignar i seguiment</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('tpv')}>
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                      <Activity className="h-4 w-4 text-emerald-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm">TPV</h4>
+                      <p className="text-xs text-muted-foreground">Terminals i objectius</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* SECCIÓ 2: Configuració del Sistema */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400 flex items-center gap-2">
+                <Activity className="h-5 w-5" /> Configuració del Sistema
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('users')}>
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                      <Activity className="h-4 w-4 text-blue-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm">Usuaris</h4>
+                      <p className="text-xs text-muted-foreground">Gestió d'usuaris</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('products')}>
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                      <Activity className="h-4 w-4 text-blue-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm">Productes</h4>
+                      <p className="text-xs text-muted-foreground">Catàleg bancari</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('map-config')}>
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                      <Activity className="h-4 w-4 text-blue-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm">Mapa</h4>
+                      <p className="text-xs text-muted-foreground">Capes i tooltips</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('concepts')}>
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                      <Activity className="h-4 w-4 text-blue-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm">Conceptes</h4>
+                      <p className="text-xs text-muted-foreground">Definicions sistema</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('templates')}>
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                      <Activity className="h-4 w-4 text-blue-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm">Plantilles Email</h4>
+                      <p className="text-xs text-muted-foreground">Templates correu</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('colors')}>
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                      <Activity className="h-4 w-4 text-blue-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm">Colors d'Estat</h4>
+                      <p className="text-xs text-muted-foreground">Configurar colors</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('alerts')}>
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                      <Activity className="h-4 w-4 text-amber-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm">Alertes</h4>
+                      <p className="text-xs text-muted-foreground">Automàtiques</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('notifications')}>
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                      <Activity className="h-4 w-4 text-amber-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm">Notificacions</h4>
+                      <p className="text-xs text-muted-foreground">Preferències</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* SECCIÓ 3: Seguretat i Compliance */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-red-600 dark:text-red-400 flex items-center gap-2">
+                <Shield className="h-5 w-5" /> Seguretat i Compliance
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-red-500/30 bg-gradient-to-br from-red-500/5 to-red-500/10"
+                  onClick={() => handleSectionChange('dora-compliance')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-red-500/20 flex items-center justify-center">
+                      <Shield className="h-4 w-4 text-red-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-red-700 dark:text-red-400">DORA / NIS2</h4>
+                      <p className="text-xs text-muted-foreground">Resiliència digital</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-indigo-500/30 bg-gradient-to-br from-indigo-500/5 to-indigo-500/10"
+                  onClick={() => handleSectionChange('iso27001')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-indigo-500/20 flex items-center justify-center">
+                      <Shield className="h-4 w-4 text-indigo-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-indigo-700 dark:text-indigo-400">ISO 27001</h4>
+                      <p className="text-xs text-muted-foreground">Annex A controls</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-cyan-500/30 bg-gradient-to-br from-cyan-500/5 to-cyan-500/10"
+                  onClick={() => handleSectionChange('adaptive-auth')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+                      <Shield className="h-4 w-4 text-cyan-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-cyan-700 dark:text-cyan-400">AMA / MFA</h4>
+                      <p className="text-xs text-muted-foreground">Autenticació adaptativa</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('health')}>
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-green-500/10 flex items-center justify-center">
+                      <Activity className="h-4 w-4 text-green-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm">Salut Sistema</h4>
+                      <p className="text-xs text-muted-foreground">Monitoratge AI</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* SECCIÓ 4: Documentació i Anàlisi */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
+                <Activity className="h-5 w-5" /> Documentació i Anàlisi
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-emerald-500/10"
+                  onClick={() => handleSectionChange('technical-docs')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                      <Activity className="h-4 w-4 text-emerald-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-emerald-700 dark:text-emerald-400">Doc. Tècnica</h4>
+                      <p className="text-xs text-muted-foreground">PDF complet</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-purple-500/10"
+                  onClick={() => handleSectionChange('competitor-gap')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                      <Activity className="h-4 w-4 text-purple-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-purple-700 dark:text-purple-400">Competència</h4>
+                      <p className="text-xs text-muted-foreground">Gap analysis</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-blue-500/10"
+                  onClick={() => handleSectionChange('app-status')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                      <Activity className="h-4 w-4 text-blue-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-blue-700 dark:text-blue-400">Estat App</h4>
+                      <p className="text-xs text-muted-foreground">Mòduls i progrés</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-teal-500/30 bg-gradient-to-br from-teal-500/5 to-teal-500/10"
+                  onClick={() => handleSectionChange('codebase-index')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-teal-500/20 flex items-center justify-center">
+                      <Activity className="h-4 w-4 text-teal-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-teal-700 dark:text-teal-400">Índex Codi</h4>
+                      <p className="text-xs text-muted-foreground">Funcionalitats</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* SECCIÓ 5: Eines i Historial */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-2">
+                <History className="h-5 w-5" /> Eines i Historial
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-amber-500/10"
+                  onClick={() => handleSectionChange('geocoding')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                      <Activity className="h-4 w-4 text-amber-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-amber-700 dark:text-amber-400">Geolocalització</h4>
+                      <p className="text-xs text-muted-foreground">Recalcular coords</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('import-history')}>
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-orange-500/10 flex items-center justify-center">
+                      <History className="h-4 w-4 text-orange-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm">Importacions</h4>
+                      <p className="text-xs text-muted-foreground">Historial empreses</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </div>
         );
