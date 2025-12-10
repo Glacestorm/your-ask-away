@@ -1,15 +1,23 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { validateCronOrServiceAuth, corsHeaders } from "../_shared/cron-auth.ts";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+
+  // Validate authentication - only cron jobs, service role, or authenticated users can access
+  const authResult = validateCronOrServiceAuth(req);
+  if (!authResult.valid) {
+    console.error('Authentication failed:', authResult.error);
+    return new Response(JSON.stringify({ error: authResult.error }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+
+  console.log(`Authenticated request from source: ${authResult.source}`);
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
