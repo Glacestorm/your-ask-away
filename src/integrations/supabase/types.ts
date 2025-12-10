@@ -483,6 +483,54 @@ export type Database = {
         }
         Relationships: []
       }
+      assistant_knowledge_documents: {
+        Row: {
+          content: string | null
+          content_type: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          document_type: string
+          external_url: string | null
+          file_url: string | null
+          id: string
+          is_active: boolean | null
+          metadata: Json | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content?: string | null
+          content_type: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          document_type: string
+          external_url?: string | null
+          file_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string | null
+          content_type?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          document_type?: string
+          external_url?: string | null
+          file_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
