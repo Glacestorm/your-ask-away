@@ -55,6 +55,7 @@ import { CodebaseIndexGenerator } from '@/components/reports/CodebaseIndexGenera
 import { ApplicationStateAnalyzer } from '@/components/admin/ApplicationStateAnalyzer';
 import { DORAComplianceDashboard } from '@/components/admin/DORAComplianceDashboard';
 import { AdaptiveAuthDashboard } from '@/components/admin/AdaptiveAuthDashboard';
+import { ISO27001Dashboard } from '@/components/admin/ISO27001Dashboard';
 import { PipelineBoard } from '@/components/pipeline/PipelineBoard';
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
@@ -579,6 +580,17 @@ const Admin = () => {
           );
         }
         return <AdaptiveAuthDashboard />;
+      case 'iso27001':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <ISO27001Dashboard />;
       case 'cascade-goals':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager && !isOfficeDirector) {
           return (
