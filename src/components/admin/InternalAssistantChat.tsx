@@ -714,6 +714,17 @@ export function InternalAssistantChat() {
                 🎙️ Grabando... Habla ahora
               </p>
             )}
+            
+            {/* Legal Audit Notice */}
+            <div className="mt-3 pt-3 border-t border-muted">
+              <p className="text-[10px] text-muted-foreground text-center leading-relaxed">
+                <Shield className="h-3 w-3 inline-block mr-1 align-middle" />
+                <strong>Aviso de Retención de Datos:</strong> De conformidad con el Reglamento (UE) 2016/679 (RGPD), la Llei 29/2021 de Protecció de Dades d'Andorra (APDA) y las normativas bancarias aplicables, 
+                todas las conversaciones con este asistente son registradas y almacenadas con fines de auditoría interna, control de cumplimiento normativo y supervisión de calidad. 
+                Los datos serán conservados durante el período legalmente establecido y podrán ser accedidos exclusivamente por el personal autorizado de auditoría y cumplimiento. 
+                El uso de este servicio implica su consentimiento a dicho tratamiento.
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
