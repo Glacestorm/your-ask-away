@@ -3085,37 +3085,61 @@ export type Database = {
       }
       notifications: {
         Row: {
+          action_label: string | null
+          action_url: string | null
           alert_id: string | null
           created_at: string | null
+          delivery_status: Json | null
+          event_type: string | null
+          expires_at: string | null
           id: string
           is_read: boolean | null
           message: string
+          metadata: Json | null
           metric_value: number | null
+          priority: number | null
           severity: string
+          source_system: string | null
           threshold_value: number | null
           title: string
           user_id: string | null
         }
         Insert: {
+          action_label?: string | null
+          action_url?: string | null
           alert_id?: string | null
           created_at?: string | null
+          delivery_status?: Json | null
+          event_type?: string | null
+          expires_at?: string | null
           id?: string
           is_read?: boolean | null
           message: string
+          metadata?: Json | null
           metric_value?: number | null
+          priority?: number | null
           severity: string
+          source_system?: string | null
           threshold_value?: number | null
           title: string
           user_id?: string | null
         }
         Update: {
+          action_label?: string | null
+          action_url?: string | null
           alert_id?: string | null
           created_at?: string | null
+          delivery_status?: Json | null
+          event_type?: string | null
+          expires_at?: string | null
           id?: string
           is_read?: boolean | null
           message?: string
+          metadata?: Json | null
           metric_value?: number | null
+          priority?: number | null
           severity?: string
+          source_system?: string | null
           threshold_value?: number | null
           title?: string
           user_id?: string | null
