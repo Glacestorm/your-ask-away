@@ -105,7 +105,6 @@ export function useWebAuthn(): UseWebAuthnReturn {
           { alg: -257, type: 'public-key' }, // RS256
         ],
         authenticatorSelection: {
-          authenticatorAttachment: 'platform',
           userVerification: 'preferred',
           residentKey: 'preferred',
           requireResidentKey: false,
