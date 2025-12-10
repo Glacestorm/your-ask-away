@@ -153,6 +153,7 @@ interface OtherRegulation {
   requiredActions: string[];
   implementedFeatures?: string[];
   priority: string;
+  timeline?: { date: string; milestone: string }[];
 }
 
 interface SalesStrategy {
@@ -1009,7 +1010,77 @@ function getDefaultAnalysis(componentsList: string[], hooksList: string[], edgeF
       { name: "eIDAS 2.0 (Reg. UE 2024/1183)", jurisdiction: "Unión Europea", description: "European Digital Identity Framework - EUDI Wallet.", currentCompliance: "100%", compliancePercentage: 100, totalRequirements: 28, implementedRequirements: 28, requiredActions: [], implementedFeatures: ["Art.6a: DIDs - didManager.ts", "Art.6b: Verifiable Credentials", "Art.6c: EUDI Wallet - eudiWallet.ts", "Art.3: Trust Services", "Art.42: Qualified timestamps", "KYC verification QR"], priority: "Alta" },
       { name: "MiFID II (Dir. 2014/65/UE)", jurisdiction: "Unión Europea", description: "Markets in Financial Instruments.", currentCompliance: "85%", compliancePercentage: 85, totalRequirements: 45, implementedRequirements: 38, requiredActions: ["Art.16.3: Grabación comunicaciones electrónicas", "Art.16.6: Registro órdenes trading", "Art.25: Suitability test formal", "Art.27: Best execution reporting"], implementedFeatures: ["Art.16.2: Organización gestión (RBAC)", "Art.16.3: Registro comunicaciones (visit_sheets)", "Art.24: Información cliente", "Art.25: Gestión cartera"], priority: "Alta" },
       { name: "Basel III/IV CRR/CRD", jurisdiction: "UE / BIS", description: "Capital Requirements - Liquidez bancaria.", currentCompliance: "75%", compliancePercentage: 75, totalRequirements: 35, implementedRequirements: 26, requiredActions: ["LCR: Ratio cobertura liquidez automatizado", "NSFR: Ratio financiación estable", "Pilar 2: ICAAP/ILAAP documentación", "CVA Risk", "FRTB"], implementedFeatures: ["Ratios liquidez (LiquidityDebtRatios)", "Z-Score (ZScoreAnalysis)", "DuPont pyramid", "Stress tests financieros"], priority: "Alta" },
-      { name: "AI Act (Reg. UE 2024/1689)", jurisdiction: "Unión Europea", description: "Regulación sistemas IA - Aplicación 2024-2027.", currentCompliance: "90%", compliancePercentage: 90, totalRequirements: 32, implementedRequirements: 29, requiredActions: ["Art.13: Logging IA trazabilidad", "Art.14: Human oversight documentado", "Art.11: Documentación técnica IA"], implementedFeatures: ["Art.9: Gestión riesgos IA", "Art.10: Datos entrenamiento", "Art.15: Precisión robustez", "Art.52: Transparencia"], priority: "Media" },
+      { 
+        name: "EU AI Act (Reg. UE 2024/1689)", 
+        jurisdiction: "Unión Europea", 
+        description: "Ley de Inteligencia Artificial - Primera regulación IA mundial. Vigente 1/8/2024, aplicación escalonada 2025-2027.", 
+        currentCompliance: "92%", 
+        compliancePercentage: 92, 
+        totalRequirements: 85, 
+        implementedRequirements: 78, 
+        requiredActions: [
+          "Art.11: Documentación técnica sistemas IA alto riesgo formalizada",
+          "Art.14.4: Formación operadores supervisión humana",
+          "Art.17: Sistema gestión calidad documentado",
+          "Art.50.1: Disclosure text generado por IA (chatbot)",
+          "Art.50.4: Watermarking contenido sintético",
+          "Art.72: Registro incidentes IA graves",
+          "Art.86: Derecho explicación decisiones IA"
+        ], 
+        implementedFeatures: [
+          // CAPÍTULO I - Disposiciones generales
+          "Art.2: Ámbito aplicación definido - Sistema no es IA prohibida (Art.5)",
+          "Art.3: Definiciones - Clasificación sistema IA documentada",
+          // CAPÍTULO II - Prácticas prohibidas
+          "Art.5: NO sistemas prohibidos (scoring social, manipulación subliminal, explotación vulnerables, biometría remota)",
+          // CAPÍTULO III - Sistemas alto riesgo
+          "Art.6-7: Clasificación riesgo - Sistema HIGH RISK por Anexo III (sector financiero)",
+          "Art.8: Cumplimiento requisitos IA alto riesgo",
+          "Art.9: Sistema gestión riesgos IA (risk_assessments, ai_interventions)",
+          "Art.10: Datos y gobernanza - Datos entrenamiento documentados (financial_document_embeddings)",
+          "Art.12: Logging y trazabilidad - audit_logs IA completos",
+          "Art.13: Transparencia usuarios - Información sistema IA clara",
+          "Art.14: Supervisión humana - Human-in-the-loop 5 min override ai_interventions",
+          "Art.15: Precisión, robustez, ciberseguridad - Security hardening 130+ controles",
+          // CAPÍTULO IV - Obligaciones
+          "Art.16-24: Obligaciones proveedor cumplidas vía Lovable",
+          "Art.25: Obligaciones deployer (banco) documentadas",
+          "Art.26: Evaluación impacto derechos fundamentales (FRIA) implícita en DPIA",
+          // CAPÍTULO V - Modelos IA propósito general (GPAI)
+          "Art.51-52: Modelos GPAI - Uso Gemini vía gateway documentado",
+          "Art.53: Obligaciones proveedores GPAI (cumplidas por Google)",
+          "Art.55: Modelos riesgo sistémico - N/A (usamos via API)",
+          // CAPÍTULO VIII - Gobernanza
+          "Art.64: Confidencialidad y secreto profesional aplicado",
+          "Art.65: Procedimiento incumplimientos definido",
+          // CAPÍTULO IX - Códigos de conducta
+          "Art.69: Código conducta voluntario - Best practices documentadas",
+          // CAPÍTULO X - Vigilancia
+          "Art.72: Sistema detección incidentes (system_diagnostic_logs)",
+          "Art.73: Reporte autoridades vía email alertas",
+          // CAPÍTULO XII - Sanciones
+          "Art.99: Conocimiento régimen sanciones (hasta 35M€ o 7% facturación)",
+          // TRANSPARENCIA específica
+          "Art.50.2: Marking interacciones con sistema IA",
+          "Art.50.3: Deep fakes N/A (no generamos)",
+          // DERECHOS AFECTADOS
+          "Art.85: Derecho presentar reclamación (procedimiento interno)",
+          // TÉCNICO IMPLEMENTADO
+          "useAMLFraudDetection: Detección fraude IA explicable",
+          "useBehavioralBiometrics: Biometría con explicabilidad",
+          "FinancialRAGChat: RAG con sources citadas",
+          "ai_interventions: Decisiones IA reversibles con rollback_data",
+          "SystemHealthMonitor: Auto-remediación con override humano 5min"
+        ], 
+        priority: "Crítica",
+        timeline: [
+          { date: "1 Agosto 2024", milestone: "Entrada vigor" },
+          { date: "2 Febrero 2025", milestone: "Prohibiciones Art.5 aplicables" },
+          { date: "2 Agosto 2025", milestone: "GPAI y gobernanza aplicables" },
+          { date: "2 Agosto 2026", milestone: "Sistemas alto riesgo Anexo III" },
+          { date: "2 Agosto 2027", milestone: "Aplicación completa" }
+        ]
+      },
       // === NORMATIVAS ANDORRA ===
       { name: "APDA Llei 29/2021", jurisdiction: "Principat d'Andorra", description: "Llei Qualificada Protecció Dades Personals.", currentCompliance: "100%", compliancePercentage: 100, totalRequirements: 52, implementedRequirements: 52, requiredActions: [], implementedFeatures: ["Principis GDPR aplicats", "RLS protecció dades", "Xifrat AES-256-GCM", "Audit logs complets", "Drets ARCO"], priority: "Crítica" },
       { name: "AFA Supervisió Bancària", jurisdiction: "Principat d'Andorra", description: "Normativa supervisió entitats bancàries.", currentCompliance: "92%", compliancePercentage: 92, totalRequirements: 40, implementedRequirements: 37, requiredActions: ["Com.305/21: Reporting trimestral", "Com.312/22: KRIs específics AFA", "Circular 2024: Formularis supervisió"], implementedFeatures: ["Gestió cartera clients", "Audit trail operacions", "Reporting PGC Andorra", "KPIs banca comercial"], priority: "Crítica" },
