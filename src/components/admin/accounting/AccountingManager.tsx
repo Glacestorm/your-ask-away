@@ -57,6 +57,7 @@ import EconomicFinancialDashboard from './EconomicFinancialDashboard';
 import CashFlowAnalysisWrapper from './CashFlowAnalysisWrapper';
 import WorkingCapitalAnalysisWrapper from './WorkingCapitalAnalysisWrapper';
 import LongTermFinancialAnalysisWrapper from './LongTermFinancialAnalysisWrapper';
+import AutomaticFinancialAnalysis from './AutomaticFinancialAnalysis';
 
 interface Company {
   id: string;
@@ -1217,8 +1218,8 @@ const AccountingManager = () => {
       case 'analisis-ia':
         if (needsCompanySelection) return <CompanySelectionPrompt />;
         return (
-          <SectionWrapper title="Anàlisi amb Intel·ligència Artificial">
-            <FinancialRAGChat 
+          <SectionWrapper title="Anàlisi Automàtic amb Intel·ligència Artificial">
+            <AutomaticFinancialAnalysis 
               companyId={companyId} 
               companyName={companyName}
               fiscalYear={selectedYear}
