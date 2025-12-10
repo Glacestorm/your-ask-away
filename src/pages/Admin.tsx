@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigationHistory } from '@/hooks/useNavigationHistory';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Activity, History, Shield, Rocket } from 'lucide-react';
+import { ArrowLeft, Activity, History, Shield, Rocket, Bot } from 'lucide-react';
 import { toast } from 'sonner';
 import VisitSheets from '@/pages/VisitSheets';
 import { GlobalNavHeader } from '@/components/GlobalNavHeader';
@@ -947,6 +947,22 @@ case 'administration':
                     </div>
                   </CardContent>
                 </Card>
+                {!isAuditor && (
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-green-500/30 bg-gradient-to-br from-green-500/5 to-green-500/10"
+                  onClick={() => handleSectionChange('internal-assistant')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-green-500/20 flex items-center justify-center">
+                      <Bot className="h-4 w-4 text-green-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-green-700 dark:text-green-400">Asistente IA</h4>
+                      <p className="text-xs text-muted-foreground">Chat intern intel·ligent</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                )}
               </div>
             </div>
           </div>
