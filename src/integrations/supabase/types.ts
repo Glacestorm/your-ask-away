@@ -369,6 +369,57 @@ export type Database = {
           },
         ]
       }
+      anonymized_training_data: {
+        Row: {
+          aggregated_metrics: Json
+          aggregation_period: string
+          anonymization_level: string
+          created_at: string
+          data_type: string
+          expires_at: string
+          id: string
+          period_end: string
+          period_start: string
+          purpose: string
+          sample_size: number
+          source_hash: string
+          techniques_applied: string[]
+          transfer_restrictions: string
+        }
+        Insert: {
+          aggregated_metrics?: Json
+          aggregation_period: string
+          anonymization_level?: string
+          created_at?: string
+          data_type: string
+          expires_at?: string
+          id?: string
+          period_end: string
+          period_start: string
+          purpose?: string
+          sample_size: number
+          source_hash: string
+          techniques_applied?: string[]
+          transfer_restrictions?: string
+        }
+        Update: {
+          aggregated_metrics?: Json
+          aggregation_period?: string
+          anonymization_level?: string
+          created_at?: string
+          data_type?: string
+          expires_at?: string
+          id?: string
+          period_end?: string
+          period_start?: string
+          purpose?: string
+          sample_size?: number
+          source_hash?: string
+          techniques_applied?: string[]
+          transfer_restrictions?: string
+        }
+        Relationships: []
+      }
       asset_inventory: {
         Row: {
           asset_name: string
@@ -1881,6 +1932,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      data_processing_consents: {
+        Row: {
+          consent_type: string
+          created_at: string
+          granted: boolean
+          granted_at: string | null
+          id: string
+          ip_address: unknown
+          policy_version: string
+          revoked_at: string | null
+          updated_at: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          consent_type: string
+          created_at?: string
+          granted?: boolean
+          granted_at?: string | null
+          id?: string
+          ip_address?: unknown
+          policy_version?: string
+          revoked_at?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          consent_type?: string
+          created_at?: string
+          granted?: boolean
+          granted_at?: string | null
+          id?: string
+          ip_address?: unknown
+          policy_version?: string
+          revoked_at?: string | null
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       dora_compliance_items: {
         Row: {
@@ -4856,6 +4949,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      anonymize_financial_data_for_training: {
+        Args: {
+          p_data_type: string
+          p_period_end: string
+          p_period_start: string
+        }
+        Returns: string
+      }
       can_view_alert: {
         Args: { _alert_id: string; _user_id: string }
         Returns: boolean
@@ -4876,6 +4977,7 @@ export type Database = {
         Args: { p_endpoint: string; p_tpp_id: string }
         Returns: boolean
       }
+      cleanup_expired_training_data: { Args: never; Returns: number }
       cleanup_rate_limits: { Args: never; Returns: undefined }
       cleanup_tpp_rate_limits: { Args: never; Returns: undefined }
       expire_open_banking_consents: { Args: never; Returns: undefined }
