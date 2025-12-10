@@ -34,6 +34,7 @@ interface Message {
   sources?: string[];
   isSensitive?: boolean;
   createdAt: Date;
+  inputMethod?: 'text' | 'voice';
 }
 
 interface Conversation {
@@ -65,6 +66,8 @@ export function InternalAssistantChat() {
   const [showKnowledgeManager, setShowKnowledgeManager] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const [pendingVoiceMessage, setPendingVoiceMessage] = useState(false);
+
   // Voice chat hook
   const { 
     isListening, 
@@ -78,6 +81,7 @@ export function InternalAssistantChat() {
     language: 'es-ES',
     onTranscript: (text) => {
       setInput(text);
+      setPendingVoiceMessage(true);
     },
   });
 
@@ -99,6 +103,14 @@ export function InternalAssistantChat() {
       setInput(transcript);
     }
   }, [transcript]);
+
+  // Auto-send when voice recording ends and we have a transcript
+  useEffect(() => {
+    if (!isListening && pendingVoiceMessage && input.trim()) {
+      sendVoiceMessage();
+      setPendingVoiceMessage(false);
+    }
+  }, [isListening, pendingVoiceMessage, input]);
 
   const loadConversations = async () => {
     if (!user) return;
@@ -180,6 +192,20 @@ export function InternalAssistantChat() {
     if (error) {
       console.error('Error saving message:', error);
     }
+
+    // Also save to audit log (permanent, cannot be deleted by user)
+    if (user) {
+      await supabase
+        .from('assistant_conversation_audit')
+        .insert({
+          conversation_id: conversationId,
+          user_id: user.id,
+          role: message.role,
+          content: message.content,
+          context: contextType,
+          input_method: message.inputMethod || 'text',
+        });
+    }
   };
 
   const updateConversationTitle = async (conversationId: string, firstMessage: string) => {
@@ -193,7 +219,7 @@ export function InternalAssistantChat() {
     await loadConversations();
   };
 
-  const sendMessage = async () => {
+  const sendMessageInternal = async (inputMethod: 'text' | 'voice' = 'text') => {
     if (!input.trim() || !user || isLoading) return;
 
     const userMessage: Message = {
@@ -201,6 +227,7 @@ export function InternalAssistantChat() {
       role: 'user',
       content: input.trim(),
       createdAt: new Date(),
+      inputMethod,
     };
 
     setMessages(prev => [...prev, userMessage]);
@@ -250,13 +277,14 @@ export function InternalAssistantChat() {
         sources: data.sources || [],
         isSensitive: data.isSensitive,
         createdAt: new Date(),
+        inputMethod: 'text', // Assistant always responds as text
       };
 
       setMessages(prev => [...prev, assistantMessage]);
       await saveMessage(convId, assistantMessage);
 
-      // Auto-speak response if enabled
-      if (autoSpeak && voiceSupported) {
+      // Auto-speak response if enabled or if user sent voice message
+      if ((autoSpeak || inputMethod === 'voice') && voiceSupported) {
         speak(data.message);
       }
 
@@ -284,7 +312,19 @@ export function InternalAssistantChat() {
     }
   };
 
+  const sendMessage = () => sendMessageInternal('text');
+  const sendVoiceMessage = () => sendMessageInternal('voice');
+
   const deleteConversation = async (convId: string) => {
+    // Mark as deleted in audit (for auditor visibility)
+    if (user) {
+      await supabase
+        .from('assistant_conversation_audit')
+        .update({ user_deleted_at: new Date().toISOString() })
+        .eq('conversation_id', convId)
+        .eq('user_id', user.id);
+    }
+
     const { error } = await supabase
       .from('internal_assistant_conversations')
       .delete()
@@ -303,6 +343,13 @@ export function InternalAssistantChat() {
   const deleteAllConversations = async () => {
     if (!user) return;
     
+    // Mark all as deleted in audit
+    await supabase
+      .from('assistant_conversation_audit')
+      .update({ user_deleted_at: new Date().toISOString() })
+      .eq('user_id', user.id)
+      .is('user_deleted_at', null);
+
     const { error } = await supabase
       .from('internal_assistant_conversations')
       .delete()
@@ -564,6 +611,13 @@ export function InternalAssistantChat() {
                           : 'bg-muted'
                       }`}
                     >
+                      {/* Voice indicator for user messages */}
+                      {message.role === 'user' && message.inputMethod === 'voice' && (
+                        <div className="flex items-center gap-1 text-primary-foreground/70 text-xs mb-1">
+                          <Mic className="h-3 w-3" />
+                          <span>Mensaje de voz</span>
+                        </div>
+                      )}
                       {message.isSensitive && (
                         <div className="flex items-center gap-1 text-yellow-500 text-xs mb-2">
                           <AlertTriangle className="h-3 w-3" />

@@ -483,6 +483,42 @@ export type Database = {
         }
         Relationships: []
       }
+      assistant_conversation_audit: {
+        Row: {
+          content: string
+          context: string | null
+          conversation_id: string
+          created_at: string
+          id: string
+          input_method: string | null
+          role: string
+          user_deleted_at: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          context?: string | null
+          conversation_id: string
+          created_at?: string
+          id?: string
+          input_method?: string | null
+          role: string
+          user_deleted_at?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          context?: string | null
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          input_method?: string | null
+          role?: string
+          user_deleted_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       assistant_knowledge_documents: {
         Row: {
           content: string | null
