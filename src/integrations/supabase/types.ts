@@ -2017,6 +2017,213 @@ export type Database = {
           },
         ]
       }
+      customer_action_recommendations: {
+        Row: {
+          action_description: string | null
+          action_title: string
+          action_type: string
+          assigned_to: string | null
+          company_id: string
+          completed_at: string | null
+          confidence_score: number | null
+          created_at: string
+          due_date: string | null
+          estimated_value: number | null
+          expected_impact: string | null
+          id: string
+          priority: number | null
+          source_model: string | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          action_description?: string | null
+          action_title: string
+          action_type: string
+          assigned_to?: string | null
+          company_id: string
+          completed_at?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          due_date?: string | null
+          estimated_value?: number | null
+          expected_impact?: string | null
+          id?: string
+          priority?: number | null
+          source_model?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          action_description?: string | null
+          action_title?: string
+          action_type?: string
+          assigned_to?: string | null
+          company_id?: string
+          completed_at?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          due_date?: string | null
+          estimated_value?: number | null
+          expected_impact?: string | null
+          id?: string
+          priority?: number | null
+          source_model?: string | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_action_recommendations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_rfm_scores: {
+        Row: {
+          calculated_at: string
+          company_id: string
+          created_at: string
+          frequency_count: number
+          frequency_score: number
+          id: string
+          monetary_score: number
+          monetary_value: number
+          recency_days: number
+          recency_score: number
+          recommended_actions: string[] | null
+          rfm_score: number | null
+          rfm_segment: string
+          segment_description: string | null
+          updated_at: string
+        }
+        Insert: {
+          calculated_at?: string
+          company_id: string
+          created_at?: string
+          frequency_count?: number
+          frequency_score: number
+          id?: string
+          monetary_score: number
+          monetary_value?: number
+          recency_days?: number
+          recency_score: number
+          recommended_actions?: string[] | null
+          rfm_score?: number | null
+          rfm_segment: string
+          segment_description?: string | null
+          updated_at?: string
+        }
+        Update: {
+          calculated_at?: string
+          company_id?: string
+          created_at?: string
+          frequency_count?: number
+          frequency_score?: number
+          id?: string
+          monetary_score?: number
+          monetary_value?: number
+          recency_days?: number
+          recency_score?: number
+          recommended_actions?: string[] | null
+          rfm_score?: number | null
+          rfm_segment?: string
+          segment_description?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_rfm_scores_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_segments: {
+        Row: {
+          calculated_at: string
+          churn_probability: number | null
+          churn_risk_level: string | null
+          clv_estimate: number | null
+          clv_percentile: number | null
+          company_id: string
+          created_at: string
+          decision_path: string[] | null
+          engagement_score: number | null
+          feature_importance: Json | null
+          id: string
+          loyalty_score: number | null
+          model_confidence: number | null
+          model_version: string | null
+          next_best_action: string | null
+          priority_score: number | null
+          profitability_tier: string | null
+          recommended_actions: Json | null
+          segment_name: string
+          segment_type: string
+          updated_at: string
+        }
+        Insert: {
+          calculated_at?: string
+          churn_probability?: number | null
+          churn_risk_level?: string | null
+          clv_estimate?: number | null
+          clv_percentile?: number | null
+          company_id: string
+          created_at?: string
+          decision_path?: string[] | null
+          engagement_score?: number | null
+          feature_importance?: Json | null
+          id?: string
+          loyalty_score?: number | null
+          model_confidence?: number | null
+          model_version?: string | null
+          next_best_action?: string | null
+          priority_score?: number | null
+          profitability_tier?: string | null
+          recommended_actions?: Json | null
+          segment_name: string
+          segment_type?: string
+          updated_at?: string
+        }
+        Update: {
+          calculated_at?: string
+          churn_probability?: number | null
+          churn_risk_level?: string | null
+          clv_estimate?: number | null
+          clv_percentile?: number | null
+          company_id?: string
+          created_at?: string
+          decision_path?: string[] | null
+          engagement_score?: number | null
+          feature_importance?: Json | null
+          id?: string
+          loyalty_score?: number | null
+          model_confidence?: number | null
+          model_version?: string | null
+          next_best_action?: string | null
+          priority_score?: number | null
+          profitability_tier?: string | null
+          recommended_actions?: Json | null
+          segment_name?: string
+          segment_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_segments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       data_processing_consents: {
         Row: {
           consent_type: string
@@ -3047,6 +3254,54 @@ export type Database = {
           mfa_required?: boolean | null
           updated_at?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      ml_model_executions: {
+        Row: {
+          companies_processed: number | null
+          completed_at: string | null
+          error_message: string | null
+          executed_by: string | null
+          execution_status: string
+          execution_time_ms: number | null
+          id: string
+          model_type: string
+          model_version: string | null
+          parameters: Json | null
+          results_summary: Json | null
+          segments_created: number | null
+          started_at: string
+        }
+        Insert: {
+          companies_processed?: number | null
+          completed_at?: string | null
+          error_message?: string | null
+          executed_by?: string | null
+          execution_status?: string
+          execution_time_ms?: number | null
+          id?: string
+          model_type: string
+          model_version?: string | null
+          parameters?: Json | null
+          results_summary?: Json | null
+          segments_created?: number | null
+          started_at?: string
+        }
+        Update: {
+          companies_processed?: number | null
+          completed_at?: string | null
+          error_message?: string | null
+          executed_by?: string | null
+          execution_status?: string
+          execution_time_ms?: number | null
+          id?: string
+          model_type?: string
+          model_version?: string | null
+          parameters?: Json | null
+          results_summary?: Json | null
+          segments_created?: number | null
+          started_at?: string
         }
         Relationships: []
       }
@@ -4162,6 +4417,60 @@ export type Database = {
           status?: string
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      segment_management_policies: {
+        Row: {
+          action_triggers: Json | null
+          automated_actions: Json | null
+          communication_channel: string[] | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          offer_types: string[] | null
+          policy_name: string
+          priority_level: number | null
+          segment_name: string
+          target_metrics: Json | null
+          updated_at: string
+          visit_frequency_days: number | null
+        }
+        Insert: {
+          action_triggers?: Json | null
+          automated_actions?: Json | null
+          communication_channel?: string[] | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          offer_types?: string[] | null
+          policy_name: string
+          priority_level?: number | null
+          segment_name: string
+          target_metrics?: Json | null
+          updated_at?: string
+          visit_frequency_days?: number | null
+        }
+        Update: {
+          action_triggers?: Json | null
+          automated_actions?: Json | null
+          communication_channel?: string[] | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          offer_types?: string[] | null
+          policy_name?: string
+          priority_level?: number | null
+          segment_name?: string
+          target_metrics?: Json | null
+          updated_at?: string
+          visit_frequency_days?: number | null
         }
         Relationships: []
       }

@@ -95,3 +95,9 @@ verify_jwt = true
 
 [functions.dispatch-webhook]
 verify_jwt = false
+
+[functions.calculate-rfm-analysis]
+verify_jwt = true
+
+[functions.segment-customers-ml]
+verify_jwt = true
