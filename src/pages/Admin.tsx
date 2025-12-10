@@ -57,6 +57,7 @@ import { DORAComplianceDashboard } from '@/components/admin/DORAComplianceDashbo
 import { AdaptiveAuthDashboard } from '@/components/admin/AdaptiveAuthDashboard';
 import { ISO27001Dashboard } from '@/components/admin/ISO27001Dashboard';
 import { PipelineBoard } from '@/components/pipeline/PipelineBoard';
+import { InternalAssistantChat } from '@/components/admin/InternalAssistantChat';
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
   const { t } = useLanguage();
@@ -591,6 +592,17 @@ const Admin = () => {
           );
         }
         return <ISO27001Dashboard />;
+      case 'internal-assistant':
+        if (isAuditor) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <InternalAssistantChat />;
       case 'cascade-goals':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager && !isOfficeDirector) {
           return (

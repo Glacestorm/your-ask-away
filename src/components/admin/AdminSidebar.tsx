@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { TrendingUp, Activity, BarChart3, Package, Users, Target, CreditCard, Building2, Settings, Database, Mail, Palette, BookOpen, Map, ChevronRight, FileText, Briefcase, History, Bell, UserCog, CalendarDays, Home, User, AlertTriangle, LayoutDashboard, ClipboardCheck, ShoppingCart, Calculator, FileCode2, Shield, Fingerprint, Rocket } from 'lucide-react';
+import { TrendingUp, Activity, BarChart3, Package, Users, Target, CreditCard, Building2, Settings, Database, Mail, Palette, BookOpen, Map, ChevronRight, FileText, Briefcase, History, Bell, UserCog, CalendarDays, Home, User, AlertTriangle, LayoutDashboard, ClipboardCheck, ShoppingCart, Calculator, FileCode2, Shield, Fingerprint, Rocket, Bot } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -250,6 +250,27 @@ export function AdminSidebar({
                   </span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              {/* Asistente IA Interno - visible para todos excepto auditores */}
+              {!isAuditor && (
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => onSectionChange('internal-assistant')}
+                  isActive={isActive('internal-assistant')}
+                  className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
+                  tooltip={!open ? {
+                    children: 'Asistente IA',
+                    className: "bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20"
+                  } : undefined}
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-green-500 to-green-600 shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-green-500/50 group-hover:rotate-3">
+                    <Bot className="h-5 w-5 text-white transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3" />
+                  </div>
+                  <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
+                    Asistente IA
+                  </span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              )}
               <SidebarMenuItem>
                 <SidebarMenuButton
                   onClick={() => onSectionChange('technical-docs')}
