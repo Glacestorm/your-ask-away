@@ -7,11 +7,22 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Bot, Send, Loader2, AlertTriangle, Shield, MessageSquare,
-  Building, FileText, Package, BookOpen, History, Trash2
+  Building, FileText, Package, BookOpen, History, Trash2, RotateCcw
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface Message {
   id: string;
@@ -254,6 +265,24 @@ export function InternalAssistantChat() {
     }
   };
 
+  const deleteAllConversations = async () => {
+    if (!user) return;
+    
+    const { error } = await supabase
+      .from('internal_assistant_conversations')
+      .delete()
+      .eq('user_id', user.id);
+
+    if (!error) {
+      setCurrentConversationId(null);
+      setMessages([]);
+      setConversations([]);
+      toast.success('Todas las conversaciones han sido eliminadas');
+    } else {
+      toast.error('Error al eliminar las conversaciones');
+    }
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -283,6 +312,38 @@ export function InternalAssistantChat() {
             <MessageSquare className="h-4 w-4 mr-2" />
             Nueva conversación
           </Button>
+          
+          {conversations.length > 0 && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  className="w-full mb-2 text-destructive hover:text-destructive border-destructive/30 hover:bg-destructive/10"
+                >
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Resetear historial
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>¿Eliminar todas las conversaciones?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Esta acción eliminará permanentemente todas tus conversaciones ({conversations.length}). 
+                    Esta acción no se puede deshacer.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={deleteAllConversations}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Eliminar todo
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
           
           <ScrollArea className="h-[calc(100vh-20rem)]">
             <div className="space-y-1">
