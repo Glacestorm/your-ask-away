@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Loader2, FileText, Search, Download, RefreshCw, TrendingUp, Shield, Zap, Brain, Scale, Sparkles, AlertTriangle, CheckCircle2, Bot, Workflow, Lock, Building2, Map, Gauge, Settings, Code, FolderTree, Terminal } from 'lucide-react';
+import { Loader2, FileText, Search, Download, RefreshCw, TrendingUp, Shield, Zap, Brain, Scale, Sparkles, AlertTriangle, CheckCircle2, Bot, Workflow, Lock, Building2, Map, Gauge, Settings, Code, FolderTree, Terminal, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -69,6 +69,7 @@ interface ComplianceRegulation {
   totalRequirements?: number;
   implementedRequirements?: number;
   jurisdiction?: string;
+  timeline?: { date: string; milestone: string }[];
   implementationPhases?: {
     phase: number;
     name: string;
@@ -1413,6 +1414,38 @@ export function ApplicationStateAnalyzer() {
                                 </div>
                               </div>
                             )}
+
+                            {/* Timeline de Aplicación (para AI Act y otras normativas escalonadas) */}
+                            {reg.timeline && reg.timeline.length > 0 && (
+                              <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                                <div className="font-medium text-sm mb-3 flex items-center gap-2 text-purple-700 dark:text-purple-400">
+                                  <Clock className="h-4 w-4" />
+                                  Cronograma d'aplicació normativa:
+                                </div>
+                                <div className="relative">
+                                  <div className="absolute left-2 top-0 bottom-0 w-0.5 bg-purple-500/30" />
+                                  <div className="space-y-3 pl-6">
+                                    {reg.timeline.map((milestone, mi) => {
+                                      const milestoneDate = new Date(milestone.date);
+                                      const isPast = milestoneDate < new Date();
+                                      return (
+                                        <div key={mi} className="relative">
+                                          <div className={`absolute -left-4 w-3 h-3 rounded-full border-2 ${isPast ? 'bg-green-500 border-green-500' : 'bg-background border-purple-500'}`} />
+                                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                                            <Badge className={`${isPast ? 'bg-green-500/20 text-green-700 dark:text-green-400' : 'bg-purple-500/20 text-purple-700 dark:text-purple-400'} text-xs shrink-0`}>
+                                              {milestone.date}
+                                            </Badge>
+                                            <span className="text-sm text-muted-foreground">
+                                              {isPast && '✓ '}{milestone.milestone}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </AccordionContent>
                       </AccordionItem>
@@ -1528,6 +1561,38 @@ export function ApplicationStateAnalyzer() {
                                         </div>
                                       </div>
                                     ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Timeline de Aplicación (para AI Act y otras normativas escalonadas) */}
+                              {reg.timeline && reg.timeline.length > 0 && (
+                                <div className="p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
+                                  <div className="font-medium text-sm mb-3 flex items-center gap-2 text-purple-700 dark:text-purple-400">
+                                    <Clock className="h-4 w-4" />
+                                    Cronograma d'aplicació normativa:
+                                  </div>
+                                  <div className="relative">
+                                    <div className="absolute left-2 top-0 bottom-0 w-0.5 bg-purple-500/30" />
+                                    <div className="space-y-3 pl-6">
+                                      {reg.timeline.map((milestone, mi) => {
+                                        const milestoneDate = new Date(milestone.date);
+                                        const isPast = milestoneDate < new Date();
+                                        return (
+                                          <div key={mi} className="relative">
+                                            <div className={`absolute -left-4 w-3 h-3 rounded-full border-2 ${isPast ? 'bg-green-500 border-green-500' : 'bg-background border-purple-500'}`} />
+                                            <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                                              <Badge className={`${isPast ? 'bg-green-500/20 text-green-700 dark:text-green-400' : 'bg-purple-500/20 text-purple-700 dark:text-purple-400'} text-xs shrink-0`}>
+                                                {milestone.date}
+                                              </Badge>
+                                              <span className="text-sm text-muted-foreground">
+                                                {isPast && '✓ '}{milestone.milestone}
+                                              </span>
+                                            </div>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
                                   </div>
                                 </div>
                               )}
