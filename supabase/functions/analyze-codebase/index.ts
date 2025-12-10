@@ -380,29 +380,165 @@ GENERA JSON COMPLETO con todas las secciones requeridas.`;
 });
 
 function getDefaultAnalysis(componentsList: string[], hooksList: string[], edgeFunctions: string[], pagesList: string[], securityFeatures?: string[]): CodebaseAnalysis {
+  // SECURITY FEATURES WITH REGULATORY MAPPING FOR ISO 27001 AUDIT
+  // Each feature maps to: ISO 27001, DORA, NIS2, PSD2/PSD3, GDPR, eIDAS, OWASP
   const allSecurityFeatures = [
-    "✅ RLS (Row Level Security) en 30+ tablas críticas",
-    "✅ JWT verification en 38 Edge Functions",
-    "✅ RBAC con 6 roles jerárquicos",
-    "✅ WebAuthn/FIDO2 Passkeys con ECDSA P-256",
-    "✅ Step-Up Authentication OTP email (Resend)",
-    "✅ Autenticación Multifactor Adaptativa (AMA) PSD2/PSD3",
-    "✅ Anti-replay counter validation",
-    "✅ Behavioral Biometrics: TypingDNA, mouse dynamics",
-    "✅ AML/Fraud Detection con screening FATF",
-    "✅ Session risk scoring en tiempo real",
-    "✅ Device fingerprinting con tabla user_device_fingerprints",
-    "✅ Geolocalización IP y detección VPN/Proxy",
-    "✅ Sanitización XSS con DOMPurify",
-    "✅ Rate limiting APIs (100 req/hora geocoding)",
-    "✅ TLS 1.3 obligatorio",
-    "✅ Secrets via Supabase Vault",
-    "✅ Audit logs completos",
-    "✅ DORA/NIS2 Dashboard con 7 stress tests",
-    "✅ Open Banking API PSD2/PSD3 con OAuth 2.0",
-    "✅ Pipeline CI/CD SAST/DAST automatizado",
-    "✅ OWASP API Security Top 10 implementado",
-    "✅ eIDAS 2.0 con DIDs y Verifiable Credentials"
+    // === AUTENTICACIÓN Y CONTROL DE ACCESO (ISO A.9, PSD2/PSD3 SCA) ===
+    "✅ RLS (Row Level Security) en 35+ tablas críticas [ISO A.9.4.1, GDPR Art.32]",
+    "✅ JWT verification en 38 Edge Functions con HMAC-SHA256 [ISO A.9.4.4, OWASP API2]",
+    "✅ RBAC con 6 roles jerárquicos y segregación funciones [ISO A.6.1.2, A.9.2.3]",
+    "✅ WebAuthn/FIDO2 Passkeys con ECDSA P-256 curva criptográfica [ISO A.10.1.1, PSD2 SCA]",
+    "✅ Step-Up Authentication OTP email via Resend [ISO A.9.4.2, PSD3 Art.97]",
+    "✅ MFA Enforcement obligatorio roles admin [ISO A.9.4.2, DORA Art.9]",
+    "✅ useMFAEnforcement hook con bypass temporal controlado [ISO A.9.2.1]",
+    
+    // === AUTENTICACIÓN ADAPTATIVA Y CONTINUA (PSD2/PSD3, DORA) ===
+    "✅ Autenticación Multifactor Adaptativa (AMA/XAMA) PSD2/PSD3 [PSD3 Art.97, DORA Art.9]",
+    "✅ useAdaptiveAuth hook con evaluación riesgo en tiempo real [ISO A.9.4.2]",
+    "✅ useXAMA Extended Attribute Multi-factor Auth con AAL1/AAL2/AAL3 [NIST 800-63B]",
+    "✅ Anti-replay counter validation WebAuthn [OWASP API2, ISO A.14.2.5]",
+    "✅ Cloned authenticator detection [PSD2 SCA, ISO A.9.4.2]",
+    "✅ Session risk scoring ML en tiempo real [DORA Art.9, ISO A.12.4.1]",
+    "✅ Continuous authentication monitoring cada 60 segundos [PSD3, DORA Art.9]",
+    
+    // === BIOMETRÍA COMPORTAMENTAL (PSD3, DORA) ===
+    "✅ Behavioral Biometrics: useBehavioralBiometrics hook [PSD3, ISO A.9.4.2]",
+    "✅ TypingDNA: análisis velocidad escritura, intervalos, digrafos [PSD3 SCA]",
+    "✅ Mouse dynamics: velocidad, aceleración, entropía movimiento [ISO A.9.4.2]",
+    "✅ Bot detection via mouse entropy < 1.5 threshold [OWASP API4]",
+    "✅ Touch behavior: presión, swipe velocity (móvil) [PSD3]",
+    "✅ Navigation pattern analysis [ISO A.12.4.1]",
+    "✅ Baseline comparison con stored user_behavior_patterns [ISO A.9.4.2]",
+    
+    // === AML/FRAUDE (PSD2, 5AMLD, FATF) ===
+    "✅ AML/Fraud Detection: useAMLFraudDetection hook [5AMLD, FATF, PSD2]",
+    "✅ Velocity analysis: detección transacciones rápidas [5AMLD Art.18]",
+    "✅ Structuring detection: fraccionamiento €3000/€10000 [5AMLD Art.11]",
+    "✅ Geographic risk: países FATF grey/black list [FATF, 5AMLD]",
+    "✅ Sanctioned countries blocking: KP, IR, SY, CU, RU, BY [EU Sanctions]",
+    "✅ High-risk merchant category (MCC) detection [PSD2, 5AMLD]",
+    "✅ Amount anomaly detection con z-score [ISO A.12.4.1]",
+    "✅ PEP (Politically Exposed Persons) status tracking [5AMLD]",
+    "✅ SAR (Suspicious Activity Report) generation [5AMLD Art.33]",
+    
+    // === DEVICE FINGERPRINTING (ISO A.11.2.6, DORA) ===
+    "✅ Device fingerprinting completo: user_device_fingerprints tabla [ISO A.11.2.6]",
+    "✅ Canvas fingerprint hash [ISO A.9.4.2]",
+    "✅ WebGL renderer detection [ISO A.11.2.6]",
+    "✅ Hardware concurrency, device memory tracking [ISO A.8.1.1]",
+    "✅ Trusted devices management con trust_expires_at [ISO A.9.2.6]",
+    
+    // === GEOLOCALIZACIÓN Y RED (ISO A.13, DORA) ===
+    "✅ Geolocalización IP con ipify.org API [ISO A.13.1.1]",
+    "✅ VPN/Proxy detection [ISO A.11.2.6, DORA Art.9]",
+    "✅ Impossible travel velocity detection [DORA Art.9]",
+    "✅ Trusted countries whitelist: AD, ES, FR, PT [ISO A.13.2.1]",
+    
+    // === PROTECCIÓN DATOS (GDPR, ISO A.8) ===
+    "✅ Sanitización XSS con DOMPurify 3.x en utils.ts [OWASP API8, ISO A.14.2.5]",
+    "✅ sanitizeHtml() para contenido user-generated [ISO A.12.2.1]",
+    "✅ sanitizeText() strip all HTML [ISO A.12.2.1]",
+    "✅ Input validation con Zod schemas [OWASP API8, ISO A.14.2.5]",
+    "✅ Rate limiting APIs: 100 req/hora geocoding [OWASP API4, ISO A.14.1.2]",
+    "✅ Payload size validation en Edge Functions [OWASP API4]",
+    
+    // === CRIPTOGRAFÍA (ISO A.10, eIDAS) ===
+    "✅ TLS 1.3 obligatorio en todas las conexiones [ISO A.10.1.1, A.13.2.1]",
+    "✅ AES-256-GCM encryption utility: src/lib/security/encryption.ts [ISO A.10.1.1]",
+    "✅ PBKDF2 con 100,000 iteraciones key derivation [ISO A.10.1.2]",
+    "✅ Secrets gestión via Supabase Vault [ISO A.10.1.2, ISO A.9.2.4]",
+    "✅ ECDSA P-256 para WebAuthn signatures [ISO A.10.1.1, eIDAS]",
+    "✅ JWT HMAC-SHA256 tokens [ISO A.10.1.1]",
+    
+    // === AUDITORÍA Y LOGS (ISO A.12.4, DORA, GDPR) ===
+    "✅ Audit logs completos: src/lib/security/auditLogger.ts [ISO A.12.4.1, GDPR Art.30]",
+    "✅ log_audit_event() función PostgreSQL [ISO A.12.4.2]",
+    "✅ Categories: authentication, authorization, data_access, data_modification [ISO A.12.4.1]",
+    "✅ Severity levels: info, warning, error, critical [ISO A.12.4.1]",
+    "✅ IP address, user_agent, session_id tracking [ISO A.12.4.3]",
+    "✅ security_audit_logs tabla dedicada [DORA Art.17, ISO A.12.4.1]",
+    "✅ Retención 5 años compliance DORA [DORA Art.17]",
+    
+    // === DORA/NIS2 COMPLIANCE (Regulación UE) ===
+    "✅ DORA/NIS2 Dashboard completo: DORAComplianceDashboard.tsx [DORA Art.5-15]",
+    "✅ 7 stress tests automatizados (DB, Capacity, Failover, DDoS, Recovery, Network) [DORA Art.24]",
+    "✅ run-stress-test Edge Function [DORA Art.24, NIS2 Art.21]",
+    "✅ Security incidents management con severidad [DORA Art.17, NIS2 Art.23]",
+    "✅ Risk assessments tracking [DORA Art.5, ISO A.16.1.4]",
+    "✅ Resilience tests con findings tracking [DORA Art.24]",
+    "✅ Third-party providers risk management [DORA Art.28-30]",
+    "✅ stress_test_simulations y stress_test_executions tablas [DORA Art.24]",
+    
+    // === ISO 27001 DASHBOARD ===
+    "✅ ISO27001Dashboard.tsx con gestión activos [ISO A.8.1.1]",
+    "✅ Asset inventory: asset_inventory tabla [ISO A.8.1.1]",
+    "✅ Access control policies: access_control_policies tabla [ISO A.9.1.1]",
+    "✅ Backup verifications: backup_verifications tabla [ISO A.12.3.1]",
+    "✅ Classification: public, internal, confidential, restricted [ISO A.8.2.1]",
+    "✅ Criticality levels: low, medium, high, critical [ISO A.8.2.1]",
+    "✅ RTO/RPO tracking por asset [ISO A.17.1.1, DORA Art.11]",
+    
+    // === OPEN BANKING API (PSD2/PSD3) ===
+    "✅ Open Banking API PSD2/PSD3 con OAuth 2.0 [PSD2 Art.66-67]",
+    "✅ TPP (Third Party Provider) registration [PSD2 Art.33]",
+    "✅ Granular consent scopes: accounts, transactions, balances [PSD2 Art.67]",
+    "✅ FAPI compliance headers: x-fapi-interaction-id [FAPI 1.0]",
+    "✅ TPP rate limiting por hora [PSD2 RTS Art.31]",
+    "✅ Consent management con expiration [GDPR Art.7, PSD2]",
+    "✅ registered_tpps, open_banking_consents tablas [PSD2]",
+    
+    // === CI/CD SECURITY PIPELINE (ISO A.14.2, DevSecOps) ===
+    "✅ Pipeline CI/CD SAST/DAST automatizado [ISO A.14.2.8, OWASP]",
+    "✅ Semgrep SAST con reglas custom: security/semgrep-rules.yaml [ISO A.14.2.1]",
+    "✅ OWASP ZAP DAST: security/zap-rules.tsv [ISO A.14.2.8]",
+    "✅ Snyk dependency scanning: security/snyk-policy.json [ISO A.12.6.1]",
+    "✅ Gitleaks secrets detection: security/.gitleaks.toml [ISO A.9.2.4]",
+    "✅ SonarQube: security/sonarqube-project.properties [ISO A.14.2.1]",
+    "✅ Nuclei vulnerability scanner [ISO A.12.6.1]",
+    "✅ Trivy container scanning [ISO A.12.6.1]",
+    "✅ GitHub security pipeline: .github/workflows/security-pipeline.yml [ISO A.14.2.9]",
+    
+    // === OWASP API SECURITY TOP 10 ===
+    "✅ OWASP API Security Top 10: supabase/functions/_shared/owasp-security.ts [OWASP]",
+    "✅ API1 BOLA: validateObjectAccess() [OWASP API1]",
+    "✅ API2 Broken Auth: validateAuthentication() [OWASP API2]",
+    "✅ API3 BOPLA: filterResponseProperties() [OWASP API3]",
+    "✅ API4 Resource Consumption: checkRateLimit(), validatePayloadSize() [OWASP API4]",
+    "✅ API5 BFLA: checkFunctionAuthorization() [OWASP API5]",
+    "✅ API6 Business Flows: protectBusinessFlow() [OWASP API6]",
+    "✅ API7 SSRF: validateExternalUrl() [OWASP API7]",
+    "✅ API8 Security Misconfig: createSecureResponse() con headers [OWASP API8]",
+    "✅ API9 Inventory: API_INVENTORY con deprecation [OWASP API9]",
+    "✅ API10 Unsafe APIs: safeExternalAPICall() [OWASP API10]",
+    "✅ Security headers: HSTS, X-Content-Type-Options, X-Frame-Options [OWASP]",
+    
+    // === eIDAS 2.0 Y IDENTIDAD DIGITAL ===
+    "✅ eIDAS 2.0: src/lib/eidas/* módulos completos [eIDAS 2.0]",
+    "✅ DID (Decentralized Identifiers): didManager.ts [eIDAS 2.0 Art.6a]",
+    "✅ Verifiable Credentials: verifiableCredentials.ts [eIDAS 2.0 Art.6b]",
+    "✅ EUDI Wallet integration: eudiWallet.ts [eIDAS 2.0 Art.6a]",
+    "✅ Trust Services: trustServices.ts [eIDAS Art.3]",
+    "✅ KYC verification flow con QR codes [5AMLD, eIDAS]",
+    "✅ Qualified timestamps [eIDAS Art.42]",
+    
+    // === SYSTEM HEALTH & AUTO-REMEDIATION (DORA Art.11) ===
+    "✅ SystemHealthMonitor con IA auto-remediación [DORA Art.11]",
+    "✅ scheduled-health-check Edge Function [DORA Art.11]",
+    "✅ analyze-system-issues con Gemini AI [DORA Art.11]",
+    "✅ ai_interventions tabla con rollback [ISO A.16.1.5]",
+    "✅ Auto-execute tras 5 min sin intervención humana [DORA Art.11]",
+    "✅ system_diagnostic_logs [ISO A.12.4.1]",
+    "✅ Cron jobs: 8:00 AM y 10:00 PM Madrid [DORA Art.11]",
+    
+    // === OPTIMISTIC LOCKING (ISO A.14.1.3) ===
+    "✅ Optimistic locking: useOptimisticLock hook [ISO A.14.1.3]",
+    "✅ version/updated_at campos en tablas críticas [ISO A.14.1.3]",
+    "✅ Conflict detection y resolution UI [ISO A.14.1.3]",
+    
+    // === MFA ENFORCEMENT ADMIN ROLES ===
+    "✅ MFA Enforcement Dialog: MFAEnforcementDialog.tsx [ISO A.9.4.2, DORA Art.9]",
+    "✅ useMFAEnforcement hook con bypass 4h/24h [ISO A.9.2.1]",
+    "✅ Admin roles require MFA: superadmin, director_comercial, responsable_comercial [ISO A.9.2.3]"
   ];
 
   // ISO 27001 Annex A - 114 Controls (agrupados por dominios)
