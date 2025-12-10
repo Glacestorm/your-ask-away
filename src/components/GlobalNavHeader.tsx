@@ -34,67 +34,16 @@ export function GlobalNavHeader({
 
   return (
     <div className={`flex items-center ${hasTitle ? 'justify-between' : 'justify-end'} rounded-2xl bg-gradient-to-br from-card via-card to-accent/20 p-3 shadow-lg border border-border/50`}>
-      {hasTitle && (
-        <div className="flex items-center gap-3">
-          {/* Navigation History Buttons - only show if there's history */}
-          {(canGoBack || canGoForward) && (
-            <div className="flex items-center gap-1 mr-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={onGoBack}
-                    disabled={!canGoBack}
-                    className="h-8 w-8 rounded-lg hover:bg-accent/50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  <p>Enrere</p>
-                </TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={onGoForward}
-                    disabled={!canGoForward}
-                    className="h-8 w-8 rounded-lg hover:bg-accent/50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  <p>Endavant</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-          )}
-          
-          <div>
-            {title && (
-              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-foreground via-foreground to-primary bg-clip-text text-transparent">
-                {title}
-              </h1>
-            )}
-            {subtitle && <p className="text-sm text-muted-foreground font-medium">{subtitle}</p>}
-          </div>
+      {/* ObelixIA Brand + Title */}
+      <div className="flex items-center gap-3">
+        {/* Brand Logo */}
+        <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary to-emerald-500 flex items-center justify-center shadow-md">
+          <span className="text-sm font-bold text-white">O</span>
         </div>
-      )}
-      
-      <div className="flex items-center gap-2">
-        {/* Offline Sync Indicator */}
-        <OfflineSyncIndicator />
         
-        {/* Online Users Indicator */}
-        <OnlineUsersIndicator />
-        
-        {/* Navigation History Buttons when no title - only show if there's history */}
-        {!hasTitle && (canGoBack || canGoForward) && (
-          <div className="flex items-center gap-1 mr-2">
+        {/* Navigation History Buttons - only show if there's history */}
+        {(canGoBack || canGoForward) && (
+          <div className="flex items-center gap-1">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -108,7 +57,7 @@ export function GlobalNavHeader({
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                <p>Enrere</p>
+                <p>Atrás</p>
               </TooltipContent>
             </Tooltip>
             <Tooltip>
@@ -124,11 +73,30 @@ export function GlobalNavHeader({
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                <p>Endavant</p>
+                <p>Adelante</p>
               </TooltipContent>
             </Tooltip>
           </div>
         )}
+        
+        {hasTitle && (
+          <div>
+            {title && (
+              <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-foreground">
+                {title}
+              </h1>
+            )}
+            {subtitle && <p className="text-xs text-muted-foreground font-medium">{subtitle}</p>}
+          </div>
+        )}
+      </div>
+      
+      <div className="flex items-center gap-2">
+        {/* Offline Sync Indicator */}
+        <OfflineSyncIndicator />
+        
+        {/* Online Users Indicator */}
+        <OnlineUsersIndicator />
         
         <Button
           variant="ghost"
