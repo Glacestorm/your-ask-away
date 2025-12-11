@@ -10,15 +10,17 @@ import {
   User, TrendingUp, TrendingDown, RefreshCw, AlertTriangle, 
   CheckCircle, Clock, Phone, Mail, Calendar, Package, 
   DollarSign, Activity, Target, Zap, BarChart3, PieChart,
-  ArrowRight, Star, Shield, Building2
+  ArrowRight, Star, Shield, Building2, CreditCard, FileText
 } from 'lucide-react';
 import { useCustomer360, Customer360Profile, CustomerInteraction } from '@/hooks/useCustomer360';
+import { useCreditScoring, CreditScoreResult, CreditFactor } from '@/hooks/useCreditScoring';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, 
   ResponsiveContainer, PieChart as RechartsPie, Pie, Cell,
-  RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis
+  RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
+  BarChart, Bar
 } from 'recharts';
 
 interface Customer360DashboardProps {
@@ -35,6 +37,13 @@ export function Customer360Dashboard({ companyId, companyName }: Customer360Dash
     isCalculating, 
     calculateProfile 
   } = useCustomer360(companyId);
+
+  const {
+    calculateScore,
+    result: creditScore,
+    isLoading: isCreditLoading,
+    getRatingColor
+  } = useCreditScoring();
 
   if (isLoading) {
     return <Customer360Skeleton />;
@@ -151,9 +160,10 @@ export function Customer360Dashboard({ companyId, companyName }: Customer360Dash
 
           {/* Main Content Tabs */}
           <Tabs defaultValue="overview" className="space-y-4">
-            <TabsList className="grid grid-cols-5 w-full">
+            <TabsList className="grid grid-cols-6 w-full">
               <TabsTrigger value="overview">Resumen</TabsTrigger>
               <TabsTrigger value="rfm">RFM</TabsTrigger>
+              <TabsTrigger value="credit">Credit Score</TabsTrigger>
               <TabsTrigger value="timeline">Timeline</TabsTrigger>
               <TabsTrigger value="transactions">Transacciones</TabsTrigger>
               <TabsTrigger value="recommendations">Acciones</TabsTrigger>
@@ -165,6 +175,16 @@ export function Customer360Dashboard({ companyId, companyName }: Customer360Dash
 
             <TabsContent value="rfm" className="space-y-4">
               <RFMTab profile={profile} />
+            </TabsContent>
+
+            <TabsContent value="credit" className="space-y-4">
+              <CreditScoringTab 
+                companyId={companyId}
+                creditScore={creditScore}
+                isLoading={isCreditLoading}
+                onCalculate={() => calculateScore(companyId)}
+                getRatingColor={getRatingColor}
+              />
             </TabsContent>
 
             <TabsContent value="timeline" className="space-y-4">
@@ -586,6 +606,254 @@ function TransactionsTab({ transactions }: { transactions: any[] }) {
       </Card>
     </div>
   );
+}
+
+function CreditScoringTab({ 
+  companyId, 
+  creditScore, 
+  isLoading, 
+  onCalculate,
+  getRatingColor 
+}: { 
+  companyId: string;
+  creditScore: CreditScoreResult | null;
+  isLoading: boolean;
+  onCalculate: () => void;
+  getRatingColor: (rating: CreditScoreResult['rating']) => string;
+}) {
+  if (!creditScore) {
+    return (
+      <Card className="p-8 text-center">
+        <div className="space-y-4">
+          <CreditCard className="h-16 w-16 mx-auto text-muted-foreground" />
+          <h3 className="text-lg font-semibold">Scoring Creditici</h3>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            Calcula el scoring creditici basat en dades financeres, comportamentals i relació bancària.
+          </p>
+          <Button onClick={onCalculate} disabled={isLoading} className="gap-2">
+            {isLoading ? (
+              <>
+                <RefreshCw className="h-4 w-4 animate-spin" />
+                Calculant...
+              </>
+            ) : (
+              <>
+                <CreditCard className="h-4 w-4" />
+                Calcular Score
+              </>
+            )}
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
+  const factorsData = creditScore.factors?.map(f => ({
+    name: f.name.substring(0, 15),
+    value: f.value,
+    benchmark: f.benchmark,
+    impact: f.impact
+  })) || [];
+
+  return (
+    <div className="space-y-4">
+      {/* Score Header */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="md:col-span-2 bg-gradient-to-br from-primary/5 to-primary/10">
+          <CardContent className="p-6 text-center">
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">Credit Score</p>
+              <p className="text-5xl font-bold">{creditScore.score}</p>
+              <p className="text-sm text-muted-foreground">/1000</p>
+              <Progress value={creditScore.score / 10} className="h-3 mt-4" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6 text-center">
+            <p className="text-sm text-muted-foreground">Rating</p>
+            <p className={`text-4xl font-bold mt-2 ${getRatingColor(creditScore.rating)}`}>
+              {creditScore.rating}
+            </p>
+            <Badge variant="outline" className="mt-2">
+              {getRiskLevelLabel(creditScore.riskLevel)}
+            </Badge>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6 text-center">
+            <p className="text-sm text-muted-foreground">Probabilitat Default</p>
+            <p className="text-4xl font-bold mt-2">
+              {(creditScore.probability_of_default * 100).toFixed(1)}%
+            </p>
+            <Badge 
+              variant={creditScore.probability_of_default < 0.1 ? 'default' : 'destructive'} 
+              className="mt-2"
+            >
+              {creditScore.probability_of_default < 0.1 ? 'Baix Risc' : 'Alt Risc'}
+            </Badge>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Factors Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Factors d'Avaluació</CardTitle>
+            <CardDescription>Comparació amb benchmark sectorial</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={factorsData} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" />
+                  <YAxis type="category" dataKey="name" width={100} fontSize={11} />
+                  <Tooltip />
+                  <Bar dataKey="value" fill="hsl(var(--primary))" name="Actual" />
+                  <Bar dataKey="benchmark" fill="hsl(var(--muted-foreground))" name="Benchmark" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Factors Detail */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Detall Factors</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-[300px]">
+              <div className="space-y-3">
+                {creditScore.factors?.map((factor, i) => (
+                  <div key={i} className="p-3 bg-muted/50 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-sm">{factor.name}</span>
+                      <Badge 
+                        variant={factor.impact === 'positive' ? 'default' : factor.impact === 'negative' ? 'destructive' : 'secondary'}
+                      >
+                        {factor.impact === 'positive' ? '↑' : factor.impact === 'negative' ? '↓' : '→'}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">{factor.description}</p>
+                    <div className="flex justify-between text-xs mt-2">
+                      <span>Valor: {factor.value.toFixed(2)}</span>
+                      <span>Benchmark: {factor.benchmark.toFixed(2)}</span>
+                      <span>Pes: {(factor.weight * 100).toFixed(0)}%</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Recommendations */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Target className="h-4 w-4" />
+              Recomanacions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {creditScore.recommendations && creditScore.recommendations.length > 0 ? (
+              <ul className="space-y-2">
+                {creditScore.recommendations.map((rec, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm">
+                    <CheckCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                    <span>{rec}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground">Sense recomanacions</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Explainability */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Explicabilitat (XAI)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <p className="text-xs text-muted-foreground">Metodologia</p>
+              <p className="text-sm">{creditScore.explainability?.methodology || 'N/A'}</p>
+            </div>
+            
+            <div>
+              <p className="text-xs text-muted-foreground mb-2">Factors Clau</p>
+              <div className="flex flex-wrap gap-1">
+                {creditScore.explainability?.key_drivers?.map((driver, i) => (
+                  <Badge key={i} variant="outline" className="text-xs">{driver}</Badge>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs text-muted-foreground">Confiança Model</p>
+                <div className="flex items-center gap-2">
+                  <Progress value={(creditScore.explainability?.model_confidence || 0) * 100} className="h-2 flex-1" />
+                  <span className="text-sm font-medium">
+                    {((creditScore.explainability?.model_confidence || 0) * 100).toFixed(0)}%
+                  </span>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Qualitat Dades</p>
+                <div className="flex items-center gap-2">
+                  <Progress value={(creditScore.explainability?.data_quality_score || 0) * 100} className="h-2 flex-1" />
+                  <span className="text-sm font-medium">
+                    {((creditScore.explainability?.data_quality_score || 0) * 100).toFixed(0)}%
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <p className="text-xs text-muted-foreground mb-2">Compliment Regulatori</p>
+              <div className="flex flex-wrap gap-1">
+                {creditScore.explainability?.regulatory_compliance?.map((reg, i) => (
+                  <Badge key={i} variant="secondary" className="text-xs">{reg}</Badge>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recalculate Button */}
+      <div className="flex justify-center">
+        <Button onClick={onCalculate} disabled={isLoading} variant="outline" className="gap-2">
+          <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          Recalcular Scoring
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function getRiskLevelLabel(riskLevel: string): string {
+  switch (riskLevel) {
+    case 'very_low': return 'Risc Molt Baix';
+    case 'low': return 'Risc Baix';
+    case 'moderate': return 'Risc Moderat';
+    case 'high': return 'Risc Alt';
+    case 'very_high': return 'Risc Molt Alt';
+    default: return riskLevel;
+  }
 }
 
 function RecommendationsTab({ profile }: { profile: Customer360Profile }) {
