@@ -468,3 +468,23 @@
   z-index: 9998 !important;
   border-radius: 50%;
 }
+
+/* ========================================
+   SCROLLBAR HIDE UTILITY FOR MOBILE
+   ======================================== */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+/* ========================================
+   TOUCH MANIPULATION FOR MOBILE
+   ======================================== */
+.touch-manipulation {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
