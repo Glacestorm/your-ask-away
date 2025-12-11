@@ -532,6 +532,10 @@ export function ApplicationStateAnalyzer() {
       const autoTable = (await import('jspdf-autotable')).default;
       
       const doc = new jsPDF('p', 'mm', 'a4');
+      
+      // Set default font for entire document
+      doc.setFont('helvetica', 'normal');
+      
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
       const margin = 15;
@@ -786,11 +790,17 @@ export function ApplicationStateAnalyzer() {
             fillColor: colors.primary,
             textColor: colors.white,
             fontStyle: 'bold',
-            fontSize: 9,
+            fontSize: 10,
+            font: 'helvetica',
           },
           bodyStyles: {
-            fontSize: 8,
+            fontSize: 9,
             textColor: colors.dark,
+            font: 'helvetica',
+          },
+          styles: {
+            font: 'helvetica',
+            cellPadding: 3,
           },
           alternateRowStyles: {
             fillColor: colors.light,
@@ -843,11 +853,17 @@ export function ApplicationStateAnalyzer() {
             fillColor: colors.secondary,
             textColor: colors.white,
             fontStyle: 'bold',
-            fontSize: 10,
+            fontSize: 11,
+            font: 'helvetica',
           },
           bodyStyles: {
-            fontSize: 8,
+            fontSize: 9,
             textColor: colors.dark,
+            font: 'helvetica',
+          },
+          styles: {
+            font: 'helvetica',
+            cellPadding: 4,
           },
           columnStyles: {
             0: { cellWidth: 10, halign: 'center', textColor: colors.secondary },
@@ -889,11 +905,17 @@ export function ApplicationStateAnalyzer() {
             fillColor: colors.accent,
             textColor: colors.white,
             fontStyle: 'bold',
-            fontSize: 9,
+            fontSize: 10,
+            font: 'helvetica',
           },
           bodyStyles: {
-            fontSize: 8,
+            fontSize: 9,
             textColor: colors.dark,
+            font: 'helvetica',
+          },
+          styles: {
+            font: 'helvetica',
+            cellPadding: 3,
           },
           alternateRowStyles: {
             fillColor: [250, 245, 255],
@@ -954,14 +976,20 @@ export function ApplicationStateAnalyzer() {
             head: [['#', 'Tecnologia', 'Rellevància', 'Estat']],
             body: installedData,
             theme: 'striped',
-            headStyles: {
+          headStyles: {
               fillColor: colors.secondary,
               textColor: colors.white,
               fontStyle: 'bold',
-              fontSize: 9,
+              fontSize: 10,
+              font: 'helvetica',
             },
             bodyStyles: {
-              fontSize: 8,
+              fontSize: 9,
+              font: 'helvetica',
+            },
+            styles: {
+              font: 'helvetica',
+              cellPadding: 3,
             },
             columnStyles: {
               0: { cellWidth: 15, halign: 'center' },
@@ -994,14 +1022,20 @@ export function ApplicationStateAnalyzer() {
             head: [['#', 'Tecnologia', 'Rellevància', 'Estat']],
             body: pendingData,
             theme: 'striped',
-            headStyles: {
+          headStyles: {
               fillColor: colors.warning,
               textColor: colors.white,
               fontStyle: 'bold',
-              fontSize: 9,
+              fontSize: 10,
+              font: 'helvetica',
             },
             bodyStyles: {
-              fontSize: 8,
+              fontSize: 9,
+              font: 'helvetica',
+            },
+            styles: {
+              font: 'helvetica',
+              cellPadding: 3,
             },
             columnStyles: {
               0: { cellWidth: 15, halign: 'center' },
@@ -1047,10 +1081,16 @@ export function ApplicationStateAnalyzer() {
             fillColor: colors.danger,
             textColor: colors.white,
             fontStyle: 'bold',
-            fontSize: 9,
+            fontSize: 10,
+            font: 'helvetica',
           },
           bodyStyles: {
-            fontSize: 7,
+            fontSize: 9,
+            font: 'helvetica',
+          },
+          styles: {
+            font: 'helvetica',
+            cellPadding: 3,
           },
           columnStyles: {
             0: { cellWidth: 10, halign: 'center' },
@@ -1105,10 +1145,16 @@ export function ApplicationStateAnalyzer() {
             fillColor: colors.accent,
             textColor: colors.white,
             fontStyle: 'bold',
-            fontSize: 9,
+            fontSize: 10,
+            font: 'helvetica',
           },
           bodyStyles: {
-            fontSize: 8,
+            fontSize: 9,
+            font: 'helvetica',
+          },
+          styles: {
+            font: 'helvetica',
+            cellPadding: 3,
           },
           columnStyles: {
             0: { cellWidth: 10, halign: 'center' },
@@ -1161,10 +1207,16 @@ export function ApplicationStateAnalyzer() {
             fillColor: colors.primary,
             textColor: colors.white,
             fontStyle: 'bold',
-            fontSize: 9,
+            fontSize: 10,
+            font: 'helvetica',
           },
           bodyStyles: {
-            fontSize: 8,
+            fontSize: 9,
+            font: 'helvetica',
+          },
+          styles: {
+            font: 'helvetica',
+            cellPadding: 3,
           },
           columnStyles: {
             0: { cellWidth: 10, halign: 'center' },
