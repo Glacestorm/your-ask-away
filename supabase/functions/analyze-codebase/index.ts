@@ -5,11 +5,28 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+interface RoadmapFeature {
+  feature: string;
+  status: string;
+  reason: string;
+  priority: string;
+  estimatedQ: string;
+}
+
+interface ImplementedFeature {
+  feature: string;
+  status: string;
+  implementedDate: string;
+  component: string;
+}
+
 interface CodebaseAnalysis {
   version: string;
   generationDate: string;
   modules: ModuleAnalysis[];
   pendingFeatures: string[];
+  roadmapFeatures?: RoadmapFeature[];
+  implementedFromRoadmap?: ImplementedFeature[];
   securityFindings: string[];
   edgeFunctionsDetail: EdgeFunctionDetail[];
   marketValuation: MarketValuation;
@@ -875,13 +892,16 @@ function getDefaultAnalysis(componentsList: string[], hooksList: string[], edgeF
         differentiators: ["IA especializada banca", "Detección riesgos automática", "Integración nativa"]
       }
     ],
-    pendingFeatures: [
-      "App móvil nativa iOS/Android",
-      "Integración Temenos T24/Transact bidireccional completa",
-      "API pública REST/GraphQL documentada para terceros",
-      "Marketplace integraciones",
-      "White-label para revendedores",
-      "Multi-tenant SaaS completo"
+    pendingFeatures: [],
+    roadmapFeatures: [
+      { feature: "App móvil nativa iOS/Android", status: "roadmap_2025", reason: "Requiere React Native/Flutter fuera scope Lovable web", priority: "alta", estimatedQ: "Q3 2025" },
+      { feature: "Integración Temenos T24/Transact bidireccional", status: "roadmap_partnership", reason: "Requiere licencias y partnership Temenos", priority: "media", estimatedQ: "Q4 2025" },
+      { feature: "Marketplace integraciones", status: "roadmap_2026", reason: "Arquitectura marketplace compleja", priority: "baja", estimatedQ: "Q1 2026" },
+      { feature: "Multi-tenant SaaS completo", status: "roadmap_2026", reason: "Requiere arquitectura tenants aislados", priority: "media", estimatedQ: "Q2 2026" }
+    ],
+    implementedFromRoadmap: [
+      { feature: "API pública REST documentada", status: "implemented", implementedDate: "2024-12", component: "APIDocumentation.tsx" },
+      { feature: "White-label para revendedores", status: "implemented", implementedDate: "2024-12", component: "WhiteLabelConfig.tsx" }
     ],
     securityFindings: allSecurityFeatures,
     edgeFunctionsDetail: [
