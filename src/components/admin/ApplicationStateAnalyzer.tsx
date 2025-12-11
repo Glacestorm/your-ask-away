@@ -529,156 +529,695 @@ export function ApplicationStateAnalyzer() {
     
     try {
       const { jsPDF } = await import('jspdf');
-      const doc = new jsPDF();
+      const autoTable = (await import('jspdf-autotable')).default;
       
-      let yPos = 20;
+      const doc = new jsPDF('p', 'mm', 'a4');
       const pageWidth = doc.internal.pageSize.getWidth();
-      const margin = 20;
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 15;
       const contentWidth = pageWidth - 2 * margin;
+      
+      // Color palette
+      const colors = {
+        primary: [30, 64, 175] as [number, number, number],      // Blue
+        secondary: [16, 185, 129] as [number, number, number],   // Green
+        accent: [139, 92, 246] as [number, number, number],      // Purple
+        warning: [245, 158, 11] as [number, number, number],     // Amber
+        danger: [239, 68, 68] as [number, number, number],       // Red
+        dark: [30, 41, 59] as [number, number, number],          // Slate
+        light: [241, 245, 249] as [number, number, number],      // Light gray
+        white: [255, 255, 255] as [number, number, number],
+      };
 
-      // Título
-      doc.setFontSize(24);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Informe de Estado de la Aplicación', margin, yPos);
-      yPos += 15;
+      // Helper functions
+      const addFooter = (pageNum: number, totalPages: number) => {
+        doc.setFillColor(...colors.dark);
+        doc.rect(0, pageHeight - 12, pageWidth, 12, 'F');
+        doc.setTextColor(...colors.white);
+        doc.setFontSize(8);
+        doc.text('ObelixIA - CRM Bancari Intel·ligent', margin, pageHeight - 5);
+        doc.text(`Pàgina ${pageNum} de ${totalPages}`, pageWidth - margin - 20, pageHeight - 5);
+        doc.text(new Date().toLocaleDateString('ca-ES'), pageWidth / 2, pageHeight - 5, { align: 'center' });
+      };
 
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`Generado: ${new Date().toLocaleString('es-ES')}`, margin, yPos);
-      yPos += 15;
-
-      // Resumen ejecutivo
-      if (improvementsAnalysis?.summary) {
-        doc.setFontSize(14);
-        doc.setFont('helvetica', 'bold');
-        doc.text('Resumen Ejecutivo', margin, yPos);
-        yPos += 8;
-        
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        const summaryLines = doc.splitTextToSize(improvementsAnalysis.summary, contentWidth);
-        doc.text(summaryLines, margin, yPos);
-        yPos += summaryLines.length * 5 + 10;
-      }
-
-      // Módulos analizados
-      if (codebaseAnalysis?.modules && Array.isArray(codebaseAnalysis.modules) && codebaseAnalysis.modules.length > 0) {
-        if (yPos > 250) {
-          doc.addPage();
-          yPos = 20;
+      const drawProgressBar = (x: number, y: number, width: number, height: number, percentage: number, color: [number, number, number]) => {
+        // Background
+        doc.setFillColor(230, 230, 230);
+        doc.roundedRect(x, y, width, height, 2, 2, 'F');
+        // Progress
+        doc.setFillColor(...color);
+        const progressWidth = (width * Math.min(percentage, 100)) / 100;
+        if (progressWidth > 0) {
+          doc.roundedRect(x, y, progressWidth, height, 2, 2, 'F');
         }
-        
-        doc.setFontSize(14);
+      };
+
+      const drawStatCard = (x: number, y: number, width: number, height: number, title: string, value: string, color: [number, number, number]) => {
+        // Card background
+        doc.setFillColor(...colors.white);
+        doc.setDrawColor(...color);
+        doc.setLineWidth(0.5);
+        doc.roundedRect(x, y, width, height, 3, 3, 'FD');
+        // Color accent bar
+        doc.setFillColor(...color);
+        doc.rect(x, y, 4, height, 'F');
+        // Title
+        doc.setTextColor(100, 100, 100);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.text(title, x + 8, y + 8);
+        // Value
+        doc.setTextColor(...colors.dark);
+        doc.setFontSize(16);
         doc.setFont('helvetica', 'bold');
-        doc.text('Módulos de la Aplicación', margin, yPos);
-        yPos += 10;
+        doc.text(value, x + 8, y + 20);
+      };
 
-        codebaseAnalysis.modules.forEach((module, idx) => {
-          if (yPos > 260) {
-            doc.addPage();
-            yPos = 20;
-          }
-          
-          doc.setFontSize(11);
-          doc.setFont('helvetica', 'bold');
-          doc.text(`${idx + 1}. ${module.name || 'Sin nombre'} (${module.completionPercentage || 0}%)`, margin, yPos);
-          yPos += 6;
-          
-          doc.setFontSize(9);
-          doc.setFont('helvetica', 'normal');
-          const descLines = doc.splitTextToSize(module.description || 'Sin descripción', contentWidth - 10);
-          doc.text(descLines, margin + 5, yPos);
-          yPos += descLines.length * 4 + 8;
-        });
-      }
+      // ===============================
+      // PAGE 1: COVER PAGE
+      // ===============================
+      // Gradient-like header
+      doc.setFillColor(...colors.primary);
+      doc.rect(0, 0, pageWidth, 100, 'F');
+      doc.setFillColor(20, 50, 140);
+      doc.rect(0, 80, pageWidth, 30, 'F');
+      
+      // Logo area (geometric shape)
+      doc.setFillColor(...colors.white);
+      doc.circle(pageWidth / 2, 45, 25, 'F');
+      doc.setFillColor(...colors.primary);
+      doc.setFontSize(28);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Ox', pageWidth / 2 - 10, 52);
+      
+      // Title
+      doc.setTextColor(...colors.white);
+      doc.setFontSize(28);
+      doc.setFont('helvetica', 'bold');
+      doc.text('INFORME D\'ESTAT', pageWidth / 2, 125, { align: 'center' });
+      doc.setFontSize(14);
+      doc.text('DE L\'APLICACIÓ', pageWidth / 2, 135, { align: 'center' });
+      
+      // Subtitle
+      doc.setTextColor(...colors.dark);
+      doc.setFontSize(18);
+      doc.text('ObelixIA - CRM Bancari Intel·ligent', pageWidth / 2, 160, { align: 'center' });
+      
+      // Version and date box
+      doc.setFillColor(...colors.light);
+      doc.roundedRect(pageWidth / 2 - 50, 175, 100, 35, 5, 5, 'F');
+      doc.setTextColor(...colors.dark);
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Versió: ${codebaseAnalysis?.version || '8.0.0'}`, pageWidth / 2, 188, { align: 'center' });
+      doc.text(`Generat: ${new Date().toLocaleDateString('ca-ES')}`, pageWidth / 2, 198, { align: 'center' });
+      
+      // Key stats on cover
+      const stats = codebaseAnalysis?.codeStats || { totalComponents: 195, totalHooks: 24, totalEdgeFunctions: 50, totalPages: 9 };
+      const statY = 230;
+      drawStatCard(margin, statY, 40, 30, 'Components', String(stats.totalComponents), colors.primary);
+      drawStatCard(margin + 45, statY, 40, 30, 'Edge Func.', String(stats.totalEdgeFunctions), colors.secondary);
+      drawStatCard(margin + 90, statY, 40, 30, 'Hooks', String(stats.totalHooks), colors.accent);
+      drawStatCard(margin + 135, statY, 40, 30, 'Pàgines', String(stats.totalPages), colors.warning);
+      
+      // Confidential footer
+      doc.setFillColor(...colors.dark);
+      doc.rect(0, pageHeight - 20, pageWidth, 20, 'F');
+      doc.setTextColor(...colors.white);
+      doc.setFontSize(9);
+      doc.text('DOCUMENT CONFIDENCIAL - ÚS INTERN', pageWidth / 2, pageHeight - 8, { align: 'center' });
 
-      // Mejoras sugeridas
-      if (improvementsAnalysis?.improvements && Array.isArray(improvementsAnalysis.improvements) && improvementsAnalysis.improvements.length > 0) {
-        doc.addPage();
-        yPos = 20;
-        
-        doc.setFontSize(14);
+      // ===============================
+      // PAGE 2: TABLE OF CONTENTS
+      // ===============================
+      doc.addPage();
+      
+      // Header
+      doc.setFillColor(...colors.primary);
+      doc.rect(0, 0, pageWidth, 25, 'F');
+      doc.setTextColor(...colors.white);
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('ÍNDEX DE CONTINGUTS', margin, 17);
+      
+      let tocY = 45;
+      doc.setTextColor(...colors.dark);
+      
+      const tocItems = [
+        { num: '1', title: 'Resum Executiu', page: 3 },
+        { num: '2', title: 'Estadístiques del Projecte', page: 3 },
+        { num: '3', title: 'Mòduls de l\'Aplicació', page: 4 },
+        { num: '4', title: 'Seguretat Implementada', page: 5 },
+        { num: '5', title: 'Compliance Normatiu', page: 6 },
+        { num: '6', title: 'Tendències Tecnològiques', page: 7 },
+        { num: '7', title: 'Millores Suggerides', page: 8 },
+        { num: '8', title: 'Integracions IA', page: 9 },
+        { num: '9', title: 'Optimitzacions de Rendiment', page: 10 },
+      ];
+      
+      tocItems.forEach((item) => {
+        doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
-        doc.text('Mejoras Sugeridas', margin, yPos);
-        yPos += 10;
-
-        improvementsAnalysis.improvements.slice(0, 10).forEach((imp, idx) => {
-          if (yPos > 250) {
-            doc.addPage();
-            yPos = 20;
-          }
-          
-          doc.setFontSize(11);
-          doc.setFont('helvetica', 'bold');
-          doc.text(`${idx + 1}. ${imp.title || 'Sin título'} [${(imp.priority || 'media').toUpperCase()}]`, margin, yPos);
-          yPos += 6;
-          
-          doc.setFontSize(9);
-          doc.setFont('helvetica', 'normal');
-          const impLines = doc.splitTextToSize(imp.description || 'Sin descripción', contentWidth - 10);
-          doc.text(impLines, margin + 5, yPos);
-          yPos += impLines.length * 4;
-          
-          doc.text(`Esfuerzo: ${imp.effort || 'N/A'} | Impacto: ${imp.impact || 'N/A'}`, margin + 5, yPos);
-          yPos += 8;
-        });
-      }
-
-      // Tendencias tecnológicas
-      if (improvementsAnalysis?.technologyTrends && Array.isArray(improvementsAnalysis.technologyTrends) && improvementsAnalysis.technologyTrends.length > 0) {
-        doc.addPage();
-        yPos = 20;
-        
-        doc.setFontSize(14);
+        doc.setTextColor(...colors.primary);
+        doc.text(item.num + '.', margin, tocY);
+        doc.setTextColor(...colors.dark);
+        doc.setFont('helvetica', 'normal');
+        doc.text(item.title, margin + 10, tocY);
+        // Dotted line
+        doc.setDrawColor(200, 200, 200);
+        doc.setLineDashPattern([1, 1], 0);
+        doc.line(margin + 80, tocY, pageWidth - margin - 15, tocY);
+        doc.setLineDashPattern([], 0);
+        // Page number
         doc.setFont('helvetica', 'bold');
-        doc.text('Tendencias Tecnológicas', margin, yPos);
-        yPos += 10;
+        doc.text(String(item.page), pageWidth - margin - 5, tocY);
+        tocY += 12;
+      });
 
-        improvementsAnalysis.technologyTrends.forEach((trend, idx) => {
-          if (yPos > 260) {
-            doc.addPage();
-            yPos = 20;
-          }
-          
-          doc.setFontSize(11);
-          doc.setFont('helvetica', 'bold');
-          doc.text(`${idx + 1}. ${trend.name || 'Sin nombre'}`, margin, yPos);
-          yPos += 6;
-          
-          doc.setFontSize(9);
-          doc.setFont('helvetica', 'normal');
-          doc.text(`Relevancia: ${trend.relevance || 'N/A'}`, margin + 5, yPos);
-          yPos += 4;
-          doc.text(`Recomendación: ${trend.recommendation || 'N/A'}`, margin + 5, yPos);
-          yPos += 8;
-        });
-      }
-
-      // Actualizaciones de compliance
-      if (improvementsAnalysis?.complianceUpdates && Array.isArray(improvementsAnalysis.complianceUpdates) && improvementsAnalysis.complianceUpdates.length > 0) {
-        doc.addPage();
-        yPos = 20;
-        
-        doc.setFontSize(14);
-        doc.setFont('helvetica', 'bold');
-        doc.text('Actualizaciones de Cumplimiento Normativo', margin, yPos);
-        yPos += 10;
-
+      // ===============================
+      // PAGE 3: EXECUTIVE SUMMARY
+      // ===============================
+      doc.addPage();
+      
+      // Header
+      doc.setFillColor(...colors.primary);
+      doc.rect(0, 0, pageWidth, 25, 'F');
+      doc.setTextColor(...colors.white);
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('1. RESUM EXECUTIU', margin, 17);
+      
+      let yPos = 40;
+      
+      // Executive summary text
+      if (improvementsAnalysis?.summary) {
+        doc.setFillColor(...colors.light);
+        doc.roundedRect(margin, yPos, contentWidth, 60, 3, 3, 'F');
+        doc.setTextColor(...colors.dark);
         doc.setFontSize(9);
         doc.setFont('helvetica', 'normal');
-        improvementsAnalysis.complianceUpdates.forEach((update, idx) => {
-          const lines = doc.splitTextToSize(`${idx + 1}. ${update || ''}`, contentWidth);
-          doc.text(lines, margin, yPos);
-          yPos += lines.length * 4 + 2;
+        const summaryLines = doc.splitTextToSize(improvementsAnalysis.summary, contentWidth - 10);
+        doc.text(summaryLines.slice(0, 15), margin + 5, yPos + 8);
+        yPos += 70;
+      }
+      
+      // Statistics section
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...colors.primary);
+      doc.text('2. ESTADÍSTIQUES DEL PROJECTE', margin, yPos);
+      yPos += 15;
+      
+      // Stats grid
+      const cardWidth = (contentWidth - 15) / 4;
+      drawStatCard(margin, yPos, cardWidth, 35, 'Completitud Global', `${overallCompletion}%`, colors.primary);
+      drawStatCard(margin + cardWidth + 5, yPos, cardWidth, 35, 'Mòduls', String(codebaseAnalysis?.modules?.length || 16), colors.secondary);
+      drawStatCard(margin + (cardWidth + 5) * 2, yPos, cardWidth, 35, 'Edge Functions', String(stats.totalEdgeFunctions), colors.accent);
+      drawStatCard(margin + (cardWidth + 5) * 3, yPos, cardWidth, 35, 'Compliance', `${improvementsAnalysis?.complianceRegulations?.filter(r => r.status === 'compliant').length || 0}/${improvementsAnalysis?.complianceRegulations?.length || 0}`, colors.warning);
+      yPos += 50;
+      
+      // Technology summary
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...colors.dark);
+      doc.text('Stack Tecnològic Principal:', margin, yPos);
+      yPos += 8;
+      
+      const techStack = ['React 19', 'TypeScript', 'Supabase', 'Tailwind CSS', 'MapLibre GL', 'Recharts', 'jsPDF'];
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      techStack.forEach((tech, idx) => {
+        const x = margin + (idx % 4) * 45;
+        const y = yPos + Math.floor(idx / 4) * 8;
+        doc.setFillColor(...colors.secondary);
+        doc.circle(x, y - 1, 1.5, 'F');
+        doc.text(tech, x + 4, y);
+      });
+
+      // ===============================
+      // PAGE 4: MODULES
+      // ===============================
+      doc.addPage();
+      
+      // Header
+      doc.setFillColor(...colors.primary);
+      doc.rect(0, 0, pageWidth, 25, 'F');
+      doc.setTextColor(...colors.white);
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('3. MÒDULS DE L\'APLICACIÓ', margin, 17);
+      
+      yPos = 35;
+      
+      if (codebaseAnalysis?.modules && Array.isArray(codebaseAnalysis.modules)) {
+        const moduleData = codebaseAnalysis.modules.map((m, idx) => [
+          String(idx + 1),
+          m.name || 'N/A',
+          `${m.completionPercentage || 0}%`,
+          m.businessValue || 'Alt'
+        ]);
+        
+        autoTable(doc, {
+          startY: yPos,
+          head: [['#', 'Mòdul', 'Completitud', 'Valor']],
+          body: moduleData,
+          theme: 'grid',
+          headStyles: {
+            fillColor: colors.primary,
+            textColor: colors.white,
+            fontStyle: 'bold',
+            fontSize: 9,
+          },
+          bodyStyles: {
+            fontSize: 8,
+            textColor: colors.dark,
+          },
+          alternateRowStyles: {
+            fillColor: colors.light,
+          },
+          columnStyles: {
+            0: { cellWidth: 10, halign: 'center' },
+            1: { cellWidth: 80 },
+            2: { cellWidth: 25, halign: 'center' },
+            3: { cellWidth: 30, halign: 'center' },
+          },
+          margin: { left: margin, right: margin },
+          didDrawCell: (data) => {
+            if (data.column.index === 2 && data.section === 'body') {
+              const percentage = parseInt(String(data.cell.raw).replace('%', '')) || 0;
+              const color = percentage >= 90 ? colors.secondary : percentage >= 70 ? colors.warning : colors.danger;
+              doc.setFillColor(...color);
+              doc.circle(data.cell.x + 3, data.cell.y + data.cell.height / 2, 2, 'F');
+            }
+          },
         });
       }
 
-      // Guardar PDF
-      doc.save(`informe-aplicacion-${new Date().toISOString().split('T')[0]}.pdf`);
-      toast.success('PDF generado correctamente');
+      // ===============================
+      // PAGE 5: SECURITY
+      // ===============================
+      doc.addPage();
+      
+      // Header
+      doc.setFillColor(...colors.secondary);
+      doc.rect(0, 0, pageWidth, 25, 'F');
+      doc.setTextColor(...colors.white);
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('4. SEGURETAT IMPLEMENTADA', margin, 17);
+      
+      yPos = 35;
+      
+      if (codebaseAnalysis?.securityFindings && codebaseAnalysis.securityFindings.length > 0) {
+        const securityData = codebaseAnalysis.securityFindings.map((finding, idx) => [
+          '✓',
+          String(finding)
+        ]);
+        
+        autoTable(doc, {
+          startY: yPos,
+          head: [['', 'Control de Seguretat Implementat']],
+          body: securityData,
+          theme: 'striped',
+          headStyles: {
+            fillColor: colors.secondary,
+            textColor: colors.white,
+            fontStyle: 'bold',
+            fontSize: 10,
+          },
+          bodyStyles: {
+            fontSize: 8,
+            textColor: colors.dark,
+          },
+          columnStyles: {
+            0: { cellWidth: 10, halign: 'center', textColor: colors.secondary },
+            1: { cellWidth: contentWidth - 15 },
+          },
+          margin: { left: margin, right: margin },
+        });
+      }
+
+      // ===============================
+      // PAGE 6: COMPLIANCE
+      // ===============================
+      doc.addPage();
+      
+      // Header
+      doc.setFillColor(...colors.accent);
+      doc.rect(0, 0, pageWidth, 25, 'F');
+      doc.setTextColor(...colors.white);
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('5. COMPLIANCE NORMATIU', margin, 17);
+      
+      yPos = 35;
+      
+      if (improvementsAnalysis?.complianceRegulations && improvementsAnalysis.complianceRegulations.length > 0) {
+        const complianceData = improvementsAnalysis.complianceRegulations.map((reg) => [
+          reg.name || 'N/A',
+          reg.status === 'compliant' ? 'COMPLERT' : reg.status === 'partial' ? 'PARCIAL' : 'PENDENT',
+          `${reg.compliancePercentage || (reg.status === 'compliant' ? 100 : 80)}%`,
+          reg.jurisdiction || 'EU'
+        ]);
+        
+        autoTable(doc, {
+          startY: yPos,
+          head: [['Normativa', 'Estat', 'Compliment', 'Jurisdicció']],
+          body: complianceData,
+          theme: 'grid',
+          headStyles: {
+            fillColor: colors.accent,
+            textColor: colors.white,
+            fontStyle: 'bold',
+            fontSize: 9,
+          },
+          bodyStyles: {
+            fontSize: 8,
+            textColor: colors.dark,
+          },
+          alternateRowStyles: {
+            fillColor: [250, 245, 255],
+          },
+          columnStyles: {
+            0: { cellWidth: 60 },
+            1: { cellWidth: 30, halign: 'center' },
+            2: { cellWidth: 25, halign: 'center' },
+            3: { cellWidth: 30, halign: 'center' },
+          },
+          margin: { left: margin, right: margin },
+          didDrawCell: (data) => {
+            if (data.column.index === 1 && data.section === 'body') {
+              const status = String(data.cell.raw);
+              const color = status === 'COMPLERT' ? colors.secondary : status === 'PARCIAL' ? colors.warning : colors.danger;
+              doc.setTextColor(...color);
+            }
+          },
+        });
+      }
+
+      // ===============================
+      // PAGE 7: TECHNOLOGY TRENDS
+      // ===============================
+      doc.addPage();
+      
+      // Header
+      doc.setFillColor(...colors.warning);
+      doc.rect(0, 0, pageWidth, 25, 'F');
+      doc.setTextColor(...colors.white);
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('6. TENDÈNCIES TECNOLÒGIQUES', margin, 17);
+      
+      yPos = 35;
+      
+      if (improvementsAnalysis?.detailedTrends && improvementsAnalysis.detailedTrends.length > 0) {
+        const trendsInstalled = improvementsAnalysis.detailedTrends.filter(t => t.installed);
+        const trendsPending = improvementsAnalysis.detailedTrends.filter(t => !t.installed);
+        
+        // Installed section
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...colors.secondary);
+        doc.text(`INSTAL·LADES (${trendsInstalled.length})`, margin, yPos);
+        yPos += 8;
+        
+        const installedData = trendsInstalled.slice(0, 10).map((t) => [
+          `#${t.number}`,
+          t.name,
+          t.relevance || 'Alta',
+          '✓'
+        ]);
+        
+        if (installedData.length > 0) {
+          autoTable(doc, {
+            startY: yPos,
+            head: [['#', 'Tecnologia', 'Rellevància', 'Estat']],
+            body: installedData,
+            theme: 'striped',
+            headStyles: {
+              fillColor: colors.secondary,
+              textColor: colors.white,
+              fontStyle: 'bold',
+              fontSize: 9,
+            },
+            bodyStyles: {
+              fontSize: 8,
+            },
+            columnStyles: {
+              0: { cellWidth: 15, halign: 'center' },
+              1: { cellWidth: 90 },
+              2: { cellWidth: 40, halign: 'center' },
+              3: { cellWidth: 15, halign: 'center', textColor: colors.secondary },
+            },
+            margin: { left: margin, right: margin },
+          });
+          yPos = (doc as any).lastAutoTable.finalY + 15;
+        }
+        
+        // Pending section
+        if (trendsPending.length > 0) {
+          doc.setFontSize(12);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(...colors.warning);
+          doc.text(`PENDENTS (${trendsPending.length})`, margin, yPos);
+          yPos += 8;
+          
+          const pendingData = trendsPending.slice(0, 5).map((t) => [
+            `#${t.number}`,
+            t.name,
+            t.relevance || 'Mitjana',
+            '○'
+          ]);
+          
+          autoTable(doc, {
+            startY: yPos,
+            head: [['#', 'Tecnologia', 'Rellevància', 'Estat']],
+            body: pendingData,
+            theme: 'striped',
+            headStyles: {
+              fillColor: colors.warning,
+              textColor: colors.white,
+              fontStyle: 'bold',
+              fontSize: 9,
+            },
+            bodyStyles: {
+              fontSize: 8,
+            },
+            columnStyles: {
+              0: { cellWidth: 15, halign: 'center' },
+              1: { cellWidth: 90 },
+              2: { cellWidth: 40, halign: 'center' },
+              3: { cellWidth: 15, halign: 'center', textColor: colors.warning },
+            },
+            margin: { left: margin, right: margin },
+          });
+        }
+      }
+
+      // ===============================
+      // PAGE 8: IMPROVEMENTS
+      // ===============================
+      doc.addPage();
+      
+      // Header
+      doc.setFillColor(...colors.danger);
+      doc.rect(0, 0, pageWidth, 25, 'F');
+      doc.setTextColor(...colors.white);
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('7. MILLORES SUGGERIDES', margin, 17);
+      
+      yPos = 35;
+      
+      if (improvementsAnalysis?.improvements && improvementsAnalysis.improvements.length > 0) {
+        const improvementData = improvementsAnalysis.improvements.slice(0, 15).map((imp, idx) => [
+          String(idx + 1),
+          imp.title || 'N/A',
+          (imp.priority || 'media').toUpperCase(),
+          imp.effort || 'N/A',
+          imp.impact || 'N/A'
+        ]);
+        
+        autoTable(doc, {
+          startY: yPos,
+          head: [['#', 'Millora', 'Prioritat', 'Esforç', 'Impacte']],
+          body: improvementData,
+          theme: 'grid',
+          headStyles: {
+            fillColor: colors.danger,
+            textColor: colors.white,
+            fontStyle: 'bold',
+            fontSize: 9,
+          },
+          bodyStyles: {
+            fontSize: 7,
+          },
+          columnStyles: {
+            0: { cellWidth: 10, halign: 'center' },
+            1: { cellWidth: 80 },
+            2: { cellWidth: 20, halign: 'center' },
+            3: { cellWidth: 25, halign: 'center' },
+            4: { cellWidth: 25, halign: 'center' },
+          },
+          margin: { left: margin, right: margin },
+          didDrawCell: (data) => {
+            if (data.column.index === 2 && data.section === 'body') {
+              const priority = String(data.cell.raw);
+              const color = priority === 'ALTA' ? colors.danger : priority === 'MEDIA' ? colors.warning : colors.secondary;
+              doc.setTextColor(...color);
+            }
+          },
+        });
+      }
+
+      // ===============================
+      // PAGE 9: AI INTEGRATIONS
+      // ===============================
+      doc.addPage();
+      
+      // Header
+      doc.setFillColor(...colors.accent);
+      doc.rect(0, 0, pageWidth, 25, 'F');
+      doc.setTextColor(...colors.white);
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('8. INTEGRACIONS IA', margin, 17);
+      
+      yPos = 35;
+      
+      if (improvementsAnalysis?.aiIntegrations && improvementsAnalysis.aiIntegrations.length > 0) {
+        const aiData = improvementsAnalysis.aiIntegrations.map((ai, idx) => {
+          const text = String(ai);
+          const isInstalled = text.includes('✅ INSTAL·LAT');
+          return [
+            String(idx + 1),
+            text.replace('✅ INSTAL·LAT:', '').replace('⏳ PENDENT:', '').trim(),
+            isInstalled ? 'ACTIU' : 'PENDENT'
+          ];
+        });
+        
+        autoTable(doc, {
+          startY: yPos,
+          head: [['#', 'Integració IA', 'Estat']],
+          body: aiData,
+          theme: 'striped',
+          headStyles: {
+            fillColor: colors.accent,
+            textColor: colors.white,
+            fontStyle: 'bold',
+            fontSize: 9,
+          },
+          bodyStyles: {
+            fontSize: 8,
+          },
+          columnStyles: {
+            0: { cellWidth: 10, halign: 'center' },
+            1: { cellWidth: 120 },
+            2: { cellWidth: 25, halign: 'center' },
+          },
+          margin: { left: margin, right: margin },
+          didDrawCell: (data) => {
+            if (data.column.index === 2 && data.section === 'body') {
+              const status = String(data.cell.raw);
+              const color = status === 'ACTIU' ? colors.secondary : colors.warning;
+              doc.setTextColor(...color);
+            }
+          },
+        });
+      }
+
+      // ===============================
+      // PAGE 10: PERFORMANCE
+      // ===============================
+      doc.addPage();
+      
+      // Header
+      doc.setFillColor(...colors.primary);
+      doc.rect(0, 0, pageWidth, 25, 'F');
+      doc.setTextColor(...colors.white);
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('9. OPTIMITZACIONS DE RENDIMENT', margin, 17);
+      
+      yPos = 35;
+      
+      if (improvementsAnalysis?.performanceOptimizations && improvementsAnalysis.performanceOptimizations.length > 0) {
+        const perfData = improvementsAnalysis.performanceOptimizations.map((opt, idx) => {
+          const text = String(opt);
+          const isInstalled = text.includes('✅ INSTAL·LAT');
+          return [
+            String(idx + 1),
+            text.replace('✅ INSTAL·LAT:', '').replace('⏳ PENDENT:', '').trim(),
+            isInstalled ? 'ACTIU' : 'PENDENT'
+          ];
+        });
+        
+        autoTable(doc, {
+          startY: yPos,
+          head: [['#', 'Optimització', 'Estat']],
+          body: perfData,
+          theme: 'striped',
+          headStyles: {
+            fillColor: colors.primary,
+            textColor: colors.white,
+            fontStyle: 'bold',
+            fontSize: 9,
+          },
+          bodyStyles: {
+            fontSize: 8,
+          },
+          columnStyles: {
+            0: { cellWidth: 10, halign: 'center' },
+            1: { cellWidth: 120 },
+            2: { cellWidth: 25, halign: 'center' },
+          },
+          margin: { left: margin, right: margin },
+          didDrawCell: (data) => {
+            if (data.column.index === 2 && data.section === 'body') {
+              const status = String(data.cell.raw);
+              const color = status === 'ACTIU' ? colors.secondary : colors.warning;
+              doc.setTextColor(...color);
+            }
+          },
+        });
+      }
+      
+      // Final summary stats
+      yPos = (doc as any).lastAutoTable?.finalY + 20 || 150;
+      
+      doc.setFillColor(...colors.light);
+      doc.roundedRect(margin, yPos, contentWidth, 40, 5, 5, 'F');
+      
+      doc.setTextColor(...colors.dark);
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('RESUM FINAL', margin + 5, yPos + 10);
+      
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      const finalStats = [
+        `• Completitud Global: ${overallCompletion}%`,
+        `• Mòduls Completats: ${codebaseAnalysis?.modules?.filter(m => m.completionPercentage >= 90).length || 0}/${codebaseAnalysis?.modules?.length || 0}`,
+        `• Controls de Seguretat: ${codebaseAnalysis?.securityFindings?.length || 0}`,
+        `• Normatives Complertes: ${improvementsAnalysis?.complianceRegulations?.filter(r => r.status === 'compliant').length || 0}/${improvementsAnalysis?.complianceRegulations?.length || 0}`,
+      ];
+      doc.text(finalStats, margin + 5, yPos + 20);
+
+      // ===============================
+      // ADD FOOTERS TO ALL PAGES
+      // ===============================
+      const totalPages = doc.getNumberOfPages();
+      for (let i = 2; i <= totalPages; i++) {
+        doc.setPage(i);
+        addFooter(i - 1, totalPages - 1);
+      }
+
+      // Save PDF
+      doc.save(`informe-obelixia-${new Date().toISOString().split('T')[0]}.pdf`);
+      toast.success('PDF professional generat correctament!');
     } catch (error: any) {
       console.error('Error generating PDF:', error);
-      toast.error(`Error generando PDF: ${error.message}`);
+      toast.error(`Error generant PDF: ${error.message}`);
     } finally {
       setIsGeneratingPDF(false);
     }
