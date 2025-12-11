@@ -57,6 +57,7 @@ import { TPVGoalsDashboard } from '@/components/dashboard/TPVGoalsDashboard';
 import { BestPracticesPanel } from '@/components/dashboard/BestPracticesPanel';
 import { GlobalNavHeader } from '@/components/GlobalNavHeader';
 import { RealtimeChatPanel } from '@/components/chat/RealtimeChatPanel';
+import { RealtimeChatCard } from '@/components/dashboard/RealtimeChatCard';
 import * as XLSX from 'xlsx';
 
 const Dashboard = () => {
@@ -241,6 +242,7 @@ const Dashboard = () => {
             <PersonalKPIsDashboard />
             <QuickActionsPanel />
             <UpcomingVisitsWidget />
+            <RealtimeChatCard />
             <ResumenEjecutivo startDate={startDate} endDate={endDate} />
           </TabsContent>
 
