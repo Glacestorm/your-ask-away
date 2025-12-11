@@ -286,108 +286,106 @@ const Dashboard = () => {
               onReorder={reorderWidgets}
               isEditMode={isEditMode}
             >
-              <div className="space-y-6">
-                {widgets.map((widget) => {
-                  const isVisible = isWidgetVisible(widget.id);
-                  
-                  // KPIs Personales
-                  if (widget.id === 'personal-kpis' && !isAuditor) {
-                    return (
-                      <DraggableWidget
-                        key={widget.id}
-                        id={widget.id}
-                        isEditMode={isEditMode}
-                        isVisible={isVisible}
-                        onToggleVisibility={() => toggleWidgetVisibility(widget.id)}
-                      >
-                        <Suspense fallback={<CardLoadingFallback />}>
-                          <PersonalKPIsDashboard />
-                        </Suspense>
-                      </DraggableWidget>
-                    );
-                  }
+              {widgets.map((widget) => {
+                const isVisible = isWidgetVisible(widget.id);
+                
+                // KPIs Personales
+                if (widget.id === 'personal-kpis' && !isAuditor) {
+                  return (
+                    <DraggableWidget
+                      key={widget.id}
+                      id={widget.id}
+                      isEditMode={isEditMode}
+                      isVisible={isVisible}
+                      onToggleVisibility={() => toggleWidgetVisibility(widget.id)}
+                    >
+                      <Suspense fallback={<CardLoadingFallback />}>
+                        <PersonalKPIsDashboard />
+                      </Suspense>
+                    </DraggableWidget>
+                  );
+                }
 
-                  // Acciones Rápidas
-                  if (widget.id === 'quick-actions' && !isAuditor) {
-                    return (
-                      <DraggableWidget
-                        key={widget.id}
-                        id={widget.id}
-                        isEditMode={isEditMode}
-                        isVisible={isVisible}
-                        onToggleVisibility={() => toggleWidgetVisibility(widget.id)}
-                      >
-                        <Suspense fallback={<LoadingFallback />}>
-                          <QuickActionsPanel />
-                        </Suspense>
-                      </DraggableWidget>
-                    );
-                  }
+                // Acciones Rápidas
+                if (widget.id === 'quick-actions' && !isAuditor) {
+                  return (
+                    <DraggableWidget
+                      key={widget.id}
+                      id={widget.id}
+                      isEditMode={isEditMode}
+                      isVisible={isVisible}
+                      onToggleVisibility={() => toggleWidgetVisibility(widget.id)}
+                    >
+                      <Suspense fallback={<LoadingFallback />}>
+                        <QuickActionsPanel />
+                      </Suspense>
+                    </DraggableWidget>
+                  );
+                }
 
-                  // Próximas Visitas
-                  if (widget.id === 'upcoming-visits' && !isAuditor) {
-                    return (
-                      <DraggableWidget
-                        key={widget.id}
-                        id={widget.id}
-                        isEditMode={isEditMode}
-                        isVisible={isVisible}
-                        onToggleVisibility={() => toggleWidgetVisibility(widget.id)}
-                      >
-                        <Suspense fallback={<CardLoadingFallback />}>
-                          <UpcomingVisitsWidget />
-                        </Suspense>
-                      </DraggableWidget>
-                    );
-                  }
+                // Próximas Visitas
+                if (widget.id === 'upcoming-visits' && !isAuditor) {
+                  return (
+                    <DraggableWidget
+                      key={widget.id}
+                      id={widget.id}
+                      isEditMode={isEditMode}
+                      isVisible={isVisible}
+                      onToggleVisibility={() => toggleWidgetVisibility(widget.id)}
+                    >
+                      <Suspense fallback={<CardLoadingFallback />}>
+                        <UpcomingVisitsWidget />
+                      </Suspense>
+                    </DraggableWidget>
+                  );
+                }
 
-                  // Resumen Ejecutivo
-                  if (widget.id === 'resumen-ejecutivo') {
-                    return (
-                      <DraggableWidget
-                        key={widget.id}
-                        id={widget.id}
-                        isEditMode={isEditMode}
-                        isVisible={isVisible}
-                        onToggleVisibility={() => toggleWidgetVisibility(widget.id)}
-                      >
-                        <Suspense fallback={<CardLoadingFallback />}>
-                          <ResumenEjecutivo startDate={startDate} endDate={endDate} />
-                        </Suspense>
-                      </DraggableWidget>
-                    );
-                  }
+                // Resumen Ejecutivo
+                if (widget.id === 'resumen-ejecutivo') {
+                  return (
+                    <DraggableWidget
+                      key={widget.id}
+                      id={widget.id}
+                      isEditMode={isEditMode}
+                      isVisible={isVisible}
+                      onToggleVisibility={() => toggleWidgetVisibility(widget.id)}
+                    >
+                      <Suspense fallback={<CardLoadingFallback />}>
+                        <ResumenEjecutivo startDate={startDate} endDate={endDate} />
+                      </Suspense>
+                    </DraggableWidget>
+                  );
+                }
 
-                  // Mi Actividad
-                  if (widget.id === 'mi-actividad' && !isAuditor) {
-                    return (
-                      <DraggableWidget
-                        key={widget.id}
-                        id={widget.id}
-                        isEditMode={isEditMode}
-                        isVisible={isVisible}
-                        onToggleVisibility={() => toggleWidgetVisibility(widget.id)}
-                      >
-                        <Card>
-                          <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                              <Activity className="h-5 w-5" />
-                              Mi Actividad Reciente
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <Suspense fallback={<LoadingFallback />}>
-                              <PersonalActivityHistory />
-                            </Suspense>
-                          </CardContent>
-                        </Card>
-                      </DraggableWidget>
-                    );
-                  }
+                // Mi Actividad
+                if (widget.id === 'mi-actividad' && !isAuditor) {
+                  return (
+                    <DraggableWidget
+                      key={widget.id}
+                      id={widget.id}
+                      isEditMode={isEditMode}
+                      isVisible={isVisible}
+                      onToggleVisibility={() => toggleWidgetVisibility(widget.id)}
+                    >
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2">
+                            <Activity className="h-5 w-5" />
+                            Mi Actividad Reciente
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <Suspense fallback={<LoadingFallback />}>
+                            <PersonalActivityHistory />
+                          </Suspense>
+                        </CardContent>
+                      </Card>
+                    </DraggableWidget>
+                  );
+                }
 
-                  return null;
-                })}
-              </div>
+                return null;
+              })}
             </SortableWidgetContainer>
 
             {/* Vista especial para auditors */}
