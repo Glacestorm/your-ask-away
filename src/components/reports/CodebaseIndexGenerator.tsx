@@ -556,6 +556,214 @@ const FUNCTIONALITY_MODULES: FunctionalityModule[] = [
     ],
     dependencies: [],
     integrations: ['Supabase Presence']
+  },
+  {
+    id: 'rfm-segmentation',
+    name: 'Anàlisi RFM i Segmentació ML',
+    icon: <BarChart3 className="h-5 w-5" />,
+    category: 'IA/ML',
+    description: 'Segmentació clients amb RFM scoring i models ML (SVM/CART) per predicció churn i CLV.',
+    features: [
+      {
+        name: 'RFM Scoring Automàtic',
+        description: 'Càlcul Recency, Frequency, Monetary amb 8 segments',
+        status: 'completed',
+        technicalDetails: ['RFMDashboard.tsx', 'calculate-rfm-analysis Edge Function', 'customer_rfm_scores table']
+      },
+      {
+        name: 'Segmentació ML SVM/CART',
+        description: 'Models machine learning per classificació clients',
+        status: 'completed',
+        technicalDetails: ['CustomerSegmentationPanel.tsx', 'segment-customers-ml Edge Function', 'customer_segments table']
+      },
+      {
+        name: 'Predicció Churn',
+        description: 'Probabilitat de pèrdua client amb factors de risc',
+        status: 'completed',
+        technicalDetails: ['Churn probability score', 'Risk factors', 'Tier distribution charts']
+      },
+      {
+        name: 'CLV Prediction',
+        description: 'Customer Lifetime Value estimat per segment',
+        status: 'completed',
+        technicalDetails: ['CLV distribution', 'Profitability tiers', 'Radar charts']
+      },
+      {
+        name: 'Polítiques Gestió',
+        description: 'Recomanacions automatitzades per cada segment',
+        status: 'completed',
+        technicalDetails: ['segment_management_policies table', 'Action recommendations', 'Priority scoring']
+      }
+    ],
+    files: [
+      'src/components/admin/RFMDashboard.tsx',
+      'src/components/admin/CustomerSegmentationPanel.tsx',
+      'supabase/functions/calculate-rfm-analysis/index.ts',
+      'supabase/functions/segment-customers-ml/index.ts'
+    ],
+    dependencies: ['recharts'],
+    integrations: ['Lovable AI (Gemini)']
+  },
+  {
+    id: 'pipeline',
+    name: 'Pipeline d\'Oportunitats',
+    icon: <Layers className="h-5 w-5" />,
+    category: 'Comercial',
+    description: 'Kanban visual per gestió oportunitats comercials amb 5 etapes i drag & drop.',
+    features: [
+      {
+        name: 'Kanban 5 Etapes',
+        description: 'Lead, Qualified, Proposal, Negotiation, Won/Lost',
+        status: 'completed',
+        technicalDetails: ['PipelineBoard.tsx', 'opportunities table', 'Drag & drop nativa']
+      },
+      {
+        name: 'Gestió Oportunitats',
+        description: 'CRUD complet amb empresa, contacte, valor estimat',
+        status: 'completed',
+        technicalDetails: ['OpportunityForm.tsx', 'OpportunityCard.tsx', 'useOpportunities.ts hook']
+      },
+      {
+        name: 'Valor Ponderat',
+        description: 'Càlcul automàtic segons probabilitat cierre',
+        status: 'completed',
+        technicalDetails: ['weighted_value calculation', 'probability percentage', 'estimated_value']
+      },
+      {
+        name: 'Marcatge VIP',
+        description: 'Identificació oportunitats clau',
+        status: 'completed',
+        technicalDetails: ['is_vip flag', 'Visual badges', 'Priority filtering']
+      }
+    ],
+    files: [
+      'src/components/pipeline/PipelineBoard.tsx',
+      'src/components/pipeline/OpportunityCard.tsx',
+      'src/components/pipeline/OpportunityForm.tsx',
+      'src/hooks/useOpportunities.ts'
+    ],
+    dependencies: ['@tanstack/react-query'],
+    integrations: ['Supabase Realtime']
+  },
+  {
+    id: 'ai-assistant',
+    name: 'Assistent IA Intern',
+    icon: <Zap className="h-5 w-5" />,
+    category: 'IA/ML',
+    description: 'Chatbot IA per gestors amb veu bidireccional i base de coneixements.',
+    features: [
+      {
+        name: 'Chat IA Contextual',
+        description: '6 tipus context: Clients, Regulacions, Productes, Procediments, Forms',
+        status: 'completed',
+        technicalDetails: ['InternalAssistantChat.tsx', 'internal-assistant-chat Edge Function', 'Gemini 2.5']
+      },
+      {
+        name: 'Veu Bidireccional',
+        description: 'Speech-to-text input i text-to-speech output',
+        status: 'completed',
+        technicalDetails: ['useVoiceChat.ts', 'Web Speech API', 'Auto-speak toggle']
+      },
+      {
+        name: 'Base Coneixements',
+        description: 'Upload PDFs i URLs per enriquir respostes',
+        status: 'completed',
+        technicalDetails: ['AssistantKnowledgeManager.tsx', 'assistant_knowledge_documents table', 'assistant-documents bucket']
+      },
+      {
+        name: 'Audit Trail Permanent',
+        description: 'Historial conversacions per compliance bancari',
+        status: 'completed',
+        technicalDetails: ['assistant_conversation_audit table', 'Legal notice GDPR/APDA', 'Auditors access']
+      }
+    ],
+    files: [
+      'src/components/admin/InternalAssistantChat.tsx',
+      'src/components/admin/AssistantKnowledgeManager.tsx',
+      'src/hooks/useVoiceChat.ts',
+      'supabase/functions/internal-assistant-chat/index.ts'
+    ],
+    dependencies: [],
+    integrations: ['Lovable AI (Gemini)', 'Web Speech API']
+  },
+  {
+    id: 'financial-rag',
+    name: 'RAG Chat Financer',
+    icon: <Calculator className="h-5 w-5" />,
+    category: 'IA/ML',
+    description: 'Consultes IA sobre estats financers amb embeddings vectorials.',
+    features: [
+      {
+        name: 'Embeddings Vectorials',
+        description: 'Generació embeddings 768D per documents financers',
+        status: 'completed',
+        technicalDetails: ['generate-financial-embeddings Edge Function', 'financial_document_embeddings table', 'Lovable AI']
+      },
+      {
+        name: 'Cerca Semàntica',
+        description: 'Búsqueda per similitud coseno sobre documents',
+        status: 'completed',
+        technicalDetails: ['search_financial_embeddings function', 'match_threshold', 'match_count']
+      },
+      {
+        name: 'Chat RAG',
+        description: 'Converses amb context recuperat de documents reals',
+        status: 'completed',
+        technicalDetails: ['FinancialRAGChat.tsx', 'financial-rag-chat Edge Function', 'Sources citation']
+      },
+      {
+        name: 'Historial Converses',
+        description: 'Persistència conversacions per empresa/any fiscal',
+        status: 'completed',
+        technicalDetails: ['financial_rag_conversations table', 'financial_rag_messages table']
+      }
+    ],
+    files: [
+      'src/components/admin/accounting/FinancialRAGChat.tsx',
+      'supabase/functions/financial-rag-chat/index.ts',
+      'supabase/functions/generate-financial-embeddings/index.ts'
+    ],
+    dependencies: [],
+    integrations: ['Lovable AI (Gemini)', 'Vector embeddings']
+  },
+  {
+    id: 'ai-visit-summary',
+    name: 'Resum IA Visites (ObelixIA)',
+    icon: <FileSearch className="h-5 w-5" />,
+    category: 'IA/ML',
+    description: 'Generació automàtica resum, següents passos i riscos de notes de visita.',
+    features: [
+      {
+        name: 'Botó Resumir amb ObelixIA',
+        description: 'Integrat a fitxa visita per generar resum automàtic',
+        status: 'completed',
+        technicalDetails: ['AISummaryButton.tsx', 'summarize-visit Edge Function', 'Gemini 2.5 Flash']
+      },
+      {
+        name: 'Resum Estructurat',
+        description: 'Síntesi notes amb format consistent',
+        status: 'completed',
+        technicalDetails: ['JSON estructurat', 'summary field', 'Integration visit_sheets']
+      },
+      {
+        name: 'Següents Passos',
+        description: 'Identificació automàtica accions pendents',
+        status: 'completed',
+        technicalDetails: ['next_steps array', 'Actionable items', 'Follow-up dates']
+      },
+      {
+        name: 'Detecció Riscos',
+        description: 'Identificació riscos potencials de la reunió',
+        status: 'completed',
+        technicalDetails: ['risks array', 'Risk classification', 'Priority flagging']
+      }
+    ],
+    files: [
+      'src/components/visits/AISummaryButton.tsx',
+      'supabase/functions/summarize-visit/index.ts'
+    ],
+    dependencies: [],
+    integrations: ['Lovable AI (Gemini)']
   }
 ];
 

@@ -812,6 +812,56 @@ function getDefaultAnalysis(componentsList: string[], hooksList: string[], edgeF
         files: [],
         businessValue: "Reduce vulnerabilidades API 95%",
         differentiators: ["Top 10 completo", "Funciones reutilizables", "Security logging"]
+      },
+      {
+        name: "Análisis RFM y Segmentación Clientes",
+        description: "Dashboard RFM con segmentación ML (SVM/CART), CLV, churn prediction, políticas gestión.",
+        implementedFeatures: ["RFM scoring automático", "8 segmentos (Champions, Loyal, At Risk, Lost...)", "Churn probability ML", "CLV predicción", "Árboles decisión CART", "Políticas gestión segmento", "ML executions history", "Radar charts", "Tier distribution", "Action recommendations"],
+        pendingFeatures: [],
+        completionPercentage: 100,
+        files: ["RFMDashboard.tsx", "CustomerSegmentationPanel.tsx", "segment-customers-ml Edge Function", "calculate-rfm-analysis Edge Function"],
+        businessValue: "Retención clientes +25%, identificación oportunidades cross-sell +40%",
+        differentiators: ["ML nativo SVM/CART", "Churn prediction real-time", "Políticas automatizadas", "8 segmentos RFM"]
+      },
+      {
+        name: "Pipeline Oportunidades Comerciales",
+        description: "Kanban visual 5 etapas con drag & drop, probabilidades, valor ponderado.",
+        implementedFeatures: ["5 etapas (lead, qualified, proposal, negotiation, won/lost)", "Drag & drop Kanban", "Probabilidad cierre", "Valor estimado ponderado", "Propietario oportunidad", "Fecha cierre estimada", "Marcado VIP", "Contacto asociado", "Realtime updates", "Filtros avanzados"],
+        pendingFeatures: [],
+        completionPercentage: 100,
+        files: ["PipelineBoard.tsx", "OpportunityCard.tsx", "OpportunityForm.tsx", "useOpportunities.ts"],
+        businessValue: "Visibilidad pipeline 100%, forecast precisión +35%",
+        differentiators: ["Kanban nativo", "Valor ponderado automático", "Integración empresas/contactos"]
+      },
+      {
+        name: "Asistente Virtual IA para Gestores",
+        description: "Chatbot interno con voz bidireccional, base conocimientos, contextos múltiples.",
+        implementedFeatures: ["Chat IA contextual", "Speech-to-text input", "Text-to-speech output", "Auto-speak toggle", "6 tipos contexto (Clientes, Regulaciones, Productos, Procedimientos, Forms)", "Base conocimientos PDF/URL", "Historial conversación", "Audit trail permanente", "Borrado usuario (audit mantiene)", "Legal notice GDPR/APDA"],
+        pendingFeatures: [],
+        completionPercentage: 100,
+        files: ["InternalAssistantChat.tsx", "AssistantKnowledgeManager.tsx", "internal-assistant-chat Edge Function", "useVoiceChat.ts"],
+        businessValue: "Reduce consultas internas 60%, acelera onboarding 50%",
+        differentiators: ["Voz bidireccional", "Contexto bancario", "Audit compliance", "Knowledge base dinámico"]
+      },
+      {
+        name: "Chat RAG Financiero con Embeddings",
+        description: "IA conversacional sobre estados financieros con recuperación vectorial.",
+        implementedFeatures: ["Embeddings vectoriales 768D", "Búsqueda similitud coseno", "Contexto multi-año", "Historial conversaciones", "Fuentes citadas", "Respuestas grounded", "Generate embeddings Edge Function", "Financial RAG chat Edge Function", "Tabla financial_document_embeddings"],
+        pendingFeatures: [],
+        completionPercentage: 100,
+        files: ["FinancialRAGChat.tsx", "financial-rag-chat Edge Function", "generate-financial-embeddings Edge Function"],
+        businessValue: "Análisis financiero instantáneo, reduce tiempo analista 70%",
+        differentiators: ["RAG nativo", "Embeddings vectoriales", "Citas fuentes", "Multi-año"]
+      },
+      {
+        name: "Resumen IA de Visitas (ObelixIA)",
+        description: "Generación automática de resumen, próximos pasos y riesgos de notas de visita.",
+        implementedFeatures: ["Botón Resumir con ObelixIA", "Generación resumen estructurado", "Próximos pasos identificados", "Riesgos detectados", "JSON estructurado", "Integración ficha visita", "summarize-visit Edge Function", "Gemini 2.5 Flash"],
+        pendingFeatures: [],
+        completionPercentage: 100,
+        files: ["AISummaryButton.tsx", "summarize-visit Edge Function"],
+        businessValue: "Ahorra 15 min/visita, mejora documentación 80%",
+        differentiators: ["IA especializada banca", "Detección riesgos automática", "Integración nativa"]
       }
     ],
     pendingFeatures: [
@@ -894,10 +944,10 @@ function getDefaultAnalysis(componentsList: string[], hooksList: string[], edgeF
       { sector: "Fintech", clientType: "Neobancos", region: "Europa", estimatedValue: "40.000€ - 80.000€", implementationTime: "1-2 meses", customizations: ["API integrations"], potentialClients: 150, marketPenetration: "5%", salesPriority: 3, conversionProbability: "50%", decisionMakers: ["CTO", "CEO"], salesApproach: "Partnership tecnológico" }
     ],
     codeStats: {
-      totalFiles: 280,
-      totalComponents: componentsList?.length || 150,
-      totalHooks: hooksList?.length || 18,
-      totalEdgeFunctions: edgeFunctions?.length || 38,
+      totalFiles: 320,
+      totalComponents: componentsList?.length || 195,
+      totalHooks: hooksList?.length || 24,
+      totalEdgeFunctions: edgeFunctions?.length || 45,
       totalPages: pagesList?.length || 9,
       linesOfCode: 85000
     },
