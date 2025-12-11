@@ -20,7 +20,8 @@ import {
   UserCheck,
   Bell,
   Filter,
-  Activity
+  Activity,
+  MessageCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { subMonths } from 'date-fns';
@@ -55,6 +56,7 @@ import { GestorEvolutionTimeline } from '@/components/dashboard/GestorEvolutionT
 import { TPVGoalsDashboard } from '@/components/dashboard/TPVGoalsDashboard';
 import { BestPracticesPanel } from '@/components/dashboard/BestPracticesPanel';
 import { GlobalNavHeader } from '@/components/GlobalNavHeader';
+import { RealtimeChatPanel } from '@/components/chat/RealtimeChatPanel';
 import * as XLSX from 'xlsx';
 
 const Dashboard = () => {
@@ -227,6 +229,10 @@ const Dashboard = () => {
             <TabsTrigger value="reportes" className="flex items-center gap-2 py-3">
               <FileText className="h-4 w-4" />
               <span className="hidden sm:inline">{t('tabs.reportes')}</span>
+            </TabsTrigger>
+            <TabsTrigger value="chat" className="flex items-center gap-2 py-3">
+              <MessageCircle className="h-4 w-4" />
+              <span className="hidden sm:inline">Chat</span>
             </TabsTrigger>
           </TabsList>
 
@@ -429,6 +435,19 @@ const Dashboard = () => {
                 </p>
               </div>
               <ReportGenerator />
+            </div>
+          </TabsContent>
+
+          {/* Chat en Tiempo Real */}
+          <TabsContent value="chat" className="space-y-6">
+            <div className="rounded-lg border bg-card p-6">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold">Chat en Tiempo Real</h2>
+                <p className="text-muted-foreground">
+                  Comunicación instantánea con tu equipo
+                </p>
+              </div>
+              <RealtimeChatPanel />
             </div>
           </TabsContent>
         </Tabs>
