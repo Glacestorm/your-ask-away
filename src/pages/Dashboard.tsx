@@ -38,6 +38,10 @@ import { GlobalNavHeader } from '@/components/GlobalNavHeader';
 import { DateRangeFilter } from '@/components/dashboard/DateRangeFilter';
 import { NotificationsPanel } from '@/components/dashboard/NotificationsPanel';
 import { NotificationService } from '@/components/dashboard/NotificationService';
+import { useWidgetLayout } from '@/hooks/useWidgetLayout';
+import { DraggableWidget } from '@/components/dashboard/DraggableWidget';
+import { SortableWidgetContainer } from '@/components/dashboard/SortableWidgetContainer';
+import { WidgetLayoutControls } from '@/components/dashboard/WidgetLayoutControls';
 
 // Lazy loading para todos los componentes pesados del Dashboard
 const ResumenEjecutivo = lazy(() => import('@/components/dashboard/ResumenEjecutivo').then(m => ({ default: m.ResumenEjecutivo })));
@@ -110,6 +114,17 @@ const Dashboard = () => {
   const [goalsSubTab, setGoalsSubTab] = useState('objetivos');
   const [teamSubTab, setTeamSubTab] = useState('gestores');
   const [toolsSubTab, setToolsSubTab] = useState('alertas');
+
+  // Widget layout system
+  const {
+    widgets,
+    isEditMode,
+    setIsEditMode,
+    reorderWidgets,
+    toggleWidgetVisibility,
+    resetLayout,
+    isWidgetVisible,
+  } = useWidgetLayout('mi-panel');
 
   // Role-based visibility configuration
   const isDirector = userRole && ['superadmin', 'director_comercial', 'director_oficina', 'responsable_comercial'].includes(userRole);
@@ -254,48 +269,126 @@ const Dashboard = () => {
 
           {/* ===== SECTION 1: MI PANEL (Personal Dashboard) ===== */}
           <TabsContent value="mi-panel" className="space-y-6">
-            {/* KPIs Personales - Visible para todos excepto auditors */}
-            {!isAuditor && (
-              <Suspense fallback={<CardLoadingFallback />}>
-                <PersonalKPIsDashboard />
-              </Suspense>
-            )}
-            
-            {/* Acciones Rápidas - Solo para usuarios que pueden hacer acciones */}
-            {!isAuditor && (
-              <Suspense fallback={<LoadingFallback />}>
-                <QuickActionsPanel />
-              </Suspense>
-            )}
-            
-            {/* Próximas Visitas - Visible para todos excepto auditors */}
-            {!isAuditor && (
-              <Suspense fallback={<CardLoadingFallback />}>
-                <UpcomingVisitsWidget />
-              </Suspense>
-            )}
-            
-            {/* Resumen Ejecutivo - Visible para todos */}
-            <Suspense fallback={<CardLoadingFallback />}>
-              <ResumenEjecutivo startDate={startDate} endDate={endDate} />
-            </Suspense>
-            
-            {/* Mi Actividad - Solo para usuarios no auditores */}
-            {!isAuditor && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Activity className="h-5 w-5" />
-                    Mi Actividad Reciente
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Suspense fallback={<LoadingFallback />}>
-                    <PersonalActivityHistory />
-                  </Suspense>
-                </CardContent>
-              </Card>
-            )}
+            {/* Widget Layout Controls */}
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                {isEditMode ? 'Arrastra los widgets para reorganizarlos' : ''}
+              </p>
+              <WidgetLayoutControls
+                isEditMode={isEditMode}
+                onToggleEditMode={() => setIsEditMode(!isEditMode)}
+                onReset={resetLayout}
+              />
+            </div>
+
+            <SortableWidgetContainer
+              items={widgets.map(w => w.id)}
+              onReorder={reorderWidgets}
+              isEditMode={isEditMode}
+            >
+              <div className="space-y-6">
+                {widgets.map((widget) => {
+                  const isVisible = isWidgetVisible(widget.id);
+                  
+                  // KPIs Personales
+                  if (widget.id === 'personal-kpis' && !isAuditor) {
+                    return (
+                      <DraggableWidget
+                        key={widget.id}
+                        id={widget.id}
+                        isEditMode={isEditMode}
+                        isVisible={isVisible}
+                        onToggleVisibility={() => toggleWidgetVisibility(widget.id)}
+                      >
+                        <Suspense fallback={<CardLoadingFallback />}>
+                          <PersonalKPIsDashboard />
+                        </Suspense>
+                      </DraggableWidget>
+                    );
+                  }
+
+                  // Acciones Rápidas
+                  if (widget.id === 'quick-actions' && !isAuditor) {
+                    return (
+                      <DraggableWidget
+                        key={widget.id}
+                        id={widget.id}
+                        isEditMode={isEditMode}
+                        isVisible={isVisible}
+                        onToggleVisibility={() => toggleWidgetVisibility(widget.id)}
+                      >
+                        <Suspense fallback={<LoadingFallback />}>
+                          <QuickActionsPanel />
+                        </Suspense>
+                      </DraggableWidget>
+                    );
+                  }
+
+                  // Próximas Visitas
+                  if (widget.id === 'upcoming-visits' && !isAuditor) {
+                    return (
+                      <DraggableWidget
+                        key={widget.id}
+                        id={widget.id}
+                        isEditMode={isEditMode}
+                        isVisible={isVisible}
+                        onToggleVisibility={() => toggleWidgetVisibility(widget.id)}
+                      >
+                        <Suspense fallback={<CardLoadingFallback />}>
+                          <UpcomingVisitsWidget />
+                        </Suspense>
+                      </DraggableWidget>
+                    );
+                  }
+
+                  // Resumen Ejecutivo
+                  if (widget.id === 'resumen-ejecutivo') {
+                    return (
+                      <DraggableWidget
+                        key={widget.id}
+                        id={widget.id}
+                        isEditMode={isEditMode}
+                        isVisible={isVisible}
+                        onToggleVisibility={() => toggleWidgetVisibility(widget.id)}
+                      >
+                        <Suspense fallback={<CardLoadingFallback />}>
+                          <ResumenEjecutivo startDate={startDate} endDate={endDate} />
+                        </Suspense>
+                      </DraggableWidget>
+                    );
+                  }
+
+                  // Mi Actividad
+                  if (widget.id === 'mi-actividad' && !isAuditor) {
+                    return (
+                      <DraggableWidget
+                        key={widget.id}
+                        id={widget.id}
+                        isEditMode={isEditMode}
+                        isVisible={isVisible}
+                        onToggleVisibility={() => toggleWidgetVisibility(widget.id)}
+                      >
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                              <Activity className="h-5 w-5" />
+                              Mi Actividad Reciente
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <Suspense fallback={<LoadingFallback />}>
+                              <PersonalActivityHistory />
+                            </Suspense>
+                          </CardContent>
+                        </Card>
+                      </DraggableWidget>
+                    );
+                  }
+
+                  return null;
+                })}
+              </div>
+            </SortableWidgetContainer>
 
             {/* Vista especial para auditors */}
             {isAuditor && (
