@@ -183,15 +183,20 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background">
       <NotificationService />
       
-      <div className="container mx-auto p-4 sm:p-6 space-y-6">
-        <div className="flex flex-col gap-4">
+      <div className="container mx-auto p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
+        {/* Header - Mobile optimized */}
+        <div className="flex flex-col gap-3 sm:gap-4">
           <GlobalNavHeader title={t('dashboard.title')} subtitle={t('dashboard.subtitle')} />
           
-          <div className="flex items-center gap-3 justify-end">
+          <div className="flex items-center gap-2 sm:gap-3 justify-end">
             <NotificationsPanel />
-            <Button onClick={exportToExcel} className="shadow-md hover:shadow-lg transition-shadow">
-              <Download className="mr-2 h-4 w-4" />
-              {t('dashboard.exportData')}
+            <Button 
+              onClick={exportToExcel} 
+              size="sm"
+              className="shadow-md hover:shadow-lg transition-shadow text-xs sm:text-sm"
+            >
+              <Download className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">{t('dashboard.exportData')}</span>
             </Button>
           </div>
         </div>
@@ -202,32 +207,50 @@ const Dashboard = () => {
           onDateRangeChange={setDateRange}
         />
 
-        {/* Main Dashboard Tabs - 5 Sections */}
-        <Tabs defaultValue="mi-panel" className="space-y-6">
-          <TabsList className={`grid w-full ${isDirector ? 'grid-cols-5' : 'grid-cols-4'} h-auto gap-1`}>
-            <TabsTrigger value="mi-panel" className="flex items-center gap-2 py-3 px-4">
-              <LayoutDashboard className="h-4 w-4" />
-              <span className="hidden sm:inline font-medium">Mi Panel</span>
-            </TabsTrigger>
-            <TabsTrigger value="analisis" className="flex items-center gap-2 py-3 px-4">
-              <PieChart className="h-4 w-4" />
-              <span className="hidden sm:inline font-medium">Análisis</span>
-            </TabsTrigger>
-            <TabsTrigger value="objetivos" className="flex items-center gap-2 py-3 px-4">
-              <Target className="h-4 w-4" />
-              <span className="hidden sm:inline font-medium">Objetivos</span>
-            </TabsTrigger>
-            {isDirector && (
-              <TabsTrigger value="equipo" className="flex items-center gap-2 py-3 px-4">
-                <Users className="h-4 w-4" />
-                <span className="hidden sm:inline font-medium">Equipo</span>
+        {/* Main Dashboard Tabs - 5 Sections - Mobile optimized with horizontal scroll */}
+        <Tabs defaultValue="mi-panel" className="space-y-4 sm:space-y-6">
+          {/* Mobile: Horizontal scrollable tabs */}
+          <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide">
+            <TabsList className={`inline-flex sm:grid sm:w-full ${isDirector ? 'sm:grid-cols-5' : 'sm:grid-cols-4'} h-auto gap-1 min-w-max sm:min-w-0`}>
+              <TabsTrigger 
+                value="mi-panel" 
+                className="flex items-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm touch-manipulation"
+              >
+                <LayoutDashboard className="h-4 w-4 flex-shrink-0" />
+                <span className="font-medium whitespace-nowrap">Mi Panel</span>
               </TabsTrigger>
-            )}
-            <TabsTrigger value="herramientas" className="flex items-center gap-2 py-3 px-4">
-              <Settings className="h-4 w-4" />
-              <span className="hidden sm:inline font-medium">Herramientas</span>
-            </TabsTrigger>
-          </TabsList>
+              <TabsTrigger 
+                value="analisis" 
+                className="flex items-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm touch-manipulation"
+              >
+                <PieChart className="h-4 w-4 flex-shrink-0" />
+                <span className="font-medium whitespace-nowrap">Análisis</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="objetivos" 
+                className="flex items-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm touch-manipulation"
+              >
+                <Target className="h-4 w-4 flex-shrink-0" />
+                <span className="font-medium whitespace-nowrap">Objetivos</span>
+              </TabsTrigger>
+              {isDirector && (
+                <TabsTrigger 
+                  value="equipo" 
+                  className="flex items-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm touch-manipulation"
+                >
+                  <Users className="h-4 w-4 flex-shrink-0" />
+                  <span className="font-medium whitespace-nowrap">Equipo</span>
+                </TabsTrigger>
+              )}
+              <TabsTrigger 
+                value="herramientas" 
+                className="flex items-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm touch-manipulation"
+              >
+                <Settings className="h-4 w-4 flex-shrink-0" />
+                <span className="font-medium whitespace-nowrap">Herramientas</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* ===== SECTION 1: MI PANEL (Personal Dashboard) ===== */}
           <TabsContent value="mi-panel" className="space-y-6">
@@ -294,86 +317,88 @@ const Dashboard = () => {
 
           {/* ===== SECTION 2: ANÁLISIS (Analytics) ===== */}
           <TabsContent value="analisis" className="space-y-6">
-            {/* Sub-navigation for Analysis - Role based visibility */}
-            <div className="flex flex-wrap gap-2 p-2 bg-muted/50 rounded-lg">
-              <Button 
-                variant={analysisSubTab === 'comparativa' ? 'default' : 'ghost'} 
-                size="sm"
-                onClick={() => setAnalysisSubTab('comparativa')}
-                className="flex items-center gap-2"
-              >
-                <GitCompare className="h-4 w-4" />
-                Comparativa
-              </Button>
-              {canSeeAdvancedAnalytics && (
+            {/* Sub-navigation for Analysis - Mobile optimized horizontal scroll */}
+            <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide">
+              <div className="inline-flex sm:flex sm:flex-wrap gap-1.5 sm:gap-2 p-2 bg-muted/50 rounded-lg min-w-max sm:min-w-0">
                 <Button 
-                  variant={analysisSubTab === 'predicciones' ? 'default' : 'ghost'} 
+                  variant={analysisSubTab === 'comparativa' ? 'default' : 'ghost'} 
                   size="sm"
-                  onClick={() => setAnalysisSubTab('predicciones')}
-                  className="flex items-center gap-2"
+                  onClick={() => setAnalysisSubTab('comparativa')}
+                  className="flex items-center gap-1.5 text-xs sm:text-sm py-2 px-2.5 sm:px-3 touch-manipulation whitespace-nowrap"
                 >
-                  <LineChart className="h-4 w-4" />
-                  Predicciones
+                  <GitCompare className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                  Comparativa
                 </Button>
-              )}
-              <Button 
-                variant={analysisSubTab === 'visitas' ? 'default' : 'ghost'} 
-                size="sm"
-                onClick={() => setAnalysisSubTab('visitas')}
-                className="flex items-center gap-2"
-              >
-                <BarChart3 className="h-4 w-4" />
-                Visitas
-              </Button>
-              <Button 
-                variant={analysisSubTab === 'productos' ? 'default' : 'ghost'} 
-                size="sm"
-                onClick={() => setAnalysisSubTab('productos')}
-                className="flex items-center gap-2"
-              >
-                <Package className="h-4 w-4" />
-                Productos
-              </Button>
-              <Button 
-                variant={analysisSubTab === 'vinculacion' ? 'default' : 'ghost'} 
-                size="sm"
-                onClick={() => setAnalysisSubTab('vinculacion')}
-                className="flex items-center gap-2"
-              >
-                <Target className="h-4 w-4" />
-                Vinculación
-              </Button>
-              <Button 
-                variant={analysisSubTab === 'geografico' ? 'default' : 'ghost'} 
-                size="sm"
-                onClick={() => setAnalysisSubTab('geografico')}
-                className="flex items-center gap-2"
-              >
-                <MapPin className="h-4 w-4" />
-                Geográfico
-              </Button>
-              {canSeeAdvancedAnalytics && (
-                <>
+                {canSeeAdvancedAnalytics && (
                   <Button 
-                    variant={analysisSubTab === 'cohortes' ? 'default' : 'ghost'} 
+                    variant={analysisSubTab === 'predicciones' ? 'default' : 'ghost'} 
                     size="sm"
-                    onClick={() => setAnalysisSubTab('cohortes')}
-                    className="flex items-center gap-2"
+                    onClick={() => setAnalysisSubTab('predicciones')}
+                    className="flex items-center gap-1.5 text-xs sm:text-sm py-2 px-2.5 sm:px-3 touch-manipulation whitespace-nowrap"
                   >
-                    <UserCheck className="h-4 w-4" />
-                    Cohortes
+                    <LineChart className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                    Predicciones
                   </Button>
-                  <Button 
-                    variant={analysisSubTab === 'embudo' ? 'default' : 'ghost'} 
-                    size="sm"
-                    onClick={() => setAnalysisSubTab('embudo')}
-                    className="flex items-center gap-2"
-                  >
-                    <Filter className="h-4 w-4" />
-                    Embudo
-                  </Button>
-                </>
-              )}
+                )}
+                <Button 
+                  variant={analysisSubTab === 'visitas' ? 'default' : 'ghost'} 
+                  size="sm"
+                  onClick={() => setAnalysisSubTab('visitas')}
+                  className="flex items-center gap-1.5 text-xs sm:text-sm py-2 px-2.5 sm:px-3 touch-manipulation whitespace-nowrap"
+                >
+                  <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                  Visitas
+                </Button>
+                <Button 
+                  variant={analysisSubTab === 'productos' ? 'default' : 'ghost'} 
+                  size="sm"
+                  onClick={() => setAnalysisSubTab('productos')}
+                  className="flex items-center gap-1.5 text-xs sm:text-sm py-2 px-2.5 sm:px-3 touch-manipulation whitespace-nowrap"
+                >
+                  <Package className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                  Productos
+                </Button>
+                <Button 
+                  variant={analysisSubTab === 'vinculacion' ? 'default' : 'ghost'} 
+                  size="sm"
+                  onClick={() => setAnalysisSubTab('vinculacion')}
+                  className="flex items-center gap-1.5 text-xs sm:text-sm py-2 px-2.5 sm:px-3 touch-manipulation whitespace-nowrap"
+                >
+                  <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                  Vinculación
+                </Button>
+                <Button 
+                  variant={analysisSubTab === 'geografico' ? 'default' : 'ghost'} 
+                  size="sm"
+                  onClick={() => setAnalysisSubTab('geografico')}
+                  className="flex items-center gap-1.5 text-xs sm:text-sm py-2 px-2.5 sm:px-3 touch-manipulation whitespace-nowrap"
+                >
+                  <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                  Geográfico
+                </Button>
+                {canSeeAdvancedAnalytics && (
+                  <>
+                    <Button 
+                      variant={analysisSubTab === 'cohortes' ? 'default' : 'ghost'} 
+                      size="sm"
+                      onClick={() => setAnalysisSubTab('cohortes')}
+                      className="flex items-center gap-1.5 text-xs sm:text-sm py-2 px-2.5 sm:px-3 touch-manipulation whitespace-nowrap"
+                    >
+                      <UserCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                      Cohortes
+                    </Button>
+                    <Button 
+                      variant={analysisSubTab === 'embudo' ? 'default' : 'ghost'} 
+                      size="sm"
+                      onClick={() => setAnalysisSubTab('embudo')}
+                      className="flex items-center gap-1.5 text-xs sm:text-sm py-2 px-2.5 sm:px-3 touch-manipulation whitespace-nowrap"
+                    >
+                      <Filter className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                      Embudo
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
 
             {/* Analysis Sub-content */}
@@ -477,45 +502,47 @@ const Dashboard = () => {
           {/* ===== SECTION 3: OBJETIVOS (Goals) ===== */}
           <TabsContent value="objetivos" className="space-y-6">
             {/* Sub-navigation for Goals - Role based visibility */}
-            <div className="flex flex-wrap gap-2 p-2 bg-muted/50 rounded-lg">
-              {!isAuditor && (
-                <Button 
-                  variant={goalsSubTab === 'objetivos' ? 'default' : 'ghost'} 
-                  size="sm"
-                  onClick={() => setGoalsSubTab('objetivos')}
-                  className="flex items-center gap-2"
-                >
-                  <Award className="h-4 w-4" />
-                  Mis Objetivos
-                </Button>
-              )}
-              {canSeeTPV && (
-                <Button 
-                  variant={goalsSubTab === 'tpv' ? 'default' : 'ghost'} 
-                  size="sm"
-                  onClick={() => setGoalsSubTab('tpv')}
-                  className="flex items-center gap-2"
-                >
-                  <Briefcase className="h-4 w-4" />
-                  TPV
-                </Button>
-              )}
-              {canSeeBestPractices && (
-                <Button 
-                  variant={goalsSubTab === 'practicas' ? 'default' : 'ghost'} 
-                  size="sm"
-                  onClick={() => setGoalsSubTab('practicas')}
-                  className="flex items-center gap-2"
-                >
-                  <Award className="h-4 w-4" />
-                  Mejores Prácticas
-                </Button>
-              )}
-              {isAuditor && (
-                <p className="text-sm text-muted-foreground flex items-center px-3">
-                  Vista de solo lectura - Sin acceso a objetivos individuales
-                </p>
-              )}
+            <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide">
+              <div className="inline-flex sm:flex sm:flex-wrap gap-1.5 sm:gap-2 p-2 bg-muted/50 rounded-lg min-w-max sm:min-w-0">
+                {!isAuditor && (
+                  <Button 
+                    variant={goalsSubTab === 'objetivos' ? 'default' : 'ghost'} 
+                    size="sm"
+                    onClick={() => setGoalsSubTab('objetivos')}
+                    className="flex items-center gap-1.5 text-xs sm:text-sm py-2 px-2.5 sm:px-3 touch-manipulation whitespace-nowrap"
+                  >
+                    <Award className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                    Mis Objetivos
+                  </Button>
+                )}
+                {canSeeTPV && (
+                  <Button 
+                    variant={goalsSubTab === 'tpv' ? 'default' : 'ghost'} 
+                    size="sm"
+                    onClick={() => setGoalsSubTab('tpv')}
+                    className="flex items-center gap-1.5 text-xs sm:text-sm py-2 px-2.5 sm:px-3 touch-manipulation whitespace-nowrap"
+                  >
+                    <Briefcase className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                    TPV
+                  </Button>
+                )}
+                {canSeeBestPractices && (
+                  <Button 
+                    variant={goalsSubTab === 'practicas' ? 'default' : 'ghost'} 
+                    size="sm"
+                    onClick={() => setGoalsSubTab('practicas')}
+                    className="flex items-center gap-1.5 text-xs sm:text-sm py-2 px-2.5 sm:px-3 touch-manipulation whitespace-nowrap"
+                  >
+                    <Award className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                    Mejores Prácticas
+                  </Button>
+                )}
+                {isAuditor && (
+                  <p className="text-xs sm:text-sm text-muted-foreground flex items-center px-2 sm:px-3 whitespace-nowrap">
+                    Vista de solo lectura
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Goals Sub-content */}
@@ -565,44 +592,46 @@ const Dashboard = () => {
           {/* ===== SECTION 4: EQUIPO (Team - Only for Directors) ===== */}
           {isDirector && (
             <TabsContent value="equipo" className="space-y-6">
-              {/* Sub-navigation for Team */}
-              <div className="flex flex-wrap gap-2 p-2 bg-muted/50 rounded-lg">
-                <Button 
-                  variant={teamSubTab === 'gestores' ? 'default' : 'ghost'} 
-                  size="sm"
-                  onClick={() => setTeamSubTab('gestores')}
-                  className="flex items-center gap-2"
-                >
-                  <Users className="h-4 w-4" />
-                  Rendimiento
-                </Button>
-                <Button 
-                  variant={teamSubTab === 'comparacion' ? 'default' : 'ghost'} 
-                  size="sm"
-                  onClick={() => setTeamSubTab('comparacion')}
-                  className="flex items-center gap-2"
-                >
-                  <GitCompare className="h-4 w-4" />
-                  Comparación
-                </Button>
-                <Button 
-                  variant={teamSubTab === 'evolucion' ? 'default' : 'ghost'} 
-                  size="sm"
-                  onClick={() => setTeamSubTab('evolucion')}
-                  className="flex items-center gap-2"
-                >
-                  <TrendingUp className="h-4 w-4" />
-                  Evolución
-                </Button>
-                <Button 
-                  variant={teamSubTab === 'estadisticas' ? 'default' : 'ghost'} 
-                  size="sm"
-                  onClick={() => setTeamSubTab('estadisticas')}
-                  className="flex items-center gap-2"
-                >
-                  <BarChart3 className="h-4 w-4" />
-                  Estadísticas
-                </Button>
+              {/* Sub-navigation for Team - Mobile optimized */}
+              <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide">
+                <div className="inline-flex sm:flex sm:flex-wrap gap-1.5 sm:gap-2 p-2 bg-muted/50 rounded-lg min-w-max sm:min-w-0">
+                  <Button 
+                    variant={teamSubTab === 'gestores' ? 'default' : 'ghost'} 
+                    size="sm"
+                    onClick={() => setTeamSubTab('gestores')}
+                    className="flex items-center gap-1.5 text-xs sm:text-sm py-2 px-2.5 sm:px-3 touch-manipulation whitespace-nowrap"
+                  >
+                    <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                    Rendimiento
+                  </Button>
+                  <Button 
+                    variant={teamSubTab === 'comparacion' ? 'default' : 'ghost'} 
+                    size="sm"
+                    onClick={() => setTeamSubTab('comparacion')}
+                    className="flex items-center gap-1.5 text-xs sm:text-sm py-2 px-2.5 sm:px-3 touch-manipulation whitespace-nowrap"
+                  >
+                    <GitCompare className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                    Comparación
+                  </Button>
+                  <Button 
+                    variant={teamSubTab === 'evolucion' ? 'default' : 'ghost'} 
+                    size="sm"
+                    onClick={() => setTeamSubTab('evolucion')}
+                    className="flex items-center gap-1.5 text-xs sm:text-sm py-2 px-2.5 sm:px-3 touch-manipulation whitespace-nowrap"
+                  >
+                    <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                    Evolución
+                  </Button>
+                  <Button 
+                    variant={teamSubTab === 'estadisticas' ? 'default' : 'ghost'} 
+                    size="sm"
+                    onClick={() => setTeamSubTab('estadisticas')}
+                    className="flex items-center gap-1.5 text-xs sm:text-sm py-2 px-2.5 sm:px-3 touch-manipulation whitespace-nowrap"
+                  >
+                    <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                    Estadísticas
+                  </Button>
+                </div>
               </div>
 
               {/* Team Sub-content */}
@@ -671,46 +700,48 @@ const Dashboard = () => {
 
           {/* ===== SECTION 5: HERRAMIENTAS (Tools) ===== */}
           <TabsContent value="herramientas" className="space-y-6">
-            {/* Sub-navigation for Tools - Role based visibility */}
-            <div className="flex flex-wrap gap-2 p-2 bg-muted/50 rounded-lg">
-              {canManageAlerts && (
-                <Button 
-                  variant={toolsSubTab === 'alertas' ? 'default' : 'ghost'} 
-                  size="sm"
-                  onClick={() => setToolsSubTab('alertas')}
-                  className="flex items-center gap-2"
-                >
-                  <Bell className="h-4 w-4" />
-                  Alertas
-                </Button>
-              )}
-              {canSeeReports && (
-                <Button 
-                  variant={toolsSubTab === 'reportes' ? 'default' : 'ghost'} 
-                  size="sm"
-                  onClick={() => setToolsSubTab('reportes')}
-                  className="flex items-center gap-2"
-                >
-                  <FileText className="h-4 w-4" />
-                  Informes
-                </Button>
-              )}
-              {!isAuditor && (
-                <Button 
-                  variant={toolsSubTab === 'recordatorios' ? 'default' : 'ghost'} 
-                  size="sm"
-                  onClick={() => setToolsSubTab('recordatorios')}
-                  className="flex items-center gap-2"
-                >
-                  <Bell className="h-4 w-4" />
-                  Recordatorios
-                </Button>
-              )}
-              {isRegularUser && !canManageAlerts && !canSeeReports && (
-                <p className="text-sm text-muted-foreground flex items-center px-3">
-                  Herramientas básicas disponibles
-                </p>
-              )}
+            {/* Sub-navigation for Tools - Mobile optimized */}
+            <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide">
+              <div className="inline-flex sm:flex sm:flex-wrap gap-1.5 sm:gap-2 p-2 bg-muted/50 rounded-lg min-w-max sm:min-w-0">
+                {canManageAlerts && (
+                  <Button 
+                    variant={toolsSubTab === 'alertas' ? 'default' : 'ghost'} 
+                    size="sm"
+                    onClick={() => setToolsSubTab('alertas')}
+                    className="flex items-center gap-1.5 text-xs sm:text-sm py-2 px-2.5 sm:px-3 touch-manipulation whitespace-nowrap"
+                  >
+                    <Bell className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                    Alertas
+                  </Button>
+                )}
+                {canSeeReports && (
+                  <Button 
+                    variant={toolsSubTab === 'reportes' ? 'default' : 'ghost'} 
+                    size="sm"
+                    onClick={() => setToolsSubTab('reportes')}
+                    className="flex items-center gap-1.5 text-xs sm:text-sm py-2 px-2.5 sm:px-3 touch-manipulation whitespace-nowrap"
+                  >
+                    <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                    Informes
+                  </Button>
+                )}
+                {!isAuditor && (
+                  <Button 
+                    variant={toolsSubTab === 'recordatorios' ? 'default' : 'ghost'} 
+                    size="sm"
+                    onClick={() => setToolsSubTab('recordatorios')}
+                    className="flex items-center gap-1.5 text-xs sm:text-sm py-2 px-2.5 sm:px-3 touch-manipulation whitespace-nowrap"
+                  >
+                    <Bell className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                    Recordatorios
+                  </Button>
+                )}
+                {isRegularUser && !canManageAlerts && !canSeeReports && (
+                  <p className="text-xs sm:text-sm text-muted-foreground flex items-center px-2 sm:px-3 whitespace-nowrap">
+                    Herramientas básicas
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Tools Sub-content */}
