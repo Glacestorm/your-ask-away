@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigationHistory } from '@/hooks/useNavigationHistory';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Activity, History, Shield, Rocket, Bot, BarChart3, Users } from 'lucide-react';
+import { ArrowLeft, Activity, History, Shield, Rocket, Bot, BarChart3, Users, Palette, FileCode2 } from 'lucide-react';
 import { toast } from 'sonner';
 import VisitSheets from '@/pages/VisitSheets';
 import { GlobalNavHeader } from '@/components/GlobalNavHeader';
@@ -62,6 +62,9 @@ import { AIIntegrationConfig } from '@/components/admin/AIIntegrationConfig';
 import { NotificationCenterManager } from '@/components/admin/NotificationCenterManager';
 import { RFMDashboard } from '@/components/admin/RFMDashboard';
 import { CustomerSegmentationPanel } from '@/components/admin/CustomerSegmentationPanel';
+import WhiteLabelConfig from '@/components/admin/WhiteLabelConfig';
+import APIDocumentation from '@/components/admin/APIDocumentation';
+
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
   const { t } = useLanguage();
@@ -656,6 +659,28 @@ const Admin = () => {
           );
         }
         return <CustomerSegmentationPanel />;
+      case 'whitelabel':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <WhiteLabelConfig />;
+      case 'api-docs':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <APIDocumentation />;
 case 'administration':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
           return (
@@ -867,6 +892,34 @@ case 'administration':
                     <div>
                       <h4 className="font-medium text-sm text-purple-700 dark:text-purple-400">IA Interna</h4>
                       <p className="text-xs text-muted-foreground">Integració model IA banc</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-cyan-500/30 bg-gradient-to-br from-cyan-500/5 to-cyan-500/10"
+                  onClick={() => handleSectionChange('whitelabel')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+                      <Palette className="h-4 w-4 text-cyan-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-cyan-700 dark:text-cyan-400">White-Label</h4>
+                      <p className="text-xs text-muted-foreground">Personalització marca</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-emerald-500/10"
+                  onClick={() => handleSectionChange('api-docs')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                      <FileCode2 className="h-4 w-4 text-emerald-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-emerald-700 dark:text-emerald-400">API REST</h4>
+                      <p className="text-xs text-muted-foreground">Documentació OpenAPI</p>
                     </div>
                   </CardContent>
                 </Card>
