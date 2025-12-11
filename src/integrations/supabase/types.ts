@@ -2017,6 +2017,113 @@ export type Database = {
           },
         ]
       }
+      customer_360_profiles: {
+        Row: {
+          active_products: number | null
+          avg_monthly_volume: number | null
+          avg_visit_frequency_days: number | null
+          churn_probability: number | null
+          clv_score: number | null
+          communication_preferences: Json | null
+          company_id: string | null
+          compliance_status: string | null
+          created_at: string | null
+          credit_score: number | null
+          cross_sell_opportunities: Json | null
+          health_score: number | null
+          id: string
+          interaction_summary: Json | null
+          last_calculated_at: string | null
+          last_visit_date: string | null
+          lifecycle_stage: string | null
+          next_best_actions: Json | null
+          preferred_channel: string | null
+          preferred_contact_time: string | null
+          recommended_products: Json | null
+          rfm_score: Json | null
+          risk_flags: Json | null
+          segment: string | null
+          successful_visits: number | null
+          tier: string | null
+          total_products: number | null
+          total_transaction_volume: number | null
+          total_visits: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          active_products?: number | null
+          avg_monthly_volume?: number | null
+          avg_visit_frequency_days?: number | null
+          churn_probability?: number | null
+          clv_score?: number | null
+          communication_preferences?: Json | null
+          company_id?: string | null
+          compliance_status?: string | null
+          created_at?: string | null
+          credit_score?: number | null
+          cross_sell_opportunities?: Json | null
+          health_score?: number | null
+          id?: string
+          interaction_summary?: Json | null
+          last_calculated_at?: string | null
+          last_visit_date?: string | null
+          lifecycle_stage?: string | null
+          next_best_actions?: Json | null
+          preferred_channel?: string | null
+          preferred_contact_time?: string | null
+          recommended_products?: Json | null
+          rfm_score?: Json | null
+          risk_flags?: Json | null
+          segment?: string | null
+          successful_visits?: number | null
+          tier?: string | null
+          total_products?: number | null
+          total_transaction_volume?: number | null
+          total_visits?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          active_products?: number | null
+          avg_monthly_volume?: number | null
+          avg_visit_frequency_days?: number | null
+          churn_probability?: number | null
+          clv_score?: number | null
+          communication_preferences?: Json | null
+          company_id?: string | null
+          compliance_status?: string | null
+          created_at?: string | null
+          credit_score?: number | null
+          cross_sell_opportunities?: Json | null
+          health_score?: number | null
+          id?: string
+          interaction_summary?: Json | null
+          last_calculated_at?: string | null
+          last_visit_date?: string | null
+          lifecycle_stage?: string | null
+          next_best_actions?: Json | null
+          preferred_channel?: string | null
+          preferred_contact_time?: string | null
+          recommended_products?: Json | null
+          rfm_score?: Json | null
+          risk_flags?: Json | null
+          segment?: string | null
+          successful_visits?: number | null
+          tier?: string | null
+          total_products?: number | null
+          total_transaction_volume?: number | null
+          total_visits?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_360_profiles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_action_recommendations: {
         Row: {
           action_description: string | null
@@ -2075,6 +2182,68 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "customer_action_recommendations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_interactions: {
+        Row: {
+          channel: string | null
+          company_id: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          importance: string | null
+          interaction_date: string
+          interaction_type: string
+          metadata: Json | null
+          outcome: string | null
+          related_entity_id: string | null
+          related_entity_type: string | null
+          sentiment: string | null
+          subject: string | null
+        }
+        Insert: {
+          channel?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          importance?: string | null
+          interaction_date: string
+          interaction_type: string
+          metadata?: Json | null
+          outcome?: string | null
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          sentiment?: string | null
+          subject?: string | null
+        }
+        Update: {
+          channel?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          importance?: string | null
+          interaction_date?: string
+          interaction_type?: string
+          metadata?: Json | null
+          outcome?: string | null
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          sentiment?: string | null
+          subject?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_interactions_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
@@ -2421,6 +2590,80 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      enriched_transactions: {
+        Row: {
+          amount: number
+          category: string | null
+          company_id: string | null
+          confidence_score: number | null
+          created_at: string | null
+          enriched_at: string | null
+          id: string
+          is_recurring: boolean | null
+          location: Json | null
+          mcc_code: string | null
+          merchant_logo_url: string | null
+          merchant_name: string | null
+          original_transaction_id: string | null
+          raw_description: string | null
+          recurring_frequency: string | null
+          recurring_type: string | null
+          subcategory: string | null
+          transaction_date: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          category?: string | null
+          company_id?: string | null
+          confidence_score?: number | null
+          created_at?: string | null
+          enriched_at?: string | null
+          id?: string
+          is_recurring?: boolean | null
+          location?: Json | null
+          mcc_code?: string | null
+          merchant_logo_url?: string | null
+          merchant_name?: string | null
+          original_transaction_id?: string | null
+          raw_description?: string | null
+          recurring_frequency?: string | null
+          recurring_type?: string | null
+          subcategory?: string | null
+          transaction_date: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          category?: string | null
+          company_id?: string | null
+          confidence_score?: number | null
+          created_at?: string | null
+          enriched_at?: string | null
+          id?: string
+          is_recurring?: boolean | null
+          location?: Json | null
+          mcc_code?: string | null
+          merchant_logo_url?: string | null
+          merchant_name?: string | null
+          original_transaction_id?: string | null
+          raw_description?: string | null
+          recurring_frequency?: string | null
+          recurring_type?: string | null
+          subcategory?: string | null
+          transaction_date?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enriched_transactions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       equity_changes_statements: {
         Row: {
@@ -5739,6 +5982,10 @@ export type Database = {
           p_period_start: string
         }
         Returns: string
+      }
+      calculate_customer_360: {
+        Args: { p_company_id: string }
+        Returns: undefined
       }
       can_view_alert: {
         Args: { _alert_id: string; _user_id: string }
