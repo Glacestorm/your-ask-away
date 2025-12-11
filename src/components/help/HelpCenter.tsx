@@ -1600,8 +1600,8 @@ export function HelpCenter({ isOpen, onClose }: HelpCenterProps) {
             </div>
 
             {/* Content */}
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-              <TabsList className="grid grid-cols-4 mx-4 mt-2">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+              <TabsList className="grid grid-cols-4 mx-4 mt-2 shrink-0">
                 <TabsTrigger value="about" className="flex items-center gap-1">
                   <Info className="h-4 w-4" />
                   <span className="hidden sm:inline">Sobre</span>
@@ -1620,7 +1620,8 @@ export function HelpCenter({ isOpen, onClose }: HelpCenterProps) {
                 </TabsTrigger>
               </TabsList>
 
-              <ScrollArea className="flex-1 p-4">
+              <div className="flex-1 min-h-0 overflow-hidden">
+                <ScrollArea className="h-full p-4">
                 {/* ABOUT OBELIXIA TAB */}
                 <TabsContent value="about" className="mt-0 space-y-6">
                   {/* Action Buttons */}
@@ -2086,7 +2087,8 @@ export function HelpCenter({ isOpen, onClose }: HelpCenterProps) {
                     ))
                   ))}
                 </TabsContent>
-              </ScrollArea>
+                </ScrollArea>
+              </div>
             </Tabs>
           </motion.div>
         </>
