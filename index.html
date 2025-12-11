@@ -36,10 +36,42 @@
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     <link rel="dns-prefetch" href="https://avaugfnqvvqcilhiudlf.supabase.co">
     
-    <!-- Preconnect for critical origins -->
+    <!-- Preconnect for critical origins with HTTP/3 support -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://avaugfnqvvqcilhiudlf.supabase.co">
+    <link rel="preconnect" href="https://avaugfnqvvqcilhiudlf.supabase.co" crossorigin>
+    
+    <!-- HTTP/3 Early Hints (Priority 6) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" fetchpriority="high">
+    <link rel="preconnect" href="https://avaugfnqvvqcilhiudlf.supabase.co" fetchpriority="high">
+    
+    <!-- Speculation Rules for Prefetch (Priority 4) -->
+    <script type="speculationrules">
+    {
+      "prefetch": [
+        {
+          "source": "document",
+          "where": {
+            "and": [
+              {"href_matches": "/*"},
+              {"not": {"href_matches": "/api/*"}},
+              {"not": {"href_matches": "*.pdf"}}
+            ]
+          },
+          "eagerness": "moderate"
+        }
+      ],
+      "prerender": [
+        {
+          "source": "document",
+          "where": {
+            "selector_matches": "nav a, [role='navigation'] a"
+          },
+          "eagerness": "conservative"
+        }
+      ]
+    }
+    </script>
     
     <!-- Critical CSS inline for FCP -->
     <style>
