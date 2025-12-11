@@ -64,6 +64,7 @@ import { RFMDashboard } from '@/components/admin/RFMDashboard';
 import { CustomerSegmentationPanel } from '@/components/admin/CustomerSegmentationPanel';
 import WhiteLabelConfig from '@/components/admin/WhiteLabelConfig';
 import APIDocumentation from '@/components/admin/APIDocumentation';
+import { Customer360Panel } from '@/components/admin/Customer360Panel';
 
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
@@ -172,6 +173,7 @@ const Admin = () => {
       case 'ai-config': return 'Configuració IA Interna';
       case 'rfm-analysis': return 'Anàlisi RFM';
       case 'customer-segmentation': return 'Segmentació de Clients ML';
+      case 'cdp-360': return 'Customer Data Platform 360°';
       default: return '';
     }
   };
@@ -604,6 +606,8 @@ const Admin = () => {
           );
         }
         return <ISO27001Dashboard />;
+      case 'cdp-360':
+        return <Customer360Panel />;
       case 'internal-assistant':
         if (isAuditor) {
           return (
