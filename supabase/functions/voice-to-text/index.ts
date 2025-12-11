@@ -29,38 +29,71 @@ serve(async (req) => {
 
     console.log('[VoiceToText] Audio size:', bytes.length, 'bytes')
 
-    // Prepare form data for OpenAI Whisper API
-    const formData = new FormData()
-    const blob = new Blob([bytes], { type: 'audio/webm' })
-    formData.append('file', blob, 'audio.webm')
-    formData.append('model', 'whisper-1')
-    formData.append('language', 'es')
-
-    const openaiKey = Deno.env.get('OPENAI_API_KEY')
-    if (!openaiKey) {
-      throw new Error('OpenAI API key not configured')
+    // Use Lovable AI Gateway for transcription via Gemini
+    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')
+    if (!lovableApiKey) {
+      throw new Error('Lovable API key not configured')
     }
 
-    // Call OpenAI Whisper API
-    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+    // Convert audio to base64 for Gemini multimodal
+    const audioBase64 = audio
+
+    // Use Gemini 2.5 Flash for audio transcription
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openaiKey}`,
+        'Authorization': `Bearer ${lovableApiKey}`,
+        'Content-Type': 'application/json',
       },
-      body: formData,
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: 'Transcribe the following audio recording exactly as spoken. Return ONLY the transcribed text, nothing else. If the audio is in Spanish or Catalan, transcribe it in that language. If the audio is unclear or empty, return an empty string.'
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: `data:audio/webm;base64,${audioBase64}`
+                }
+              }
+            ]
+          }
+        ],
+        max_tokens: 1000,
+      }),
     })
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error('[VoiceToText] OpenAI error:', errorText)
-      throw new Error(`OpenAI API error: ${response.status}`)
+      console.error('[VoiceToText] Lovable AI error:', response.status, errorText)
+      
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: 'Rate limit exceeded, please try again later' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: 'Payment required, please add credits' }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+      throw new Error(`AI API error: ${response.status}`)
     }
 
     const result = await response.json()
-    console.log('[VoiceToText] Transcription result:', result.text)
+    const transcribedText = result.choices?.[0]?.message?.content?.trim() || ''
+    
+    console.log('[VoiceToText] Transcription result:', transcribedText)
 
     return new Response(
-      JSON.stringify({ text: result.text }),
+      JSON.stringify({ text: transcribedText }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
