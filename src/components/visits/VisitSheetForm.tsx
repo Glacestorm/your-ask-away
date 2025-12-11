@@ -17,10 +17,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ConflictDialog } from '@/components/ui/ConflictDialog';
-import { Calendar as CalendarIcon, Save, FileText, Package, PackagePlus, CheckCircle2, XCircle, Clock, AlertTriangle, Send, User, History, PenTool, Camera, FileStack } from 'lucide-react';
+import { Calendar as CalendarIcon, Save, FileText, Package, PackagePlus, CheckCircle2, XCircle, Clock, AlertTriangle, Send, User, History, PenTool, Camera, FileStack, Sparkles } from 'lucide-react';
 import { SignaturePad } from './SignaturePad';
 import { VisitSheetPhotos } from './VisitSheetPhotos';
 import { VisitSheetTemplateSelector } from './VisitSheetTemplateSelector';
+import { AISummaryButton } from './AISummaryButton';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -167,6 +168,11 @@ export function VisitSheetForm({ visitId, companyId, open, onOpenChange, onSaved
   const [visitPhotos, setVisitPhotos] = useState<Array<{id: string; photo_url: string; photo_caption: string | null; uploaded_at: string}>>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
 
+  // === NUEVOS CAMPOS: Resumen IA ===
+  const [aiSummary, setAiSummary] = useState<string | null>(null);
+  const [aiNextSteps, setAiNextSteps] = useState<string[] | null>(null);
+  const [aiRisks, setAiRisks] = useState<string[] | null>(null);
+
   useEffect(() => {
     if (open && companyId) {
       fetchCompanyData();
@@ -298,6 +304,11 @@ export function VisitSheetForm({ visitId, companyId, open, onOpenChange, onSaved
     // Cargar firma digital
     if (data.firma_digital) setFirmaDigital(data.firma_digital);
     if (data.firma_nombre_firmante) setFirmaNombreFirmante(data.firma_nombre_firmante);
+    
+    // Cargar resumen IA
+    if (data.ai_summary) setAiSummary(data.ai_summary);
+    if (data.ai_next_steps) setAiNextSteps(data.ai_next_steps);
+    if (data.ai_risks) setAiRisks(data.ai_risks);
     
     // Load validation history if validated
     if (data.validated_at && data.validated_by) {
@@ -1212,7 +1223,7 @@ export function VisitSheetForm({ visitId, companyId, open, onOpenChange, onSaved
                 <CardHeader>
                   <CardTitle className="text-base">9. Resumen de la Reunión</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="notas-gestor">Notas del Gestor</Label>
                     <Textarea
@@ -1223,6 +1234,31 @@ export function VisitSheetForm({ visitId, companyId, open, onOpenChange, onSaved
                       placeholder="Objetivos, necesidades, objecciones, tono del cliente, acuerdos previos..."
                     />
                   </div>
+                </CardContent>
+              </Card>
+
+              {/* Resumen IA con ObelixIA */}
+              <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-secondary/5">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-primary" />
+                    Resumen IA (ObelixIA)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <AISummaryButton
+                    visitSheetId={existingSheet?.id || undefined}
+                    notes={notasGestor || ''}
+                    companyName={company?.name}
+                    existingSummary={aiSummary}
+                    existingNextSteps={aiNextSteps}
+                    existingRisks={aiRisks}
+                    onSummaryGenerated={(summary, steps, risks) => {
+                      setAiSummary(summary);
+                      setAiNextSteps(steps);
+                      setAiRisks(risks);
+                    }}
+                  />
                 </CardContent>
               </Card>
             </TabsContent>
