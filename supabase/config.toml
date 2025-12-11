@@ -104,3 +104,18 @@ verify_jwt = true
 
 [functions.summarize-visit]
 verify_jwt = true
+
+[functions.credit-scoring]
+verify_jwt = true
+
+[functions.detect-anomalies]
+verify_jwt = true
+
+[functions.product-recommendations]
+verify_jwt = true
+
+[functions.predict-churn]
+verify_jwt = true
+
+[functions.intelligent-ocr]
+verify_jwt = true
