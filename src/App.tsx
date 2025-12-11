@@ -11,6 +11,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { PageStreamingSkeleton, StreamingBoundary } from "@/components/performance/StreamingBoundary";
 import { MFAEnforcementDialog } from "@/components/security/MFAEnforcementDialog";
 import { HelpButton } from "@/components/help/HelpButton";
+import { FloatingChatButton } from "@/components/chat/FloatingChatButton";
 
 // Lazy load pages with React 19 preload hints for better streaming SSR
 const Auth = lazy(() => import("./pages/Auth"));
@@ -47,6 +48,7 @@ const App = () => (
                 <Toaster />
                 <Sonner />
                 <HelpButton />
+                <FloatingChatButton />
                 {/* React 19 Streaming SSR with progressive Suspense boundaries */}
                 <StreamingBoundary priority="high" fallback={<PageStreamingSkeleton />}>
                   <Routes>
