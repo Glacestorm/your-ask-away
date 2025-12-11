@@ -98,7 +98,7 @@ export function InternalAssistantChat() {
     }
   };
 
-  // Handle voice recording completion - transcribe audio
+  // Handle voice recording completion - transcribe audio and send
   const handleVoiceRecordingComplete = async (audioBlob: Blob) => {
     console.log('[VoiceChat] Recording complete, blob size:', audioBlob.size);
     setIsTranscribing(true);
@@ -120,17 +120,25 @@ export function InternalAssistantChat() {
       const base64Audio = await base64Promise;
       console.log('[VoiceChat] Audio converted to base64, length:', base64Audio.length);
       
-      // Call transcription edge function (using OpenAI Whisper)
+      // Call transcription edge function
       const { data, error } = await supabase.functions.invoke('voice-to-text', {
         body: { audio: base64Audio }
       });
       
       if (error) throw error;
       
-      if (data?.text) {
-        console.log('[VoiceChat] Transcription result:', data.text);
-        setInput(data.text);
+      if (data?.text && data.text.trim()) {
+        const transcribedText = data.text.trim();
+        console.log('[VoiceChat] Transcription result:', transcribedText);
+        
+        // Show transcription and auto-send
+        setInput(transcribedText);
         toast.success('Audio transcrito correctamente');
+        
+        // Auto-send the voice message after a short delay
+        setTimeout(() => {
+          sendVoiceMessageWithText(transcribedText);
+        }, 300);
       } else {
         toast.info('No se detectó texto en el audio');
       }
@@ -139,6 +147,97 @@ export function InternalAssistantChat() {
       toast.error('Error al transcribir el audio');
     } finally {
       setIsTranscribing(false);
+    }
+  };
+
+  // Send voice message with specific text
+  const sendVoiceMessageWithText = async (text: string) => {
+    if (!text.trim() || !user || isLoading) return;
+
+    const userMessage: Message = {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content: text.trim(),
+      createdAt: new Date(),
+      inputMethod: 'voice',
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setIsLoading(true);
+
+    try {
+      // Get or create conversation
+      let convId = currentConversationId;
+      if (!convId) {
+        convId = await startNewConversation();
+        if (!convId) throw new Error('Failed to create conversation');
+        await updateConversationTitle(convId, userMessage.content);
+      }
+
+      // Save user message
+      await saveMessage(convId, userMessage);
+
+      // Get user profile for office info
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('oficina')
+        .eq('id', user.id)
+        .single();
+
+      // Call the edge function
+      const { data, error } = await supabase.functions.invoke('internal-assistant-chat', {
+        body: {
+          messages: messages.concat(userMessage).map(m => ({
+            role: m.role,
+            content: m.content,
+          })),
+          conversationId: convId,
+          userId: user.id,
+          userRole: userRole || 'gestor',
+          contextType,
+          userOffice: profile?.oficina,
+        },
+      });
+
+      if (error) throw error;
+
+      const assistantMessage: Message = {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: data.message,
+        sources: data.sources || [],
+        isSensitive: data.isSensitive,
+        createdAt: new Date(),
+        inputMethod: 'text',
+      };
+
+      setMessages(prev => [...prev, assistantMessage]);
+      await saveMessage(convId, assistantMessage);
+
+      // Auto-speak response for voice messages
+      speak(data.message);
+
+      // Update conversation if sensitive
+      if (data.requiresReview) {
+        await supabase
+          .from('internal_assistant_conversations')
+          .update({ requires_human_review: true, is_sensitive: true })
+          .eq('id', convId);
+      }
+
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast.error('Error al enviar el mensaje');
+      
+      setMessages(prev => [...prev, {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: 'Lo siento, ha ocurrido un error al procesar tu consulta. Por favor, inténtalo de nuevo.',
+        createdAt: new Date(),
+      }]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -655,8 +754,8 @@ export function InternalAssistantChat() {
                       {/* Voice indicator for user messages */}
                       {message.role === 'user' && message.inputMethod === 'voice' && (
                         <div className="flex items-center gap-1 text-primary-foreground/70 text-xs mb-1">
-                          <Bot className="h-3 w-3" />
-                          <span>Mensaje de voz</span>
+                          <Volume2 className="h-3 w-3" />
+                          <span>🎤 Mensaje de voz transcrito</span>
                         </div>
                       )}
                       {message.isSensitive && (
