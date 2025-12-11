@@ -29,47 +29,70 @@ import {
 import { toast } from 'sonner';
 import { subMonths } from 'date-fns';
 import { DateRange } from 'react-day-picker';
-import { ResumenEjecutivo } from '@/components/dashboard/ResumenEjecutivo';
-import { AnalisisGeografico } from '@/components/dashboard/AnalisisGeografico';
-import { DateRangeFilter } from '@/components/dashboard/DateRangeFilter';
-import { ComparativaTemporales } from '@/components/dashboard/ComparativaTemporales';
-import { PrediccionesFuturas } from '@/components/dashboard/PrediccionesFuturas';
-import { ObjetivosYMetas } from '@/components/dashboard/ObjetivosYMetas';
-import { VisitsMetrics } from '@/components/admin/VisitsMetrics';
-import { ProductsMetrics } from '@/components/admin/ProductsMetrics';
-import { GestoresMetrics } from '@/components/admin/GestoresMetrics';
-import { VinculacionMetrics } from '@/components/admin/VinculacionMetrics';
-import { ReportGenerator } from '@/components/reports/ReportGenerator';
-import { AnalisisCohortes } from '@/components/dashboard/AnalisisCohortes';
-import { AlertsManager } from '@/components/dashboard/AlertsManager';
-import { NotificationsPanel } from '@/components/dashboard/NotificationsPanel';
-import { NotificationPreferences } from '@/components/dashboard/NotificationPreferences';
-import { AnalisisEmbudo } from '@/components/dashboard/AnalisisEmbudo';
 import { supabase } from '@/integrations/supabase/client';
-import { VisitReminders } from '@/components/dashboard/VisitReminders';
-import { NotificationService } from '@/components/dashboard/NotificationService';
-import { UpcomingVisitsWidget } from '@/components/dashboard/UpcomingVisitsWidget';
-import { QuickActionsPanel } from '@/components/dashboard/QuickActionsPanel';
-import { PersonalKPIsDashboard } from '@/components/dashboard/PersonalKPIsDashboard';
-import { GestoresLeaderboard } from '@/components/dashboard/GestoresLeaderboard';
-import { PersonalActivityHistory } from '@/components/dashboard/PersonalActivityHistory';
-import { ActivityStatistics } from '@/components/dashboard/ActivityStatistics';
-import { GestorComparison } from '@/components/dashboard/GestorComparison';
-import { GestorEvolutionTimeline } from '@/components/dashboard/GestorEvolutionTimeline';
-import { TPVGoalsDashboard } from '@/components/dashboard/TPVGoalsDashboard';
-import { BestPracticesPanel } from '@/components/dashboard/BestPracticesPanel';
-import { GlobalNavHeader } from '@/components/GlobalNavHeader';
 import { Skeleton } from '@/components/ui/skeleton';
 import * as XLSX from 'xlsx';
 
-// Lazy loading para componentes pesados
-const LazyAnalisisGeografico = lazy(() => import('@/components/dashboard/AnalisisGeografico').then(m => ({ default: m.AnalisisGeografico })));
+// Componentes ligeros que se cargan siempre
+import { GlobalNavHeader } from '@/components/GlobalNavHeader';
+import { DateRangeFilter } from '@/components/dashboard/DateRangeFilter';
+import { NotificationsPanel } from '@/components/dashboard/NotificationsPanel';
+import { NotificationService } from '@/components/dashboard/NotificationService';
 
+// Lazy loading para todos los componentes pesados del Dashboard
+const ResumenEjecutivo = lazy(() => import('@/components/dashboard/ResumenEjecutivo').then(m => ({ default: m.ResumenEjecutivo })));
+const ComparativaTemporales = lazy(() => import('@/components/dashboard/ComparativaTemporales').then(m => ({ default: m.ComparativaTemporales })));
+const PrediccionesFuturas = lazy(() => import('@/components/dashboard/PrediccionesFuturas').then(m => ({ default: m.PrediccionesFuturas })));
+const ObjetivosYMetas = lazy(() => import('@/components/dashboard/ObjetivosYMetas').then(m => ({ default: m.ObjetivosYMetas })));
+const AnalisisGeografico = lazy(() => import('@/components/dashboard/AnalisisGeografico').then(m => ({ default: m.AnalisisGeografico })));
+const AnalisisCohortes = lazy(() => import('@/components/dashboard/AnalisisCohortes').then(m => ({ default: m.AnalisisCohortes })));
+const AnalisisEmbudo = lazy(() => import('@/components/dashboard/AnalisisEmbudo').then(m => ({ default: m.AnalisisEmbudo })));
+
+// Admin metrics components
+const VisitsMetrics = lazy(() => import('@/components/admin/VisitsMetrics').then(m => ({ default: m.VisitsMetrics })));
+const ProductsMetrics = lazy(() => import('@/components/admin/ProductsMetrics').then(m => ({ default: m.ProductsMetrics })));
+const GestoresMetrics = lazy(() => import('@/components/admin/GestoresMetrics').then(m => ({ default: m.GestoresMetrics })));
+const VinculacionMetrics = lazy(() => import('@/components/admin/VinculacionMetrics').then(m => ({ default: m.VinculacionMetrics })));
+
+// Dashboard specific components
+const PersonalKPIsDashboard = lazy(() => import('@/components/dashboard/PersonalKPIsDashboard').then(m => ({ default: m.PersonalKPIsDashboard })));
+const QuickActionsPanel = lazy(() => import('@/components/dashboard/QuickActionsPanel').then(m => ({ default: m.QuickActionsPanel })));
+const UpcomingVisitsWidget = lazy(() => import('@/components/dashboard/UpcomingVisitsWidget').then(m => ({ default: m.UpcomingVisitsWidget })));
+const PersonalActivityHistory = lazy(() => import('@/components/dashboard/PersonalActivityHistory').then(m => ({ default: m.PersonalActivityHistory })));
+const GestoresLeaderboard = lazy(() => import('@/components/dashboard/GestoresLeaderboard').then(m => ({ default: m.GestoresLeaderboard })));
+const GestorComparison = lazy(() => import('@/components/dashboard/GestorComparison').then(m => ({ default: m.GestorComparison })));
+const GestorEvolutionTimeline = lazy(() => import('@/components/dashboard/GestorEvolutionTimeline').then(m => ({ default: m.GestorEvolutionTimeline })));
+const ActivityStatistics = lazy(() => import('@/components/dashboard/ActivityStatistics').then(m => ({ default: m.ActivityStatistics })));
+const TPVGoalsDashboard = lazy(() => import('@/components/dashboard/TPVGoalsDashboard').then(m => ({ default: m.TPVGoalsDashboard })));
+const BestPracticesPanel = lazy(() => import('@/components/dashboard/BestPracticesPanel').then(m => ({ default: m.BestPracticesPanel })));
+
+// Tools components
+const AlertsManager = lazy(() => import('@/components/dashboard/AlertsManager').then(m => ({ default: m.AlertsManager })));
+const NotificationPreferences = lazy(() => import('@/components/dashboard/NotificationPreferences').then(m => ({ default: m.NotificationPreferences })));
+const VisitReminders = lazy(() => import('@/components/dashboard/VisitReminders').then(m => ({ default: m.VisitReminders })));
+const ReportGenerator = lazy(() => import('@/components/reports/ReportGenerator').then(m => ({ default: m.ReportGenerator })));
+
+// Loading fallback component
 const LoadingFallback = () => (
-  <div className="space-y-4">
+  <div className="space-y-4 animate-pulse">
     <Skeleton className="h-8 w-1/3" />
     <Skeleton className="h-64 w-full" />
   </div>
+);
+
+const CardLoadingFallback = () => (
+  <Card>
+    <CardHeader>
+      <Skeleton className="h-6 w-1/4" />
+      <Skeleton className="h-4 w-1/2 mt-2" />
+    </CardHeader>
+    <CardContent>
+      <div className="space-y-3">
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-8 w-full" />
+      </div>
+    </CardContent>
+  </Card>
 );
 
 const Dashboard = () => {
@@ -209,16 +232,30 @@ const Dashboard = () => {
           {/* ===== SECTION 1: MI PANEL (Personal Dashboard) ===== */}
           <TabsContent value="mi-panel" className="space-y-6">
             {/* KPIs Personales - Visible para todos excepto auditors */}
-            {!isAuditor && <PersonalKPIsDashboard />}
+            {!isAuditor && (
+              <Suspense fallback={<CardLoadingFallback />}>
+                <PersonalKPIsDashboard />
+              </Suspense>
+            )}
             
             {/* Acciones Rápidas - Solo para usuarios que pueden hacer acciones */}
-            {!isAuditor && <QuickActionsPanel />}
+            {!isAuditor && (
+              <Suspense fallback={<LoadingFallback />}>
+                <QuickActionsPanel />
+              </Suspense>
+            )}
             
             {/* Próximas Visitas - Visible para todos excepto auditors */}
-            {!isAuditor && <UpcomingVisitsWidget />}
+            {!isAuditor && (
+              <Suspense fallback={<CardLoadingFallback />}>
+                <UpcomingVisitsWidget />
+              </Suspense>
+            )}
             
             {/* Resumen Ejecutivo - Visible para todos */}
-            <ResumenEjecutivo startDate={startDate} endDate={endDate} />
+            <Suspense fallback={<CardLoadingFallback />}>
+              <ResumenEjecutivo startDate={startDate} endDate={endDate} />
+            </Suspense>
             
             {/* Mi Actividad - Solo para usuarios no auditores */}
             {!isAuditor && (
@@ -230,7 +267,9 @@ const Dashboard = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <PersonalActivityHistory />
+                  <Suspense fallback={<LoadingFallback />}>
+                    <PersonalActivityHistory />
+                  </Suspense>
                 </CardContent>
               </Card>
             )}
@@ -339,7 +378,9 @@ const Dashboard = () => {
 
             {/* Analysis Sub-content */}
             {analysisSubTab === 'comparativa' && (
-              <ComparativaTemporales startDate={startDate} endDate={endDate} />
+              <Suspense fallback={<CardLoadingFallback />}>
+                <ComparativaTemporales startDate={startDate} endDate={endDate} />
+              </Suspense>
             )}
             
             {analysisSubTab === 'predicciones' && (
@@ -349,7 +390,9 @@ const Dashboard = () => {
                   <p className="text-sm text-muted-foreground">{t('section.predictions.subtitle')}</p>
                 </CardHeader>
                 <CardContent>
-                  <PrediccionesFuturas />
+                  <Suspense fallback={<LoadingFallback />}>
+                    <PrediccionesFuturas />
+                  </Suspense>
                 </CardContent>
               </Card>
             )}
@@ -361,7 +404,9 @@ const Dashboard = () => {
                   <p className="text-sm text-muted-foreground">{t('section.visits.subtitle')}</p>
                 </CardHeader>
                 <CardContent>
-                  <VisitsMetrics />
+                  <Suspense fallback={<LoadingFallback />}>
+                    <VisitsMetrics />
+                  </Suspense>
                 </CardContent>
               </Card>
             )}
@@ -373,7 +418,9 @@ const Dashboard = () => {
                   <p className="text-sm text-muted-foreground">{t('section.products.subtitle')}</p>
                 </CardHeader>
                 <CardContent>
-                  <ProductsMetrics />
+                  <Suspense fallback={<LoadingFallback />}>
+                    <ProductsMetrics />
+                  </Suspense>
                 </CardContent>
               </Card>
             )}
@@ -385,14 +432,16 @@ const Dashboard = () => {
                   <p className="text-sm text-muted-foreground">{t('section.linkage.subtitle')}</p>
                 </CardHeader>
                 <CardContent>
-                  <VinculacionMetrics />
+                  <Suspense fallback={<LoadingFallback />}>
+                    <VinculacionMetrics />
+                  </Suspense>
                 </CardContent>
               </Card>
             )}
             
             {analysisSubTab === 'geografico' && (
-              <Suspense fallback={<LoadingFallback />}>
-                <LazyAnalisisGeografico startDate={startDate} endDate={endDate} />
+              <Suspense fallback={<CardLoadingFallback />}>
+                <AnalisisGeografico startDate={startDate} endDate={endDate} />
               </Suspense>
             )}
             
@@ -403,7 +452,9 @@ const Dashboard = () => {
                   <p className="text-sm text-muted-foreground">{t('section.cohorts.subtitle')}</p>
                 </CardHeader>
                 <CardContent>
-                  <AnalisisCohortes />
+                  <Suspense fallback={<LoadingFallback />}>
+                    <AnalisisCohortes />
+                  </Suspense>
                 </CardContent>
               </Card>
             )}
@@ -415,7 +466,9 @@ const Dashboard = () => {
                   <p className="text-sm text-muted-foreground">{t('section.funnel.subtitle')}</p>
                 </CardHeader>
                 <CardContent>
-                  <AnalisisEmbudo />
+                  <Suspense fallback={<LoadingFallback />}>
+                    <AnalisisEmbudo />
+                  </Suspense>
                 </CardContent>
               </Card>
             )}
@@ -473,7 +526,9 @@ const Dashboard = () => {
                   <p className="text-sm text-muted-foreground">{t('section.objectives.subtitle')}</p>
                 </CardHeader>
                 <CardContent>
-                  <ObjetivosYMetas />
+                  <Suspense fallback={<LoadingFallback />}>
+                    <ObjetivosYMetas />
+                  </Suspense>
                 </CardContent>
               </Card>
             )}
@@ -485,7 +540,9 @@ const Dashboard = () => {
                   <p className="text-sm text-muted-foreground">Seguimiento de metas de facturación, vinculación y comisiones</p>
                 </CardHeader>
                 <CardContent>
-                  <TPVGoalsDashboard />
+                  <Suspense fallback={<LoadingFallback />}>
+                    <TPVGoalsDashboard />
+                  </Suspense>
                 </CardContent>
               </Card>
             )}
@@ -497,7 +554,9 @@ const Dashboard = () => {
                   <p className="text-sm text-muted-foreground">Comparte y aprende de las mejores prácticas del equipo</p>
                 </CardHeader>
                 <CardContent>
-                  <BestPracticesPanel />
+                  <Suspense fallback={<LoadingFallback />}>
+                    <BestPracticesPanel />
+                  </Suspense>
                 </CardContent>
               </Card>
             )}
@@ -549,14 +608,18 @@ const Dashboard = () => {
               {/* Team Sub-content */}
               {teamSubTab === 'gestores' && (
                 <div className="space-y-6">
-                  <GestoresLeaderboard />
+                  <Suspense fallback={<CardLoadingFallback />}>
+                    <GestoresLeaderboard />
+                  </Suspense>
                   <Card>
                     <CardHeader>
                       <CardTitle>{t('section.managers.title')}</CardTitle>
                       <p className="text-sm text-muted-foreground">{t('section.managers.subtitle')}</p>
                     </CardHeader>
                     <CardContent>
-                      <GestoresMetrics />
+                      <Suspense fallback={<LoadingFallback />}>
+                        <GestoresMetrics />
+                      </Suspense>
                     </CardContent>
                   </Card>
                 </div>
@@ -569,7 +632,9 @@ const Dashboard = () => {
                     <p className="text-sm text-muted-foreground">Análisis comparativo del rendimiento del equipo</p>
                   </CardHeader>
                   <CardContent>
-                    <GestorComparison />
+                    <Suspense fallback={<LoadingFallback />}>
+                      <GestorComparison />
+                    </Suspense>
                   </CardContent>
                 </Card>
               )}
@@ -581,7 +646,9 @@ const Dashboard = () => {
                     <p className="text-sm text-muted-foreground">Progresión del rendimiento a lo largo del tiempo</p>
                   </CardHeader>
                   <CardContent>
-                    <GestorEvolutionTimeline />
+                    <Suspense fallback={<LoadingFallback />}>
+                      <GestorEvolutionTimeline />
+                    </Suspense>
                   </CardContent>
                 </Card>
               )}
@@ -593,7 +660,9 @@ const Dashboard = () => {
                     <p className="text-sm text-muted-foreground">Métricas detalladas de actividad del equipo</p>
                   </CardHeader>
                   <CardContent>
-                    <ActivityStatistics />
+                    <Suspense fallback={<LoadingFallback />}>
+                      <ActivityStatistics />
+                    </Suspense>
                   </CardContent>
                 </Card>
               )}
@@ -653,7 +722,9 @@ const Dashboard = () => {
                     <p className="text-sm text-muted-foreground">{t('section.alerts.subtitle')}</p>
                   </CardHeader>
                   <CardContent>
-                    <AlertsManager />
+                    <Suspense fallback={<LoadingFallback />}>
+                      <AlertsManager />
+                    </Suspense>
                   </CardContent>
                 </Card>
 
@@ -663,7 +734,9 @@ const Dashboard = () => {
                     <p className="text-sm text-muted-foreground">{t('section.notifications.subtitle')}</p>
                   </CardHeader>
                   <CardContent>
-                    <NotificationPreferences />
+                    <Suspense fallback={<LoadingFallback />}>
+                      <NotificationPreferences />
+                    </Suspense>
                   </CardContent>
                 </Card>
               </div>
@@ -676,13 +749,17 @@ const Dashboard = () => {
                   <p className="text-sm text-muted-foreground">{t('section.reports.subtitle')}</p>
                 </CardHeader>
                 <CardContent>
-                  <ReportGenerator />
+                  <Suspense fallback={<LoadingFallback />}>
+                    <ReportGenerator />
+                  </Suspense>
                 </CardContent>
               </Card>
             )}
 
             {toolsSubTab === 'recordatorios' && !isAuditor && (
-              <VisitReminders />
+              <Suspense fallback={<CardLoadingFallback />}>
+                <VisitReminders />
+              </Suspense>
             )}
 
             {/* Default view for users without specific permissions */}
@@ -692,7 +769,9 @@ const Dashboard = () => {
                   <CardTitle className="text-blue-700 dark:text-blue-400">Notificaciones</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <NotificationPreferences />
+                  <Suspense fallback={<LoadingFallback />}>
+                    <NotificationPreferences />
+                  </Suspense>
                 </CardContent>
               </Card>
             )}
