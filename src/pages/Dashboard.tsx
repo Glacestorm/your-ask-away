@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
-  ArrowLeft, 
   TrendingUp, 
   BarChart3, 
   Package, 
@@ -20,7 +20,11 @@ import {
   UserCheck,
   Bell,
   Filter,
-  Activity
+  Activity,
+  Briefcase,
+  Settings,
+  LayoutDashboard,
+  PieChart
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { subMonths } from 'date-fns';
@@ -55,10 +59,21 @@ import { GestorEvolutionTimeline } from '@/components/dashboard/GestorEvolutionT
 import { TPVGoalsDashboard } from '@/components/dashboard/TPVGoalsDashboard';
 import { BestPracticesPanel } from '@/components/dashboard/BestPracticesPanel';
 import { GlobalNavHeader } from '@/components/GlobalNavHeader';
+import { Skeleton } from '@/components/ui/skeleton';
 import * as XLSX from 'xlsx';
 
+// Lazy loading para componentes pesados
+const LazyAnalisisGeografico = lazy(() => import('@/components/dashboard/AnalisisGeografico').then(m => ({ default: m.AnalisisGeografico })));
+
+const LoadingFallback = () => (
+  <div className="space-y-4">
+    <Skeleton className="h-8 w-1/3" />
+    <Skeleton className="h-64 w-full" />
+  </div>
+);
+
 const Dashboard = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, userRole } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
   
@@ -66,6 +81,15 @@ const Dashboard = () => {
     from: subMonths(new Date(), 1),
     to: new Date(),
   });
+
+  // Sub-tabs state for each main section
+  const [analysisSubTab, setAnalysisSubTab] = useState('comparativa');
+  const [goalsSubTab, setGoalsSubTab] = useState('objetivos');
+  const [teamSubTab, setTeamSubTab] = useState('gestores');
+  const [toolsSubTab, setToolsSubTab] = useState('alertas');
+
+  // Check if user is a director or admin (can see team tab)
+  const isDirector = userRole && ['superadmin', 'director_comercial', 'director_oficina', 'responsable_comercial'].includes(userRole);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -127,7 +151,6 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Notification Service - runs in background */}
       <NotificationService />
       
       <div className="container mx-auto p-4 sm:p-6 space-y-6">
@@ -149,289 +172,454 @@ const Dashboard = () => {
           onDateRangeChange={setDateRange}
         />
 
-        {/* Dashboard Tabs */}
-        <Tabs defaultValue="resumen" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:grid-cols-18 h-auto">
-            <TabsTrigger value="resumen" className="flex items-center gap-2 py-3">
-              <TrendingUp className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('tabs.resumen')}</span>
+        {/* Main Dashboard Tabs - 5 Sections */}
+        <Tabs defaultValue="mi-panel" className="space-y-6">
+          <TabsList className={`grid w-full ${isDirector ? 'grid-cols-5' : 'grid-cols-4'} h-auto gap-1`}>
+            <TabsTrigger value="mi-panel" className="flex items-center gap-2 py-3 px-4">
+              <LayoutDashboard className="h-4 w-4" />
+              <span className="hidden sm:inline font-medium">Mi Panel</span>
             </TabsTrigger>
-            <TabsTrigger value="comparativa" className="flex items-center gap-2 py-3">
-              <GitCompare className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('tabs.comparativa')}</span>
+            <TabsTrigger value="analisis" className="flex items-center gap-2 py-3 px-4">
+              <PieChart className="h-4 w-4" />
+              <span className="hidden sm:inline font-medium">Análisis</span>
             </TabsTrigger>
-            <TabsTrigger value="predicciones" className="flex items-center gap-2 py-3">
-              <LineChart className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('tabs.predicciones')}</span>
-            </TabsTrigger>
-            <TabsTrigger value="objetivos" className="flex items-center gap-2 py-3">
-              <Award className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('tabs.objetivos')}</span>
-            </TabsTrigger>
-            <TabsTrigger value="tpv-goals" className="flex items-center gap-2 py-3">
+            <TabsTrigger value="objetivos" className="flex items-center gap-2 py-3 px-4">
               <Target className="h-4 w-4" />
-              <span className="hidden sm:inline">TPV</span>
+              <span className="hidden sm:inline font-medium">Objetivos</span>
             </TabsTrigger>
-            <TabsTrigger value="mejores-practicas" className="flex items-center gap-2 py-3">
-              <Award className="h-4 w-4" />
-              <span className="hidden sm:inline">Mejores Prácticas</span>
-            </TabsTrigger>
-            <TabsTrigger value="visitas" className="flex items-center gap-2 py-3">
-              <BarChart3 className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('tabs.visitas')}</span>
-            </TabsTrigger>
-            <TabsTrigger value="productos" className="flex items-center gap-2 py-3">
-              <Package className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('tabs.productos')}</span>
-            </TabsTrigger>
-            <TabsTrigger value="gestores" className="flex items-center gap-2 py-3">
-              <Users className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('tabs.gestores')}</span>
-            </TabsTrigger>
-            <TabsTrigger value="vinculacion" className="flex items-center gap-2 py-3">
-              <Target className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('tabs.vinculacion')}</span>
-            </TabsTrigger>
-            <TabsTrigger value="geografico" className="flex items-center gap-2 py-3">
-              <MapPin className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('tabs.geografico')}</span>
-            </TabsTrigger>
-            <TabsTrigger value="cohortes" className="flex items-center gap-2 py-3">
-              <UserCheck className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('tabs.cohortes')}</span>
-            </TabsTrigger>
-            <TabsTrigger value="embudo" className="flex items-center gap-2 py-3">
-              <Filter className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('tabs.embudo')}</span>
-            </TabsTrigger>
-            <TabsTrigger value="alertas" className="flex items-center gap-2 py-3">
-              <Bell className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('tabs.alertas')}</span>
-            </TabsTrigger>
-            <TabsTrigger value="actividad" className="flex items-center gap-2 py-3">
-              <Activity className="h-4 w-4" />
-              <span className="hidden sm:inline">Mi Actividad</span>
-            </TabsTrigger>
-            <TabsTrigger value="estadisticas" className="flex items-center gap-2 py-3">
-              <BarChart3 className="h-4 w-4" />
-              <span className="hidden sm:inline">Estadísticas</span>
-            </TabsTrigger>
-            <TabsTrigger value="comparacion" className="flex items-center gap-2 py-3">
-              <Users className="h-4 w-4" />
-              <span className="hidden sm:inline">Comparación</span>
-            </TabsTrigger>
-            <TabsTrigger value="evolucion" className="flex items-center gap-2 py-3">
-              <TrendingUp className="h-4 w-4" />
-              <span className="hidden sm:inline">Evolución</span>
-            </TabsTrigger>
-            <TabsTrigger value="reportes" className="flex items-center gap-2 py-3">
-              <FileText className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('tabs.reportes')}</span>
+            {isDirector && (
+              <TabsTrigger value="equipo" className="flex items-center gap-2 py-3 px-4">
+                <Users className="h-4 w-4" />
+                <span className="hidden sm:inline font-medium">Equipo</span>
+              </TabsTrigger>
+            )}
+            <TabsTrigger value="herramientas" className="flex items-center gap-2 py-3 px-4">
+              <Settings className="h-4 w-4" />
+              <span className="hidden sm:inline font-medium">Herramientas</span>
             </TabsTrigger>
           </TabsList>
 
-          {/* Resumen Ejecutivo */}
-          <TabsContent value="resumen" className="space-y-6">
+          {/* ===== SECTION 1: MI PANEL (Personal Dashboard) ===== */}
+          <TabsContent value="mi-panel" className="space-y-6">
+            {/* KPIs Personales */}
             <PersonalKPIsDashboard />
-            <QuickActionsPanel />
-            <UpcomingVisitsWidget />
-            <ResumenEjecutivo startDate={startDate} endDate={endDate} />
-          </TabsContent>
-
-          {/* Análisis Comparativo */}
-          <TabsContent value="comparativa" className="space-y-6">
-            <ComparativaTemporales startDate={startDate} endDate={endDate} />
-          </TabsContent>
-
-          {/* Predicciones Futuras */}
-          <TabsContent value="predicciones" className="space-y-6">
-            <div className="rounded-lg border bg-card p-6">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold">{t('section.predictions.title')}</h2>
-                <p className="text-muted-foreground">
-                  {t('section.predictions.subtitle')}
-                </p>
-              </div>
-              <PrediccionesFuturas />
-            </div>
-          </TabsContent>
-
-          {/* Objetivos y Metas */}
-          <TabsContent value="objetivos" className="space-y-6">
-            <div className="rounded-lg border bg-card p-6">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold">{t('section.objectives.title')}</h2>
-                <p className="text-muted-foreground">
-                  {t('section.objectives.subtitle')}
-                </p>
-              </div>
-              <ObjetivosYMetas />
-            </div>
-          </TabsContent>
-
-          {/* Objetivos de TPV */}
-          <TabsContent value="tpv-goals" className="space-y-6">
-            <div className="rounded-lg border bg-card p-6">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold">Objetivos de TPV</h2>
-                <p className="text-muted-foreground">
-                  Seguimiento de metas de facturación, vinculación y comisiones
-                </p>
-              </div>
-              <TPVGoalsDashboard />
-            </div>
-          </TabsContent>
-
-          {/* Mejores Prácticas */}
-          <TabsContent value="mejores-practicas" className="space-y-6">
-            <div className="rounded-lg border bg-card p-6">
-              <BestPracticesPanel />
-            </div>
-          </TabsContent>
-
-          {/* Análisis de Visitas */}
-          <TabsContent value="visitas" className="space-y-6">
-            <div className="rounded-lg border bg-card p-6">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold">{t('section.visits.title')}</h2>
-                <p className="text-muted-foreground">
-                  {t('section.visits.subtitle')}
-                </p>
-              </div>
-              <VisitsMetrics />
-            </div>
-          </TabsContent>
-
-          {/* Análisis de Productos */}
-          <TabsContent value="productos" className="space-y-6">
-            <div className="rounded-lg border bg-card p-6">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold">{t('section.products.title')}</h2>
-                <p className="text-muted-foreground">
-                  {t('section.products.subtitle')}
-                </p>
-              </div>
-              <ProductsMetrics />
-            </div>
-          </TabsContent>
-
-          {/* Rendimiento de Gestores */}
-          <TabsContent value="gestores" className="space-y-6">
-            <GestoresLeaderboard />
             
-            <div className="rounded-lg border bg-card p-6">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold">{t('section.managers.title')}</h2>
-                <p className="text-muted-foreground">
-                  {t('section.managers.subtitle')}
-                </p>
-              </div>
-              <GestoresMetrics />
+            {/* Acciones Rápidas */}
+            <QuickActionsPanel />
+            
+            {/* Próximas Visitas */}
+            <UpcomingVisitsWidget />
+            
+            {/* Resumen Ejecutivo */}
+            <ResumenEjecutivo startDate={startDate} endDate={endDate} />
+            
+            {/* Mi Actividad */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5" />
+                  Mi Actividad Reciente
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PersonalActivityHistory />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ===== SECTION 2: ANÁLISIS (Analytics) ===== */}
+          <TabsContent value="analisis" className="space-y-6">
+            {/* Sub-navigation for Analysis */}
+            <div className="flex flex-wrap gap-2 p-2 bg-muted/50 rounded-lg">
+              <Button 
+                variant={analysisSubTab === 'comparativa' ? 'default' : 'ghost'} 
+                size="sm"
+                onClick={() => setAnalysisSubTab('comparativa')}
+                className="flex items-center gap-2"
+              >
+                <GitCompare className="h-4 w-4" />
+                Comparativa
+              </Button>
+              <Button 
+                variant={analysisSubTab === 'predicciones' ? 'default' : 'ghost'} 
+                size="sm"
+                onClick={() => setAnalysisSubTab('predicciones')}
+                className="flex items-center gap-2"
+              >
+                <LineChart className="h-4 w-4" />
+                Predicciones
+              </Button>
+              <Button 
+                variant={analysisSubTab === 'visitas' ? 'default' : 'ghost'} 
+                size="sm"
+                onClick={() => setAnalysisSubTab('visitas')}
+                className="flex items-center gap-2"
+              >
+                <BarChart3 className="h-4 w-4" />
+                Visitas
+              </Button>
+              <Button 
+                variant={analysisSubTab === 'productos' ? 'default' : 'ghost'} 
+                size="sm"
+                onClick={() => setAnalysisSubTab('productos')}
+                className="flex items-center gap-2"
+              >
+                <Package className="h-4 w-4" />
+                Productos
+              </Button>
+              <Button 
+                variant={analysisSubTab === 'vinculacion' ? 'default' : 'ghost'} 
+                size="sm"
+                onClick={() => setAnalysisSubTab('vinculacion')}
+                className="flex items-center gap-2"
+              >
+                <Target className="h-4 w-4" />
+                Vinculación
+              </Button>
+              <Button 
+                variant={analysisSubTab === 'geografico' ? 'default' : 'ghost'} 
+                size="sm"
+                onClick={() => setAnalysisSubTab('geografico')}
+                className="flex items-center gap-2"
+              >
+                <MapPin className="h-4 w-4" />
+                Geográfico
+              </Button>
+              <Button 
+                variant={analysisSubTab === 'cohortes' ? 'default' : 'ghost'} 
+                size="sm"
+                onClick={() => setAnalysisSubTab('cohortes')}
+                className="flex items-center gap-2"
+              >
+                <UserCheck className="h-4 w-4" />
+                Cohortes
+              </Button>
+              <Button 
+                variant={analysisSubTab === 'embudo' ? 'default' : 'ghost'} 
+                size="sm"
+                onClick={() => setAnalysisSubTab('embudo')}
+                className="flex items-center gap-2"
+              >
+                <Filter className="h-4 w-4" />
+                Embudo
+              </Button>
             </div>
+
+            {/* Analysis Sub-content */}
+            {analysisSubTab === 'comparativa' && (
+              <ComparativaTemporales startDate={startDate} endDate={endDate} />
+            )}
+            
+            {analysisSubTab === 'predicciones' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('section.predictions.title')}</CardTitle>
+                  <p className="text-sm text-muted-foreground">{t('section.predictions.subtitle')}</p>
+                </CardHeader>
+                <CardContent>
+                  <PrediccionesFuturas />
+                </CardContent>
+              </Card>
+            )}
+            
+            {analysisSubTab === 'visitas' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('section.visits.title')}</CardTitle>
+                  <p className="text-sm text-muted-foreground">{t('section.visits.subtitle')}</p>
+                </CardHeader>
+                <CardContent>
+                  <VisitsMetrics />
+                </CardContent>
+              </Card>
+            )}
+            
+            {analysisSubTab === 'productos' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('section.products.title')}</CardTitle>
+                  <p className="text-sm text-muted-foreground">{t('section.products.subtitle')}</p>
+                </CardHeader>
+                <CardContent>
+                  <ProductsMetrics />
+                </CardContent>
+              </Card>
+            )}
+            
+            {analysisSubTab === 'vinculacion' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('section.linkage.title')}</CardTitle>
+                  <p className="text-sm text-muted-foreground">{t('section.linkage.subtitle')}</p>
+                </CardHeader>
+                <CardContent>
+                  <VinculacionMetrics />
+                </CardContent>
+              </Card>
+            )}
+            
+            {analysisSubTab === 'geografico' && (
+              <Suspense fallback={<LoadingFallback />}>
+                <LazyAnalisisGeografico startDate={startDate} endDate={endDate} />
+              </Suspense>
+            )}
+            
+            {analysisSubTab === 'cohortes' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('section.cohorts.title')}</CardTitle>
+                  <p className="text-sm text-muted-foreground">{t('section.cohorts.subtitle')}</p>
+                </CardHeader>
+                <CardContent>
+                  <AnalisisCohortes />
+                </CardContent>
+              </Card>
+            )}
+            
+            {analysisSubTab === 'embudo' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('section.funnel.title')}</CardTitle>
+                  <p className="text-sm text-muted-foreground">{t('section.funnel.subtitle')}</p>
+                </CardHeader>
+                <CardContent>
+                  <AnalisisEmbudo />
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
-          {/* Evolución de Vinculación */}
-          <TabsContent value="vinculacion" className="space-y-6">
-            <div className="rounded-lg border bg-card p-6">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold">{t('section.linkage.title')}</h2>
-                <p className="text-muted-foreground">
-                  {t('section.linkage.subtitle')}
-                </p>
-              </div>
-              <VinculacionMetrics />
+          {/* ===== SECTION 3: OBJETIVOS (Goals) ===== */}
+          <TabsContent value="objetivos" className="space-y-6">
+            {/* Sub-navigation for Goals */}
+            <div className="flex flex-wrap gap-2 p-2 bg-muted/50 rounded-lg">
+              <Button 
+                variant={goalsSubTab === 'objetivos' ? 'default' : 'ghost'} 
+                size="sm"
+                onClick={() => setGoalsSubTab('objetivos')}
+                className="flex items-center gap-2"
+              >
+                <Award className="h-4 w-4" />
+                Mis Objetivos
+              </Button>
+              <Button 
+                variant={goalsSubTab === 'tpv' ? 'default' : 'ghost'} 
+                size="sm"
+                onClick={() => setGoalsSubTab('tpv')}
+                className="flex items-center gap-2"
+              >
+                <Briefcase className="h-4 w-4" />
+                TPV
+              </Button>
+              <Button 
+                variant={goalsSubTab === 'practicas' ? 'default' : 'ghost'} 
+                size="sm"
+                onClick={() => setGoalsSubTab('practicas')}
+                className="flex items-center gap-2"
+              >
+                <Award className="h-4 w-4" />
+                Mejores Prácticas
+              </Button>
             </div>
+
+            {/* Goals Sub-content */}
+            {goalsSubTab === 'objetivos' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('section.objectives.title')}</CardTitle>
+                  <p className="text-sm text-muted-foreground">{t('section.objectives.subtitle')}</p>
+                </CardHeader>
+                <CardContent>
+                  <ObjetivosYMetas />
+                </CardContent>
+              </Card>
+            )}
+            
+            {goalsSubTab === 'tpv' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Objetivos de TPV</CardTitle>
+                  <p className="text-sm text-muted-foreground">Seguimiento de metas de facturación, vinculación y comisiones</p>
+                </CardHeader>
+                <CardContent>
+                  <TPVGoalsDashboard />
+                </CardContent>
+              </Card>
+            )}
+            
+            {goalsSubTab === 'practicas' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Mejores Prácticas</CardTitle>
+                  <p className="text-sm text-muted-foreground">Comparte y aprende de las mejores prácticas del equipo</p>
+                </CardHeader>
+                <CardContent>
+                  <BestPracticesPanel />
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
-          {/* Análisis Geográfico */}
-          <TabsContent value="geografico" className="space-y-6">
-            <AnalisisGeografico startDate={startDate} endDate={endDate} />
-          </TabsContent>
-
-          {/* Análisis de Cohortes */}
-          <TabsContent value="cohortes" className="space-y-6">
-            <div className="rounded-lg border bg-card p-6">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold">{t('section.cohorts.title')}</h2>
-                <p className="text-muted-foreground">
-                  {t('section.cohorts.subtitle')}
-                </p>
+          {/* ===== SECTION 4: EQUIPO (Team - Only for Directors) ===== */}
+          {isDirector && (
+            <TabsContent value="equipo" className="space-y-6">
+              {/* Sub-navigation for Team */}
+              <div className="flex flex-wrap gap-2 p-2 bg-muted/50 rounded-lg">
+                <Button 
+                  variant={teamSubTab === 'gestores' ? 'default' : 'ghost'} 
+                  size="sm"
+                  onClick={() => setTeamSubTab('gestores')}
+                  className="flex items-center gap-2"
+                >
+                  <Users className="h-4 w-4" />
+                  Rendimiento
+                </Button>
+                <Button 
+                  variant={teamSubTab === 'comparacion' ? 'default' : 'ghost'} 
+                  size="sm"
+                  onClick={() => setTeamSubTab('comparacion')}
+                  className="flex items-center gap-2"
+                >
+                  <GitCompare className="h-4 w-4" />
+                  Comparación
+                </Button>
+                <Button 
+                  variant={teamSubTab === 'evolucion' ? 'default' : 'ghost'} 
+                  size="sm"
+                  onClick={() => setTeamSubTab('evolucion')}
+                  className="flex items-center gap-2"
+                >
+                  <TrendingUp className="h-4 w-4" />
+                  Evolución
+                </Button>
+                <Button 
+                  variant={teamSubTab === 'estadisticas' ? 'default' : 'ghost'} 
+                  size="sm"
+                  onClick={() => setTeamSubTab('estadisticas')}
+                  className="flex items-center gap-2"
+                >
+                  <BarChart3 className="h-4 w-4" />
+                  Estadísticas
+                </Button>
               </div>
-              <AnalisisCohortes />
-            </div>
-          </TabsContent>
 
-          {/* Análisis de Embudo */}
-          <TabsContent value="embudo" className="space-y-6">
-            <div className="rounded-lg border bg-card p-6">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold">{t('section.funnel.title')}</h2>
-                <p className="text-muted-foreground">
-                  {t('section.funnel.subtitle')}
-                </p>
+              {/* Team Sub-content */}
+              {teamSubTab === 'gestores' && (
+                <div className="space-y-6">
+                  <GestoresLeaderboard />
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>{t('section.managers.title')}</CardTitle>
+                      <p className="text-sm text-muted-foreground">{t('section.managers.subtitle')}</p>
+                    </CardHeader>
+                    <CardContent>
+                      <GestoresMetrics />
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+              
+              {teamSubTab === 'comparacion' && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Comparación entre Gestores</CardTitle>
+                    <p className="text-sm text-muted-foreground">Análisis comparativo del rendimiento del equipo</p>
+                  </CardHeader>
+                  <CardContent>
+                    <GestorComparison />
+                  </CardContent>
+                </Card>
+              )}
+              
+              {teamSubTab === 'evolucion' && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Evolución Temporal</CardTitle>
+                    <p className="text-sm text-muted-foreground">Progresión del rendimiento a lo largo del tiempo</p>
+                  </CardHeader>
+                  <CardContent>
+                    <GestorEvolutionTimeline />
+                  </CardContent>
+                </Card>
+              )}
+              
+              {teamSubTab === 'estadisticas' && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Estadísticas de Actividad</CardTitle>
+                    <p className="text-sm text-muted-foreground">Métricas detalladas de actividad del equipo</p>
+                  </CardHeader>
+                  <CardContent>
+                    <ActivityStatistics />
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          )}
+
+          {/* ===== SECTION 5: HERRAMIENTAS (Tools) ===== */}
+          <TabsContent value="herramientas" className="space-y-6">
+            {/* Sub-navigation for Tools */}
+            <div className="flex flex-wrap gap-2 p-2 bg-muted/50 rounded-lg">
+              <Button 
+                variant={toolsSubTab === 'alertas' ? 'default' : 'ghost'} 
+                size="sm"
+                onClick={() => setToolsSubTab('alertas')}
+                className="flex items-center gap-2"
+              >
+                <Bell className="h-4 w-4" />
+                Alertas
+              </Button>
+              <Button 
+                variant={toolsSubTab === 'reportes' ? 'default' : 'ghost'} 
+                size="sm"
+                onClick={() => setToolsSubTab('reportes')}
+                className="flex items-center gap-2"
+              >
+                <FileText className="h-4 w-4" />
+                Informes
+              </Button>
+            </div>
+
+            {/* Tools Sub-content */}
+            {toolsSubTab === 'alertas' && (
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{t('section.alerts.title')}</CardTitle>
+                    <p className="text-sm text-muted-foreground">{t('section.alerts.subtitle')}</p>
+                  </CardHeader>
+                  <CardContent>
+                    <AlertsManager />
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{t('section.notifications.title')}</CardTitle>
+                    <p className="text-sm text-muted-foreground">{t('section.notifications.subtitle')}</p>
+                  </CardHeader>
+                  <CardContent>
+                    <NotificationPreferences />
+                  </CardContent>
+                </Card>
+
+                <VisitReminders />
               </div>
-              <AnalisisEmbudo />
-            </div>
+            )}
+            
+            {toolsSubTab === 'reportes' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('section.reports.title')}</CardTitle>
+                  <p className="text-sm text-muted-foreground">{t('section.reports.subtitle')}</p>
+                </CardHeader>
+                <CardContent>
+                  <ReportGenerator />
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
-
-          {/* Sistema de Alertas */}
-          <TabsContent value="alertas" className="space-y-6">
-            <div className="rounded-lg border bg-card p-6">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold">{t('section.alerts.title')}</h2>
-                <p className="text-muted-foreground">
-                  {t('section.alerts.subtitle')}
-                </p>
-              </div>
-              <AlertsManager />
-            </div>
-
-            <div className="rounded-lg border bg-card p-6">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold">{t('section.notifications.title')}</h2>
-                <p className="text-muted-foreground">
-                  {t('section.notifications.subtitle')}
-                </p>
-              </div>
-              <NotificationPreferences />
-            </div>
-
-            <VisitReminders />
-          </TabsContent>
-
-          {/* Mi Actividad Personal */}
-          <TabsContent value="actividad" className="space-y-6">
-            <PersonalActivityHistory />
-          </TabsContent>
-
-          {/* Estadísticas de Actividad */}
-          <TabsContent value="estadisticas" className="space-y-6">
-            <ActivityStatistics />
-          </TabsContent>
-
-          {/* Comparación entre Gestores */}
-          <TabsContent value="comparacion" className="space-y-6">
-            <GestorComparison />
-          </TabsContent>
-
-          {/* Evolución Temporal */}
-          <TabsContent value="evolucion" className="space-y-6">
-            <GestorEvolutionTimeline />
-          </TabsContent>
-
-          {/* Generación de Reportes */}
-          <TabsContent value="reportes" className="space-y-6">
-            <div className="rounded-lg border bg-card p-6">
-              <div className="mb-6">
-                <h2 className="text-2xl font-bold">{t('section.reports.title')}</h2>
-                <p className="text-muted-foreground">
-                  {t('section.reports.subtitle')}
-                </p>
-              </div>
-              <ReportGenerator />
-            </div>
-          </TabsContent>
-
         </Tabs>
       </div>
     </div>
