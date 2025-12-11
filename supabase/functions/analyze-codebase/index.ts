@@ -11,6 +11,7 @@ interface CodebaseAnalysis {
   modules: ModuleAnalysis[];
   pendingFeatures: string[];
   securityFindings: string[];
+  edgeFunctionsDetail: EdgeFunctionDetail[];
   marketValuation: MarketValuation;
   competitorComparison: CompetitorComparison[];
   potentialClients: PotentialClient[];
@@ -87,6 +88,16 @@ interface CodeStats {
   totalEdgeFunctions: number;
   totalPages: number;
   linesOfCode: number;
+}
+
+interface EdgeFunctionDetail {
+  name: string;
+  description: string;
+  category: string;
+  jwtRequired: boolean;
+  aiPowered: boolean;
+  tables: string[];
+  integrations: string[];
 }
 
 interface MarketingHighlights {
@@ -873,13 +884,74 @@ function getDefaultAnalysis(componentsList: string[], hooksList: string[], edgeF
       "Multi-tenant SaaS completo"
     ],
     securityFindings: allSecurityFeatures,
+    edgeFunctionsDetail: [
+      // === IA Y ANÁLISIS ===
+      { name: "analyze-codebase", description: "Análisis exhaustivo del código fuente con Gemini AI, genera informes técnicos, compliance ISO 27001, valoración económica", category: "IA y Análisis", jwtRequired: true, aiPowered: true, tables: [], integrations: ["Lovable AI Gateway", "Gemini 2.5 Flash"] },
+      { name: "analyze-system-issues", description: "IA auto-remediación de problemas detectados en diagnósticos del sistema", category: "IA y Análisis", jwtRequired: false, aiPowered: true, tables: ["ai_interventions", "system_diagnostic_logs"], integrations: ["Lovable AI Gateway", "Gemini 2.5 Flash"] },
+      { name: "search-improvements", description: "Búsqueda web de mejoras tecnológicas, tendencias y optimizaciones", category: "IA y Análisis", jwtRequired: true, aiPowered: true, tables: [], integrations: ["Lovable AI Gateway"] },
+      { name: "search-ai-recommendations", description: "Recomendaciones IA para automatización, competidores y compliance bancario", category: "IA y Análisis", jwtRequired: true, aiPowered: true, tables: [], integrations: ["Lovable AI Gateway"] },
+      { name: "generate-action-plan", description: "Genera planes de acción IA para objetivos con pasos concretos", category: "IA y Análisis", jwtRequired: true, aiPowered: true, tables: ["action_plans", "action_plan_steps"], integrations: ["Lovable AI Gateway"] },
+      { name: "generate-ml-predictions", description: "Predicciones ML para cumplimiento objetivos y tendencias", category: "IA y Análisis", jwtRequired: true, aiPowered: true, tables: ["goals"], integrations: ["Lovable AI Gateway"] },
+      { name: "summarize-visit", description: "Resume notas de visita con IA, genera próximos pasos y riesgos", category: "IA y Análisis", jwtRequired: false, aiPowered: true, tables: ["visit_sheets"], integrations: ["Lovable AI Gateway", "Gemini 2.5 Flash"] },
+      { name: "internal-assistant-chat", description: "Asistente virtual IA interno para gestores bancarios con contexto", category: "IA y Análisis", jwtRequired: true, aiPowered: true, tables: ["internal_assistant_messages", "assistant_knowledge_documents"], integrations: ["Lovable AI Gateway"] },
+      
+      // === FINANZAS Y CONTABILIDAD ===
+      { name: "parse-financial-pdf", description: "Extrae datos financieros de PDFs con OCR e IA, mapea a campos PGC", category: "Finanzas", jwtRequired: true, aiPowered: true, tables: ["balance_sheets", "income_statements"], integrations: ["Lovable AI Gateway", "Gemini 2.5 Pro"] },
+      { name: "financial-rag-chat", description: "Chat RAG financiero con embeddings vectoriales sobre estados financieros", category: "Finanzas", jwtRequired: true, aiPowered: true, tables: ["financial_document_embeddings", "financial_rag_conversations"], integrations: ["Lovable AI Gateway"] },
+      { name: "generate-financial-embeddings", description: "Genera embeddings vectoriales para documentos financieros", category: "Finanzas", jwtRequired: true, aiPowered: true, tables: ["financial_document_embeddings"], integrations: ["Lovable AI Gateway"] },
+      { name: "open-banking-api", description: "API Open Banking PSD2/PSD3 con OAuth 2.0, consentimientos y TPP", category: "Finanzas", jwtRequired: false, aiPowered: false, tables: ["open_banking_consents", "registered_tpps"], integrations: ["FAPI 1.0"] },
+      
+      // === SEGMENTACIÓN Y CRM ===
+      { name: "calculate-rfm-analysis", description: "Calcula análisis RFM (Recencia, Frecuencia, Monetario) de clientes", category: "CRM", jwtRequired: true, aiPowered: false, tables: ["customer_rfm_scores", "companies", "visits"], integrations: [] },
+      { name: "segment-customers-ml", description: "Segmentación ML de clientes con SVM, CART, predicción churn y CLV", category: "CRM", jwtRequired: true, aiPowered: true, tables: ["customer_segments", "segment_management_policies"], integrations: ["Lovable AI Gateway"] },
+      { name: "smart-column-mapping", description: "Mapeo inteligente de columnas Excel a campos BD con IA", category: "CRM", jwtRequired: false, aiPowered: true, tables: ["companies"], integrations: ["Lovable AI Gateway"] },
+      { name: "search-company-photo", description: "Busca fotos de empresas en Bing y las sube a Storage", category: "CRM", jwtRequired: false, aiPowered: false, tables: ["company_photos"], integrations: ["Bing Image Search API"] },
+      
+      // === GEOLOCALIZACIÓN Y MAPAS ===
+      { name: "geocode-address", description: "Geocodifica direcciones a coordenadas GPS via Nominatim/OSM", category: "Mapas", jwtRequired: true, aiPowered: false, tables: ["companies"], integrations: ["OpenStreetMap Nominatim"] },
+      { name: "optimize-route", description: "Optimiza rutas multi-parada con Google Directions API", category: "Mapas", jwtRequired: true, aiPowered: false, tables: [], integrations: ["Google Directions API"] },
+      
+      // === NOTIFICACIONES Y EMAILS ===
+      { name: "send-reminder-email", description: "Envía emails recordatorio de visitas programadas", category: "Notificaciones", jwtRequired: false, aiPowered: false, tables: ["visits"], integrations: ["Resend API"] },
+      { name: "send-visit-calendar-invite", description: "Envía invitaciones calendario ICS para visitas", category: "Notificaciones", jwtRequired: false, aiPowered: false, tables: ["visits"], integrations: ["Resend API"] },
+      { name: "send-alert-email", description: "Envía emails de alertas críticas del sistema", category: "Notificaciones", jwtRequired: false, aiPowered: false, tables: ["alerts"], integrations: ["Resend API"] },
+      { name: "send-critical-opportunity-email", description: "Notifica oportunidades críticas a directores", category: "Notificaciones", jwtRequired: false, aiPowered: false, tables: ["notifications"], integrations: ["Resend API"] },
+      { name: "send-goal-achievement-email", description: "Celebra logros de objetivos con email personalizado", category: "Notificaciones", jwtRequired: false, aiPowered: false, tables: ["goals"], integrations: ["Resend API"] },
+      { name: "send-daily-kpi-report", description: "Informe KPI diario automático por email HTML", category: "Notificaciones", jwtRequired: false, aiPowered: false, tables: ["visits", "goals", "companies"], integrations: ["Resend API"] },
+      { name: "send-weekly-kpi-report", description: "Informe KPI semanal con comparativas", category: "Notificaciones", jwtRequired: false, aiPowered: false, tables: ["visits", "goals", "companies"], integrations: ["Resend API"] },
+      { name: "send-monthly-kpi-report", description: "Informe KPI mensual consolidado", category: "Notificaciones", jwtRequired: false, aiPowered: false, tables: ["visits", "goals", "companies"], integrations: ["Resend API"] },
+      { name: "send-monthly-reports", description: "Genera y envía informes mensuales consolidados", category: "Notificaciones", jwtRequired: false, aiPowered: false, tables: [], integrations: ["Resend API"] },
+      { name: "send-step-up-otp", description: "Envía OTP por email para Step-Up Authentication PSD2/PSD3", category: "Seguridad", jwtRequired: false, aiPowered: false, tables: ["auth_challenges"], integrations: ["Resend API"] },
+      { name: "notify-visit-validation", description: "Notifica validación/rechazo de fichas de visita", category: "Notificaciones", jwtRequired: false, aiPowered: false, tables: ["visit_sheets"], integrations: ["Resend API"] },
+      { name: "dispatch-webhook", description: "Dispatcher genérico para webhooks externos", category: "Notificaciones", jwtRequired: false, aiPowered: false, tables: [], integrations: [] },
+      
+      // === ALERTAS Y MONITOREO ===
+      { name: "check-alerts", description: "Verifica condiciones de alertas y dispara notificaciones", category: "Alertas", jwtRequired: false, aiPowered: false, tables: ["alerts", "alert_history"], integrations: [] },
+      { name: "check-goal-achievements", description: "Detecta objetivos cumplidos y genera celebraciones", category: "Alertas", jwtRequired: false, aiPowered: false, tables: ["goals"], integrations: [] },
+      { name: "check-goals-at-risk", description: "Identifica objetivos en riesgo de incumplimiento", category: "Alertas", jwtRequired: false, aiPowered: false, tables: ["goals", "notifications"], integrations: [] },
+      { name: "check-low-performance", description: "Detecta bajo rendimiento de gestores", category: "Alertas", jwtRequired: false, aiPowered: false, tables: ["profiles", "visits"], integrations: [] },
+      { name: "check-visit-reminders", description: "Procesa recordatorios de visitas programadas", category: "Alertas", jwtRequired: false, aiPowered: false, tables: ["visits", "email_reminder_preferences"], integrations: [] },
+      { name: "check-visit-sheet-reminders", description: "Recuerda completar fichas de visita pendientes", category: "Alertas", jwtRequired: false, aiPowered: false, tables: ["visit_sheets"], integrations: [] },
+      { name: "escalate-alerts", description: "Escala alertas no resueltas a niveles superiores", category: "Alertas", jwtRequired: false, aiPowered: false, tables: ["alert_history"], integrations: [] },
+      
+      // === SEGURIDAD Y AUTENTICACIÓN ===
+      { name: "evaluate-session-risk", description: "Evalúa riesgo de sesión con ML para autenticación adaptativa", category: "Seguridad", jwtRequired: true, aiPowered: true, tables: ["session_risk_assessments", "user_device_fingerprints"], integrations: ["ipify API"] },
+      { name: "verify-step-up-challenge", description: "Verifica código OTP de Step-Up Authentication", category: "Seguridad", jwtRequired: true, aiPowered: false, tables: ["auth_challenges"], integrations: [] },
+      { name: "webauthn-verify", description: "Verifica firmas WebAuthn/Passkeys con ECDSA P-256", category: "Seguridad", jwtRequired: false, aiPowered: false, tables: ["user_passkeys"], integrations: ["WebAuthn/FIDO2"] },
+      { name: "manage-user", description: "CRUD usuarios restringido a superadmins", category: "Seguridad", jwtRequired: true, aiPowered: false, tables: ["profiles", "user_roles"], integrations: ["Supabase Auth Admin"] },
+      
+      // === SISTEMA Y SALUD ===
+      { name: "system-health", description: "Informe completo salud sistema: DB, storage, auth, tablas", category: "Sistema", jwtRequired: true, aiPowered: false, tables: ["profiles", "audit_logs"], integrations: [] },
+      { name: "scheduled-health-check", description: "Diagnóstico automático 8 módulos, cron 8:00/22:00 Madrid", category: "Sistema", jwtRequired: false, aiPowered: false, tables: ["system_diagnostic_logs"], integrations: ["Resend API"] },
+      { name: "run-stress-test", description: "Ejecuta 7 stress tests DORA: DB, Capacity, Failover, DDoS, Recovery", category: "Sistema", jwtRequired: true, aiPowered: false, tables: ["stress_test_executions"], integrations: [] }
+    ],
     marketValuation: {
       totalHours: 3800,
       hourlyRate: 105,
       totalCost: 399000,
       breakdown: [
-        { category: "Frontend React/TypeScript (150+ components)", hours: 1300, cost: 136500 },
-        { category: "Backend Supabase/Edge (38 functions)", hours: 750, cost: 78750 },
+        { category: "Frontend React/TypeScript (195+ components)", hours: 1300, cost: 136500 },
+        { category: "Backend Supabase/Edge (44 functions)", hours: 850, cost: 89250 },
         { category: "Base Datos PostgreSQL + RLS", hours: 500, cost: 52500 },
         { category: "Módulo Contabilidad PGC", hours: 450, cost: 47250 },
         { category: "GIS/Mapas Enterprise", hours: 280, cost: 29400 },
@@ -947,9 +1019,9 @@ function getDefaultAnalysis(componentsList: string[], hooksList: string[], edgeF
       totalFiles: 320,
       totalComponents: componentsList?.length || 195,
       totalHooks: hooksList?.length || 24,
-      totalEdgeFunctions: edgeFunctions?.length || 45,
+      totalEdgeFunctions: 44,
       totalPages: pagesList?.length || 9,
-      linesOfCode: 85000
+      linesOfCode: 95000
     },
     marketingHighlights: {
       uniqueSellingPoints: [
