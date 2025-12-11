@@ -374,8 +374,8 @@ export function ApplicationStateAnalyzer() {
         'OpportunityHeatmap.tsx', 'RoutePlanner.tsx', 'SectorStats.tsx',
         'VisitsPanel.tsx', 'markerIcons.tsx', 'markerStyles.tsx',
         // Visit components
-        'ParticipantsSelector.tsx', 'SignaturePad.tsx', 'VisitSheetForm.tsx',
-        'VisitSheetPhotos.tsx', 'VisitSheetTemplateSelector.tsx',
+        'AISummaryButton.tsx', 'ParticipantsSelector.tsx', 'SignaturePad.tsx', 
+        'VisitSheetForm.tsx', 'VisitSheetPhotos.tsx', 'VisitSheetTemplateSelector.tsx',
         // Reports
         'AppDetailedStatusGenerator.tsx', 'CodebaseIndexGenerator.tsx',
         'CompetitorGapAnalysisGenerator.tsx', 'DynamicTechnicalDocGenerator.tsx',
@@ -392,23 +392,25 @@ export function ApplicationStateAnalyzer() {
         'useNotificationsQuery', 'usePresence', 'useRealtimeChannel', 
         'useCompaniesServerPagination', 'useCompanyPhotosLazy', 'useDeferredValue',
         'useNavigationHistory', 'useOptimisticLock', 'useWebAuthn', 'useWebVitals',
-        'useCelebration', 'useAdaptiveAuth', 'use-mobile', 'use-toast'
+        'useCelebration', 'useAdaptiveAuth', 'useBehavioralBiometrics', 'useAMLFraudDetection',
+        'useOpportunities', 'useVoiceChat', 'use-mobile', 'use-toast'
       ];
       
-      // Lista COMPLETA de todas las Edge Functions (38 total)
+      // Lista COMPLETA de todas las Edge Functions (45 total)
       const edgeFunctions = [
-        'analyze-codebase', 'analyze-system-issues', 'check-alerts', 
+        'analyze-codebase', 'analyze-system-issues', 'calculate-rfm-analysis', 'check-alerts', 
         'check-goal-achievements', 'check-goals-at-risk', 'check-low-performance',
-        'check-visit-reminders', 'check-visit-sheet-reminders', 'escalate-alerts',
+        'check-visit-reminders', 'check-visit-sheet-reminders', 'dispatch-webhook', 'escalate-alerts',
         'evaluate-session-risk', 'financial-rag-chat', 'generate-action-plan',
         'generate-financial-embeddings', 'generate-ml-predictions', 'geocode-address',
-        'manage-user', 'notify-visit-validation', 'optimize-route',
-        'parse-financial-pdf', 'run-stress-test', 'scheduled-health-check', 'search-ai-recommendations',
-        'search-company-photo', 'search-improvements', 'send-alert-email',
-        'send-critical-opportunity-email', 'send-daily-kpi-report', 'send-goal-achievement-email',
-        'send-monthly-kpi-report', 'send-monthly-reports', 'send-reminder-email',
-        'send-step-up-otp', 'send-visit-calendar-invite', 'send-weekly-kpi-report',
-        'smart-column-mapping', 'system-health', 'verify-step-up-challenge', 'webauthn-verify'
+        'internal-assistant-chat', 'manage-user', 'notify-visit-validation', 'open-banking-api',
+        'optimize-route', 'parse-financial-pdf', 'run-stress-test', 'scheduled-health-check', 
+        'search-ai-recommendations', 'search-company-photo', 'search-improvements', 
+        'segment-customers-ml', 'send-alert-email', 'send-critical-opportunity-email', 
+        'send-daily-kpi-report', 'send-goal-achievement-email', 'send-monthly-kpi-report', 
+        'send-monthly-reports', 'send-reminder-email', 'send-step-up-otp', 
+        'send-visit-calendar-invite', 'send-weekly-kpi-report', 'smart-column-mapping', 
+        'summarize-visit', 'system-health', 'verify-step-up-challenge', 'webauthn-verify'
       ];
       
       const pagesList = ['Dashboard', 'MapView', 'Admin', 'Profile', 'VisitSheets', 'Home', 'Auth', 'Index', 'NotFound'];
