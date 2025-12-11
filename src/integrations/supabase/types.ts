@@ -4690,6 +4690,35 @@ export type Database = {
         }
         Relationships: []
       }
+      suggestion_votes: {
+        Row: {
+          created_at: string
+          id: string
+          suggestion_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          suggestion_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          suggestion_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "suggestion_votes_suggestion_id_fkey"
+            columns: ["suggestion_id"]
+            isOneToOne: false
+            referencedRelation: "user_suggestions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       system_diagnostic_logs: {
         Row: {
           checks: Json
@@ -5126,6 +5155,60 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_suggestions: {
+        Row: {
+          admin_notes: string | null
+          ai_response: string | null
+          category: string | null
+          context: string | null
+          created_at: string
+          id: string
+          priority: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          source: string | null
+          status: string | null
+          suggestion_text: string
+          updated_at: string
+          user_id: string | null
+          votes_count: number | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          ai_response?: string | null
+          category?: string | null
+          context?: string | null
+          created_at?: string
+          id?: string
+          priority?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source?: string | null
+          status?: string | null
+          suggestion_text: string
+          updated_at?: string
+          user_id?: string | null
+          votes_count?: number | null
+        }
+        Update: {
+          admin_notes?: string | null
+          ai_response?: string | null
+          category?: string | null
+          context?: string | null
+          created_at?: string
+          id?: string
+          priority?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          source?: string | null
+          status?: string | null
+          suggestion_text?: string
+          updated_at?: string
+          user_id?: string | null
+          votes_count?: number | null
         }
         Relationships: []
       }
