@@ -88,8 +88,15 @@ const Dashboard = () => {
   const [teamSubTab, setTeamSubTab] = useState('gestores');
   const [toolsSubTab, setToolsSubTab] = useState('alertas');
 
-  // Check if user is a director or admin (can see team tab)
+  // Role-based visibility configuration
   const isDirector = userRole && ['superadmin', 'director_comercial', 'director_oficina', 'responsable_comercial'].includes(userRole);
+  const isAuditor = userRole === 'auditor';
+  const isRegularUser = userRole === 'user';
+  const canManageAlerts = userRole && ['superadmin', 'director_comercial', 'responsable_comercial', 'director_oficina'].includes(userRole);
+  const canSeeAdvancedAnalytics = userRole && ['superadmin', 'director_comercial', 'responsable_comercial', 'director_oficina', 'auditor'].includes(userRole);
+  const canSeeTPV = userRole && ['superadmin', 'director_comercial', 'responsable_comercial', 'user'].includes(userRole);
+  const canSeeBestPractices = !isAuditor; // Everyone except auditors
+  const canSeeReports = userRole && ['superadmin', 'director_comercial', 'responsable_comercial', 'director_oficina', 'auditor'].includes(userRole);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -201,35 +208,54 @@ const Dashboard = () => {
 
           {/* ===== SECTION 1: MI PANEL (Personal Dashboard) ===== */}
           <TabsContent value="mi-panel" className="space-y-6">
-            {/* KPIs Personales */}
-            <PersonalKPIsDashboard />
+            {/* KPIs Personales - Visible para todos excepto auditors */}
+            {!isAuditor && <PersonalKPIsDashboard />}
             
-            {/* Acciones Rápidas */}
-            <QuickActionsPanel />
+            {/* Acciones Rápidas - Solo para usuarios que pueden hacer acciones */}
+            {!isAuditor && <QuickActionsPanel />}
             
-            {/* Próximas Visitas */}
-            <UpcomingVisitsWidget />
+            {/* Próximas Visitas - Visible para todos excepto auditors */}
+            {!isAuditor && <UpcomingVisitsWidget />}
             
-            {/* Resumen Ejecutivo */}
+            {/* Resumen Ejecutivo - Visible para todos */}
             <ResumenEjecutivo startDate={startDate} endDate={endDate} />
             
-            {/* Mi Actividad */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5" />
-                  Mi Actividad Reciente
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <PersonalActivityHistory />
-              </CardContent>
-            </Card>
+            {/* Mi Actividad - Solo para usuarios no auditores */}
+            {!isAuditor && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="h-5 w-5" />
+                    Mi Actividad Reciente
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <PersonalActivityHistory />
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Vista especial para auditors */}
+            {isAuditor && (
+              <Card className="border-amber-500/30 bg-amber-500/5">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+                    <Activity className="h-5 w-5" />
+                    Vista de Auditoría
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Como auditor, tiene acceso de solo lectura a las métricas y análisis agregados del sistema.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           {/* ===== SECTION 2: ANÁLISIS (Analytics) ===== */}
           <TabsContent value="analisis" className="space-y-6">
-            {/* Sub-navigation for Analysis */}
+            {/* Sub-navigation for Analysis - Role based visibility */}
             <div className="flex flex-wrap gap-2 p-2 bg-muted/50 rounded-lg">
               <Button 
                 variant={analysisSubTab === 'comparativa' ? 'default' : 'ghost'} 
@@ -240,15 +266,17 @@ const Dashboard = () => {
                 <GitCompare className="h-4 w-4" />
                 Comparativa
               </Button>
-              <Button 
-                variant={analysisSubTab === 'predicciones' ? 'default' : 'ghost'} 
-                size="sm"
-                onClick={() => setAnalysisSubTab('predicciones')}
-                className="flex items-center gap-2"
-              >
-                <LineChart className="h-4 w-4" />
-                Predicciones
-              </Button>
+              {canSeeAdvancedAnalytics && (
+                <Button 
+                  variant={analysisSubTab === 'predicciones' ? 'default' : 'ghost'} 
+                  size="sm"
+                  onClick={() => setAnalysisSubTab('predicciones')}
+                  className="flex items-center gap-2"
+                >
+                  <LineChart className="h-4 w-4" />
+                  Predicciones
+                </Button>
+              )}
               <Button 
                 variant={analysisSubTab === 'visitas' ? 'default' : 'ghost'} 
                 size="sm"
@@ -285,24 +313,28 @@ const Dashboard = () => {
                 <MapPin className="h-4 w-4" />
                 Geográfico
               </Button>
-              <Button 
-                variant={analysisSubTab === 'cohortes' ? 'default' : 'ghost'} 
-                size="sm"
-                onClick={() => setAnalysisSubTab('cohortes')}
-                className="flex items-center gap-2"
-              >
-                <UserCheck className="h-4 w-4" />
-                Cohortes
-              </Button>
-              <Button 
-                variant={analysisSubTab === 'embudo' ? 'default' : 'ghost'} 
-                size="sm"
-                onClick={() => setAnalysisSubTab('embudo')}
-                className="flex items-center gap-2"
-              >
-                <Filter className="h-4 w-4" />
-                Embudo
-              </Button>
+              {canSeeAdvancedAnalytics && (
+                <>
+                  <Button 
+                    variant={analysisSubTab === 'cohortes' ? 'default' : 'ghost'} 
+                    size="sm"
+                    onClick={() => setAnalysisSubTab('cohortes')}
+                    className="flex items-center gap-2"
+                  >
+                    <UserCheck className="h-4 w-4" />
+                    Cohortes
+                  </Button>
+                  <Button 
+                    variant={analysisSubTab === 'embudo' ? 'default' : 'ghost'} 
+                    size="sm"
+                    onClick={() => setAnalysisSubTab('embudo')}
+                    className="flex items-center gap-2"
+                  >
+                    <Filter className="h-4 w-4" />
+                    Embudo
+                  </Button>
+                </>
+              )}
             </div>
 
             {/* Analysis Sub-content */}
@@ -391,35 +423,46 @@ const Dashboard = () => {
 
           {/* ===== SECTION 3: OBJETIVOS (Goals) ===== */}
           <TabsContent value="objetivos" className="space-y-6">
-            {/* Sub-navigation for Goals */}
+            {/* Sub-navigation for Goals - Role based visibility */}
             <div className="flex flex-wrap gap-2 p-2 bg-muted/50 rounded-lg">
-              <Button 
-                variant={goalsSubTab === 'objetivos' ? 'default' : 'ghost'} 
-                size="sm"
-                onClick={() => setGoalsSubTab('objetivos')}
-                className="flex items-center gap-2"
-              >
-                <Award className="h-4 w-4" />
-                Mis Objetivos
-              </Button>
-              <Button 
-                variant={goalsSubTab === 'tpv' ? 'default' : 'ghost'} 
-                size="sm"
-                onClick={() => setGoalsSubTab('tpv')}
-                className="flex items-center gap-2"
-              >
-                <Briefcase className="h-4 w-4" />
-                TPV
-              </Button>
-              <Button 
-                variant={goalsSubTab === 'practicas' ? 'default' : 'ghost'} 
-                size="sm"
-                onClick={() => setGoalsSubTab('practicas')}
-                className="flex items-center gap-2"
-              >
-                <Award className="h-4 w-4" />
-                Mejores Prácticas
-              </Button>
+              {!isAuditor && (
+                <Button 
+                  variant={goalsSubTab === 'objetivos' ? 'default' : 'ghost'} 
+                  size="sm"
+                  onClick={() => setGoalsSubTab('objetivos')}
+                  className="flex items-center gap-2"
+                >
+                  <Award className="h-4 w-4" />
+                  Mis Objetivos
+                </Button>
+              )}
+              {canSeeTPV && (
+                <Button 
+                  variant={goalsSubTab === 'tpv' ? 'default' : 'ghost'} 
+                  size="sm"
+                  onClick={() => setGoalsSubTab('tpv')}
+                  className="flex items-center gap-2"
+                >
+                  <Briefcase className="h-4 w-4" />
+                  TPV
+                </Button>
+              )}
+              {canSeeBestPractices && (
+                <Button 
+                  variant={goalsSubTab === 'practicas' ? 'default' : 'ghost'} 
+                  size="sm"
+                  onClick={() => setGoalsSubTab('practicas')}
+                  className="flex items-center gap-2"
+                >
+                  <Award className="h-4 w-4" />
+                  Mejores Prácticas
+                </Button>
+              )}
+              {isAuditor && (
+                <p className="text-sm text-muted-foreground flex items-center px-3">
+                  Vista de solo lectura - Sin acceso a objetivos individuales
+                </p>
+              )}
             </div>
 
             {/* Goals Sub-content */}
@@ -559,30 +602,50 @@ const Dashboard = () => {
 
           {/* ===== SECTION 5: HERRAMIENTAS (Tools) ===== */}
           <TabsContent value="herramientas" className="space-y-6">
-            {/* Sub-navigation for Tools */}
+            {/* Sub-navigation for Tools - Role based visibility */}
             <div className="flex flex-wrap gap-2 p-2 bg-muted/50 rounded-lg">
-              <Button 
-                variant={toolsSubTab === 'alertas' ? 'default' : 'ghost'} 
-                size="sm"
-                onClick={() => setToolsSubTab('alertas')}
-                className="flex items-center gap-2"
-              >
-                <Bell className="h-4 w-4" />
-                Alertas
-              </Button>
-              <Button 
-                variant={toolsSubTab === 'reportes' ? 'default' : 'ghost'} 
-                size="sm"
-                onClick={() => setToolsSubTab('reportes')}
-                className="flex items-center gap-2"
-              >
-                <FileText className="h-4 w-4" />
-                Informes
-              </Button>
+              {canManageAlerts && (
+                <Button 
+                  variant={toolsSubTab === 'alertas' ? 'default' : 'ghost'} 
+                  size="sm"
+                  onClick={() => setToolsSubTab('alertas')}
+                  className="flex items-center gap-2"
+                >
+                  <Bell className="h-4 w-4" />
+                  Alertas
+                </Button>
+              )}
+              {canSeeReports && (
+                <Button 
+                  variant={toolsSubTab === 'reportes' ? 'default' : 'ghost'} 
+                  size="sm"
+                  onClick={() => setToolsSubTab('reportes')}
+                  className="flex items-center gap-2"
+                >
+                  <FileText className="h-4 w-4" />
+                  Informes
+                </Button>
+              )}
+              {!isAuditor && (
+                <Button 
+                  variant={toolsSubTab === 'recordatorios' ? 'default' : 'ghost'} 
+                  size="sm"
+                  onClick={() => setToolsSubTab('recordatorios')}
+                  className="flex items-center gap-2"
+                >
+                  <Bell className="h-4 w-4" />
+                  Recordatorios
+                </Button>
+              )}
+              {isRegularUser && !canManageAlerts && !canSeeReports && (
+                <p className="text-sm text-muted-foreground flex items-center px-3">
+                  Herramientas básicas disponibles
+                </p>
+              )}
             </div>
 
             {/* Tools Sub-content */}
-            {toolsSubTab === 'alertas' && (
+            {toolsSubTab === 'alertas' && canManageAlerts && (
               <div className="space-y-6">
                 <Card>
                   <CardHeader>
@@ -603,12 +666,10 @@ const Dashboard = () => {
                     <NotificationPreferences />
                   </CardContent>
                 </Card>
-
-                <VisitReminders />
               </div>
             )}
             
-            {toolsSubTab === 'reportes' && (
+            {toolsSubTab === 'reportes' && canSeeReports && (
               <Card>
                 <CardHeader>
                   <CardTitle>{t('section.reports.title')}</CardTitle>
@@ -616,6 +677,22 @@ const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <ReportGenerator />
+                </CardContent>
+              </Card>
+            )}
+
+            {toolsSubTab === 'recordatorios' && !isAuditor && (
+              <VisitReminders />
+            )}
+
+            {/* Default view for users without specific permissions */}
+            {isRegularUser && !canManageAlerts && toolsSubTab === 'alertas' && (
+              <Card className="border-blue-500/30 bg-blue-500/5">
+                <CardHeader>
+                  <CardTitle className="text-blue-700 dark:text-blue-400">Notificaciones</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <NotificationPreferences />
                 </CardContent>
               </Card>
             )}
