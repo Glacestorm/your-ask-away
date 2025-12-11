@@ -5,13 +5,18 @@ import {
   ChevronRight, ChevronDown, RefreshCw, FileDown, 
   Home, Users, MapPin, Calendar, BarChart3, Calculator,
   Shield, Bell, Settings, Database, Sparkles, Check,
-  Building2, Target, TrendingUp, FileText, Bot
+  Building2, Target, TrendingUp, FileText, Bot, Info,
+  Cpu, HardDrive, Server, Globe, Lock, Eye, Layers,
+  FileCheck, AlertTriangle, CheckCircle2, Percent
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import jsPDF from 'jspdf';
@@ -36,6 +41,340 @@ interface FAQ {
   question: string;
   answer: string;
 }
+
+// Comprehensive ObelixIA System Information
+const obelixiaSystemInfo = {
+  overview: {
+    title: 'ObelixIA - CRM Bancario Inteligente',
+    tagline: 'Sistema integral de gestión de cartera bancaria con inteligencia artificial',
+    version: '8.0.0',
+    description: `ObelixIA es una plataforma empresarial de gestión de relaciones con clientes (CRM) específicamente diseñada para el sector bancario. Combina la gestión tradicional de cartera con capacidades avanzadas de inteligencia artificial, cumplimiento normativo europeo y análisis financiero en tiempo real.
+
+El sistema permite a los gestores bancarios administrar su cartera de empresas, planificar visitas comerciales, analizar estados financieros, gestionar oportunidades de venta y cumplir con todas las normativas regulatorias aplicables (ISO 27001, GDPR, DORA, NIS2, PSD2/PSD3, MiFID II, etc.).`,
+    targetUsers: [
+      'Gestores Bancarios (Relationship Managers)',
+      'Directores de Oficina',
+      'Directores Comerciales',
+      'Responsables Comerciales',
+      'Auditores Internos',
+      'Equipos de Compliance'
+    ],
+    keyBenefits: [
+      'Reducción del 60% en tiempo de gestión administrativa',
+      'Incremento del 40% en productividad comercial',
+      'Cumplimiento normativo automatizado al 95%+',
+      'Análisis predictivo de riesgo y oportunidades',
+      'Trazabilidad completa de todas las interacciones',
+      'Integración con sistemas bancarios core (Temenos, etc.)'
+    ]
+  },
+  software: {
+    title: 'Arquitectura de Software',
+    stack: [
+      { name: 'Frontend', tech: 'React 19 + TypeScript + Vite', description: 'Interfaz de usuario moderna, responsive y accesible' },
+      { name: 'Estilos', tech: 'Tailwind CSS + Shadcn/UI', description: 'Sistema de diseño consistente con temas personalizables' },
+      { name: 'Estado', tech: 'React Query + Context API', description: 'Gestión de estado optimizada con caché inteligente' },
+      { name: 'Backend', tech: 'Supabase (PostgreSQL)', description: 'Base de datos relacional con Row Level Security' },
+      { name: 'API', tech: 'Edge Functions (Deno)', description: 'Funciones serverless para lógica de negocio' },
+      { name: 'Autenticación', tech: 'Supabase Auth + WebAuthn', description: 'MFA, passkeys y autenticación biométrica' },
+      { name: 'IA', tech: 'Lovable AI Gateway (Gemini 2.5)', description: 'Procesamiento de lenguaje natural y análisis predictivo' },
+      { name: 'Mapas', tech: 'MapLibre GL', description: 'Visualización geográfica con clustering' },
+      { name: 'PDFs', tech: 'jsPDF + jspdf-autotable', description: 'Generación de documentos profesionales' },
+      { name: 'Gráficos', tech: 'Recharts', description: 'Visualización de datos interactiva' }
+    ],
+    architecture: `La aplicación sigue una arquitectura moderna de Single Page Application (SPA) con las siguientes características:
+
+**Capas de la Aplicación:**
+1. **Presentación (UI)**: Componentes React reutilizables con Tailwind CSS
+2. **Lógica de Negocio**: Hooks personalizados y servicios
+3. **Acceso a Datos**: React Query + Supabase Client
+4. **Backend**: PostgreSQL + Edge Functions + RLS
+
+**Patrones Implementados:**
+- Component-Based Architecture
+- Custom Hooks Pattern
+- Repository Pattern para datos
+- Observer Pattern (Realtime)
+- Command Pattern (Actions)
+- Factory Pattern (Generadores)`,
+    security: [
+      'Encriptación AES-256-GCM para datos sensibles',
+      'Row Level Security (RLS) en todas las tablas',
+      'JWT tokens con rotación automática',
+      'HTTPS/TLS obligatorio',
+      'Sanitización XSS con DOMPurify',
+      'Validación de entrada en cliente y servidor',
+      'Audit logging completo',
+      'Rate limiting en Edge Functions'
+    ]
+  },
+  hardware: {
+    title: 'Requisitos de Hardware',
+    client: {
+      title: 'Dispositivos Cliente',
+      minimum: [
+        'Procesador: Dual-core 2.0 GHz o superior',
+        'RAM: 4 GB mínimo',
+        'Almacenamiento: 500 MB disponibles (caché)',
+        'Pantalla: Resolución mínima 1280x720',
+        'Conexión: Banda ancha 10 Mbps'
+      ],
+      recommended: [
+        'Procesador: Quad-core 2.5 GHz o superior',
+        'RAM: 8 GB o superior',
+        'Almacenamiento: 1 GB disponible (caché offline)',
+        'Pantalla: Full HD 1920x1080 o superior',
+        'Conexión: Banda ancha 50+ Mbps'
+      ],
+      browsers: [
+        'Google Chrome 100+ (Recomendado)',
+        'Mozilla Firefox 100+',
+        'Microsoft Edge 100+',
+        'Safari 15+ (macOS/iOS)'
+      ]
+    },
+    server: {
+      title: 'Infraestructura Servidor (Cloud)',
+      specs: [
+        'PostgreSQL 15+ con extensiones pgvector, pg_cron',
+        'Edge Functions: Deno Runtime aislado',
+        'CDN global para assets estáticos',
+        'Almacenamiento: S3-compatible (ilimitado)',
+        'Balanceo de carga automático',
+        'Auto-scaling según demanda'
+      ],
+      capacity: [
+        'Usuarios simultáneos: 500-1000+ (optimizado)',
+        'Empresas gestionadas: 20,000+ por instancia',
+        'Visitas mensuales: Sin límite',
+        'Almacenamiento documentos: Configurable',
+        'Retención audit logs: 7 años (configurable)'
+      ]
+    },
+    offline: {
+      title: 'Capacidades Offline',
+      features: [
+        'Service Worker para caché de recursos',
+        'IndexedDB para datos locales',
+        'Sincronización progresiva al reconectar',
+        'Notificaciones offline encoladas',
+        'Mapas pre-cacheados por zona'
+      ]
+    }
+  },
+  modules: [
+    {
+      id: 'dashboard',
+      name: 'Dashboard Principal',
+      description: 'Centro de control con métricas KPI en tiempo real, accesos rápidos y notificaciones',
+      compliance: 95,
+      regulations: ['GDPR', 'ISO 27001'],
+      features: ['Métricas en tiempo real', 'Filtros por período/gestor/oficina', 'Notificaciones push', 'Widgets configurables'],
+      dependencies: ['Empresas', 'Visitas', 'Objetivos', 'Notificaciones'],
+      menuPath: '/admin → Dashboard'
+    },
+    {
+      id: 'companies',
+      name: 'Gestión de Empresas',
+      description: 'Administración completa del portfolio de clientes y prospectos con datos financieros',
+      compliance: 92,
+      regulations: ['GDPR', 'KYC', 'AML', 'ISO 27001'],
+      features: ['CRUD completo', 'Importación Excel', 'Geocodificación automática', 'Detección duplicados', 'Vinculación bancaria', 'Documentos/Fotos'],
+      dependencies: ['Mapa', 'Contabilidad', 'Visitas', 'Pipeline'],
+      menuPath: '/admin → Empresas'
+    },
+    {
+      id: 'visits',
+      name: 'Gestión de Visitas',
+      description: 'Planificación, registro y seguimiento de visitas comerciales con fichas detalladas',
+      compliance: 94,
+      regulations: ['GDPR', 'MiFID II', 'ISO 27001'],
+      features: ['Calendario compartido', 'Fichas de visita 12 secciones', 'Firma digital', 'Resumen IA', 'Recordatorios automáticos'],
+      dependencies: ['Empresas', 'Productos', 'Notificaciones'],
+      menuPath: '/admin → Visitas'
+    },
+    {
+      id: 'map',
+      name: 'Mapa Geográfico',
+      description: 'Visualización GIS del portfolio con clustering, rutas optimizadas y análisis territorial',
+      compliance: 90,
+      regulations: ['GDPR'],
+      features: ['3 capas de mapa', 'Clustering inteligente', 'Filtros avanzados', 'Drag-to-relocate', 'Planificación rutas', 'Heatmaps'],
+      dependencies: ['Empresas', 'Visitas'],
+      menuPath: '/admin → Mapa'
+    },
+    {
+      id: 'accounting',
+      name: 'Contabilidad',
+      description: 'Estados financieros PGC, análisis de ratios, scoring crediticio y RAG financiero',
+      compliance: 96,
+      regulations: ['IFRS 9', 'Basel III/IV', 'ISO 27001'],
+      features: ['Balance/PyG/Flujos/ECPN', 'Import PDF con IA', 'Ratios automáticos', 'Z-Score Altman', 'Rating bancario', 'RAG Chat'],
+      dependencies: ['Empresas', 'IA'],
+      menuPath: '/admin → Comptabilitat'
+    },
+    {
+      id: 'pipeline',
+      name: 'Pipeline Oportunidades',
+      description: 'Gestión del embudo de ventas con tablero Kanban y predicción de cierre',
+      compliance: 88,
+      regulations: ['GDPR', 'MiFID II'],
+      features: ['Tablero Kanban', 'Drag & drop', 'Probabilidad de cierre', 'Valor ponderado', 'Alertas estancamiento'],
+      dependencies: ['Empresas', 'Productos', 'Visitas'],
+      menuPath: '/admin → Pipeline'
+    },
+    {
+      id: 'goals',
+      name: 'Objetivos y Metas',
+      description: 'Definición, asignación y seguimiento de objetivos comerciales con cascada',
+      compliance: 91,
+      regulations: ['ISO 27001'],
+      features: ['Objetivos por métrica/período', 'Cascada jerárquica', 'Progreso en tiempo real', 'Alertas de riesgo', 'Histórico'],
+      dependencies: ['Dashboard', 'Visitas', 'Notificaciones'],
+      menuPath: '/admin → Objetivos'
+    },
+    {
+      id: 'rfm',
+      name: 'Análisis RFM',
+      description: 'Segmentación de clientes por Recencia, Frecuencia y Valor Monetario',
+      compliance: 94,
+      regulations: ['GDPR', 'ISO 27001'],
+      features: ['Scoring RFM automático', '5 segmentos', 'Políticas por segmento', 'Acciones recomendadas'],
+      dependencies: ['Empresas', 'Visitas'],
+      menuPath: '/admin → Anàlisi RFM'
+    },
+    {
+      id: 'ml-segmentation',
+      name: 'Segmentación ML',
+      description: 'Segmentación avanzada con Machine Learning, predicción de churn y CLV',
+      compliance: 92,
+      regulations: ['GDPR', 'AI Act', 'ISO 27001'],
+      features: ['SVM/CART clustering', 'Predicción churn', 'Customer Lifetime Value', 'Árboles de decisión'],
+      dependencies: ['Empresas', 'RFM', 'IA'],
+      menuPath: '/admin → Segmentació ML'
+    },
+    {
+      id: 'dora-nis2',
+      name: 'DORA/NIS2',
+      description: 'Panel de cumplimiento de resiliencia operativa digital y seguridad de redes',
+      compliance: 98,
+      regulations: ['DORA', 'NIS2'],
+      features: ['Gestión incidentes', 'Evaluaciones riesgo', 'Pruebas resiliencia', 'Proveedores terceros', 'Stress tests'],
+      dependencies: ['System Health', 'Notificaciones'],
+      menuPath: '/admin → DORA/NIS2'
+    },
+    {
+      id: 'iso27001',
+      name: 'ISO 27001',
+      description: 'Panel de cumplimiento de los 114 controles del Anexo A de ISO 27001',
+      compliance: 97,
+      regulations: ['ISO 27001'],
+      features: ['14 dominios', '114 controles', 'Evidencias', 'Gaps', 'Plan corrección', 'Certificación'],
+      dependencies: ['Audit Logs', 'System Health'],
+      menuPath: '/admin → ISO 27001'
+    },
+    {
+      id: 'ai-assistant',
+      name: 'Asistente IA Interno',
+      description: 'Chatbot inteligente para consultas sobre clientes, normativa y procedimientos',
+      compliance: 94,
+      regulations: ['GDPR', 'AI Act', 'APDA'],
+      features: ['Chat texto/voz', 'Base conocimiento', 'Contextos múltiples', 'Audit trail permanente'],
+      dependencies: ['Empresas', 'Productos', 'IA'],
+      menuPath: '/admin → Assistent IA'
+    },
+    {
+      id: 'financial-rag',
+      name: 'RAG Financiero',
+      description: 'Chat con contexto de documentos financieros usando Retrieval-Augmented Generation',
+      compliance: 95,
+      regulations: ['GDPR', 'AI Act', 'IFRS 9'],
+      features: ['Embeddings vectoriales', 'Búsqueda semántica', 'Respuestas contextuales', 'Citas de fuentes'],
+      dependencies: ['Contabilidad', 'IA'],
+      menuPath: '/admin → Comptabilitat → RAG Chat'
+    },
+    {
+      id: 'notifications',
+      name: 'Centro de Notificaciones',
+      description: 'Sistema Pub/Sub con webhooks para alertas, recordatorios y eventos',
+      compliance: 93,
+      regulations: ['GDPR', 'ISO 27001'],
+      features: ['8 canales', 'Suscripciones por rol', 'Webhooks HMAC', 'Histórico entregas'],
+      dependencies: ['Todos los módulos'],
+      menuPath: '/admin → Notificacions'
+    },
+    {
+      id: 'system-health',
+      name: 'System Health',
+      description: 'Monitorización de salud del sistema con diagnósticos automáticos e intervenciones IA',
+      compliance: 96,
+      regulations: ['DORA', 'ISO 27001'],
+      features: ['Diagnósticos 8 módulos', 'Checks programados', 'AI auto-remediation', 'Rollback', 'Alertas email'],
+      dependencies: ['Edge Functions', 'Notificaciones'],
+      menuPath: '/admin → System Health'
+    },
+    {
+      id: 'audit-logs',
+      name: 'Audit Logs',
+      description: 'Registro completo de auditoría de todas las acciones del sistema',
+      compliance: 99,
+      regulations: ['GDPR', 'ISO 27001', 'DORA', 'MiFID II'],
+      features: ['Registro automático', 'IP/User Agent', 'Antes/Después', 'Filtros avanzados', 'Export'],
+      dependencies: ['Todos los módulos'],
+      menuPath: '/admin → Audit Logs'
+    }
+  ],
+  regulations: [
+    { id: 'iso27001', name: 'ISO 27001', compliance: 97, description: 'Sistema de Gestión de Seguridad de la Información', status: 'Complert' },
+    { id: 'gdpr', name: 'GDPR', compliance: 95, description: 'Reglamento General de Protección de Datos', status: 'Complert' },
+    { id: 'dora', name: 'DORA', compliance: 98, description: 'Resiliencia Operativa Digital', status: 'Complert' },
+    { id: 'nis2', name: 'NIS2', compliance: 96, description: 'Seguridad de Redes y Sistemas de Información', status: 'Complert' },
+    { id: 'psd2', name: 'PSD2/PSD3', compliance: 94, description: 'Directiva de Servicios de Pago', status: 'En Progrés' },
+    { id: 'mifid2', name: 'MiFID II', compliance: 92, description: 'Mercados de Instrumentos Financieros', status: 'En Progrés' },
+    { id: 'basel', name: 'Basel III/IV', compliance: 90, description: 'Requisitos de Capital Bancario', status: 'En Progrés' },
+    { id: 'ifrs9', name: 'IFRS 9', compliance: 93, description: 'Instrumentos Financieros (Contabilidad)', status: 'Complert' },
+    { id: 'aiact', name: 'EU AI Act', compliance: 92, description: 'Reglamento de Inteligencia Artificial', status: 'En Progrés' },
+    { id: 'eidas', name: 'eIDAS 2.0', compliance: 88, description: 'Identidad Digital y Servicios de Confianza', status: 'En Progrés' },
+    { id: 'apda', name: 'APDA (Andorra)', compliance: 96, description: 'Protección de Datos de Andorra', status: 'Complert' },
+    { id: 'owasp', name: 'OWASP Top 10', compliance: 98, description: 'Seguridad de Aplicaciones Web', status: 'Complert' }
+  ],
+  menuStructure: {
+    title: 'Estructura de Menús',
+    description: 'Navegación completa de la aplicación por rol de usuario',
+    roles: [
+      {
+        role: 'Gestor',
+        access: ['Dashboard Personal', 'Mis Empresas', 'Mis Visitas', 'Mapa (zona asignada)', 'Mis Objetivos', 'Perfil'],
+        restricted: ['Admin', 'Configuración', 'Usuarios', 'Audit Logs']
+      },
+      {
+        role: 'Director Oficina',
+        access: ['Dashboard Oficina', 'Empresas Oficina', 'Visitas Oficina', 'Mapa Oficina', 'Objetivos Equipo', 'Métricas Gestores', 'Calendario Compartido'],
+        restricted: ['Admin Global', 'Configuración Sistema', 'Usuarios Otras Oficinas']
+      },
+      {
+        role: 'Director Comercial',
+        access: ['Dashboard Global', 'Todas Empresas', 'Todas Visitas', 'Mapa Completo', 'Objetivos Globales', 'Admin Panel Completo', 'Configuración', 'Reportes'],
+        restricted: []
+      },
+      {
+        role: 'Responsable Comercial',
+        access: ['Acceso equivalente a Director Comercial', 'Panel de Auditoría de Responsables'],
+        restricted: []
+      },
+      {
+        role: 'Auditor',
+        access: ['Audit Logs (solo lectura)', 'Conversaciones Asistente IA', 'Historial Acciones'],
+        restricted: ['Modificación de datos', 'Configuración', 'Admin funcional']
+      },
+      {
+        role: 'Superadmin',
+        access: ['Acceso completo a todos los módulos', 'Selector de Visión (ver como otros roles)', 'Configuración Sistema', 'Edge Functions'],
+        restricted: []
+      }
+    ]
+  }
+};
 
 const helpModules: HelpModule[] = [
   {
@@ -546,8 +885,10 @@ export function HelpCenter({ isOpen, onClose }: HelpCenterProps) {
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [isAnalyzingAbout, setIsAnalyzingAbout] = useState(false);
+  const [isGeneratingAboutPdf, setIsGeneratingAboutPdf] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('modules');
+  const [activeTab, setActiveTab] = useState('about');
 
   useEffect(() => {
     const saved = localStorage.getItem('help_last_update');
@@ -602,6 +943,323 @@ export function HelpCenter({ isOpen, onClose }: HelpCenterProps) {
       });
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const analyzeAboutCode = async () => {
+    setIsAnalyzingAbout(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('analyze-codebase', {
+        body: { type: 'system-overview' }
+      });
+
+      if (error) throw error;
+
+      toast.success('Análisis completado', {
+        description: 'La información del sistema ha sido actualizada con los últimos datos.'
+      });
+    } catch (error) {
+      console.error('Error analyzing system:', error);
+      toast.error('Error al analizar', {
+        description: 'No se pudo analizar el sistema. Inténtalo de nuevo.'
+      });
+    } finally {
+      setIsAnalyzingAbout(false);
+    }
+  };
+
+  const generateAboutPdf = async () => {
+    setIsGeneratingAboutPdf(true);
+    try {
+      const pdf = new jsPDF();
+      const margin = 20;
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const contentWidth = pageWidth - margin * 2;
+      let y = margin;
+
+      // Header
+      pdf.setFillColor(30, 64, 175);
+      pdf.rect(0, 0, pageWidth, 50, 'F');
+      
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(24);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('ObelixIA - Documentación del Sistema', margin, 25);
+      
+      pdf.setFontSize(12);
+      pdf.text(obelixiaSystemInfo.overview.tagline, margin, 35);
+      
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`Versión ${obelixiaSystemInfo.overview.version} | Generado: ${new Date().toLocaleDateString('es-ES')}`, margin, 45);
+
+      y = 65;
+      pdf.setTextColor(0, 0, 0);
+
+      // Table of Contents
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Índice', margin, y);
+      y += 10;
+
+      const sections = ['Visión General', 'Arquitectura de Software', 'Requisitos de Hardware', 'Módulos del Sistema', 'Cumplimiento Normativo', 'Estructura de Menús'];
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      sections.forEach((section, i) => {
+        pdf.text(`${i + 1}. ${section}`, margin + 5, y);
+        y += 6;
+      });
+
+      // Section 1: Overview
+      pdf.addPage();
+      y = margin;
+      pdf.setFillColor(59, 130, 246);
+      pdf.rect(0, 0, pageWidth, 30, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('1. Visión General', margin, 20);
+      
+      y = 45;
+      pdf.setTextColor(0, 0, 0);
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      const descLines = pdf.splitTextToSize(obelixiaSystemInfo.overview.description, contentWidth);
+      descLines.forEach((line: string) => {
+        if (y > 270) { pdf.addPage(); y = margin; }
+        pdf.text(line, margin, y);
+        y += 5;
+      });
+
+      y += 10;
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Usuarios Objetivo:', margin, y);
+      y += 7;
+      pdf.setFont('helvetica', 'normal');
+      obelixiaSystemInfo.overview.targetUsers.forEach((user) => {
+        pdf.text(`• ${user}`, margin + 5, y);
+        y += 5;
+      });
+
+      y += 10;
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Beneficios Clave:', margin, y);
+      y += 7;
+      pdf.setFont('helvetica', 'normal');
+      obelixiaSystemInfo.overview.keyBenefits.forEach((benefit) => {
+        const lines = pdf.splitTextToSize(`• ${benefit}`, contentWidth - 5);
+        lines.forEach((line: string) => {
+          if (y > 270) { pdf.addPage(); y = margin; }
+          pdf.text(line, margin + 5, y);
+          y += 5;
+        });
+      });
+
+      // Section 2: Software
+      pdf.addPage();
+      y = margin;
+      pdf.setFillColor(59, 130, 246);
+      pdf.rect(0, 0, pageWidth, 30, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('2. Arquitectura de Software', margin, 20);
+      
+      y = 45;
+      pdf.setTextColor(0, 0, 0);
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Stack Tecnológico', margin, y);
+      y += 8;
+
+      pdf.setFontSize(10);
+      obelixiaSystemInfo.software.stack.forEach((item) => {
+        if (y > 260) { pdf.addPage(); y = margin; }
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`${item.name}:`, margin, y);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(`${item.tech}`, margin + 30, y);
+        y += 5;
+        pdf.text(`   ${item.description}`, margin, y);
+        y += 7;
+      });
+
+      y += 5;
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Seguridad Implementada', margin, y);
+      y += 8;
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      obelixiaSystemInfo.software.security.forEach((item) => {
+        if (y > 270) { pdf.addPage(); y = margin; }
+        pdf.text(`• ${item}`, margin + 5, y);
+        y += 5;
+      });
+
+      // Section 3: Hardware
+      pdf.addPage();
+      y = margin;
+      pdf.setFillColor(59, 130, 246);
+      pdf.rect(0, 0, pageWidth, 30, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('3. Requisitos de Hardware', margin, 20);
+      
+      y = 45;
+      pdf.setTextColor(0, 0, 0);
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Requisitos Cliente (Mínimos)', margin, y);
+      y += 8;
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      obelixiaSystemInfo.hardware.client.minimum.forEach((req) => {
+        pdf.text(`• ${req}`, margin + 5, y);
+        y += 5;
+      });
+
+      y += 5;
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Requisitos Cliente (Recomendados)', margin, y);
+      y += 8;
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      obelixiaSystemInfo.hardware.client.recommended.forEach((req) => {
+        pdf.text(`• ${req}`, margin + 5, y);
+        y += 5;
+      });
+
+      y += 5;
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Navegadores Compatibles', margin, y);
+      y += 8;
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(obelixiaSystemInfo.hardware.client.browsers.join(', '), margin + 5, y);
+
+      // Section 4: Modules
+      pdf.addPage();
+      y = margin;
+      pdf.setFillColor(59, 130, 246);
+      pdf.rect(0, 0, pageWidth, 30, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('4. Módulos del Sistema', margin, 20);
+      
+      y = 45;
+      pdf.setTextColor(0, 0, 0);
+
+      obelixiaSystemInfo.modules.forEach((module, i) => {
+        if (y > 240) { pdf.addPage(); y = margin; }
+        
+        pdf.setFontSize(11);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`${i + 1}. ${module.name} (${module.compliance}%)`, margin, y);
+        y += 6;
+        
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'normal');
+        const descLines = pdf.splitTextToSize(module.description, contentWidth);
+        descLines.forEach((line: string) => {
+          pdf.text(line, margin + 5, y);
+          y += 4;
+        });
+        
+        pdf.text(`Normativas: ${module.regulations.join(', ')}`, margin + 5, y);
+        y += 4;
+        pdf.text(`Ruta: ${module.menuPath}`, margin + 5, y);
+        y += 4;
+        pdf.text(`Dependencias: ${module.dependencies.join(', ')}`, margin + 5, y);
+        y += 8;
+      });
+
+      // Section 5: Compliance
+      pdf.addPage();
+      y = margin;
+      pdf.setFillColor(59, 130, 246);
+      pdf.rect(0, 0, pageWidth, 30, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('5. Cumplimiento Normativo', margin, 20);
+      
+      y = 45;
+      pdf.setTextColor(0, 0, 0);
+
+      const avgCompliance = Math.round(obelixiaSystemInfo.regulations.reduce((acc, r) => acc + r.compliance, 0) / obelixiaSystemInfo.regulations.length);
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(`Cumplimiento Promedio Global: ${avgCompliance}%`, margin, y);
+      y += 15;
+
+      obelixiaSystemInfo.regulations.forEach((reg) => {
+        if (y > 260) { pdf.addPage(); y = margin; }
+        
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`${reg.name}: ${reg.compliance}% (${reg.status})`, margin, y);
+        y += 5;
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(reg.description, margin + 5, y);
+        y += 8;
+      });
+
+      // Section 6: Menu Structure
+      pdf.addPage();
+      y = margin;
+      pdf.setFillColor(59, 130, 246);
+      pdf.rect(0, 0, pageWidth, 30, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('6. Estructura de Menús por Rol', margin, 20);
+      
+      y = 45;
+      pdf.setTextColor(0, 0, 0);
+
+      obelixiaSystemInfo.menuStructure.roles.forEach((roleInfo) => {
+        if (y > 220) { pdf.addPage(); y = margin; }
+        
+        pdf.setFontSize(11);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(roleInfo.role, margin, y);
+        y += 7;
+        
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text('Acceso permitido:', margin + 5, y);
+        y += 5;
+        const accessLines = pdf.splitTextToSize(roleInfo.access.join(', '), contentWidth - 10);
+        accessLines.forEach((line: string) => {
+          pdf.text(line, margin + 10, y);
+          y += 4;
+        });
+        
+        if (roleInfo.restricted.length > 0) {
+          y += 2;
+          pdf.text('Restringido:', margin + 5, y);
+          y += 5;
+          const restrictedLines = pdf.splitTextToSize(roleInfo.restricted.join(', '), contentWidth - 10);
+          restrictedLines.forEach((line: string) => {
+            pdf.text(line, margin + 10, y);
+            y += 4;
+          });
+        }
+        y += 8;
+      });
+
+      pdf.save(`ObelixIA_Sistema_Documentacion_${new Date().toISOString().split('T')[0]}.pdf`);
+      toast.success('PDF generado', { description: 'La documentación del sistema se ha descargado correctamente.' });
+    } catch (error) {
+      console.error('Error generating about PDF:', error);
+      toast.error('Error al generar PDF');
+    } finally {
+      setIsGeneratingAboutPdf(false);
     }
   };
 
@@ -943,7 +1601,11 @@ export function HelpCenter({ isOpen, onClose }: HelpCenterProps) {
 
             {/* Content */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-              <TabsList className="grid grid-cols-3 mx-4 mt-2">
+              <TabsList className="grid grid-cols-4 mx-4 mt-2">
+                <TabsTrigger value="about" className="flex items-center gap-1">
+                  <Info className="h-4 w-4" />
+                  <span className="hidden sm:inline">Sobre</span>
+                </TabsTrigger>
                 <TabsTrigger value="modules" className="flex items-center gap-1">
                   <Book className="h-4 w-4" />
                   <span className="hidden sm:inline">Módulos</span>
@@ -959,6 +1621,396 @@ export function HelpCenter({ isOpen, onClose }: HelpCenterProps) {
               </TabsList>
 
               <ScrollArea className="flex-1 p-4">
+                {/* ABOUT OBELIXIA TAB */}
+                <TabsContent value="about" className="mt-0 space-y-6">
+                  {/* Action Buttons */}
+                  <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={analyzeAboutCode}
+                      disabled={isAnalyzingAbout}
+                      className="flex-1"
+                    >
+                      {isAnalyzingAbout ? (
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Sparkles className="h-4 w-4 mr-2" />
+                      )}
+                      {isAnalyzingAbout ? 'Analizando...' : 'Analizar Sistema'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={generateAboutPdf}
+                      disabled={isGeneratingAboutPdf}
+                      className="flex-1"
+                    >
+                      {isGeneratingAboutPdf ? (
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <FileDown className="h-4 w-4 mr-2" />
+                      )}
+                      {isGeneratingAboutPdf ? 'Generando...' : 'Descargar PDF Sistema'}
+                    </Button>
+                  </div>
+
+                  {/* Overview Section */}
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-primary/10">
+                          <Globe className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-xl">{obelixiaSystemInfo.overview.title}</CardTitle>
+                          <CardDescription>{obelixiaSystemInfo.overview.tagline}</CardDescription>
+                        </div>
+                        <Badge variant="secondary" className="ml-auto">v{obelixiaSystemInfo.overview.version}</Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-sm text-muted-foreground whitespace-pre-line">
+                        {obelixiaSystemInfo.overview.description}
+                      </p>
+                      
+                      <div className="grid sm:grid-cols-2 gap-4 mt-4">
+                        <div className="space-y-2">
+                          <h4 className="font-medium flex items-center gap-2">
+                            <Users className="h-4 w-4 text-primary" />
+                            Usuarios Objetivo
+                          </h4>
+                          <ul className="text-sm text-muted-foreground space-y-1">
+                            {obelixiaSystemInfo.overview.targetUsers.map((user, i) => (
+                              <li key={i} className="flex items-center gap-2">
+                                <Check className="h-3 w-3 text-green-500" />
+                                {user}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div className="space-y-2">
+                          <h4 className="font-medium flex items-center gap-2">
+                            <TrendingUp className="h-4 w-4 text-primary" />
+                            Beneficios Clave
+                          </h4>
+                          <ul className="text-sm text-muted-foreground space-y-1">
+                            {obelixiaSystemInfo.overview.keyBenefits.map((benefit, i) => (
+                              <li key={i} className="flex items-start gap-2">
+                                <CheckCircle2 className="h-3 w-3 text-green-500 mt-1 shrink-0" />
+                                {benefit}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Software Architecture */}
+                  <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="software">
+                      <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-blue-500/10">
+                            <Cpu className="h-5 w-5 text-blue-500" />
+                          </div>
+                          <div className="text-left">
+                            <span className="font-semibold">{obelixiaSystemInfo.software.title}</span>
+                            <p className="text-xs text-muted-foreground">Stack tecnológico, arquitectura y seguridad</p>
+                          </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="space-y-4 pt-4">
+                        <div className="space-y-3">
+                          <h4 className="font-medium text-sm">Stack Tecnológico</h4>
+                          <div className="grid gap-2">
+                            {obelixiaSystemInfo.software.stack.map((item, i) => (
+                              <div key={i} className="flex items-center justify-between p-2 bg-muted/50 rounded-lg">
+                                <div>
+                                  <span className="font-medium text-sm">{item.name}</span>
+                                  <p className="text-xs text-muted-foreground">{item.description}</p>
+                                </div>
+                                <Badge variant="outline" className="text-xs">{item.tech}</Badge>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          <h4 className="font-medium text-sm">Arquitectura</h4>
+                          <div className="bg-muted/50 rounded-lg p-3">
+                            <pre className="text-xs text-muted-foreground whitespace-pre-wrap">
+                              {obelixiaSystemInfo.software.architecture}
+                            </pre>
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          <h4 className="font-medium text-sm flex items-center gap-2">
+                            <Lock className="h-4 w-4 text-green-500" />
+                            Seguridad Implementada
+                          </h4>
+                          <div className="grid sm:grid-cols-2 gap-2">
+                            {obelixiaSystemInfo.software.security.map((item, i) => (
+                              <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <Shield className="h-3 w-3 text-green-500" />
+                                {item}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+
+                    {/* Hardware Requirements */}
+                    <AccordionItem value="hardware">
+                      <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-orange-500/10">
+                            <HardDrive className="h-5 w-5 text-orange-500" />
+                          </div>
+                          <div className="text-left">
+                            <span className="font-semibold">{obelixiaSystemInfo.hardware.title}</span>
+                            <p className="text-xs text-muted-foreground">Cliente, servidor y capacidades offline</p>
+                          </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="space-y-4 pt-4">
+                        <div className="grid sm:grid-cols-2 gap-4">
+                          <div className="space-y-3">
+                            <h4 className="font-medium text-sm">Requisitos Mínimos (Cliente)</h4>
+                            <ul className="text-sm text-muted-foreground space-y-1">
+                              {obelixiaSystemInfo.hardware.client.minimum.map((req, i) => (
+                                <li key={i} className="flex items-start gap-2">
+                                  <AlertTriangle className="h-3 w-3 text-yellow-500 mt-1 shrink-0" />
+                                  {req}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          <div className="space-y-3">
+                            <h4 className="font-medium text-sm">Requisitos Recomendados</h4>
+                            <ul className="text-sm text-muted-foreground space-y-1">
+                              {obelixiaSystemInfo.hardware.client.recommended.map((req, i) => (
+                                <li key={i} className="flex items-start gap-2">
+                                  <CheckCircle2 className="h-3 w-3 text-green-500 mt-1 shrink-0" />
+                                  {req}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          <h4 className="font-medium text-sm">Navegadores Compatibles</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {obelixiaSystemInfo.hardware.client.browsers.map((browser, i) => (
+                              <Badge key={i} variant="secondary">{browser}</Badge>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          <h4 className="font-medium text-sm flex items-center gap-2">
+                            <Server className="h-4 w-4 text-primary" />
+                            Infraestructura Servidor
+                          </h4>
+                          <div className="grid sm:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <span className="text-xs font-medium text-muted-foreground">Especificaciones</span>
+                              <ul className="text-sm text-muted-foreground space-y-1">
+                                {obelixiaSystemInfo.hardware.server.specs.map((spec, i) => (
+                                  <li key={i} className="flex items-start gap-2">
+                                    <Database className="h-3 w-3 text-primary mt-1 shrink-0" />
+                                    {spec}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                            <div className="space-y-2">
+                              <span className="text-xs font-medium text-muted-foreground">Capacidad</span>
+                              <ul className="text-sm text-muted-foreground space-y-1">
+                                {obelixiaSystemInfo.hardware.server.capacity.map((cap, i) => (
+                                  <li key={i} className="flex items-start gap-2">
+                                    <BarChart3 className="h-3 w-3 text-green-500 mt-1 shrink-0" />
+                                    {cap}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          <h4 className="font-medium text-sm flex items-center gap-2">
+                            <Layers className="h-4 w-4 text-purple-500" />
+                            Capacidades Offline
+                          </h4>
+                          <ul className="text-sm text-muted-foreground space-y-1">
+                            {obelixiaSystemInfo.hardware.offline.features.map((feature, i) => (
+                              <li key={i} className="flex items-start gap-2">
+                                <Check className="h-3 w-3 text-purple-500 mt-1 shrink-0" />
+                                {feature}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+
+                    {/* Modules with Compliance */}
+                    <AccordionItem value="modules-compliance">
+                      <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-green-500/10">
+                            <Layers className="h-5 w-5 text-green-500" />
+                          </div>
+                          <div className="text-left">
+                            <span className="font-semibold">Módulos y Cumplimiento</span>
+                            <p className="text-xs text-muted-foreground">{obelixiaSystemInfo.modules.length} módulos con % de cumplimiento normativo</p>
+                          </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="space-y-3 pt-4">
+                        {obelixiaSystemInfo.modules.map((module, i) => (
+                          <div key={module.id} className="border rounded-lg p-3 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <span className="font-medium text-sm">{i + 1}. {module.name}</span>
+                                <p className="text-xs text-muted-foreground">{module.description}</p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge variant={module.compliance >= 95 ? 'default' : module.compliance >= 90 ? 'secondary' : 'outline'}>
+                                  {module.compliance}%
+                                </Badge>
+                              </div>
+                            </div>
+                            <Progress value={module.compliance} className="h-1.5" />
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {module.regulations.map((reg, j) => (
+                                <Badge key={j} variant="outline" className="text-xs">{reg}</Badge>
+                              ))}
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-1">
+                              <span className="font-medium">Menú:</span> {module.menuPath}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              <span className="font-medium">Dependencias:</span> {module.dependencies.join(', ')}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              <span className="font-medium">Funciones:</span> {module.features.join(' • ')}
+                            </div>
+                          </div>
+                        ))}
+                      </AccordionContent>
+                    </AccordionItem>
+
+                    {/* Regulations Compliance */}
+                    <AccordionItem value="regulations">
+                      <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-purple-500/10">
+                            <FileCheck className="h-5 w-5 text-purple-500" />
+                          </div>
+                          <div className="text-left">
+                            <span className="font-semibold">Cumplimiento Normativo</span>
+                            <p className="text-xs text-muted-foreground">{obelixiaSystemInfo.regulations.length} normativas monitorizadas</p>
+                          </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="space-y-3 pt-4">
+                        <div className="grid gap-3">
+                          {obelixiaSystemInfo.regulations.map((reg) => (
+                            <div key={reg.id} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium text-sm">{reg.name}</span>
+                                  <Badge 
+                                    variant={reg.status === 'Complert' ? 'default' : 'secondary'}
+                                    className="text-xs"
+                                  >
+                                    {reg.status}
+                                  </Badge>
+                                </div>
+                                <p className="text-xs text-muted-foreground">{reg.description}</p>
+                              </div>
+                              <div className="text-right">
+                                <span className={`text-lg font-bold ${
+                                  reg.compliance >= 95 ? 'text-green-500' : 
+                                  reg.compliance >= 90 ? 'text-yellow-500' : 'text-orange-500'
+                                }`}>
+                                  {reg.compliance}%
+                                </span>
+                                <Progress value={reg.compliance} className="h-1 w-20 mt-1" />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        {/* Average Compliance */}
+                        <div className="mt-4 p-4 bg-primary/5 rounded-lg">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium">Cumplimiento Promedio Global</span>
+                            <span className="text-2xl font-bold text-primary">
+                              {Math.round(obelixiaSystemInfo.regulations.reduce((acc, r) => acc + r.compliance, 0) / obelixiaSystemInfo.regulations.length)}%
+                            </span>
+                          </div>
+                          <Progress 
+                            value={Math.round(obelixiaSystemInfo.regulations.reduce((acc, r) => acc + r.compliance, 0) / obelixiaSystemInfo.regulations.length)} 
+                            className="h-2 mt-2" 
+                          />
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+
+                    {/* Menu Structure */}
+                    <AccordionItem value="menu-structure">
+                      <AccordionTrigger className="hover:no-underline">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-cyan-500/10">
+                            <Eye className="h-5 w-5 text-cyan-500" />
+                          </div>
+                          <div className="text-left">
+                            <span className="font-semibold">{obelixiaSystemInfo.menuStructure.title}</span>
+                            <p className="text-xs text-muted-foreground">{obelixiaSystemInfo.menuStructure.description}</p>
+                          </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="space-y-3 pt-4">
+                        {obelixiaSystemInfo.menuStructure.roles.map((roleInfo, i) => (
+                          <div key={i} className="border rounded-lg p-3">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Users className="h-4 w-4 text-primary" />
+                              <span className="font-medium">{roleInfo.role}</span>
+                            </div>
+                            <div className="space-y-2">
+                              <div>
+                                <span className="text-xs font-medium text-green-600">Acceso Permitido:</span>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {roleInfo.access.map((item, j) => (
+                                    <Badge key={j} variant="outline" className="text-xs bg-green-500/5">{item}</Badge>
+                                  ))}
+                                </div>
+                              </div>
+                              {roleInfo.restricted.length > 0 && (
+                                <div>
+                                  <span className="text-xs font-medium text-red-600">Restringido:</span>
+                                  <div className="flex flex-wrap gap-1 mt-1">
+                                    {roleInfo.restricted.map((item, j) => (
+                                      <Badge key={j} variant="outline" className="text-xs bg-red-500/5">{item}</Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </TabsContent>
+
                 <TabsContent value="modules" className="mt-0 space-y-4">
                   {selectedModule ? (
                     <>
