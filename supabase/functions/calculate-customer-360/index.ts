@@ -71,7 +71,7 @@ async function calculateProfile(supabase: any, companyId: string, apiKey: string
     .from('companies')
     .select(`
       *,
-      status:status_colors(status_name, color),
+      status:status_colors(status_name, color_hex),
       gestor:profiles!companies_gestor_id_fkey(full_name, email)
     `)
     .eq('id', companyId)
