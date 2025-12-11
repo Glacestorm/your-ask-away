@@ -101,3 +101,6 @@ verify_jwt = true
 
 [functions.segment-customers-ml]
 verify_jwt = true
+
+[functions.summarize-visit]
+verify_jwt = true
