@@ -282,14 +282,62 @@ serve(async (req) => {
     const responseSensitive = detectSensitiveContent(assistantMessage);
     const flagForReview = isSensitive || responseSensitive;
 
-    console.log(`[Internal Assistant] Response generated. Sensitive: ${flagForReview}`);
+    // Detect if the AI couldn't answer and should save as suggestion
+    const cannotAnswerPatterns = [
+      'no tengo información',
+      'no puedo encontrar',
+      'no está disponible',
+      'no tengo acceso',
+      'fuera de mi alcance',
+      'no implementado',
+      'no existe actualmente',
+      'no tengo datos',
+      'no puedo ayudarte con eso',
+      'esa funcionalidad no está',
+      'no he encontrado',
+      'desconozco',
+      'no tengo conocimiento'
+    ];
+
+    const lowerResponse = assistantMessage.toLowerCase();
+    const couldNotAnswer = cannotAnswerPatterns.some(pattern => lowerResponse.includes(pattern));
+
+    // If couldn't answer, save as potential suggestion
+    if (couldNotAnswer && lastUserMessage) {
+      try {
+        await supabase
+          .from('user_suggestions')
+          .insert({
+            user_id: userId,
+            suggestion_text: lastUserMessage.content,
+            source: 'ai_detected',
+            context: contextType,
+            ai_response: assistantMessage.substring(0, 500),
+            status: 'pending',
+            priority: 'medium',
+            category: 'feature'
+          });
+        console.log('[Internal Assistant] Saved unanswered query as suggestion');
+      } catch (suggestionError) {
+        console.error('[Internal Assistant] Error saving suggestion:', suggestionError);
+      }
+    }
+
+    console.log(`[Internal Assistant] Response generated. Sensitive: ${flagForReview}, CouldNotAnswer: ${couldNotAnswer}`);
+
+    // Add proactive suggestion prompt if couldn't fully answer
+    let finalMessage = assistantMessage;
+    if (couldNotAnswer) {
+      finalMessage += '\n\n💡 **¿Te gustaría que esta funcionalidad estuviera disponible?** Tu consulta ha sido guardada automáticamente como sugerencia. Puedes ver todas las sugerencias y votar por las que más te interesen en el menú de Ayuda → Buzón de Sugerencias.';
+    }
 
     return new Response(
       JSON.stringify({
-        message: assistantMessage,
+        message: finalMessage,
         isSensitive: flagForReview,
         requiresReview: flagForReview,
         sources: extractSources(assistantMessage),
+        savedAsSuggestion: couldNotAnswer,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

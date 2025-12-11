@@ -7,7 +7,7 @@ import {
   Shield, Bell, Settings, Database, Sparkles, Check,
   Building2, Target, TrendingUp, FileText, Bot, Info,
   Cpu, HardDrive, Server, Globe, Lock, Eye, Layers,
-  FileCheck, AlertTriangle, CheckCircle2, Percent
+  FileCheck, AlertTriangle, CheckCircle2, Percent, MessageSquarePlus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +20,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import jsPDF from 'jspdf';
+import { SuggestionBox } from './SuggestionBox';
 
 interface HelpModule {
   id: string;
@@ -1601,7 +1602,7 @@ export function HelpCenter({ isOpen, onClose }: HelpCenterProps) {
 
             {/* Content */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
-              <TabsList className="grid grid-cols-4 mx-4 mt-2 shrink-0">
+              <TabsList className="grid grid-cols-5 mx-4 mt-2 shrink-0">
                 <TabsTrigger value="about" className="flex items-center gap-1">
                   <Info className="h-4 w-4" />
                   <span className="hidden sm:inline">Sobre</span>
@@ -1617,6 +1618,10 @@ export function HelpCenter({ isOpen, onClose }: HelpCenterProps) {
                 <TabsTrigger value="tips" className="flex items-center gap-1">
                   <Lightbulb className="h-4 w-4" />
                   <span className="hidden sm:inline">Consejos</span>
+                </TabsTrigger>
+                <TabsTrigger value="suggestions" className="flex items-center gap-1">
+                  <MessageSquarePlus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Buzón</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -2086,6 +2091,10 @@ export function HelpCenter({ isOpen, onClose }: HelpCenterProps) {
                       ))
                     ))
                   ))}
+                </TabsContent>
+
+                <TabsContent value="suggestions" className="mt-0">
+                  <SuggestionBox />
                 </TabsContent>
                 </ScrollArea>
               </div>
