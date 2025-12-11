@@ -67,6 +67,7 @@ export function InternalAssistantChat() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const [pendingVoiceMessage, setPendingVoiceMessage] = useState(false);
+  const [voiceError, setVoiceError] = useState<string | null>(null);
 
   // Voice chat hook
   const { 
@@ -74,16 +75,46 @@ export function InternalAssistantChat() {
     isSpeaking, 
     isSupported: voiceSupported,
     transcript,
+    error: voiceChatError,
     toggleListening,
     speak,
     stopSpeaking
   } = useVoiceChat({
     language: 'es-ES',
     onTranscript: (text) => {
+      console.log('Voice transcript received:', text);
       setInput(text);
       setPendingVoiceMessage(true);
     },
   });
+
+  // Log voice support status on mount
+  useEffect(() => {
+    console.log('Voice chat support status:', voiceSupported);
+    console.log('SpeechRecognition available:', !!(window.SpeechRecognition || (window as any).webkitSpeechRecognition));
+    console.log('SpeechSynthesis available:', 'speechSynthesis' in window);
+  }, [voiceSupported]);
+
+  // Handle voice errors
+  useEffect(() => {
+    if (voiceChatError) {
+      console.error('Voice chat error:', voiceChatError);
+      if (voiceChatError === 'not-allowed' || voiceChatError === 'microphone-permission') {
+        setVoiceError('Permiso de micrófono denegado. Por favor, permite el acceso al micrófono.');
+        toast.error('Permiso de micrófono denegado');
+      } else if (voiceChatError === 'no-speech') {
+        setVoiceError('No se detectó ninguna voz. Intenta hablar más alto.');
+      } else if (voiceChatError === 'network') {
+        setVoiceError('Error de red. Verifica tu conexión.');
+      } else if (voiceChatError === 'not-supported') {
+        setVoiceError('Tu navegador no soporta reconocimiento de voz.');
+      } else {
+        setVoiceError(`Error: ${voiceChatError}`);
+      }
+    } else {
+      setVoiceError(null);
+    }
+  }, [voiceChatError]);
 
   useEffect(() => {
     if (user) {
@@ -671,24 +702,36 @@ export function InternalAssistantChat() {
 
           {/* Input Area */}
           <div className="p-4 border-t">
+            {/* Voice error message */}
+            {voiceError && (
+              <div className="mb-2 p-2 bg-destructive/10 border border-destructive/30 rounded-md">
+                <p className="text-xs text-destructive">{voiceError}</p>
+              </div>
+            )}
+            
             <div className="flex gap-2">
-              {/* Voice Input Button */}
-              {voiceSupported && (
-                <Button
-                  variant={isListening ? "destructive" : "outline"}
-                  size="icon"
-                  onClick={toggleListening}
-                  disabled={isLoading}
-                  title={isListening ? "Detener grabación" : "Hablar"}
-                  className={isListening ? "animate-pulse" : ""}
-                >
-                  {isListening ? (
-                    <MicOff className="h-4 w-4" />
-                  ) : (
-                    <Mic className="h-4 w-4" />
-                  )}
-                </Button>
-              )}
+              {/* Voice Input Button - always show for debugging */}
+              <Button
+                variant={isListening ? "destructive" : "outline"}
+                size="icon"
+                onClick={() => {
+                  console.log('Mic button clicked, voiceSupported:', voiceSupported, 'isListening:', isListening);
+                  if (!voiceSupported) {
+                    toast.error('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.');
+                    return;
+                  }
+                  toggleListening();
+                }}
+                disabled={isLoading}
+                title={!voiceSupported ? "Reconocimiento de voz no soportado" : isListening ? "Detener grabación" : "Hablar"}
+                className={`${isListening ? "animate-pulse" : ""} ${!voiceSupported ? "opacity-50" : ""}`}
+              >
+                {isListening ? (
+                  <MicOff className="h-4 w-4" />
+                ) : (
+                  <Mic className="h-4 w-4" />
+                )}
+              </Button>
               
               <Input
                 value={input}
@@ -712,6 +755,13 @@ export function InternalAssistantChat() {
             {isListening && (
               <p className="text-xs text-muted-foreground mt-2 text-center animate-pulse">
                 🎙️ Grabando... Habla ahora
+              </p>
+            )}
+            
+            {/* Debug info */}
+            {!voiceSupported && (
+              <p className="text-xs text-muted-foreground mt-2 text-center">
+                ⚠️ Reconocimiento de voz no disponible. Usa Chrome, Edge o Safari.
               </p>
             )}
             
