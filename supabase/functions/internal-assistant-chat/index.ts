@@ -32,12 +32,133 @@ function detectSensitiveContent(text: string): boolean {
   return SENSITIVE_KEYWORDS.some(keyword => lowerText.includes(keyword));
 }
 
+// ObelixIA Help Knowledge Base - Full system documentation
+const OBELIXIA_HELP_KNOWLEDGE = `
+## SOBRE OBELIXIA
+
+ObelixIA es un CRM Bancario Inteligente diseñado específicamente para la gestión de carteras de clientes empresariales en entidades financieras. Combina tecnologías de vanguardia con cumplimiento normativo europeo.
+
+### ARQUITECTURA DE SOFTWARE
+- **Frontend**: React 19 + TypeScript + Vite
+- **Estilos**: Tailwind CSS + Shadcn/UI
+- **Estado**: TanStack Query (Caché inteligente)
+- **Backend**: Supabase (PostgreSQL + Auth + Edge Functions)
+- **IA**: Lovable AI Gateway (Gemini 2.5 Flash/Pro)
+- **Mapas**: MapLibre GL + OpenStreetMap + Supercluster
+
+### SEGURIDAD IMPLEMENTADA
+- Autenticación WebAuthn/FIDO2 (Passkeys)
+- MFA obligatorio para administradores
+- Cifrado AES-256-GCM para datos sensibles
+- RLS (Row-Level Security) en base de datos
+- Audit logging completo
+- Biometría comportamental (PSD3)
+- Detección AML/Fraude contextual
+
+### MÓDULOS PRINCIPALES
+
+1. **Mapa GIS Empresarial** (100% compliant)
+   - Clustering dinámico para 20,000+ empresas
+   - Capas: OSM, Satélite, 3D
+   - Coloración por estado, vinculación, P&L, visitas
+   - Planificación de rutas optimizadas
+
+2. **Gestión de Empresas** (100% compliant)
+   - Datos de empresa (CIF, CNAE, dirección)
+   - Contactos múltiples, documentos, fotos
+   - Afiliaciones bancarias y TPVs
+
+3. **Fichas de Visita** (100% compliant - MiFID II, PSD2)
+   - 12 secciones: diagnóstico, necesidades, propuesta valor
+   - Firma digital y resumen IA automático
+
+4. **Pipeline Oportunidades** (100% compliant)
+   - Tablero Kanban drag-and-drop
+   - Estados: Lead, Cualificado, Propuesta, Negociación
+
+5. **Módulo Contable** (100% compliant - IFRS 9, Basel III)
+   - Balance, cuenta resultados, flujos efectivo
+   - Importación PDF con OCR inteligente
+   - Chat RAG financiero con IA
+
+6. **Objetivos y Metas** (100% compliant)
+   - Seguimiento en tiempo real
+   - Alertas de objetivos en riesgo
+
+7. **Análisis RFM + ML** (100% compliant - AI Act)
+   - Segmentos: Champions, Loyal, At Risk, Lost
+   - Predicción de churn y CLV
+
+8. **DORA/NIS2 Compliance** (100% compliant)
+   - Gestión de incidentes, tests resiliencia
+   - Simulaciones de estrés automatizadas
+
+9. **Asistente IA Interno** (100% compliant - AI Act, GDPR)
+   - Consultas por texto y voz
+   - Base de conocimiento actualizable
+
+10. **Sistema de Notificaciones** (100% compliant)
+    - 8 canales predefinidos
+    - Webhooks para integraciones
+
+### ESTADO DE CUMPLIMIENTO NORMATIVO
+- ISO 27001: 95% (108/114 controles)
+- GDPR/RGPD: 100%
+- DORA: 100%
+- NIS2: 100%
+- PSD2/PSD3: 100%
+- eIDAS 2.0: 90%
+- OWASP Top 10: 100%
+- Basel III/IV: 100%
+- MiFID II: 100%
+- APDA Andorra: 100%
+- AI Act (EU): 92%
+
+### MENÚS POR ROL
+
+**Director Comercial**: Dashboard Unificado, Métricas por Gestor/Oficina, Objetivos Globales, Pipeline, Análisis RFM/ML, Administración Completa
+
+**Director de Oficina**: Dashboard Oficina, Métricas de Gestores, Objetivos por Gestor, Calendario Oficina, Auditoría de Gestores
+
+**Responsable Comercial**: Dashboard Comercial, Seguimiento Equipos, Objetivos Comerciales, Pipeline, Análisis RFM, Administración
+
+**Gestor**: Mi Dashboard, Mis Empresas, Mapa Cartera, Fichas de Visita, Mis Objetivos, Calendario Personal
+
+**Auditor**: Dashboard Auditoría, Logs de Auditoría, Fichas de Visita (solo lectura), Informes KPI, Normativa
+
+### PREGUNTAS FRECUENTES
+
+**¿Cómo veo mis empresas?** - Accede al Mapa desde el menú lateral o desde la tarjeta "Mapa" en tu dashboard.
+
+**¿Cómo registro una visita?** - Desde dashboard pulsa "Crear Ficha" o Visitas > Nueva Ficha. Completa las 12 secciones.
+
+**¿Puedo trabajar offline?** - Sí, ObelixIA tiene capacidad offline. Los cambios se sincronizan al reconectar.
+
+**¿Qué significan los colores del mapa?** - Dependen del modo: Estado (verde=activo), Vinculación (gradiente %), P&L (verde=beneficios), Visitas (frecuencia).
+
+**¿Cómo importo datos contables?** - En Contabilidad, selecciona empresa y ejercicio. Usa "Importar PDF" para extracción automática por IA.
+
+**¿Quién puede ver mis datos?** - Gestores solo ven sus empresas. Directores ven su oficina o global según rol. Auditores tienen solo lectura.
+
+**¿Cómo funciona el análisis RFM?** - Clasifica clientes por Recencia, Frecuencia y valor Monetario en grupos como Champions, Loyal, At Risk.
+
+**¿Cómo se garantiza la seguridad?** - Cifrado AES-256, WebAuthn/Passkeys, MFA obligatorio, RLS, audit logging, cumplimiento GDPR/DORA/ISO27001.
+`;
+
 async function getContextData(supabase: any, contextType: string, userQuery: string): Promise<string> {
   let contextData = '';
   
+  // Always include ObelixIA help knowledge for system-related queries
+  const helpKeywords = ['obelixia', 'ayuda', 'help', 'módulo', 'función', 'cómo', 'qué es', 'para qué', 'normativa', 'cumplimiento', 'compliance', 'seguridad', 'menú', 'rol'];
+  const queryLower = userQuery.toLowerCase();
+  const isHelpQuery = helpKeywords.some(kw => queryLower.includes(kw));
+  
+  if (isHelpQuery) {
+    contextData += '\n\nCONOCIMIENTO DEL SISTEMA OBELIXIA:\n' + OBELIXIA_HELP_KNOWLEDGE;
+  }
+  
   try {
     if (contextType === 'clients') {
-      // Search companies based on query
       const { data: companies } = await supabase
         .from('companies')
         .select('name, sector, address, phone, email, cnae, facturacion_anual, client_type')
@@ -45,7 +166,7 @@ async function getContextData(supabase: any, contextType: string, userQuery: str
         .limit(5);
       
       if (companies && companies.length > 0) {
-        contextData = `\n\nDATOS DE CLIENTES ENCONTRADOS:\n${JSON.stringify(companies, null, 2)}`;
+        contextData += `\n\nDATOS DE CLIENTES ENCONTRADOS:\n${JSON.stringify(companies, null, 2)}`;
       }
     } else if (contextType === 'products') {
       const { data: products } = await supabase
@@ -55,7 +176,7 @@ async function getContextData(supabase: any, contextType: string, userQuery: str
         .limit(20);
       
       if (products && products.length > 0) {
-        contextData = `\n\nPRODUCTOS BANCARIOS DISPONIBLES:\n${JSON.stringify(products, null, 2)}`;
+        contextData += `\n\nPRODUCTOS BANCARIOS DISPONIBLES:\n${JSON.stringify(products, null, 2)}`;
       }
     }
     
@@ -198,6 +319,16 @@ function buildSystemPrompt(userRole: string, contextType: string, userOffice?: s
 - Normativas bancarias (Andorra, España, Europa)
 - Productos y servicios bancarios
 - Procedimientos internos
+- INFORMACIÓN SOBRE OBELIXIA: arquitectura, módulos, funcionalidades, cumplimiento normativo, menús por rol, FAQs
+
+CAPACIDAD ESPECIAL - CONOCIMIENTO DEL SISTEMA:
+Tienes acceso completo a la documentación de ObelixIA incluyendo:
+- Arquitectura de software y hardware
+- Todos los módulos y sus funcionalidades
+- Estado de cumplimiento de cada normativa (ISO 27001, GDPR, DORA, NIS2, etc.)
+- Estructura de menús por rol de usuario
+- Preguntas frecuentes y respuestas
+Cuando el usuario pregunte sobre ObelixIA, cómo funciona, qué hace, módulos, normativas, etc., usa el conocimiento del sistema proporcionado en el contexto.
 
 REGLAS DE SEGURIDAD Y COMPLIANCE:
 1. NUNCA proporciones datos personales sensibles (DNI, números de cuenta completos, contraseñas)
@@ -219,13 +350,16 @@ NORMATIVAS APLICABLES:
 - MiFID II: Mercados financieros
 - Basel III/IV: Requisitos de capital
 - DORA: Resiliencia operativa digital
+- ISO 27001: Sistema de gestión de seguridad
+- AI Act: Regulación europea de IA
 
 FORMATO DE RESPUESTA:
 - Sé conciso y directo
 - Usa viñetas cuando sea apropiado
 - Cita normativas específicas cuando aplique
 - Indica siempre si la información requiere verificación adicional
-- Responde en el mismo idioma que la pregunta del usuario`;
+- Responde en el mismo idioma que la pregunta del usuario
+- Cuando expliques funcionalidades de ObelixIA, sé detallado y preciso`;
 
   const roleSpecificContext = getRoleContext(userRole);
   
