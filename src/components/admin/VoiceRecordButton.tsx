@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Mic, Square, Loader2 } from 'lucide-react';
+import { Mic, MicOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -16,7 +16,7 @@ export function VoiceRecordButton({
   className 
 }: VoiceRecordButtonProps) {
   const [isRecording, setIsRecording] = useState(false);
-  const [isPressing, setIsPressing] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [duration, setDuration] = useState(0);
   const [error, setError] = useState<string | null>(null);
   
@@ -24,7 +24,6 @@ export function VoiceRecordButton({
   const audioChunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const isRecordingRef = useRef(false);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -37,8 +36,6 @@ export function VoiceRecordButton({
   }, []);
 
   const startRecording = useCallback(async () => {
-    if (isRecordingRef.current) return;
-    
     try {
       setError(null);
       audioChunksRef.current = [];
@@ -84,8 +81,10 @@ export function VoiceRecordButton({
           const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
           console.log('[VoiceRecord] Audio blob size:', audioBlob.size);
           
-          if (audioBlob.size > 1000) { // Only process if we have substantial audio
+          if (audioBlob.size > 1000) {
+            setIsProcessing(true);
             onRecordingComplete(audioBlob);
+            setTimeout(() => setIsProcessing(false), 3000);
           } else {
             toast.info('Grabación muy corta, intenta hablar más tiempo');
           }
@@ -97,19 +96,19 @@ export function VoiceRecordButton({
           streamRef.current = null;
         }
         
-        isRecordingRef.current = false;
         setIsRecording(false);
+        setDuration(0);
       };
 
       mediaRecorder.onerror = (event) => {
         console.error('[VoiceRecord] MediaRecorder error:', event);
         setError('Error durante la grabación');
         toast.error('Error durante la grabación');
+        setIsRecording(false);
       };
 
       // Start recording
       mediaRecorder.start(100);
-      isRecordingRef.current = true;
       setIsRecording(true);
       setDuration(0);
       
@@ -119,6 +118,7 @@ export function VoiceRecordButton({
       }, 1000);
       
       console.log('[VoiceRecord] Recording started');
+      toast.success('Grabando... Click de nuevo para parar');
       
     } catch (err) {
       console.error('[VoiceRecord] Error:', err);
@@ -134,7 +134,6 @@ export function VoiceRecordButton({
       
       setError(errorMsg);
       toast.error(errorMsg);
-      isRecordingRef.current = false;
       setIsRecording(false);
     }
   }, [onRecordingComplete]);
@@ -152,30 +151,13 @@ export function VoiceRecordButton({
     }
   }, []);
 
-  const handleMouseDown = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    if (disabled) return;
-    
-    setIsPressing(true);
-    startRecording();
-  }, [disabled, startRecording]);
-
-  const handleMouseUp = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    if (!isPressing) return;
-    
-    setIsPressing(false);
-    if (isRecordingRef.current) {
+  const toggleRecording = useCallback(() => {
+    if (isRecording) {
       stopRecording();
+    } else {
+      startRecording();
     }
-  }, [isPressing, stopRecording]);
-
-  const handleMouseLeave = useCallback(() => {
-    if (isPressing && isRecordingRef.current) {
-      setIsPressing(false);
-      stopRecording();
-    }
-  }, [isPressing, stopRecording]);
+  }, [isRecording, startRecording, stopRecording]);
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -183,27 +165,38 @@ export function VoiceRecordButton({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  if (isProcessing) {
+    return (
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        disabled
+        className={cn("relative", className)}
+        title="Procesando..."
+      >
+        <Loader2 className="h-4 w-4 animate-spin" />
+      </Button>
+    );
+  }
+
   return (
     <div className="flex items-center gap-2">
       <Button
         type="button"
         variant={isRecording ? "destructive" : "outline"}
         size="icon"
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
-        onTouchStart={handleMouseDown}
-        onTouchEnd={handleMouseUp}
+        onClick={toggleRecording}
         disabled={disabled}
-        title="Mantén presionado para grabar"
+        title={isRecording ? "Click para parar" : "Click para grabar"}
         className={cn(
-          "touch-none select-none transition-all",
+          "transition-all",
           isRecording && "animate-pulse ring-2 ring-destructive ring-offset-2",
           className
         )}
       >
         {isRecording ? (
-          <Square className="h-4 w-4 fill-current" />
+          <MicOff className="h-4 w-4" />
         ) : (
           <Mic className="h-4 w-4" />
         )}
