@@ -533,13 +533,14 @@ export function ApplicationStateAnalyzer() {
       
       const doc = new jsPDF('p', 'mm', 'a4');
       
-      // Set default font for entire document
-      doc.setFont('helvetica', 'normal');
+      // Set default fonts - Times for body (professional), Helvetica for headers
+      doc.setFont('times', 'normal');
       
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
       const margin = 15;
       const contentWidth = pageWidth - 2 * margin;
+      const lineHeight = 5; // Standard line height for body text
       
       // Sanitize text for PDF - handle accented characters and unicode
       const sanitizeText = (text: string): string => {
@@ -826,17 +827,28 @@ export function ApplicationStateAnalyzer() {
       
       let yPos = 40;
       
-      // Executive summary text
+      // Executive summary text - formatted with better typography
       if (improvementsAnalysis?.summary) {
-        doc.setFillColor(...colors.light);
-        doc.roundedRect(margin, yPos, contentWidth, 60, 3, 3, 'F');
-        doc.setTextColor(...colors.dark);
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'normal');
+        doc.setFillColor(248, 250, 252);
+        doc.roundedRect(margin, yPos, contentWidth, 70, 4, 4, 'F');
+        
+        // Add left accent bar
+        doc.setFillColor(...colors.primary);
+        doc.rect(margin, yPos, 3, 70, 'F');
+        
+        doc.setTextColor(51, 65, 85);
+        doc.setFontSize(10);
+        doc.setFont('times', 'normal');
         const sanitizedSummary = sanitizeText(improvementsAnalysis.summary);
-        const summaryLines = doc.splitTextToSize(sanitizedSummary, contentWidth - 10);
-        doc.text(summaryLines.slice(0, 15), margin + 5, yPos + 8);
-        yPos += 70;
+        const summaryLines = doc.splitTextToSize(sanitizedSummary, contentWidth - 15);
+        
+        // Add lines with proper spacing
+        let textY = yPos + 10;
+        summaryLines.slice(0, 12).forEach((line: string) => {
+          doc.text(line, margin + 8, textY);
+          textY += lineHeight;
+        });
+        yPos += 80;
       }
       
       // Statistics section
@@ -910,14 +922,14 @@ export function ApplicationStateAnalyzer() {
             overflow: 'linebreak',
           },
           bodyStyles: {
-            fontSize: 9,
+            fontSize: 10,
             textColor: colors.dark,
-            font: 'helvetica',
+            font: 'times',
             overflow: 'linebreak',
           },
           styles: {
-            font: 'helvetica',
-            cellPadding: 4,
+            font: 'times',
+            cellPadding: 5,
             overflow: 'linebreak',
           },
           alternateRowStyles: {
@@ -976,13 +988,13 @@ export function ApplicationStateAnalyzer() {
             font: 'helvetica',
           },
           bodyStyles: {
-            fontSize: 9,
+            fontSize: 10,
             textColor: colors.dark,
-            font: 'helvetica',
+            font: 'times',
           },
           styles: {
-            font: 'helvetica',
-            cellPadding: 4,
+            font: 'times',
+            cellPadding: 5,
           },
           columnStyles: {
             0: { cellWidth: 10, halign: 'center', textColor: colors.secondary },
@@ -1027,22 +1039,15 @@ export function ApplicationStateAnalyzer() {
             fontSize: 10,
             font: 'helvetica',
             halign: 'center',
-            overflow: 'linebreak',
           },
           bodyStyles: {
-            fontSize: 9,
+            fontSize: 10,
             textColor: colors.dark,
-            font: 'helvetica',
-            overflow: 'linebreak',
+            font: 'times',
           },
           styles: {
-            font: 'helvetica',
-            cellPadding: 4,
-            overflow: 'linebreak',
-            cellWidth: 'wrap',
-          },
-          alternateRowStyles: {
-            fillColor: [250, 245, 255],
+            font: 'times',
+            cellPadding: 5,
           },
           columnStyles: {
             0: { cellWidth: 70, halign: 'left' },
@@ -1073,7 +1078,7 @@ export function ApplicationStateAnalyzer() {
       doc.setTextColor(...colors.white);
       doc.setFontSize(16);
       doc.setFont('helvetica', 'bold');
-      doc.text('6. TENDÈNCIES TECNOLÒGIQUES', margin, 17);
+      doc.text('6. TENDENCIES TECNOLOGIQUES', margin, 17);
       
       yPos = 35;
       
@@ -1085,14 +1090,14 @@ export function ApplicationStateAnalyzer() {
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(...colors.secondary);
-        doc.text(`INSTAL·LADES (${trendsInstalled.length})`, margin, yPos);
+        doc.text(`INSTALLADES (${trendsInstalled.length})`, margin, yPos);
         yPos += 8;
         
         const installedData = trendsInstalled.slice(0, 10).map((t) => [
           `#${t.number}`,
           sanitizeText(t.name),
           sanitizeText(t.relevance || 'Alta'),
-          'v'
+          'OK'
         ]);
         
         if (installedData.length > 0) {
@@ -1108,17 +1113,14 @@ export function ApplicationStateAnalyzer() {
               fontSize: 10,
               font: 'helvetica',
               halign: 'center',
-              overflow: 'linebreak',
             },
             bodyStyles: {
-              fontSize: 9,
-              font: 'helvetica',
-              overflow: 'linebreak',
+              fontSize: 10,
+              font: 'times',
             },
             styles: {
-              font: 'helvetica',
-              cellPadding: 4,
-              overflow: 'linebreak',
+              font: 'times',
+              cellPadding: 5,
             },
             columnStyles: {
               0: { cellWidth: 18, halign: 'center' },
@@ -1159,17 +1161,14 @@ export function ApplicationStateAnalyzer() {
               fontSize: 10,
               font: 'helvetica',
               halign: 'center',
-              overflow: 'linebreak',
             },
             bodyStyles: {
-              fontSize: 9,
-              font: 'helvetica',
-              overflow: 'linebreak',
+              fontSize: 10,
+              font: 'times',
             },
             styles: {
-              font: 'helvetica',
-              cellPadding: 4,
-              overflow: 'linebreak',
+              font: 'times',
+              cellPadding: 5,
             },
             columnStyles: {
               0: { cellWidth: 18, halign: 'center' },
@@ -1222,14 +1221,12 @@ export function ApplicationStateAnalyzer() {
             overflow: 'linebreak',
           },
           bodyStyles: {
-            fontSize: 9,
-            font: 'helvetica',
-            overflow: 'linebreak',
+            fontSize: 10,
+            font: 'times',
           },
           styles: {
-            font: 'helvetica',
-            cellPadding: 4,
-            overflow: 'linebreak',
+            font: 'times',
+            cellPadding: 5,
           },
           columnStyles: {
             0: { cellWidth: 15, halign: 'center' },
@@ -1291,14 +1288,12 @@ export function ApplicationStateAnalyzer() {
             overflow: 'linebreak',
           },
           bodyStyles: {
-            fontSize: 9,
-            font: 'helvetica',
-            overflow: 'linebreak',
+            fontSize: 10,
+            font: 'times',
           },
           styles: {
-            font: 'helvetica',
-            cellPadding: 4,
-            overflow: 'linebreak',
+            font: 'times',
+            cellPadding: 5,
           },
           columnStyles: {
             0: { cellWidth: 18, halign: 'center' },
@@ -1358,14 +1353,12 @@ export function ApplicationStateAnalyzer() {
             overflow: 'linebreak',
           },
           bodyStyles: {
-            fontSize: 9,
-            font: 'helvetica',
-            overflow: 'linebreak',
+            fontSize: 10,
+            font: 'times',
           },
           styles: {
-            font: 'helvetica',
-            cellPadding: 4,
-            overflow: 'linebreak',
+            font: 'times',
+            cellPadding: 5,
           },
           columnStyles: {
             0: { cellWidth: 18, halign: 'center' },
@@ -1395,13 +1388,13 @@ export function ApplicationStateAnalyzer() {
       doc.setFont('helvetica', 'bold');
       doc.text('RESUM FINAL', margin + 5, yPos + 10);
       
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setFont('times', 'normal');
       const finalStats = [
-        `• Completitud Global: ${overallCompletion}%`,
-        `• Mòduls Completats: ${codebaseAnalysis?.modules?.filter(m => m.completionPercentage >= 90).length || 0}/${codebaseAnalysis?.modules?.length || 0}`,
-        `• Controls de Seguretat: ${codebaseAnalysis?.securityFindings?.length || 0}`,
-        `• Normatives Complertes: ${improvementsAnalysis?.complianceRegulations?.filter(r => r.status === 'compliant').length || 0}/${improvementsAnalysis?.complianceRegulations?.length || 0}`,
+        'Completitud Global: ' + overallCompletion + '%',
+        'Moduls Completats: ' + (codebaseAnalysis?.modules?.filter(m => m.completionPercentage >= 90).length || 0) + '/' + (codebaseAnalysis?.modules?.length || 0),
+        'Controls de Seguretat: ' + (codebaseAnalysis?.securityFindings?.length || 0),
+        'Normatives Complertes: ' + (improvementsAnalysis?.complianceRegulations?.filter(r => r.status === 'compliant').length || 0) + '/' + (improvementsAnalysis?.complianceRegulations?.length || 0),
       ];
       doc.text(finalStats, margin + 5, yPos + 20);
 
