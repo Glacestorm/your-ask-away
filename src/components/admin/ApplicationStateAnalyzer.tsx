@@ -541,6 +541,49 @@ export function ApplicationStateAnalyzer() {
       const margin = 15;
       const contentWidth = pageWidth - 2 * margin;
       
+      // Sanitize text for PDF (remove unicode that jsPDF can't handle)
+      const sanitizeText = (text: string): string => {
+        if (!text) return '';
+        return text
+          .replace(/✅/g, '[OK]')
+          .replace(/⏳/g, '[PEND]')
+          .replace(/✓/g, 'v')
+          .replace(/○/g, 'o')
+          .replace(/•/g, '-')
+          .replace(/→/g, '->')
+          .replace(/←/g, '<-')
+          .replace(/★/g, '*')
+          .replace(/☆/g, '*')
+          .replace(/✔/g, 'v')
+          .replace(/✘/g, 'x')
+          .replace(/❌/g, '[X]')
+          .replace(/⚠/g, '[!]')
+          .replace(/🔒/g, '[LOCK]')
+          .replace(/🔓/g, '[UNLOCK]')
+          .replace(/📊/g, '')
+          .replace(/📈/g, '')
+          .replace(/📉/g, '')
+          .replace(/💡/g, '')
+          .replace(/🚀/g, '')
+          .replace(/⚡/g, '')
+          .replace(/🔥/g, '')
+          .replace(/✨/g, '')
+          .replace(/🎯/g, '')
+          .replace(/📋/g, '')
+          .replace(/📁/g, '')
+          .replace(/📂/g, '')
+          .replace(/🔧/g, '')
+          .replace(/⚙/g, '')
+          .replace(/🛡/g, '')
+          .replace(/🏦/g, '')
+          .replace(/💼/g, '')
+          .replace(/📱/g, '')
+          .replace(/💻/g, '')
+          .replace(/🌐/g, '')
+          .replace(/[^\x00-\x7F]/g, '') // Remove any remaining non-ASCII
+          .trim();
+      };
+      
       // Color palette
       const colors = {
         primary: [30, 64, 175] as [number, number, number],      // Blue
@@ -720,7 +763,8 @@ export function ApplicationStateAnalyzer() {
         doc.setTextColor(...colors.dark);
         doc.setFontSize(9);
         doc.setFont('helvetica', 'normal');
-        const summaryLines = doc.splitTextToSize(improvementsAnalysis.summary, contentWidth - 10);
+        const sanitizedSummary = sanitizeText(improvementsAnalysis.summary);
+        const summaryLines = doc.splitTextToSize(sanitizedSummary, contentWidth - 10);
         doc.text(summaryLines.slice(0, 15), margin + 5, yPos + 8);
         yPos += 70;
       }
@@ -776,9 +820,9 @@ export function ApplicationStateAnalyzer() {
       if (codebaseAnalysis?.modules && Array.isArray(codebaseAnalysis.modules)) {
         const moduleData = codebaseAnalysis.modules.map((m, idx) => [
           String(idx + 1),
-          m.name || 'N/A',
+          sanitizeText(m.name || 'N/A'),
           `${m.completionPercentage || 0}%`,
-          m.businessValue || 'Alt'
+          sanitizeText(m.businessValue || 'Alt')
         ]);
         
         autoTable(doc, {
@@ -839,9 +883,9 @@ export function ApplicationStateAnalyzer() {
       yPos = 35;
       
       if (codebaseAnalysis?.securityFindings && codebaseAnalysis.securityFindings.length > 0) {
-        const securityData = codebaseAnalysis.securityFindings.map((finding, idx) => [
-          '✓',
-          String(finding)
+        const securityData = codebaseAnalysis.securityFindings.map((finding) => [
+          'v',
+          sanitizeText(String(finding))
         ]);
         
         autoTable(doc, {
@@ -890,10 +934,10 @@ export function ApplicationStateAnalyzer() {
       
       if (improvementsAnalysis?.complianceRegulations && improvementsAnalysis.complianceRegulations.length > 0) {
         const complianceData = improvementsAnalysis.complianceRegulations.map((reg) => [
-          reg.name || 'N/A',
+          sanitizeText(reg.name || 'N/A'),
           reg.status === 'compliant' ? 'COMPLERT' : reg.status === 'partial' ? 'PARCIAL' : 'PENDENT',
           `${reg.compliancePercentage || (reg.status === 'compliant' ? 100 : 80)}%`,
-          reg.jurisdiction || 'EU'
+          sanitizeText(reg.jurisdiction || 'EU')
         ]);
         
         autoTable(doc, {
@@ -965,9 +1009,9 @@ export function ApplicationStateAnalyzer() {
         
         const installedData = trendsInstalled.slice(0, 10).map((t) => [
           `#${t.number}`,
-          t.name,
-          t.relevance || 'Alta',
-          '✓'
+          sanitizeText(t.name),
+          sanitizeText(t.relevance || 'Alta'),
+          'v'
         ]);
         
         if (installedData.length > 0) {
@@ -1012,9 +1056,9 @@ export function ApplicationStateAnalyzer() {
           
           const pendingData = trendsPending.slice(0, 5).map((t) => [
             `#${t.number}`,
-            t.name,
-            t.relevance || 'Mitjana',
-            '○'
+            sanitizeText(t.name),
+            sanitizeText(t.relevance || 'Mitjana'),
+            'o'
           ]);
           
           autoTable(doc, {
@@ -1066,10 +1110,10 @@ export function ApplicationStateAnalyzer() {
       if (improvementsAnalysis?.improvements && improvementsAnalysis.improvements.length > 0) {
         const improvementData = improvementsAnalysis.improvements.slice(0, 15).map((imp, idx) => [
           String(idx + 1),
-          imp.title || 'N/A',
+          sanitizeText(imp.title || 'N/A'),
           (imp.priority || 'media').toUpperCase(),
-          imp.effort || 'N/A',
-          imp.impact || 'N/A'
+          sanitizeText(imp.effort || 'N/A'),
+          sanitizeText(imp.impact || 'N/A')
         ]);
         
         autoTable(doc, {
@@ -1127,11 +1171,11 @@ export function ApplicationStateAnalyzer() {
       
       if (improvementsAnalysis?.aiIntegrations && improvementsAnalysis.aiIntegrations.length > 0) {
         const aiData = improvementsAnalysis.aiIntegrations.map((ai, idx) => {
-          const text = String(ai);
-          const isInstalled = text.includes('✅ INSTAL·LAT');
+          const text = sanitizeText(String(ai));
+          const isInstalled = String(ai).includes('[OK] INSTALLAT') || String(ai).includes('INSTAL');
           return [
             String(idx + 1),
-            text.replace('✅ INSTAL·LAT:', '').replace('⏳ PENDENT:', '').trim(),
+            text.replace('[OK] INSTALLAT:', '').replace('[PEND] PENDENT:', '').replace('INSTAL.LAT:', '').replace('PENDENT:', '').trim(),
             isInstalled ? 'ACTIU' : 'PENDENT'
           ];
         });
@@ -1189,11 +1233,11 @@ export function ApplicationStateAnalyzer() {
       
       if (improvementsAnalysis?.performanceOptimizations && improvementsAnalysis.performanceOptimizations.length > 0) {
         const perfData = improvementsAnalysis.performanceOptimizations.map((opt, idx) => {
-          const text = String(opt);
-          const isInstalled = text.includes('✅ INSTAL·LAT');
+          const text = sanitizeText(String(opt));
+          const isInstalled = String(opt).includes('[OK] INSTALLAT') || String(opt).includes('INSTAL');
           return [
             String(idx + 1),
-            text.replace('✅ INSTAL·LAT:', '').replace('⏳ PENDENT:', '').trim(),
+            text.replace('[OK] INSTALLAT:', '').replace('[PEND] PENDENT:', '').replace('INSTAL.LAT:', '').replace('PENDENT:', '').trim(),
             isInstalled ? 'ACTIU' : 'PENDENT'
           ];
         });
