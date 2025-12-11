@@ -710,21 +710,49 @@ export function InternalAssistantChat() {
             )}
             
             <div className="flex gap-2">
-              {/* Voice Input Button - always show for debugging */}
+              {/* Voice Input Button - press and hold to record */}
               <Button
                 variant={isListening ? "destructive" : "outline"}
                 size="icon"
-                onClick={() => {
-                  console.log('Mic button clicked, voiceSupported:', voiceSupported, 'isListening:', isListening);
+                onMouseDown={() => {
+                  console.log('Mic button pressed, voiceSupported:', voiceSupported);
                   if (!voiceSupported) {
                     toast.error('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.');
                     return;
                   }
+                  setVoiceError(null);
                   toggleListening();
                 }}
+                onMouseUp={() => {
+                  console.log('Mic button released, isListening:', isListening);
+                  if (isListening) {
+                    toggleListening();
+                  }
+                }}
+                onMouseLeave={() => {
+                  // Stop if mouse leaves button while pressing
+                  if (isListening) {
+                    toggleListening();
+                  }
+                }}
+                onTouchStart={() => {
+                  console.log('Mic touch start, voiceSupported:', voiceSupported);
+                  if (!voiceSupported) {
+                    toast.error('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.');
+                    return;
+                  }
+                  setVoiceError(null);
+                  toggleListening();
+                }}
+                onTouchEnd={() => {
+                  console.log('Mic touch end, isListening:', isListening);
+                  if (isListening) {
+                    toggleListening();
+                  }
+                }}
                 disabled={isLoading}
-                title={!voiceSupported ? "Reconocimiento de voz no soportado" : isListening ? "Detener grabación" : "Hablar"}
-                className={`${isListening ? "animate-pulse" : ""} ${!voiceSupported ? "opacity-50" : ""}`}
+                title={!voiceSupported ? "Reconocimiento de voz no soportado" : "Mantén presionado para hablar"}
+                className={`${isListening ? "animate-pulse bg-destructive" : ""} ${!voiceSupported ? "opacity-50" : ""}`}
               >
                 {isListening ? (
                   <MicOff className="h-4 w-4" />
