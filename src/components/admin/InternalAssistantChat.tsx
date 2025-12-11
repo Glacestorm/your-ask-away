@@ -8,13 +8,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Bot, Send, Loader2, AlertTriangle, Shield, MessageSquare,
   Building, FileText, Package, BookOpen, History, Trash2, RotateCcw,
-  Mic, MicOff, Volume2, VolumeX, ClipboardList, Users, Settings
+  Volume2, VolumeX, ClipboardList, Users, Settings
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { useVoiceChat } from '@/hooks/useVoiceChat';
 import { AssistantKnowledgeManager } from './AssistantKnowledgeManager';
+import { VoiceRecordButton } from './VoiceRecordButton';
+import { ChatFileUpload, UploadedFile } from './ChatFileUpload';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,7 +35,8 @@ interface Message {
   sources?: string[];
   isSensitive?: boolean;
   createdAt: Date;
-  inputMethod?: 'text' | 'voice';
+  inputMethod?: 'text' | 'voice' | 'file';
+  attachments?: { name: string; type: string; url?: string }[];
 }
 
 interface Conversation {
@@ -64,57 +66,81 @@ export function InternalAssistantChat() {
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [autoSpeak, setAutoSpeak] = useState(false);
   const [showKnowledgeManager, setShowKnowledgeManager] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const [pendingVoiceMessage, setPendingVoiceMessage] = useState(false);
-  const [voiceError, setVoiceError] = useState<string | null>(null);
+  // Text-to-speech state
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const synthRef = useRef<SpeechSynthesisUtterance | null>(null);
 
-  // Voice chat hook
-  const { 
-    isListening, 
-    isSpeaking, 
-    isSupported: voiceSupported,
-    transcript,
-    error: voiceChatError,
-    toggleListening,
-    speak,
-    stopSpeaking
-  } = useVoiceChat({
-    language: 'es-ES',
-    onTranscript: (text) => {
-      console.log('Voice transcript received:', text);
-      setInput(text);
-      setPendingVoiceMessage(true);
-    },
-  });
+  const speak = (text: string) => {
+    if (!window.speechSynthesis || !text) return;
+    
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'es-ES';
+    utterance.rate = 1.0;
+    
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+    
+    synthRef.current = utterance;
+    window.speechSynthesis.speak(utterance);
+  };
 
-  // Log voice support status on mount
-  useEffect(() => {
-    console.log('Voice chat support status:', voiceSupported);
-    console.log('SpeechRecognition available:', !!(window.SpeechRecognition || (window as any).webkitSpeechRecognition));
-    console.log('SpeechSynthesis available:', 'speechSynthesis' in window);
-  }, [voiceSupported]);
-
-  // Handle voice errors
-  useEffect(() => {
-    if (voiceChatError) {
-      console.error('Voice chat error:', voiceChatError);
-      if (voiceChatError === 'not-allowed' || voiceChatError === 'microphone-permission') {
-        setVoiceError('Permiso de micrófono denegado. Por favor, permite el acceso al micrófono.');
-        toast.error('Permiso de micrófono denegado');
-      } else if (voiceChatError === 'no-speech') {
-        setVoiceError('No se detectó ninguna voz. Intenta hablar más alto.');
-      } else if (voiceChatError === 'network') {
-        setVoiceError('Error de red. Verifica tu conexión.');
-      } else if (voiceChatError === 'not-supported') {
-        setVoiceError('Tu navegador no soporta reconocimiento de voz.');
-      } else {
-        setVoiceError(`Error: ${voiceChatError}`);
-      }
-    } else {
-      setVoiceError(null);
+  const stopSpeaking = () => {
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
     }
-  }, [voiceChatError]);
+  };
+
+  // Handle voice recording completion - transcribe audio
+  const handleVoiceRecordingComplete = async (audioBlob: Blob) => {
+    console.log('[VoiceChat] Recording complete, blob size:', audioBlob.size);
+    setIsTranscribing(true);
+    
+    try {
+      // Convert blob to base64
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve, reject) => {
+        reader.onload = () => {
+          const result = reader.result as string;
+          // Remove data URL prefix
+          const base64 = result.split(',')[1];
+          resolve(base64);
+        };
+        reader.onerror = reject;
+      });
+      reader.readAsDataURL(audioBlob);
+      
+      const base64Audio = await base64Promise;
+      console.log('[VoiceChat] Audio converted to base64, length:', base64Audio.length);
+      
+      // Call transcription edge function (using OpenAI Whisper)
+      const { data, error } = await supabase.functions.invoke('voice-to-text', {
+        body: { audio: base64Audio }
+      });
+      
+      if (error) throw error;
+      
+      if (data?.text) {
+        console.log('[VoiceChat] Transcription result:', data.text);
+        setInput(data.text);
+        toast.success('Audio transcrito correctamente');
+      } else {
+        toast.info('No se detectó texto en el audio');
+      }
+    } catch (error) {
+      console.error('[VoiceChat] Transcription error:', error);
+      toast.error('Error al transcribir el audio');
+    } finally {
+      setIsTranscribing(false);
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -127,21 +153,7 @@ export function InternalAssistantChat() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
-
-  // Update input when transcript changes
-  useEffect(() => {
-    if (transcript) {
-      setInput(transcript);
-    }
-  }, [transcript]);
-
-  // Auto-send when voice recording ends and we have a transcript
-  useEffect(() => {
-    if (!isListening && pendingVoiceMessage && input.trim()) {
-      sendVoiceMessage();
-      setPendingVoiceMessage(false);
-    }
-  }, [isListening, pendingVoiceMessage, input]);
+  
 
   const loadConversations = async () => {
     if (!user) return;
@@ -315,7 +327,7 @@ export function InternalAssistantChat() {
       await saveMessage(convId, assistantMessage);
 
       // Auto-speak response if enabled or if user sent voice message
-      if ((autoSpeak || inputMethod === 'voice') && voiceSupported) {
+      if (autoSpeak || inputMethod === 'voice') {
         speak(data.message);
       }
 
@@ -542,18 +554,16 @@ export function InternalAssistantChat() {
             </CardTitle>
             
             {/* Voice Controls */}
-            {voiceSupported && (
-              <div className="flex items-center gap-2">
-                <Button
-                  variant={autoSpeak ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setAutoSpeak(!autoSpeak)}
-                  title={autoSpeak ? "Desactivar respuestas por voz" : "Activar respuestas por voz"}
-                >
-                  {autoSpeak ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-                </Button>
-              </div>
-            )}
+            <div className="flex items-center gap-2">
+              <Button
+                variant={autoSpeak ? "default" : "outline"}
+                size="sm"
+                onClick={() => setAutoSpeak(!autoSpeak)}
+                title={autoSpeak ? "Desactivar respuestas por voz" : "Activar respuestas por voz"}
+              >
+                {autoSpeak ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+              </Button>
+            </div>
           </div>
           
           {/* Context Type Selector */}
@@ -595,7 +605,7 @@ export function InternalAssistantChat() {
                 <h3 className="text-lg font-medium">¡Hola! Soy tu asistente interno</h3>
                 <p className="text-sm max-w-md mt-2">
                   Puedo ayudarte a buscar información sobre clientes, normativas, productos, procedimientos y formularios. 
-                  {voiceSupported && ' También puedes hablarme usando el micrófono.'}
+                  También puedes hablarme usando el micrófono o adjuntar documentos.
                 </p>
                 <div className="grid grid-cols-2 gap-2 mt-4 max-w-lg">
                   <Button 
@@ -645,7 +655,7 @@ export function InternalAssistantChat() {
                       {/* Voice indicator for user messages */}
                       {message.role === 'user' && message.inputMethod === 'voice' && (
                         <div className="flex items-center gap-1 text-primary-foreground/70 text-xs mb-1">
-                          <Mic className="h-3 w-3" />
+                          <Bot className="h-3 w-3" />
                           <span>Mensaje de voz</span>
                         </div>
                       )}
@@ -666,7 +676,7 @@ export function InternalAssistantChat() {
                         </div>
                       )}
                       {/* Voice button for assistant messages */}
-                      {message.role === 'assistant' && voiceSupported && (
+                      {message.role === 'assistant' && (
                         <Button
                           variant="ghost"
                           size="sm"
@@ -701,77 +711,49 @@ export function InternalAssistantChat() {
           </ScrollArea>
 
           {/* Input Area */}
-          <div className="p-4 border-t">
-            {/* Voice error message */}
-            {voiceError && (
-              <div className="mb-2 p-2 bg-destructive/10 border border-destructive/30 rounded-md">
-                <p className="text-xs text-destructive">{voiceError}</p>
+          <div className="p-4 border-t space-y-3">
+            {/* File upload previews */}
+            {uploadedFiles.length > 0 && (
+              <ChatFileUpload
+                files={uploadedFiles}
+                onFilesChange={setUploadedFiles}
+                disabled={isLoading}
+              />
+            )}
+            
+            {/* Transcription status */}
+            {isTranscribing && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Transcribiendo audio...
               </div>
             )}
             
-            <div className="flex gap-2">
-              {/* Voice Input Button - press and hold to record */}
-              <Button
-                variant={isListening ? "destructive" : "outline"}
-                size="icon"
-                onMouseDown={() => {
-                  console.log('Mic button pressed, voiceSupported:', voiceSupported);
-                  if (!voiceSupported) {
-                    toast.error('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.');
-                    return;
-                  }
-                  setVoiceError(null);
-                  toggleListening();
-                }}
-                onMouseUp={() => {
-                  console.log('Mic button released, isListening:', isListening);
-                  if (isListening) {
-                    toggleListening();
-                  }
-                }}
-                onMouseLeave={() => {
-                  // Stop if mouse leaves button while pressing
-                  if (isListening) {
-                    toggleListening();
-                  }
-                }}
-                onTouchStart={() => {
-                  console.log('Mic touch start, voiceSupported:', voiceSupported);
-                  if (!voiceSupported) {
-                    toast.error('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.');
-                    return;
-                  }
-                  setVoiceError(null);
-                  toggleListening();
-                }}
-                onTouchEnd={() => {
-                  console.log('Mic touch end, isListening:', isListening);
-                  if (isListening) {
-                    toggleListening();
-                  }
-                }}
+            <div className="flex gap-2 items-end">
+              {/* Voice Record Button - press and hold */}
+              <VoiceRecordButton
+                onRecordingComplete={handleVoiceRecordingComplete}
+                disabled={isLoading || isTranscribing}
+              />
+              
+              {/* File upload button */}
+              <ChatFileUpload
+                files={uploadedFiles}
+                onFilesChange={setUploadedFiles}
                 disabled={isLoading}
-                title={!voiceSupported ? "Reconocimiento de voz no soportado" : "Mantén presionado para hablar"}
-                className={`${isListening ? "animate-pulse bg-destructive" : ""} ${!voiceSupported ? "opacity-50" : ""}`}
-              >
-                {isListening ? (
-                  <MicOff className="h-4 w-4" />
-                ) : (
-                  <Mic className="h-4 w-4" />
-                )}
-              </Button>
+              />
               
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder={isListening ? "Escuchando..." : "Escribe tu consulta..."}
-                disabled={isLoading}
+                placeholder="Escribe tu consulta..."
+                disabled={isLoading || isTranscribing}
                 className="flex-1"
               />
               <Button 
                 onClick={sendMessage} 
-                disabled={isLoading || !input.trim()}
+                disabled={isLoading || (!input.trim() && uploadedFiles.length === 0)}
               >
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -780,21 +762,9 @@ export function InternalAssistantChat() {
                 )}
               </Button>
             </div>
-            {isListening && (
-              <p className="text-xs text-muted-foreground mt-2 text-center animate-pulse">
-                🎙️ Grabando... Habla ahora
-              </p>
-            )}
-            
-            {/* Debug info */}
-            {!voiceSupported && (
-              <p className="text-xs text-muted-foreground mt-2 text-center">
-                ⚠️ Reconocimiento de voz no disponible. Usa Chrome, Edge o Safari.
-              </p>
-            )}
             
             {/* Legal Audit Notice */}
-            <div className="mt-3 pt-3 border-t border-muted">
+            <div className="pt-3 border-t border-muted">
               <p className="text-[10px] text-muted-foreground text-center leading-relaxed">
                 <Shield className="h-3 w-3 inline-block mr-1 align-middle" />
                 <strong>Aviso de Retención de Datos:</strong> De conformidad con el Reglamento (UE) 2016/679 (RGPD), la Llei 29/2021 de Protecció de Dades d'Andorra (APDA) y las normativas bancarias aplicables, 
