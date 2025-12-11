@@ -56,7 +56,7 @@ serve(async (req) => {
 
 Tu tarea es proporcionar sugerencias de mejoras actualizadas basándote en:
 - Las últimas tendencias en desarrollo web (React 19, Vite 6, TypeScript 5.5+)
-- Novedades en frameworks UI (Tailwind CSS 4, shadcn/ui, Radix)
+- Novedades en frameworks UI (Tailwind CSS 4)
 - Mejores prácticas de seguridad bancaria (OWASP 2024, DORA, PSD3)
 - Optimizaciones de rendimiento (Core Web Vitals, streaming SSR)
 - IA/ML para banca (LLMs, embeddings, RAG)
@@ -64,7 +64,17 @@ Tu tarea es proporcionar sugerencias de mejoras actualizadas basándote en:
 - APIs y estándares abiertos (Open Banking, PSD2/PSD3)
 - DevOps y CI/CD modernos
 
-IMPORTANTE: Responde SOLO con JSON válido sin markdown ni comentarios.`;
+TECNOLOGÍAS YA IMPLEMENTADAS AL 100% (NO SUGERIR):
+- shadcn/ui + Radix UI: 50+ componentes accesibles implementados en src/components/ui/
+- React Query/TanStack Query: caché y gestión de estado servidor
+- Supabase: base de datos, auth, edge functions, realtime
+- MapLibre GL: GIS con clustering Supercluster
+- WebAuthn/FIDO2: autenticación passwordless
+- Behavioral Biometrics: detección impostores
+- RAG/pgvector: chat IA financiero
+- DORA/NIS2 compliance dashboard
+
+IMPORTANTE: Responde SOLO con JSON válido sin markdown ni comentarios. NO sugieras migración a shadcn/ui o Radix UI porque ya están implementados.`;
 
     const userPrompt = `Analiza esta aplicación CRM bancaria y sugiere mejoras:
 
@@ -1293,6 +1303,36 @@ function getDefaultImprovements(): ImprovementsAnalysis & {
           "✅ Indicador visual de estado offline/online",
           "✅ Descarga manual de datos para offline",
           "✅ Service Worker con estrategias de cache"
+        ]
+      },
+      {
+        category: "ux",
+        title: "✅ shadcn/ui + Radix UI para componentes robustos y accesibles (IMPLEMENTADO 100%)",
+        description: "Biblioteca completa de 50+ componentes UI pre-construidos basados en Radix UI primitives con Tailwind CSS. Componentes accesibles (ARIA), personalizables, y estandarizados para aplicaciones bancarias enterprise.",
+        priority: "alta",
+        effort: "Completado",
+        impact: "Consistencia UI +100%, accesibilidad WCAG 2.1 AA",
+        source: "shadcn/ui documentation, Radix UI accessibility guidelines",
+        relatedTechnologies: ["Tailwind CSS", "Radix UI", "TypeScript", "React"],
+        implementationSteps: [
+          "✅ 50+ componentes en src/components/ui/",
+          "✅ Button con variants (default, destructive, outline, secondary, ghost, link)",
+          "✅ Card, Dialog, AlertDialog, Sheet, Drawer",
+          "✅ Form con react-hook-form + zod validation",
+          "✅ Select, Combobox, DatePicker, Calendar",
+          "✅ Table con sorting, filtering, pagination",
+          "✅ Tabs, Accordion, Collapsible",
+          "✅ Toast/Sonner para notificaciones",
+          "✅ Avatar, Badge, Tooltip, HoverCard",
+          "✅ DropdownMenu, ContextMenu, Menubar",
+          "✅ Progress, Slider, Switch, Checkbox, RadioGroup",
+          "✅ Input, Textarea, Label con estados de error",
+          "✅ Breadcrumb, NavigationMenu, Pagination",
+          "✅ Carousel con embla-carousel-react",
+          "✅ Command palette con cmdk",
+          "✅ Chart components con Recharts",
+          "✅ Tema claro/oscuro con CSS variables",
+          "✅ Totalmente tipado con TypeScript"
         ]
       }
     ],
