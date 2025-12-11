@@ -27,11 +27,15 @@ export function DraggableWidget({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id, disabled: !isEditMode });
+  } = useSortable({ 
+    id, 
+    disabled: !isEditMode,
+  });
 
-  const style = {
+  const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
+    opacity: isDragging ? 0.5 : 1,
   };
 
   if (!isVisible && !isEditMode) {
@@ -44,7 +48,7 @@ export function DraggableWidget({
       style={style}
       className={cn(
         'relative group',
-        isDragging && 'z-50 opacity-90 scale-[1.02]',
+        isDragging && 'z-50 scale-[1.02]',
         isEditMode && 'ring-2 ring-primary/20 rounded-lg',
         !isVisible && isEditMode && 'opacity-50'
       )}

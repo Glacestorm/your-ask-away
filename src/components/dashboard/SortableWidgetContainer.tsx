@@ -61,7 +61,7 @@ export function SortableWidgetContainer({
   };
 
   if (!isEditMode) {
-    return <>{children}</>;
+    return <div className="space-y-6">{children}</div>;
   }
 
   return (
@@ -73,7 +73,9 @@ export function SortableWidgetContainer({
       onDragCancel={handleDragCancel}
     >
       <SortableContext items={items} strategy={verticalListSortingStrategy}>
-        {children}
+        <div className="space-y-6">
+          {children}
+        </div>
       </SortableContext>
       <DragOverlay>
         {activeId ? (
