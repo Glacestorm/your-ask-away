@@ -1016,6 +1016,20 @@ case 'administration':
                     </div>
                   </CardContent>
                 </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-purple-500/10"
+                  onClick={() => handleSectionChange('ml-explainability')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                      <Bot className="h-4 w-4 text-purple-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-purple-700 dark:text-purple-400">ML / IA</h4>
+                      <p className="text-xs text-muted-foreground">SHAP/LIME Explainability</p>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
 
