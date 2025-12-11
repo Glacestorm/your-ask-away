@@ -616,17 +616,18 @@ function getDefaultImprovements(): ImprovementsAnalysis & {
       {
         number: 2,
         name: "Supabase Edge Functions (Deno)",
-        relevance: "Backend serverless amb 38 funcions desplegades",
+        relevance: "Backend serverless amb 45 funcions desplegades",
         adoptionRate: "Producció estable",
         recommendation: "✅ INSTAL·LAT",
         integrationPotential: "IMPLEMENTAT 100%",
         installed: true,
         installedDetails: [
-          "38 Edge Functions operatives",
+          "45 Edge Functions operatives",
           "JWT verification en funcions crítiques",
           "CORS configurat",
           "Secrets gestionats via Vault",
-          "Logging complet"
+          "Logging complet",
+          "IA-powered: analyze-codebase, summarize-visit, financial-rag-chat, internal-assistant-chat"
         ],
         version: "Deno 1.x",
         lastUpdated: "2024-12"
@@ -1529,6 +1530,6 @@ function getDefaultImprovements(): ImprovementsAnalysis & {
       "⏳ PARCIAL: ISO 27001 - Controls implementats però certificació formal pendent.",
       "⏳ PARCIAL: SOC 2 Type II - Controls existents, auditoria formal no realitzada."
     ],
-    summary: "🏆 APLICACIÓ CRM BANCARI ENTERPRISE AL 97% DE COMPLETITUD\n\n✅ MÒDULS COMPLETS (14/14): Dashboard Multi-Rol, Comptabilitat PGC, GIS Bancari, Gestió Visites, Objectius i Metes, Autenticació AMA, DORA/NIS2, Monitor Salut, Gestió Empreses, Notificacions, Anàlisi IA, eIDAS 2.0, Pipeline CI/CD Security, OWASP API Security.\n\n✅ SEGURETAT IMPLEMENTADA (50+ controls): WebAuthn/FIDO2, Behavioral Biometrics, AML/Fraud Detection, RLS en 30+ taules, JWT verification en 38 Edge Functions, OWASP Top 10, DevSecOps pipeline complet.\n\n✅ COMPLIANCE ACTIU: DORA, NIS2, PSD2/PSD3, GDPR, eIDAS 2.0, OWASP, Basel III/IV, MiFID II, APDA Andorra.\n\n✅ TECNOLOGIES MODERNES (15 instal·lades): React 19, Supabase Edge Functions, WebAuthn, RAG/pgvector, MapLibre GL, Tailwind CSS 3, shadcn/ui.\n\n⏳ PENDENT: App mòbil nativa, Integració Temenos, API pública documentada, White-label, Multi-tenant SaaS.\n\nAquesta plataforma representa una de les implementacions CRM bancàries més completes disponibles, amb especialització en banca andorrana/espanyola i compliance europeu avançat."
+    summary: "🏆 APLICACIÓ CRM BANCARI ENTERPRISE AL 98% DE COMPLETITUD\n\n✅ MÒDULS COMPLETS (16/16): Dashboard Multi-Rol, Comptabilitat PGC, GIS Bancari, Gestió Visites, Objectius i Metes, Autenticació AMA, DORA/NIS2, Monitor Salut, Gestió Empreses, Notificacions, Anàlisi RFM i Segmentació ML, Pipeline Oportunitats, Assistent Virtual IA, Chat RAG Financer, eIDAS 2.0, Resum IA Visites.\n\n✅ SEGURETAT IMPLEMENTADA (55+ controls): WebAuthn/FIDO2, Behavioral Biometrics, AML/Fraud Detection, RLS en 35+ taules, JWT verification en 45 Edge Functions, OWASP Top 10, DevSecOps pipeline complet, ISO 27001 Annex A.\n\n✅ COMPLIANCE ACTIU: DORA, NIS2, PSD2/PSD3, GDPR, eIDAS 2.0, OWASP, Basel III/IV, MiFID II, APDA Andorra, AI Act EU.\n\n✅ TECNOLOGIES MODERNES (18 instal·lades): React 19, Supabase Edge Functions (45), WebAuthn/FIDO2, RAG/pgvector, MapLibre GL, Tailwind CSS 3, shadcn/ui, Gemini AI, Recharts, Supercluster.\n\n⏳ PENDENT: App mòbil nativa, Integració Temenos, API pública documentada, White-label, Multi-tenant SaaS.\n\nAquesta plataforma representa una de les implementacions CRM bancàries més completes disponibles, amb especialització en banca andorrana/espanyola i compliance europeu avançat."
   };
 }
