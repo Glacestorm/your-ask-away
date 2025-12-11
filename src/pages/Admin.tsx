@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigationHistory } from '@/hooks/useNavigationHistory';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Activity, History, Shield, Rocket, Bot, BarChart3, Users, Palette, FileCode2 } from 'lucide-react';
+import { ArrowLeft, Activity, History, Shield, Rocket, Bot, BarChart3, Users, Palette, FileCode2, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import VisitSheets from '@/pages/VisitSheets';
 import { GlobalNavHeader } from '@/components/GlobalNavHeader';
@@ -986,6 +986,20 @@ case 'administration':
                     <div>
                       <h4 className="font-medium text-sm">Salut Sistema</h4>
                       <p className="text-xs text-muted-foreground">Monitoratge AI</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-teal-500/30 bg-gradient-to-br from-teal-500/5 to-teal-500/10"
+                  onClick={() => handleSectionChange('cdp-360')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-teal-500/20 flex items-center justify-center">
+                      <Eye className="h-4 w-4 text-teal-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-teal-700 dark:text-teal-400">CDP 360°</h4>
+                      <p className="text-xs text-muted-foreground">Customer Data Platform</p>
                     </div>
                   </CardContent>
                 </Card>
