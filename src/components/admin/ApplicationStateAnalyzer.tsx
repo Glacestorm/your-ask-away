@@ -541,25 +541,26 @@ export function ApplicationStateAnalyzer() {
       const margin = 15;
       const contentWidth = pageWidth - 2 * margin;
       
-      // Sanitize text for PDF (remove unicode that jsPDF can't handle)
+      // Sanitize text for PDF - handle accented characters and unicode
       const sanitizeText = (text: string): string => {
         if (!text) return '';
         return text
+          // Status symbols
           .replace(/✅/g, '[OK]')
           .replace(/⏳/g, '[PEND]')
-          .replace(/✓/g, 'v')
+          .replace(/✓/g, 'OK')
           .replace(/○/g, 'o')
           .replace(/•/g, '-')
           .replace(/→/g, '->')
           .replace(/←/g, '<-')
           .replace(/★/g, '*')
           .replace(/☆/g, '*')
-          .replace(/✔/g, 'v')
-          .replace(/✘/g, 'x')
+          .replace(/✔/g, 'OK')
+          .replace(/✘/g, 'X')
           .replace(/❌/g, '[X]')
           .replace(/⚠/g, '[!]')
-          .replace(/🔒/g, '[LOCK]')
-          .replace(/🔓/g, '[UNLOCK]')
+          .replace(/🔒/g, '')
+          .replace(/🔓/g, '')
           .replace(/📊/g, '')
           .replace(/📈/g, '')
           .replace(/📉/g, '')
@@ -580,7 +581,49 @@ export function ApplicationStateAnalyzer() {
           .replace(/📱/g, '')
           .replace(/💻/g, '')
           .replace(/🌐/g, '')
-          .replace(/[^\x00-\x7F]/g, '') // Remove any remaining non-ASCII
+          // Accented vowels - uppercase
+          .replace(/[ÀÁÂÃÄÅ]/g, 'A')
+          .replace(/[ÈÉÊË]/g, 'E')
+          .replace(/[ÌÍÎÏ]/g, 'I')
+          .replace(/[ÒÓÔÕÖ]/g, 'O')
+          .replace(/[ÙÚÛÜ]/g, 'U')
+          .replace(/Ñ/g, 'N')
+          .replace(/Ç/g, 'C')
+          // Accented vowels - lowercase
+          .replace(/[àáâãäå]/g, 'a')
+          .replace(/[èéêë]/g, 'e')
+          .replace(/[ìíîï]/g, 'i')
+          .replace(/[òóôõö]/g, 'o')
+          .replace(/[ùúûü]/g, 'u')
+          .replace(/ñ/g, 'n')
+          .replace(/ç/g, 'c')
+          // Special characters
+          .replace(/«/g, '"')
+          .replace(/»/g, '"')
+          .replace(/'/g, "'")
+          .replace(/'/g, "'")
+          .replace(/"/g, '"')
+          .replace(/"/g, '"')
+          .replace(/–/g, '-')
+          .replace(/—/g, '-')
+          .replace(/…/g, '...')
+          .replace(/·/g, '.')
+          .replace(/€/g, 'EUR')
+          .replace(/£/g, 'GBP')
+          .replace(/¥/g, 'JPY')
+          .replace(/©/g, '(c)')
+          .replace(/®/g, '(R)')
+          .replace(/™/g, '(TM)')
+          .replace(/°/g, ' deg')
+          .replace(/±/g, '+/-')
+          .replace(/×/g, 'x')
+          .replace(/÷/g, '/')
+          .replace(/≤/g, '<=')
+          .replace(/≥/g, '>=')
+          .replace(/≠/g, '!=')
+          .replace(/∞/g, 'inf')
+          // Remove any remaining non-printable or extended characters
+          .replace(/[^\x20-\x7E]/g, '')
           .trim();
       };
       
@@ -649,13 +692,40 @@ export function ApplicationStateAnalyzer() {
       doc.setFillColor(20, 50, 140);
       doc.rect(0, 80, pageWidth, 30, 'F');
       
-      // Logo area (geometric shape)
+      // Logo area - professional hexagonal design
+      const logoX = pageWidth / 2;
+      const logoY = 45;
+      const logoSize = 22;
+      
+      // Outer hexagon (white background)
       doc.setFillColor(...colors.white);
-      doc.circle(pageWidth / 2, 45, 25, 'F');
-      doc.setFillColor(...colors.primary);
-      doc.setFontSize(28);
+      const hexPoints = [];
+      for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI / 3) * i - Math.PI / 2;
+        hexPoints.push([logoX + logoSize * Math.cos(angle), logoY + logoSize * Math.sin(angle)]);
+      }
+      doc.setLineWidth(0);
+      doc.moveTo(hexPoints[0][0], hexPoints[0][1]);
+      for (let i = 1; i < 6; i++) {
+        doc.lineTo(hexPoints[i][0], hexPoints[i][1]);
+      }
+      doc.lineTo(hexPoints[0][0], hexPoints[0][1]);
+      doc.fill();
+      
+      // Inner accent circle
+      doc.setFillColor(20, 50, 140);
+      doc.circle(logoX, logoY, 15, 'F');
+      
+      // Logo text
+      doc.setTextColor(...colors.white);
+      doc.setFontSize(18);
       doc.setFont('helvetica', 'bold');
-      doc.text('Ox', pageWidth / 2 - 10, 52);
+      doc.text('OIA', logoX, logoY + 5, { align: 'center' });
+      
+      // Decorative ring
+      doc.setDrawColor(...colors.white);
+      doc.setLineWidth(1.5);
+      doc.circle(logoX, logoY, 18, 'S');
       
       // Title
       doc.setTextColor(...colors.white);
@@ -827,7 +897,7 @@ export function ApplicationStateAnalyzer() {
         
         autoTable(doc, {
           startY: yPos,
-          head: [['#', 'Mòdul', 'Completitud', 'Valor']],
+          head: [['Num', 'Modul', 'Completitud', 'Valor']],
           body: moduleData,
           theme: 'grid',
           headStyles: {
@@ -836,26 +906,31 @@ export function ApplicationStateAnalyzer() {
             fontStyle: 'bold',
             fontSize: 10,
             font: 'helvetica',
+            halign: 'center',
+            overflow: 'linebreak',
           },
           bodyStyles: {
             fontSize: 9,
             textColor: colors.dark,
             font: 'helvetica',
+            overflow: 'linebreak',
           },
           styles: {
             font: 'helvetica',
-            cellPadding: 3,
+            cellPadding: 4,
+            overflow: 'linebreak',
           },
           alternateRowStyles: {
             fillColor: colors.light,
           },
           columnStyles: {
-            0: { cellWidth: 10, halign: 'center' },
-            1: { cellWidth: 80 },
-            2: { cellWidth: 25, halign: 'center' },
-            3: { cellWidth: 30, halign: 'center' },
+            0: { cellWidth: 18, halign: 'center' },
+            1: { cellWidth: 100, halign: 'left' },
+            2: { cellWidth: 30, halign: 'center' },
+            3: { cellWidth: 25, halign: 'center' },
           },
           margin: { left: margin, right: margin },
+          tableWidth: contentWidth,
           didDrawCell: (data) => {
             if (data.column.index === 2 && data.section === 'body') {
               const percentage = parseInt(String(data.cell.raw).replace('%', '')) || 0;
@@ -942,7 +1017,7 @@ export function ApplicationStateAnalyzer() {
         
         autoTable(doc, {
           startY: yPos,
-          head: [['Normativa', 'Estat', 'Compliment', 'Jurisdicció']],
+          head: [['Normativa', 'Estat', '% Complet', 'Jurisdiccio']],
           body: complianceData,
           theme: 'grid',
           headStyles: {
@@ -951,26 +1026,32 @@ export function ApplicationStateAnalyzer() {
             fontStyle: 'bold',
             fontSize: 10,
             font: 'helvetica',
+            halign: 'center',
+            overflow: 'linebreak',
           },
           bodyStyles: {
             fontSize: 9,
             textColor: colors.dark,
             font: 'helvetica',
+            overflow: 'linebreak',
           },
           styles: {
             font: 'helvetica',
-            cellPadding: 3,
+            cellPadding: 4,
+            overflow: 'linebreak',
+            cellWidth: 'wrap',
           },
           alternateRowStyles: {
             fillColor: [250, 245, 255],
           },
           columnStyles: {
-            0: { cellWidth: 60 },
-            1: { cellWidth: 30, halign: 'center' },
-            2: { cellWidth: 25, halign: 'center' },
-            3: { cellWidth: 30, halign: 'center' },
+            0: { cellWidth: 70, halign: 'left' },
+            1: { cellWidth: 35, halign: 'center' },
+            2: { cellWidth: 30, halign: 'center' },
+            3: { cellWidth: 35, halign: 'center' },
           },
           margin: { left: margin, right: margin },
+          tableWidth: contentWidth,
           didDrawCell: (data) => {
             if (data.column.index === 1 && data.section === 'body') {
               const status = String(data.cell.raw);
@@ -1017,31 +1098,36 @@ export function ApplicationStateAnalyzer() {
         if (installedData.length > 0) {
           autoTable(doc, {
             startY: yPos,
-            head: [['#', 'Tecnologia', 'Rellevància', 'Estat']],
+            head: [['Num', 'Tecnologia', 'Rellevancia', 'Estat']],
             body: installedData,
             theme: 'striped',
-          headStyles: {
+            headStyles: {
               fillColor: colors.secondary,
               textColor: colors.white,
               fontStyle: 'bold',
               fontSize: 10,
               font: 'helvetica',
+              halign: 'center',
+              overflow: 'linebreak',
             },
             bodyStyles: {
               fontSize: 9,
               font: 'helvetica',
+              overflow: 'linebreak',
             },
             styles: {
               font: 'helvetica',
-              cellPadding: 3,
+              cellPadding: 4,
+              overflow: 'linebreak',
             },
             columnStyles: {
-              0: { cellWidth: 15, halign: 'center' },
-              1: { cellWidth: 90 },
-              2: { cellWidth: 40, halign: 'center' },
-              3: { cellWidth: 15, halign: 'center', textColor: colors.secondary },
+              0: { cellWidth: 18, halign: 'center' },
+              1: { cellWidth: 100, halign: 'left' },
+              2: { cellWidth: 35, halign: 'center' },
+              3: { cellWidth: 20, halign: 'center', textColor: colors.secondary },
             },
             margin: { left: margin, right: margin },
+            tableWidth: contentWidth,
           });
           yPos = (doc as any).lastAutoTable.finalY + 15;
         }
@@ -1063,31 +1149,36 @@ export function ApplicationStateAnalyzer() {
           
           autoTable(doc, {
             startY: yPos,
-            head: [['#', 'Tecnologia', 'Rellevància', 'Estat']],
+            head: [['Num', 'Tecnologia', 'Rellevancia', 'Estat']],
             body: pendingData,
             theme: 'striped',
-          headStyles: {
+            headStyles: {
               fillColor: colors.warning,
               textColor: colors.white,
               fontStyle: 'bold',
               fontSize: 10,
               font: 'helvetica',
+              halign: 'center',
+              overflow: 'linebreak',
             },
             bodyStyles: {
               fontSize: 9,
               font: 'helvetica',
+              overflow: 'linebreak',
             },
             styles: {
               font: 'helvetica',
-              cellPadding: 3,
+              cellPadding: 4,
+              overflow: 'linebreak',
             },
             columnStyles: {
-              0: { cellWidth: 15, halign: 'center' },
-              1: { cellWidth: 90 },
-              2: { cellWidth: 40, halign: 'center' },
-              3: { cellWidth: 15, halign: 'center', textColor: colors.warning },
+              0: { cellWidth: 18, halign: 'center' },
+              1: { cellWidth: 100, halign: 'left' },
+              2: { cellWidth: 35, halign: 'center' },
+              3: { cellWidth: 20, halign: 'center', textColor: colors.warning },
             },
             margin: { left: margin, right: margin },
+            tableWidth: contentWidth,
           });
         }
       }
@@ -1118,7 +1209,7 @@ export function ApplicationStateAnalyzer() {
         
         autoTable(doc, {
           startY: yPos,
-          head: [['#', 'Millora', 'Prioritat', 'Esforç', 'Impacte']],
+          head: [['Num', 'Millora Suggerida', 'Prioritat', 'Esforc', 'Impacte']],
           body: improvementData,
           theme: 'grid',
           headStyles: {
@@ -1127,23 +1218,28 @@ export function ApplicationStateAnalyzer() {
             fontStyle: 'bold',
             fontSize: 10,
             font: 'helvetica',
+            halign: 'center',
+            overflow: 'linebreak',
           },
           bodyStyles: {
             fontSize: 9,
             font: 'helvetica',
+            overflow: 'linebreak',
           },
           styles: {
             font: 'helvetica',
-            cellPadding: 3,
+            cellPadding: 4,
+            overflow: 'linebreak',
           },
           columnStyles: {
-            0: { cellWidth: 10, halign: 'center' },
-            1: { cellWidth: 80 },
-            2: { cellWidth: 20, halign: 'center' },
-            3: { cellWidth: 25, halign: 'center' },
-            4: { cellWidth: 25, halign: 'center' },
+            0: { cellWidth: 15, halign: 'center' },
+            1: { cellWidth: 75, halign: 'left' },
+            2: { cellWidth: 28, halign: 'center' },
+            3: { cellWidth: 28, halign: 'center' },
+            4: { cellWidth: 28, halign: 'center' },
           },
           margin: { left: margin, right: margin },
+          tableWidth: contentWidth,
           didDrawCell: (data) => {
             if (data.column.index === 2 && data.section === 'body') {
               const priority = String(data.cell.raw);
@@ -1182,7 +1278,7 @@ export function ApplicationStateAnalyzer() {
         
         autoTable(doc, {
           startY: yPos,
-          head: [['#', 'Integració IA', 'Estat']],
+          head: [['Num', 'Integracio IA', 'Estat']],
           body: aiData,
           theme: 'striped',
           headStyles: {
@@ -1191,21 +1287,26 @@ export function ApplicationStateAnalyzer() {
             fontStyle: 'bold',
             fontSize: 10,
             font: 'helvetica',
+            halign: 'center',
+            overflow: 'linebreak',
           },
           bodyStyles: {
             fontSize: 9,
             font: 'helvetica',
+            overflow: 'linebreak',
           },
           styles: {
             font: 'helvetica',
-            cellPadding: 3,
+            cellPadding: 4,
+            overflow: 'linebreak',
           },
           columnStyles: {
-            0: { cellWidth: 10, halign: 'center' },
-            1: { cellWidth: 120 },
-            2: { cellWidth: 25, halign: 'center' },
+            0: { cellWidth: 18, halign: 'center' },
+            1: { cellWidth: 125, halign: 'left' },
+            2: { cellWidth: 30, halign: 'center' },
           },
           margin: { left: margin, right: margin },
+          tableWidth: contentWidth,
           didDrawCell: (data) => {
             if (data.column.index === 2 && data.section === 'body') {
               const status = String(data.cell.raw);
@@ -1244,7 +1345,7 @@ export function ApplicationStateAnalyzer() {
         
         autoTable(doc, {
           startY: yPos,
-          head: [['#', 'Optimització', 'Estat']],
+          head: [['Num', 'Optimitzacio de Rendiment', 'Estat']],
           body: perfData,
           theme: 'striped',
           headStyles: {
@@ -1253,21 +1354,26 @@ export function ApplicationStateAnalyzer() {
             fontStyle: 'bold',
             fontSize: 10,
             font: 'helvetica',
+            halign: 'center',
+            overflow: 'linebreak',
           },
           bodyStyles: {
             fontSize: 9,
             font: 'helvetica',
+            overflow: 'linebreak',
           },
           styles: {
             font: 'helvetica',
-            cellPadding: 3,
+            cellPadding: 4,
+            overflow: 'linebreak',
           },
           columnStyles: {
-            0: { cellWidth: 10, halign: 'center' },
-            1: { cellWidth: 120 },
-            2: { cellWidth: 25, halign: 'center' },
+            0: { cellWidth: 18, halign: 'center' },
+            1: { cellWidth: 125, halign: 'left' },
+            2: { cellWidth: 30, halign: 'center' },
           },
           margin: { left: margin, right: margin },
+          tableWidth: contentWidth,
           didDrawCell: (data) => {
             if (data.column.index === 2 && data.section === 'body') {
               const status = String(data.cell.raw);
