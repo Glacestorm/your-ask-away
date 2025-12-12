@@ -269,6 +269,25 @@ export function AdminSidebar({
                   </span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              {/* ML Avançat - Ensemble + A/B Testing */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => onSectionChange('advanced-ml')}
+                  isActive={isActive('advanced-ml')}
+                  className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
+                  tooltip={!open ? {
+                    children: 'ML Avançat',
+                    className: "bg-gradient-to-br from-fuchsia-500/10 to-fuchsia-500/5 border-fuchsia-500/20"
+                  } : undefined}
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-fuchsia-500 to-fuchsia-600 shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-fuchsia-500/50 group-hover:rotate-3">
+                    <Rocket className="h-5 w-5 text-white transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3" />
+                  </div>
+                  <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
+                    ML Avançat
+                  </span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               {/* CDP 360 - Customer Data Platform */}
               <SidebarMenuItem>
                 <SidebarMenuButton
