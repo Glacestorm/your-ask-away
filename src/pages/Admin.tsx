@@ -66,6 +66,7 @@ import WhiteLabelConfig from '@/components/admin/WhiteLabelConfig';
 import APIDocumentation from '@/components/admin/APIDocumentation';
 import { Customer360Panel } from '@/components/admin/Customer360Panel';
 import { MLExplainabilityPanel } from '@/components/admin/MLExplainabilityPanel';
+import { AdvancedMLDashboard } from '@/components/admin/AdvancedMLDashboard';
 
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
@@ -176,6 +177,7 @@ const Admin = () => {
       case 'customer-segmentation': return 'Segmentació de Clients ML';
       case 'cdp-360': return 'Customer Data Platform 360°';
       case 'ml-explainability': return 'ML Explainability (SHAP/LIME)';
+      case 'advanced-ml': return 'ML Avançat (Ensemble + A/B)';
       default: return '';
     }
   };
@@ -621,6 +623,17 @@ const Admin = () => {
           );
         }
         return <MLExplainabilityPanel />;
+      case 'advanced-ml':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <AdvancedMLDashboard />;
       case 'internal-assistant':
         if (isAuditor) {
           return (
