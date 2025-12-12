@@ -3668,6 +3668,79 @@ export type Database = {
         }
         Relationships: []
       }
+      ml_ab_tests: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          model_a_id: string | null
+          model_b_id: string | null
+          results: Json | null
+          start_date: string
+          status: string | null
+          test_name: string
+          traffic_split_a: number | null
+          updated_at: string | null
+          winner_model_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          model_a_id?: string | null
+          model_b_id?: string | null
+          results?: Json | null
+          start_date?: string
+          status?: string | null
+          test_name: string
+          traffic_split_a?: number | null
+          updated_at?: string | null
+          winner_model_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          model_a_id?: string | null
+          model_b_id?: string | null
+          results?: Json | null
+          start_date?: string
+          status?: string | null
+          test_name?: string
+          traffic_split_a?: number | null
+          updated_at?: string | null
+          winner_model_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ml_ab_tests_model_a_id_fkey"
+            columns: ["model_a_id"]
+            isOneToOne: false
+            referencedRelation: "ml_model_registry"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_ab_tests_model_b_id_fkey"
+            columns: ["model_b_id"]
+            isOneToOne: false
+            referencedRelation: "ml_model_registry"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_ab_tests_winner_model_id_fkey"
+            columns: ["winner_model_id"]
+            isOneToOne: false
+            referencedRelation: "ml_model_registry"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ml_model_executions: {
         Row: {
           companies_processed: number | null
@@ -3715,6 +3788,199 @@ export type Database = {
           started_at?: string
         }
         Relationships: []
+      }
+      ml_model_registry: {
+        Row: {
+          ab_test_group: string | null
+          ab_test_weight: number | null
+          created_at: string | null
+          created_by: string | null
+          deployed_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_production: boolean | null
+          model_name: string
+          model_type: string
+          parameters: Json | null
+          performance_metrics: Json | null
+          trained_at: string | null
+          training_data_info: Json | null
+          updated_at: string | null
+          version: string
+        }
+        Insert: {
+          ab_test_group?: string | null
+          ab_test_weight?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          deployed_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_production?: boolean | null
+          model_name: string
+          model_type: string
+          parameters?: Json | null
+          performance_metrics?: Json | null
+          trained_at?: string | null
+          training_data_info?: Json | null
+          updated_at?: string | null
+          version: string
+        }
+        Update: {
+          ab_test_group?: string | null
+          ab_test_weight?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          deployed_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_production?: boolean | null
+          model_name?: string
+          model_type?: string
+          parameters?: Json | null
+          performance_metrics?: Json | null
+          trained_at?: string | null
+          training_data_info?: Json | null
+          updated_at?: string | null
+          version?: string
+        }
+        Relationships: []
+      }
+      ml_prediction_logs: {
+        Row: {
+          ab_test_id: string | null
+          actual_outcome: Json | null
+          company_id: string | null
+          created_at: string | null
+          explanation_id: string | null
+          id: string
+          input_features: Json
+          is_correct: boolean | null
+          latency_ms: number | null
+          model_id: string | null
+          prediction: Json
+          prediction_probability: number | null
+        }
+        Insert: {
+          ab_test_id?: string | null
+          actual_outcome?: Json | null
+          company_id?: string | null
+          created_at?: string | null
+          explanation_id?: string | null
+          id?: string
+          input_features: Json
+          is_correct?: boolean | null
+          latency_ms?: number | null
+          model_id?: string | null
+          prediction: Json
+          prediction_probability?: number | null
+        }
+        Update: {
+          ab_test_id?: string | null
+          actual_outcome?: Json | null
+          company_id?: string | null
+          created_at?: string | null
+          explanation_id?: string | null
+          id?: string
+          input_features?: Json
+          is_correct?: boolean | null
+          latency_ms?: number | null
+          model_id?: string | null
+          prediction?: Json
+          prediction_probability?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ml_prediction_logs_ab_test_id_fkey"
+            columns: ["ab_test_id"]
+            isOneToOne: false
+            referencedRelation: "ml_ab_tests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_prediction_logs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_prediction_logs_explanation_id_fkey"
+            columns: ["explanation_id"]
+            isOneToOne: false
+            referencedRelation: "model_explanations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ml_prediction_logs_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "ml_model_registry"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      model_explanations: {
+        Row: {
+          company_id: string | null
+          confidence_intervals: Json | null
+          counterfactuals: Json | null
+          created_at: string | null
+          created_by: string | null
+          decision_path: string[] | null
+          feature_importances: Json | null
+          human_readable_explanation: string | null
+          id: string
+          lime_weights: Json | null
+          model_type: string
+          model_version: string | null
+          prediction_id: string | null
+          shap_values: Json | null
+        }
+        Insert: {
+          company_id?: string | null
+          confidence_intervals?: Json | null
+          counterfactuals?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          decision_path?: string[] | null
+          feature_importances?: Json | null
+          human_readable_explanation?: string | null
+          id?: string
+          lime_weights?: Json | null
+          model_type: string
+          model_version?: string | null
+          prediction_id?: string | null
+          shap_values?: Json | null
+        }
+        Update: {
+          company_id?: string | null
+          confidence_intervals?: Json | null
+          counterfactuals?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          decision_path?: string[] | null
+          feature_importances?: Json | null
+          human_readable_explanation?: string | null
+          id?: string
+          lime_weights?: Json | null
+          model_type?: string
+          model_version?: string | null
+          prediction_id?: string | null
+          shap_values?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "model_explanations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notification_channels: {
         Row: {
