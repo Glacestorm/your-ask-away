@@ -184,6 +184,7 @@ const Admin = () => {
       case 'advanced-ml': return 'ML Avançat (Ensemble + A/B)';
       case 'sms-manager': return 'Gestió SMS';
       case 'realtime-chat': return 'Chat en Temps Real';
+      case 'predictive-analytics': return 'Analítica Predictiva i KPIs';
       default: return '';
     }
   };
@@ -1090,6 +1091,21 @@ case 'administration':
                     <div>
                       <h4 className="font-medium text-sm text-fuchsia-700 dark:text-fuchsia-400">ML Avançat</h4>
                       <p className="text-xs text-muted-foreground">Ensemble + A/B Testing</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                {/* Predictive Analytics - FASE 5 */}
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-amber-500/10"
+                  onClick={() => handleSectionChange('predictive-analytics')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                      <BarChart3 className="h-4 w-4 text-amber-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-amber-700 dark:text-amber-400">KPIs Predictius</h4>
+                      <p className="text-xs text-muted-foreground">50+ indicadors + forecast</p>
                     </div>
                   </CardContent>
                 </Card>
