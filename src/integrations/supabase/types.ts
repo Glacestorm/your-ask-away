@@ -1162,6 +1162,50 @@ export type Database = {
           },
         ]
       }
+      chat_attachments: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_size: number | null
+          file_type: string
+          file_url: string
+          id: string
+          message_id: string | null
+          thumbnail_url: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_size?: number | null
+          file_type: string
+          file_url: string
+          id?: string
+          message_id?: string | null
+          thumbnail_url?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_size?: number | null
+          file_type?: string
+          file_url?: string
+          id?: string
+          message_id?: string | null
+          thumbnail_url?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_attachments_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "chat_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           content: string
@@ -1173,6 +1217,9 @@ export type Database = {
           is_edited: boolean | null
           message_type: string | null
           metadata: Json | null
+          priority: string | null
+          reactions: Json | null
+          read_by: string[] | null
           reply_to_id: string | null
           room_id: string | null
           sender_id: string | null
@@ -1187,6 +1234,9 @@ export type Database = {
           is_edited?: boolean | null
           message_type?: string | null
           metadata?: Json | null
+          priority?: string | null
+          reactions?: Json | null
+          read_by?: string[] | null
           reply_to_id?: string | null
           room_id?: string | null
           sender_id?: string | null
@@ -1201,6 +1251,9 @@ export type Database = {
           is_edited?: boolean | null
           message_type?: string | null
           metadata?: Json | null
+          priority?: string | null
+          reactions?: Json | null
+          read_by?: string[] | null
           reply_to_id?: string | null
           room_id?: string | null
           sender_id?: string | null
@@ -2181,6 +2234,60 @@ export type Database = {
             columns: ["parent_company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversation_summaries: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          generated_at: string
+          id: string
+          key_topics: string[] | null
+          last_activity: string | null
+          message_count: number | null
+          room_id: string | null
+          sentiment: string | null
+          summary_text: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          generated_at?: string
+          id?: string
+          key_topics?: string[] | null
+          last_activity?: string | null
+          message_count?: number | null
+          room_id?: string | null
+          sentiment?: string | null
+          summary_text?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          generated_at?: string
+          id?: string
+          key_topics?: string[] | null
+          last_activity?: string | null
+          message_count?: number | null
+          room_id?: string | null
+          sentiment?: string | null
+          summary_text?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_summaries_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_summaries_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "chat_rooms"
             referencedColumns: ["id"]
           },
         ]
@@ -5263,8 +5370,45 @@ export type Database = {
           },
         ]
       }
+      sms_delivery_logs: {
+        Row: {
+          id: string
+          logged_at: string
+          provider_response: Json | null
+          sms_id: string | null
+          status: string
+          status_code: string | null
+        }
+        Insert: {
+          id?: string
+          logged_at?: string
+          provider_response?: Json | null
+          sms_id?: string | null
+          status: string
+          status_code?: string | null
+        }
+        Update: {
+          id?: string
+          logged_at?: string
+          provider_response?: Json | null
+          sms_id?: string | null
+          status?: string
+          status_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sms_delivery_logs_sms_id_fkey"
+            columns: ["sms_id"]
+            isOneToOne: false
+            referencedRelation: "sms_notifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sms_notifications: {
         Row: {
+          company_id: string | null
+          contact_name: string | null
           created_at: string | null
           delivered_at: string | null
           error_message: string | null
@@ -5272,11 +5416,16 @@ export type Database = {
           message: string
           phone_number: string
           provider_message_id: string | null
+          retry_count: number | null
+          scheduled_at: string | null
           sent_at: string | null
           status: string | null
+          template_id: string | null
           user_id: string | null
         }
         Insert: {
+          company_id?: string | null
+          contact_name?: string | null
           created_at?: string | null
           delivered_at?: string | null
           error_message?: string | null
@@ -5284,11 +5433,16 @@ export type Database = {
           message: string
           phone_number: string
           provider_message_id?: string | null
+          retry_count?: number | null
+          scheduled_at?: string | null
           sent_at?: string | null
           status?: string | null
+          template_id?: string | null
           user_id?: string | null
         }
         Update: {
+          company_id?: string | null
+          contact_name?: string | null
           created_at?: string | null
           delivered_at?: string | null
           error_message?: string | null
@@ -5296,9 +5450,66 @@ export type Database = {
           message?: string
           phone_number?: string
           provider_message_id?: string | null
+          retry_count?: number | null
+          scheduled_at?: string | null
           sent_at?: string | null
           status?: string | null
+          template_id?: string | null
           user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sms_notifications_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sms_notifications_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "sms_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sms_templates: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string
+          usage_count: number | null
+          variables: string[] | null
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string
+          usage_count?: number | null
+          variables?: string[] | null
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string
+          usage_count?: number | null
+          variables?: string[] | null
         }
         Relationships: []
       }
