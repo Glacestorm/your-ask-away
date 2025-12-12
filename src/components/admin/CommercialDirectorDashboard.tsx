@@ -31,6 +31,11 @@ import { DashboardExportButton } from '@/components/dashboard/DashboardExportBut
 import { RealtimeNotificationsBadge } from '@/components/dashboard/RealtimeNotificationsBadge';
 import { UpcomingVisitsWidget } from '@/components/dashboard/UpcomingVisitsWidget';
 
+import { useWidgetLayout } from '@/hooks/useWidgetLayout';
+import { DraggableWidget } from '@/components/dashboard/DraggableWidget';
+import { SortableWidgetContainer } from '@/components/dashboard/SortableWidgetContainer';
+import { WidgetLayoutControls } from '@/components/dashboard/WidgetLayoutControls';
+
 interface BasicStats {
   totalVisits: number;
   avgSuccessRate: number;
@@ -87,6 +92,17 @@ export function CommercialDirectorDashboard() {
   const [gestorDetails, setGestorDetails] = useState<GestorDetail[]>([]);
   const [monthlyTrend, setMonthlyTrend] = useState<MonthlyTrend[]>([]);
   const [resultDistribution, setResultDistribution] = useState<{name: string; value: number}[]>([]);
+
+  // Widget layout system
+  const {
+    widgets,
+    isEditMode,
+    setIsEditMode,
+    reorderWidgets,
+    toggleWidgetVisibility,
+    resetLayout,
+    isWidgetVisible,
+  } = useWidgetLayout('commercial-director');
 
   useEffect(() => {
     if (dateRange?.from && dateRange?.to) {
@@ -314,6 +330,11 @@ export function CommercialDirectorDashboard() {
               onDateRangeChange={setDateRange}
             />
             <div className="flex items-center gap-2">
+              <WidgetLayoutControls
+                isEditMode={isEditMode}
+                onToggleEditMode={() => setIsEditMode(!isEditMode)}
+                onReset={resetLayout}
+              />
               <RealtimeNotificationsBadge />
               <DashboardExportButton 
                 data={{
@@ -332,111 +353,179 @@ export function CommercialDirectorDashboard() {
             </div>
           </div>
 
-          {/* Hero KPIs */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-transparent shadow-lg">
-              <div className="absolute top-0 right-0 h-24 w-24 translate-x-8 -translate-y-8 rounded-full bg-blue-500/10 blur-2xl" />
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10">
-                    <Activity className="h-6 w-6 text-blue-500" />
-                  </div>
-                  {stats.visitsTrend !== 0 && (
-                    <Badge variant={stats.visitsTrend > 0 ? "default" : "destructive"} className={cn(
-                      "gap-1",
-                      stats.visitsTrend > 0 ? "bg-green-500/10 text-green-600 hover:bg-green-500/20" : "bg-red-500/10 text-red-600 hover:bg-red-500/20"
-                    )}>
-                      {stats.visitsTrend > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                      {Math.abs(stats.visitsTrend)}%
-                    </Badge>
-                  )}
-                </div>
-                <div className="mt-4">
-                  <p className="text-sm font-medium text-muted-foreground">{t('director.totalVisits')}</p>
-                  <p className="text-3xl font-bold tracking-tight">{stats.totalVisits.toLocaleString()}</p>
-                </div>
-              </CardContent>
-            </Card>
+          <SortableWidgetContainer
+            items={widgets.map(w => w.id)}
+            onReorder={reorderWidgets}
+            isEditMode={isEditMode}
+          >
+            {widgets.map((widget) => {
+              const isVisible = isWidgetVisible(widget.id);
+              
+              if (widget.id === 'kpi-cards') {
+                return (
+                  <DraggableWidget
+                    key={widget.id}
+                    id={widget.id}
+                    isEditMode={isEditMode}
+                    isVisible={isVisible}
+                    onToggleVisibility={() => toggleWidgetVisibility(widget.id)}
+                  >
+                    {/* Hero KPIs */}
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-transparent shadow-lg">
+                        <div className="absolute top-0 right-0 h-24 w-24 translate-x-8 -translate-y-8 rounded-full bg-blue-500/10 blur-2xl" />
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-500/10">
+                              <Activity className="h-6 w-6 text-blue-500" />
+                            </div>
+                            {stats.visitsTrend !== 0 && (
+                              <Badge variant={stats.visitsTrend > 0 ? "default" : "destructive"} className={cn(
+                                "gap-1",
+                                stats.visitsTrend > 0 ? "bg-green-500/10 text-green-600 hover:bg-green-500/20" : "bg-red-500/10 text-red-600 hover:bg-red-500/20"
+                              )}>
+                                {stats.visitsTrend > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                                {Math.abs(stats.visitsTrend)}%
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="mt-4">
+                            <p className="text-sm font-medium text-muted-foreground">{t('director.totalVisits')}</p>
+                            <p className="text-3xl font-bold tracking-tight">{stats.totalVisits.toLocaleString()}</p>
+                          </div>
+                        </CardContent>
+                      </Card>
 
-            <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent shadow-lg">
-              <div className="absolute top-0 right-0 h-24 w-24 translate-x-8 -translate-y-8 rounded-full bg-emerald-500/10 blur-2xl" />
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10">
-                    <Target className="h-6 w-6 text-emerald-500" />
-                  </div>
-                  {stats.successTrend !== 0 && (
-                    <Badge variant={stats.successTrend > 0 ? "default" : "destructive"} className={cn(
-                      "gap-1",
-                      stats.successTrend > 0 ? "bg-green-500/10 text-green-600 hover:bg-green-500/20" : "bg-red-500/10 text-red-600 hover:bg-red-500/20"
-                    )}>
-                      {stats.successTrend > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                      {Math.abs(stats.successTrend)}pp
-                    </Badge>
-                  )}
-                </div>
-                <div className="mt-4">
-                  <p className="text-sm font-medium text-muted-foreground">{t('director.successRate')}</p>
-                  <p className="text-3xl font-bold tracking-tight">{stats.avgSuccessRate}%</p>
-                </div>
-                <Progress value={stats.avgSuccessRate} className="mt-3 h-1.5" />
-              </CardContent>
-            </Card>
+                      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-transparent shadow-lg">
+                        <div className="absolute top-0 right-0 h-24 w-24 translate-x-8 -translate-y-8 rounded-full bg-emerald-500/10 blur-2xl" />
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10">
+                              <Target className="h-6 w-6 text-emerald-500" />
+                            </div>
+                            {stats.successTrend !== 0 && (
+                              <Badge variant={stats.successTrend > 0 ? "default" : "destructive"} className={cn(
+                                "gap-1",
+                                stats.successTrend > 0 ? "bg-green-500/10 text-green-600 hover:bg-green-500/20" : "bg-red-500/10 text-red-600 hover:bg-red-500/20"
+                              )}>
+                                {stats.successTrend > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                                {Math.abs(stats.successTrend)}pp
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="mt-4">
+                            <p className="text-sm font-medium text-muted-foreground">{t('director.successRate')}</p>
+                            <p className="text-3xl font-bold tracking-tight">{stats.avgSuccessRate}%</p>
+                          </div>
+                          <Progress value={stats.avgSuccessRate} className="mt-3 h-1.5" />
+                        </CardContent>
+                      </Card>
 
-            <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-violet-500/10 via-violet-500/5 to-transparent shadow-lg">
-              <div className="absolute top-0 right-0 h-24 w-24 translate-x-8 -translate-y-8 rounded-full bg-violet-500/10 blur-2xl" />
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-500/10">
-                    <Building2 className="h-6 w-6 text-violet-500" />
-                  </div>
-                </div>
-                <div className="mt-4">
-                  <p className="text-sm font-medium text-muted-foreground">{t('director.companies')}</p>
-                  <p className="text-3xl font-bold tracking-tight">{stats.totalCompanies.toLocaleString()}</p>
-                </div>
-              </CardContent>
-            </Card>
+                      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-violet-500/10 via-violet-500/5 to-transparent shadow-lg">
+                        <div className="absolute top-0 right-0 h-24 w-24 translate-x-8 -translate-y-8 rounded-full bg-violet-500/10 blur-2xl" />
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-500/10">
+                              <Building2 className="h-6 w-6 text-violet-500" />
+                            </div>
+                          </div>
+                          <div className="mt-4">
+                            <p className="text-sm font-medium text-muted-foreground">{t('director.companies')}</p>
+                            <p className="text-3xl font-bold tracking-tight">{stats.totalCompanies.toLocaleString()}</p>
+                          </div>
+                        </CardContent>
+                      </Card>
 
-            <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent shadow-lg">
-              <div className="absolute top-0 right-0 h-24 w-24 translate-x-8 -translate-y-8 rounded-full bg-amber-500/10 blur-2xl" />
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10">
-                    <Users className="h-6 w-6 text-amber-500" />
-                  </div>
-                </div>
-                <div className="mt-4">
-                  <p className="text-sm font-medium text-muted-foreground">{t('director.managers')}</p>
-                  <p className="text-3xl font-bold tracking-tight">{stats.activeGestores}</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                      <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent shadow-lg">
+                        <div className="absolute top-0 right-0 h-24 w-24 translate-x-8 -translate-y-8 rounded-full bg-amber-500/10 blur-2xl" />
+                        <CardContent className="p-6">
+                          <div className="flex items-center justify-between">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/10">
+                              <Users className="h-6 w-6 text-amber-500" />
+                            </div>
+                          </div>
+                          <div className="mt-4">
+                            <p className="text-sm font-medium text-muted-foreground">{t('director.managers')}</p>
+                            <p className="text-3xl font-bold tracking-tight">{stats.activeGestores}</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </DraggableWidget>
+                );
+              }
 
-          {/* Metrics Card */}
-          <MetricsCardsSection />
+              if (widget.id === 'metrics-cards') {
+                return (
+                  <DraggableWidget
+                    key={widget.id}
+                    id={widget.id}
+                    isEditMode={isEditMode}
+                    isVisible={isVisible}
+                    onToggleVisibility={() => toggleWidgetVisibility(widget.id)}
+                  >
+                    <MetricsCardsSection />
+                  </DraggableWidget>
+                );
+              }
 
-          {/* Quick Actions Grid */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <QuickVisitSheetCard />
-            <MapDashboardCard />
-            <AccountingDashboardCard />
-            <CompaniesDashboardCard />
-          </div>
+              if (widget.id === 'quick-cards') {
+                return (
+                  <DraggableWidget
+                    key={widget.id}
+                    id={widget.id}
+                    isEditMode={isEditMode}
+                    isVisible={isVisible}
+                    onToggleVisibility={() => toggleWidgetVisibility(widget.id)}
+                  >
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                      <QuickVisitSheetCard />
+                      <MapDashboardCard />
+                      <AccountingDashboardCard />
+                      <CompaniesDashboardCard />
+                    </div>
+                  </DraggableWidget>
+                );
+              }
 
-          {/* Secondary Actions */}
-          <div className="grid gap-6 md:grid-cols-3">
-            <ContractedProductsDashboardCard />
-            <GoalsAlertsDashboardCard />
-            <KPIDashboardCard />
-          </div>
+              if (widget.id === 'analytics') {
+                return (
+                  <DraggableWidget
+                    key={widget.id}
+                    id={widget.id}
+                    isEditMode={isEditMode}
+                    isVisible={isVisible}
+                    onToggleVisibility={() => toggleWidgetVisibility(widget.id)}
+                  >
+                    <div className="grid gap-6 md:grid-cols-3">
+                      <ContractedProductsDashboardCard />
+                      <GoalsAlertsDashboardCard />
+                      <KPIDashboardCard />
+                    </div>
+                  </DraggableWidget>
+                );
+              }
 
-          {/* Alerts */}
-          <AlertHistoryDashboardCard />
+              if (widget.id === 'offices-ranking') {
+                return (
+                  <DraggableWidget
+                    key={widget.id}
+                    id={widget.id}
+                    isEditMode={isEditMode}
+                    isVisible={isVisible}
+                    onToggleVisibility={() => toggleWidgetVisibility(widget.id)}
+                  >
+                    <div className="space-y-6">
+                      <AlertHistoryDashboardCard />
+                      <AdvancedAnalyticsDashboardCard />
+                    </div>
+                  </DraggableWidget>
+                );
+              }
 
-          {/* Advanced Analytics */}
-          <AdvancedAnalyticsDashboardCard />
+              return null;
+            })}
+          </SortableWidgetContainer>
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-8 animate-in fade-in-50 duration-500">
