@@ -219,6 +219,84 @@ export type Database = {
           },
         ]
       }
+      ai_task_queue: {
+        Row: {
+          ai_reasoning: string | null
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          due_date: string | null
+          estimated_value: number | null
+          id: string
+          priority: number
+          result_notes: string | null
+          status: string
+          suggested_action: string | null
+          target_entity_id: string | null
+          target_entity_type: string | null
+          target_gestor_id: string | null
+          task_description: string | null
+          task_title: string
+          task_type: string
+          updated_at: string
+        }
+        Insert: {
+          ai_reasoning?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          due_date?: string | null
+          estimated_value?: number | null
+          id?: string
+          priority?: number
+          result_notes?: string | null
+          status?: string
+          suggested_action?: string | null
+          target_entity_id?: string | null
+          target_entity_type?: string | null
+          target_gestor_id?: string | null
+          task_description?: string | null
+          task_title: string
+          task_type: string
+          updated_at?: string
+        }
+        Update: {
+          ai_reasoning?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          due_date?: string | null
+          estimated_value?: number | null
+          id?: string
+          priority?: number
+          result_notes?: string | null
+          status?: string
+          suggested_action?: string | null
+          target_entity_id?: string | null
+          target_entity_type?: string | null
+          target_gestor_id?: string | null
+          task_description?: string | null
+          task_title?: string
+          task_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_task_queue_completed_by_fkey"
+            columns: ["completed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_task_queue_target_gestor_id_fkey"
+            columns: ["target_gestor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       alert_history: {
         Row: {
           alert_id: string
@@ -4855,6 +4933,65 @@ export type Database = {
           },
         ]
       }
+      pipeline_snapshots: {
+        Row: {
+          avg_deal_age_days: number | null
+          avg_deal_value: number | null
+          by_stage: Json | null
+          conversion_rate: number | null
+          created_at: string
+          gestor_id: string | null
+          health_score: number | null
+          id: string
+          office: string | null
+          snapshot_date: string
+          total_opportunities: number | null
+          total_value: number | null
+          velocity_score: number | null
+          win_rate: number | null
+        }
+        Insert: {
+          avg_deal_age_days?: number | null
+          avg_deal_value?: number | null
+          by_stage?: Json | null
+          conversion_rate?: number | null
+          created_at?: string
+          gestor_id?: string | null
+          health_score?: number | null
+          id?: string
+          office?: string | null
+          snapshot_date?: string
+          total_opportunities?: number | null
+          total_value?: number | null
+          velocity_score?: number | null
+          win_rate?: number | null
+        }
+        Update: {
+          avg_deal_age_days?: number | null
+          avg_deal_value?: number | null
+          by_stage?: Json | null
+          conversion_rate?: number | null
+          created_at?: string
+          gestor_id?: string | null
+          health_score?: number | null
+          id?: string
+          office?: string | null
+          snapshot_date?: string
+          total_opportunities?: number | null
+          total_value?: number | null
+          velocity_score?: number | null
+          win_rate?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pipeline_snapshots_gestor_id_fkey"
+            columns: ["gestor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       premium_api_tiers: {
         Row: {
           created_at: string | null
@@ -5394,6 +5531,87 @@ export type Database = {
         }
         Relationships: []
       }
+      revenue_signals: {
+        Row: {
+          actioned_at: string | null
+          actioned_by: string | null
+          ai_analysis: Json | null
+          confidence_score: number | null
+          created_at: string
+          description: string
+          entity_id: string | null
+          entity_type: string | null
+          expires_at: string | null
+          gestor_id: string | null
+          id: string
+          is_actioned: boolean | null
+          is_read: boolean | null
+          office: string | null
+          potential_value: number | null
+          recommended_action: string | null
+          severity: string
+          signal_type: string
+          title: string
+        }
+        Insert: {
+          actioned_at?: string | null
+          actioned_by?: string | null
+          ai_analysis?: Json | null
+          confidence_score?: number | null
+          created_at?: string
+          description: string
+          entity_id?: string | null
+          entity_type?: string | null
+          expires_at?: string | null
+          gestor_id?: string | null
+          id?: string
+          is_actioned?: boolean | null
+          is_read?: boolean | null
+          office?: string | null
+          potential_value?: number | null
+          recommended_action?: string | null
+          severity?: string
+          signal_type: string
+          title: string
+        }
+        Update: {
+          actioned_at?: string | null
+          actioned_by?: string | null
+          ai_analysis?: Json | null
+          confidence_score?: number | null
+          created_at?: string
+          description?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          expires_at?: string | null
+          gestor_id?: string | null
+          id?: string
+          is_actioned?: boolean | null
+          is_read?: boolean | null
+          office?: string | null
+          potential_value?: number | null
+          recommended_action?: string | null
+          severity?: string
+          signal_type?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revenue_signals_actioned_by_fkey"
+            columns: ["actioned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "revenue_signals_gestor_id_fkey"
+            columns: ["gestor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       risk_assessments: {
         Row: {
           approved_at: string | null
@@ -5456,6 +5674,203 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      sales_achievements: {
+        Row: {
+          achievement_name: string
+          achievement_type: string
+          badge_color: string | null
+          badge_icon: string | null
+          created_at: string
+          description: string | null
+          gestor_id: string
+          id: string
+          metadata: Json | null
+          points: number
+          quota_id: string | null
+          unlocked_at: string
+        }
+        Insert: {
+          achievement_name: string
+          achievement_type: string
+          badge_color?: string | null
+          badge_icon?: string | null
+          created_at?: string
+          description?: string | null
+          gestor_id: string
+          id?: string
+          metadata?: Json | null
+          points?: number
+          quota_id?: string | null
+          unlocked_at?: string
+        }
+        Update: {
+          achievement_name?: string
+          achievement_type?: string
+          badge_color?: string | null
+          badge_icon?: string | null
+          created_at?: string
+          description?: string | null
+          gestor_id?: string
+          id?: string
+          metadata?: Json | null
+          points?: number
+          quota_id?: string | null
+          unlocked_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_achievements_gestor_id_fkey"
+            columns: ["gestor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_achievements_quota_id_fkey"
+            columns: ["quota_id"]
+            isOneToOne: false
+            referencedRelation: "sales_quotas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_leaderboard: {
+        Row: {
+          achievements_count: number | null
+          badges: Json | null
+          calculated_at: string
+          gestor_id: string
+          id: string
+          period_start: string
+          period_type: string
+          previous_rank: number | null
+          rank_change: number | null
+          rank_position: number
+          streak_days: number | null
+          total_deals_won: number | null
+          total_points: number | null
+          total_value: number | null
+          total_visits: number | null
+        }
+        Insert: {
+          achievements_count?: number | null
+          badges?: Json | null
+          calculated_at?: string
+          gestor_id: string
+          id?: string
+          period_start: string
+          period_type?: string
+          previous_rank?: number | null
+          rank_change?: number | null
+          rank_position: number
+          streak_days?: number | null
+          total_deals_won?: number | null
+          total_points?: number | null
+          total_value?: number | null
+          total_visits?: number | null
+        }
+        Update: {
+          achievements_count?: number | null
+          badges?: Json | null
+          calculated_at?: string
+          gestor_id?: string
+          id?: string
+          period_start?: string
+          period_type?: string
+          previous_rank?: number | null
+          rank_change?: number | null
+          rank_position?: number
+          streak_days?: number | null
+          total_deals_won?: number | null
+          total_points?: number | null
+          total_value?: number | null
+          total_visits?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_leaderboard_gestor_id_fkey"
+            columns: ["gestor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_quotas: {
+        Row: {
+          achievement_percentage: number | null
+          actual_new_clients: number | null
+          actual_products_sold: number | null
+          actual_value: number
+          actual_visits: number | null
+          created_at: string
+          created_by: string | null
+          gestor_id: string
+          id: string
+          period_end: string
+          period_start: string
+          period_type: string
+          target_new_clients: number | null
+          target_products_sold: number | null
+          target_value: number
+          target_visits: number | null
+          updated_at: string
+        }
+        Insert: {
+          achievement_percentage?: number | null
+          actual_new_clients?: number | null
+          actual_products_sold?: number | null
+          actual_value?: number
+          actual_visits?: number | null
+          created_at?: string
+          created_by?: string | null
+          gestor_id: string
+          id?: string
+          period_end: string
+          period_start: string
+          period_type?: string
+          target_new_clients?: number | null
+          target_products_sold?: number | null
+          target_value?: number
+          target_visits?: number | null
+          updated_at?: string
+        }
+        Update: {
+          achievement_percentage?: number | null
+          actual_new_clients?: number | null
+          actual_products_sold?: number | null
+          actual_value?: number
+          actual_visits?: number | null
+          created_at?: string
+          created_by?: string | null
+          gestor_id?: string
+          id?: string
+          period_end?: string
+          period_start?: string
+          period_type?: string
+          target_new_clients?: number | null
+          target_products_sold?: number | null
+          target_value?: number
+          target_visits?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_quotas_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_quotas_gestor_id_fkey"
+            columns: ["gestor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       scenario_simulations: {
         Row: {
