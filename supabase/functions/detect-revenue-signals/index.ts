@@ -93,7 +93,13 @@ serve(async (req) => {
     }
 
     // 4. Cross-sell opportunities (companies with few products)
-    const { data: crossSellCandidates } = await supabase.rpc('get_cross_sell_candidates').catch(() => ({ data: null }));
+    let crossSellCandidates = null;
+    try {
+      const result = await supabase.rpc('get_cross_sell_candidates');
+      crossSellCandidates = result.data;
+    } catch {
+      // Function may not exist, use fallback
+    }
 
     // Fallback: Get companies with less than 2 products but high revenue
     if (!crossSellCandidates) {
