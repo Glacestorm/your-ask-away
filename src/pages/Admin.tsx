@@ -71,6 +71,7 @@ import { SMSManager } from '@/components/admin/SMSManager';
 import { RealtimeChatPanel } from '@/components/chat/RealtimeChatPanel';
 import { CoreBankingManager } from '@/components/admin/CoreBankingManager';
 import { PredictiveAnalyticsDashboard } from '@/components/admin/PredictiveAnalyticsDashboard';
+import { SPMDashboard } from '@/components/admin/spm/SPMDashboard';
 
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
@@ -185,6 +186,7 @@ const Admin = () => {
       case 'sms-manager': return 'Gestió SMS';
       case 'realtime-chat': return 'Chat en Temps Real';
       case 'predictive-analytics': return 'Analítica Predictiva i KPIs';
+      case 'spm-dashboard': return 'Sales Performance Management';
       default: return '';
     }
   };
@@ -678,6 +680,17 @@ const Admin = () => {
           );
         }
         return <PredictiveAnalyticsDashboard />;
+      case 'spm-dashboard':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <SPMDashboard />;
       case 'cascade-goals':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager && !isOfficeDirector) {
           return (

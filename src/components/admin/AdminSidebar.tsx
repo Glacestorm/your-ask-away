@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { TrendingUp, Activity, BarChart3, Package, Users, Target, CreditCard, Building2, Settings, Database, Mail, Palette, BookOpen, Map, ChevronRight, FileText, Briefcase, History, Bell, UserCog, CalendarDays, Home, User, AlertTriangle, LayoutDashboard, ClipboardCheck, ShoppingCart, Calculator, FileCode2, Shield, Fingerprint, Rocket, Bot, PieChart, Eye, Brain } from 'lucide-react';
+import { TrendingUp, Activity, BarChart3, Package, Users, Target, CreditCard, Building2, Settings, Database, Mail, Palette, BookOpen, Map, ChevronRight, FileText, Briefcase, History, Bell, UserCog, CalendarDays, Home, User, AlertTriangle, LayoutDashboard, ClipboardCheck, ShoppingCart, Calculator, FileCode2, Shield, Fingerprint, Rocket, Bot, PieChart, Eye, Brain, Trophy } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -285,6 +285,25 @@ export function AdminSidebar({
                   </div>
                   <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
                     ML Avançat
+                  </span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              {/* SPM Dashboard - Sales Performance Management */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => onSectionChange('spm-dashboard')}
+                  isActive={isActive('spm-dashboard')}
+                  className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
+                  tooltip={!open ? {
+                    children: 'SPM Dashboard',
+                    className: "bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20"
+                  } : undefined}
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-amber-500/50 group-hover:rotate-3">
+                    <Trophy className="h-5 w-5 text-white transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3" />
+                  </div>
+                  <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
+                    SPM Dashboard
                   </span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
