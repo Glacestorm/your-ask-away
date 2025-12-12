@@ -2292,6 +2292,54 @@ export type Database = {
           },
         ]
       }
+      core_banking_configs: {
+        Row: {
+          api_endpoint: string
+          api_version: string | null
+          auth_config: Json | null
+          auth_type: string
+          core_type: string
+          created_at: string | null
+          created_by: string | null
+          entity_name: string
+          id: string
+          is_active: boolean | null
+          retry_config: Json | null
+          timeout_ms: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          api_endpoint: string
+          api_version?: string | null
+          auth_config?: Json | null
+          auth_type: string
+          core_type: string
+          created_at?: string | null
+          created_by?: string | null
+          entity_name: string
+          id?: string
+          is_active?: boolean | null
+          retry_config?: Json | null
+          timeout_ms?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          api_endpoint?: string
+          api_version?: string | null
+          auth_config?: Json | null
+          auth_type?: string
+          core_type?: string
+          created_at?: string | null
+          created_by?: string | null
+          entity_name?: string
+          id?: string
+          is_active?: boolean | null
+          retry_config?: Json | null
+          timeout_ms?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       customer_360_profiles: {
         Row: {
           active_products: number | null
@@ -3542,6 +3590,118 @@ export type Database = {
           },
         ]
       }
+      integration_mappings: {
+        Row: {
+          config_id: string | null
+          core_field: string
+          created_at: string | null
+          default_value: string | null
+          direction: string
+          entity_type: string
+          id: string
+          is_required: boolean | null
+          obelixia_field: string
+          transformation_rule: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          config_id?: string | null
+          core_field: string
+          created_at?: string | null
+          default_value?: string | null
+          direction: string
+          entity_type: string
+          id?: string
+          is_required?: boolean | null
+          obelixia_field: string
+          transformation_rule?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          config_id?: string | null
+          core_field?: string
+          created_at?: string | null
+          default_value?: string | null
+          direction?: string
+          entity_type?: string
+          id?: string
+          is_required?: boolean | null
+          obelixia_field?: string
+          transformation_rule?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_mappings_config_id_fkey"
+            columns: ["config_id"]
+            isOneToOne: false
+            referencedRelation: "core_banking_configs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integration_queue: {
+        Row: {
+          attempts: number | null
+          completed_at: string | null
+          config_id: string | null
+          created_at: string | null
+          created_by: string | null
+          error_message: string | null
+          id: string
+          max_attempts: number | null
+          operation_type: string
+          payload: Json
+          priority: number | null
+          result: Json | null
+          scheduled_at: string | null
+          started_at: string | null
+          status: string | null
+        }
+        Insert: {
+          attempts?: number | null
+          completed_at?: string | null
+          config_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          error_message?: string | null
+          id?: string
+          max_attempts?: number | null
+          operation_type: string
+          payload: Json
+          priority?: number | null
+          result?: Json | null
+          scheduled_at?: string | null
+          started_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          attempts?: number | null
+          completed_at?: string | null
+          config_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          error_message?: string | null
+          id?: string
+          max_attempts?: number | null
+          operation_type?: string
+          payload?: Json
+          priority?: number | null
+          result?: Json | null
+          scheduled_at?: string | null
+          started_at?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_queue_config_id_fkey"
+            columns: ["config_id"]
+            isOneToOne: false
+            referencedRelation: "core_banking_configs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       internal_assistant_conversations: {
         Row: {
           context_type: string
@@ -4527,6 +4687,45 @@ export type Database = {
           },
         ]
       }
+      premium_api_tiers: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          features: Json | null
+          id: string
+          is_active: boolean | null
+          price_monthly: number | null
+          rate_limit_per_day: number | null
+          rate_limit_per_hour: number | null
+          rate_limit_per_minute: number | null
+          tier_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          price_monthly?: number | null
+          rate_limit_per_day?: number | null
+          rate_limit_per_hour?: number | null
+          rate_limit_per_minute?: number | null
+          tier_name: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          price_monthly?: number | null
+          rate_limit_per_day?: number | null
+          rate_limit_per_hour?: number | null
+          rate_limit_per_minute?: number | null
+          tier_name?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           active: boolean | null
@@ -5297,6 +5496,72 @@ export type Database = {
         }
         Relationships: []
       }
+      sepa_instant_payments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          creditor_bic: string | null
+          creditor_iban: string
+          creditor_name: string
+          currency: string | null
+          debtor_iban: string
+          debtor_name: string
+          end_to_end_id: string
+          id: string
+          instruction_id: string | null
+          processing_time_ms: number | null
+          rejection_reason: string | null
+          remittance_info: string | null
+          settlement_date: string | null
+          status: string | null
+          tpp_id: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          creditor_bic?: string | null
+          creditor_iban: string
+          creditor_name: string
+          currency?: string | null
+          debtor_iban: string
+          debtor_name: string
+          end_to_end_id: string
+          id?: string
+          instruction_id?: string | null
+          processing_time_ms?: number | null
+          rejection_reason?: string | null
+          remittance_info?: string | null
+          settlement_date?: string | null
+          status?: string | null
+          tpp_id: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          creditor_bic?: string | null
+          creditor_iban?: string
+          creditor_name?: string
+          currency?: string | null
+          debtor_iban?: string
+          debtor_name?: string
+          end_to_end_id?: string
+          id?: string
+          instruction_id?: string | null
+          processing_time_ms?: number | null
+          rejection_reason?: string | null
+          remittance_info?: string | null
+          settlement_date?: string | null
+          status?: string | null
+          tpp_id?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       session_risk_assessments: {
         Row: {
           created_at: string | null
@@ -5804,6 +6069,47 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      tpp_premium_subscriptions: {
+        Row: {
+          auto_renew: boolean | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          started_at: string | null
+          status: string | null
+          tier_id: string | null
+          tpp_id: string
+        }
+        Insert: {
+          auto_renew?: boolean | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          started_at?: string | null
+          status?: string | null
+          tier_id?: string | null
+          tpp_id: string
+        }
+        Update: {
+          auto_renew?: boolean | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          started_at?: string | null
+          status?: string | null
+          tier_id?: string | null
+          tpp_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tpp_premium_subscriptions_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "premium_api_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tpp_rate_limits: {
         Row: {
@@ -6632,6 +6938,118 @@ export type Database = {
             columns: ["gestor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vrp_mandates: {
+        Row: {
+          consent_id: string | null
+          created_at: string | null
+          creditor_account: string
+          creditor_name: string
+          currency: string | null
+          debtor_account: string
+          frequency: string
+          id: string
+          max_amount: number
+          max_per_period: number | null
+          reference: string | null
+          status: string | null
+          tpp_id: string
+          updated_at: string | null
+          valid_from: string
+          valid_to: string | null
+        }
+        Insert: {
+          consent_id?: string | null
+          created_at?: string | null
+          creditor_account: string
+          creditor_name: string
+          currency?: string | null
+          debtor_account: string
+          frequency: string
+          id?: string
+          max_amount: number
+          max_per_period?: number | null
+          reference?: string | null
+          status?: string | null
+          tpp_id: string
+          updated_at?: string | null
+          valid_from: string
+          valid_to?: string | null
+        }
+        Update: {
+          consent_id?: string | null
+          created_at?: string | null
+          creditor_account?: string
+          creditor_name?: string
+          currency?: string | null
+          debtor_account?: string
+          frequency?: string
+          id?: string
+          max_amount?: number
+          max_per_period?: number | null
+          reference?: string | null
+          status?: string | null
+          tpp_id?: string
+          updated_at?: string | null
+          valid_from?: string
+          valid_to?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vrp_mandates_consent_id_fkey"
+            columns: ["consent_id"]
+            isOneToOne: false
+            referencedRelation: "open_banking_consents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vrp_payments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string | null
+          end_to_end_id: string
+          execution_date: string | null
+          failure_reason: string | null
+          id: string
+          mandate_id: string | null
+          payment_reference: string | null
+          status: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string | null
+          end_to_end_id: string
+          execution_date?: string | null
+          failure_reason?: string | null
+          id?: string
+          mandate_id?: string | null
+          payment_reference?: string | null
+          status?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string | null
+          end_to_end_id?: string
+          execution_date?: string | null
+          failure_reason?: string | null
+          id?: string
+          mandate_id?: string | null
+          payment_reference?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vrp_payments_mandate_id_fkey"
+            columns: ["mandate_id"]
+            isOneToOne: false
+            referencedRelation: "vrp_mandates"
             referencedColumns: ["id"]
           },
         ]

@@ -137,3 +137,6 @@ verify_jwt = true
 
 [functions.advanced-ml-scoring]
 verify_jwt = true
+
+[functions.core-banking-adapter]
+verify_jwt = true
