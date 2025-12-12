@@ -125,3 +125,15 @@ verify_jwt = true
 
 [functions.calculate-customer-360]
 verify_jwt = true
+
+[functions.ml-explainability]
+verify_jwt = true
+
+[functions.random-forest-predict]
+verify_jwt = true
+
+[functions.deep-learning-predict]
+verify_jwt = true
+
+[functions.advanced-ml-scoring]
+verify_jwt = true
