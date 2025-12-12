@@ -626,18 +626,18 @@ function getDefaultImprovements(): ImprovementsAnalysis & {
       {
         number: 2,
         name: "Supabase Edge Functions (Deno)",
-        relevance: "Backend serverless amb 45 funcions desplegades",
+        relevance: "Backend serverless amb 64 funcions desplegades",
         adoptionRate: "Producció estable",
         recommendation: "✅ INSTAL·LAT",
         integrationPotential: "IMPLEMENTAT 100%",
         installed: true,
         installedDetails: [
-          "45 Edge Functions operatives",
+          "64 Edge Functions operatives",
           "JWT verification en funcions crítiques",
           "CORS configurat",
           "Secrets gestionats via Vault",
           "Logging complet",
-          "IA-powered: analyze-codebase, summarize-visit, financial-rag-chat, internal-assistant-chat"
+          "IA-powered: analyze-codebase, summarize-visit, financial-rag-chat, internal-assistant-chat, voice-to-text"
         ],
         version: "Deno 1.x",
         lastUpdated: "2024-12"
@@ -1360,9 +1360,9 @@ function getDefaultImprovements(): ImprovementsAnalysis & {
       },
       {
         name: "2. Supabase Edge Functions (Deno)",
-        relevance: "38 funcions serverless desplegades",
+        relevance: "64 funcions serverless desplegades",
         adoptionRate: "Producció estable",
-        recommendation: "✅ INSTAL·LAT - 38 Edge Functions",
+        recommendation: "✅ INSTAL·LAT - 64 Edge Functions",
         integrationPotential: "IMPLEMENTAT 100%",
         installed: true
       },
