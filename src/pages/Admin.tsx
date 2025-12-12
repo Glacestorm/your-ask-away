@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigationHistory } from '@/hooks/useNavigationHistory';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Activity, History, Shield, Rocket, Bot, BarChart3, Users, Palette, FileCode2, Eye, MessageSquare, Bell, MessagesSquare } from 'lucide-react';
+import { ArrowLeft, Activity, History, Shield, Rocket, Bot, BarChart3, Users, Palette, FileCode2, Eye, MessageSquare, Bell, MessagesSquare, Database } from 'lucide-react';
 import { toast } from 'sonner';
 import VisitSheets from '@/pages/VisitSheets';
 import { GlobalNavHeader } from '@/components/GlobalNavHeader';
@@ -69,6 +69,7 @@ import { MLExplainabilityPanel } from '@/components/admin/MLExplainabilityPanel'
 import { AdvancedMLDashboard } from '@/components/admin/AdvancedMLDashboard';
 import { SMSManager } from '@/components/admin/SMSManager';
 import { RealtimeChatPanel } from '@/components/chat/RealtimeChatPanel';
+import { CoreBankingManager } from '@/components/admin/CoreBankingManager';
 
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
@@ -614,6 +615,17 @@ const Admin = () => {
           );
         }
         return <ISO27001Dashboard />;
+      case 'core-banking':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <CoreBankingManager />;
       case 'cdp-360':
         return <Customer360Panel />;
       case 'ml-explainability':
@@ -1009,6 +1021,20 @@ case 'administration':
                     <div>
                       <h4 className="font-medium text-sm text-cyan-700 dark:text-cyan-400">AMA / MFA</h4>
                       <p className="text-xs text-muted-foreground">Autenticació adaptativa</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-emerald-500/10"
+                  onClick={() => handleSectionChange('core-banking')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                      <Database className="h-4 w-4 text-emerald-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-emerald-700 dark:text-emerald-400">Core Banking</h4>
+                      <p className="text-xs text-muted-foreground">Integració PSD3/VRP</p>
                     </div>
                   </CardContent>
                 </Card>
