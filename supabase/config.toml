@@ -140,3 +140,6 @@ verify_jwt = true
 
 [functions.core-banking-adapter]
 verify_jwt = true
+
+[functions.generate-kpis]
+verify_jwt = true

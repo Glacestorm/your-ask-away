@@ -70,6 +70,7 @@ import { AdvancedMLDashboard } from '@/components/admin/AdvancedMLDashboard';
 import { SMSManager } from '@/components/admin/SMSManager';
 import { RealtimeChatPanel } from '@/components/chat/RealtimeChatPanel';
 import { CoreBankingManager } from '@/components/admin/CoreBankingManager';
+import { PredictiveAnalyticsDashboard } from '@/components/admin/PredictiveAnalyticsDashboard';
 
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
