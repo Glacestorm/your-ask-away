@@ -1043,6 +1043,21 @@ case 'administration':
                     </div>
                   </CardContent>
                 </Card>
+                {/* ML Avançat - FASE 2 */}
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-fuchsia-500/30 bg-gradient-to-br from-fuchsia-500/5 to-fuchsia-500/10"
+                  onClick={() => handleSectionChange('advanced-ml')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-fuchsia-500/20 flex items-center justify-center">
+                      <Rocket className="h-4 w-4 text-fuchsia-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-fuchsia-700 dark:text-fuchsia-400">ML Avançat</h4>
+                      <p className="text-xs text-muted-foreground">Ensemble + A/B Testing</p>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
 
