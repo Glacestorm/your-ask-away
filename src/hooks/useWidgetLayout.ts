@@ -8,15 +8,43 @@ export interface WidgetConfig {
 
 const STORAGE_KEY = 'dashboard-widget-layout';
 
-const getDefaultWidgets = (): WidgetConfig[] => [
-  { id: 'personal-kpis', visible: true, order: 0 },
-  { id: 'quick-actions', visible: true, order: 1 },
-  { id: 'upcoming-visits', visible: true, order: 2 },
-  { id: 'resumen-ejecutivo', visible: true, order: 3 },
-  { id: 'mi-actividad', visible: true, order: 4 },
-];
+// Default widgets for each dashboard section
+const DEFAULT_WIDGETS: Record<string, WidgetConfig[]> = {
+  'mi-panel': [
+    { id: 'personal-kpis', visible: true, order: 0 },
+    { id: 'quick-actions', visible: true, order: 1 },
+    { id: 'upcoming-visits', visible: true, order: 2 },
+    { id: 'resumen-ejecutivo', visible: true, order: 3 },
+    { id: 'mi-actividad', visible: true, order: 4 },
+  ],
+  'gestor-dashboard': [
+    { id: 'stats-cards', visible: true, order: 0 },
+    { id: 'quick-cards', visible: true, order: 1 },
+    { id: 'goals-tracker', visible: true, order: 2 },
+    { id: 'visits-manager', visible: true, order: 3 },
+    { id: 'overview', visible: true, order: 4 },
+  ],
+  'office-director': [
+    { id: 'kpi-cards', visible: true, order: 0 },
+    { id: 'metrics-cards', visible: true, order: 1 },
+    { id: 'quick-cards', visible: true, order: 2 },
+    { id: 'analytics', visible: true, order: 3 },
+    { id: 'gestores-table', visible: true, order: 4 },
+  ],
+  'commercial-director': [
+    { id: 'kpi-cards', visible: true, order: 0 },
+    { id: 'metrics-cards', visible: true, order: 1 },
+    { id: 'quick-cards', visible: true, order: 2 },
+    { id: 'analytics', visible: true, order: 3 },
+    { id: 'offices-ranking', visible: true, order: 4 },
+  ],
+};
 
-function loadWidgets(storageKey: string): WidgetConfig[] {
+const getDefaultWidgets = (section: string): WidgetConfig[] => {
+  return DEFAULT_WIDGETS[section] || DEFAULT_WIDGETS['mi-panel'];
+};
+
+function loadWidgets(storageKey: string, section: string): WidgetConfig[] {
   try {
     const stored = localStorage.getItem(storageKey);
     if (stored) {
@@ -28,7 +56,7 @@ function loadWidgets(storageKey: string): WidgetConfig[] {
   } catch (e) {
     console.error('Error loading widget layout:', e);
   }
-  return getDefaultWidgets();
+  return getDefaultWidgets(section);
 }
 
 function saveWidgets(storageKey: string, widgets: WidgetConfig[]) {
@@ -42,7 +70,7 @@ function saveWidgets(storageKey: string, widgets: WidgetConfig[]) {
 export function useWidgetLayout(section: string = 'mi-panel') {
   const storageKey = `${STORAGE_KEY}-${section}`;
   
-  const [widgets, setWidgets] = useState<WidgetConfig[]>(() => loadWidgets(storageKey));
+  const [widgets, setWidgets] = useState<WidgetConfig[]>(() => loadWidgets(storageKey, section));
   const [isEditMode, setIsEditMode] = useState(false);
 
   const reorderWidgets = useCallback((activeId: string, overId: string) => {
@@ -77,10 +105,10 @@ export function useWidgetLayout(section: string = 'mi-panel') {
   }, [storageKey]);
 
   const resetLayout = useCallback(() => {
-    const defaultWidgets = getDefaultWidgets();
+    const defaultWidgets = getDefaultWidgets(section);
     setWidgets(defaultWidgets);
     saveWidgets(storageKey, defaultWidgets);
-  }, [storageKey]);
+  }, [storageKey, section]);
 
   const isWidgetVisible = useCallback((id: string): boolean => {
     const widget = widgets.find((w) => w.id === id);

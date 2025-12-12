@@ -31,6 +31,11 @@ import { DashboardExportButton } from '@/components/dashboard/DashboardExportBut
 import { RealtimeNotificationsBadge } from '@/components/dashboard/RealtimeNotificationsBadge';
 import { UpcomingVisitsWidget } from '@/components/dashboard/UpcomingVisitsWidget';
 
+import { useWidgetLayout } from '@/hooks/useWidgetLayout';
+import { DraggableWidget } from '@/components/dashboard/DraggableWidget';
+import { SortableWidgetContainer } from '@/components/dashboard/SortableWidgetContainer';
+import { WidgetLayoutControls } from '@/components/dashboard/WidgetLayoutControls';
+
 interface BasicStats {
   totalVisits: number;
   avgSuccessRate: number;
@@ -84,6 +89,17 @@ export function OfficeDirectorDashboard() {
   const [monthlyTrends, setMonthlyTrends] = useState<MonthlyTrend[]>([]);
   const [resultDistribution, setResultDistribution] = useState<ResultDistribution[]>([]);
   const [previousStats, setPreviousStats] = useState<BasicStats | null>(null);
+
+  // Widget layout system
+  const {
+    widgets,
+    isEditMode,
+    setIsEditMode,
+    reorderWidgets,
+    toggleWidgetVisibility,
+    resetLayout,
+    isWidgetVisible,
+  } = useWidgetLayout('office-director');
 
   useEffect(() => {
     if (user) {
@@ -390,6 +406,11 @@ export function OfficeDirectorDashboard() {
               onDateRangeChange={setDateRange}
             />
             <div className="flex items-center gap-2">
+              <WidgetLayoutControls
+                isEditMode={isEditMode}
+                onToggleEditMode={() => setIsEditMode(!isEditMode)}
+                onReset={resetLayout}
+              />
               <RealtimeNotificationsBadge />
               <DashboardExportButton 
                 data={{
@@ -408,24 +429,86 @@ export function OfficeDirectorDashboard() {
             </div>
           </div>
 
-          <MetricsCardsSection />
+          <SortableWidgetContainer
+            items={widgets.map(w => w.id)}
+            onReorder={reorderWidgets}
+            isEditMode={isEditMode}
+          >
+            {widgets.map((widget) => {
+              const isVisible = isWidgetVisible(widget.id);
+              
+              if (widget.id === 'metrics-cards') {
+                return (
+                  <DraggableWidget
+                    key={widget.id}
+                    id={widget.id}
+                    isEditMode={isEditMode}
+                    isVisible={isVisible}
+                    onToggleVisibility={() => toggleWidgetVisibility(widget.id)}
+                  >
+                    <MetricsCardsSection />
+                  </DraggableWidget>
+                );
+              }
 
-          <div className="grid gap-6 md:grid-cols-4">
-            <QuickVisitSheetCard />
-            <MapDashboardCard />
-            <AccountingDashboardCard />
-            <CompaniesDashboardCard />
-          </div>
+              if (widget.id === 'quick-cards') {
+                return (
+                  <DraggableWidget
+                    key={widget.id}
+                    id={widget.id}
+                    isEditMode={isEditMode}
+                    isVisible={isVisible}
+                    onToggleVisibility={() => toggleWidgetVisibility(widget.id)}
+                  >
+                    <div className="grid gap-6 md:grid-cols-4">
+                      <QuickVisitSheetCard />
+                      <MapDashboardCard />
+                      <AccountingDashboardCard />
+                      <CompaniesDashboardCard />
+                    </div>
+                  </DraggableWidget>
+                );
+              }
 
-          <div className="grid gap-6 md:grid-cols-3">
-            <ContractedProductsDashboardCard />
-            <GoalsAlertsDashboardCard />
-            <KPIDashboardCard />
-          </div>
+              if (widget.id === 'analytics') {
+                return (
+                  <DraggableWidget
+                    key={widget.id}
+                    id={widget.id}
+                    isEditMode={isEditMode}
+                    isVisible={isVisible}
+                    onToggleVisibility={() => toggleWidgetVisibility(widget.id)}
+                  >
+                    <div className="grid gap-6 md:grid-cols-3">
+                      <ContractedProductsDashboardCard />
+                      <GoalsAlertsDashboardCard />
+                      <KPIDashboardCard />
+                    </div>
+                  </DraggableWidget>
+                );
+              }
 
-          <UpcomingVisitsWidget />
-          <AlertHistoryDashboardCard />
-          <AdvancedAnalyticsDashboardCard />
+              if (widget.id === 'gestores-table') {
+                return (
+                  <DraggableWidget
+                    key={widget.id}
+                    id={widget.id}
+                    isEditMode={isEditMode}
+                    isVisible={isVisible}
+                    onToggleVisibility={() => toggleWidgetVisibility(widget.id)}
+                  >
+                    <div className="space-y-6">
+                      <UpcomingVisitsWidget />
+                      <AlertHistoryDashboardCard />
+                      <AdvancedAnalyticsDashboardCard />
+                    </div>
+                  </DraggableWidget>
+                );
+              }
+
+              return null;
+            })}
+          </SortableWidgetContainer>
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6 animate-in fade-in-50 duration-300">
