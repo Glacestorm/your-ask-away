@@ -2812,6 +2812,93 @@ export type Database = {
         }
         Relationships: []
       }
+      dynamic_kpis: {
+        Row: {
+          alert_status: string | null
+          alert_threshold_high: number | null
+          alert_threshold_low: number | null
+          benchmark_percentile: number | null
+          benchmark_value: number | null
+          calculation_formula: Json | null
+          change_percentage: number | null
+          confidence_score: number | null
+          created_at: string
+          current_value: number | null
+          data_sources: string[] | null
+          entity_id: string
+          entity_type: string
+          id: string
+          kpi_category: string
+          kpi_code: string
+          kpi_name: string
+          metadata: Json | null
+          period_end: string
+          period_start: string
+          period_type: string
+          previous_value: number | null
+          sector_average: number | null
+          trend: string | null
+          trend_strength: number | null
+          updated_at: string
+        }
+        Insert: {
+          alert_status?: string | null
+          alert_threshold_high?: number | null
+          alert_threshold_low?: number | null
+          benchmark_percentile?: number | null
+          benchmark_value?: number | null
+          calculation_formula?: Json | null
+          change_percentage?: number | null
+          confidence_score?: number | null
+          created_at?: string
+          current_value?: number | null
+          data_sources?: string[] | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          kpi_category: string
+          kpi_code: string
+          kpi_name: string
+          metadata?: Json | null
+          period_end: string
+          period_start: string
+          period_type: string
+          previous_value?: number | null
+          sector_average?: number | null
+          trend?: string | null
+          trend_strength?: number | null
+          updated_at?: string
+        }
+        Update: {
+          alert_status?: string | null
+          alert_threshold_high?: number | null
+          alert_threshold_low?: number | null
+          benchmark_percentile?: number | null
+          benchmark_value?: number | null
+          calculation_formula?: Json | null
+          change_percentage?: number | null
+          confidence_score?: number | null
+          created_at?: string
+          current_value?: number | null
+          data_sources?: string[] | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          kpi_category?: string
+          kpi_code?: string
+          kpi_name?: string
+          metadata?: Json | null
+          period_end?: string
+          period_start?: string
+          period_type?: string
+          previous_value?: number | null
+          sector_average?: number | null
+          trend?: string | null
+          trend_strength?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       email_reminder_preferences: {
         Row: {
           created_at: string | null
