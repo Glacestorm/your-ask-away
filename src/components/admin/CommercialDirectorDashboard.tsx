@@ -26,6 +26,7 @@ import { AlertHistoryDashboardCard } from '@/components/dashboard/AlertHistoryDa
 import { ContractedProductsDashboardCard } from '@/components/dashboard/ContractedProductsDashboardCard';
 import { GoalsAlertsDashboardCard } from '@/components/dashboard/GoalsAlertsDashboardCard';
 import { KPIDashboardCard } from '@/components/dashboard/KPIDashboardCard';
+import { SPMDashboardCard } from '@/components/dashboard/SPMDashboardCard';
 import { AdvancedAnalyticsDashboardCard } from '@/components/dashboard/AdvancedAnalyticsDashboardCard';
 import { DashboardExportButton } from '@/components/dashboard/DashboardExportButton';
 import { RealtimeNotificationsBadge } from '@/components/dashboard/RealtimeNotificationsBadge';
@@ -497,10 +498,11 @@ export function CommercialDirectorDashboard() {
                     isVisible={isVisible}
                     onToggleVisibility={() => toggleWidgetVisibility(widget.id)}
                   >
-                    <div className="grid gap-6 md:grid-cols-3">
+                    <div className="grid gap-6 md:grid-cols-4">
                       <ContractedProductsDashboardCard />
                       <GoalsAlertsDashboardCard />
                       <KPIDashboardCard />
+                      <SPMDashboardCard />
                     </div>
                   </DraggableWidget>
                 );
