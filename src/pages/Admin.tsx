@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigationHistory } from '@/hooks/useNavigationHistory';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Activity, History, Shield, Rocket, Bot, BarChart3, Users, Palette, FileCode2, Eye, MessageSquare, Bell, MessagesSquare, Database } from 'lucide-react';
+import { ArrowLeft, Activity, History, Shield, Rocket, Bot, BarChart3, Users, Palette, FileCode2, Eye, MessageSquare, Bell, MessagesSquare, Database, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
 import VisitSheets from '@/pages/VisitSheets';
 import { GlobalNavHeader } from '@/components/GlobalNavHeader';
@@ -857,6 +857,20 @@ case 'administration':
                     <div>
                       <h4 className="font-medium text-sm">Segmentació ML</h4>
                       <p className="text-xs text-muted-foreground">SVM + CART</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-amber-500/20 bg-gradient-to-br from-amber-500/5 to-amber-500/10"
+                  onClick={() => handleSectionChange('spm-dashboard')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                      <Trophy className="h-4 w-4 text-amber-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm">SPM Dashboard</h4>
+                      <p className="text-xs text-muted-foreground">Sales Performance</p>
                     </div>
                   </CardContent>
                 </Card>
