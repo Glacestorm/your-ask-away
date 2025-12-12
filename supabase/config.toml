@@ -143,3 +143,12 @@ verify_jwt = true
 
 [functions.generate-kpis]
 verify_jwt = true
+
+[functions.calculate-sales-performance]
+verify_jwt = true
+
+[functions.detect-revenue-signals]
+verify_jwt = true
+
+[functions.generate-ai-tasks]
+verify_jwt = true
