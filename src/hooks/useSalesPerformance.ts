@@ -331,10 +331,25 @@ export function useSalesPerformanceMutations() {
   });
 
   const createQuota = useMutation({
-    mutationFn: async (quota: Omit<SalesQuota, 'id' | 'created_at' | 'updated_at' | 'achievement_percentage'>) => {
+    mutationFn: async (quota: {
+      gestor_id: string;
+      period_type: string;
+      period_start: string;
+      period_end: string;
+      target_value: number;
+      target_visits?: number;
+      target_new_clients?: number;
+      target_products_sold?: number;
+    }) => {
       const { data, error } = await supabase
         .from('sales_quotas')
-        .insert(quota)
+        .insert({
+          ...quota,
+          actual_value: 0,
+          actual_visits: 0,
+          actual_new_clients: 0,
+          actual_products_sold: 0,
+        })
         .select()
         .single();
       if (error) throw error;

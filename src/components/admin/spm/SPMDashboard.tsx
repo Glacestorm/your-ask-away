@@ -8,7 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { 
   Target, Trophy, TrendingUp, Users, Zap, 
   Award, Medal, Star, Crown, Flame,
-  RefreshCw, Calendar, BarChart3
+  RefreshCw, Calendar, BarChart3, Settings
 } from 'lucide-react';
 import { useSalesQuotas, useSalesLeaderboard, useSalesAchievements, useCalculateSalesPerformance } from '@/hooks/useSalesPerformance';
 import { useAuth } from '@/hooks/useAuth';
@@ -16,11 +16,16 @@ import { GamificationWidget } from './GamificationWidget';
 import { PipelineIntelligence } from './PipelineIntelligence';
 import { RevenueIntelligence } from './RevenueIntelligence';
 import { AutonomousAIPanel } from './AutonomousAIPanel';
+import { QuotaAssignmentForm } from './QuotaAssignmentForm';
+import { useAchievementNotifications } from '@/hooks/useAchievementNotifications';
 
 export function SPMDashboard() {
   const { t } = useLanguage();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
+  
+  // Enable achievement notifications
+  useAchievementNotifications();
   
   const { data: quotas, isLoading: quotasLoading } = useSalesQuotas(undefined, 'monthly');
   const { data: leaderboard, isLoading: leaderboardLoading } = useSalesLeaderboard('monthly');
@@ -131,10 +136,14 @@ export function SPMDashboard() {
 
       {/* Main Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview" className="gap-2">
             <Target className="h-4 w-4" />
             <span className="hidden sm:inline">Overview</span>
+          </TabsTrigger>
+          <TabsTrigger value="quotas" className="gap-2">
+            <Settings className="h-4 w-4" />
+            <span className="hidden sm:inline">Cuotas</span>
           </TabsTrigger>
           <TabsTrigger value="leaderboard" className="gap-2">
             <Trophy className="h-4 w-4" />
@@ -150,7 +159,7 @@ export function SPMDashboard() {
           </TabsTrigger>
           <TabsTrigger value="ai-tasks" className="gap-2">
             <Zap className="h-4 w-4" />
-            <span className="hidden sm:inline">IA Autónoma</span>
+            <span className="hidden sm:inline">IA</span>
           </TabsTrigger>
         </TabsList>
 
@@ -209,6 +218,10 @@ export function SPMDashboard() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="quotas" className="mt-6">
+          <QuotaAssignmentForm />
         </TabsContent>
 
         <TabsContent value="leaderboard" className="mt-6">
