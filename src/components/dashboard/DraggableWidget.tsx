@@ -24,71 +24,71 @@ export function DraggableWidget({
     attributes,
     listeners,
     setNodeRef,
-    setActivatorNodeRef,
     transform,
     transition,
     isDragging,
-  } = useSortable({ 
-    id,
-  });
+  } = useSortable({ id });
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
   };
 
-  // Si no es visible y no estamos en modo edición, no renderizar
+  // Don't render if not visible and not in edit mode
   if (!isVisible && !isEditMode) {
     return null;
   }
 
-  // Si no estamos en modo edición, renderizar sin funcionalidad de drag
+  // Normal render without drag functionality
   if (!isEditMode) {
-    return <div>{children}</div>;
+    return <>{children}</>;
   }
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      {...attributes}
       className={cn(
         'relative',
-        isDragging && 'z-50 opacity-70 scale-[1.02]',
-        'ring-2 ring-primary/20 rounded-lg',
-        !isVisible && 'opacity-50'
+        isDragging && 'z-50 opacity-50',
+        'ring-2 ring-primary/30 rounded-lg p-1',
+        !isVisible && 'opacity-40'
       )}
     >
-      <div className="absolute -top-2 -left-2 z-10 flex items-center gap-1 bg-background border border-border rounded-md shadow-sm p-1">
+      {/* Drag handle and controls */}
+      <div className="absolute -top-3 left-4 z-20 flex items-center gap-1 bg-primary text-primary-foreground rounded-md shadow-lg px-2 py-1">
         <button
-          ref={setActivatorNodeRef}
+          {...attributes}
           {...listeners}
-          className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded touch-none"
+          className="cursor-grab active:cursor-grabbing p-0.5 hover:bg-primary-foreground/20 rounded touch-none"
           aria-label="Arrastrar widget"
           type="button"
         >
-          <GripVertical className="h-4 w-4 text-muted-foreground" />
+          <GripVertical className="h-4 w-4" />
         </button>
         {onToggleVisibility && (
           <Button
             variant="ghost"
             size="icon"
-            className="h-6 w-6"
+            className="h-5 w-5 hover:bg-primary-foreground/20 text-primary-foreground"
             onClick={(e) => {
+              e.preventDefault();
               e.stopPropagation();
               onToggleVisibility();
             }}
             aria-label={isVisible ? 'Ocultar widget' : 'Mostrar widget'}
           >
             {isVisible ? (
-              <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+              <Eye className="h-3 w-3" />
             ) : (
-              <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
+              <EyeOff className="h-3 w-3" />
             )}
           </Button>
         )}
       </div>
-      <div className="pointer-events-none">
+      
+      {/* Widget content - disable pointer events during edit mode */}
+      <div className={cn(isEditMode && 'pointer-events-none select-none')}>
         {children}
       </div>
     </div>
