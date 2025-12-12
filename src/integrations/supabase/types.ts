@@ -369,6 +369,87 @@ export type Database = {
           },
         ]
       }
+      analytics_predictions: {
+        Row: {
+          accuracy_score: number | null
+          actual_value: number | null
+          confidence_interval_high: number | null
+          confidence_interval_low: number | null
+          confidence_level: number | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          feature_importances: Json | null
+          id: string
+          input_features: Json | null
+          metadata: Json | null
+          model_name: string
+          model_version: string | null
+          predicted_category: string | null
+          predicted_value: number | null
+          prediction_date: string
+          prediction_horizon_days: number
+          prediction_type: string
+          priority_score: number | null
+          recommendations: Json | null
+          scenario: string | null
+          scenario_parameters: Json | null
+          valid_until: string | null
+        }
+        Insert: {
+          accuracy_score?: number | null
+          actual_value?: number | null
+          confidence_interval_high?: number | null
+          confidence_interval_low?: number | null
+          confidence_level?: number | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          feature_importances?: Json | null
+          id?: string
+          input_features?: Json | null
+          metadata?: Json | null
+          model_name: string
+          model_version?: string | null
+          predicted_category?: string | null
+          predicted_value?: number | null
+          prediction_date?: string
+          prediction_horizon_days: number
+          prediction_type: string
+          priority_score?: number | null
+          recommendations?: Json | null
+          scenario?: string | null
+          scenario_parameters?: Json | null
+          valid_until?: string | null
+        }
+        Update: {
+          accuracy_score?: number | null
+          actual_value?: number | null
+          confidence_interval_high?: number | null
+          confidence_interval_low?: number | null
+          confidence_level?: number | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          feature_importances?: Json | null
+          id?: string
+          input_features?: Json | null
+          metadata?: Json | null
+          model_name?: string
+          model_version?: string | null
+          predicted_category?: string | null
+          predicted_value?: number | null
+          prediction_date?: string
+          prediction_horizon_days?: number
+          prediction_type?: string
+          priority_score?: number | null
+          recommendations?: Json | null
+          scenario?: string | null
+          scenario_parameters?: Json | null
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
       anonymized_training_data: {
         Row: {
           aggregated_metrics: Json
@@ -5373,6 +5454,78 @@ export type Database = {
           scope?: string
           status?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      scenario_simulations: {
+        Row: {
+          base_parameters: Json
+          best_case_results: Json | null
+          constraints: Json | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_shared: boolean | null
+          monte_carlo_iterations: number | null
+          name: string
+          recommendations: Json | null
+          run_completed_at: string | null
+          run_started_at: string | null
+          scenario_type: string
+          sensitivity_analysis: Json | null
+          shared_with: string[] | null
+          simulation_results: Json | null
+          status: string | null
+          updated_at: string
+          variables: Json
+          worst_case_results: Json | null
+        }
+        Insert: {
+          base_parameters: Json
+          best_case_results?: Json | null
+          constraints?: Json | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_shared?: boolean | null
+          monte_carlo_iterations?: number | null
+          name: string
+          recommendations?: Json | null
+          run_completed_at?: string | null
+          run_started_at?: string | null
+          scenario_type: string
+          sensitivity_analysis?: Json | null
+          shared_with?: string[] | null
+          simulation_results?: Json | null
+          status?: string | null
+          updated_at?: string
+          variables: Json
+          worst_case_results?: Json | null
+        }
+        Update: {
+          base_parameters?: Json
+          best_case_results?: Json | null
+          constraints?: Json | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_shared?: boolean | null
+          monte_carlo_iterations?: number | null
+          name?: string
+          recommendations?: Json | null
+          run_completed_at?: string | null
+          run_started_at?: string | null
+          scenario_type?: string
+          sensitivity_analysis?: Json | null
+          shared_with?: string[] | null
+          simulation_results?: Json | null
+          status?: string | null
+          updated_at?: string
+          variables?: Json
+          worst_case_results?: Json | null
         }
         Relationships: []
       }
