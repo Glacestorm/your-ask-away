@@ -1379,6 +1379,642 @@ serve(async (req) => {
     }, 200, interactionId);
   }
 
+  // ==================== PSD3 ENHANCEMENTS ====================
+
+  // POST /sepa-instant - SEPA Instant Payment (SCT Inst)
+  if (path === '/sepa-instant' && req.method === 'POST') {
+    if (!authResult.scopes?.includes('payments')) {
+      return jsonApiError('Forbidden', 'payments scope required', 403, interactionId);
+    }
+
+    // Validate premium tier for SEPA Instant
+    if (tppId) {
+      const { data: subscription } = await supabase
+        .from('tpp_premium_subscriptions')
+        .select('tier_id, premium_api_tiers(tier_name, features)')
+        .eq('tpp_id', tppId)
+        .eq('status', 'active')
+        .single();
+
+      const tierData = subscription?.premium_api_tiers as any;
+      const features = tierData?.features || [];
+      if (!features.includes('sepa_instant')) {
+        return jsonApiError('Forbidden', 'SEPA Instant requires premium tier subscription', 403, interactionId);
+      }
+    }
+
+    const body = await req.json();
+    const { debtorIban, debtorName, creditorIban, creditorName, creditorBic, amount, currency, remittanceInfo } = body;
+
+    if (!debtorIban || !creditorIban || !amount) {
+      return jsonApiError('Bad Request', 'Missing required SEPA Instant fields', 400, interactionId);
+    }
+
+    const endToEndId = `SEPA${Date.now()}${crypto.randomUUID().substring(0, 8).toUpperCase()}`;
+    const instructionId = `INST${Date.now()}`;
+    const startTime = Date.now();
+
+    // Store SEPA Instant payment
+    const { data: payment, error } = await supabase
+      .from('sepa_instant_payments')
+      .insert({
+        tpp_id: tppId || 'direct',
+        user_id: authResult.userId,
+        debtor_iban: debtorIban,
+        debtor_name: debtorName || 'Account Holder',
+        creditor_iban: creditorIban,
+        creditor_name: creditorName,
+        creditor_bic: creditorBic,
+        amount: parseFloat(amount),
+        currency: currency || 'EUR',
+        remittance_info: remittanceInfo,
+        end_to_end_id: endToEndId,
+        instruction_id: instructionId,
+        status: 'accepted',
+        settlement_date: new Date().toISOString(),
+        processing_time_ms: Date.now() - startTime
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('[Open Banking API] SEPA Instant error:', error);
+      return jsonApiError('Internal Error', 'Failed to process SEPA Instant payment', 500, interactionId);
+    }
+
+    await logAudit(supabase, {
+      tppId: tppId || 'direct',
+      userId: authResult.userId,
+      endpoint: path,
+      method: 'POST',
+      requestBody: body,
+      responseStatus: 201,
+      responseBody: { paymentId: payment.id, endToEndId },
+      interactionId,
+      ipAddress
+    });
+
+    return jsonApiResponse({
+      data: {
+        id: payment.id,
+        type: 'sepa-instant-payments',
+        attributes: {
+          endToEndId,
+          instructionId,
+          transactionStatus: 'ACSC', // AcceptedSettlementCompleted
+          settlementDate: payment.settlement_date,
+          processingTimeMs: payment.processing_time_ms,
+          debtorIban,
+          creditorIban,
+          creditorName,
+          amount: {
+            value: amount,
+            currency: currency || 'EUR'
+          }
+        },
+        links: {
+          self: `${url.origin}/sepa-instant/${payment.id}`,
+          status: `${url.origin}/sepa-instant/${payment.id}/status`
+        }
+      }
+    }, 201, interactionId);
+  }
+
+  // GET /sepa-instant/:paymentId - Get SEPA Instant payment status
+  const sepaInstantMatch = path.match(/^\/sepa-instant\/([^\/]+)$/);
+  if (sepaInstantMatch && req.method === 'GET') {
+    const paymentId = sepaInstantMatch[1];
+
+    const { data: payment, error } = await supabase
+      .from('sepa_instant_payments')
+      .select('*')
+      .eq('id', paymentId)
+      .single();
+
+    if (error || !payment) {
+      return jsonApiError('Not Found', 'SEPA Instant payment not found', 404, interactionId);
+    }
+
+    return jsonApiResponse({
+      data: {
+        id: payment.id,
+        type: 'sepa-instant-payments',
+        attributes: {
+          endToEndId: payment.end_to_end_id,
+          instructionId: payment.instruction_id,
+          transactionStatus: payment.status === 'settled' ? 'ACSC' : payment.status.toUpperCase(),
+          settlementDate: payment.settlement_date,
+          processingTimeMs: payment.processing_time_ms,
+          amount: {
+            value: payment.amount.toString(),
+            currency: payment.currency
+          },
+          rejectionReason: payment.rejection_reason
+        }
+      }
+    }, 200, interactionId);
+  }
+
+  // ==================== VRP (Variable Recurring Payments) ====================
+
+  // POST /vrp/mandates - Create VRP mandate
+  if (path === '/vrp/mandates' && req.method === 'POST') {
+    if (!authResult.scopes?.includes('payments')) {
+      return jsonApiError('Forbidden', 'payments scope required', 403, interactionId);
+    }
+
+    // Validate premium tier for VRP
+    if (tppId) {
+      const { data: subscription } = await supabase
+        .from('tpp_premium_subscriptions')
+        .select('tier_id, premium_api_tiers(tier_name, features)')
+        .eq('tpp_id', tppId)
+        .eq('status', 'active')
+        .single();
+
+      const tierData = subscription?.premium_api_tiers as any;
+      const features = tierData?.features || [];
+      if (!features.includes('vrp')) {
+        return jsonApiError('Forbidden', 'VRP requires premium tier subscription', 403, interactionId);
+      }
+    }
+
+    // Validate consent for VRP
+    if (tppId && authResult.userId) {
+      const consentValidation = await validateConsent(tppId, authResult.userId, 'payments', supabase);
+      if (!consentValidation.valid) {
+        return jsonApiError('Forbidden', consentValidation.error || 'No valid consent for VRP', 403, interactionId);
+      }
+
+      const body = await req.json();
+      const { debtorAccount, creditorAccount, creditorName, maxAmount, currency, frequency, maxPerPeriod, validFrom, validTo, reference } = body;
+
+      if (!debtorAccount || !creditorAccount || !creditorName || !maxAmount || !frequency || !validFrom) {
+        return jsonApiError('Bad Request', 'Missing required VRP mandate fields', 400, interactionId);
+      }
+
+      // Create VRP mandate
+      const { data: mandate, error } = await supabase
+        .from('vrp_mandates')
+        .insert({
+          consent_id: consentValidation.consent.id,
+          tpp_id: tppId,
+          debtor_account: debtorAccount,
+          creditor_account: creditorAccount,
+          creditor_name: creditorName,
+          max_amount: parseFloat(maxAmount),
+          currency: currency || 'EUR',
+          frequency,
+          max_per_period: maxPerPeriod ? parseFloat(maxPerPeriod) : null,
+          valid_from: new Date(validFrom).toISOString(),
+          valid_to: validTo ? new Date(validTo).toISOString() : null,
+          reference,
+          status: 'awaiting_authorization'
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('[Open Banking API] VRP mandate error:', error);
+        return jsonApiError('Internal Error', 'Failed to create VRP mandate', 500, interactionId);
+      }
+
+      await logAudit(supabase, {
+        tppId,
+        userId: authResult.userId,
+        consentId: consentValidation.consent.consent_id,
+        endpoint: path,
+        method: 'POST',
+        requestBody: body,
+        responseStatus: 201,
+        responseBody: { mandateId: mandate.id },
+        interactionId,
+        ipAddress
+      });
+
+      return jsonApiResponse({
+        data: {
+          id: mandate.id,
+          type: 'vrp-mandates',
+          attributes: {
+            mandateId: mandate.id,
+            status: mandate.status,
+            debtorAccount,
+            creditorAccount,
+            creditorName,
+            maxAmount: {
+              value: maxAmount,
+              currency: currency || 'EUR'
+            },
+            frequency,
+            maxPerPeriod: maxPerPeriod ? { value: maxPerPeriod, currency: currency || 'EUR' } : null,
+            validFrom: mandate.valid_from,
+            validTo: mandate.valid_to,
+            reference
+          },
+          links: {
+            self: `${url.origin}/vrp/mandates/${mandate.id}`,
+            authorise: `${url.origin}/vrp/mandates/${mandate.id}/authorise`,
+            payments: `${url.origin}/vrp/mandates/${mandate.id}/payments`
+          }
+        }
+      }, 201, interactionId);
+    }
+    
+    return jsonApiError('Unauthorized', 'Valid TPP and user authentication required', 401, interactionId);
+  }
+
+  // GET /vrp/mandates/:mandateId - Get VRP mandate
+  const vrpMandateMatch = path.match(/^\/vrp\/mandates\/([^\/]+)$/);
+  if (vrpMandateMatch && req.method === 'GET') {
+    const mandateId = vrpMandateMatch[1];
+
+    const { data: mandate, error } = await supabase
+      .from('vrp_mandates')
+      .select('*')
+      .eq('id', mandateId)
+      .single();
+
+    if (error || !mandate) {
+      return jsonApiError('Not Found', 'VRP mandate not found', 404, interactionId);
+    }
+
+    return jsonApiResponse({
+      data: {
+        id: mandate.id,
+        type: 'vrp-mandates',
+        attributes: {
+          status: mandate.status,
+          debtorAccount: mandate.debtor_account,
+          creditorAccount: mandate.creditor_account,
+          creditorName: mandate.creditor_name,
+          maxAmount: {
+            value: mandate.max_amount.toString(),
+            currency: mandate.currency
+          },
+          frequency: mandate.frequency,
+          validFrom: mandate.valid_from,
+          validTo: mandate.valid_to
+        }
+      }
+    }, 200, interactionId);
+  }
+
+  // POST /vrp/mandates/:mandateId/authorise - Authorize VRP mandate
+  const vrpAuthoriseMatch = path.match(/^\/vrp\/mandates\/([^\/]+)\/authorise$/);
+  if (vrpAuthoriseMatch && req.method === 'POST') {
+    const mandateId = vrpAuthoriseMatch[1];
+
+    const { error } = await supabase
+      .from('vrp_mandates')
+      .update({ status: 'authorized', updated_at: new Date().toISOString() })
+      .eq('id', mandateId);
+
+    if (error) {
+      console.error('[Open Banking API] VRP authorization error:', error);
+      return jsonApiError('Internal Error', 'Failed to authorize VRP mandate', 500, interactionId);
+    }
+
+    await logAudit(supabase, {
+      tppId: tppId || 'direct',
+      userId: authResult.userId,
+      endpoint: path,
+      method: 'POST',
+      responseStatus: 200,
+      interactionId,
+      ipAddress
+    });
+
+    return jsonApiResponse({
+      data: {
+        mandateId,
+        status: 'authorized'
+      }
+    }, 200, interactionId);
+  }
+
+  // POST /vrp/mandates/:mandateId/payments - Execute VRP payment
+  const vrpPaymentMatch = path.match(/^\/vrp\/mandates\/([^\/]+)\/payments$/);
+  if (vrpPaymentMatch && req.method === 'POST') {
+    const mandateId = vrpPaymentMatch[1];
+
+    // Get mandate
+    const { data: mandate, error: mandateError } = await supabase
+      .from('vrp_mandates')
+      .select('*')
+      .eq('id', mandateId)
+      .eq('status', 'authorized')
+      .single();
+
+    if (mandateError || !mandate) {
+      return jsonApiError('Not Found', 'Active VRP mandate not found', 404, interactionId);
+    }
+
+    const body = await req.json();
+    const { amount, paymentReference } = body;
+
+    if (!amount) {
+      return jsonApiError('Bad Request', 'Amount is required', 400, interactionId);
+    }
+
+    const requestedAmount = parseFloat(amount);
+
+    // Validate amount against mandate limits
+    if (requestedAmount > parseFloat(mandate.max_amount)) {
+      return jsonApiError('Bad Request', `Amount exceeds mandate maximum of ${mandate.max_amount}`, 400, interactionId);
+    }
+
+    // Check period limits
+    if (mandate.max_per_period) {
+      const periodStart = getPeriodStart(mandate.frequency);
+      const { data: periodPayments } = await supabase
+        .from('vrp_payments')
+        .select('amount')
+        .eq('mandate_id', mandateId)
+        .gte('execution_date', periodStart.toISOString())
+        .eq('status', 'completed');
+
+      const periodTotal = (periodPayments || []).reduce((sum: number, p: any) => sum + parseFloat(p.amount), 0);
+      if (periodTotal + requestedAmount > parseFloat(mandate.max_per_period)) {
+        return jsonApiError('Bad Request', `Amount would exceed period limit of ${mandate.max_per_period}`, 400, interactionId);
+      }
+    }
+
+    const endToEndId = `VRP${Date.now()}${crypto.randomUUID().substring(0, 8).toUpperCase()}`;
+
+    // Create VRP payment
+    const { data: payment, error } = await supabase
+      .from('vrp_payments')
+      .insert({
+        mandate_id: mandateId,
+        amount: requestedAmount,
+        currency: mandate.currency,
+        end_to_end_id: endToEndId,
+        payment_reference: paymentReference,
+        status: 'completed'
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('[Open Banking API] VRP payment error:', error);
+      return jsonApiError('Internal Error', 'Failed to execute VRP payment', 500, interactionId);
+    }
+
+    await logAudit(supabase, {
+      tppId: tppId || 'direct',
+      userId: authResult.userId,
+      endpoint: path,
+      method: 'POST',
+      requestBody: body,
+      responseStatus: 201,
+      responseBody: { paymentId: payment.id },
+      interactionId,
+      ipAddress
+    });
+
+    return jsonApiResponse({
+      data: {
+        id: payment.id,
+        type: 'vrp-payments',
+        attributes: {
+          mandateId,
+          endToEndId,
+          status: 'completed',
+          amount: {
+            value: amount,
+            currency: mandate.currency
+          },
+          executionDate: payment.execution_date,
+          paymentReference
+        }
+      }
+    }, 201, interactionId);
+  }
+
+  // DELETE /vrp/mandates/:mandateId - Revoke VRP mandate
+  const vrpRevokeMatch = path.match(/^\/vrp\/mandates\/([^\/]+)$/);
+  if (vrpRevokeMatch && req.method === 'DELETE') {
+    const mandateId = vrpRevokeMatch[1];
+
+    const { error } = await supabase
+      .from('vrp_mandates')
+      .update({ status: 'revoked', updated_at: new Date().toISOString() })
+      .eq('id', mandateId);
+
+    if (error) {
+      console.error('[Open Banking API] VRP revocation error:', error);
+      return jsonApiError('Internal Error', 'Failed to revoke VRP mandate', 500, interactionId);
+    }
+
+    await logAudit(supabase, {
+      tppId: tppId || 'direct',
+      userId: authResult.userId,
+      endpoint: path,
+      method: 'DELETE',
+      responseStatus: 204,
+      interactionId,
+      ipAddress
+    });
+
+    return new Response(null, { 
+      status: 204,
+      headers: { ...corsHeaders, 'x-fapi-interaction-id': interactionId }
+    });
+  }
+
+  // ==================== PREMIUM API ENDPOINTS ====================
+
+  // GET /premium/tiers - List available premium tiers
+  if (path === '/premium/tiers' && req.method === 'GET') {
+    const { data: tiers, error } = await supabase
+      .from('premium_api_tiers')
+      .select('*')
+      .eq('is_active', true)
+      .order('price_monthly', { ascending: true });
+
+    if (error) {
+      return jsonApiError('Internal Error', 'Failed to fetch premium tiers', 500, interactionId);
+    }
+
+    return jsonApiResponse({
+      data: (tiers || []).map(tier => ({
+        id: tier.id,
+        type: 'premium-tiers',
+        attributes: {
+          tierName: tier.tier_name,
+          description: tier.description,
+          rateLimits: {
+            perMinute: tier.rate_limit_per_minute,
+            perHour: tier.rate_limit_per_hour,
+            perDay: tier.rate_limit_per_day
+          },
+          features: tier.features,
+          priceMonthly: tier.price_monthly
+        }
+      }))
+    }, 200, interactionId);
+  }
+
+  // POST /premium/subscribe - Subscribe to premium tier
+  if (path === '/premium/subscribe' && req.method === 'POST') {
+    if (!tppId) {
+      return jsonApiError('Bad Request', 'x-tpp-id header required', 400, interactionId);
+    }
+
+    const body = await req.json();
+    const { tierId, autoRenew } = body;
+
+    if (!tierId) {
+      return jsonApiError('Bad Request', 'tierId is required', 400, interactionId);
+    }
+
+    // Verify tier exists
+    const { data: tier } = await supabase
+      .from('premium_api_tiers')
+      .select('*')
+      .eq('id', tierId)
+      .eq('is_active', true)
+      .single();
+
+    if (!tier) {
+      return jsonApiError('Not Found', 'Premium tier not found', 404, interactionId);
+    }
+
+    // Check existing subscription
+    const { data: existingSub } = await supabase
+      .from('tpp_premium_subscriptions')
+      .select('id')
+      .eq('tpp_id', tppId)
+      .eq('status', 'active')
+      .single();
+
+    if (existingSub) {
+      // Update existing subscription
+      await supabase
+        .from('tpp_premium_subscriptions')
+        .update({
+          tier_id: tierId,
+          auto_renew: autoRenew ?? true,
+          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        })
+        .eq('id', existingSub.id);
+    } else {
+      // Create new subscription
+      await supabase
+        .from('tpp_premium_subscriptions')
+        .insert({
+          tpp_id: tppId,
+          tier_id: tierId,
+          status: 'active',
+          auto_renew: autoRenew ?? true,
+          expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        });
+    }
+
+    // Update TPP rate limits based on tier
+    await supabase
+      .from('registered_tpps')
+      .update({ rate_limit_per_hour: tier.rate_limit_per_hour })
+      .eq('tpp_id', tppId);
+
+    await logAudit(supabase, {
+      tppId,
+      endpoint: path,
+      method: 'POST',
+      requestBody: body,
+      responseStatus: 200,
+      interactionId,
+      ipAddress
+    });
+
+    return jsonApiResponse({
+      data: {
+        type: 'premium-subscriptions',
+        attributes: {
+          tppId,
+          tierName: tier.tier_name,
+          status: 'active',
+          features: tier.features,
+          rateLimits: {
+            perMinute: tier.rate_limit_per_minute,
+            perHour: tier.rate_limit_per_hour,
+            perDay: tier.rate_limit_per_day
+          },
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        }
+      }
+    }, 200, interactionId);
+  }
+
+  // GET /premium/subscription - Get current TPP subscription
+  if (path === '/premium/subscription' && req.method === 'GET') {
+    if (!tppId) {
+      return jsonApiError('Bad Request', 'x-tpp-id header required', 400, interactionId);
+    }
+
+    const { data: subscription } = await supabase
+      .from('tpp_premium_subscriptions')
+      .select('*, premium_api_tiers(*)')
+      .eq('tpp_id', tppId)
+      .eq('status', 'active')
+      .single();
+
+    if (!subscription) {
+      return jsonApiResponse({
+        data: {
+          type: 'premium-subscriptions',
+          attributes: {
+            status: 'none',
+            tierName: 'basic',
+            message: 'No active premium subscription'
+          }
+        }
+      }, 200, interactionId);
+    }
+
+    return jsonApiResponse({
+      data: {
+        id: subscription.id,
+        type: 'premium-subscriptions',
+        attributes: {
+          tierName: subscription.premium_api_tiers?.tier_name,
+          status: subscription.status,
+          features: subscription.premium_api_tiers?.features,
+          rateLimits: {
+            perMinute: subscription.premium_api_tiers?.rate_limit_per_minute,
+            perHour: subscription.premium_api_tiers?.rate_limit_per_hour,
+            perDay: subscription.premium_api_tiers?.rate_limit_per_day
+          },
+          startedAt: subscription.started_at,
+          expiresAt: subscription.expires_at,
+          autoRenew: subscription.auto_renew
+        }
+      }
+    }, 200, interactionId);
+  }
+
   // Not found
   return jsonApiError('Not Found', `Endpoint ${path} not found`, 404, interactionId);
 });
+
+// Helper function to get period start date based on frequency
+function getPeriodStart(frequency: string): Date {
+  const now = new Date();
+  switch (frequency) {
+    case 'daily':
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    case 'weekly':
+      const dayOfWeek = now.getDay();
+      return new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek);
+    case 'monthly':
+      return new Date(now.getFullYear(), now.getMonth(), 1);
+    case 'quarterly':
+      const quarter = Math.floor(now.getMonth() / 3);
+      return new Date(now.getFullYear(), quarter * 3, 1);
+    case 'yearly':
+      return new Date(now.getFullYear(), 0, 1);
+    default:
+      return new Date(now.getFullYear(), now.getMonth(), 1);
+  }
+}
