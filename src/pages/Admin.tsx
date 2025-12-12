@@ -667,6 +667,17 @@ const Admin = () => {
         return <SMSManager />;
       case 'realtime-chat':
         return <RealtimeChatPanel />;
+      case 'predictive-analytics':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <PredictiveAnalyticsDashboard />;
       case 'cascade-goals':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager && !isOfficeDirector) {
           return (
