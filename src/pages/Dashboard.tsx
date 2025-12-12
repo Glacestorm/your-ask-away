@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -32,6 +32,7 @@ import { DateRange } from 'react-day-picker';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import * as XLSX from 'xlsx';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Componentes ligeros que se cargan siempre
 import { GlobalNavHeader } from '@/components/GlobalNavHeader';
@@ -42,6 +43,7 @@ import { useWidgetLayout } from '@/hooks/useWidgetLayout';
 import { DraggableWidget } from '@/components/dashboard/DraggableWidget';
 import { SortableWidgetContainer } from '@/components/dashboard/SortableWidgetContainer';
 import { WidgetLayoutControls } from '@/components/dashboard/WidgetLayoutControls';
+import { MobileTabsMenu } from '@/components/dashboard/MobileTabsMenu';
 
 // Lazy loading para todos los componentes pesados del Dashboard
 const ResumenEjecutivo = lazy(() => import('@/components/dashboard/ResumenEjecutivo').then(m => ({ default: m.ResumenEjecutivo })));
@@ -103,11 +105,31 @@ const Dashboard = () => {
   const { user, loading: authLoading, userRole } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: subMonths(new Date(), 1),
     to: new Date(),
   });
+
+  // Role-based visibility configuration
+  const isDirector = userRole && ['superadmin', 'director_comercial', 'director_oficina', 'responsable_comercial'].includes(userRole);
+  const isAuditor = userRole === 'auditor';
+  const isRegularUser = userRole === 'user';
+  const canManageAlerts = userRole && ['superadmin', 'director_comercial', 'responsable_comercial', 'director_oficina'].includes(userRole);
+  const canSeeAdvancedAnalytics = userRole && ['superadmin', 'director_comercial', 'responsable_comercial', 'director_oficina', 'auditor'].includes(userRole);
+  const canSeeTPV = userRole && ['superadmin', 'director_comercial', 'responsable_comercial', 'user'].includes(userRole);
+  const canSeeBestPractices = !isAuditor; // Everyone except auditors
+  const canSeeReports = userRole && ['superadmin', 'director_comercial', 'responsable_comercial', 'director_oficina', 'auditor'].includes(userRole);
+
+  // Role-based default tab - Directors default to "equipo", gestors to "mi-panel"
+  const getDefaultTab = useMemo(() => {
+    if (isDirector) return 'equipo';
+    if (isAuditor) return 'analisis';
+    return 'mi-panel';
+  }, [isDirector, isAuditor]);
+
+  const [activeMainTab, setActiveMainTab] = useState(getDefaultTab);
 
   // Sub-tabs state for each main section
   const [analysisSubTab, setAnalysisSubTab] = useState('comparativa');
@@ -126,15 +148,14 @@ const Dashboard = () => {
     isWidgetVisible,
   } = useWidgetLayout('mi-panel');
 
-  // Role-based visibility configuration
-  const isDirector = userRole && ['superadmin', 'director_comercial', 'director_oficina', 'responsable_comercial'].includes(userRole);
-  const isAuditor = userRole === 'auditor';
-  const isRegularUser = userRole === 'user';
-  const canManageAlerts = userRole && ['superadmin', 'director_comercial', 'responsable_comercial', 'director_oficina'].includes(userRole);
-  const canSeeAdvancedAnalytics = userRole && ['superadmin', 'director_comercial', 'responsable_comercial', 'director_oficina', 'auditor'].includes(userRole);
-  const canSeeTPV = userRole && ['superadmin', 'director_comercial', 'responsable_comercial', 'user'].includes(userRole);
-  const canSeeBestPractices = !isAuditor; // Everyone except auditors
-  const canSeeReports = userRole && ['superadmin', 'director_comercial', 'responsable_comercial', 'director_oficina', 'auditor'].includes(userRole);
+  // Tab configuration for mobile dropdown
+  const tabsConfig = useMemo(() => [
+    { value: 'mi-panel', label: 'Mi Panel', icon: <LayoutDashboard className="h-4 w-4" />, visible: true },
+    { value: 'analisis', label: 'Análisis', icon: <PieChart className="h-4 w-4" />, visible: true },
+    { value: 'objetivos', label: 'Objetivos', icon: <Target className="h-4 w-4" />, visible: true },
+    { value: 'equipo', label: 'Equipo', icon: <Users className="h-4 w-4" />, visible: isDirector },
+    { value: 'herramientas', label: 'Herramientas', icon: <Settings className="h-4 w-4" />, visible: true },
+  ], [isDirector]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -222,50 +243,57 @@ const Dashboard = () => {
           onDateRangeChange={setDateRange}
         />
 
-        {/* Main Dashboard Tabs - 5 Sections - Mobile optimized with horizontal scroll */}
-        <Tabs defaultValue="mi-panel" className="space-y-4 sm:space-y-6">
-          {/* Mobile: Horizontal scrollable tabs */}
-          <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide">
-            <TabsList className={`inline-flex sm:grid sm:w-full ${isDirector ? 'sm:grid-cols-5' : 'sm:grid-cols-4'} h-auto gap-1 min-w-max sm:min-w-0`}>
+        {/* Main Dashboard Tabs - 5 Sections */}
+        <Tabs value={activeMainTab} onValueChange={setActiveMainTab} className="space-y-4 sm:space-y-6">
+          {/* Mobile: Dropdown menu */}
+          {isMobile ? (
+            <MobileTabsMenu
+              activeTab={activeMainTab}
+              onTabChange={setActiveMainTab}
+              tabs={tabsConfig}
+            />
+          ) : (
+            /* Desktop: Standard tabs */
+            <TabsList className={`grid w-full ${isDirector ? 'grid-cols-5' : 'grid-cols-4'} h-auto gap-1`}>
               <TabsTrigger 
                 value="mi-panel" 
-                className="flex items-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm touch-manipulation"
+                className="flex items-center gap-2 py-3 px-4 text-sm touch-manipulation"
               >
                 <LayoutDashboard className="h-4 w-4 flex-shrink-0" />
-                <span className="font-medium whitespace-nowrap">Mi Panel</span>
+                <span className="font-medium">Mi Panel</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="analisis" 
-                className="flex items-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm touch-manipulation"
+                className="flex items-center gap-2 py-3 px-4 text-sm touch-manipulation"
               >
                 <PieChart className="h-4 w-4 flex-shrink-0" />
-                <span className="font-medium whitespace-nowrap">Análisis</span>
+                <span className="font-medium">Análisis</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="objetivos" 
-                className="flex items-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm touch-manipulation"
+                className="flex items-center gap-2 py-3 px-4 text-sm touch-manipulation"
               >
                 <Target className="h-4 w-4 flex-shrink-0" />
-                <span className="font-medium whitespace-nowrap">Objetivos</span>
+                <span className="font-medium">Objetivos</span>
               </TabsTrigger>
               {isDirector && (
                 <TabsTrigger 
                   value="equipo" 
-                  className="flex items-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm touch-manipulation"
+                  className="flex items-center gap-2 py-3 px-4 text-sm touch-manipulation"
                 >
                   <Users className="h-4 w-4 flex-shrink-0" />
-                  <span className="font-medium whitespace-nowrap">Equipo</span>
+                  <span className="font-medium">Equipo</span>
                 </TabsTrigger>
               )}
               <TabsTrigger 
                 value="herramientas" 
-                className="flex items-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-3 sm:px-4 text-xs sm:text-sm touch-manipulation"
+                className="flex items-center gap-2 py-3 px-4 text-sm touch-manipulation"
               >
                 <Settings className="h-4 w-4 flex-shrink-0" />
-                <span className="font-medium whitespace-nowrap">Herramientas</span>
+                <span className="font-medium">Herramientas</span>
               </TabsTrigger>
             </TabsList>
-          </div>
+          )}
 
           {/* ===== SECTION 1: MI PANEL (Personal Dashboard) ===== */}
           <TabsContent value="mi-panel" className="space-y-6">
