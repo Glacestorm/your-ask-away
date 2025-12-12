@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigationHistory } from '@/hooks/useNavigationHistory';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Activity, History, Shield, Rocket, Bot, BarChart3, Users, Palette, FileCode2, Eye } from 'lucide-react';
+import { ArrowLeft, Activity, History, Shield, Rocket, Bot, BarChart3, Users, Palette, FileCode2, Eye, MessageSquare, Bell, MessagesSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import VisitSheets from '@/pages/VisitSheets';
 import { GlobalNavHeader } from '@/components/GlobalNavHeader';
@@ -67,6 +67,8 @@ import APIDocumentation from '@/components/admin/APIDocumentation';
 import { Customer360Panel } from '@/components/admin/Customer360Panel';
 import { MLExplainabilityPanel } from '@/components/admin/MLExplainabilityPanel';
 import { AdvancedMLDashboard } from '@/components/admin/AdvancedMLDashboard';
+import { SMSManager } from '@/components/admin/SMSManager';
+import { RealtimeChatPanel } from '@/components/chat/RealtimeChatPanel';
 
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
@@ -178,6 +180,8 @@ const Admin = () => {
       case 'cdp-360': return 'Customer Data Platform 360°';
       case 'ml-explainability': return 'ML Explainability (SHAP/LIME)';
       case 'advanced-ml': return 'ML Avançat (Ensemble + A/B)';
+      case 'sms-manager': return 'Gestió SMS';
+      case 'realtime-chat': return 'Chat en Temps Real';
       default: return '';
     }
   };
@@ -645,6 +649,10 @@ const Admin = () => {
           );
         }
         return <InternalAssistantChat />;
+      case 'sms-manager':
+        return <SMSManager />;
+      case 'realtime-chat':
+        return <RealtimeChatPanel />;
       case 'cascade-goals':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager && !isOfficeDirector) {
           return (
@@ -1126,7 +1134,58 @@ case 'administration':
               </div>
             </div>
 
-            {/* SECCIÓ 5: Eines i Historial */}
+            {/* SECCIÓ 5: Comunicació Omnicanal - FASE 3 */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-pink-600 dark:text-pink-400 flex items-center gap-2">
+                <MessagesSquare className="h-5 w-5" /> Comunicació Omnicanal
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-pink-500/30 bg-gradient-to-br from-pink-500/5 to-pink-500/10"
+                  onClick={() => handleSectionChange('sms-manager')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-pink-500/20 flex items-center justify-center">
+                      <MessageSquare className="h-4 w-4 text-pink-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-pink-700 dark:text-pink-400">SMS Gateway</h4>
+                      <p className="text-xs text-muted-foreground">Plantilles i enviaments</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-violet-500/30 bg-gradient-to-br from-violet-500/5 to-violet-500/10"
+                  onClick={() => handleSectionChange('realtime-chat')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-violet-500/20 flex items-center justify-center">
+                      <MessagesSquare className="h-4 w-4 text-violet-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-violet-700 dark:text-violet-400">Chat Temps Real</h4>
+                      <p className="text-xs text-muted-foreground">Sales i missatges</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-orange-500/30 bg-gradient-to-br from-orange-500/5 to-orange-500/10"
+                  onClick={() => handleSectionChange('notifications')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                      <Bell className="h-4 w-4 text-orange-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-orange-700 dark:text-orange-400">Push Notifications</h4>
+                      <p className="text-xs text-muted-foreground">Web i mòbil</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* SECCIÓ 6: Eines i Historial */}
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-2">
                 <History className="h-5 w-5" /> Eines i Historial
