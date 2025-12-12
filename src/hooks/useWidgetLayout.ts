@@ -13,7 +13,7 @@ interface WidgetLayoutState {
 
 const STORAGE_KEY = 'dashboard-widget-layout';
 
-const defaultWidgets: WidgetConfig[] = [
+const getDefaultWidgets = (): WidgetConfig[] => [
   { id: 'personal-kpis', visible: true, order: 0 },
   { id: 'quick-actions', visible: true, order: 1 },
   { id: 'upcoming-visits', visible: true, order: 2 },
@@ -28,12 +28,16 @@ export function useWidgetLayout(section: string = 'mi-panel') {
     try {
       const stored = localStorage.getItem(storageKey);
       if (stored) {
-        return JSON.parse(stored);
+        const parsed = JSON.parse(stored);
+        // Validar que tiene la estructura correcta
+        if (parsed.widgets && Array.isArray(parsed.widgets) && parsed.widgets.length > 0) {
+          return parsed;
+        }
       }
     } catch (e) {
       console.error('Error loading widget layout:', e);
     }
-    return { widgets: defaultWidgets, isEditMode: false };
+    return { widgets: getDefaultWidgets(), isEditMode: false };
   });
 
   const [isEditMode, setIsEditMode] = useState(false);
@@ -74,7 +78,7 @@ export function useWidgetLayout(section: string = 'mi-panel') {
   }, []);
 
   const resetLayout = useCallback(() => {
-    setState({ widgets: defaultWidgets, isEditMode: false });
+    setState({ widgets: getDefaultWidgets(), isEditMode: false });
   }, []);
 
   const getWidgetOrder = useCallback((id: string): number => {
