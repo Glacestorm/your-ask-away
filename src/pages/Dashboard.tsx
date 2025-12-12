@@ -44,6 +44,9 @@ import { DraggableWidget } from '@/components/dashboard/DraggableWidget';
 import { SortableWidgetContainer } from '@/components/dashboard/SortableWidgetContainer';
 import { WidgetLayoutControls } from '@/components/dashboard/WidgetLayoutControls';
 import { MobileTabsMenu } from '@/components/dashboard/MobileTabsMenu';
+import { AlertsBadge } from '@/components/dashboard/AlertsBadge';
+import { FocusModeToggle } from '@/components/dashboard/FocusModeToggle';
+import { FocusModeDashboard } from '@/components/dashboard/FocusModeDashboard';
 
 // Lazy loading para todos los componentes pesados del Dashboard
 const ResumenEjecutivo = lazy(() => import('@/components/dashboard/ResumenEjecutivo').then(m => ({ default: m.ResumenEjecutivo })));
@@ -136,6 +139,9 @@ const Dashboard = () => {
   const [goalsSubTab, setGoalsSubTab] = useState('objetivos');
   const [teamSubTab, setTeamSubTab] = useState('gestores');
   const [toolsSubTab, setToolsSubTab] = useState('alertas');
+  
+  // Focus Mode state
+  const [focusMode, setFocusMode] = useState(false);
 
   // Widget layout system
   const {
@@ -225,6 +231,11 @@ const Dashboard = () => {
           <GlobalNavHeader title={t('dashboard.title')} subtitle={t('dashboard.subtitle')} />
           
           <div className="flex items-center gap-2 sm:gap-3 justify-end">
+            <FocusModeToggle 
+              isActive={focusMode} 
+              onToggle={() => setFocusMode(!focusMode)} 
+            />
+            <AlertsBadge />
             <NotificationsPanel />
             <Button 
               onClick={exportToExcel} 
@@ -243,7 +254,11 @@ const Dashboard = () => {
           onDateRangeChange={setDateRange}
         />
 
-        {/* Main Dashboard Tabs - 5 Sections */}
+        {/* Focus Mode - Simplified View */}
+        {focusMode ? (
+          <FocusModeDashboard startDate={startDate} endDate={endDate} />
+        ) : (
+        /* Main Dashboard Tabs - 5 Sections */
         <Tabs value={activeMainTab} onValueChange={setActiveMainTab} className="space-y-4 sm:space-y-6">
           {/* Mobile: Dropdown menu */}
           {isMobile ? (
@@ -927,6 +942,7 @@ const Dashboard = () => {
             )}
           </TabsContent>
         </Tabs>
+        )}
       </div>
     </div>
   );
