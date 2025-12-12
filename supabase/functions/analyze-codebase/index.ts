@@ -1036,12 +1036,12 @@ function getDefaultAnalysis(componentsList: string[], hooksList: string[], edgeF
       { sector: "Fintech", clientType: "Neobancos", region: "Europa", estimatedValue: "40.000€ - 80.000€", implementationTime: "1-2 meses", customizations: ["API integrations"], potentialClients: 150, marketPenetration: "5%", salesPriority: 3, conversionProbability: "50%", decisionMakers: ["CTO", "CEO"], salesApproach: "Partnership tecnológico" }
     ],
     codeStats: {
-      totalFiles: 310,
-      totalComponents: 195,
-      totalHooks: 22,
-      totalEdgeFunctions: 45,
+      totalFiles: 380,
+      totalComponents: 210,
+      totalHooks: 54,
+      totalEdgeFunctions: 64,
       totalPages: 9,
-      linesOfCode: 95000
+      linesOfCode: 120000
     },
     marketingHighlights: {
       uniqueSellingPoints: [
