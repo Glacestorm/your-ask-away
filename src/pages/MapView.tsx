@@ -99,7 +99,7 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
   const [routePlannerCompany, setRoutePlannerCompany] = useState<CompanyWithDetails | null>(null);
   const [isSelectingPins, setIsSelectingPins] = useState(false);
   const [routeSelectedIds, setRouteSelectedIds] = useState<string[]>([]);
-  const [showLegend, setShowLegend] = useState(true);
+  const [showLegend, setShowLegend] = useState(false);
   const [showStatistics, setShowStatistics] = useState(false);
 
   useEffect(() => {
