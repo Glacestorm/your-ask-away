@@ -485,75 +485,86 @@ export function MapContainer({
     // Andorra coordinates
     const andorraCenter: [number, number] = [1.5218, 42.5063];
 
-    // SOLUCIÓN DEFINITIVA: Tiles raster inline - SIEMPRE funciona, sin dependencias externas
-    // Usando OSM France que tiene CORS habilitado y no bloquea iframes
-    const createBaseStyle = (): maplibregl.StyleSpecification => {
-      console.log('🗺️ Inicializando mapa con OSM France tiles');
-      return {
-        version: 8 as const,
-        sources: {
-          'raster-tiles': {
-            type: 'raster' as const,
-            tiles: [
-              'https://tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png'
-            ],
-            tileSize: 256,
-            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxzoom: 19,
-          },
-        },
-        layers: [{
-          id: 'raster-layer',
-          type: 'raster' as const,
-          source: 'raster-tiles',
-          minzoom: 0,
-          maxzoom: 19,
-        }],
-      };
-    };
-
-    const createSatelliteStyle = (): maplibregl.StyleSpecification => ({
-      version: 8 as const,
+    // ==========================================
+    // DIAGNÓSTICO: Versión mínima para encontrar el error
+    // ==========================================
+    
+    // Estilo mínimo con MapTiler free tiles (más confiable)
+    const minimalStyle: maplibregl.StyleSpecification = {
+      version: 8,
       sources: {
-        'satellite-tiles': {
-          type: 'raster' as const,
+        'osm': {
+          type: 'raster',
           tiles: [
-            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+            'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
           ],
           tileSize: 256,
-          attribution: '© Esri',
-          maxzoom: 19,
-        },
+          attribution: '© OpenStreetMap'
+        }
       },
-      layers: [{
-        id: 'satellite-layer',
-        type: 'raster' as const,
-        source: 'satellite-tiles',
-        minzoom: 0,
-        maxzoom: 19,
-      }],
-      glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
-    });
+      layers: [
+        {
+          id: 'osm-tiles',
+          type: 'raster',
+          source: 'osm',
+          minzoom: 0,
+          maxzoom: 19
+        }
+      ]
+    };
 
-    const initialStyle = mapStyle === 'satellite' ? createSatelliteStyle() : createBaseStyle();
-    console.log('🚀 Inicializando MapLibre GL con estilo:', mapStyle);
-
+    console.log('🔍 DIAGNÓSTICO: Iniciando mapa mínimo...');
+    
     try {
       map.current = new maplibregl.Map({
         container: mapContainer.current,
-        style: initialStyle,
+        style: minimalStyle,
         center: andorraCenter,
         zoom: 12,
-        pitch: view3D ? 60 : 0,
-        bearing: 0,
-        maxZoom: 20,
+        maxZoom: 19,
         minZoom: 1,
-        trackResize: true,
-        fadeDuration: 0,
       });
-      console.log('✅ Instancia del mapa creada correctamente');
+      
+      console.log('✅ Mapa creado, esperando tiles...');
+      
+      // Evento cuando el estilo está listo
+      map.current.on('styledata', () => {
+        console.log('📦 Estilo cargado');
+      });
+      
+      // Evento cuando las fuentes están listas
+      map.current.on('sourcedata', (e) => {
+        console.log('📍 Source data:', e.sourceId, e.isSourceLoaded);
+      });
+      
+      // Evento de carga completa
+      map.current.on('load', () => {
+        console.log('✅ MAPA CARGADO COMPLETAMENTE');
+        setMapLoaded(true);
+        if (map.current && view3D) {
+          add3DBuildingsLayer(map.current);
+        }
+      });
+      
+      // Evento de error - MUY IMPORTANTE
+      map.current.on('error', (e) => {
+        console.error('❌ ERROR DEL MAPA:', e.error?.message || e);
+        // Mostrar error visualmente
+        if (mapContainer.current) {
+          const errorDiv = document.createElement('div');
+          errorDiv.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:red;color:white;padding:20px;z-index:9999;border-radius:8px;';
+          errorDiv.textContent = 'Error: ' + (e.error?.message || 'Tile loading failed');
+          mapContainer.current.appendChild(errorDiv);
+        }
+      });
+      
+      // Evento de tile error específico
+      map.current.on('tile.error', (e) => {
+        console.error('❌ ERROR DE TILE:', e);
+      });
+      
     } catch (err) {
-      console.error('❌ Error creando el mapa:', err);
+      console.error('❌ Error fatal creando el mapa:', err);
       return;
     }
 
@@ -562,24 +573,7 @@ export function MapContainer({
       visualizePitch: true,
     }), 'top-right');
 
-    // Add scale control
     map.current.addControl(new maplibregl.ScaleControl(), 'bottom-left');
-
-    // Set mapLoaded when style is ready
-    map.current.on('load', () => {
-      console.log('✅ Mapa cargado correctamente - tiles visibles');
-      setMapLoaded(true);
-      
-      // Add 3D buildings layer if in 3D mode
-      if (map.current && view3D) {
-        add3DBuildingsLayer(map.current);
-      }
-    });
-
-    // Handle errors
-    map.current.on('error', (e) => {
-      console.error('❌ Error del mapa:', e);
-    });
 
     return () => {
       if (map.current) {
@@ -596,52 +590,49 @@ export function MapContainer({
     const currentCenter = map.current.getCenter();
     const currentZoom = map.current.getZoom();
 
-    // Get style based on mapStyle prop - siempre StyleSpecification inline
+    // Usar el mismo estilo mínimo para consistencia
     const getStyle = (styleName: string): maplibregl.StyleSpecification => {
       if (styleName === 'satellite') {
         return {
-          version: 8 as const,
+          version: 8,
           sources: {
-            'satellite-tiles': {
-              type: 'raster' as const,
+            'satellite': {
+              type: 'raster',
               tiles: [
                 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
               ],
               tileSize: 256,
-              attribution: '© Esri',
-              maxzoom: 19,
-            },
+              attribution: '© Esri'
+            }
           },
           layers: [{
             id: 'satellite-layer',
-            type: 'raster' as const,
-            source: 'satellite-tiles',
+            type: 'raster',
+            source: 'satellite',
             minzoom: 0,
-            maxzoom: 19,
-          }],
+            maxzoom: 19
+          }]
         };
       }
-      // OSM France - tiles raster con CORS habilitado
       return {
-        version: 8 as const,
+        version: 8,
         sources: {
-          'raster-tiles': {
-            type: 'raster' as const,
+          'osm': {
+            type: 'raster',
             tiles: [
-              'https://tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png'
+              'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
             ],
             tileSize: 256,
-            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-            maxzoom: 19,
-          },
+            attribution: '© OpenStreetMap'
+          }
         },
         layers: [{
-          id: 'raster-layer',
-          type: 'raster' as const,
-          source: 'raster-tiles',
+          id: 'osm-tiles',
+          type: 'raster',
+          source: 'osm',
           minzoom: 0,
-          maxzoom: 19,
-        }],
+          maxzoom: 19
+        }]
       };
     };
 
@@ -1617,7 +1608,8 @@ export function MapContainer({
 
   return (
     <div className="relative h-full w-full">
-      <div ref={mapContainer} className="h-full w-full" />
+      {/* Fondo visible para diagnóstico - si ves azul, el contenedor funciona */}
+      <div ref={mapContainer} className="h-full w-full" style={{ backgroundColor: '#e0e7ff' }} />
       
       {/* Floating Undo Button */}
       {undoInfo && (
