@@ -485,63 +485,62 @@ export function MapContainer({
     // Andorra coordinates
     const andorraCenter: [number, number] = [1.5218, 42.5063];
 
-    // Use OpenFreeMap - completely free, no API key, CORS enabled
-    // Fallback to MapLibre demo tiles if needed
-    const getMapStyle = (styleName: string): string | maplibregl.StyleSpecification => {
-      if (styleName === 'satellite') {
-        // Esri World Imagery - free satellite imagery
-        return {
-          version: 8 as const,
-          sources: {
-            'satellite-tiles': {
-              type: 'raster' as const,
-              tiles: [
-                'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-              ],
-              tileSize: 256,
-              attribution: '© Esri',
-            },
-          },
-          layers: [{
-            id: 'satellite-layer',
-            type: 'raster' as const,
-            source: 'satellite-tiles',
-            minzoom: 0,
-            maxzoom: 19,
-          }],
-        };
-      }
-      
-      // OpenFreeMap - free, no API key, CORS enabled, high quality
-      return 'https://tiles.openfreemap.org/styles/liberty';
-    };
+    // OpenStreetMap raster tiles - direct, reliable, no style.json needed
+    const createOSMStyle = (): maplibregl.StyleSpecification => ({
+      version: 8 as const,
+      sources: {
+        'osm-tiles': {
+          type: 'raster' as const,
+          tiles: [
+            'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+          ],
+          tileSize: 256,
+          attribution: '© OpenStreetMap contributors',
+        },
+      },
+      layers: [{
+        id: 'osm-layer',
+        type: 'raster' as const,
+        source: 'osm-tiles',
+        minzoom: 0,
+        maxzoom: 19,
+      }],
+    });
 
-    const initialStyle = getMapStyle(mapStyle);
-    console.log('Initializing map with style:', typeof initialStyle === 'string' ? initialStyle : 'satellite');
+    const createSatelliteStyle = (): maplibregl.StyleSpecification => ({
+      version: 8 as const,
+      sources: {
+        'satellite-tiles': {
+          type: 'raster' as const,
+          tiles: [
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+          ],
+          tileSize: 256,
+          attribution: '© Esri',
+        },
+      },
+      layers: [{
+        id: 'satellite-layer',
+        type: 'raster' as const,
+        source: 'satellite-tiles',
+        minzoom: 0,
+        maxzoom: 19,
+      }],
+    });
 
-    try {
-      map.current = new maplibregl.Map({
-        container: mapContainer.current,
-        style: initialStyle,
-        center: andorraCenter,
-        zoom: 12,
-        pitch: view3D ? 60 : 0,
-        bearing: 0,
-        maxZoom: 19,
-        minZoom: 1,
-      });
-    } catch (error) {
-      console.error('Failed to initialize map, using fallback:', error);
-      // Fallback to MapLibre demo tiles
-      map.current = new maplibregl.Map({
-        container: mapContainer.current,
-        style: 'https://demotiles.maplibre.org/style.json',
-        center: andorraCenter,
-        zoom: 12,
-        pitch: view3D ? 60 : 0,
-        bearing: 0,
-      });
-    }
+    const initialStyle = mapStyle === 'satellite' ? createSatelliteStyle() : createOSMStyle();
+    console.log('Initializing map with OpenStreetMap tiles');
+
+    map.current = new maplibregl.Map({
+      container: mapContainer.current,
+      style: initialStyle,
+      center: andorraCenter,
+      zoom: 12,
+      pitch: view3D ? 60 : 0,
+      bearing: 0,
+      maxZoom: 19,
+      minZoom: 1,
+    });
 
     // Add navigation controls
     map.current.addControl(new maplibregl.NavigationControl({
@@ -582,8 +581,8 @@ export function MapContainer({
     const currentCenter = map.current.getCenter();
     const currentZoom = map.current.getZoom();
 
-    // Get style based on mapStyle prop
-    const getStyle = (styleName: string): maplibregl.StyleSpecification | string => {
+    // Get style based on mapStyle prop - using inline raster styles
+    const getStyle = (styleName: string): maplibregl.StyleSpecification => {
       if (styleName === 'satellite') {
         return {
           version: 8 as const,
@@ -606,8 +605,27 @@ export function MapContainer({
           }],
         };
       }
-      // OpenFreeMap - free, no API key needed, CORS enabled
-      return 'https://tiles.openfreemap.org/styles/liberty';
+      // OpenStreetMap raster tiles - direct, no style.json needed
+      return {
+        version: 8 as const,
+        sources: {
+          'osm-tiles': {
+            type: 'raster' as const,
+            tiles: [
+              'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+            ],
+            tileSize: 256,
+            attribution: '© OpenStreetMap contributors',
+          },
+        },
+        layers: [{
+          id: 'osm-layer',
+          type: 'raster' as const,
+          source: 'osm-tiles',
+          minzoom: 0,
+          maxzoom: 19,
+        }],
+      };
     };
 
     map.current.setStyle(getStyle(mapStyle));
