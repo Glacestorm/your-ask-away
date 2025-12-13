@@ -485,47 +485,66 @@ export function MapContainer({
     // Andorra coordinates
     const andorraCenter: [number, number] = [1.5218, 42.5063];
 
-    const getMapStyle = (): any => {
-      switch (mapStyle) {
-        case 'satellite':
-          return {
-            version: 8,
-            sources: {
-              'satellite': {
-                type: 'raster',
-                tiles: [
-                  'https://mt0.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
-                  'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
-                ],
-                tileSize: 256,
-                attribution: '© Google',
-              },
-            },
-            layers: [{
-              id: 'satellite',
+    // Create base style with OSM tiles - reliable and free
+    const createBaseStyle = (styleName: string): any => {
+      if (styleName === 'satellite') {
+        return {
+          version: 8,
+          sources: {
+            'raster-tiles': {
               type: 'raster',
-              source: 'satellite',
-              minzoom: 0,
-              maxzoom: 20,
-            }],
-          };
-        
-        default:
-          // Use MapLibre's demo tiles (guaranteed to work without API key)
-          return 'https://demotiles.maplibre.org/style.json';
+              tiles: [
+                'https://mt0.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+                'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+              ],
+              tileSize: 256,
+              attribution: '© Google',
+            },
+          },
+          layers: [{
+            id: 'simple-tiles',
+            type: 'raster',
+            source: 'raster-tiles',
+            minzoom: 0,
+            maxzoom: 22,
+          }],
+        };
       }
+      
+      // Default OSM style - most reliable
+      return {
+        version: 8,
+        sources: {
+          'raster-tiles': {
+            type: 'raster',
+            tiles: [
+              'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+            ],
+            tileSize: 256,
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          },
+        },
+        layers: [{
+          id: 'simple-tiles',
+          type: 'raster',
+          source: 'raster-tiles',
+          minzoom: 0,
+          maxzoom: 19,
+        }],
+      };
     };
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
-      style: getMapStyle(),
+      style: createBaseStyle(mapStyle),
       center: andorraCenter,
       zoom: 12,
       pitch: view3D ? 60 : 0,
       bearing: 0,
+      attributionControl: false,
     });
 
-    // Add navigation controls (top-right to avoid RoutePlanner overlap)
+    // Add navigation controls
     map.current.addControl(new maplibregl.NavigationControl({
       visualizePitch: true,
     }), 'top-right');
@@ -533,18 +552,27 @@ export function MapContainer({
     // Add scale control
     map.current.addControl(new maplibregl.ScaleControl(), 'bottom-left');
 
+    // Set mapLoaded when style is ready
     map.current.on('load', () => {
+      console.log('Map loaded successfully');
       setMapLoaded(true);
       
-      // Add 3D buildings layer
-      if (map.current) {
+      // Add 3D buildings layer if in 3D mode
+      if (map.current && view3D) {
         add3DBuildingsLayer(map.current);
       }
     });
 
+    // Handle errors
+    map.current.on('error', (e) => {
+      console.error('Map error:', e);
+    });
+
     return () => {
-      map.current?.remove();
-      map.current = null;
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
     };
   }, []);
 
@@ -555,38 +583,56 @@ export function MapContainer({
     const currentCenter = map.current.getCenter();
     const currentZoom = map.current.getZoom();
 
-    const getMapStyle = (): any => {
-      switch (mapStyle) {
-        case 'satellite':
-          return {
-            version: 8,
-            sources: {
-              'base': {
-                type: 'raster',
-                tiles: [
-                  'https://mt0.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
-                  'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
-                ],
-                tileSize: 256,
-                attribution: '© Google',
-              },
-            },
-            layers: [{
-              id: 'base',
+    // Create style based on mapStyle prop
+    const createStyle = (styleName: string): any => {
+      if (styleName === 'satellite') {
+        return {
+          version: 8,
+          sources: {
+            'raster-tiles': {
               type: 'raster',
-              source: 'base',
-              minzoom: 0,
-              maxzoom: 20,
-            }],
-          };
-          
-        default:
-          // Use MapLibre's demo tiles
-          return 'https://demotiles.maplibre.org/style.json';
+              tiles: [
+                'https://mt0.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+                'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+              ],
+              tileSize: 256,
+              attribution: '© Google',
+            },
+          },
+          layers: [{
+            id: 'simple-tiles',
+            type: 'raster',
+            source: 'raster-tiles',
+            minzoom: 0,
+            maxzoom: 22,
+          }],
+        };
       }
+      
+      // Default OSM style
+      return {
+        version: 8,
+        sources: {
+          'raster-tiles': {
+            type: 'raster',
+            tiles: [
+              'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+            ],
+            tileSize: 256,
+            attribution: '© OpenStreetMap contributors',
+          },
+        },
+        layers: [{
+          id: 'simple-tiles',
+          type: 'raster',
+          source: 'raster-tiles',
+          minzoom: 0,
+          maxzoom: 19,
+        }],
+      };
     };
 
-    map.current.setStyle(getMapStyle());
+    map.current.setStyle(createStyle(mapStyle));
     
     // Restore center and zoom after style change
     map.current.once('styledata', () => {
@@ -596,11 +642,10 @@ export function MapContainer({
         zoom: currentZoom,
       });
       
-      // Re-add 3D buildings layer after style change
-      add3DBuildingsLayer(map.current);
-      
-      // Re-add route - trigger re-render by forcing the route effect to run
-      // The main route effect will handle this automatically
+      // Re-add 3D buildings layer after style change if in 3D mode
+      if (view3D) {
+        add3DBuildingsLayer(map.current);
+      }
     });
 
     map.current.easeTo({
@@ -616,7 +661,7 @@ export function MapContainer({
         view3D ? 'visible' : 'none'
       );
     }
-  }, [mapStyle, view3D, mapLoaded, baseLayers]);
+  }, [mapStyle, view3D, mapLoaded]);
 
   // Update markers when companies or filters change
   useEffect(() => {
