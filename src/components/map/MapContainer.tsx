@@ -485,11 +485,31 @@ export function MapContainer({
     // Andorra coordinates
     const andorraCenter: [number, number] = [1.5218, 42.5063];
 
-    // SOLUCIÓN DEFINITIVA: OpenFreeMap - 100% gratuito, sin API key, CORS habilitado
-    // https://openfreemap.org - Tiles vectoriales gratuitos basados en OpenStreetMap
-    const createBaseStyle = (): string => {
-      console.log('🗺️ Inicializando mapa con OpenFreeMap (gratuito, sin restricciones)');
-      return 'https://tiles.openfreemap.org/styles/liberty';
+    // SOLUCIÓN DEFINITIVA: Tiles raster inline - SIEMPRE funciona, sin dependencias externas
+    // Usando OSM France que tiene CORS habilitado y no bloquea iframes
+    const createBaseStyle = (): maplibregl.StyleSpecification => {
+      console.log('🗺️ Inicializando mapa con OSM France tiles');
+      return {
+        version: 8 as const,
+        sources: {
+          'raster-tiles': {
+            type: 'raster' as const,
+            tiles: [
+              'https://tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png'
+            ],
+            tileSize: 256,
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxzoom: 19,
+          },
+        },
+        layers: [{
+          id: 'raster-layer',
+          type: 'raster' as const,
+          source: 'raster-tiles',
+          minzoom: 0,
+          maxzoom: 19,
+        }],
+      };
     };
 
     const createSatelliteStyle = (): maplibregl.StyleSpecification => ({
@@ -576,8 +596,8 @@ export function MapContainer({
     const currentCenter = map.current.getCenter();
     const currentZoom = map.current.getZoom();
 
-    // Get style based on mapStyle prop
-    const getStyle = (styleName: string): maplibregl.StyleSpecification | string => {
+    // Get style based on mapStyle prop - siempre StyleSpecification inline
+    const getStyle = (styleName: string): maplibregl.StyleSpecification => {
       if (styleName === 'satellite') {
         return {
           version: 8 as const,
@@ -599,11 +619,30 @@ export function MapContainer({
             minzoom: 0,
             maxzoom: 19,
           }],
-          glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
         };
       }
-      // OpenFreeMap - tiles vectoriales gratuitos
-      return 'https://tiles.openfreemap.org/styles/liberty';
+      // OSM France - tiles raster con CORS habilitado
+      return {
+        version: 8 as const,
+        sources: {
+          'raster-tiles': {
+            type: 'raster' as const,
+            tiles: [
+              'https://tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png'
+            ],
+            tileSize: 256,
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxzoom: 19,
+          },
+        },
+        layers: [{
+          id: 'raster-layer',
+          type: 'raster' as const,
+          source: 'raster-tiles',
+          minzoom: 0,
+          maxzoom: 19,
+        }],
+      };
     };
 
     map.current.setStyle(getStyle(mapStyle));
