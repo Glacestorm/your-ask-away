@@ -137,7 +137,7 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
     try {
       setLoading(true);
 
-      // Fetch all data in parallel for faster loading
+      // Optimized: Fetch all data in parallel
       const [companiesResult, statusResult, productsResult, companyProductsResult] = await Promise.all([
         supabase
           .from('companies')
@@ -176,20 +176,20 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
         throw productsResult.error;
       }
 
-      // Create a map of company products for fast lookup
+      // Create a map of company products for fast lookup (O(n) instead of O(n²))
       const productsByCompany: Record<string, any[]> = {};
       if (!companyProductsResult.error && companyProductsResult.data) {
-        companyProductsResult.data.forEach((cp: any) => {
+        for (const cp of companyProductsResult.data as any[]) {
           if (!productsByCompany[cp.company_id]) {
             productsByCompany[cp.company_id] = [];
           }
           if (cp.products) {
             productsByCompany[cp.company_id].push(cp.products);
           }
-        });
+        }
       }
 
-      // Map companies with their products
+      // Map companies with their products using fast lookup
       const companiesWithProducts = (companiesResult.data || []).map(company => ({
         ...company,
         products: productsByCompany[company.id] || [],

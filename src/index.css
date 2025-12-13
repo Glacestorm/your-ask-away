@@ -488,3 +488,41 @@
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
+
+/* ========================================
+   MAPBOX GL JS PERFORMANCE OPTIMIZATIONS
+   ======================================== */
+/* GPU acceleration for map markers */
+.mapboxgl-marker {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Optimize cluster markers for performance */
+.cluster-marker {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+}
+
+/* Reduce repaints on map canvas */
+.mapboxgl-canvas {
+  outline: none;
+}
+
+/* Optimize popups */
+.mapboxgl-popup {
+  will-change: transform;
+}
+
+/* Optimize marker dragging */
+.marker-dragging {
+  will-change: transform;
+  z-index: 10000 !important;
+}
+
+/* Reduce layout shifts during map load */
+.mapboxgl-ctrl-logo,
+.mapboxgl-ctrl-attrib {
+  contain: layout style;
+}
