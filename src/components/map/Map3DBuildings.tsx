@@ -23,16 +23,36 @@ const Map3DBuildings: React.FC = () => {
 
     const initMap = async () => {
       try {
+        console.log('Initializing 3D map...');
+        
+        // Check if user is authenticated
+        const { data: session } = await supabase.auth.getSession();
+        if (!session?.session) {
+          console.warn('User not authenticated, map functions require authentication');
+          setError('Debes iniciar sesión para ver el mapa 3D');
+          setIsLoaded(true);
+          return;
+        }
+        
         // Get Mapbox token
+        console.log('Fetching Mapbox token...');
         const { data, error: invokeError } = await supabase.functions.invoke('get-mapbox-token');
         
-        if (invokeError || !data?.token) {
+        if (invokeError) {
           console.error('Error fetching token:', invokeError);
+          setError(`Error al obtener token: ${invokeError.message || 'Error desconocido'}`);
+          setIsLoaded(true);
+          return;
+        }
+        
+        if (!data?.token) {
+          console.error('No token in response:', data);
           setError('No se pudo obtener el token de Mapbox. Verifica la configuración.');
           setIsLoaded(true);
           return;
         }
         
+        console.log('Token obtained successfully');
         mapboxgl.accessToken = data.token;
 
         const styleUrl = isDarkMode 
@@ -52,13 +72,19 @@ const Map3DBuildings: React.FC = () => {
         map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
         map.current.on('style.load', () => {
+          console.log('Map style loaded');
           setIsLoaded(true);
           setMapReady(true);
           add3DBuildings();
         });
         
         map.current.on('load', () => {
+          console.log('Map fully loaded');
           setMapReady(true);
+        });
+        
+        map.current.on('error', (e) => {
+          console.error('Mapbox error:', e);
         });
       } catch (err) {
         console.error('Error initializing map:', err);
