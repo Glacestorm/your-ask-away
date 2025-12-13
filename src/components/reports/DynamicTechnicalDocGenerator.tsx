@@ -2597,7 +2597,7 @@ security/
       h.addParagraph('ObelixIA es el CRM bancario para entidades 50-500 empleados. Potencia enterprise con costes startup y compliance desde día 1.');
 
       h.addSubtitle('Resultados Cuantificados');
-      ['💰 Ahorro 450.000€ a 5 años vs enterprise', '⏱️ Implementación 3 meses', '📈 +25% productividad comercial', '🛡️ 100% compliance PSD3/DORA'].forEach(r => h.addListItem(r, 1));
+      ['💰 Ahorro 450.000€ a 5 años vs enterprise', '⏱️ Implementación 3 meses', '📈 +25% productividad comercial', '🛡️ 100% compliance PSD3/DORA'].forEach(r => h.addParagraph(`• ${r}`));
 
       h.addPageNumber();
 
@@ -2613,10 +2613,10 @@ security/
         'Implementación: 25.000€ - 45.000€',
         'Formación: 12.000€ - 18.000€',
         'Migración datos: 8.000€ - 15.000€',
-      ].forEach(c => h.addListItem(c, 1));
+      ].forEach(c => h.addParagraph(`• ${c}`));
 
       h.addSubtitle('Costes Recurrentes');
-      ['Mantenimiento 18%: 27.000€ - 45.000€/año', 'Hosting opcional: 2.400€ - 4.800€/año'].forEach(c => h.addListItem(c, 1));
+      ['Mantenimiento 18%: 27.000€ - 45.000€/año', 'Hosting opcional: 2.400€ - 4.800€/año'].forEach(c => h.addParagraph(`• ${c}`));
 
       h.addHighlightBox('TCO 5 AÑOS', 'Rango: 370.000€ - 530.000€ (vs 1.2M€+ alternativas enterprise)', 'warning');
 
@@ -2634,7 +2634,7 @@ security/
         'Salesforce FSC: 1.450.000€ (ahorro 66%)',
         'MS Dynamics 365: 1.180.000€ (ahorro 58%)',
         'SAP Banking: 2.100.000€ (ahorro 76%)',
-      ].forEach(c => h.addListItem(c, 1));
+      ].forEach(c => h.addParagraph(`• ${c}`));
 
       h.addHighlightBox('CONCLUSIÓN', 'ObelixIA: 65% ahorro medio TCO, implementación 4-6x más rápida.', 'success');
 
@@ -2663,7 +2663,7 @@ security/
       
       h.addMainTitle('33. ROADMAP DE IMPLEMENTACIÓN');
 
-      ['Fase 1 (Sem 1-2): Discovery y Setup', 'Fase 2 (Sem 3-6): Configuración Core', 'Fase 3 (Sem 7-9): Migración y Testing', 'Fase 4 (Sem 10-12): Go-Live'].forEach(f => h.addListItem(f, 1));
+      ['Fase 1 (Sem 1-2): Discovery y Setup', 'Fase 2 (Sem 3-6): Configuración Core', 'Fase 3 (Sem 7-9): Migración y Testing', 'Fase 4 (Sem 10-12): Go-Live'].forEach(f => h.addParagraph(`• ${f}`));
 
       h.addHighlightBox('GARANTÍA', '12 semanas máximo hasta Go-Live con SLA 99.5%', 'success');
 
@@ -2676,13 +2676,13 @@ security/
       h.addMainTitle('34-37. GARANTÍAS, LICENSING Y SOPORTE');
 
       h.addSubtitle('SLAs');
-      ['Disponibilidad 99.5%', 'Respuesta P1: 30 min', 'Resolución críticos: 4h'].forEach(s => h.addListItem(s, 1));
+      ['Disponibilidad 99.5%', 'Respuesta P1: 30 min', 'Resolución críticos: 4h'].forEach(s => h.addParagraph(`• ${s}`));
 
       h.addSubtitle('Licensing');
-      ['Perpetua: 150K-350K€ + 18% mant.', 'SaaS: 60-180€/usuario/mes', 'OEM: desde 250K€'].forEach(l => h.addListItem(l, 1));
+      ['Perpetua: 150K-350K€ + 18% mant.', 'SaaS: 60-180€/usuario/mes', 'OEM: desde 250K€'].forEach(l => h.addParagraph(`• ${l}`));
 
       h.addSubtitle('Soporte');
-      ['PM dedicado', 'Soporte L2 8x5 incluido', 'Opción 24x7 (+40%)'].forEach(s => h.addListItem(s, 1));
+      ['PM dedicado', 'Soporte L2 8x5 incluido', 'Opción 24x7 (+40%)'].forEach(s => h.addParagraph(`• ${s}`));
 
       h.addPageNumber();
 
