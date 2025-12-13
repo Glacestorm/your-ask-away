@@ -60,6 +60,7 @@
     "jspdf": "^3.0.4",
     "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.462.0",
+    "mapbox-gl": "^3.8.0",
     "maplibre-gl": "^5.13.0",
     "next-themes": "^0.3.0",
     "pmtiles": "^3.0.7",
