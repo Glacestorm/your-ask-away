@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -144,29 +144,30 @@ const Home = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [allUserRoles, setAllUserRoles] = useState<AppRole[]>([]);
+  const rolesLoadedRef = useRef(false);
 
+  // Redirect if not authenticated - do this early
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/auth');
+      navigate('/auth', { replace: true });
     }
   }, [user, authLoading, navigate]);
 
-  // Fetch all roles for the current user
+  // Fetch all roles only once per user
   useEffect(() => {
-    const fetchAllRoles = async () => {
-      if (!user) return;
-      
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id);
-      
-      if (!error && data) {
-        setAllUserRoles(data.map(r => r.role));
-      }
-    };
+    if (!user || rolesLoadedRef.current) return;
     
-    fetchAllRoles();
+    rolesLoadedRef.current = true;
+    
+    supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .then(({ data, error }) => {
+        if (!error && data) {
+          setAllUserRoles(data.map(r => r.role));
+        }
+      });
   }, [user]);
 
   const handleSignOut = async () => {
