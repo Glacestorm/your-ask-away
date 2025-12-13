@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import maplibregl from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
-import * as pmtiles from 'pmtiles';
-import { layers, namedTheme } from 'protomaps-themes-base';
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import { CompanyWithDetails, MapFilters, StatusColor, MapColorMode } from '@/types/database';
 import { supabase } from '@/integrations/supabase/client';
 import Supercluster from 'supercluster';
@@ -12,9 +10,24 @@ import { getMarkerStyle, MarkerStyle } from './markerStyles';
 import { toast } from 'sonner';
 import { CompanyPhotosDialog } from './CompanyPhotosDialog';
 
-// Register PMTiles protocol once
-const protocol = new pmtiles.Protocol();
-maplibregl.addProtocol('pmtiles', protocol.tile);
+// Set Mapbox token - will be fetched from edge function
+let mapboxTokenLoaded = false;
+async function ensureMapboxToken() {
+  if (mapboxTokenLoaded) return true;
+  try {
+    const { data, error } = await supabase.functions.invoke('get-mapbox-token');
+    if (error || !data?.token) {
+      console.error('Failed to get Mapbox token:', error);
+      return false;
+    }
+    mapboxgl.accessToken = data.token;
+    mapboxTokenLoaded = true;
+    return true;
+  } catch (err) {
+    console.error('Error fetching Mapbox token:', err);
+    return false;
+  }
+}
 
 type CompanyPoint = {
   type: 'Feature';
@@ -28,7 +41,7 @@ type CompanyPoint = {
 };
 
 // Helper function to add 3D buildings layer with dynamic colors
-function add3DBuildingsLayer(map: maplibregl.Map) {
+function add3DBuildingsLayer(map: mapboxgl.Map) {
   // Wait for style to be fully loaded
   if (!map.isStyleLoaded()) {
     map.once('styledata', () => add3DBuildingsLayer(map));
@@ -175,11 +188,11 @@ export function MapContainer({
   routeSelectedIds = [],
 }: MapContainerProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<maplibregl.Map | null>(null);
-  const markers = useRef<maplibregl.Marker[]>([]);
+  const map = useRef<mapboxgl.Map | null>(null);
+  const markers = useRef<mapboxgl.Marker[]>([]);
   const [mapLoaded, setMapLoaded] = useState(false);
   const superclusterRef = useRef<Supercluster<CompanyWithDetails> | null>(null);
-  const searchMarkerRef = useRef<maplibregl.Marker | null>(null);
+  const searchMarkerRef = useRef<mapboxgl.Marker | null>(null);
   const [tooltipConfig, setTooltipConfig] = useState<TooltipConfig[]>([]);
   const [vinculacionData, setVinculacionData] = useState<Record<string, { 
     percentage: number; 
@@ -189,7 +202,7 @@ export function MapContainer({
   }>>({});
   const [minZoomVinculacion, setMinZoomVinculacion] = useState<number>(minZoomVinculacionProp || 8);
   const [visitCounts, setVisitCounts] = useState<Record<string, number>>({});
-  const persistentPopupRef = useRef<{ popup: maplibregl.Popup; companyId: string } | null>(null);
+  const persistentPopupRef = useRef<{ popup: mapboxgl.Popup; companyId: string } | null>(null);
   const [focusedMarkerId, setFocusedMarkerId] = useState<string | null>(null);
   
   // State for undo functionality
@@ -207,7 +220,7 @@ export function MapContainer({
   } | null>(null);
 
   // Refs for route markers
-  const routeMarkersRef = useRef<maplibregl.Marker[]>([]);
+  const routeMarkersRef = useRef<mapboxgl.Marker[]>([]);
 
   // Effect to propagate prop changes to state
   useEffect(() => {
@@ -328,7 +341,7 @@ export function MapContainer({
       `;
       el.textContent = label;
 
-      const marker = new maplibregl.Marker({ element: el })
+      const marker = new mapboxgl.Marker({ element: el })
         .setLngLat([point.longitude, point.latitude])
         .addTo(mapInstance);
         
@@ -340,7 +353,7 @@ export function MapContainer({
       const lats = allPoints.map(p => p.latitude);
       const lngs = allPoints.map(p => p.longitude);
       
-      const bounds = new maplibregl.LngLatBounds(
+      const bounds = new mapboxgl.LngLatBounds(
         [Math.min(...lngs), Math.min(...lats)],
         [Math.max(...lngs), Math.max(...lats)]
       );
@@ -488,70 +501,65 @@ export function MapContainer({
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
-    // Andorra coordinates
-    const andorraCenter: [number, number] = [1.5218, 42.5063];
+    const initMap = async () => {
+      // Ensure Mapbox token is loaded
+      const tokenLoaded = await ensureMapboxToken();
+      if (!tokenLoaded) {
+        console.error('❌ Could not load Mapbox token');
+        toast.error('Error cargando el mapa - token no disponible');
+        return;
+      }
 
-    // ==========================================
-    // PMTiles: Vector tiles sin dependencia de servidores externos
-    // Usa protomaps.com CDN público gratuito
-    // ==========================================
-    const PMTILES_URL = 'https://build.protomaps.com/20231220.pmtiles';
-    
-    // Determine theme based on current document theme
-    const isDarkMode = document.documentElement.classList.contains('dark');
-    const themeName = isDarkMode ? 'dark' : 'light';
-    const theme = namedTheme(themeName);
-    
-    const pmtilesStyle: maplibregl.StyleSpecification = {
-      version: 8,
-      glyphs: 'https://cdn.protomaps.com/fonts/pbf/{fontstack}/{range}.pbf',
-      sources: {
-        protomaps: {
-          type: 'vector',
-          url: `pmtiles://${PMTILES_URL}`,
-          attribution: '<a href="https://protomaps.com">Protomaps</a> © <a href="https://openstreetmap.org">OpenStreetMap</a>'
-        }
-      },
-      layers: layers('protomaps', theme)
+      // Andorra coordinates
+      const andorraCenter: [number, number] = [1.5218, 42.5063];
+      
+      // Determine theme based on current document theme
+      const isDarkMode = document.documentElement.classList.contains('dark');
+      const styleUrl = isDarkMode 
+        ? 'mapbox://styles/mapbox/dark-v11'
+        : 'mapbox://styles/mapbox/streets-v12';
+
+      console.log('🔍 Iniciando mapa con Mapbox...');
+      
+      try {
+        map.current = new mapboxgl.Map({
+          container: mapContainer.current!,
+          style: styleUrl,
+          center: andorraCenter,
+          zoom: 12,
+          maxZoom: 19,
+          minZoom: 1,
+          projection: 'mercator'
+        });
+        
+        // Evento de carga completa
+        map.current.on('load', () => {
+          console.log('✅ MAPA CARGADO con Mapbox');
+          setMapLoaded(true);
+          if (map.current && view3D) {
+            add3DBuildingsLayer(map.current);
+          }
+        });
+        
+        // Evento de error 
+        map.current.on('error', (e) => {
+          console.error('❌ Error del mapa:', e.error?.message || e);
+        });
+
+        // Add navigation controls
+        map.current.addControl(new mapboxgl.NavigationControl({
+          visualizePitch: true,
+        }), 'top-right');
+
+        map.current.addControl(new mapboxgl.ScaleControl(), 'bottom-left');
+        
+      } catch (err) {
+        console.error('❌ Error fatal creando el mapa:', err);
+        return;
+      }
     };
 
-    console.log('🔍 Iniciando mapa con Protomaps PMTiles...');
-    
-    try {
-      map.current = new maplibregl.Map({
-        container: mapContainer.current,
-        style: pmtilesStyle,
-        center: andorraCenter,
-        zoom: 12,
-        maxZoom: 19,
-        minZoom: 1,
-      });
-      
-      // Evento de carga completa
-      map.current.on('load', () => {
-        console.log('✅ MAPA CARGADO con Protomaps');
-        setMapLoaded(true);
-        if (map.current && view3D) {
-          add3DBuildingsLayer(map.current);
-        }
-      });
-      
-      // Evento de error 
-      map.current.on('error', (e) => {
-        console.error('❌ Error del mapa:', e.error?.message || e);
-      });
-      
-    } catch (err) {
-      console.error('❌ Error fatal creando el mapa:', err);
-      return;
-    }
-
-    // Add navigation controls
-    map.current.addControl(new maplibregl.NavigationControl({
-      visualizePitch: true,
-    }), 'top-right');
-
-    map.current.addControl(new maplibregl.ScaleControl(), 'bottom-left');
+    initMap();
 
     return () => {
       if (map.current) {
@@ -568,31 +576,17 @@ export function MapContainer({
     const currentCenter = map.current.getCenter();
     const currentZoom = map.current.getZoom();
 
-    // PMTiles URL
-    const PMTILES_URL = 'https://build.protomaps.com/20231220.pmtiles';
-    
-    const getStyle = (styleName: string): maplibregl.StyleSpecification => {
-      // For satellite, we need a different source - but protomaps doesn't have satellite
-      // So we keep the same vector style for now
+    const getStyleUrl = (styleName: string): string => {
+      if (styleName === 'satellite') {
+        return 'mapbox://styles/mapbox/satellite-streets-v12';
+      }
       const isDarkMode = document.documentElement.classList.contains('dark');
-      const themeName = styleName === 'satellite' ? 'dark' : (isDarkMode ? 'dark' : 'light');
-      const theme = namedTheme(themeName);
-      
-      return {
-        version: 8,
-        glyphs: 'https://cdn.protomaps.com/fonts/pbf/{fontstack}/{range}.pbf',
-        sources: {
-          protomaps: {
-            type: 'vector',
-            url: `pmtiles://${PMTILES_URL}`,
-            attribution: '<a href="https://protomaps.com">Protomaps</a> © <a href="https://openstreetmap.org">OpenStreetMap</a>'
-          }
-        },
-        layers: layers('protomaps', theme)
-      };
+      return isDarkMode 
+        ? 'mapbox://styles/mapbox/dark-v11'
+        : 'mapbox://styles/mapbox/streets-v12';
     };
 
-    map.current.setStyle(getStyle(mapStyle));
+    map.current.setStyle(getStyleUrl(mapStyle));
     
     // Restore center and zoom after style change
     map.current.once('styledata', () => {
@@ -847,7 +841,7 @@ export function MapContainer({
             </div>
           `;
 
-          const marker = new maplibregl.Marker({ element: clusterEl })
+          const marker = new mapboxgl.Marker({ element: clusterEl })
             .setLngLat([longitude, latitude])
             .addTo(map.current!);
 
@@ -956,7 +950,7 @@ export function MapContainer({
           );
 
           // Create marker with rotation alignment to follow map rotation
-          const marker = new maplibregl.Marker({ 
+          const marker = new mapboxgl.Marker({ 
             element: el,
             anchor: 'bottom',
             offset: [0, 0],
@@ -1103,7 +1097,7 @@ export function MapContainer({
           });
 
           // Create hover tooltip with configurable fields
-          const hoverPopup = new maplibregl.Popup({
+          const hoverPopup = new mapboxgl.Popup({
             offset: 25,
             closeButton: false,
             closeOnClick: false,
@@ -1281,7 +1275,7 @@ export function MapContainer({
             onSelectCompany(company);
 
             // Create new persistent popup
-            const persistentPopup = new maplibregl.Popup({
+            const persistentPopup = new mapboxgl.Popup({
               offset: 25,
               closeButton: false,
               closeOnClick: false,
@@ -1385,13 +1379,13 @@ export function MapContainer({
   useEffect(() => {
     if (!map.current || !mapLoaded || !view3D) return;
 
-    const popup = new maplibregl.Popup({
+    const popup = new mapboxgl.Popup({
       closeButton: false,
       closeOnClick: false,
       className: 'building-popup',
     });
 
-    const onMouseMove = (e: maplibregl.MapMouseEvent) => {
+    const onMouseMove = (e: mapboxgl.MapMouseEvent) => {
       const features = map.current!.queryRenderedFeatures(e.point, {
         layers: ['3d-buildings'],
       });
@@ -1497,11 +1491,11 @@ export function MapContainer({
     `;
 
     // Create and add marker
-    const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
+    const marker = new mapboxgl.Marker({ element: el, anchor: 'bottom' })
       .setLngLat([searchLocation.lon, searchLocation.lat])
       .addTo(map.current);
 
-    const popup = new maplibregl.Popup({
+    const popup = new mapboxgl.Popup({
       offset: 25,
       closeButton: true,
       closeOnClick: true,

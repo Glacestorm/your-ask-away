@@ -152,3 +152,9 @@ verify_jwt = true
 
 [functions.generate-ai-tasks]
 verify_jwt = true
+
+[functions.get-mapbox-token]
+verify_jwt = true
+
+[functions.proxy-map-tiles]
+verify_jwt = false
