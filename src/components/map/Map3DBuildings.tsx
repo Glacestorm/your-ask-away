@@ -231,20 +231,18 @@ const Map3DBuildings: React.FC = () => {
     }
   };
 
-  const flyToLocation = useCallback((coords: [number, number], name: string) => {
-    if (!mapRef.current || !mapReady) {
-      console.warn('Map not ready for flyTo:', name);
-      return;
-    }
+  const flyToLocation = (coords: [number, number]) => {
+    const map = mapRef.current;
+    if (!map) return;
     
-    mapRef.current.flyTo({
+    map.flyTo({
       center: coords,
       zoom: 16,
       pitch: 60,
       bearing: Math.random() * 60 - 30,
       duration: 2000
     });
-  }, [mapReady]);
+  };
 
   return (
     <div className="relative w-full h-screen bg-muted">
@@ -300,18 +298,18 @@ const Map3DBuildings: React.FC = () => {
           <div className="space-y-2">
             <Label className="text-sm text-muted-foreground">Ciudades con edificios 3D</Label>
             <div className="grid grid-cols-2 gap-2">
-              <Button variant="default" size="sm" onClick={() => flyToLocation([2.1734, 41.3851], 'Barcelona')}>Barcelona</Button>
-              <Button variant="default" size="sm" onClick={() => flyToLocation([-3.7038, 40.4168], 'Madrid')}>Madrid</Button>
-              <Button variant="outline" size="sm" onClick={() => flyToLocation([2.3522, 48.8566], 'París')}>París</Button>
-              <Button variant="outline" size="sm" onClick={() => flyToLocation([-0.1276, 51.5074], 'Londres')}>Londres</Button>
+              <Button variant="default" size="sm" onClick={() => flyToLocation([2.1734, 41.3851])}>Barcelona</Button>
+              <Button variant="default" size="sm" onClick={() => flyToLocation([-3.7038, 40.4168])}>Madrid</Button>
+              <Button variant="outline" size="sm" onClick={() => flyToLocation([2.3522, 48.8566])}>París</Button>
+              <Button variant="outline" size="sm" onClick={() => flyToLocation([-0.1276, 51.5074])}>Londres</Button>
             </div>
           </div>
 
           <div className="space-y-2">
             <Label className="text-sm text-muted-foreground">Andorra (sin datos 3D)</Label>
             <div className="grid grid-cols-2 gap-2">
-              <Button variant="secondary" size="sm" onClick={() => flyToLocation([1.5218, 42.5063], 'Andorra la Vella')}>Andorra la Vella</Button>
-              <Button variant="secondary" size="sm" onClick={() => flyToLocation([1.5347, 42.5103], 'Escaldes')}>Escaldes</Button>
+              <Button variant="secondary" size="sm" onClick={() => flyToLocation([1.5218, 42.5063])}>Andorra la Vella</Button>
+              <Button variant="secondary" size="sm" onClick={() => flyToLocation([1.5347, 42.5103])}>Escaldes</Button>
             </div>
           </div>
           
