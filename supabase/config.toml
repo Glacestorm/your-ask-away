@@ -154,7 +154,19 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.get-mapbox-token]
-verify_jwt = true
+verify_jwt = false
 
 [functions.proxy-map-tiles]
+verify_jwt = false
+
+[functions.mapbox-isochrone]
+verify_jwt = false
+
+[functions.mapbox-matrix]
+verify_jwt = false
+
+[functions.mapbox-static]
+verify_jwt = false
+
+[functions.mapbox-elevation]
 verify_jwt = false
