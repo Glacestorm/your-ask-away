@@ -486,27 +486,27 @@ export function MapContainer({
     const andorraCenter: [number, number] = [1.5218, 42.5063];
 
     // ==========================================
-    // Stamen Toner via Stadia Maps - works in iframes
+    // Tiles via Edge Function proxy (evita bloqueos CORS/sandbox)
     // ==========================================
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const proxyTileUrl = `${supabaseUrl}/functions/v1/proxy-map-tiles?z={z}&x={x}&y={y}&style=default`;
     
     const minimalStyle: maplibregl.StyleSpecification = {
       version: 8,
       glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
       sources: {
-        'stadia': {
+        'proxy-tiles': {
           type: 'raster',
-          tiles: [
-            'https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}.png'
-          ],
+          tiles: [proxyTileUrl],
           tileSize: 256,
-          attribution: '© Stadia Maps © OpenStreetMap'
+          attribution: '© OpenStreetMap'
         }
       },
       layers: [
         {
-          id: 'stadia-tiles',
+          id: 'base-tiles',
           type: 'raster',
-          source: 'stadia',
+          source: 'proxy-tiles',
           minzoom: 0,
           maxzoom: 19
         }
@@ -567,46 +567,27 @@ export function MapContainer({
     const currentCenter = map.current.getCenter();
     const currentZoom = map.current.getZoom();
 
-    // Usar el mismo estilo mínimo para consistencia
+    // Usar tiles via proxy para consistencia
+    const supabaseUrlStyle = import.meta.env.VITE_SUPABASE_URL;
     const getStyle = (styleName: string): maplibregl.StyleSpecification => {
-      if (styleName === 'satellite') {
-        return {
-          version: 8,
-          sources: {
-            'satellite': {
-              type: 'raster',
-              tiles: [
-                'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-              ],
-              tileSize: 256,
-              attribution: '© Esri'
-            }
-          },
-          layers: [{
-            id: 'satellite-layer',
-            type: 'raster',
-            source: 'satellite',
-            minzoom: 0,
-            maxzoom: 19
-          }]
-        };
-      }
+      const style = styleName === 'satellite' ? 'satellite' : 'default';
+      const proxyUrl = `${supabaseUrlStyle}/functions/v1/proxy-map-tiles?z={z}&x={x}&y={y}&style=${style}`;
+      
       return {
         version: 8,
+        glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
         sources: {
-          'stadia': {
+          'proxy-tiles': {
             type: 'raster',
-            tiles: [
-              'https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}.png'
-            ],
+            tiles: [proxyUrl],
             tileSize: 256,
-            attribution: '© Stadia Maps © OpenStreetMap'
+            attribution: styleName === 'satellite' ? '© Esri' : '© OpenStreetMap'
           }
         },
         layers: [{
-          id: 'stadia-tiles',
+          id: 'base-tiles',
           type: 'raster',
-          source: 'stadia',
+          source: 'proxy-tiles',
           minzoom: 0,
           maxzoom: 19
         }]
