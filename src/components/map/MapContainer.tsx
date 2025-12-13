@@ -489,15 +489,13 @@ export function MapContainer({
       switch (mapStyle) {
         case 'satellite':
           return {
-            version: 8 as const,
+            version: 8,
             sources: {
               'satellite': {
                 type: 'raster',
                 tiles: [
                   'https://mt0.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
                   'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
-                  'https://mt2.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
-                  'https://mt3.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
                 ],
                 tileSize: 256,
                 attribution: '© Google',
@@ -512,27 +510,9 @@ export function MapContainer({
             }],
           };
         
-        default: // 'default'
-          return {
-            version: 8 as const,
-            sources: {
-              'carto': {
-                type: 'raster',
-                tiles: [
-                  'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
-                ],
-                tileSize: 256,
-                attribution: '© CARTO © OpenStreetMap',
-              },
-            },
-            layers: [{
-              id: 'carto',
-              type: 'raster',
-              source: 'carto',
-              minzoom: 0,
-              maxzoom: 20,
-            }],
-          };
+        default:
+          // Use MapLibre's demo tiles (guaranteed to work without API key)
+          return 'https://demotiles.maplibre.org/style.json';
       }
     };
 
@@ -576,20 +556,16 @@ export function MapContainer({
     const currentZoom = map.current.getZoom();
 
     const getMapStyle = (): any => {
-      let baseStyle: any;
-      
       switch (mapStyle) {
         case 'satellite':
-          baseStyle = {
-            version: 8 as const,
+          return {
+            version: 8,
             sources: {
               'base': {
                 type: 'raster',
                 tiles: [
                   'https://mt0.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
                   'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
-                  'https://mt2.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
-                  'https://mt3.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
                 ],
                 tileSize: 256,
                 attribution: '© Google',
@@ -603,73 +579,11 @@ export function MapContainer({
               maxzoom: 20,
             }],
           };
-          break;
           
-        default: // 'default'
-          baseStyle = {
-            version: 8 as const,
-            sources: {
-              'base': {
-                type: 'raster',
-                tiles: [
-                  'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
-                ],
-                tileSize: 256,
-                attribution: '© CARTO © OpenStreetMap',
-              },
-            },
-            layers: [{
-              id: 'base',
-              type: 'raster',
-              source: 'base',
-              minzoom: 0,
-              maxzoom: 20,
-            }],
-          };
+        default:
+          // Use MapLibre's demo tiles
+          return 'https://demotiles.maplibre.org/style.json';
       }
-
-      // Add overlay layers only for non-satellite views
-      const overlayLayers: any[] = [];
-      
-      // Only add overlays for default map style (not satellite)
-      if (mapStyle === 'default') {
-        if (baseLayers.roads) {
-          baseStyle.sources['carto-overlay'] = {
-            type: 'raster',
-            tiles: ['https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png'],
-            tileSize: 256,
-          };
-          overlayLayers.push({
-            id: 'roads-overlay',
-            type: 'raster',
-            source: 'carto-overlay',
-            paint: {
-              'raster-opacity': 0.5,
-            },
-          });
-        }
-
-        if (baseLayers.labels) {
-          if (!baseStyle.sources['osm-overlay']) {
-            baseStyle.sources['osm-overlay'] = {
-              type: 'raster',
-              tiles: ['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'],
-              tileSize: 256,
-            };
-          }
-          overlayLayers.push({
-            id: 'labels-overlay',
-            type: 'raster',
-            source: 'osm-overlay',
-            paint: {
-              'raster-opacity': 0.3,
-            },
-          });
-        }
-      }
-
-      baseStyle.layers.push(...overlayLayers);
-      return baseStyle;
     };
 
     map.current.setStyle(getMapStyle());
