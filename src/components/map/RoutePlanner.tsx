@@ -22,7 +22,8 @@ import {
   ChevronDown,
   Minimize2,
   Maximize2,
-  Eye
+  Eye,
+  Map
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -48,6 +49,14 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from '@/components/ui/label';
 
 interface RouteSegment {
   start_address: string;
@@ -78,11 +87,14 @@ export interface OptimizedRoute {
     longitude: number;
   }[];
   segments: RouteSegment[];
-  polyline: string;
+  polyline?: string | null;
+  geometry?: { type: string; coordinates: number[][] }; // GeoJSON for Mapbox
   bounds: { northeast: { lat: number; lng: number }; southwest: { lat: number; lng: number } };
+  provider?: 'google' | 'mapbox';
 }
 
 type PlannerMode = 'minimized' | 'selecting' | 'panel' | 'results';
+type RouteProvider = 'google' | 'mapbox';
 
 interface RoutePlannerProps {
   companies: CompanyWithDetails[];
@@ -113,6 +125,7 @@ export function RoutePlanner({
   const [searchQuery, setSearchQuery] = useState('');
   const [mode, setMode] = useState<PlannerMode>('panel');
   const [showDirections, setShowDirections] = useState(false);
+  const [routeProvider, setRouteProvider] = useState<RouteProvider>('mapbox');
 
   // Get user location on mount
   useEffect(() => {
@@ -200,17 +213,33 @@ export function RoutePlanner({
         longitude: c.longitude,
       }));
 
-      const { data, error } = await supabase.functions.invoke('optimize-route', {
-        body: { origin, waypoints, optimize: true },
-      });
+      let data, error;
+
+      if (routeProvider === 'mapbox') {
+        // Use Mapbox Directions API
+        const result = await supabase.functions.invoke('mapbox-directions', {
+          body: { origin, waypoints, optimize: true, profile: 'driving-traffic' },
+        });
+        data = result.data;
+        error = result.error;
+      } else {
+        // Use Google Directions API
+        const result = await supabase.functions.invoke('optimize-route', {
+          body: { origin, waypoints, optimize: true },
+        });
+        data = result.data;
+        error = result.error;
+      }
 
       if (error) throw error;
 
       if (data.success && data.route) {
-        setOptimizedRoute(data.route);
-        onRouteCalculated(data.route);
+        const routeWithProvider = { ...data.route, provider: routeProvider };
+        setOptimizedRoute(routeWithProvider);
+        onRouteCalculated(routeWithProvider);
         setMode('results');
-        toast.success(`Ruta optimizada: ${data.route.total_distance.text} en ${data.route.total_duration.text}`);
+        const providerName = routeProvider === 'mapbox' ? 'Mapbox' : 'Google';
+        toast.success(`Ruta ${providerName}: ${data.route.total_distance.text} en ${data.route.total_duration.text}`);
       } else {
         throw new Error(data.error || 'Error al calcular la ruta');
       }
@@ -490,6 +519,38 @@ export function RoutePlanner({
 
         <ScrollArea className="flex-1 p-4">
           <div className="space-y-4">
+            {/* Route Provider Selector */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium flex items-center gap-2">
+                <Map className="h-4 w-4" />
+                Proveedor de rutas
+              </Label>
+              <Select value={routeProvider} onValueChange={(v: RouteProvider) => setRouteProvider(v)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Seleccionar proveedor" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="mapbox">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-blue-500" />
+                      Mapbox (Tráfico en tiempo real)
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="google">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-red-500" />
+                      Google Maps
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {routeProvider === 'mapbox' 
+                  ? 'Usa datos de tráfico en tiempo real para optimizar la ruta'
+                  : 'Rutas tradicionales con Google Directions API'}
+              </p>
+            </div>
+
             {/* Select from map button */}
             <Button 
               variant="outline"
@@ -626,6 +687,20 @@ export function RoutePlanner({
             {/* Route Results */}
             {optimizedRoute && (
               <div className="space-y-4 border-t pt-4">
+                {/* Provider Badge */}
+                <div className="flex items-center justify-center">
+                  <Badge variant="outline" className={cn(
+                    "px-3 py-1",
+                    optimizedRoute.provider === 'mapbox' ? 'border-blue-500 text-blue-500' : 'border-red-500 text-red-500'
+                  )}>
+                    <div className={cn(
+                      "w-2 h-2 rounded-full mr-2",
+                      optimizedRoute.provider === 'mapbox' ? 'bg-blue-500' : 'bg-red-500'
+                    )} />
+                    {optimizedRoute.provider === 'mapbox' ? 'Mapbox Navigation' : 'Google Maps'}
+                  </Badge>
+                </div>
+
                 {/* Summary */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-primary/10 rounded-lg p-4 text-center">
@@ -681,7 +756,7 @@ export function RoutePlanner({
                               <div className="flex items-center gap-2">
                                 <Badge variant="outline" className="shrink-0">{segIndex + 1}</Badge>
                                 <span className="text-sm font-medium truncate">
-                                  {segment.end_address.split(',')[0]}
+                                  {segment.end_address?.split(',')[0] || `Parada ${segIndex + 1}`}
                                 </span>
                               </div>
                               <span className="text-xs text-muted-foreground">
