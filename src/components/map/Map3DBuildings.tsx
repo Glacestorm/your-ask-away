@@ -15,37 +15,56 @@ const Map3DBuildings: React.FC = () => {
   const [heightMultiplier, setHeightMultiplier] = useState(1);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
     const initMap = async () => {
-      // Get Mapbox token
-      const { data } = await supabase.functions.invoke('get-mapbox-token');
-      if (data?.token) {
+      try {
+        // Get Mapbox token
+        const { data, error: invokeError } = await supabase.functions.invoke('get-mapbox-token');
+        
+        if (invokeError || !data?.token) {
+          console.error('Error fetching token:', invokeError);
+          setError('No se pudo obtener el token de Mapbox. Verifica la configuración.');
+          setIsLoaded(true);
+          return;
+        }
+        
         mapboxgl.accessToken = data.token;
-      }
 
-      const styleUrl = isDarkMode 
-        ? 'mapbox://styles/mapbox/dark-v11'
-        : 'mapbox://styles/mapbox/light-v11';
+        const styleUrl = isDarkMode 
+          ? 'mapbox://styles/mapbox/dark-v11'
+          : 'mapbox://styles/mapbox/light-v11';
 
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current!,
-        style: styleUrl,
-        center: [1.5218, 42.5063], // Andorra
-        zoom: 15.5,
-        pitch: pitch,
-        bearing: bearing,
-        antialias: true
-      });
+        map.current = new mapboxgl.Map({
+          container: mapContainer.current!,
+          style: styleUrl,
+          center: [1.5218, 42.5063], // Andorra
+          zoom: 15.5,
+          pitch: pitch,
+          bearing: bearing,
+          antialias: true
+        });
 
-      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+        map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-      map.current.on('style.load', () => {
+        map.current.on('style.load', () => {
+          setIsLoaded(true);
+          setMapReady(true);
+          add3DBuildings();
+        });
+        
+        map.current.on('load', () => {
+          setMapReady(true);
+        });
+      } catch (err) {
+        console.error('Error initializing map:', err);
+        setError('Error al inicializar el mapa');
         setIsLoaded(true);
-        add3DBuildings();
-      });
+      }
     };
 
     initMap();
@@ -196,7 +215,13 @@ const Map3DBuildings: React.FC = () => {
   };
 
   const flyToLocation = (coords: [number, number], name: string) => {
-    map.current?.flyTo({
+    if (!map.current || !mapReady) {
+      console.warn('Map not ready yet');
+      return;
+    }
+    
+    console.log('Flying to:', name, coords);
+    map.current.flyTo({
       center: coords,
       zoom: 16,
       pitch: 60,
@@ -282,6 +307,7 @@ const Map3DBuildings: React.FC = () => {
             <Button 
               variant="secondary" 
               size="sm"
+              disabled={!mapReady}
               onClick={() => flyToLocation([1.5218, 42.5063], 'Andorra la Vella')}
             >
               Andorra
@@ -289,6 +315,7 @@ const Map3DBuildings: React.FC = () => {
             <Button 
               variant="secondary" 
               size="sm"
+              disabled={!mapReady}
               onClick={() => flyToLocation([2.1734, 41.3851], 'Barcelona')}
             >
               Barcelona
@@ -296,6 +323,7 @@ const Map3DBuildings: React.FC = () => {
             <Button 
               variant="secondary" 
               size="sm"
+              disabled={!mapReady}
               onClick={() => flyToLocation([-3.7038, 40.4168], 'Madrid')}
             >
               Madrid
@@ -303,6 +331,7 @@ const Map3DBuildings: React.FC = () => {
             <Button 
               variant="secondary" 
               size="sm"
+              disabled={!mapReady}
               onClick={() => flyToLocation([-73.9857, 40.7484], 'Nueva York')}
             >
               NYC
@@ -317,6 +346,19 @@ const Map3DBuildings: React.FC = () => {
           <div className="text-center space-y-2">
             <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
             <p className="text-muted-foreground">Cargando mapa 3D...</p>
+          </div>
+        </div>
+      )}
+      
+      {/* Error message */}
+      {error && (
+        <div className="absolute inset-0 flex items-center justify-center bg-background/90 z-20">
+          <div className="text-center space-y-4 p-6 max-w-md">
+            <div className="h-12 w-12 rounded-full bg-destructive/20 flex items-center justify-center mx-auto">
+              <Building2 className="h-6 w-6 text-destructive" />
+            </div>
+            <p className="text-foreground font-medium">Error al cargar el mapa</p>
+            <p className="text-muted-foreground text-sm">{error}</p>
           </div>
         </div>
       )}
