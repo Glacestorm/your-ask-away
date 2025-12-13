@@ -319,9 +319,8 @@ export function MapConfigDashboard() {
       icon: <Clock className="h-5 w-5" />,
       category: 'navigation',
       color: 'bg-blue-500',
-      implemented: false,
-      external: true,
-      externalUrl: 'https://docs.mapbox.com/api/navigation/isochrone/'
+      implemented: true,
+      action: () => navigate('/admin?section=map')
     },
     {
       id: 'optimization-api',
@@ -339,9 +338,8 @@ export function MapConfigDashboard() {
       icon: <Target className="h-5 w-5" />,
       category: 'navigation',
       color: 'bg-blue-500',
-      implemented: false,
-      external: true,
-      externalUrl: 'https://docs.mapbox.com/api/navigation/matrix/'
+      implemented: true,
+      action: () => navigate('/admin?section=map')
     },
     {
       id: 'directions-playground',
@@ -499,7 +497,8 @@ export function MapConfigDashboard() {
       icon: <Activity className="h-5 w-5" />,
       category: 'data',
       color: 'bg-slate-500',
-      implemented: false
+      implemented: true,
+      action: () => navigate('/admin?section=map')
     },
     {
       id: 'clustering',
@@ -589,7 +588,8 @@ export function MapConfigDashboard() {
       icon: <Ruler className="h-5 w-5" />,
       category: 'tools',
       color: 'bg-purple-500',
-      implemented: false
+      implemented: true,
+      action: () => navigate('/admin?section=map')
     },
     {
       id: 'export-image',
@@ -598,7 +598,8 @@ export function MapConfigDashboard() {
       icon: <ImageIcon className="h-5 w-5" />,
       category: 'tools',
       color: 'bg-purple-500',
-      implemented: false
+      implemented: true,
+      action: () => navigate('/admin?section=map')
     },
     {
       id: 'mapbox-docs',
