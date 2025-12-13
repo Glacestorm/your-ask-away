@@ -405,7 +405,10 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
                   Buscar ubicación
                 </Button>
                 <Button
-                  onClick={() => setShowRoutePlanner(true)}
+                  onClick={() => {
+                    setShowRoutePlanner(true);
+                    setIsSelectingPins(true); // Activar modo selección automáticamente
+                  }}
                   variant={showRoutePlanner ? "default" : "outline"}
                   className="shadow-lg"
                   size="default"
