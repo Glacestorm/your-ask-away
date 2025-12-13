@@ -485,66 +485,49 @@ export function MapContainer({
     // Andorra coordinates
     const andorraCenter: [number, number] = [1.5218, 42.5063];
 
-    // Create base style with OSM tiles - reliable and free
-    const createBaseStyle = (styleName: string): any => {
+    // Use CARTO's full GL style JSON - most reliable and CORS friendly
+    const getStyleUrl = (styleName: string): string => {
       if (styleName === 'satellite') {
-        return {
-          version: 8,
-          sources: {
-            'raster-tiles': {
-              type: 'raster',
-              tiles: [
-                'https://mt0.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
-                'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
-              ],
-              tileSize: 256,
-              attribution: '© Google',
-            },
-          },
-          layers: [{
-            id: 'simple-tiles',
-            type: 'raster',
-            source: 'raster-tiles',
-            minzoom: 0,
-            maxzoom: 22,
-          }],
-        };
+        // For satellite we still need raster tiles
+        return 'satellite';
       }
-      
-      // Default style using Carto tiles (CORS friendly)
-      return {
-        version: 8,
-        sources: {
-          'raster-tiles': {
-            type: 'raster',
-            tiles: [
-              'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
-              'https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
-              'https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
-              'https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png'
-            ],
-            tileSize: 256,
-            attribution: '© <a href="https://carto.com/">CARTO</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-          },
-        },
-        layers: [{
-          id: 'simple-tiles',
-          type: 'raster',
-          source: 'raster-tiles',
-          minzoom: 0,
-          maxzoom: 20,
-        }],
-      };
+      // CARTO Voyager GL style - free, no API key, CORS friendly
+      return 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json';
     };
+
+    const getSatelliteStyle = (): any => ({
+      version: 8,
+      sources: {
+        'satellite-tiles': {
+          type: 'raster',
+          tiles: [
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+          ],
+          tileSize: 256,
+          attribution: '© Esri',
+        },
+      },
+      layers: [{
+        id: 'satellite-layer',
+        type: 'raster',
+        source: 'satellite-tiles',
+        minzoom: 0,
+        maxzoom: 19,
+      }],
+    });
+
+    const styleUrl = getStyleUrl(mapStyle);
+    const initialStyle = styleUrl === 'satellite' ? getSatelliteStyle() : styleUrl;
+
+    console.log('Initializing map with style:', initialStyle);
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
-      style: createBaseStyle(mapStyle),
+      style: initialStyle,
       center: andorraCenter,
       zoom: 12,
       pitch: view3D ? 60 : 0,
       bearing: 0,
-      attributionControl: false,
     });
 
     // Add navigation controls
@@ -586,59 +569,35 @@ export function MapContainer({
     const currentCenter = map.current.getCenter();
     const currentZoom = map.current.getZoom();
 
-    // Create style based on mapStyle prop
-    const createStyle = (styleName: string): any => {
+    // Get style based on mapStyle prop
+    const getStyle = (styleName: string): maplibregl.StyleSpecification | string => {
       if (styleName === 'satellite') {
         return {
-          version: 8,
+          version: 8 as const,
           sources: {
-            'raster-tiles': {
-              type: 'raster',
+            'satellite-tiles': {
+              type: 'raster' as const,
               tiles: [
-                'https://mt0.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
-                'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+                'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
               ],
               tileSize: 256,
-              attribution: '© Google',
+              attribution: '© Esri',
             },
           },
           layers: [{
-            id: 'simple-tiles',
-            type: 'raster',
-            source: 'raster-tiles',
+            id: 'satellite-layer',
+            type: 'raster' as const,
+            source: 'satellite-tiles',
             minzoom: 0,
-            maxzoom: 22,
+            maxzoom: 19,
           }],
         };
       }
-      
-      // Default style using Carto tiles (CORS friendly)
-      return {
-        version: 8,
-        sources: {
-          'raster-tiles': {
-            type: 'raster',
-            tiles: [
-              'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
-              'https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
-              'https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
-              'https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png'
-            ],
-            tileSize: 256,
-            attribution: '© CARTO © OpenStreetMap',
-          },
-        },
-        layers: [{
-          id: 'simple-tiles',
-          type: 'raster',
-          source: 'raster-tiles',
-          minzoom: 0,
-          maxzoom: 20,
-        }],
-      };
+      // CARTO Voyager GL style - free, no API key needed
+      return 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json';
     };
 
-    map.current.setStyle(createStyle(mapStyle));
+    map.current.setStyle(getStyle(mapStyle));
     
     // Restore center and zoom after style change
     map.current.once('styledata', () => {
