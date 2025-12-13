@@ -107,11 +107,12 @@ const Map3DBuildings: React.FC = () => {
         mapboxgl.accessToken = data.token;
         setLoadingState('map');
 
+        // Start with Barcelona where 3D buildings definitely exist
         const mapInstance = new mapboxgl.Map({
           container: mapContainer.current!,
           style: 'mapbox://styles/mapbox/light-v11',
-          center: [1.5218, 42.5063],
-          zoom: 15.5,
+          center: [2.1734, 41.3851], // Barcelona - has 3D building data
+          zoom: 16,
           pitch: 60,
           bearing: -17.6,
           antialias: true
