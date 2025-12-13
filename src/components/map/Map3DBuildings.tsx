@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -7,26 +7,22 @@ import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Building2, RotateCcw, Sun, Moon, ArrowLeft, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 
 const Map3DBuildings: React.FC = () => {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const initializingRef = useRef(false);
+  
   const [pitch, setPitch] = useState(60);
   const [bearing, setBearing] = useState(-17.6);
   const [heightMultiplier, setHeightMultiplier] = useState(1);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [loadingState, setLoadingState] = useState<'auth' | 'token' | 'map' | 'ready' | 'error'>('auth');
-  const [mapReady, setMapReady] = useState(false);
+  const [loadingState, setLoadingState] = useState<'init' | 'token' | 'map' | 'ready' | 'error'>('init');
   const [error, setError] = useState<string | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
 
-  const add3DBuildings = useCallback(() => {
-    if (!map.current) return;
-
-    const layers = map.current.getStyle()?.layers;
+  const add3DBuildings = (mapInstance: mapboxgl.Map, darkMode: boolean, multiplier: number) => {
+    const layers = mapInstance.getStyle()?.layers;
     if (!layers) return;
 
     let labelLayerId: string | undefined;
@@ -37,11 +33,11 @@ const Map3DBuildings: React.FC = () => {
       }
     }
 
-    if (map.current.getLayer('3d-buildings')) {
-      map.current.removeLayer('3d-buildings');
+    if (mapInstance.getLayer('3d-buildings')) {
+      mapInstance.removeLayer('3d-buildings');
     }
 
-    map.current.addLayer(
+    mapInstance.addLayer(
       {
         id: '3d-buildings',
         source: 'composite',
@@ -51,7 +47,7 @@ const Map3DBuildings: React.FC = () => {
         minzoom: 14,
         maxzoom: 22,
         paint: {
-          'fill-extrusion-color': isDarkMode 
+          'fill-extrusion-color': darkMode 
             ? ['interpolate', ['linear'], ['get', 'height'],
                 0, 'hsl(230, 30%, 25%)',
                 50, 'hsl(230, 30%, 35%)',
@@ -65,16 +61,12 @@ const Map3DBuildings: React.FC = () => {
                 200, 'hsl(35, 60%, 55%)'
               ],
           'fill-extrusion-height': [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
+            'interpolate', ['linear'], ['zoom'],
             14, 0,
-            14.5, ['*', ['get', 'height'], heightMultiplier]
+            14.5, ['*', ['get', 'height'], multiplier]
           ],
           'fill-extrusion-base': [
-            'interpolate',
-            ['linear'],
-            ['zoom'],
+            'interpolate', ['linear'], ['zoom'],
             14, 0,
             14.5, ['get', 'min_height']
           ],
@@ -83,96 +75,89 @@ const Map3DBuildings: React.FC = () => {
       },
       labelLayerId
     );
-  }, [isDarkMode, heightMultiplier]);
+  };
 
-  const initMap = useCallback(async () => {
-    if (!mapContainer.current) return;
-    
-    // Clean up existing map
-    if (map.current) {
-      map.current.remove();
-      map.current = null;
-    }
-
-    setError(null);
-    setLoadingState('token');
-
-    try {
-      const { data, error: invokeError } = await supabase.functions.invoke('get-mapbox-token');
-      
-      if (invokeError) {
-        throw new Error(`Error al obtener token: ${invokeError.message}`);
-      }
-      
-      if (!data?.token) {
-        throw new Error('No se pudo obtener el token de Mapbox');
-      }
-      
-      mapboxgl.accessToken = data.token;
-      setLoadingState('map');
-
-      const styleUrl = isDarkMode 
-        ? 'mapbox://styles/mapbox/dark-v11?optimize=true'
-        : 'mapbox://styles/mapbox/light-v11?optimize=true';
-
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: styleUrl,
-        center: [1.5218, 42.5063],
-        zoom: 15.5,
-        pitch: pitch,
-        bearing: bearing,
-        antialias: true,
-        fadeDuration: 0,
-        preserveDrawingBuffer: false,
-        trackResize: true
-      });
-
-      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-
-      map.current.on('style.load', () => {
-        setLoadingState('ready');
-        setMapReady(true);
-        add3DBuildings();
-      });
-      
-      map.current.on('error', (e) => {
-        console.error('Mapbox error:', e);
-        if (e.error?.message?.includes('access token')) {
-          setError('Token de Mapbox inválido');
-          setLoadingState('error');
-        }
-      });
-    } catch (err) {
-      console.error('Error initializing map:', err);
-      setError(err instanceof Error ? err.message : 'Error al inicializar el mapa');
-      setLoadingState('error');
-    }
-  }, [isDarkMode, pitch, bearing, add3DBuildings]);
-
-  // Wait for auth then init map
   useEffect(() => {
-    if (authLoading) {
-      setLoadingState('auth');
-      return;
-    }
+    if (!mapContainer.current || initializingRef.current || map.current) return;
+    
+    initializingRef.current = true;
 
-    if (!user) {
-      setError('Debes iniciar sesión para ver el mapa 3D');
-      setLoadingState('error');
-      return;
-    }
+    const initMap = async () => {
+      setLoadingState('token');
+      setError(null);
+
+      try {
+        console.log('Fetching Mapbox token...');
+        const { data, error: invokeError } = await supabase.functions.invoke('get-mapbox-token');
+        
+        if (invokeError) {
+          console.error('Token invoke error:', invokeError);
+          throw new Error(`Error al obtener token: ${invokeError.message}`);
+        }
+        
+        if (!data?.token) {
+          console.error('No token in response:', data);
+          throw new Error('No se pudo obtener el token de Mapbox');
+        }
+        
+        console.log('Token obtained, initializing map...');
+        mapboxgl.accessToken = data.token;
+        setLoadingState('map');
+
+        const mapInstance = new mapboxgl.Map({
+          container: mapContainer.current!,
+          style: 'mapbox://styles/mapbox/light-v11',
+          center: [1.5218, 42.5063],
+          zoom: 15.5,
+          pitch: 60,
+          bearing: -17.6,
+          antialias: true
+        });
+
+        map.current = mapInstance;
+        mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+        mapInstance.on('load', () => {
+          console.log('Map loaded successfully');
+          add3DBuildings(mapInstance, false, 1);
+          setLoadingState('ready');
+        });
+        
+        mapInstance.on('error', (e) => {
+          console.error('Mapbox error:', e);
+        });
+        
+      } catch (err) {
+        console.error('Error initializing map:', err);
+        setError(err instanceof Error ? err.message : 'Error al inicializar el mapa');
+        setLoadingState('error');
+        initializingRef.current = false;
+      }
+    };
 
     initMap();
 
     return () => {
-      map.current?.remove();
-      map.current = null;
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+      initializingRef.current = false;
     };
-  }, [authLoading, user, retryCount]);
+  }, []);
 
   const handleRetry = () => {
-    setRetryCount(prev => prev + 1);
+    if (map.current) {
+      map.current.remove();
+      map.current = null;
+    }
+    initializingRef.current = false;
+    setLoadingState('init');
+    // Force re-render to trigger useEffect
+    setTimeout(() => {
+      setError(null);
+      window.location.reload();
+    }, 100);
   };
 
   const updatePitch = (value: number[]) => {
@@ -193,9 +178,7 @@ const Map3DBuildings: React.FC = () => {
     
     if (map.current?.getLayer('3d-buildings')) {
       map.current.setPaintProperty('3d-buildings', 'fill-extrusion-height', [
-        'interpolate',
-        ['linear'],
-        ['zoom'],
+        'interpolate', ['linear'], ['zoom'],
         14, 0,
         14.5, ['*', ['get', 'height'], newMultiplier]
       ]);
@@ -209,11 +192,13 @@ const Map3DBuildings: React.FC = () => {
     setIsDarkMode(newDarkMode);
     
     const styleUrl = newDarkMode 
-      ? 'mapbox://styles/mapbox/dark-v11?optimize=true'
-      : 'mapbox://styles/mapbox/light-v11?optimize=true';
+      ? 'mapbox://styles/mapbox/dark-v11'
+      : 'mapbox://styles/mapbox/light-v11';
     
     map.current.setStyle(styleUrl);
-    map.current.once('style.load', add3DBuildings);
+    map.current.once('style.load', () => {
+      add3DBuildings(map.current!, newDarkMode, heightMultiplier);
+    });
   };
 
   const resetView = () => {
@@ -231,17 +216,15 @@ const Map3DBuildings: React.FC = () => {
     
     if (map.current?.getLayer('3d-buildings')) {
       map.current.setPaintProperty('3d-buildings', 'fill-extrusion-height', [
-        'interpolate',
-        ['linear'],
-        ['zoom'],
+        'interpolate', ['linear'], ['zoom'],
         14, 0,
         14.5, ['get', 'height']
       ]);
     }
   };
 
-  const flyToLocation = (coords: [number, number], name: string) => {
-    if (!map.current || !mapReady) return;
+  const flyToLocation = (coords: [number, number]) => {
+    if (!map.current || loadingState !== 'ready') return;
     
     map.current.flyTo({
       center: coords,
@@ -254,12 +237,15 @@ const Map3DBuildings: React.FC = () => {
 
   const getLoadingMessage = () => {
     switch (loadingState) {
-      case 'auth': return 'Verificando autenticación...';
+      case 'init': return 'Iniciando...';
       case 'token': return 'Obteniendo token de Mapbox...';
       case 'map': return 'Cargando mapa 3D...';
       default: return 'Cargando...';
     }
   };
+
+  const isReady = loadingState === 'ready';
+  const isLoading = loadingState !== 'ready' && loadingState !== 'error';
 
   return (
     <div className="relative w-full h-screen">
@@ -274,7 +260,7 @@ const Map3DBuildings: React.FC = () => {
         <ArrowLeft className="h-4 w-4" />
       </Button>
 
-      {loadingState === 'ready' && (
+      {isReady && (
         <div className="absolute top-4 left-4 bg-background/95 backdrop-blur-sm border border-border rounded-lg p-4 shadow-lg space-y-4 w-72 z-10">
           <div className="flex items-center gap-2 text-foreground font-semibold">
             <Building2 className="h-5 w-5 text-primary" />
@@ -312,26 +298,26 @@ const Map3DBuildings: React.FC = () => {
           <div className="space-y-2">
             <Label className="text-sm text-muted-foreground">Andorra</Label>
             <div className="grid grid-cols-2 gap-2">
-              <Button variant="secondary" size="sm" disabled={!mapReady} onClick={() => flyToLocation([1.5218, 42.5063], 'Andorra la Vella')}>Andorra la Vella</Button>
-              <Button variant="secondary" size="sm" disabled={!mapReady} onClick={() => flyToLocation([1.5347, 42.5103], 'Escaldes')}>Escaldes</Button>
-              <Button variant="secondary" size="sm" disabled={!mapReady} onClick={() => flyToLocation([1.4881, 42.5441], 'La Massana')}>La Massana</Button>
-              <Button variant="secondary" size="sm" disabled={!mapReady} onClick={() => flyToLocation([1.5985, 42.5516], 'Canillo')}>Canillo</Button>
-              <Button variant="secondary" size="sm" disabled={!mapReady} onClick={() => flyToLocation([1.5340, 42.4642], 'Sant Julià')}>Sant Julià</Button>
-              <Button variant="secondary" size="sm" disabled={!mapReady} onClick={() => flyToLocation([1.4728, 42.5565], 'Ordino')}>Ordino</Button>
+              <Button variant="secondary" size="sm" onClick={() => flyToLocation([1.5218, 42.5063])}>Andorra la Vella</Button>
+              <Button variant="secondary" size="sm" onClick={() => flyToLocation([1.5347, 42.5103])}>Escaldes</Button>
+              <Button variant="secondary" size="sm" onClick={() => flyToLocation([1.4881, 42.5441])}>La Massana</Button>
+              <Button variant="secondary" size="sm" onClick={() => flyToLocation([1.5985, 42.5516])}>Canillo</Button>
+              <Button variant="secondary" size="sm" onClick={() => flyToLocation([1.5340, 42.4642])}>Sant Julià</Button>
+              <Button variant="secondary" size="sm" onClick={() => flyToLocation([1.4728, 42.5565])}>Ordino</Button>
             </div>
           </div>
           
           <div className="space-y-2">
             <Label className="text-sm text-muted-foreground">Altres ciutats</Label>
             <div className="grid grid-cols-2 gap-2">
-              <Button variant="outline" size="sm" disabled={!mapReady} onClick={() => flyToLocation([2.1734, 41.3851], 'Barcelona')}>Barcelona</Button>
-              <Button variant="outline" size="sm" disabled={!mapReady} onClick={() => flyToLocation([-3.7038, 40.4168], 'Madrid')}>Madrid</Button>
+              <Button variant="outline" size="sm" onClick={() => flyToLocation([2.1734, 41.3851])}>Barcelona</Button>
+              <Button variant="outline" size="sm" onClick={() => flyToLocation([-3.7038, 40.4168])}>Madrid</Button>
             </div>
           </div>
         </div>
       )}
 
-      {loadingState !== 'ready' && loadingState !== 'error' && (
+      {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-20">
           <div className="text-center space-y-2">
             <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
