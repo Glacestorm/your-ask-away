@@ -52,16 +52,13 @@ serve(async (req) => {
     // Mapbox Directions API with optimization
     const mapboxProfile = profile === 'driving-traffic' ? 'mapbox/driving-traffic' : `mapbox/${profile}`;
     
-    const params = new URLSearchParams({
+    // Base params for both APIs
+    const baseParams = new URLSearchParams({
       access_token: MAPBOX_TOKEN,
-      alternatives: 'false',
       geometries: 'geojson',
       language: 'es',
       overview: 'full',
       steps: 'true',
-      annotations: 'distance,duration,speed',
-      voice_instructions: 'true',
-      banner_instructions: 'true',
     });
 
     // If optimizing and more than 2 waypoints, use Optimization API
@@ -71,10 +68,14 @@ serve(async (req) => {
     if (optimize && waypoints.length > 1) {
       // Use Mapbox Optimization API for route optimization
       isOptimizationAPI = true;
-      url = `https://api.mapbox.com/optimized-trips/v1/${mapboxProfile}/${coordinates}?${params.toString()}&source=first&roundtrip=false`;
+      url = `https://api.mapbox.com/optimized-trips/v1/${mapboxProfile}/${coordinates}?${baseParams.toString()}&source=first&roundtrip=false`;
     } else {
-      // Use standard Directions API
-      url = `https://api.mapbox.com/directions/v5/${mapboxProfile}/${coordinates}?${params.toString()}`;
+      // Use standard Directions API with additional params
+      baseParams.append('alternatives', 'false');
+      baseParams.append('annotations', 'distance,duration,speed');
+      baseParams.append('voice_instructions', 'true');
+      baseParams.append('banner_instructions', 'true');
+      url = `https://api.mapbox.com/directions/v5/${mapboxProfile}/${coordinates}?${baseParams.toString()}`;
     }
 
     console.log('Calling Mapbox API...');
