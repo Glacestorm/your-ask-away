@@ -1,18 +1,27 @@
-import React, { Suspense, lazy, useEffect, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useState, memo } from 'react';
 import { MapSkeleton } from './MapSkeleton';
 import type { MapContainerProps } from './MapContainerTypes';
 
-// Lazy load the heavy MapContainer component
+// Lazy load the heavy MapContainer component with preload hint
 const MapContainerLazy = lazy(() => 
   import('./MapContainer').then(module => ({ 
     default: module.MapContainer 
   }))
 );
 
+// Preload the MapContainer module when component mounts
+let preloadStarted = false;
+const preloadMapContainer = () => {
+  if (!preloadStarted) {
+    preloadStarted = true;
+    import('./MapContainer');
+  }
+};
+
 // Re-export types
 export type { MapContainerProps } from './MapContainerTypes';
 
-export function LazyMapContainer(props: MapContainerProps) {
+export const LazyMapContainer = memo(function LazyMapContainer(props: MapContainerProps) {
   const [isClient, setIsClient] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
 
@@ -20,17 +29,27 @@ export function LazyMapContainer(props: MapContainerProps) {
   useEffect(() => {
     setIsClient(true);
     
-    // Use requestIdleCallback for non-critical rendering
-    // This improves TTI by deferring map load until browser is idle
+    // Start preloading immediately
+    preloadMapContainer();
+    
+    // Use requestIdleCallback with shorter timeout for faster map load
     if ('requestIdleCallback' in window) {
-      (window as any).requestIdleCallback(() => {
+      const idleId = (window as any).requestIdleCallback(() => {
         setShouldRender(true);
-      }, { timeout: 2000 });
+      }, { timeout: 500 }); // Reduced from 2000ms to 500ms
+      
+      return () => {
+        if ('cancelIdleCallback' in window) {
+          (window as any).cancelIdleCallback(idleId);
+        }
+      };
     } else {
       // Fallback for browsers without requestIdleCallback
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         setShouldRender(true);
-      }, 100);
+      }, 50); // Reduced from 100ms to 50ms
+      
+      return () => clearTimeout(timeoutId);
     }
   }, []);
 
@@ -47,6 +66,6 @@ export function LazyMapContainer(props: MapContainerProps) {
       <MapContainerLazy {...props} />
     </Suspense>
   );
-}
+});
 
 export default LazyMapContainer;

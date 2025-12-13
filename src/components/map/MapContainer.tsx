@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { CompanyWithDetails, MapFilters, StatusColor, MapColorMode } from '@/types/database';
@@ -357,35 +357,34 @@ export function MapContainer({
     return () => clearTimeout(timer);
   }, [mapLoaded, drawRouteOnMap, routeWaypoints]);
 
-  // Fetch tooltip configuration
+  // Fetch tooltip configuration and map config in parallel for faster load
   useEffect(() => {
-    const fetchTooltipConfig = async () => {
+    const fetchAllConfigs = async () => {
       try {
-        const { data, error } = await supabase
-          .from('map_tooltip_config')
-          .select('*')
-          .eq('enabled', true)
-          .order('display_order');
+        // Parallel fetch for better performance
+        const [tooltipResult, mapConfigResult] = await Promise.all([
+          supabase
+            .from('map_tooltip_config')
+            .select('*')
+            .eq('enabled', true)
+            .order('display_order'),
+          supabase
+            .from('map_config')
+            .select('*')
+            .eq('config_key', 'min_zoom_vinculacion')
+            .maybeSingle()
+        ]);
 
-        if (error) {
-          console.error('Error fetching tooltip config:', error);
-          throw error;
+        if (tooltipResult.error) {
+          console.error('Error fetching tooltip config:', tooltipResult.error);
+        } else {
+          setTooltipConfig(tooltipResult.data || []);
         }
-        setTooltipConfig(data || []);
 
-        // Fetch min zoom configuration
-        const { data: mapConfigData, error: mapConfigError } = await supabase
-          .from('map_config')
-          .select('*')
-          .eq('config_key', 'min_zoom_vinculacion')
-          .maybeSingle();
-
-        if (mapConfigError) {
-          console.error('Error fetching map config:', mapConfigError);
-          throw mapConfigError;
-        }
-        if (mapConfigData) {
-          const configValue = mapConfigData.config_value as { value: number };
+        if (mapConfigResult.error) {
+          console.error('Error fetching map config:', mapConfigResult.error);
+        } else if (mapConfigResult.data) {
+          const configValue = mapConfigResult.data.config_value as { value: number };
           const dbZoom = configValue.value;
           setMinZoomVinculacion(minZoomVinculacionProp !== undefined ? minZoomVinculacionProp : dbZoom);
         } else if (minZoomVinculacionProp !== undefined) {
@@ -396,96 +395,87 @@ export function MapContainer({
       }
     };
 
-    fetchTooltipConfig();
-  }, []);
+    fetchAllConfigs();
+  }, [minZoomVinculacionProp]);
 
-  // Calculate bank affiliation for each company
+  // Calculate bank affiliation and visit counts in parallel for faster load
   useEffect(() => {
+    if (companies.length === 0) return;
+
     const calculateMetrics = async () => {
       try {
-        // Fetch ALL bank affiliations (not just primary)
-        const { data: bankAffiliations, error: bankError } = await supabase
-          .from('company_bank_affiliations' as any)
-          .select('company_id, bank_name, affiliation_percentage, is_primary, active')
-          .eq('active', true)
-          .order('is_primary', { ascending: false });
+        // Parallel fetch for better performance
+        const [bankResult, visitsResult] = await Promise.all([
+          supabase
+            .from('company_bank_affiliations' as any)
+            .select('company_id, bank_name, affiliation_percentage, is_primary, active')
+            .eq('active', true)
+            .order('is_primary', { ascending: false }),
+          supabase
+            .from('visits')
+            .select('company_id')
+        ]);
 
-        if (bankError) {
-          console.error('Error fetching bank affiliations:', bankError);
-          throw bankError;
-        }
-
-        // Map bank names to colors
-        const bankColors: Record<string, string> = {
-          'Creand': '#10b981', // green
-          'Morabanc': '#3b82f6', // blue
-          'Andbank': '#f59e0b', // amber
-        };
-
-        const vinculacionMap: Record<string, { 
-          percentage: number; 
-          bank: string; 
-          color: string;
-          allBanks: { bank: string; percentage: number; color: string }[];
-        }> = {};
-        
-        // Group by company_id
-        const groupedByCompany: Record<string, any[]> = {};
-        bankAffiliations?.forEach((aff: any) => {
-          if (!groupedByCompany[aff.company_id]) {
-            groupedByCompany[aff.company_id] = [];
-          }
-          groupedByCompany[aff.company_id].push(aff);
-        });
-
-        // For each company, store primary and all banks
-        Object.entries(groupedByCompany).forEach(([companyId, affiliations]) => {
-          const primary = affiliations.find(a => a.is_primary) || affiliations[0];
-          const allBanks = affiliations.map(aff => ({
-            bank: aff.bank_name,
-            percentage: aff.affiliation_percentage || 0,
-            color: bankColors[aff.bank_name] || '#6b7280',
-          }));
-
-          vinculacionMap[companyId] = {
-            percentage: primary.affiliation_percentage || 0,
-            bank: primary.bank_name,
-            color: bankColors[primary.bank_name] || '#6b7280',
-            allBanks,
+        // Process bank affiliations
+        if (!bankResult.error && bankResult.data) {
+          const bankColors: Record<string, string> = {
+            'Creand': '#10b981',
+            'Morabanc': '#3b82f6',
+            'Andbank': '#f59e0b',
           };
-        });
 
-        console.log('Vinculación bancaria calculada:', Object.keys(vinculacionMap).length, 'empresas');
-        setVinculacionData(vinculacionMap);
+          const vinculacionMap: Record<string, { 
+            percentage: number; 
+            bank: string; 
+            color: string;
+            allBanks: { bank: string; percentage: number; color: string }[];
+          }> = {};
+          
+          const groupedByCompany: Record<string, any[]> = {};
+          bankResult.data.forEach((aff: any) => {
+            if (!groupedByCompany[aff.company_id]) {
+              groupedByCompany[aff.company_id] = [];
+            }
+            groupedByCompany[aff.company_id].push(aff);
+          });
 
-        // Fetch visit counts
-        const { data: visits, error } = await supabase
-          .from('visits')
-          .select('company_id');
+          Object.entries(groupedByCompany).forEach(([companyId, affiliations]) => {
+            const primary = affiliations.find(a => a.is_primary) || affiliations[0];
+            const allBanks = affiliations.map(aff => ({
+              bank: aff.bank_name,
+              percentage: aff.affiliation_percentage || 0,
+              color: bankColors[aff.bank_name] || '#6b7280',
+            }));
 
-        if (error) {
-          console.error('Error fetching visits:', error);
-          throw error;
+            vinculacionMap[companyId] = {
+              percentage: primary.affiliation_percentage || 0,
+              bank: primary.bank_name,
+              color: bankColors[primary.bank_name] || '#6b7280',
+              allBanks,
+            };
+          });
+
+          setVinculacionData(vinculacionMap);
+        } else if (bankResult.error) {
+          console.error('Error fetching bank affiliations:', bankResult.error);
         }
 
-        const visitCountMap: Record<string, number> = {};
-        
-        visits?.forEach(visit => {
-          if (!visitCountMap[visit.company_id]) {
-            visitCountMap[visit.company_id] = 0;
-          }
-          visitCountMap[visit.company_id] += 1;
-        });
-
-        setVisitCounts(visitCountMap);
+        // Process visit counts
+        if (!visitsResult.error && visitsResult.data) {
+          const visitCountMap: Record<string, number> = {};
+          visitsResult.data.forEach(visit => {
+            visitCountMap[visit.company_id] = (visitCountMap[visit.company_id] || 0) + 1;
+          });
+          setVisitCounts(visitCountMap);
+        } else if (visitsResult.error) {
+          console.error('Error fetching visits:', visitsResult.error);
+        }
       } catch (error: any) {
         console.error('Error general calculando métricas:', error);
       }
     };
 
-    if (companies.length > 0) {
-      calculateMetrics();
-    }
+    calculateMetrics();
   }, [companies]);
 
   // Initialize map
