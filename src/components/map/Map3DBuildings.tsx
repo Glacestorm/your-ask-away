@@ -8,7 +8,11 @@ import { Label } from '@/components/ui/label';
 import { Building2, RotateCcw, Sun, Moon, ArrowLeft, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
-const Map3DBuildings: React.FC = () => {
+interface Map3DBuildingsProps {
+  embedded?: boolean;
+}
+
+const Map3DBuildings: React.FC<Map3DBuildingsProps> = ({ embedded = false }) => {
   const navigate = useNavigate();
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -245,19 +249,21 @@ const Map3DBuildings: React.FC = () => {
   };
 
   return (
-    <div className="relative w-full h-screen bg-muted">
+    <div className={`relative w-full ${embedded ? 'h-full' : 'h-screen'} bg-muted`}>
       {/* Map container */}
       <div ref={mapContainer} className="absolute inset-0" />
       
-      {/* Back button */}
-      <Button
-        variant="outline"
-        size="icon"
-        className="absolute top-4 right-4 z-30 bg-background/95 backdrop-blur-sm"
-        onClick={() => navigate(-1)}
-      >
-        <ArrowLeft className="h-4 w-4" />
-      </Button>
+      {/* Back button - only show when not embedded */}
+      {!embedded && (
+        <Button
+          variant="outline"
+          size="icon"
+          className="absolute top-4 right-4 z-30 bg-background/95 backdrop-blur-sm"
+          onClick={() => navigate(-1)}
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+      )}
 
       {/* Controls panel */}
       {mapReady && (

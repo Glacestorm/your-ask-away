@@ -49,6 +49,7 @@ import {
 } from 'lucide-react';
 import { MapTooltipConfig } from './MapTooltipConfig';
 import { useNavigate } from 'react-router-dom';
+import Map3DBuildings from '@/components/map/Map3DBuildings';
 
 interface MapToolCard {
   id: string;
@@ -268,7 +269,7 @@ export function MapConfigDashboard() {
       category: 'maps',
       color: 'bg-emerald-500',
       implemented: true,
-      action: () => navigate('/map-3d')
+      action: () => setActiveTab('3d')
     },
     {
       id: 'map-satellite',
@@ -713,7 +714,7 @@ export function MapConfigDashboard() {
       </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-7 h-auto">
+        <TabsList className="grid w-full grid-cols-8 h-auto">
           <TabsTrigger value="overview" className="text-xs py-2">
             <Globe className="h-4 w-4 mr-1" />
             Resumen
@@ -721,6 +722,10 @@ export function MapConfigDashboard() {
           <TabsTrigger value="maps" className="text-xs py-2">
             <Map className="h-4 w-4 mr-1" />
             Maps
+          </TabsTrigger>
+          <TabsTrigger value="3d" className="text-xs py-2">
+            <Building2 className="h-4 w-4 mr-1" />
+            3D
           </TabsTrigger>
           <TabsTrigger value="navigation" className="text-xs py-2">
             <Navigation className="h-4 w-4 mr-1" />
@@ -758,7 +763,7 @@ export function MapConfigDashboard() {
             <Button 
               variant="outline" 
               className="h-20 flex-col gap-2 border-2 border-blue-500/30 hover:bg-blue-500/10"
-              onClick={() => navigate('/map-3d')}
+              onClick={() => setActiveTab('3d')}
             >
               <Building2 className="h-6 w-6 text-blue-500" />
               <span className="text-sm">Mapa 3D</span>
@@ -906,6 +911,10 @@ export function MapConfigDashboard() {
 
         <TabsContent value="tooltip">
           <MapTooltipConfig />
+        </TabsContent>
+
+        <TabsContent value="3d" className="h-[calc(100vh-280px)]">
+          <Map3DBuildings embedded />
         </TabsContent>
       </Tabs>
     </div>
