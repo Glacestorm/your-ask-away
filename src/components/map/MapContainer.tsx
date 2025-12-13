@@ -485,50 +485,63 @@ export function MapContainer({
     // Andorra coordinates
     const andorraCenter: [number, number] = [1.5218, 42.5063];
 
-    // Use CARTO's full GL style JSON - most reliable and CORS friendly
-    const getStyleUrl = (styleName: string): string => {
+    // Use OpenFreeMap - completely free, no API key, CORS enabled
+    // Fallback to MapLibre demo tiles if needed
+    const getMapStyle = (styleName: string): string | maplibregl.StyleSpecification => {
       if (styleName === 'satellite') {
-        // For satellite we still need raster tiles
-        return 'satellite';
+        // Esri World Imagery - free satellite imagery
+        return {
+          version: 8 as const,
+          sources: {
+            'satellite-tiles': {
+              type: 'raster' as const,
+              tiles: [
+                'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+              ],
+              tileSize: 256,
+              attribution: '© Esri',
+            },
+          },
+          layers: [{
+            id: 'satellite-layer',
+            type: 'raster' as const,
+            source: 'satellite-tiles',
+            minzoom: 0,
+            maxzoom: 19,
+          }],
+        };
       }
-      // CARTO Voyager GL style - free, no API key, CORS friendly
-      return 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json';
+      
+      // OpenFreeMap - free, no API key, CORS enabled, high quality
+      return 'https://tiles.openfreemap.org/styles/liberty';
     };
 
-    const getSatelliteStyle = (): any => ({
-      version: 8,
-      sources: {
-        'satellite-tiles': {
-          type: 'raster',
-          tiles: [
-            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-          ],
-          tileSize: 256,
-          attribution: '© Esri',
-        },
-      },
-      layers: [{
-        id: 'satellite-layer',
-        type: 'raster',
-        source: 'satellite-tiles',
-        minzoom: 0,
-        maxzoom: 19,
-      }],
-    });
+    const initialStyle = getMapStyle(mapStyle);
+    console.log('Initializing map with style:', typeof initialStyle === 'string' ? initialStyle : 'satellite');
 
-    const styleUrl = getStyleUrl(mapStyle);
-    const initialStyle = styleUrl === 'satellite' ? getSatelliteStyle() : styleUrl;
-
-    console.log('Initializing map with style:', initialStyle);
-
-    map.current = new maplibregl.Map({
-      container: mapContainer.current,
-      style: initialStyle,
-      center: andorraCenter,
-      zoom: 12,
-      pitch: view3D ? 60 : 0,
-      bearing: 0,
-    });
+    try {
+      map.current = new maplibregl.Map({
+        container: mapContainer.current,
+        style: initialStyle,
+        center: andorraCenter,
+        zoom: 12,
+        pitch: view3D ? 60 : 0,
+        bearing: 0,
+        maxZoom: 19,
+        minZoom: 1,
+      });
+    } catch (error) {
+      console.error('Failed to initialize map, using fallback:', error);
+      // Fallback to MapLibre demo tiles
+      map.current = new maplibregl.Map({
+        container: mapContainer.current,
+        style: 'https://demotiles.maplibre.org/style.json',
+        center: andorraCenter,
+        zoom: 12,
+        pitch: view3D ? 60 : 0,
+        bearing: 0,
+      });
+    }
 
     // Add navigation controls
     map.current.addControl(new maplibregl.NavigationControl({
@@ -593,8 +606,8 @@ export function MapContainer({
           }],
         };
       }
-      // CARTO Voyager GL style - free, no API key needed
-      return 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json';
+      // OpenFreeMap - free, no API key needed, CORS enabled
+      return 'https://tiles.openfreemap.org/styles/liberty';
     };
 
     map.current.setStyle(getStyle(mapStyle));
