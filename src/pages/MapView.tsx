@@ -17,7 +17,7 @@ import { MapLegend } from '@/components/map/MapLegend';
 import { MapStatisticsPanel } from '@/components/map/MapStatisticsPanel';
 import { CompanyWithDetails, MapFilters, StatusColor, Product, MapColorMode } from '@/types/database';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Search, Route } from 'lucide-react';
+import { Loader2, Search, Route, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { MarkerStyle } from '@/components/map/markerStyles';
@@ -408,7 +408,7 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
                 <Button
                   onClick={() => {
                     setShowRoutePlanner(true);
-                    setIsSelectingPins(true); // Activar modo selección automáticamente
+                    setIsSelectingPins(true);
                   }}
                   variant={showRoutePlanner ? "default" : "outline"}
                   className="shadow-lg"
@@ -416,6 +416,15 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
                 >
                   <Route className="mr-2 h-4 w-4" />
                   Planificar Ruta
+                </Button>
+                <Button
+                  onClick={() => navigate('/map-3d')}
+                  variant="outline"
+                  className="shadow-lg bg-background/95"
+                  size="default"
+                >
+                  <Building2 className="mr-2 h-4 w-4" />
+                  Vista 3D
                 </Button>
               </div>
             )}

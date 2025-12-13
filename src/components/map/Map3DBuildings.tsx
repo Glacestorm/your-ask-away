@@ -340,7 +340,7 @@ const Map3DBuildings: React.FC = () => {
 
         {/* Quick locations */}
         <div className="space-y-2">
-          <Label className="text-sm text-muted-foreground">Ubicaciones</Label>
+          <Label className="text-sm text-muted-foreground">Andorra</Label>
           <div className="grid grid-cols-2 gap-2">
             <Button 
               variant="secondary" 
@@ -348,10 +348,57 @@ const Map3DBuildings: React.FC = () => {
               disabled={!mapReady}
               onClick={() => flyToLocation([1.5218, 42.5063], 'Andorra la Vella')}
             >
-              Andorra
+              Andorra la Vella
             </Button>
             <Button 
               variant="secondary" 
+              size="sm"
+              disabled={!mapReady}
+              onClick={() => flyToLocation([1.5347, 42.5103], 'Escaldes')}
+            >
+              Escaldes
+            </Button>
+            <Button 
+              variant="secondary" 
+              size="sm"
+              disabled={!mapReady}
+              onClick={() => flyToLocation([1.4881, 42.5441], 'La Massana')}
+            >
+              La Massana
+            </Button>
+            <Button 
+              variant="secondary" 
+              size="sm"
+              disabled={!mapReady}
+              onClick={() => flyToLocation([1.5985, 42.5516], 'Canillo')}
+            >
+              Canillo
+            </Button>
+            <Button 
+              variant="secondary" 
+              size="sm"
+              disabled={!mapReady}
+              onClick={() => flyToLocation([1.5340, 42.4642], 'Sant Julià')}
+            >
+              Sant Julià
+            </Button>
+            <Button 
+              variant="secondary" 
+              size="sm"
+              disabled={!mapReady}
+              onClick={() => flyToLocation([1.4728, 42.5565], 'Ordino')}
+            >
+              Ordino
+            </Button>
+          </div>
+        </div>
+        
+        {/* Other cities */}
+        <div className="space-y-2">
+          <Label className="text-sm text-muted-foreground">Altres ciutats</Label>
+          <div className="grid grid-cols-2 gap-2">
+            <Button 
+              variant="outline" 
               size="sm"
               disabled={!mapReady}
               onClick={() => flyToLocation([2.1734, 41.3851], 'Barcelona')}
@@ -359,20 +406,12 @@ const Map3DBuildings: React.FC = () => {
               Barcelona
             </Button>
             <Button 
-              variant="secondary" 
+              variant="outline" 
               size="sm"
               disabled={!mapReady}
               onClick={() => flyToLocation([-3.7038, 40.4168], 'Madrid')}
             >
               Madrid
-            </Button>
-            <Button 
-              variant="secondary" 
-              size="sm"
-              disabled={!mapReady}
-              onClick={() => flyToLocation([-73.9857, 40.7484], 'Nueva York')}
-            >
-              NYC
             </Button>
           </div>
         </div>
