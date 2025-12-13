@@ -1,13 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
-import { Building2, RotateCcw, Sun, Moon } from 'lucide-react';
+import { Building2, RotateCcw, Sun, Moon, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 const Map3DBuildings: React.FC = () => {
+  const navigate = useNavigate();
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [pitch, setPitch] = useState(60);
@@ -260,6 +262,16 @@ const Map3DBuildings: React.FC = () => {
     <div className="relative w-full h-screen">
       <div ref={mapContainer} className="absolute inset-0" />
       
+      {/* Back button */}
+      <Button
+        variant="outline"
+        size="icon"
+        className="absolute top-4 right-4 z-20 bg-background/95 backdrop-blur-sm"
+        onClick={() => navigate(-1)}
+      >
+        <ArrowLeft className="h-4 w-4" />
+      </Button>
+
       {/* Controls Panel */}
       <div className="absolute top-4 left-4 bg-background/95 backdrop-blur-sm border border-border rounded-lg p-4 shadow-lg space-y-4 w-72 z-10">
         <div className="flex items-center gap-2 text-foreground font-semibold">
