@@ -170,3 +170,6 @@ verify_jwt = true
 
 [functions.mapbox-elevation]
 verify_jwt = true
+
+[functions.mapbox-directions]
+verify_jwt = true
