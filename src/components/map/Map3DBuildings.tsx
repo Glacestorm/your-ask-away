@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -18,7 +18,7 @@ const Map3DBuildings: React.FC = () => {
   const [bearing, setBearing] = useState(-17.6);
   const [heightMultiplier, setHeightMultiplier] = useState(1);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [loadingState, setLoadingState] = useState<'auth' | 'token' | 'map' | 'ready' | 'error'>('auth');
+  const [loadingState, setLoadingState] = useState<'token' | 'map' | 'ready' | 'error'>('token');
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
 
@@ -84,63 +84,26 @@ const Map3DBuildings: React.FC = () => {
     initializingRef.current = true;
 
     const initMap = async () => {
-      setLoadingState('auth');
+      setLoadingState('token');
       setError(null);
 
       try {
-        // Wait for auth session with timeout
-        console.log('Checking authentication...');
-        let session = null;
-        let attempts = 0;
-        const maxAttempts = 10;
+        console.log('Fetching Mapbox token...');
         
-        while (!session && attempts < maxAttempts) {
-          const { data } = await supabase.auth.getSession();
-          session = data.session;
-          if (!session) {
-            attempts++;
-            console.log(`Auth attempt ${attempts}/${maxAttempts}, waiting...`);
-            await new Promise(r => setTimeout(r, 500));
-          }
+        // Simple fetch without auth since verify_jwt is false
+        const { data, error: fetchError } = await supabase.functions.invoke('get-mapbox-token');
+
+        if (fetchError) {
+          console.error('Token fetch error:', fetchError);
+          throw new Error(`Error al obtener token: ${fetchError.message}`);
         }
-
-        if (!session) {
-          console.log('No session found, redirecting to login...');
-          navigate('/auth');
-          return;
-        }
-
-        console.log('User authenticated, fetching token...');
-        setLoadingState('token');
-
-        // Use fetch with explicit Authorization header to ensure JWT is sent
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        const response = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-mapbox-token`,
-          {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${currentSession?.access_token}`,
-              'Content-Type': 'application/json',
-              'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
-            }
-          }
-        );
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('Token fetch failed:', response.status, errorText);
-          throw new Error(`Error al obtener token: ${response.status} - ${errorText}`);
-        }
-
-        const data = await response.json();
         
         if (!data?.token) {
           console.error('No token in response:', data);
           throw new Error('Token de Mapbox no configurado en el servidor');
         }
         
-        console.log('Token obtained successfully, initializing map...');
+        console.log('Token obtained, initializing map...');
         mapboxgl.accessToken = data.token;
         setLoadingState('map');
 
@@ -188,7 +151,7 @@ const Map3DBuildings: React.FC = () => {
       }
       initializingRef.current = false;
     };
-  }, [retryCount, navigate]);
+  }, [retryCount]);
 
   const handleRetry = () => {
     if (map.current) {
@@ -277,7 +240,6 @@ const Map3DBuildings: React.FC = () => {
 
   const getLoadingMessage = () => {
     switch (loadingState) {
-      case 'auth': return 'Verificando autenticación...';
       case 'token': return 'Obteniendo token de Mapbox...';
       case 'map': return 'Cargando mapa 3D...';
       default: return 'Cargando...';
