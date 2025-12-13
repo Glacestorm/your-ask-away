@@ -1892,74 +1892,96 @@ export function ApplicationStateAnalyzer() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Estat de l'Aplicació</h2>
-          <p className="text-muted-foreground">
-            Anàlisi complet del codi i suggeriments de millora
-          </p>
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">Generador de Documentació Comercial Exhaustiva amb IA</h2>
+            <p className="text-muted-foreground">
+              Anàlisi complet del codi, millores i documentació professional per a vendes
+            </p>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button
-            onClick={analyzeCodebase}
-            disabled={isAnalyzingCodebase}
-            variant="outline"
-          >
-            {isAnalyzingCodebase ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <FileText className="mr-2 h-4 w-4" />
+        
+        {/* Buttons Section - More Prominent */}
+        <Card className="border-2 border-primary/20 bg-gradient-to-r from-primary/5 to-secondary/5">
+          <CardContent className="pt-6">
+            <div className="flex flex-wrap gap-3 justify-center">
+              <Button
+                onClick={analyzeCodebase}
+                disabled={isAnalyzingCodebase}
+                variant="outline"
+                size="lg"
+                className="min-w-[180px]"
+              >
+                {isAnalyzingCodebase ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <FileText className="mr-2 h-4 w-4" />
+                )}
+                1. Analitzar Codi
+              </Button>
+              <Button
+                onClick={searchImprovements}
+                disabled={isSearchingImprovements}
+                variant="outline"
+                size="lg"
+                className="min-w-[180px]"
+              >
+                {isSearchingImprovements ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Search className="mr-2 h-4 w-4" />
+                )}
+                2. Buscar Millores
+              </Button>
+              <Button
+                onClick={searchAIRecommendations}
+                disabled={isSearchingAI}
+                size="lg"
+                className="min-w-[180px] bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+              >
+                {isSearchingAI ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Brain className="mr-2 h-4 w-4" />
+                )}
+                3. IA i Automatització
+              </Button>
+              <Button
+                onClick={generatePDF}
+                disabled={isGeneratingPDF || (!codebaseAnalysis && !improvementsAnalysis)}
+                size="lg"
+                className="min-w-[180px]"
+              >
+                {isGeneratingPDF ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="mr-2 h-4 w-4" />
+                )}
+                4. Generar PDF Tècnic
+              </Button>
+              <Button
+                onClick={generateSalesPDF}
+                disabled={isGeneratingSalesPDF || !codebaseAnalysis}
+                size="lg"
+                className="min-w-[200px] bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold shadow-lg"
+              >
+                {isGeneratingSalesPDF ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <Sparkles className="mr-2 h-5 w-5" />
+                )}
+                5. PROPOSTA COMERCIAL
+              </Button>
+            </div>
+            
+            {!codebaseAnalysis && (
+              <p className="text-center text-sm text-muted-foreground mt-4">
+                👆 Primer fes clic a "1. Analitzar Codi" per activar totes les opcions
+              </p>
             )}
-            Analitzar Codi
-          </Button>
-          <Button
-            onClick={searchImprovements}
-            disabled={isSearchingImprovements}
-            variant="outline"
-          >
-            {isSearchingImprovements ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Search className="mr-2 h-4 w-4" />
-            )}
-            Buscar Millores
-          </Button>
-          <Button
-            onClick={searchAIRecommendations}
-            disabled={isSearchingAI}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-          >
-            {isSearchingAI ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Brain className="mr-2 h-4 w-4" />
-            )}
-            IA i Automatització
-          </Button>
-          <Button
-            onClick={generatePDF}
-            disabled={isGeneratingPDF || (!codebaseAnalysis && !improvementsAnalysis)}
-          >
-            {isGeneratingPDF ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Download className="mr-2 h-4 w-4" />
-            )}
-            Generar PDF
-          </Button>
-          <Button
-            onClick={generateSalesPDF}
-            disabled={isGeneratingSalesPDF || !codebaseAnalysis}
-            className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700"
-          >
-            {isGeneratingSalesPDF ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Sparkles className="mr-2 h-4 w-4" />
-            )}
-            Proposta Comercial
-          </Button>
-        </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Progress bar durante análisis */}
