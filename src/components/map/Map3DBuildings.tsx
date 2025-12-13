@@ -18,8 +18,9 @@ const Map3DBuildings: React.FC = () => {
   const [bearing, setBearing] = useState(-17.6);
   const [heightMultiplier, setHeightMultiplier] = useState(1);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [loadingState, setLoadingState] = useState<'init' | 'token' | 'map' | 'ready' | 'error'>('init');
+  const [loadingState, setLoadingState] = useState<'auth' | 'token' | 'map' | 'ready' | 'error'>('auth');
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   const add3DBuildings = (mapInstance: mapboxgl.Map, darkMode: boolean, multiplier: number) => {
     const layers = mapInstance.getStyle()?.layers;
@@ -83,24 +84,63 @@ const Map3DBuildings: React.FC = () => {
     initializingRef.current = true;
 
     const initMap = async () => {
-      setLoadingState('token');
+      setLoadingState('auth');
       setError(null);
 
       try {
-        console.log('Fetching Mapbox token...');
-        const { data, error: invokeError } = await supabase.functions.invoke('get-mapbox-token');
+        // Wait for auth session with timeout
+        console.log('Checking authentication...');
+        let session = null;
+        let attempts = 0;
+        const maxAttempts = 10;
         
-        if (invokeError) {
-          console.error('Token invoke error:', invokeError);
-          throw new Error(`Error al obtener token: ${invokeError.message}`);
+        while (!session && attempts < maxAttempts) {
+          const { data } = await supabase.auth.getSession();
+          session = data.session;
+          if (!session) {
+            attempts++;
+            console.log(`Auth attempt ${attempts}/${maxAttempts}, waiting...`);
+            await new Promise(r => setTimeout(r, 500));
+          }
         }
+
+        if (!session) {
+          console.log('No session found, redirecting to login...');
+          navigate('/auth');
+          return;
+        }
+
+        console.log('User authenticated, fetching token...');
+        setLoadingState('token');
+
+        // Use fetch with explicit Authorization header to ensure JWT is sent
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-mapbox-token`,
+          {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${currentSession?.access_token}`,
+              'Content-Type': 'application/json',
+              'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
+            }
+          }
+        );
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Token fetch failed:', response.status, errorText);
+          throw new Error(`Error al obtener token: ${response.status} - ${errorText}`);
+        }
+
+        const data = await response.json();
         
         if (!data?.token) {
           console.error('No token in response:', data);
-          throw new Error('No se pudo obtener el token de Mapbox');
+          throw new Error('Token de Mapbox no configurado en el servidor');
         }
         
-        console.log('Token obtained, initializing map...');
+        console.log('Token obtained successfully, initializing map...');
         mapboxgl.accessToken = data.token;
         setLoadingState('map');
 
@@ -118,13 +158,17 @@ const Map3DBuildings: React.FC = () => {
         mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
         mapInstance.on('load', () => {
-          console.log('Map loaded successfully');
+          console.log('Map loaded, adding 3D buildings...');
           add3DBuildings(mapInstance, false, 1);
           setLoadingState('ready');
         });
         
         mapInstance.on('error', (e) => {
           console.error('Mapbox error:', e);
+          if (e.error?.message?.includes('access token')) {
+            setError('Token de Mapbox inválido o expirado');
+            setLoadingState('error');
+          }
         });
         
       } catch (err) {
@@ -144,7 +188,7 @@ const Map3DBuildings: React.FC = () => {
       }
       initializingRef.current = false;
     };
-  }, []);
+  }, [retryCount, navigate]);
 
   const handleRetry = () => {
     if (map.current) {
@@ -152,12 +196,8 @@ const Map3DBuildings: React.FC = () => {
       map.current = null;
     }
     initializingRef.current = false;
-    setLoadingState('init');
-    // Force re-render to trigger useEffect
-    setTimeout(() => {
-      setError(null);
-      window.location.reload();
-    }, 100);
+    setError(null);
+    setRetryCount(prev => prev + 1);
   };
 
   const updatePitch = (value: number[]) => {
@@ -237,7 +277,7 @@ const Map3DBuildings: React.FC = () => {
 
   const getLoadingMessage = () => {
     switch (loadingState) {
-      case 'init': return 'Iniciando...';
+      case 'auth': return 'Verificando autenticación...';
       case 'token': return 'Obteniendo token de Mapbox...';
       case 'map': return 'Cargando mapa 3D...';
       default: return 'Cargando...';
