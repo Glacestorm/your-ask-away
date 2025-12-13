@@ -16,7 +16,7 @@ import { StatusColorsManager } from '@/components/admin/StatusColorsManager';
 import { ConceptsManager } from '@/components/admin/ConceptsManager';
 import { AuditLogsViewer } from '@/components/admin/AuditLogsViewer';
 import { EmailTemplatesManager } from '@/components/admin/EmailTemplatesManager';
-import { MapTooltipConfig } from '@/components/admin/MapTooltipConfig';
+import { MapConfigDashboard } from '@/components/admin/MapConfigDashboard';
 import { VisitsMetrics } from '@/components/admin/VisitsMetrics';
 import { ProductsMetrics } from '@/components/admin/ProductsMetrics';
 import { GestoresMetrics } from '@/components/admin/GestoresMetrics';
@@ -367,7 +367,7 @@ const Admin = () => {
       case 'concepts':
         return <ConceptsManager />;
       case 'map-config':
-        return <MapTooltipConfig />;
+        return <MapConfigDashboard />;
       case 'import-history':
         return (
           <div className="rounded-lg border bg-card p-6">
