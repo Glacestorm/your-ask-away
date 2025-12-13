@@ -516,23 +516,21 @@ export function MapContainer({
           return {
             version: 8 as const,
             sources: {
-              'osm': {
+              'carto': {
                 type: 'raster',
                 tiles: [
-                  'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
                 ],
                 tileSize: 256,
-                attribution: '© OpenStreetMap',
+                attribution: '© CARTO © OpenStreetMap',
               },
             },
             layers: [{
-              id: 'osm',
+              id: 'carto',
               type: 'raster',
-              source: 'osm',
+              source: 'carto',
               minzoom: 0,
-              maxzoom: 19,
+              maxzoom: 20,
             }],
           };
       }
@@ -614,12 +612,10 @@ export function MapContainer({
               'base': {
                 type: 'raster',
                 tiles: [
-                  'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
                 ],
                 tileSize: 256,
-                attribution: '© OpenStreetMap',
+                attribution: '© CARTO © OpenStreetMap',
               },
             },
             layers: [{
@@ -627,7 +623,7 @@ export function MapContainer({
               type: 'raster',
               source: 'base',
               minzoom: 0,
-              maxzoom: 19,
+              maxzoom: 20,
             }],
           };
       }
@@ -638,15 +634,15 @@ export function MapContainer({
       // Only add overlays for default map style (not satellite)
       if (mapStyle === 'default') {
         if (baseLayers.roads) {
-          baseStyle.sources['osm-overlay'] = {
+          baseStyle.sources['carto-overlay'] = {
             type: 'raster',
-            tiles: ['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            tiles: ['https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png'],
             tileSize: 256,
           };
           overlayLayers.push({
             id: 'roads-overlay',
             type: 'raster',
-            source: 'osm-overlay',
+            source: 'carto-overlay',
             paint: {
               'raster-opacity': 0.5,
             },
