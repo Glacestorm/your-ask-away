@@ -486,27 +486,26 @@ export function MapContainer({
     const andorraCenter: [number, number] = [1.5218, 42.5063];
 
     // ==========================================
-    // DIAGNÓSTICO: Versión mínima para encontrar el error
+    // Carto Basemaps - reliable CORS-enabled tiles
     // ==========================================
     
-    // Estilo mínimo con MapTiler free tiles (más confiable)
     const minimalStyle: maplibregl.StyleSpecification = {
       version: 8,
       sources: {
-        'osm': {
+        'carto': {
           type: 'raster',
           tiles: [
-            'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+            'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'
           ],
           tileSize: 256,
-          attribution: '© OpenStreetMap'
+          attribution: '© Carto © OpenStreetMap'
         }
       },
       layers: [
         {
-          id: 'osm-tiles',
+          id: 'carto-tiles',
           type: 'raster',
-          source: 'osm',
+          source: 'carto',
           minzoom: 0,
           maxzoom: 19
         }
@@ -617,19 +616,19 @@ export function MapContainer({
       return {
         version: 8,
         sources: {
-          'osm': {
+          'carto': {
             type: 'raster',
             tiles: [
-              'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+              'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'
             ],
             tileSize: 256,
-            attribution: '© OpenStreetMap'
+            attribution: '© Carto © OpenStreetMap'
           }
         },
         layers: [{
-          id: 'osm-tiles',
+          id: 'carto-tiles',
           type: 'raster',
-          source: 'osm',
+          source: 'carto',
           minzoom: 0,
           maxzoom: 19
         }]
