@@ -485,35 +485,11 @@ export function MapContainer({
     // Andorra coordinates
     const andorraCenter: [number, number] = [1.5218, 42.5063];
 
-    // SOLUCIÓN DEFINITIVA: Carto Positron tiles - 100% gratuito, sin API key, CORS habilitado
-    // Carto ofrece tiles de alta calidad basados en OpenStreetMap sin restricciones
-    const createBaseStyle = (): maplibregl.StyleSpecification => {
-      console.log('🗺️ Inicializando mapa con Carto Positron tiles (gratuito, sin restricciones)');
-      return {
-        version: 8 as const,
-        sources: {
-          'carto-positron': {
-            type: 'raster' as const,
-            tiles: [
-              'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
-              'https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
-              'https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
-              'https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png'
-            ],
-            tileSize: 256,
-            attribution: '© <a href="https://carto.com/attributions">CARTO</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-            maxzoom: 20,
-          },
-        },
-        layers: [{
-          id: 'carto-layer',
-          type: 'raster' as const,
-          source: 'carto-positron',
-          minzoom: 0,
-          maxzoom: 20,
-        }],
-        glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
-      };
+    // SOLUCIÓN DEFINITIVA: OpenFreeMap - 100% gratuito, sin API key, CORS habilitado
+    // https://openfreemap.org - Tiles vectoriales gratuitos basados en OpenStreetMap
+    const createBaseStyle = (): string => {
+      console.log('🗺️ Inicializando mapa con OpenFreeMap (gratuito, sin restricciones)');
+      return 'https://tiles.openfreemap.org/styles/liberty';
     };
 
     const createSatelliteStyle = (): maplibregl.StyleSpecification => ({
@@ -539,7 +515,7 @@ export function MapContainer({
       glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
     });
 
-    const initialStyle: maplibregl.StyleSpecification = mapStyle === 'satellite' ? createSatelliteStyle() : createBaseStyle();
+    const initialStyle = mapStyle === 'satellite' ? createSatelliteStyle() : createBaseStyle();
     console.log('🚀 Inicializando MapLibre GL con estilo:', mapStyle);
 
     try {
@@ -600,8 +576,8 @@ export function MapContainer({
     const currentCenter = map.current.getCenter();
     const currentZoom = map.current.getZoom();
 
-    // Get style based on mapStyle prop - siempre retorna StyleSpecification inline
-    const getStyle = (styleName: string): maplibregl.StyleSpecification => {
+    // Get style based on mapStyle prop
+    const getStyle = (styleName: string): maplibregl.StyleSpecification | string => {
       if (styleName === 'satellite') {
         return {
           version: 8 as const,
@@ -626,32 +602,8 @@ export function MapContainer({
           glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
         };
       }
-      // Carto Voyager - tiles gratuitos con alto detalle
-      return {
-        version: 8 as const,
-        sources: {
-          'carto-positron': {
-            type: 'raster' as const,
-            tiles: [
-              'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
-              'https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
-              'https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
-              'https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png'
-            ],
-            tileSize: 256,
-            attribution: '© <a href="https://carto.com/attributions">CARTO</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-            maxzoom: 20,
-          },
-        },
-        layers: [{
-          id: 'carto-layer',
-          type: 'raster' as const,
-          source: 'carto-positron',
-          minzoom: 0,
-          maxzoom: 20,
-        }],
-        glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
-      };
+      // OpenFreeMap - tiles vectoriales gratuitos
+      return 'https://tiles.openfreemap.org/styles/liberty';
     };
 
     map.current.setStyle(getStyle(mapStyle));
