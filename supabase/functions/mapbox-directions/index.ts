@@ -79,12 +79,6 @@ serve(async (req) => {
       baseParams.append('voice_instructions', 'true');
       baseParams.append('banner_instructions', 'true');
       url = `https://api.mapbox.com/directions/v5/${mapboxProfile}/${coordinates}?${baseParams.toString()}`;
-      // Use standard Directions API with additional params
-      baseParams.append('alternatives', 'false');
-      baseParams.append('annotations', 'distance,duration,speed');
-      baseParams.append('voice_instructions', 'true');
-      baseParams.append('banner_instructions', 'true');
-      url = `https://api.mapbox.com/directions/v5/${mapboxProfile}/${coordinates}?${baseParams.toString()}`;
     }
 
     console.log('Calling Mapbox API...');
