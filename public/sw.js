@@ -159,18 +159,21 @@ async function staleWhileRevalidate(request, cacheName) {
   const cachedResponse = await caches.match(request);
   
   const networkPromise = fetch(request)
-    .then((networkResponse) => {
+    .then(async (networkResponse) => {
       if (networkResponse.ok) {
-        const cache = caches.open(cacheName);
-        cache.then((c) => {
-          c.put(request, networkResponse.clone());
+        try {
+          const cache = await caches.open(cacheName);
+          // Clone before any use to avoid "body already used" error
+          const responseToCache = networkResponse.clone();
+          await cache.put(request, responseToCache);
           trimCache(cacheName, CACHE_LIMITS[cacheName] || 50);
-        });
+        } catch {
+          // Silently handle cache errors
+        }
       }
       return networkResponse;
     })
-    .catch((error) => {
-      console.log('[SW] Revalidation failed:', error);
+    .catch(() => {
       return null;
     });
   

@@ -26,6 +26,8 @@ export function usePresence(options: UsePresenceOptions = {}) {
   const [isConnected, setIsConnected] = useState(false);
   const channelRef = useRef<RealtimeChannel | null>(null);
   const profileDataRef = useRef<{ full_name: string; role: string; avatar_url?: string; oficina?: string } | null>(null);
+  const isSubscribedRef = useRef(false);
+  const lastTrackTimeRef = useRef(0);
 
   // Fetch user profile data once
   useEffect(() => {
@@ -57,7 +59,12 @@ export function usePresence(options: UsePresenceOptions = {}) {
 
   const trackPresence = useCallback(
     async (currentPage?: string) => {
-      if (!channelRef.current || !user?.id || !profileDataRef.current) return;
+      if (!channelRef.current || !user?.id || !profileDataRef.current || !isSubscribedRef.current) return;
+
+      // Debounce: don't track more than once per 5 seconds
+      const now = Date.now();
+      if (now - lastTrackTimeRef.current < 5000) return;
+      lastTrackTimeRef.current = now;
 
       const presenceData: OnlineUser = {
         id: user.id,
@@ -72,8 +79,8 @@ export function usePresence(options: UsePresenceOptions = {}) {
 
       try {
         await channelRef.current.track(presenceData);
-      } catch (error) {
-        console.error('[Presence] Error tracking presence:', error);
+      } catch {
+        // Silently handle errors to avoid console spam
       }
     },
     [user?.id, user?.email]
@@ -81,6 +88,9 @@ export function usePresence(options: UsePresenceOptions = {}) {
 
   useEffect(() => {
     if (!enabled || !user?.id) return;
+
+    // Prevent double subscription
+    if (channelRef.current) return;
 
     const channel = supabase.channel('online-users', {
       config: {
@@ -97,63 +107,48 @@ export function usePresence(options: UsePresenceOptions = {}) {
 
         Object.values(state).forEach((presences) => {
           if (Array.isArray(presences) && presences.length > 0) {
-            // Get the most recent presence for each user
             users.push(presences[0] as OnlineUser);
           }
         });
 
         setOnlineUsers(users);
       })
-      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-        console.log('[Presence] User joined:', key, newPresences);
-      })
-      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
-        console.log('[Presence] User left:', key, leftPresences);
-      })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
+          isSubscribedRef.current = true;
           setIsConnected(true);
-          // Wait for profile data to be loaded
-          const waitForProfile = async () => {
-            let attempts = 0;
-            while (!profileDataRef.current && attempts < 10) {
-              await new Promise((resolve) => setTimeout(resolve, 100));
-              attempts++;
-            }
-            if (profileDataRef.current) {
-              trackPresence(trackPage ? window.location.pathname : undefined);
-            }
-          };
-          waitForProfile();
-        } else {
+          
+          // Wait for profile data then track once
+          let attempts = 0;
+          while (!profileDataRef.current && attempts < 10) {
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            attempts++;
+          }
+          if (profileDataRef.current) {
+            trackPresence(trackPage ? window.location.pathname : undefined);
+          }
+        } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+          isSubscribedRef.current = false;
           setIsConnected(false);
         }
       });
 
     channelRef.current = channel;
 
-    // Track page changes
-    const handleRouteChange = () => {
-      if (trackPage && channelRef.current) {
-        trackPresence(window.location.pathname);
-      }
-    };
-
-    window.addEventListener('popstate', handleRouteChange);
-
-    // Heartbeat to keep presence alive
+    // Heartbeat every 60 seconds (reduced frequency)
     const heartbeatInterval = setInterval(() => {
-      if (channelRef.current && profileDataRef.current) {
+      if (channelRef.current && profileDataRef.current && isSubscribedRef.current) {
+        lastTrackTimeRef.current = 0; // Reset debounce for heartbeat
         trackPresence(trackPage ? window.location.pathname : undefined);
       }
-    }, 30000); // Every 30 seconds
+    }, 60000);
 
     return () => {
-      window.removeEventListener('popstate', handleRouteChange);
       clearInterval(heartbeatInterval);
+      isSubscribedRef.current = false;
 
       if (channelRef.current) {
-        channelRef.current.untrack();
+        channelRef.current.untrack().catch(() => {});
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
       }
