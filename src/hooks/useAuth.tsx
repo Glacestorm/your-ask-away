@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import { useState, useEffect, createContext, useContext, ReactNode, useRef, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { AppRole, UserRole } from '@/types/database';
@@ -22,103 +22,113 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Role priority cache (static - never changes)
+const ROLE_PRIORITIES: Record<string, number> = {
+  'superadmin': 100,
+  'director_comercial': 90,
+  'responsable_comercial': 80,
+  'director_oficina': 70,
+  'admin': 60,
+  'auditor': 50,
+  'gestor': 40,
+  'user': 10,
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [userRole, setUserRole] = useState<AppRole | null>(null);
   const [loading, setLoading] = useState(true);
-  const [roleLoading, setRoleLoading] = useState(false);
+  
+  // Prevent duplicate role fetches
+  const fetchingRoleRef = useRef<string | null>(null);
+  const roleCache = useRef<Map<string, AppRole>>(new Map());
 
-  // Priority order for roles (highest privilege first)
-  const getRolePriority = (role: string): number => {
-    const priorities: Record<string, number> = {
-      'superadmin': 100,
-      'director_comercial': 90,
-      'responsable_comercial': 80,
-      'director_oficina': 70,
-      'admin': 60,
-      'auditor': 50,
-      'gestor': 40,
-      'user': 10,
-    };
-    return priorities[role] || 0;
-  };
-
-  const fetchUserRole = async (userId: string) => {
+  const fetchUserRole = useCallback(async (userId: string) => {
+    // Prevent duplicate fetches for same user
+    if (fetchingRoleRef.current === userId) return;
+    
+    // Check cache first
+    const cachedRole = roleCache.current.get(userId);
+    if (cachedRole) {
+      setUserRole(cachedRole);
+      return;
+    }
+    
+    fetchingRoleRef.current = userId;
+    
     try {
-      setRoleLoading(true);
-      console.log('🔍 Fetching role for user:', userId);
-      
-      // Fetch all roles for the user (they may have multiple)
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', userId);
-
-      console.log('📦 Role query result:', { data, error });
       
       if (error) throw error;
       
-      // If user has multiple roles, select the highest privilege one
       let role: AppRole = 'user';
       if (data && data.length > 0) {
-        const sortedRoles = data.sort((a, b) => 
-          getRolePriority(b.role) - getRolePriority(a.role)
-        );
-        role = sortedRoles[0].role as AppRole;
+        // Find highest priority role
+        role = data.reduce((highest, current) => {
+          return (ROLE_PRIORITIES[current.role] || 0) > (ROLE_PRIORITIES[highest] || 0)
+            ? current.role as AppRole
+            : highest;
+        }, 'user' as AppRole);
       }
       
-      console.log('✅ Setting user role to:', role);
+      roleCache.current.set(userId, role);
       setUserRole(role);
     } catch (error) {
-      console.error('❌ Error fetching user role:', error);
-      setUserRole('user'); // Default fallback
+      console.error('Error fetching user role:', error);
+      setUserRole('user');
     } finally {
-      setRoleLoading(false);
+      fetchingRoleRef.current = null;
     }
-  };
+  }, []);
 
   useEffect(() => {
-    console.log('🚀 Auth hook initializing...');
+    let mounted = true;
+    let initialSessionChecked = false;
     
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('🔄 Auth state changed:', event, 'User:', session?.user?.email);
+        if (!mounted) return;
+        
+        // Skip if this is the initial session (we handle it below)
+        if (event === 'INITIAL_SESSION') {
+          initialSessionChecked = true;
+        }
+        
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Fetch role but don't block the auth state change
         if (session?.user) {
-          console.log('👤 User logged in, fetching role...');
-          // Don't use async/await in the callback
           fetchUserRole(session.user.id);
         } else {
-          console.log('👋 User logged out, clearing role');
           setUserRole(null);
-          setRoleLoading(false);
         }
         
         setLoading(false);
       }
     );
 
-    // THEN check for existing session
+    // Check for existing session only if not already handled
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('🔐 Initial session check:', session?.user?.email);
+      if (!mounted || initialSessionChecked) return;
+      
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
         fetchUserRole(session.user.id);
-      } else {
-        setRoleLoading(false);
       }
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [fetchUserRole]);
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -187,30 +197,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isOfficeDirector = userRole === 'director_oficina' || userRole === 'superadmin' || userRole === 'responsable_comercial';
   const isCommercialManager = userRole === 'responsable_comercial' || userRole === 'superadmin';
   const isAuditor = userRole === 'auditor';
-  
-  // Overall loading state includes both auth and role loading
-  const overallLoading = loading || roleLoading;
-  
-  console.log('🔑 Current auth state:', { 
-    userEmail: user?.email, 
-    userRole, 
-    isAdmin, 
-    isSuperAdmin,
-    isCommercialDirector,
-    isOfficeDirector,
-    isCommercialManager,
-    isAuditor,
-    loading: overallLoading,
-    authLoading: loading,
-    roleLoading
-  });
 
   return (
     <AuthContext.Provider value={{
       user,
       session,
       userRole,
-      loading: overallLoading,
+      loading,
       signIn,
       signUp,
       signOut,
