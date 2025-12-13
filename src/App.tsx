@@ -19,6 +19,7 @@ const Home = lazy(() => import("./pages/Home"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Profile = lazy(() => import("./pages/Profile"));
+const Map3D = lazy(() => import("./pages/Map3D"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Preload critical routes on hover/focus for faster navigation
@@ -77,6 +78,11 @@ const App = () => (
                     <Route path="/profile" element={
                       <StreamingBoundary priority="low" delay={100}>
                         <Profile />
+                      </StreamingBoundary>
+                    } />
+                    <Route path="/map-3d" element={
+                      <StreamingBoundary priority="medium">
+                        <Map3D />
                       </StreamingBoundary>
                     } />
                     <Route path="*" element={<NotFound />} />
