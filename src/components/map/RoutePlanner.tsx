@@ -160,6 +160,13 @@ export function RoutePlanner({
     }
   }, [selectedCompanyFromMap, mode, onCompanyAddedFromMap]);
 
+  // Sync mode with external isSelectingMode prop
+  useEffect(() => {
+    if (isSelectingMode && mode !== 'selecting') {
+      setMode('selecting');
+    }
+  }, [isSelectingMode]);
+
   // Notify parent about selecting mode changes
   useEffect(() => {
     onSelectingModeChange?.(mode === 'selecting');
