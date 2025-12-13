@@ -150,6 +150,7 @@ interface MapContainerProps {
   routeWaypoints?: { id: string; name: string; latitude: number; longitude: number }[];
   routeOrigin?: { latitude: number; longitude: number; name: string } | null;
   routeSelectedIds?: string[];
+  routeGeometry?: { type: string; coordinates: number[][] } | null;
 }
 
 interface TooltipConfig {
@@ -186,6 +187,7 @@ export function MapContainer({
   routeWaypoints,
   routeOrigin,
   routeSelectedIds = [],
+  routeGeometry,
 }: MapContainerProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -265,7 +267,7 @@ export function MapContainer({
     }
   }, [focusCompanyId, companies, mapLoaded, view3D, onFocusCompanyHandled]);
 
-  // Function to draw route markers only (no polyline)
+  // Function to draw route markers and line
   const drawRouteOnMap = useCallback(() => {
     if (!map.current || !mapLoaded) return;
 
@@ -275,9 +277,64 @@ export function MapContainer({
     routeMarkersRef.current.forEach(marker => marker.remove());
     routeMarkersRef.current = [];
 
+    // Clean up previous route line
+    if (mapInstance.getLayer('route-line')) {
+      mapInstance.removeLayer('route-line');
+    }
+    if (mapInstance.getLayer('route-line-outline')) {
+      mapInstance.removeLayer('route-line-outline');
+    }
+    if (mapInstance.getSource('route-source')) {
+      mapInstance.removeSource('route-source');
+    }
+
     // If no waypoints at all, exit early
     if (!routeWaypoints || routeWaypoints.length === 0) {
       return;
+    }
+
+    // Draw route line if geometry is available
+    if (routeGeometry && routeGeometry.coordinates && routeGeometry.coordinates.length > 0) {
+      mapInstance.addSource('route-source', {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          properties: {},
+          geometry: routeGeometry as GeoJSON.Geometry
+        }
+      });
+
+      // Add outline layer first (for visibility)
+      mapInstance.addLayer({
+        id: 'route-line-outline',
+        type: 'line',
+        source: 'route-source',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        paint: {
+          'line-color': '#ffffff',
+          'line-width': 10,
+          'line-opacity': 0.8
+        }
+      });
+
+      // Add main route line
+      mapInstance.addLayer({
+        id: 'route-line',
+        type: 'line',
+        source: 'route-source',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        paint: {
+          'line-color': '#3b82f6',
+          'line-width': 6,
+          'line-opacity': 1
+        }
+      });
     }
 
     // Create waypoint markers - include origin as A
@@ -363,9 +420,9 @@ export function MapContainer({
         duration: 1000
       });
     }
-  }, [mapLoaded, routeWaypoints, routeOrigin]);
+  }, [mapLoaded, routeWaypoints, routeOrigin, routeGeometry]);
 
-  // Effect to draw route markers
+  // Effect to draw route markers and line
   useEffect(() => {
     if (!map.current || !mapLoaded) return;
 
@@ -374,7 +431,7 @@ export function MapContainer({
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [mapLoaded, drawRouteOnMap, routeWaypoints]);
+  }, [mapLoaded, drawRouteOnMap, routeWaypoints, routeGeometry]);
 
   // Fetch tooltip configuration and map config in parallel for faster load
   useEffect(() => {
