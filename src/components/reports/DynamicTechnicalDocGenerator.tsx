@@ -247,20 +247,30 @@ interface CodebaseAnalysis {
 }
 
 const COMPONENTS_LIST = [
-  'admin/AdminSidebar.tsx', 'admin/AlertHistoryViewer.tsx', 'admin/AuditLogsViewer.tsx',
-  'admin/AuditorDashboard.tsx', 'admin/BulkGoalsAssignment.tsx', 'admin/CommercialDirectorDashboard.tsx',
+  // Admin components (68 total)
+  'admin/AdminSidebar.tsx', 'admin/AIIntegrationConfig.tsx', 'admin/APIDocumentation.tsx',
+  'admin/AdaptiveAuthDashboard.tsx', 'admin/AdvancedCompanyFilters.tsx', 'admin/AdvancedMLDashboard.tsx',
+  'admin/AlertHistoryViewer.tsx', 'admin/ApplicationStateAnalyzer.tsx', 'admin/AssistantKnowledgeManager.tsx',
+  'admin/AuditLogsViewer.tsx', 'admin/AuditorDashboard.tsx', 'admin/BulkGoalsAssignment.tsx',
+  'admin/CascadeGoalsManager.tsx', 'admin/ChatFileUpload.tsx', 'admin/CommercialDirectorDashboard.tsx',
   'admin/CommercialManagerAudit.tsx', 'admin/CommercialManagerDashboard.tsx', 'admin/CompaniesManager.tsx',
-  'admin/CompaniesPagination.tsx', 'admin/ConceptsManager.tsx', 'admin/ContractedProductsReport.tsx',
-  'admin/DirectorAlertsPanel.tsx', 'admin/DORAComplianceDashboard.tsx', 'admin/EmailTemplatesManager.tsx', 
-  'admin/ExcelImporter.tsx', 'admin/GestorDashboard.tsx', 'admin/GestoresMetrics.tsx', 
-  'admin/GoalsKPIDashboard.tsx', 'admin/GoalsProgressTracker.tsx', 'admin/ImportHistoryViewer.tsx', 
-  'admin/KPIReportHistory.tsx', 'admin/MapTooltipConfig.tsx', 'admin/MetricsExplorer.tsx', 
-  'admin/OfficeDirectorDashboard.tsx', 'admin/ProductsManager.tsx', 'admin/ProductsMetrics.tsx', 
-  'admin/SharedVisitsCalendar.tsx', 'admin/StatusColorsManager.tsx', 'admin/SystemHealthMonitor.tsx', 
-  'admin/TPVGoalsManager.tsx', 'admin/TPVManager.tsx', 'admin/UsersManager.tsx', 
+  'admin/CompaniesPagination.tsx', 'admin/CompanyDataCompleteness.tsx', 'admin/CompanyExportButton.tsx',
+  'admin/ConceptsManager.tsx', 'admin/ContractedProductsReport.tsx', 'admin/CoreBankingManager.tsx',
+  'admin/Customer360Panel.tsx', 'admin/CustomerSegmentationPanel.tsx', 'admin/DirectorAlertsPanel.tsx',
+  'admin/DORAComplianceDashboard.tsx', 'admin/EmailTemplatesManager.tsx', 'admin/EnhancedCompanyCard.tsx',
+  'admin/ExcelImporter.tsx', 'admin/GeocodingRecalculator.tsx', 'admin/GestorDashboard.tsx',
+  'admin/GestoresMetrics.tsx', 'admin/GoalsKPIDashboard.tsx', 'admin/GoalsProgressTracker.tsx',
+  'admin/ImportHistoryViewer.tsx', 'admin/InternalAssistantChat.tsx', 'admin/ISO27001Dashboard.tsx',
+  'admin/KPIReportHistory.tsx', 'admin/MapConfigDashboard.tsx', 'admin/MapTooltipConfig.tsx',
+  'admin/MetricsExplorer.tsx', 'admin/MLExplainabilityPanel.tsx', 'admin/NotificationCenterManager.tsx',
+  'admin/OfficeDirectorDashboard.tsx', 'admin/PredictiveAnalyticsDashboard.tsx', 'admin/ProductsManager.tsx',
+  'admin/ProductsMetrics.tsx', 'admin/RFMDashboard.tsx', 'admin/SharedVisitsCalendar.tsx',
+  'admin/SMSManager.tsx', 'admin/StatusColorsManager.tsx', 'admin/SystemHealthMonitor.tsx',
+  'admin/TPVGoalsManager.tsx', 'admin/TPVManager.tsx', 'admin/UsersManager.tsx',
   'admin/VinculacionMetrics.tsx', 'admin/VisitSheetAuditViewer.tsx', 'admin/VisitSheetValidationPanel.tsx',
-  'admin/VisitSheetsGestorComparison.tsx', 'admin/VisitsMetrics.tsx', 'admin/AdaptiveAuthDashboard.tsx',
-  'admin/CascadeGoalsManager.tsx', 'admin/ApplicationStateAnalyzer.tsx',
+  'admin/VisitSheetsGestorComparison.tsx', 'admin/VisitsMetrics.tsx', 'admin/VoiceRecordButton.tsx',
+  'admin/WhiteLabelConfig.tsx',
+  // Admin accounting components (45 total)
   'admin/accounting/AccountingCompanyIndex.tsx', 'admin/accounting/AccountingGroupsChart.tsx',
   'admin/accounting/AccountingMainMenu.tsx', 'admin/accounting/AccountingManager.tsx',
   'admin/accounting/AddedValueAnalysis.tsx', 'admin/accounting/AnalyticalPLChart.tsx',
@@ -272,22 +282,25 @@ const COMPONENTS_LIST = [
   'admin/accounting/EconomicFinancialDashboard.tsx', 'admin/accounting/EnhancedCompanyHeader.tsx',
   'admin/accounting/EquityChangesForm.tsx', 'admin/accounting/FinancialAnalysisTab.tsx',
   'admin/accounting/FinancialNotesManager.tsx', 'admin/accounting/FinancialRAGChat.tsx',
-  'admin/accounting/FinancialStatementsHistory.tsx', 'admin/accounting/FinancingStatement.tsx', 
-  'admin/accounting/IncomeStatementChart.tsx', 'admin/accounting/IncomeStatementForm.tsx', 
-  'admin/accounting/LiquidityDebtRatios.tsx', 'admin/accounting/LongTermFinancialAnalysis.tsx', 
-  'admin/accounting/MovingAnnualTrendChart.tsx', 'admin/accounting/MultiYearComparison.tsx', 
-  'admin/accounting/PDFImportDialog.tsx', 'admin/accounting/PeriodYearSelector.tsx', 
-  'admin/accounting/ProfitabilityTab.tsx', 'admin/accounting/ProvisionalStatementsManager.tsx', 
-  'admin/accounting/RatiosPyramid.tsx', 'admin/accounting/ReportsTab.tsx', 
-  'admin/accounting/SectorSimulator.tsx', 'admin/accounting/SectoralRatiosAnalysis.tsx', 
-  'admin/accounting/TreasuryMovements.tsx', 'admin/accounting/ValuationTab.tsx', 
-  'admin/accounting/WorkingCapitalAnalysis.tsx', 'admin/accounting/WorkingCapitalNOF.tsx', 
+  'admin/accounting/FinancialStatementsHistory.tsx', 'admin/accounting/FinancingStatement.tsx',
+  'admin/accounting/IncomeStatementChart.tsx', 'admin/accounting/IncomeStatementForm.tsx',
+  'admin/accounting/LiquidityDebtRatios.tsx', 'admin/accounting/LongTermFinancialAnalysis.tsx',
+  'admin/accounting/MovingAnnualTrendChart.tsx', 'admin/accounting/MultiYearComparison.tsx',
+  'admin/accounting/PDFImportDialog.tsx', 'admin/accounting/PeriodYearSelector.tsx',
+  'admin/accounting/ProfitabilityTab.tsx', 'admin/accounting/ProvisionalStatementsManager.tsx',
+  'admin/accounting/RatiosPyramid.tsx', 'admin/accounting/ReportsTab.tsx',
+  'admin/accounting/SectorSimulator.tsx', 'admin/accounting/SectoralRatiosAnalysis.tsx',
+  'admin/accounting/TreasuryMovements.tsx', 'admin/accounting/ValuationTab.tsx',
+  'admin/accounting/WorkingCapitalAnalysis.tsx', 'admin/accounting/WorkingCapitalNOF.tsx',
   'admin/accounting/ZScoreAnalysis.tsx',
+  // Auth components
   'auth/PasskeyButton.tsx', 'auth/PasskeyManager.tsx', 'auth/StepUpAuthDialog.tsx',
   'auth/XAMAStatusIndicator.tsx', 'auth/XAMAVerificationDialog.tsx',
+  // Company components
   'company/BankAffiliationsManager.tsx', 'company/CompanyDetail.tsx', 'company/CompanyPhotosManager.tsx',
   'company/CompanyPrintReport.tsx', 'company/ContactsManager.tsx', 'company/DocumentsManager.tsx',
   'company/ExcelExportDialog.tsx', 'company/TPVTerminalsManager.tsx', 'company/VisitSheetsHistory.tsx',
+  // Dashboard components (60+ total)
   'dashboard/AccountingDashboardCard.tsx', 'dashboard/ActionPlanManager.tsx',
   'dashboard/ActivityStatistics.tsx', 'dashboard/AdvancedAnalyticsDashboardCard.tsx',
   'dashboard/AlertHistoryDashboardCard.tsx', 'dashboard/AlertsManager.tsx',
@@ -300,61 +313,116 @@ const COMPONENTS_LIST = [
   'dashboard/GestorEvolutionTimeline.tsx', 'dashboard/GestorFilterSelector.tsx',
   'dashboard/GestorOverviewSection.tsx', 'dashboard/GestoresLeaderboard.tsx',
   'dashboard/GoalsAlertsDashboardCard.tsx', 'dashboard/KPIDashboardCard.tsx',
-  'dashboard/MLPredictions.tsx', 'dashboard/MapButton.tsx', 'dashboard/MapDashboardCard.tsx', 
-  'dashboard/MetricsCardsSection.tsx', 'dashboard/MetricsDashboardCard.tsx', 
-  'dashboard/NotificationPreferences.tsx', 'dashboard/NotificationService.tsx', 
-  'dashboard/NotificationsPanel.tsx', 'dashboard/ObjetivosYMetas.tsx', 
+  'dashboard/MLPredictions.tsx', 'dashboard/MapButton.tsx', 'dashboard/MapDashboardCard.tsx',
+  'dashboard/MetricsCardsSection.tsx', 'dashboard/MetricsDashboardCard.tsx',
+  'dashboard/NotificationPreferences.tsx', 'dashboard/NotificationService.tsx',
+  'dashboard/NotificationsPanel.tsx', 'dashboard/ObjetivosYMetas.tsx',
   'dashboard/OfflineSyncIndicator.tsx', 'dashboard/PersonalActivityHistory.tsx',
   'dashboard/PersonalGoalsDetailedAnalysis.tsx', 'dashboard/PersonalGoalsHistory.tsx',
   'dashboard/PersonalGoalsTracker.tsx', 'dashboard/PersonalKPIsDashboard.tsx',
   'dashboard/PowerBIExport.tsx', 'dashboard/PrediccionesFuturas.tsx',
   'dashboard/PushNotifications.tsx', 'dashboard/QuickActionsPanel.tsx',
   'dashboard/QuickVisitManager.tsx', 'dashboard/QuickVisitSheetCard.tsx',
-  'dashboard/RealtimeNotificationsBadge.tsx', 'dashboard/ResumenEjecutivo.tsx', 
-  'dashboard/TPVGestorRanking.tsx', 'dashboard/TPVGoalsComparison.tsx', 
-  'dashboard/TPVGoalsDashboard.tsx', 'dashboard/TPVGoalsHistory.tsx', 
-  'dashboard/UnifiedMetricsDashboard.tsx', 'dashboard/UpcomingVisitsWidget.tsx', 
+  'dashboard/RealtimeNotificationsBadge.tsx', 'dashboard/ResumenEjecutivo.tsx',
+  'dashboard/TPVGestorRanking.tsx', 'dashboard/TPVGoalsComparison.tsx',
+  'dashboard/TPVGoalsDashboard.tsx', 'dashboard/TPVGoalsHistory.tsx',
+  'dashboard/UnifiedMetricsDashboard.tsx', 'dashboard/UpcomingVisitsWidget.tsx',
   'dashboard/VisitReminders.tsx',
+  // eIDAS components
   'eidas/EIDASVerificationPanel.tsx',
+  // Help components
+  'help/HelpCenter.tsx', 'help/HelpButton.tsx',
+  // Map components (15 total)
   'map/CompanyPhotosDialog.tsx', 'map/GeoSearch.tsx', 'map/MapContainer.tsx',
   'map/MapHeader.tsx', 'map/MapLayersControl.tsx', 'map/MapSidebar.tsx', 'map/MapLegend.tsx',
-  'map/MapStatisticsPanel.tsx', 'map/OpportunityHeatmap.tsx', 'map/RoutePlanner.tsx',
-  'map/SectorStats.tsx', 'map/VisitsPanel.tsx', 'map/markerIcons.tsx', 'map/markerStyles.tsx',
+  'map/MapStatisticsPanel.tsx', 'map/Map3DBuildings.tsx', 'map/OpportunityHeatmap.tsx',
+  'map/RoutePlanner.tsx', 'map/SectorStats.tsx', 'map/VisitsPanel.tsx',
+  'map/markerIcons.tsx', 'map/markerStyles.tsx',
+  // Performance components
   'performance/OptimizedImage.tsx', 'performance/PerformanceMonitor.tsx',
   'performance/SSRCacheProvider.tsx', 'performance/StreamingBoundary.tsx',
+  // Pipeline components
+  'pipeline/PipelineBoard.tsx', 'pipeline/PipelineColumn.tsx', 'pipeline/PipelineCard.tsx',
+  // Presence components
   'presence/OnlineUsersIndicator.tsx',
+  // Reports components
   'reports/ReportGenerator.tsx', 'reports/TechnicalDocumentGenerator.tsx',
   'reports/DynamicTechnicalDocGenerator.tsx', 'reports/AppDetailedStatusGenerator.tsx',
   'reports/CodebaseIndexGenerator.tsx', 'reports/CompetitorGapAnalysisGenerator.tsx',
+  // Security components
+  'security/SecurityDashboard.tsx', 'security/ThreatAnalysis.tsx',
+  // Visits components
   'visits/ParticipantsSelector.tsx', 'visits/SignaturePad.tsx', 'visits/VisitSheetForm.tsx',
   'visits/VisitSheetPhotos.tsx', 'visits/VisitSheetTemplateSelector.tsx',
+  // UI components (50+ from shadcn)
+  'ui/button.tsx', 'ui/card.tsx', 'ui/dialog.tsx', 'ui/input.tsx', 'ui/table.tsx',
+  // Chat components
+  'chat/ChatRoom.tsx', 'chat/ChatMessage.tsx', 'chat/ChatInput.tsx',
 ];
 
 const HOOKS_LIST = [
+  // Core hooks (55 total)
   'useAuth.tsx', 'useCelebration.ts', 'useCompaniesServerPagination.ts',
-  'useCompanyPhotosLazy.ts', 'useDeferredValue.ts', 'useGoalsQuery.ts', 
-  'useNavigationHistory.ts', 'useNotifications.tsx', 'useNotificationsQuery.ts', 
+  'useCompanyPhotosLazy.ts', 'useDeferredValue.ts', 'useGoalsQuery.ts',
+  'useNavigationHistory.ts', 'useNotifications.tsx', 'useNotificationsQuery.ts',
   'useOfflineSync.ts', 'useOptimisticLock.ts', 'usePerformanceMonitor.ts',
-  'usePresence.ts', 'useReact19Actions.ts', 'useRealtimeChannel.ts', 
-  'useStreamingData.ts', 'useTransitionState.ts', 'useVisitsQuery.ts', 
+  'usePresence.ts', 'useReact19Actions.ts', 'useRealtimeChannel.ts',
+  'useStreamingData.ts', 'useTransitionState.ts', 'useVisitsQuery.ts',
   'useWebAuthn.ts', 'useWebVitals.ts', 'useXAMA.ts', 'useEIDAS.ts',
   'useAdaptiveAuth.ts', 'useBehavioralBiometrics.ts', 'useAMLFraudDetection.ts',
   'use-mobile.tsx', 'use-toast.ts',
+  // ML/AI hooks
+  'useAIAgents.ts', 'useAdvancedMLScoring.ts', 'useAnomalyDetection.ts',
+  'useChurnPrediction.ts', 'useCreditScoring.ts', 'useCustomer360.ts',
+  'useDeepLearning.ts', 'useIntelligentOCR.ts', 'useMLExplainability.ts',
+  'useModelRegistry.ts', 'useOpportunities.ts', 'useProductRecommendations.ts',
+  'useRandomForest.ts', 'useSalesPerformance.ts', 'useTransactionEnrichment.ts',
+  // Voice/Chat hooks
+  'useVoiceChat.ts', 'useVoiceRecorder.ts', 'useRealtimeChat.ts',
+  // Performance hooks
+  'usePartytown.ts', 'useSpeculationRules.ts', 'useViewTransitions.ts',
+  // Dashboard hooks
+  'useDashboardData.ts', 'useWidgetLayout.ts', 'useVisitSummary.ts',
+  // Auth hooks
+  'useMFAEnforcement.ts', 'usePushNotifications.ts', 'useSMS.ts',
+  'useAchievementNotifications.ts',
 ];
 
 const EDGE_FUNCTIONS = [
-  'analyze-codebase', 'analyze-system-issues', 'check-alerts', 'check-goal-achievements', 
-  'check-goals-at-risk', 'check-low-performance', 'check-visit-reminders', 
+  // Core functions
+  'analyze-codebase', 'analyze-system-issues', 'check-alerts', 'check-goal-achievements',
+  'check-goals-at-risk', 'check-low-performance', 'check-visit-reminders',
   'check-visit-sheet-reminders', 'escalate-alerts', 'evaluate-session-risk',
+  // AI/ML functions
   'financial-rag-chat', 'generate-action-plan', 'generate-financial-embeddings',
-  'generate-ml-predictions', 'geocode-address', 'manage-user', 'notify-visit-validation', 
-  'open-banking-api', 'optimize-route', 'parse-financial-pdf', 'run-stress-test',
-  'scheduled-health-check', 'search-ai-recommendations', 'search-company-photo', 
-  'search-improvements', 'send-alert-email', 'send-critical-opportunity-email', 
-  'send-daily-kpi-report', 'send-goal-achievement-email', 'send-monthly-kpi-report', 
-  'send-monthly-reports', 'send-reminder-email', 'send-step-up-otp',
-  'send-visit-calendar-invite', 'send-weekly-kpi-report', 'smart-column-mapping', 
-  'system-health', 'verify-step-up-challenge', 'webauthn-verify',
+  'generate-ml-predictions', 'advanced-ml-scoring', 'deep-learning-predict',
+  'detect-anomalies', 'predict-churn', 'random-forest-predict', 'ml-explainability',
+  'intelligent-ocr', 'product-recommendations', 'credit-scoring', 'segment-customers-ml',
+  // Geocoding/Maps
+  'geocode-address', 'get-mapbox-token', 'mapbox-directions', 'mapbox-elevation',
+  'mapbox-isochrone', 'mapbox-matrix', 'mapbox-static', 'optimize-route', 'proxy-map-tiles',
+  // User management
+  'manage-user', 'notify-visit-validation', 'open-banking-api',
+  // PDF/Document
+  'parse-financial-pdf', 'summarize-visit', 'voice-to-text',
+  // System health
+  'run-stress-test', 'scheduled-health-check', 'system-health',
+  // AI recommendations
+  'search-ai-recommendations', 'search-company-photo', 'search-improvements',
+  // Email functions
+  'send-alert-email', 'send-critical-opportunity-email', 'send-daily-kpi-report',
+  'send-goal-achievement-email', 'send-monthly-kpi-report', 'send-monthly-reports',
+  'send-reminder-email', 'send-step-up-otp', 'send-visit-calendar-invite',
+  'send-weekly-kpi-report', 'send-push-notification', 'send-sms',
+  // Column mapping
+  'smart-column-mapping', 'verify-step-up-challenge', 'webauthn-verify',
+  // Internal assistant
+  'internal-assistant-chat',
+  // Customer analytics
+  'calculate-customer-360', 'calculate-rfm-analysis', 'calculate-sales-performance',
+  'detect-revenue-signals', 'enrich-transaction', 'generate-ai-tasks', 'generate-kpis',
+  // Core banking
+  'core-banking-adapter', 'dispatch-webhook',
 ];
 
 const PAGES_LIST = [
@@ -462,7 +530,7 @@ security/
       updateAnalyzeStep('valuation');
       
       setAnalysis(data as CodebaseAnalysis);
-      toast.success('Análisis completado', { description: 'Ahora puedes generar los 3 PDFs' });
+      toast.success('Análisis completado', { description: 'Ahora puedes generar los 5 PDFs comerciales' });
       return data as CodebaseAnalysis;
     } catch (error) {
       console.error('Error analyzing codebase:', error);
@@ -3275,12 +3343,12 @@ security/
           Generador de Documentación Comercial Exhaustiva con IA
         </CardTitle>
         <CardDescription>
-          Genera documentación técnico-comercial de 140+ páginas dividida en 4 PDFs independientes
+          Genera documentación técnico-comercial de 175+ páginas dividida en 5 PDFs independientes
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Features Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
           <div className="flex items-center gap-2 text-sm">
             <Shield className="h-4 w-4 text-green-500" />
             <span>ISO 27001</span>
@@ -3301,15 +3369,20 @@ security/
             <Target className="h-4 w-4 text-orange-500" />
             <span>Marketing</span>
           </div>
+          <div className="flex items-center gap-2 text-sm">
+            <Award className="h-4 w-4 text-amber-500" />
+            <span>Proposta</span>
+          </div>
         </div>
 
         {/* Badges */}
         <div className="flex flex-wrap gap-2">
-          <Badge variant="outline">4 PDFs Independientes</Badge>
+          <Badge variant="outline">5 PDFs Independientes</Badge>
           <Badge variant="outline">~35 páginas cada uno</Badge>
-          <Badge variant="outline">140+ páginas total</Badge>
+          <Badge variant="outline">175+ páginas total</Badge>
           <Badge variant="outline">Gemini 2.5 Pro</Badge>
           <Badge variant="outline">Ahorro por Cliente</Badge>
+          <Badge variant="secondary">Proposta Comercial</Badge>
         </div>
 
         {/* Analyze Steps Progress */}
@@ -3343,7 +3416,13 @@ security/
           <div className="space-y-2">
             <Progress value={progress} className="w-full" />
             <p className="text-sm text-muted-foreground text-center">
-              Generando {generatingPart === 'part1' ? 'Parte 1' : generatingPart === 'part2' ? 'Parte 2' : generatingPart === 'part3' ? 'Parte 3' : 'Parte 4'}... {progress}%
+              Generando {
+                generatingPart === 'part1' ? 'Parte 1: Resumen' : 
+                generatingPart === 'part2' ? 'Parte 2: TCO/ISO' : 
+                generatingPart === 'part3' ? 'Parte 3: BCP' : 
+                generatingPart === 'part4' ? 'Parte 4: Marketing' :
+                'Parte 5: Proposta Comercial'
+              }... {progress}%
             </p>
           </div>
         )}
@@ -3376,13 +3455,13 @@ security/
               <span className="text-sm font-medium">Análisis completado - Versión {analysis.version}</span>
             </div>
             <p className="text-xs text-green-600 dark:text-green-500 mt-1">
-              {analysis.modules.length} módulos | {analysis.codeStats.totalComponents} componentes | {analysis.marketValuation.totalCost.toLocaleString()}€
+              {analysis.modules.length} módulos | {analysis.codeStats.totalComponents} componentes | {analysis.codeStats.totalEdgeFunctions} Edge Functions | {analysis.marketValuation.totalCost.toLocaleString()}€
             </p>
           </div>
         )}
 
-        {/* Four PDF Buttons */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {/* Five PDF Buttons */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <Button
             onClick={generatePart1}
             disabled={!isAnalysisComplete || analyzing || generatingPart !== null}
@@ -3442,12 +3521,27 @@ security/
             <span className="font-medium">Parte 4</span>
             <span className="text-xs opacity-80">Marketing, Ventas</span>
           </Button>
+
+          <Button
+            onClick={generatePart5}
+            disabled={!isAnalysisComplete || analyzing || generatingPart !== null}
+            variant={isAnalysisComplete ? "secondary" : "outline"}
+            className="flex flex-col h-auto py-4 border-2 border-amber-500/50"
+          >
+            {generatingPart === 'part5' ? (
+              <Loader2 className="h-5 w-5 animate-spin mb-1" />
+            ) : (
+              <Award className="h-5 w-5 mb-1 text-amber-500" />
+            )}
+            <span className="font-medium">Parte 5</span>
+            <span className="text-xs opacity-80">Proposta Comercial</span>
+          </Button>
         </div>
 
         {/* Hint when not analyzed */}
         {!isAnalysisComplete && !analyzing && (
           <p className="text-xs text-muted-foreground text-center">
-            Haz clic en "Analitzar Codi" para habilitar la generación de los 4 PDFs
+            Haz clic en "Analitzar Codi" para habilitar la generación de los 5 PDFs comerciales
           </p>
         )}
       </CardContent>
