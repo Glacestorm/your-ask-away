@@ -486,33 +486,34 @@ export function MapContainer({
     const andorraCenter: [number, number] = [1.5218, 42.5063];
 
     // ==========================================
-    // Carto Basemaps - reliable CORS-enabled tiles
+    // Stamen Toner via Stadia Maps - works in iframes
     // ==========================================
     
     const minimalStyle: maplibregl.StyleSpecification = {
       version: 8,
+      glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
       sources: {
-        'carto': {
+        'stadia': {
           type: 'raster',
           tiles: [
-            'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'
+            'https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}.png'
           ],
           tileSize: 256,
-          attribution: '© Carto © OpenStreetMap'
+          attribution: '© Stadia Maps © OpenStreetMap'
         }
       },
       layers: [
         {
-          id: 'carto-tiles',
+          id: 'stadia-tiles',
           type: 'raster',
-          source: 'carto',
+          source: 'stadia',
           minzoom: 0,
           maxzoom: 19
         }
       ]
     };
 
-    console.log('🔍 DIAGNÓSTICO: Iniciando mapa mínimo...');
+    console.log('🔍 Iniciando mapa con Stadia Maps...');
     
     try {
       map.current = new maplibregl.Map({
@@ -524,42 +525,19 @@ export function MapContainer({
         minZoom: 1,
       });
       
-      console.log('✅ Mapa creado, esperando tiles...');
-      
-      // Evento cuando el estilo está listo
-      map.current.on('styledata', () => {
-        console.log('📦 Estilo cargado');
-      });
-      
-      // Evento cuando las fuentes están listas
-      map.current.on('sourcedata', (e) => {
-        console.log('📍 Source data:', e.sourceId, e.isSourceLoaded);
-      });
-      
       // Evento de carga completa
       map.current.on('load', () => {
-        console.log('✅ MAPA CARGADO COMPLETAMENTE');
+        console.log('✅ MAPA CARGADO');
         setMapLoaded(true);
         if (map.current && view3D) {
           add3DBuildingsLayer(map.current);
         }
       });
       
-      // Evento de error - MUY IMPORTANTE
+      // Evento de error 
       map.current.on('error', (e) => {
-        console.error('❌ ERROR DEL MAPA:', e.error?.message || e);
-        // Mostrar error visualmente
-        if (mapContainer.current) {
-          const errorDiv = document.createElement('div');
-          errorDiv.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:red;color:white;padding:20px;z-index:9999;border-radius:8px;';
-          errorDiv.textContent = 'Error: ' + (e.error?.message || 'Tile loading failed');
-          mapContainer.current.appendChild(errorDiv);
-        }
-      });
-      
-      // Evento de tile error específico
-      map.current.on('tile.error', (e) => {
-        console.error('❌ ERROR DE TILE:', e);
+        console.error('❌ Error del mapa:', e.error?.message || e);
+        // No mostrar el error visual, solo log
       });
       
     } catch (err) {
@@ -616,19 +594,19 @@ export function MapContainer({
       return {
         version: 8,
         sources: {
-          'carto': {
+          'stadia': {
             type: 'raster',
             tiles: [
-              'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'
+              'https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}.png'
             ],
             tileSize: 256,
-            attribution: '© Carto © OpenStreetMap'
+            attribution: '© Stadia Maps © OpenStreetMap'
           }
         },
         layers: [{
-          id: 'carto-tiles',
+          id: 'stadia-tiles',
           type: 'raster',
-          source: 'carto',
+          source: 'stadia',
           minzoom: 0,
           maxzoom: 19
         }]
