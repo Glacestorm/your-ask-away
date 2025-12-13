@@ -23,7 +23,8 @@ import {
   Minimize2,
   Maximize2,
   Eye,
-  Map
+  Map,
+  Printer
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -268,6 +269,167 @@ export function RoutePlanner({
     setOptimizedRoute(null);
     onRouteCalculated(null);
     setMode('panel');
+  };
+
+  const handlePrintRoute = () => {
+    if (!optimizedRoute) return;
+    
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('es-ES', { 
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+    });
+    const timeStr = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast.error('No se pudo abrir la ventana de impresión');
+      return;
+    }
+
+    const providerName = optimizedRoute.provider === 'mapbox' ? 'Mapbox Navigation' : 'Google Maps';
+    
+    let segmentsHtml = '';
+    optimizedRoute.segments.forEach((segment, segIndex) => {
+      const waypoint = optimizedRoute.optimized_order[segIndex];
+      const company = selectedCompanies.find(c => c.id === waypoint?.id);
+      
+      segmentsHtml += `
+        <div class="segment">
+          <div class="segment-header">
+            <span class="segment-num">${segIndex + 1}</span>
+            <div class="segment-info">
+              <strong>${waypoint?.name || segment.end_address?.split(',')[0] || `Parada ${segIndex + 1}`}</strong>
+              ${company ? `<div class="company-details">
+                <span>📍 ${company.address || 'Sin dirección'}</span>
+                ${company.phone ? `<span>📞 ${company.phone}</span>` : ''}
+                ${company.email ? `<span>✉️ ${company.email}</span>` : ''}
+                ${company.bp ? `<span>🏦 BP: ${company.bp}</span>` : ''}
+              </div>` : ''}
+              <div class="segment-stats">${segment.distance.text} · ${segment.duration.text}</div>
+            </div>
+          </div>
+          <div class="steps">
+            ${segment.steps.map((step, i) => `
+              <div class="step">
+                <span class="step-num">${i + 1}.</span>
+                <span>${step.instruction.replace(/<[^>]*>/g, '')}</span>
+                <span class="step-distance">${step.distance.text}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    });
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Ruta - ${dateStr}</title>
+        <style>
+          * { box-sizing: border-box; margin: 0; padding: 0; }
+          body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; color: #333; line-height: 1.5; }
+          .header { text-align: center; border-bottom: 3px solid #0066cc; padding-bottom: 20px; margin-bottom: 20px; }
+          .header h1 { font-size: 24px; color: #0066cc; margin-bottom: 8px; }
+          .header .meta { color: #666; font-size: 14px; }
+          .provider { display: inline-block; background: ${optimizedRoute.provider === 'mapbox' ? '#0066cc' : '#ea4335'}; color: white; padding: 4px 12px; border-radius: 16px; font-size: 12px; margin-top: 10px; }
+          .summary { display: flex; justify-content: center; gap: 40px; background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 25px; }
+          .summary-item { text-align: center; }
+          .summary-item .value { font-size: 28px; font-weight: bold; color: #0066cc; }
+          .summary-item .label { color: #666; font-size: 13px; }
+          .order { margin-bottom: 25px; }
+          .order h2 { font-size: 16px; color: #333; margin-bottom: 12px; border-bottom: 1px solid #ddd; padding-bottom: 8px; }
+          .order-list { display: grid; gap: 8px; }
+          .order-item { display: flex; align-items: center; gap: 12px; padding: 10px; background: #fafafa; border-radius: 6px; border-left: 4px solid #0066cc; }
+          .order-item.origin { border-left-color: #22c55e; background: #f0fdf4; }
+          .order-num { background: #0066cc; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; }
+          .order-item.origin .order-num { background: #22c55e; }
+          .directions { margin-top: 25px; }
+          .directions h2 { font-size: 16px; color: #333; margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 8px; }
+          .segment { margin-bottom: 20px; border: 1px solid #e5e5e5; border-radius: 8px; overflow: hidden; page-break-inside: avoid; }
+          .segment-header { display: flex; align-items: flex-start; gap: 12px; background: #f8f8f8; padding: 12px; }
+          .segment-num { background: #0066cc; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+          .segment-info { flex: 1; }
+          .segment-info strong { font-size: 15px; display: block; margin-bottom: 4px; }
+          .segment-stats { color: #666; font-size: 13px; margin-top: 4px; }
+          .company-details { font-size: 12px; color: #555; margin-top: 4px; }
+          .company-details span { display: inline-block; margin-right: 12px; }
+          .steps { padding: 10px 12px; font-size: 13px; }
+          .step { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px dotted #eee; }
+          .step:last-child { border-bottom: none; }
+          .step-num { color: #999; min-width: 24px; }
+          .step-distance { color: #666; margin-left: auto; white-space: nowrap; }
+          .footer { margin-top: 30px; padding-top: 15px; border-top: 1px solid #ddd; text-align: center; color: #888; font-size: 12px; }
+          .url { word-break: break-all; background: #f5f5f5; padding: 10px; border-radius: 6px; font-family: monospace; font-size: 11px; margin-top: 15px; }
+          @media print { body { padding: 10px; } .segment { page-break-inside: avoid; } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>🗺️ Ruta Optimizada</h1>
+          <div class="meta">${dateStr} · ${timeStr}</div>
+          <div class="provider">${providerName}</div>
+        </div>
+        
+        <div class="summary">
+          <div class="summary-item">
+            <div class="value">${optimizedRoute.total_distance.text}</div>
+            <div class="label">Distancia Total</div>
+          </div>
+          <div class="summary-item">
+            <div class="value">${optimizedRoute.total_duration.text}</div>
+            <div class="label">Tiempo Estimado</div>
+          </div>
+          <div class="summary-item">
+            <div class="value">${optimizedRoute.optimized_order.length}</div>
+            <div class="label">Paradas</div>
+          </div>
+        </div>
+
+        <div class="order">
+          <h2>📍 Orden de Visita</h2>
+          <div class="order-list">
+            <div class="order-item origin">
+              <span class="order-num">A</span>
+              <span><strong>Tu ubicación</strong> (punto de partida)</span>
+            </div>
+            ${optimizedRoute.optimized_order.map((wp, i) => {
+              const company = selectedCompanies.find(c => c.id === wp.id);
+              return `
+                <div class="order-item">
+                  <span class="order-num">${i + 1}</span>
+                  <div>
+                    <strong>${wp.name}</strong>
+                    ${company?.address ? `<div style="font-size: 12px; color: #666;">${company.address}</div>` : ''}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+
+        <div class="directions">
+          <h2>📋 Indicaciones Detalladas</h2>
+          ${segmentsHtml}
+        </div>
+
+        <div class="url">
+          <strong>Google Maps:</strong> ${googleMapsUrl}
+        </div>
+
+        <div class="footer">
+          Generado con ObelixIA · ${dateStr}
+        </div>
+      </body>
+      </html>
+    `);
+    
+    printWindow.document.close();
+    setTimeout(() => {
+      printWindow.print();
+    }, 250);
+    
+    toast.success('Abriendo ventana de impresión');
   };
 
   const handleClose = () => {
@@ -800,16 +962,27 @@ export function RoutePlanner({
                       Ver en mapa
                     </Button>
                   </div>
-                  <Button 
-                    variant="secondary" 
-                    onClick={() => {
-                      navigator.clipboard.writeText(googleMapsUrl);
-                      toast.success('URL copiada al portapapeles');
-                    }}
-                  >
-                    <Copy className="h-4 w-4 mr-2" />
-                    Copiar URL de Google Maps
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="secondary" 
+                      className="flex-1"
+                      onClick={() => {
+                        navigator.clipboard.writeText(googleMapsUrl);
+                        toast.success('URL copiada al portapapeles');
+                      }}
+                    >
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copiar URL
+                    </Button>
+                    <Button 
+                      variant="secondary" 
+                      className="flex-1"
+                      onClick={() => handlePrintRoute()}
+                    >
+                      <Printer className="h-4 w-4 mr-2" />
+                      Imprimir
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}
