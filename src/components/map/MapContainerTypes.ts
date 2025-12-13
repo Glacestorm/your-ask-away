@@ -32,4 +32,5 @@ export interface MapContainerProps {
   routeWaypoints?: { id: string; name: string; latitude: number; longitude: number }[];
   routeOrigin?: { latitude: number; longitude: number; name: string } | null;
   routeSelectedIds?: string[];
+  routeGeometry?: { type: string; coordinates: number[][] } | null;
 }

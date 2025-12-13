@@ -96,6 +96,7 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
   
   const [routeWaypoints, setRouteWaypoints] = useState<{ id: string; name: string; latitude: number; longitude: number }[]>([]);
   const [routeOrigin, setRouteOrigin] = useState<{ latitude: number; longitude: number; name: string } | null>(null);
+  const [routeGeometry, setRouteGeometry] = useState<{ type: string; coordinates: number[][] } | null>(null);
   const [routePlannerCompany, setRoutePlannerCompany] = useState<CompanyWithDetails | null>(null);
   const [isSelectingPins, setIsSelectingPins] = useState(false);
   const [routeSelectedIds, setRouteSelectedIds] = useState<string[]>([]);
@@ -455,6 +456,7 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
               routeWaypoints={routeWaypoints}
               routeOrigin={routeOrigin}
               routeSelectedIds={routeSelectedIds}
+              routeGeometry={routeGeometry}
             />
 
             {/* Map Legend */}
@@ -483,11 +485,13 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
                 onRouteCalculated={(route) => {
                   setRouteWaypoints(route?.optimized_order || []);
                   setRouteOrigin(route?.origin || null);
+                  setRouteGeometry(route?.geometry || null);
                 }}
                 onClose={() => {
                   setShowRoutePlanner(false);
                   setRouteWaypoints([]);
                   setRouteOrigin(null);
+                  setRouteGeometry(null);
                   setRoutePlannerCompany(null);
                   setIsSelectingPins(false);
                   setRouteSelectedIds([]);
