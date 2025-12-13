@@ -485,11 +485,35 @@ export function MapContainer({
     // Andorra coordinates
     const andorraCenter: [number, number] = [1.5218, 42.5063];
 
-    // SOLUTION: Use MapLibre's official demo style - 100% free, no API key, always works
-    // This is the most reliable option for iframe environments
-    const createBaseStyle = (): string => {
-      console.log('Using MapLibre demo tiles (guaranteed to work)');
-      return 'https://demotiles.maplibre.org/style.json';
+    // SOLUCIÓN DEFINITIVA: Carto Positron tiles - 100% gratuito, sin API key, CORS habilitado
+    // Carto ofrece tiles de alta calidad basados en OpenStreetMap sin restricciones
+    const createBaseStyle = (): maplibregl.StyleSpecification => {
+      console.log('🗺️ Inicializando mapa con Carto Positron tiles (gratuito, sin restricciones)');
+      return {
+        version: 8 as const,
+        sources: {
+          'carto-positron': {
+            type: 'raster' as const,
+            tiles: [
+              'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+              'https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+              'https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+              'https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png'
+            ],
+            tileSize: 256,
+            attribution: '© <a href="https://carto.com/attributions">CARTO</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            maxzoom: 20,
+          },
+        },
+        layers: [{
+          id: 'carto-layer',
+          type: 'raster' as const,
+          source: 'carto-positron',
+          minzoom: 0,
+          maxzoom: 20,
+        }],
+        glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
+      };
     };
 
     const createSatelliteStyle = (): maplibregl.StyleSpecification => ({
@@ -502,6 +526,7 @@ export function MapContainer({
           ],
           tileSize: 256,
           attribution: '© Esri',
+          maxzoom: 19,
         },
       },
       layers: [{
@@ -511,9 +536,11 @@ export function MapContainer({
         minzoom: 0,
         maxzoom: 19,
       }],
+      glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
     });
-    const initialStyle = mapStyle === 'satellite' ? createSatelliteStyle() : createBaseStyle();
-    console.log('Initializing MapLibre GL map...');
+
+    const initialStyle: maplibregl.StyleSpecification = mapStyle === 'satellite' ? createSatelliteStyle() : createBaseStyle();
+    console.log('🚀 Inicializando MapLibre GL con estilo:', mapStyle);
 
     try {
       map.current = new maplibregl.Map({
@@ -523,13 +550,14 @@ export function MapContainer({
         zoom: 12,
         pitch: view3D ? 60 : 0,
         bearing: 0,
-        maxZoom: 19,
+        maxZoom: 20,
         minZoom: 1,
         trackResize: true,
+        fadeDuration: 0,
       });
-      console.log('Map instance created successfully');
+      console.log('✅ Instancia del mapa creada correctamente');
     } catch (err) {
-      console.error('Failed to create map:', err);
+      console.error('❌ Error creando el mapa:', err);
       return;
     }
 
@@ -543,7 +571,7 @@ export function MapContainer({
 
     // Set mapLoaded when style is ready
     map.current.on('load', () => {
-      console.log('Map loaded successfully');
+      console.log('✅ Mapa cargado correctamente - tiles visibles');
       setMapLoaded(true);
       
       // Add 3D buildings layer if in 3D mode
@@ -554,7 +582,7 @@ export function MapContainer({
 
     // Handle errors
     map.current.on('error', (e) => {
-      console.error('Map error:', e);
+      console.error('❌ Error del mapa:', e);
     });
 
     return () => {
@@ -572,8 +600,8 @@ export function MapContainer({
     const currentCenter = map.current.getCenter();
     const currentZoom = map.current.getZoom();
 
-    // Get style based on mapStyle prop
-    const getStyle = (styleName: string): maplibregl.StyleSpecification | string => {
+    // Get style based on mapStyle prop - siempre retorna StyleSpecification inline
+    const getStyle = (styleName: string): maplibregl.StyleSpecification => {
       if (styleName === 'satellite') {
         return {
           version: 8 as const,
@@ -585,6 +613,7 @@ export function MapContainer({
               ],
               tileSize: 256,
               attribution: '© Esri',
+              maxzoom: 19,
             },
           },
           layers: [{
@@ -594,10 +623,35 @@ export function MapContainer({
             minzoom: 0,
             maxzoom: 19,
           }],
+          glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
         };
       }
-      // MapLibre demo tiles - 100% free, no API key needed
-      return 'https://demotiles.maplibre.org/style.json';
+      // Carto Voyager - tiles gratuitos con alto detalle
+      return {
+        version: 8 as const,
+        sources: {
+          'carto-positron': {
+            type: 'raster' as const,
+            tiles: [
+              'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+              'https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+              'https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+              'https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png'
+            ],
+            tileSize: 256,
+            attribution: '© <a href="https://carto.com/attributions">CARTO</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            maxzoom: 20,
+          },
+        },
+        layers: [{
+          id: 'carto-layer',
+          type: 'raster' as const,
+          source: 'carto-positron',
+          minzoom: 0,
+          maxzoom: 20,
+        }],
+        glyphs: 'https://fonts.openmaptiles.org/{fontstack}/{range}.pbf',
+      };
     };
 
     map.current.setStyle(getStyle(mapStyle));
