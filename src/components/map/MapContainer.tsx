@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import * as pmtiles from 'pmtiles';
+import { layers, namedTheme } from 'protomaps-themes-base';
 import { CompanyWithDetails, MapFilters, StatusColor, MapColorMode } from '@/types/database';
 import { supabase } from '@/integrations/supabase/client';
 import Supercluster from 'supercluster';
@@ -9,6 +11,10 @@ import { formatCnaeWithDescription } from '@/lib/cnaeDescriptions';
 import { getMarkerStyle, MarkerStyle } from './markerStyles';
 import { toast } from 'sonner';
 import { CompanyPhotosDialog } from './CompanyPhotosDialog';
+
+// Register PMTiles protocol once
+const protocol = new pmtiles.Protocol();
+maplibregl.addProtocol('pmtiles', protocol.tile);
 
 type CompanyPoint = {
   type: 'Feature';
@@ -486,39 +492,35 @@ export function MapContainer({
     const andorraCenter: [number, number] = [1.5218, 42.5063];
 
     // ==========================================
-    // Tiles via Edge Function proxy (evita bloqueos CORS/sandbox)
+    // PMTiles: Vector tiles sin dependencia de servidores externos
+    // Usa protomaps.com CDN público gratuito
     // ==========================================
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const proxyTileUrl = `${supabaseUrl}/functions/v1/proxy-map-tiles?z={z}&x={x}&y={y}&style=default`;
+    const PMTILES_URL = 'https://build.protomaps.com/20231220.pmtiles';
     
-    const minimalStyle: maplibregl.StyleSpecification = {
+    // Determine theme based on current document theme
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    const themeName = isDarkMode ? 'dark' : 'light';
+    const theme = namedTheme(themeName);
+    
+    const pmtilesStyle: maplibregl.StyleSpecification = {
       version: 8,
-      glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+      glyphs: 'https://cdn.protomaps.com/fonts/pbf/{fontstack}/{range}.pbf',
       sources: {
-        'proxy-tiles': {
-          type: 'raster',
-          tiles: [proxyTileUrl],
-          tileSize: 256,
-          attribution: '© OpenStreetMap'
+        protomaps: {
+          type: 'vector',
+          url: `pmtiles://${PMTILES_URL}`,
+          attribution: '<a href="https://protomaps.com">Protomaps</a> © <a href="https://openstreetmap.org">OpenStreetMap</a>'
         }
       },
-      layers: [
-        {
-          id: 'base-tiles',
-          type: 'raster',
-          source: 'proxy-tiles',
-          minzoom: 0,
-          maxzoom: 19
-        }
-      ]
+      layers: layers('protomaps', theme)
     };
 
-    console.log('🔍 Iniciando mapa con Stadia Maps...');
+    console.log('🔍 Iniciando mapa con Protomaps PMTiles...');
     
     try {
       map.current = new maplibregl.Map({
         container: mapContainer.current,
-        style: minimalStyle,
+        style: pmtilesStyle,
         center: andorraCenter,
         zoom: 12,
         maxZoom: 19,
@@ -527,7 +529,7 @@ export function MapContainer({
       
       // Evento de carga completa
       map.current.on('load', () => {
-        console.log('✅ MAPA CARGADO');
+        console.log('✅ MAPA CARGADO con Protomaps');
         setMapLoaded(true);
         if (map.current && view3D) {
           add3DBuildingsLayer(map.current);
@@ -537,7 +539,6 @@ export function MapContainer({
       // Evento de error 
       map.current.on('error', (e) => {
         console.error('❌ Error del mapa:', e.error?.message || e);
-        // No mostrar el error visual, solo log
       });
       
     } catch (err) {
@@ -567,30 +568,27 @@ export function MapContainer({
     const currentCenter = map.current.getCenter();
     const currentZoom = map.current.getZoom();
 
-    // Usar tiles via proxy para consistencia
-    const supabaseUrlStyle = import.meta.env.VITE_SUPABASE_URL;
+    // PMTiles URL
+    const PMTILES_URL = 'https://build.protomaps.com/20231220.pmtiles';
+    
     const getStyle = (styleName: string): maplibregl.StyleSpecification => {
-      const style = styleName === 'satellite' ? 'satellite' : 'default';
-      const proxyUrl = `${supabaseUrlStyle}/functions/v1/proxy-map-tiles?z={z}&x={x}&y={y}&style=${style}`;
+      // For satellite, we need a different source - but protomaps doesn't have satellite
+      // So we keep the same vector style for now
+      const isDarkMode = document.documentElement.classList.contains('dark');
+      const themeName = styleName === 'satellite' ? 'dark' : (isDarkMode ? 'dark' : 'light');
+      const theme = namedTheme(themeName);
       
       return {
         version: 8,
-        glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+        glyphs: 'https://cdn.protomaps.com/fonts/pbf/{fontstack}/{range}.pbf',
         sources: {
-          'proxy-tiles': {
-            type: 'raster',
-            tiles: [proxyUrl],
-            tileSize: 256,
-            attribution: styleName === 'satellite' ? '© Esri' : '© OpenStreetMap'
+          protomaps: {
+            type: 'vector',
+            url: `pmtiles://${PMTILES_URL}`,
+            attribution: '<a href="https://protomaps.com">Protomaps</a> © <a href="https://openstreetmap.org">OpenStreetMap</a>'
           }
         },
-        layers: [{
-          id: 'base-tiles',
-          type: 'raster',
-          source: 'proxy-tiles',
-          minzoom: 0,
-          maxzoom: 19
-        }]
+        layers: layers('protomaps', theme)
       };
     };
 
