@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend, Area, AreaChart } from 'recharts';
@@ -8,14 +7,14 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { toast } from 'sonner';
 import { DateRangeFilter } from '@/components/dashboard/DateRangeFilter';
 import { DateRange } from 'react-day-picker';
-import { subMonths, format, startOfMonth, endOfMonth, subDays } from 'date-fns';
+import { subMonths } from 'date-fns';
 import { MetricsExplorer } from '@/components/admin/MetricsExplorer';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { QuickVisitManager } from '@/components/dashboard/QuickVisitManager';
 import { cn } from '@/lib/utils';
+import { useDashboardData } from '@/hooks/useDashboardData';
 
 import { MapDashboardCard } from '@/components/dashboard/MapDashboardCard';
 import { QuickVisitSheetCard } from '@/components/dashboard/QuickVisitSheetCard';
@@ -37,35 +36,6 @@ import { DraggableWidget } from '@/components/dashboard/DraggableWidget';
 import { SortableWidgetContainer } from '@/components/dashboard/SortableWidgetContainer';
 import { WidgetLayoutControls } from '@/components/dashboard/WidgetLayoutControls';
 
-interface BasicStats {
-  totalVisits: number;
-  avgSuccessRate: number;
-  totalCompanies: number;
-  activeGestores: number;
-  visitsTrend: number;
-  successTrend: number;
-}
-
-interface GestorRanking {
-  name: string;
-  visits: number;
-  successRate: number;
-}
-
-interface GestorDetail {
-  name: string;
-  oficina: string;
-  totalVisits: number;
-  successRate: number;
-  companies: number;
-}
-
-interface MonthlyTrend {
-  month: string;
-  visits: number;
-  successful: number;
-}
-
 const CHART_COLORS = [
   'hsl(var(--chart-1))',
   'hsl(var(--chart-2))',
@@ -76,23 +46,13 @@ const CHART_COLORS = [
 
 export function CommercialDirectorDashboard() {
   const { t } = useLanguage();
-  const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
     const today = new Date();
     return { from: subMonths(today, 1), to: today };
   });
-  const [stats, setStats] = useState<BasicStats>({
-    totalVisits: 0,
-    avgSuccessRate: 0,
-    totalCompanies: 0,
-    activeGestores: 0,
-    visitsTrend: 0,
-    successTrend: 0
-  });
-  const [gestorRanking, setGestorRanking] = useState<GestorRanking[]>([]);
-  const [gestorDetails, setGestorDetails] = useState<GestorDetail[]>([]);
-  const [monthlyTrend, setMonthlyTrend] = useState<MonthlyTrend[]>([]);
-  const [resultDistribution, setResultDistribution] = useState<{name: string; value: number}[]>([]);
+
+  // Use optimized hook - fetches ALL data in parallel with caching
+  const { data, loading } = useDashboardData(dateRange);
 
   // Widget layout system
   const {
@@ -105,189 +65,20 @@ export function CommercialDirectorDashboard() {
     isWidgetVisible,
   } = useWidgetLayout('commercial-director');
 
-  useEffect(() => {
-    if (dateRange?.from && dateRange?.to) {
-      fetchData();
-    }
-  }, [dateRange]);
-
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-
-      if (!dateRange?.from || !dateRange?.to) return;
-
-      const fromDate = format(dateRange.from, 'yyyy-MM-dd');
-      const toDate = format(dateRange.to, 'yyyy-MM-dd');
-      
-      // Previous period for comparison
-      const daysDiff = Math.ceil((dateRange.to.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24));
-      const prevFromDate = format(subDays(dateRange.from, daysDiff), 'yyyy-MM-dd');
-      const prevToDate = format(subDays(dateRange.from, 1), 'yyyy-MM-dd');
-
-      // Current period visits
-      const { count: visitsCount } = await supabase
-        .from('visits')
-        .select('*', { count: 'exact', head: true })
-        .gte('visit_date', fromDate)
-        .lte('visit_date', toDate);
-
-      // Previous period visits for trend
-      const { count: prevVisitsCount } = await supabase
-        .from('visits')
-        .select('*', { count: 'exact', head: true })
-        .gte('visit_date', prevFromDate)
-        .lte('visit_date', prevToDate);
-
-      // Success counts
-      const { count: successCount } = await supabase
-        .from('visits')
-        .select('*', { count: 'exact', head: true })
-        .eq('result', 'Exitosa')
-        .gte('visit_date', fromDate)
-        .lte('visit_date', toDate);
-
-      const { count: prevSuccessCount } = await supabase
-        .from('visits')
-        .select('*', { count: 'exact', head: true })
-        .eq('result', 'Exitosa')
-        .gte('visit_date', prevFromDate)
-        .lte('visit_date', prevToDate);
-
-      // Result distribution
-      const { data: visitsData } = await supabase
-        .from('visits')
-        .select('result')
-        .gte('visit_date', fromDate)
-        .lte('visit_date', toDate);
-
-      if (visitsData) {
-        const distribution: Record<string, number> = {};
-        visitsData.forEach(v => {
-          const result = v.result || 'Sin resultado';
-          distribution[result] = (distribution[result] || 0) + 1;
-        });
-        setResultDistribution(Object.entries(distribution).map(([name, value]) => ({ name, value })));
-      }
-
-      // Companies and gestores
-      const { count: companiesCount } = await supabase
-        .from('companies')
-        .select('*', { count: 'exact', head: true });
-
-      const { count: gestoresCount } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true });
-
-      const totalVisits = visitsCount || 0;
-      const successfulVisits = successCount || 0;
-      const avgSuccessRate = totalVisits > 0 
-        ? Math.round((successfulVisits / totalVisits) * 100) 
-        : 0;
-
-      const prevTotal = prevVisitsCount || 0;
-      const prevSuccess = prevSuccessCount || 0;
-      const prevSuccessRate = prevTotal > 0 ? Math.round((prevSuccess / prevTotal) * 100) : 0;
-
-      const visitsTrend = prevTotal > 0 ? Math.round(((totalVisits - prevTotal) / prevTotal) * 100) : 0;
-      const successTrend = prevSuccessRate > 0 ? avgSuccessRate - prevSuccessRate : 0;
-
-      setStats({
-        totalVisits,
-        avgSuccessRate,
-        totalCompanies: companiesCount || 0,
-        activeGestores: gestoresCount || 0,
-        visitsTrend,
-        successTrend
-      });
-
-      // Gestor details
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, full_name, email, oficina');
-
-      if (profiles) {
-        const detailsPromises = profiles.map(async (profile) => {
-          const { count: visitCount } = await supabase
-            .from('visits')
-            .select('*', { count: 'exact', head: true })
-            .eq('gestor_id', profile.id)
-            .gte('visit_date', fromDate)
-            .lte('visit_date', toDate);
-
-          const { count: successVisitCount } = await supabase
-            .from('visits')
-            .select('*', { count: 'exact', head: true })
-            .eq('gestor_id', profile.id)
-            .eq('result', 'Exitosa')
-            .gte('visit_date', fromDate)
-            .lte('visit_date', toDate);
-
-          const { count: companyCount } = await supabase
-            .from('companies')
-            .select('*', { count: 'exact', head: true })
-            .eq('gestor_id', profile.id);
-
-          const visits = visitCount || 0;
-          const successVisits = successVisitCount || 0;
-          const successRate = visits > 0 ? Math.round((successVisits / visits) * 100) : 0;
-
-          return {
-            name: profile.full_name || profile.email.split('@')[0],
-            oficina: profile.oficina || 'Sin asignar',
-            totalVisits: visits,
-            successRate,
-            companies: companyCount || 0
-          };
-        });
-
-        const details = await Promise.all(detailsPromises);
-        
-        const ranking = details
-          .filter(d => d.totalVisits > 0)
-          .sort((a, b) => b.totalVisits - a.totalVisits)
-          .slice(0, 5)
-          .map(d => ({ name: d.name, visits: d.totalVisits, successRate: d.successRate }));
-        
-        setGestorRanking(ranking);
-        const sortedDetails = details.sort((a, b) => b.totalVisits - a.totalVisits);
-        setGestorDetails(sortedDetails);
-      }
-
-      // Monthly trend (last 6 months)
-      const monthlyData: MonthlyTrend[] = [];
-      for (let i = 5; i >= 0; i--) {
-        const monthStart = startOfMonth(subMonths(new Date(), i));
-        const monthEnd = endOfMonth(subMonths(new Date(), i));
-        
-        const { count: monthVisits } = await supabase
-          .from('visits')
-          .select('*', { count: 'exact', head: true })
-          .gte('visit_date', format(monthStart, 'yyyy-MM-dd'))
-          .lte('visit_date', format(monthEnd, 'yyyy-MM-dd'));
-
-        const { count: monthSuccess } = await supabase
-          .from('visits')
-          .select('*', { count: 'exact', head: true })
-          .eq('result', 'Exitosa')
-          .gte('visit_date', format(monthStart, 'yyyy-MM-dd'))
-          .lte('visit_date', format(monthEnd, 'yyyy-MM-dd'));
-
-        monthlyData.push({
-          month: format(monthStart, 'MMM'),
-          visits: monthVisits || 0,
-          successful: monthSuccess || 0
-        });
-      }
-      setMonthlyTrend(monthlyData);
-
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      toast.error('Error al cargar datos');
-    } finally {
-      setLoading(false);
-    }
+  // Extract data from hook or use defaults
+  const stats = data?.stats || {
+    totalVisits: 0,
+    avgSuccessRate: 0,
+    totalCompanies: 0,
+    activeGestores: 0,
+    visitsTrend: 0,
+    successTrend: 0
   };
+  const gestorRanking = data?.gestorRanking || [];
+  const gestorDetails = data?.gestorDetails || [];
+  const monthlyTrend = data?.monthlyTrend || [];
+  const resultDistribution = data?.resultDistribution || [];
+
 
   if (loading) {
     return (
