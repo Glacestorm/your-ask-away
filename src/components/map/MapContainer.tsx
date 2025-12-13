@@ -511,17 +511,20 @@ export function MapContainer({
         };
       }
       
-      // Default OSM style - most reliable
+      // Default style using Carto tiles (CORS friendly)
       return {
         version: 8,
         sources: {
           'raster-tiles': {
             type: 'raster',
             tiles: [
-              'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+              'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+              'https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+              'https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+              'https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png'
             ],
             tileSize: 256,
-            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            attribution: '© <a href="https://carto.com/">CARTO</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
           },
         },
         layers: [{
@@ -529,7 +532,7 @@ export function MapContainer({
           type: 'raster',
           source: 'raster-tiles',
           minzoom: 0,
-          maxzoom: 19,
+          maxzoom: 20,
         }],
       };
     };
@@ -609,17 +612,20 @@ export function MapContainer({
         };
       }
       
-      // Default OSM style
+      // Default style using Carto tiles (CORS friendly)
       return {
         version: 8,
         sources: {
           'raster-tiles': {
             type: 'raster',
             tiles: [
-              'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+              'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+              'https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+              'https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png',
+              'https://d.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}@2x.png'
             ],
             tileSize: 256,
-            attribution: '© OpenStreetMap contributors',
+            attribution: '© CARTO © OpenStreetMap',
           },
         },
         layers: [{
@@ -627,7 +633,7 @@ export function MapContainer({
           type: 'raster',
           source: 'raster-tiles',
           minzoom: 0,
-          maxzoom: 19,
+          maxzoom: 20,
         }],
       };
     };
