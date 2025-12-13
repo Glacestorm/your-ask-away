@@ -24,7 +24,8 @@ import {
   Maximize2,
   Eye,
   Map,
-  Printer
+  Printer,
+  Navigation
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -458,6 +459,19 @@ export function RoutePlanner({
     return `https://www.google.com/maps/dir/?api=1&origin=${originStr}&destination=${destinationStr}${waypointsStr ? `&waypoints=${waypointsStr}` : ''}&travelmode=driving`;
   };
 
+  // URL for Google Maps Navigation mode (opens in navigation directly)
+  const getGoogleMapsNavigationUrl = () => {
+    if (!origin || selectedCompanies.length === 0) return '';
+    
+    const orderedCompanies = optimizedRoute 
+      ? optimizedRoute.optimized_order.map(o => selectedCompanies.find(c => c.id === o.id)!)
+      : selectedCompanies;
+    
+    // Google Maps navigation mode uses different URL format
+    const destination = orderedCompanies[orderedCompanies.length - 1];
+    return `https://www.google.com/maps/dir/?api=1&destination=${destination.latitude},${destination.longitude}&travelmode=driving&dir_action=navigate`;
+  };
+
   const googleMapsUrl = getGoogleMapsUrl();
 
   // Filter companies based on search query
@@ -600,28 +614,34 @@ export function RoutePlanner({
             {/* Actions */}
             <div className="flex flex-col gap-2">
               <div className="flex gap-2">
-                <Button size="sm" className="flex-1" asChild>
-                  <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-3 w-3 mr-1" />
-                    Google Maps
+                <Button size="sm" className="flex-1 bg-green-600 hover:bg-green-700" asChild>
+                  <a href={getGoogleMapsNavigationUrl()} target="_blank" rel="noopener noreferrer">
+                    <Navigation className="h-3 w-3 mr-1" />
+                    Navegar
                   </a>
                 </Button>
-                <Button size="sm" variant="outline" onClick={handleReset}>
+                <Button size="sm" variant="outline" className="flex-1" asChild>
+                  <a href={googleMapsUrl} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-3 w-3 mr-1" />
+                    Ver Mapa
+                  </a>
+                </Button>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  size="sm" 
+                  variant="secondary" 
+                  className="flex-1"
+                  onClick={() => handlePrintRoute()}
+                >
+                  <Printer className="h-3 w-3 mr-1" />
+                  Imprimir
+                </Button>
+                <Button size="sm" variant="outline" className="flex-1" onClick={handleReset}>
                   <RotateCcw className="h-3 w-3 mr-1" />
                   Nueva
                 </Button>
               </div>
-              <Button 
-                size="sm" 
-                variant="secondary" 
-                onClick={() => {
-                  navigator.clipboard.writeText(googleMapsUrl);
-                  toast.success('URL copiada al portapapeles');
-                }}
-              >
-                <Copy className="h-3 w-3 mr-1" />
-                Copiar URL
-              </Button>
             </div>
 
             {/* Toggle directions */}
