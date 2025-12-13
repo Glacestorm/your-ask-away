@@ -502,8 +502,13 @@ export function MapContainer({
     if (!mapContainer.current || map.current) return;
 
     const initMap = async () => {
+      console.log('🚀 Iniciando initMap...');
+      console.log('📦 mapContainer.current:', mapContainer.current);
+      
       // Ensure Mapbox token is loaded
       const tokenLoaded = await ensureMapboxToken();
+      console.log('🔑 Token loaded:', tokenLoaded, 'Token value:', mapboxgl.accessToken?.substring(0, 20) + '...');
+      
       if (!tokenLoaded) {
         console.error('❌ Could not load Mapbox token');
         toast.error('Error cargando el mapa - token no disponible');
@@ -513,15 +518,14 @@ export function MapContainer({
       // Andorra coordinates
       const andorraCenter: [number, number] = [1.5218, 42.5063];
       
-      // Determine theme based on current document theme
-      const isDarkMode = document.documentElement.classList.contains('dark');
-      const styleUrl = isDarkMode 
-        ? 'mapbox://styles/mapbox/dark-v11'
-        : 'mapbox://styles/mapbox/streets-v12';
+      // Use simple light style
+      const styleUrl = 'mapbox://styles/mapbox/streets-v12';
 
-      console.log('🔍 Iniciando mapa con Mapbox...');
+      console.log('🎨 Using style:', styleUrl);
       
       try {
+        console.log('🗺️ Creating Mapbox map...');
+        
         map.current = new mapboxgl.Map({
           container: mapContainer.current!,
           style: styleUrl,
@@ -529,8 +533,9 @@ export function MapContainer({
           zoom: 12,
           maxZoom: 19,
           minZoom: 1,
-          projection: 'mercator'
         });
+        
+        console.log('✅ Map object created:', map.current);
         
         // Evento de carga completa
         map.current.on('load', () => {
@@ -544,6 +549,11 @@ export function MapContainer({
         // Evento de error 
         map.current.on('error', (e) => {
           console.error('❌ Error del mapa:', e.error?.message || e);
+        });
+        
+        // Style load event
+        map.current.on('style.load', () => {
+          console.log('🎨 Style loaded successfully');
         });
 
         // Add navigation controls
