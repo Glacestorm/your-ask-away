@@ -49,12 +49,9 @@ serve(async (req) => {
     
     const coordinates = allPoints.map(p => `${p.longitude},${p.latitude}`).join(';');
 
-    // Mapbox Directions API with optimization
-    // Note: Optimization API doesn't support driving-traffic, fallback to driving
-    const useOptimization = optimize && waypoints.length > 1;
-    const mapboxProfile = useOptimization 
-      ? `mapbox/${profile === 'driving-traffic' ? 'driving' : profile}`
-      : (profile === 'driving-traffic' ? 'mapbox/driving-traffic' : `mapbox/${profile}`);
+    // Mapbox Directions API - always use standard Directions API for driving-traffic
+    // Optimization API doesn't support driving-traffic profile
+    const useOptimization = optimize && waypoints.length > 1 && profile !== 'driving-traffic';
     
     // Base params for both APIs
     const baseParams = new URLSearchParams({
@@ -65,15 +62,23 @@ serve(async (req) => {
       steps: 'true',
     });
 
-    // If optimizing and more than 2 waypoints, use Optimization API
+    // Build URL based on API type
     let url: string;
     let isOptimizationAPI = false;
 
-    if (optimize && waypoints.length > 1) {
-      // Use Mapbox Optimization API for route optimization
+    if (useOptimization) {
+      // Use Mapbox Optimization API for route optimization (no driving-traffic)
       isOptimizationAPI = true;
+      const mapboxProfile = `mapbox/${profile}`;
       url = `https://api.mapbox.com/optimized-trips/v1/${mapboxProfile}/${coordinates}?${baseParams.toString()}&source=first&roundtrip=false`;
     } else {
+      // Use standard Directions API (supports driving-traffic)
+      const mapboxProfile = profile === 'driving-traffic' ? 'mapbox/driving-traffic' : `mapbox/${profile}`;
+      baseParams.append('alternatives', 'false');
+      baseParams.append('annotations', 'distance,duration,speed');
+      baseParams.append('voice_instructions', 'true');
+      baseParams.append('banner_instructions', 'true');
+      url = `https://api.mapbox.com/directions/v5/${mapboxProfile}/${coordinates}?${baseParams.toString()}`;
       // Use standard Directions API with additional params
       baseParams.append('alternatives', 'false');
       baseParams.append('annotations', 'distance,duration,speed');
