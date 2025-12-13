@@ -485,23 +485,25 @@ export function MapContainer({
     // Andorra coordinates
     const andorraCenter: [number, number] = [1.5218, 42.5063];
 
-    // OpenStreetMap raster tiles - direct, reliable, no style.json needed
-    const createOSMStyle = (): maplibregl.StyleSpecification => ({
+    // Wikimedia Maps - reliable CORS-enabled tiles that work in iframes
+    // Alternative providers for maximum compatibility
+    const createBaseStyle = (): maplibregl.StyleSpecification => ({
       version: 8 as const,
       sources: {
-        'osm-tiles': {
+        'base-tiles': {
           type: 'raster' as const,
           tiles: [
-            'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+            // Wikimedia Maps - CORS enabled, works in iframes
+            'https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png'
           ],
           tileSize: 256,
-          attribution: '© OpenStreetMap contributors',
+          attribution: '© Wikimedia © OpenStreetMap contributors',
         },
       },
       layers: [{
-        id: 'osm-layer',
+        id: 'base-layer',
         type: 'raster' as const,
-        source: 'osm-tiles',
+        source: 'base-tiles',
         minzoom: 0,
         maxzoom: 19,
       }],
@@ -528,8 +530,8 @@ export function MapContainer({
       }],
     });
 
-    const initialStyle = mapStyle === 'satellite' ? createSatelliteStyle() : createOSMStyle();
-    console.log('Initializing map with OpenStreetMap tiles');
+    const initialStyle = mapStyle === 'satellite' ? createSatelliteStyle() : createBaseStyle();
+    console.log('Initializing map with Wikimedia tiles');
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
@@ -605,23 +607,23 @@ export function MapContainer({
           }],
         };
       }
-      // OpenStreetMap raster tiles - direct, no style.json needed
+      // Wikimedia Maps - CORS enabled, works in iframes
       return {
         version: 8 as const,
         sources: {
-          'osm-tiles': {
+          'base-tiles': {
             type: 'raster' as const,
             tiles: [
-              'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+              'https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png'
             ],
             tileSize: 256,
-            attribution: '© OpenStreetMap contributors',
+            attribution: '© Wikimedia © OpenStreetMap contributors',
           },
         },
         layers: [{
-          id: 'osm-layer',
+          id: 'base-layer',
           type: 'raster' as const,
-          source: 'osm-tiles',
+          source: 'base-tiles',
           minzoom: 0,
           maxzoom: 19,
         }],
