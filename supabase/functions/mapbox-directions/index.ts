@@ -50,7 +50,11 @@ serve(async (req) => {
     const coordinates = allPoints.map(p => `${p.longitude},${p.latitude}`).join(';');
 
     // Mapbox Directions API with optimization
-    const mapboxProfile = profile === 'driving-traffic' ? 'mapbox/driving-traffic' : `mapbox/${profile}`;
+    // Note: Optimization API doesn't support driving-traffic, fallback to driving
+    const useOptimization = optimize && waypoints.length > 1;
+    const mapboxProfile = useOptimization 
+      ? `mapbox/${profile === 'driving-traffic' ? 'driving' : profile}`
+      : (profile === 'driving-traffic' ? 'mapbox/driving-traffic' : `mapbox/${profile}`);
     
     // Base params for both APIs
     const baseParams = new URLSearchParams({
