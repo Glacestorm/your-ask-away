@@ -105,6 +105,7 @@ interface RoutePlannerProps {
   isSelectingMode?: boolean;
   onSelectingModeChange?: (selecting: boolean) => void;
   onSelectedCompaniesChange?: (ids: string[]) => void;
+  onCompanyAddedFromMap?: () => void;
 }
 
 export function RoutePlanner({ 
@@ -115,7 +116,8 @@ export function RoutePlanner({
   selectedCompanyFromMap,
   isSelectingMode = false,
   onSelectingModeChange,
-  onSelectedCompaniesChange
+  onSelectedCompaniesChange,
+  onCompanyAddedFromMap
 }: RoutePlannerProps) {
   const [selectedCompanies, setSelectedCompanies] = useState<CompanyWithDetails[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -153,8 +155,10 @@ export function RoutePlanner({
   useEffect(() => {
     if (selectedCompanyFromMap && mode === 'selecting') {
       addCompanyToRoute(selectedCompanyFromMap);
+      // Notify parent to reset the selection so next click works
+      onCompanyAddedFromMap?.();
     }
-  }, [selectedCompanyFromMap, mode]);
+  }, [selectedCompanyFromMap, mode, onCompanyAddedFromMap]);
 
   // Notify parent about selecting mode changes
   useEffect(() => {

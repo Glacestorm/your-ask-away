@@ -493,6 +493,7 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
                 isSelectingMode={isSelectingPins}
                 onSelectingModeChange={setIsSelectingPins}
                 onSelectedCompaniesChange={setRouteSelectedIds}
+                onCompanyAddedFromMap={() => setRoutePlannerCompany(null)}
               />
             )}
           </div>
