@@ -7,7 +7,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -26,43 +25,49 @@ serve(async (req) => {
       );
     }
 
-    // Choose tile source based on style
-    let tileUrl: string;
-    if (style === 'satellite') {
-      tileUrl = `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`;
-    } else {
-      // Use OpenStreetMap tiles
-      tileUrl = `https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
+    const apiKey = Deno.env.get('MAPTILER_API_KEY');
+    if (!apiKey) {
+      console.error('MAPTILER_API_KEY not configured');
+      return new Response(
+        JSON.stringify({ error: 'MapTiler API key not configured' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    console.log(`Fetching tile: ${tileUrl}`);
+    // MapTiler tile URLs
+    let tileUrl: string;
+    if (style === 'satellite') {
+      tileUrl = `https://api.maptiler.com/tiles/satellite-v2/${z}/${x}/${y}.jpg?key=${apiKey}`;
+    } else {
+      tileUrl = `https://api.maptiler.com/maps/streets-v2/${z}/${x}/${y}.png?key=${apiKey}`;
+    }
 
-    // Fetch the tile from the external source
+    console.log(`Fetching MapTiler tile: ${z}/${x}/${y} style=${style}`);
+
     const tileResponse = await fetch(tileUrl, {
       headers: {
         'User-Agent': 'ObelixIA-Map/1.0',
-        'Accept': 'image/png,image/*',
+        'Accept': 'image/*',
       },
     });
 
     if (!tileResponse.ok) {
-      console.error(`Tile fetch failed: ${tileResponse.status}`);
+      console.error(`MapTiler fetch failed: ${tileResponse.status}`);
       return new Response(
         JSON.stringify({ error: `Tile fetch failed: ${tileResponse.status}` }),
         { status: tileResponse.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Get the tile data as ArrayBuffer
     const tileData = await tileResponse.arrayBuffer();
+    const contentType = style === 'satellite' ? 'image/jpeg' : 'image/png';
 
-    // Return the tile with proper headers
     return new Response(tileData, {
       status: 200,
       headers: {
         ...corsHeaders,
-        'Content-Type': 'image/png',
-        'Cache-Control': 'public, max-age=86400', // Cache for 24 hours
+        'Content-Type': contentType,
+        'Cache-Control': 'public, max-age=86400',
       },
     });
   } catch (error: unknown) {
