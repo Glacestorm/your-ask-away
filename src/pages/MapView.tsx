@@ -137,78 +137,67 @@ const MapView = ({ canGoBack, canGoForward, onGoBack, onGoForward }: MapViewProp
     try {
       setLoading(true);
 
-      // Fetch companies with related data
-      const { data: companiesData, error: companiesError } = await supabase
-        .from('companies')
-        .select(`
-          *,
-          status:status_colors(*),
-          gestor:profiles(*)
-        `);
+      // Fetch all data in parallel for faster loading
+      const [companiesResult, statusResult, productsResult, companyProductsResult] = await Promise.all([
+        supabase
+          .from('companies')
+          .select(`
+            *,
+            status:status_colors(*),
+            gestor:profiles(*)
+          `),
+        supabase
+          .from('status_colors')
+          .select('*')
+          .order('display_order'),
+        supabase
+          .from('products')
+          .select('*')
+          .eq('active', true)
+          .order('name'),
+        supabase
+          .from('company_products')
+          .select('company_id, product_id, products(*)')
+          .eq('active', true)
+      ]);
 
-      if (companiesError) {
-        console.error('Error fetching companies:', companiesError);
-        throw companiesError;
+      if (companiesResult.error) {
+        console.error('Error fetching companies:', companiesResult.error);
+        throw companiesResult.error;
       }
 
-      // Fetch products for each company
-      const companiesWithProducts = await Promise.all(
-        (companiesData || []).map(async (company) => {
-          try {
-            const { data: productsData, error: productsError } = await supabase
-              .from('company_products')
-              .select('product_id, products(*)')
-              .eq('company_id', company.id)
-              .eq('active', true);
+      if (statusResult.error) {
+        console.error('Error fetching status colors:', statusResult.error);
+        throw statusResult.error;
+      }
 
-            if (productsError) {
-              console.error(`Error fetching products for company ${company.id}:`, productsError);
-              return {
-                ...company,
-                products: [],
-              };
-            }
+      if (productsResult.error) {
+        console.error('Error fetching products:', productsResult.error);
+        throw productsResult.error;
+      }
 
-            return {
-              ...company,
-              products: productsData?.map((cp: any) => cp.products).filter(Boolean) || [],
-            };
-          } catch (err) {
-            console.error(`Error processing company ${company.id}:`, err);
-            return {
-              ...company,
-              products: [],
-            };
+      // Create a map of company products for fast lookup
+      const productsByCompany: Record<string, any[]> = {};
+      if (!companyProductsResult.error && companyProductsResult.data) {
+        companyProductsResult.data.forEach((cp: any) => {
+          if (!productsByCompany[cp.company_id]) {
+            productsByCompany[cp.company_id] = [];
           }
-        })
-      );
+          if (cp.products) {
+            productsByCompany[cp.company_id].push(cp.products);
+          }
+        });
+      }
+
+      // Map companies with their products
+      const companiesWithProducts = (companiesResult.data || []).map(company => ({
+        ...company,
+        products: productsByCompany[company.id] || [],
+      }));
 
       setCompanies(companiesWithProducts as CompanyWithDetails[]);
-
-      // Fetch status colors
-      const { data: statusData, error: statusError } = await supabase
-        .from('status_colors')
-        .select('*')
-        .order('display_order');
-
-      if (statusError) {
-        console.error('Error fetching status colors:', statusError);
-        throw statusError;
-      }
-      setStatusColors(statusData || []);
-
-      // Fetch products
-      const { data: productsData, error: productsError } = await supabase
-        .from('products')
-        .select('*')
-        .eq('active', true)
-        .order('name');
-
-      if (productsError) {
-        console.error('Error fetching products:', productsError);
-        throw productsError;
-      }
-      setProducts(productsData || []);
+      setStatusColors(statusResult.data || []);
+      setProducts(productsResult.data || []);
 
     } catch (error: any) {
       console.error('Error general al cargar datos:', error);

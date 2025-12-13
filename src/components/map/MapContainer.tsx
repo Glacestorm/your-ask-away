@@ -1625,8 +1625,18 @@ export function MapContainer({
 
   return (
     <div className="relative h-full w-full">
-      {/* Fondo visible para diagnóstico - si ves azul, el contenedor funciona */}
-      <div ref={mapContainer} className="h-full w-full" style={{ backgroundColor: '#e0e7ff' }} />
+      {/* Map container */}
+      <div ref={mapContainer} className="h-full w-full" />
+      
+      {/* Loading overlay */}
+      {!mapLoaded && (
+        <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
+          <div className="text-center space-y-3">
+            <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full mx-auto" />
+            <p className="text-muted-foreground text-sm">Cargando mapa...</p>
+          </div>
+        </div>
+      )}
       
       {/* Floating Undo Button */}
       {undoInfo && (
