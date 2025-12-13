@@ -179,23 +179,20 @@ const Home = () => {
     }
   };
 
-  const getAvailableFeatures = () => {
+  // Memoize computed values to avoid recalculations on every render
+  const availableFeatures = useMemo(() => {
     const effectiveRole = userRole || 'user';
     return featureMenuOptions.filter(option => 
       option.roles.includes(effectiveRole)
     );
-  };
+  }, [userRole]);
 
-  const getCurrentRoleConfig = () => {
+  const currentRole = useMemo(() => {
     const effectiveRole = userRole || 'user';
     return roleConfig[effectiveRole] || roleConfig.user;
-  };
+  }, [userRole]);
 
-  const canAccessAdmin = () => {
-    const effectiveRole = userRole || 'user';
-    return adminAccessRoles.includes(effectiveRole);
-  };
-
+  // Show loading state
   if (authLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-gradient-to-br from-background via-background to-accent/10">
@@ -207,8 +204,6 @@ const Home = () => {
     );
   }
 
-  const availableFeatures = getAvailableFeatures();
-  const currentRole = getCurrentRoleConfig();
   const RoleIcon = currentRole.icon;
 
   return (
