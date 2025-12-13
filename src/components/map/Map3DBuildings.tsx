@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -11,24 +11,22 @@ import { supabase } from '@/integrations/supabase/client';
 const Map3DBuildings: React.FC = () => {
   const navigate = useNavigate();
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
+  const mapRef = useRef<mapboxgl.Map | null>(null);
+  const initializingRef = useRef(false);
   
   const [pitch, setPitch] = useState(60);
   const [bearing, setBearing] = useState(-17.6);
   const [heightMultiplier, setHeightMultiplier] = useState(1);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [isReady, setIsReady] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [debugInfo, setDebugInfo] = useState<string>('Iniciando...');
 
-  const add3DBuildings = (mapInstance: mapboxgl.Map, darkMode: boolean, multiplier: number) => {
+  const add3DBuildings = useCallback((mapInstance: mapboxgl.Map, darkMode: boolean, multiplier: number) => {
     try {
       const layers = mapInstance.getStyle()?.layers;
-      if (!layers) {
-        console.log('No layers found in style');
-        return;
-      }
+      if (!layers) return;
 
       let labelLayerId: string | undefined;
       for (const layer of layers) {
@@ -80,37 +78,31 @@ const Map3DBuildings: React.FC = () => {
         },
         labelLayerId
       );
-      console.log('3D buildings layer added successfully');
     } catch (err) {
       console.error('Error adding 3D buildings:', err);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    // Prevent double initialization
-    if (map.current) return;
-    if (!mapContainer.current) return;
+    if (!mapContainer.current || initializingRef.current || mapRef.current) return;
+    initializingRef.current = true;
 
     const initMap = async () => {
       try {
         setDebugInfo('Obteniendo token...');
-        console.log('Fetching Mapbox token...');
         
-        const { data, error: fetchError } = await supabase.functions.invoke('get-mapbox-token');
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData?.session?.access_token;
+        
+        const { data, error: fetchError } = await supabase.functions.invoke('get-mapbox-token', {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined
+        });
 
-        if (fetchError) {
-          console.error('Token fetch error:', fetchError);
-          throw new Error(`Error al obtener token: ${fetchError.message}`);
+        if (fetchError || !data?.token) {
+          throw new Error(fetchError?.message || 'Token de Mapbox no configurado');
         }
         
-        if (!data?.token) {
-          console.error('No token in response:', data);
-          throw new Error('Token de Mapbox no configurado');
-        }
-        
-        console.log('Token obtained successfully');
         setDebugInfo('Inicializando mapa...');
-        
         mapboxgl.accessToken = data.token;
 
         const mapInstance = new mapboxgl.Map({
@@ -120,18 +112,18 @@ const Map3DBuildings: React.FC = () => {
           zoom: 16,
           pitch: 60,
           bearing: -17.6,
-          antialias: true
+          antialias: true,
+          fadeDuration: 0
         });
 
-        map.current = mapInstance;
+        mapRef.current = mapInstance;
 
         mapInstance.on('load', () => {
-          console.log('Map loaded successfully');
           setDebugInfo('Añadiendo edificios 3D...');
           add3DBuildings(mapInstance, false, 1);
           mapInstance.addControl(new mapboxgl.NavigationControl(), 'top-right');
           setIsLoading(false);
-          setIsReady(true);
+          setMapReady(true);
           setDebugInfo('');
         });
 
@@ -145,49 +137,51 @@ const Map3DBuildings: React.FC = () => {
         console.error('Error initializing map:', err);
         setError(err instanceof Error ? err.message : 'Error al inicializar');
         setIsLoading(false);
+        initializingRef.current = false;
       }
     };
 
     initMap();
 
     return () => {
-      if (map.current) {
-        map.current.remove();
-        map.current = null;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
       }
+      initializingRef.current = false;
     };
-  }, []);
+  }, [add3DBuildings]);
 
   const handleRetry = () => {
-    if (map.current) {
-      map.current.remove();
-      map.current = null;
+    if (mapRef.current) {
+      mapRef.current.remove();
+      mapRef.current = null;
     }
+    initializingRef.current = false;
     setError(null);
     setIsLoading(true);
-    setIsReady(false);
-    // Force re-mount by navigating
+    setMapReady(false);
     window.location.reload();
   };
 
   const updatePitch = (value: number[]) => {
     const newPitch = value[0];
     setPitch(newPitch);
-    map.current?.easeTo({ pitch: newPitch, duration: 300 });
+    mapRef.current?.easeTo({ pitch: newPitch, duration: 300 });
   };
 
   const updateBearing = (value: number[]) => {
     const newBearing = value[0];
     setBearing(newBearing);
-    map.current?.easeTo({ bearing: newBearing, duration: 300 });
+    mapRef.current?.easeTo({ bearing: newBearing, duration: 300 });
   };
 
   const updateHeightMultiplier = (value: number[]) => {
     const newMultiplier = value[0];
     setHeightMultiplier(newMultiplier);
     
-    if (map.current?.getLayer('3d-buildings')) {
-      map.current.setPaintProperty('3d-buildings', 'fill-extrusion-height', [
+    if (mapRef.current?.getLayer('3d-buildings')) {
+      mapRef.current.setPaintProperty('3d-buildings', 'fill-extrusion-height', [
         'interpolate', ['linear'], ['zoom'],
         14, 0,
         14.5, ['*', ['get', 'height'], newMultiplier]
@@ -196,7 +190,7 @@ const Map3DBuildings: React.FC = () => {
   };
 
   const toggleDarkMode = () => {
-    if (!map.current) return;
+    if (!mapRef.current) return;
     
     const newDarkMode = !isDarkMode;
     setIsDarkMode(newDarkMode);
@@ -205,18 +199,22 @@ const Map3DBuildings: React.FC = () => {
       ? 'mapbox://styles/mapbox/dark-v11'
       : 'mapbox://styles/mapbox/light-v11';
     
-    map.current.setStyle(styleUrl);
-    map.current.once('style.load', () => {
-      add3DBuildings(map.current!, newDarkMode, heightMultiplier);
+    mapRef.current.setStyle(styleUrl);
+    mapRef.current.once('style.load', () => {
+      if (mapRef.current) {
+        add3DBuildings(mapRef.current, newDarkMode, heightMultiplier);
+      }
     });
   };
 
   const resetView = () => {
+    if (!mapRef.current) return;
+    
     setPitch(60);
     setBearing(-17.6);
     setHeightMultiplier(1);
     
-    map.current?.flyTo({
+    mapRef.current.flyTo({
       center: [2.1734, 41.3851],
       zoom: 16,
       pitch: 60,
@@ -224,8 +222,8 @@ const Map3DBuildings: React.FC = () => {
       duration: 1500
     });
     
-    if (map.current?.getLayer('3d-buildings')) {
-      map.current.setPaintProperty('3d-buildings', 'fill-extrusion-height', [
+    if (mapRef.current.getLayer('3d-buildings')) {
+      mapRef.current.setPaintProperty('3d-buildings', 'fill-extrusion-height', [
         'interpolate', ['linear'], ['zoom'],
         14, 0,
         14.5, ['get', 'height']
@@ -233,22 +231,24 @@ const Map3DBuildings: React.FC = () => {
     }
   };
 
-  const flyToLocation = (coords: [number, number], name: string) => {
-    if (!map.current) return;
+  const flyToLocation = useCallback((coords: [number, number], name: string) => {
+    if (!mapRef.current || !mapReady) {
+      console.warn('Map not ready for flyTo:', name);
+      return;
+    }
     
-    console.log(`Flying to ${name}:`, coords);
-    map.current.flyTo({
+    mapRef.current.flyTo({
       center: coords,
       zoom: 16,
       pitch: 60,
       bearing: Math.random() * 60 - 30,
       duration: 2000
     });
-  };
+  }, [mapReady]);
 
   return (
     <div className="relative w-full h-screen bg-muted">
-      {/* Map container - always visible */}
+      {/* Map container */}
       <div ref={mapContainer} className="absolute inset-0" />
       
       {/* Back button */}
@@ -261,8 +261,8 @@ const Map3DBuildings: React.FC = () => {
         <ArrowLeft className="h-4 w-4" />
       </Button>
 
-      {/* Controls panel - only when ready */}
-      {isReady && (
+      {/* Controls panel */}
+      {mapReady && (
         <div className="absolute top-4 left-4 bg-background/95 backdrop-blur-sm border border-border rounded-lg p-4 shadow-lg space-y-4 w-72 z-10">
           <div className="flex items-center gap-2 text-foreground font-semibold">
             <Building2 className="h-5 w-5 text-primary" />
@@ -298,16 +298,6 @@ const Map3DBuildings: React.FC = () => {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm text-muted-foreground">Andorra (sin datos 3D)</Label>
-            <div className="grid grid-cols-2 gap-2">
-              <Button variant="secondary" size="sm" onClick={() => flyToLocation([1.5218, 42.5063], 'Andorra la Vella')}>Andorra la Vella</Button>
-              <Button variant="secondary" size="sm" onClick={() => flyToLocation([1.5347, 42.5103], 'Escaldes')}>Escaldes</Button>
-              <Button variant="secondary" size="sm" onClick={() => flyToLocation([1.4881, 42.5441], 'La Massana')}>La Massana</Button>
-              <Button variant="secondary" size="sm" onClick={() => flyToLocation([1.5985, 42.5516], 'Canillo')}>Canillo</Button>
-            </div>
-          </div>
-          
-          <div className="space-y-2">
             <Label className="text-sm text-muted-foreground">Ciudades con edificios 3D</Label>
             <div className="grid grid-cols-2 gap-2">
               <Button variant="default" size="sm" onClick={() => flyToLocation([2.1734, 41.3851], 'Barcelona')}>Barcelona</Button>
@@ -316,9 +306,17 @@ const Map3DBuildings: React.FC = () => {
               <Button variant="outline" size="sm" onClick={() => flyToLocation([-0.1276, 51.5074], 'Londres')}>Londres</Button>
             </div>
           </div>
+
+          <div className="space-y-2">
+            <Label className="text-sm text-muted-foreground">Andorra (sin datos 3D)</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <Button variant="secondary" size="sm" onClick={() => flyToLocation([1.5218, 42.5063], 'Andorra la Vella')}>Andorra la Vella</Button>
+              <Button variant="secondary" size="sm" onClick={() => flyToLocation([1.5347, 42.5103], 'Escaldes')}>Escaldes</Button>
+            </div>
+          </div>
           
           <p className="text-xs text-muted-foreground italic">
-            Nota: Andorra no tiene datos de altura de edificios en Mapbox. Las ciudades grandes sí los tienen.
+            Nota: Andorra no tiene datos de altura de edificios en Mapbox.
           </p>
         </div>
       )}
