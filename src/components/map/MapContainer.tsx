@@ -12,21 +12,33 @@ import { CompanyPhotosDialog } from './CompanyPhotosDialog';
 
 // Set Mapbox token - will be fetched from edge function
 let mapboxTokenLoaded = false;
-async function ensureMapboxToken() {
+let tokenPromise: Promise<boolean> | null = null;
+
+async function ensureMapboxToken(): Promise<boolean> {
   if (mapboxTokenLoaded) return true;
-  try {
-    const { data, error } = await supabase.functions.invoke('get-mapbox-token');
-    if (error || !data?.token) {
-      console.error('Failed to get Mapbox token:', error);
+  
+  // Prevent multiple simultaneous token fetches
+  if (tokenPromise) return tokenPromise;
+  
+  tokenPromise = (async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('get-mapbox-token');
+      if (error || !data?.token) {
+        console.error('Failed to get Mapbox token:', error);
+        return false;
+      }
+      mapboxgl.accessToken = data.token;
+      mapboxTokenLoaded = true;
+      return true;
+    } catch (err) {
+      console.error('Error fetching Mapbox token:', err);
       return false;
+    } finally {
+      tokenPromise = null;
     }
-    mapboxgl.accessToken = data.token;
-    mapboxTokenLoaded = true;
-    return true;
-  } catch (err) {
-    console.error('Error fetching Mapbox token:', err);
-    return false;
-  }
+  })();
+  
+  return tokenPromise;
 }
 
 type CompanyPoint = {
@@ -40,7 +52,7 @@ type CompanyPoint = {
   };
 };
 
-// Helper function to add 3D buildings layer with dynamic colors
+// Helper function to add 3D buildings layer with optimized expressions
 function add3DBuildingsLayer(map: mapboxgl.Map) {
   // Wait for style to be fully loaded
   if (!map.isStyleLoaded()) {
@@ -48,75 +60,52 @@ function add3DBuildingsLayer(map: mapboxgl.Map) {
     return;
   }
 
-  // Add OSM Buildings source for 3D buildings
-  if (!map.getSource('osm-buildings')) {
-    map.addSource('osm-buildings', {
-      type: 'vector',
-      tiles: ['https://tiles.openstreetmap.fr/openriverboatmap/{z}/{x}/{y}.pbf'],
-      minzoom: 13,
-      maxzoom: 14,
-    });
-  }
+  if (map.getLayer('3d-buildings')) return;
 
-  // Add 3D buildings layer with dynamic coloring by building type
-  if (!map.getLayer('3d-buildings')) {
-    map.addLayer({
+  // Use Mapbox composite source for better performance (combines tiles)
+  const layers = map.getStyle()?.layers;
+  const labelLayerId = layers?.find(
+    layer => layer.type === 'symbol' && layer.layout?.['text-field']
+  )?.id;
+
+  map.addLayer(
+    {
       id: '3d-buildings',
       type: 'fill-extrusion',
-      source: 'osm-buildings',
+      source: 'composite',
       'source-layer': 'building',
-      minzoom: 15,
+      // Performance: only render at zoom levels where buildings are visible
+      minzoom: 14,
+      maxzoom: 22,
+      // Optimized filter: most specific conditions first
+      filter: [
+        'all',
+        ['==', ['get', 'extrude'], 'true'],
+        ['==', ['geometry-type'], 'Polygon'],
+      ],
       paint: {
+        // Simplified color expression (faster than complex match)
         'fill-extrusion-color': [
           'case',
-          // Commercial (shops, offices) - Blue
-          ['in', ['get', 'building'], ['literal', ['commercial', 'retail', 'office']]],
-          'hsl(210, 70%, 60%)',
-          ['in', ['get', 'shop'], ['literal', ['yes', 'supermarket', 'mall', 'convenience']]],
-          'hsl(210, 70%, 60%)',
-          ['==', ['get', 'amenity'], 'bank'],
-          'hsl(210, 70%, 60%)',
-          
-          // Residential (houses, apartments) - Green
-          ['in', ['get', 'building'], ['literal', ['residential', 'apartments', 'house', 'detached', 'terrace']]],
-          'hsl(120, 50%, 55%)',
-          
-          // Industrial (factories, warehouses) - Orange
-          ['in', ['get', 'building'], ['literal', ['industrial', 'warehouse', 'manufacture']]],
-          'hsl(25, 80%, 60%)',
-          
-          // Public buildings (schools, hospitals) - Purple
-          ['in', ['get', 'amenity'], ['literal', ['school', 'hospital', 'clinic', 'university', 'college']]],
-          'hsl(270, 50%, 60%)',
-          ['==', ['get', 'building'], 'public'],
-          'hsl(270, 50%, 60%)',
-          
-          // Religious buildings (churches, temples) - Yellow
-          ['in', ['get', 'building'], ['literal', ['church', 'cathedral', 'chapel', 'mosque', 'temple', 'synagogue']]],
-          'hsl(45, 80%, 65%)',
-          ['==', ['get', 'amenity'], 'place_of_worship'],
-          'hsl(45, 80%, 65%)',
-          
-          // Default color for unknown buildings
-          ['has', 'building:colour'],
-          ['get', 'building:colour'],
-          'hsl(30, 15%, 75%)',
+          ['has', 'colour'],
+          ['get', 'colour'],
+          'hsl(35, 20%, 85%)'
         ],
+        // Optimized height expression
         'fill-extrusion-height': [
           'case',
           ['has', 'height'],
           ['get', 'height'],
-          ['case',
-            ['has', 'building:levels'],
-            ['*', ['to-number', ['get', 'building:levels']], 3],
-            8,
-          ],
+          ['has', 'levels'],
+          ['*', ['to-number', ['get', 'levels']], 3],
+          10
         ],
         'fill-extrusion-base': 0,
         'fill-extrusion-opacity': 0.6,
       },
-    });
-  }
+    },
+    labelLayerId
+  );
 }
 
 interface MapContainerProps {
@@ -575,13 +564,16 @@ export function MapContainer({
       // Andorra coordinates
       const andorraCenter: [number, number] = [1.5218, 42.5063];
       
-      // Use simple light style
-      const styleUrl = 'mapbox://styles/mapbox/streets-v12';
+      // Use optimized style with ?optimize=true to remove unused layers
+      const isDark = document.documentElement.classList.contains('dark');
+      const styleUrl = isDark 
+        ? 'mapbox://styles/mapbox/dark-v11?optimize=true'
+        : 'mapbox://styles/mapbox/streets-v12?optimize=true';
 
-      console.log('🎨 Using style:', styleUrl);
+      console.log('🎨 Using optimized style:', styleUrl);
       
       try {
-        console.log('🗺️ Creating Mapbox map...');
+        console.log('🗺️ Creating Mapbox map with optimizations...');
         
         map.current = new mapboxgl.Map({
           container: mapContainer.current!,
@@ -590,6 +582,12 @@ export function MapContainer({
           zoom: 12,
           maxZoom: 19,
           minZoom: 1,
+          // Performance optimizations
+          antialias: false, // Disable antialiasing for better performance
+          fadeDuration: 0, // Disable fade animations
+          preserveDrawingBuffer: false,
+          trackResize: true,
+          refreshExpiredTiles: false, // Don't refresh expired tiles automatically
         });
         
         console.log('✅ Map object created:', map.current);
@@ -644,13 +642,14 @@ export function MapContainer({
     const currentZoom = map.current.getZoom();
 
     const getStyleUrl = (styleName: string): string => {
+      // Add ?optimize=true for vector tile optimization (removes unused features)
       if (styleName === 'satellite') {
-        return 'mapbox://styles/mapbox/satellite-streets-v12';
+        return 'mapbox://styles/mapbox/satellite-streets-v12?optimize=true';
       }
       const isDarkMode = document.documentElement.classList.contains('dark');
       return isDarkMode 
-        ? 'mapbox://styles/mapbox/dark-v11'
-        : 'mapbox://styles/mapbox/streets-v12';
+        ? 'mapbox://styles/mapbox/dark-v11?optimize=true'
+        : 'mapbox://styles/mapbox/streets-v12?optimize=true';
     };
 
     map.current.setStyle(getStyleUrl(mapStyle));
@@ -855,10 +854,14 @@ export function MapContainer({
       },
     }));
 
+    // Initialize Supercluster with optimized settings for performance
     superclusterRef.current = new Supercluster({
       radius: 60,
       maxZoom: 16,
       minPoints: 2,
+      // Performance optimizations
+      extent: 512,      // Tile extent
+      nodeSize: 64,     // KD-tree node size
     });
     superclusterRef.current.load(points);
 
@@ -1392,13 +1395,21 @@ export function MapContainer({
       }
     };
 
-    map.current.on('moveend', updateMarkers);
-    map.current.on('zoomend', updateMarkers);
+    // Debounced event handlers for better performance
+    let updateTimeout: NodeJS.Timeout | null = null;
+    const debouncedUpdateMarkers = () => {
+      if (updateTimeout) clearTimeout(updateTimeout);
+      updateTimeout = setTimeout(updateMarkers, 100);
+    };
+
+    map.current.on('moveend', debouncedUpdateMarkers);
+    map.current.on('zoomend', debouncedUpdateMarkers);
     map.current.on('click', handleMapClick);
 
     return () => {
-      map.current?.off('moveend', updateMarkers);
-      map.current?.off('zoomend', updateMarkers);
+      if (updateTimeout) clearTimeout(updateTimeout);
+      map.current?.off('moveend', debouncedUpdateMarkers);
+      map.current?.off('zoomend', debouncedUpdateMarkers);
       map.current?.off('click', handleMapClick);
     };
   }, [companies, filters, mapLoaded, statusColors, onSelectCompany, baseLayers.markers, tooltipConfig, vinculacionData, minZoomVinculacion, colorMode, visitCounts, focusedMarkerId]);
