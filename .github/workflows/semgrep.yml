@@ -1,0 +1,17 @@
+name: Semgrep SAST
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  semgrep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: .semgrep.yml
+          publishToken: ${{ secrets.SEMGREP_APP_TOKEN }}
