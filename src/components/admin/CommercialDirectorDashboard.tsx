@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { useState, Suspense, lazy } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend, Area, AreaChart } from 'recharts';
 import { Activity, Target, Building2, Users, TrendingUp, TrendingDown, ArrowUpRight, BarChart3, Eye, Clock, Zap, Award, AlertTriangle, CheckCircle2, Calendar } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -14,7 +13,8 @@ import { MetricsExplorer } from '@/components/admin/MetricsExplorer';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { QuickVisitManager } from '@/components/dashboard/QuickVisitManager';
 import { cn } from '@/lib/utils';
-import { useDashboardData } from '@/hooks/useDashboardData';
+import { useDashboardDataOptimized } from '@/hooks/useDashboardDataOptimized';
+import { ProgressiveDashboardSkeleton, ChartSkeleton } from '@/components/dashboard/ProgressiveDashboardSkeleton';
 
 import { MapDashboardCard } from '@/components/dashboard/MapDashboardCard';
 import { QuickVisitSheetCard } from '@/components/dashboard/QuickVisitSheetCard';
@@ -52,7 +52,7 @@ export function CommercialDirectorDashboard() {
   });
 
   // Use optimized hook - fetches ALL data in parallel with caching
-  const { data, loading } = useDashboardData(dateRange);
+  const { data, loading, isLoadingTrends } = useDashboardDataOptimized(dateRange);
 
   // Widget layout system
   const {
@@ -81,19 +81,7 @@ export function CommercialDirectorDashboard() {
 
 
   if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-4">
-          {[1, 2, 3, 4].map(i => (
-            <Skeleton key={i} className="h-32 rounded-2xl" />
-          ))}
-        </div>
-        <div className="grid gap-6 md:grid-cols-2">
-          <Skeleton className="h-80 rounded-2xl" />
-          <Skeleton className="h-80 rounded-2xl" />
-        </div>
-      </div>
-    );
+    return <ProgressiveDashboardSkeleton />;
   }
 
   return (
