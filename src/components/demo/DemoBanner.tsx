@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDemoContext } from '@/contexts/DemoContext';
 import { Button } from '@/components/ui/button';
-import { Clock, Database, User, X, Play, ChevronDown, ChevronUp } from 'lucide-react';
+import { Clock, Database, User, X, Play, ChevronLeft, ChevronRight, Building2, Calendar, Target, Bell } from 'lucide-react';
 import { DemoEndModal } from './DemoEndModal';
 
 export const DemoBanner: React.FC = () => {
@@ -39,114 +39,122 @@ export const DemoBanner: React.FC = () => {
     <>
       <AnimatePresence>
         <motion.div
-          initial={{ y: -100 }}
-          animate={{ y: 0 }}
-          exit={{ y: -100 }}
-          className="fixed top-0 left-0 right-0 z-50"
+          initial={{ x: -100 }}
+          animate={{ x: 0 }}
+          exit={{ x: -100 }}
+          className="fixed left-0 top-1/2 -translate-y-1/2 z-50"
         >
-          <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 text-white shadow-lg">
-            <div className="container mx-auto">
-              <div className="flex items-center justify-between py-2 px-4">
-                {/* Left section */}
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
+          {/* Vertical sidebar demo panel */}
+          <div className="bg-gradient-to-b from-amber-500 via-orange-500 to-amber-500 text-white shadow-2xl rounded-r-xl overflow-hidden">
+            {/* Collapse toggle */}
+            <button
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="absolute -right-6 top-1/2 -translate-y-1/2 bg-orange-500 text-white p-1.5 rounded-r-lg shadow-lg hover:bg-orange-600 transition-colors"
+            >
+              {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            </button>
+
+            <AnimatePresence mode="wait">
+              {!isCollapsed ? (
+                <motion.div
+                  initial={{ width: 0, opacity: 0 }}
+                  animate={{ width: 'auto', opacity: 1 }}
+                  exit={{ width: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="p-4 flex flex-col gap-4 min-w-[200px]"
+                >
+                  {/* Header */}
+                  <div className="flex items-center gap-2 border-b border-white/20 pb-3">
                     <motion.div
-                      animate={{ scale: [1, 1.1, 1] }}
+                      animate={{ scale: [1, 1.2, 1] }}
                       transition={{ duration: 2, repeat: Infinity }}
-                      className="w-3 h-3 rounded-full bg-white"
+                      className="w-3 h-3 rounded-full bg-white shadow-lg"
                     />
-                    <span className="font-bold text-sm uppercase tracking-wide">Modo Demo</span>
+                    <span className="font-bold text-sm uppercase tracking-wide">Demo Activa</span>
                   </div>
-                  
-                  {!isCollapsed && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="hidden md:flex items-center gap-4 text-sm"
-                    >
-                      <div className="flex items-center gap-1.5 bg-white/20 px-2 py-1 rounded">
-                        <User className="h-3.5 w-3.5" />
-                        <span>{roleLabels[demoRole || ''] || demoRole}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 bg-white/20 px-2 py-1 rounded">
-                        <Clock className="h-3.5 w-3.5" />
-                        <span>{elapsedTime}</span>
-                      </div>
-                      {dataStats && (
-                        <div className="flex items-center gap-1.5 bg-white/20 px-2 py-1 rounded">
-                          <Database className="h-3.5 w-3.5" />
-                          <span>{dataStats.companies} empresas · {dataStats.visits} visitas</span>
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
-                </div>
 
-                {/* Right section */}
-                <div className="flex items-center gap-2">
-                  {!tourActive && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={startTour}
-                      className="text-white hover:bg-white/20 hidden sm:flex"
-                    >
-                      <Play className="h-4 w-4 mr-1" />
-                      Ver Tour
-                    </Button>
-                  )}
-                  
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setIsCollapsed(!isCollapsed)}
-                    className="text-white hover:bg-white/20 md:hidden"
-                  >
-                    {isCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
-                  </Button>
+                  {/* Role */}
+                  <div className="flex items-center gap-2 text-sm bg-white/20 px-3 py-2 rounded-lg">
+                    <User className="h-4 w-4" />
+                    <span className="font-medium">{roleLabels[demoRole || ''] || demoRole}</span>
+                  </div>
 
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    onClick={() => setShowEndModal(true)}
-                    disabled={isLoading}
-                    className="bg-white text-orange-600 hover:bg-white/90 font-medium"
-                  >
-                    <X className="h-4 w-4 mr-1" />
-                    Finalizar
-                  </Button>
-                </div>
-              </div>
+                  {/* Timer */}
+                  <div className="flex items-center gap-2 text-sm bg-white/20 px-3 py-2 rounded-lg">
+                    <Clock className="h-4 w-4" />
+                    <span className="font-mono text-lg">{elapsedTime}</span>
+                  </div>
 
-              {/* Mobile expanded info */}
-              <AnimatePresence>
-                {!isCollapsed && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="md:hidden overflow-hidden"
-                  >
-                    <div className="flex flex-wrap gap-2 px-4 pb-2 text-sm">
-                      <div className="flex items-center gap-1.5 bg-white/20 px-2 py-1 rounded">
-                        <User className="h-3.5 w-3.5" />
-                        <span>{roleLabels[demoRole || ''] || demoRole}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 bg-white/20 px-2 py-1 rounded">
-                        <Clock className="h-3.5 w-3.5" />
-                        <span>{elapsedTime}</span>
-                      </div>
-                      {dataStats && (
-                        <div className="flex items-center gap-1.5 bg-white/20 px-2 py-1 rounded">
-                          <Database className="h-3.5 w-3.5" />
+                  {/* Stats */}
+                  {dataStats && (
+                    <div className="space-y-2">
+                      <p className="text-xs text-white/70 uppercase tracking-wide">Datos Demo</p>
+                      <div className="grid gap-2 text-xs">
+                        <div className="flex items-center gap-2 bg-white/15 px-2 py-1.5 rounded">
+                          <Building2 className="h-3.5 w-3.5" />
                           <span>{dataStats.companies} empresas</span>
                         </div>
-                      )}
+                        <div className="flex items-center gap-2 bg-white/15 px-2 py-1.5 rounded">
+                          <Calendar className="h-3.5 w-3.5" />
+                          <span>{dataStats.visits} visitas</span>
+                        </div>
+                        <div className="flex items-center gap-2 bg-white/15 px-2 py-1.5 rounded">
+                          <Target className="h-3.5 w-3.5" />
+                          <span>{dataStats.goals} objetivos</span>
+                        </div>
+                        <div className="flex items-center gap-2 bg-white/15 px-2 py-1.5 rounded">
+                          <Bell className="h-3.5 w-3.5" />
+                          <span>{dataStats.notifications} notificaciones</span>
+                        </div>
+                      </div>
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="flex flex-col gap-2 pt-2 border-t border-white/20">
+                    {!tourActive && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={startTour}
+                        className="text-white hover:bg-white/20 justify-start"
+                      >
+                        <Play className="h-4 w-4 mr-2" />
+                        Ver Tour
+                      </Button>
+                    )}
+                    
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => setShowEndModal(true)}
+                      disabled={isLoading}
+                      className="bg-white text-orange-600 hover:bg-white/90 font-medium justify-start"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Finalizar Demo
+                    </Button>
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="p-2 flex flex-col items-center gap-3"
+                >
+                  <motion.div
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="w-3 h-3 rounded-full bg-white shadow-lg"
+                  />
+                  <span className="text-xs font-bold writing-mode-vertical rotate-180" style={{ writingMode: 'vertical-rl' }}>
+                    DEMO
+                  </span>
+                  <div className="text-xs font-mono">{elapsedTime}</div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </motion.div>
       </AnimatePresence>
