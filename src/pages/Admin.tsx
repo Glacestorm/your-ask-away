@@ -770,16 +770,16 @@ case 'administration':
         return (
           <div className="rounded-lg border bg-card p-6 space-y-8">
             <div>
-              <h2 className="text-2xl font-bold">Administració</h2>
+              <h2 className="text-2xl font-bold">{t('admin.title')}</h2>
               <p className="text-sm text-muted-foreground">
-                Gestió d'usuaris, productes, objectius i configuració del sistema
+                {t('admin.subtitle')}
               </p>
             </div>
 
             {/* SECCIÓ 1: Visió i Comercial */}
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-primary flex items-center gap-2">
-                <Rocket className="h-5 w-5" /> Comercial i Oportunitats
+                <Rocket className="h-5 w-5" /> {t('admin.section.commercial')}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 <Card 
@@ -791,8 +791,8 @@ case 'administration':
                       <Activity className="h-4 w-4 text-primary" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm">Selector de Visió</h4>
-                      <p className="text-xs text-muted-foreground">Escull rol</p>
+                      <h4 className="font-medium text-sm">{t('admin.card.roleSelector')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.roleSelector.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -805,8 +805,8 @@ case 'administration':
                       <Rocket className="h-4 w-4 text-orange-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm">Pipeline Oportunitats</h4>
-                      <p className="text-xs text-muted-foreground">CRM comercial</p>
+                      <h4 className="font-medium text-sm">{t('admin.card.pipeline')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.pipeline.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -816,8 +816,8 @@ case 'administration':
                       <Activity className="h-4 w-4 text-indigo-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm">Objectius</h4>
-                      <p className="text-xs text-muted-foreground">Assignar i seguiment</p>
+                      <h4 className="font-medium text-sm">{t('admin.card.goals')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.goals.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -827,8 +827,8 @@ case 'administration':
                       <Activity className="h-4 w-4 text-emerald-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm">TPV</h4>
-                      <p className="text-xs text-muted-foreground">Terminals i objectius</p>
+                      <h4 className="font-medium text-sm">{t('admin.card.tpv')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.tpv.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -841,8 +841,8 @@ case 'administration':
                       <BarChart3 className="h-4 w-4 text-violet-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm">Anàlisi RFM</h4>
-                      <p className="text-xs text-muted-foreground">Recency, Frequency, Monetary</p>
+                      <h4 className="font-medium text-sm">{t('admin.card.rfm')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.rfm.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -855,8 +855,8 @@ case 'administration':
                       <Users className="h-4 w-4 text-pink-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm">Segmentació ML</h4>
-                      <p className="text-xs text-muted-foreground">SVM + CART</p>
+                      <h4 className="font-medium text-sm">{t('admin.card.segmentation')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.segmentation.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -869,8 +869,8 @@ case 'administration':
                       <Trophy className="h-4 w-4 text-amber-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm">SPM Dashboard</h4>
-                      <p className="text-xs text-muted-foreground">Sales Performance</p>
+                      <h4 className="font-medium text-sm">{t('admin.card.spm')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.spm.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -880,7 +880,7 @@ case 'administration':
             {/* SECCIÓ 2: Configuració del Sistema */}
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400 flex items-center gap-2">
-                <Activity className="h-5 w-5" /> Configuració del Sistema
+                <Activity className="h-5 w-5" /> {t('admin.section.systemConfig')}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => handleSectionChange('users')}>
@@ -889,8 +889,8 @@ case 'administration':
                       <Activity className="h-4 w-4 text-blue-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm">Usuaris</h4>
-                      <p className="text-xs text-muted-foreground">Gestió d'usuaris</p>
+                      <h4 className="font-medium text-sm">{t('admin.card.users')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.users.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -900,8 +900,8 @@ case 'administration':
                       <Activity className="h-4 w-4 text-blue-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm">Productes</h4>
-                      <p className="text-xs text-muted-foreground">Catàleg bancari</p>
+                      <h4 className="font-medium text-sm">{t('admin.card.products')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.products.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -911,8 +911,8 @@ case 'administration':
                       <Activity className="h-4 w-4 text-blue-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm">Mapa</h4>
-                      <p className="text-xs text-muted-foreground">Capes i tooltips</p>
+                      <h4 className="font-medium text-sm">{t('admin.card.map')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.map.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -922,8 +922,8 @@ case 'administration':
                       <Activity className="h-4 w-4 text-blue-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm">Conceptes</h4>
-                      <p className="text-xs text-muted-foreground">Definicions sistema</p>
+                      <h4 className="font-medium text-sm">{t('admin.card.concepts')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.concepts.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -933,8 +933,8 @@ case 'administration':
                       <Activity className="h-4 w-4 text-blue-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm">Plantilles Email</h4>
-                      <p className="text-xs text-muted-foreground">Templates correu</p>
+                      <h4 className="font-medium text-sm">{t('admin.card.templates')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.templates.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -944,8 +944,8 @@ case 'administration':
                       <Activity className="h-4 w-4 text-blue-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm">Colors d'Estat</h4>
-                      <p className="text-xs text-muted-foreground">Configurar colors</p>
+                      <h4 className="font-medium text-sm">{t('admin.card.colors')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.colors.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -955,8 +955,8 @@ case 'administration':
                       <Activity className="h-4 w-4 text-amber-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm">Alertes</h4>
-                      <p className="text-xs text-muted-foreground">Automàtiques</p>
+                      <h4 className="font-medium text-sm">{t('admin.card.alerts')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.alerts.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -966,8 +966,8 @@ case 'administration':
                       <Activity className="h-4 w-4 text-amber-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm">Notificacions</h4>
-                      <p className="text-xs text-muted-foreground">Preferències</p>
+                      <h4 className="font-medium text-sm">{t('admin.card.notifications')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.notifications.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -980,8 +980,8 @@ case 'administration':
                       <Bot className="h-4 w-4 text-purple-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-purple-700 dark:text-purple-400">IA Interna</h4>
-                      <p className="text-xs text-muted-foreground">Integració model IA banc</p>
+                      <h4 className="font-medium text-sm text-purple-700 dark:text-purple-400">{t('admin.card.internalAI')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.internalAI.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -994,8 +994,8 @@ case 'administration':
                       <Palette className="h-4 w-4 text-cyan-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-cyan-700 dark:text-cyan-400">White-Label</h4>
-                      <p className="text-xs text-muted-foreground">Personalització marca</p>
+                      <h4 className="font-medium text-sm text-cyan-700 dark:text-cyan-400">{t('admin.card.whiteLabel')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.whiteLabel.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1008,8 +1008,8 @@ case 'administration':
                       <FileCode2 className="h-4 w-4 text-emerald-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-emerald-700 dark:text-emerald-400">API REST</h4>
-                      <p className="text-xs text-muted-foreground">Documentació OpenAPI</p>
+                      <h4 className="font-medium text-sm text-emerald-700 dark:text-emerald-400">{t('admin.card.apiDocs')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.apiDocs.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1019,7 +1019,7 @@ case 'administration':
             {/* SECCIÓ 3: Seguretat i Compliance */}
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-red-600 dark:text-red-400 flex items-center gap-2">
-                <Shield className="h-5 w-5" /> Seguretat i Compliance
+                <Shield className="h-5 w-5" /> {t('admin.section.security')}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 <Card 
@@ -1031,8 +1031,8 @@ case 'administration':
                       <Shield className="h-4 w-4 text-red-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-red-700 dark:text-red-400">DORA / NIS2</h4>
-                      <p className="text-xs text-muted-foreground">Resiliència digital</p>
+                      <h4 className="font-medium text-sm text-red-700 dark:text-red-400">{t('admin.card.dora')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.dora.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1045,8 +1045,8 @@ case 'administration':
                       <Shield className="h-4 w-4 text-indigo-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-indigo-700 dark:text-indigo-400">ISO 27001</h4>
-                      <p className="text-xs text-muted-foreground">Annex A controls</p>
+                      <h4 className="font-medium text-sm text-indigo-700 dark:text-indigo-400">{t('admin.card.iso27001')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.iso27001.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1059,8 +1059,8 @@ case 'administration':
                       <Shield className="h-4 w-4 text-cyan-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-cyan-700 dark:text-cyan-400">AMA / MFA</h4>
-                      <p className="text-xs text-muted-foreground">Autenticació adaptativa</p>
+                      <h4 className="font-medium text-sm text-cyan-700 dark:text-cyan-400">{t('admin.card.ama')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.ama.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1073,8 +1073,8 @@ case 'administration':
                       <Database className="h-4 w-4 text-emerald-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-emerald-700 dark:text-emerald-400">Core Banking</h4>
-                      <p className="text-xs text-muted-foreground">Integració PSD3/VRP</p>
+                      <h4 className="font-medium text-sm text-emerald-700 dark:text-emerald-400">{t('admin.card.coreBanking')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.coreBanking.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1084,8 +1084,8 @@ case 'administration':
                       <Activity className="h-4 w-4 text-green-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm">Salut Sistema</h4>
-                      <p className="text-xs text-muted-foreground">Monitoratge AI</p>
+                      <h4 className="font-medium text-sm">{t('admin.card.systemHealth')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.systemHealth.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1098,8 +1098,8 @@ case 'administration':
                       <Eye className="h-4 w-4 text-teal-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-teal-700 dark:text-teal-400">CDP 360°</h4>
-                      <p className="text-xs text-muted-foreground">Customer Data Platform</p>
+                      <h4 className="font-medium text-sm text-teal-700 dark:text-teal-400">{t('admin.card.cdp360')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.cdp360.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1112,12 +1112,11 @@ case 'administration':
                       <Bot className="h-4 w-4 text-purple-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-purple-700 dark:text-purple-400">ML / IA</h4>
-                      <p className="text-xs text-muted-foreground">SHAP/LIME Explainability</p>
+                      <h4 className="font-medium text-sm text-purple-700 dark:text-purple-400">{t('admin.card.mlIA')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.mlIA.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
-                {/* ML Avançat - FASE 2 */}
                 <Card 
                   className="cursor-pointer hover:shadow-md transition-all border-2 border-fuchsia-500/30 bg-gradient-to-br from-fuchsia-500/5 to-fuchsia-500/10"
                   onClick={() => handleSectionChange('advanced-ml')}
@@ -1127,12 +1126,11 @@ case 'administration':
                       <Rocket className="h-4 w-4 text-fuchsia-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-fuchsia-700 dark:text-fuchsia-400">ML Avançat</h4>
-                      <p className="text-xs text-muted-foreground">Ensemble + A/B Testing</p>
+                      <h4 className="font-medium text-sm text-fuchsia-700 dark:text-fuchsia-400">{t('admin.card.advancedML')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.advancedML.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
-                {/* Predictive Analytics - FASE 5 */}
                 <Card 
                   className="cursor-pointer hover:shadow-md transition-all border-2 border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-amber-500/10"
                   onClick={() => handleSectionChange('predictive-analytics')}
@@ -1142,8 +1140,8 @@ case 'administration':
                       <BarChart3 className="h-4 w-4 text-amber-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-amber-700 dark:text-amber-400">KPIs Predictius</h4>
-                      <p className="text-xs text-muted-foreground">50+ indicadors + forecast</p>
+                      <h4 className="font-medium text-sm text-amber-700 dark:text-amber-400">{t('admin.card.predictiveKPIs')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.predictiveKPIs.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1153,7 +1151,7 @@ case 'administration':
             {/* SECCIÓ 4: Documentació i Anàlisi */}
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
-                <Activity className="h-5 w-5" /> Documentació i Anàlisi
+                <Activity className="h-5 w-5" /> {t('admin.section.documentation')}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 <Card 
