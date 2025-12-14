@@ -173,7 +173,7 @@ const Home = () => {
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      toast.error('Error al tancar la sessió');
+      toast.error(t('auth.logoutError'));
     } else {
       navigate('/auth');
     }
@@ -227,10 +227,10 @@ const Home = () => {
             </div>
             <div className="text-center hidden md:block">
               <h1 className="text-xl font-bold text-foreground">
-                Panel de Control
+                {t('dashboard.controlPanel')}
               </h1>
               <p className="text-xs text-muted-foreground">
-                Selecciona una opción para acceder
+                {t('dashboard.selectOption')}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -243,7 +243,7 @@ const Home = () => {
                 className="gap-2"
               >
                 <LogOut className="h-4 w-4" />
-                <span className="hidden sm:inline">Cerrar sesión</span>
+                <span className="hidden sm:inline">{t('dashboard.logout')}</span>
               </Button>
             </div>
           </div>

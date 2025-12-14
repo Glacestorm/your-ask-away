@@ -156,12 +156,12 @@ const Dashboard = () => {
 
   // Tab configuration for mobile dropdown
   const tabsConfig = useMemo(() => [
-    { value: 'mi-panel', label: 'Mi Panel', icon: <LayoutDashboard className="h-4 w-4" />, visible: true },
-    { value: 'analisis', label: 'Análisis', icon: <PieChart className="h-4 w-4" />, visible: true },
-    { value: 'objetivos', label: 'Objetivos', icon: <Target className="h-4 w-4" />, visible: true },
-    { value: 'equipo', label: 'Equipo', icon: <Users className="h-4 w-4" />, visible: isDirector },
-    { value: 'herramientas', label: 'Herramientas', icon: <Settings className="h-4 w-4" />, visible: true },
-  ], [isDirector]);
+    { value: 'mi-panel', label: t('dashboard.tabs.myPanel'), icon: <LayoutDashboard className="h-4 w-4" />, visible: true },
+    { value: 'analisis', label: t('dashboard.tabs.analysis'), icon: <PieChart className="h-4 w-4" />, visible: true },
+    { value: 'objetivos', label: t('dashboard.tabs.goals'), icon: <Target className="h-4 w-4" />, visible: true },
+    { value: 'equipo', label: t('dashboard.tabs.team'), icon: <Users className="h-4 w-4" />, visible: isDirector },
+    { value: 'herramientas', label: t('dashboard.tabs.tools'), icon: <Settings className="h-4 w-4" />, visible: true },
+  ], [isDirector, t]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -275,21 +275,21 @@ const Dashboard = () => {
                 className="flex items-center gap-2 py-3 px-4 text-sm touch-manipulation"
               >
                 <LayoutDashboard className="h-4 w-4 flex-shrink-0" />
-                <span className="font-medium">Mi Panel</span>
+                <span className="font-medium">{t('dashboard.tabs.myPanel')}</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="analisis" 
                 className="flex items-center gap-2 py-3 px-4 text-sm touch-manipulation"
               >
                 <PieChart className="h-4 w-4 flex-shrink-0" />
-                <span className="font-medium">Análisis</span>
+                <span className="font-medium">{t('dashboard.tabs.analysis')}</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="objetivos" 
                 className="flex items-center gap-2 py-3 px-4 text-sm touch-manipulation"
               >
                 <Target className="h-4 w-4 flex-shrink-0" />
-                <span className="font-medium">Objetivos</span>
+                <span className="font-medium">{t('dashboard.tabs.goals')}</span>
               </TabsTrigger>
               {isDirector && (
                 <TabsTrigger 
@@ -297,7 +297,7 @@ const Dashboard = () => {
                   className="flex items-center gap-2 py-3 px-4 text-sm touch-manipulation"
                 >
                   <Users className="h-4 w-4 flex-shrink-0" />
-                  <span className="font-medium">Equipo</span>
+                  <span className="font-medium">{t('dashboard.tabs.team')}</span>
                 </TabsTrigger>
               )}
               <TabsTrigger 
@@ -305,7 +305,7 @@ const Dashboard = () => {
                 className="flex items-center gap-2 py-3 px-4 text-sm touch-manipulation"
               >
                 <Settings className="h-4 w-4 flex-shrink-0" />
-                <span className="font-medium">Herramientas</span>
+                <span className="font-medium">{t('dashboard.tabs.tools')}</span>
               </TabsTrigger>
             </TabsList>
           )}
@@ -315,7 +315,7 @@ const Dashboard = () => {
             {/* Widget Layout Controls */}
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
-                {isEditMode ? 'Arrastra los widgets para reorganizarlos' : ''}
+                {isEditMode ? t('dashboard.dragWidgets') : ''}
               </p>
               <WidgetLayoutControls
                 isEditMode={isEditMode}
