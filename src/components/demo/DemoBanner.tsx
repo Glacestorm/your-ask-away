@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDemoContext } from '@/contexts/DemoContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Clock, Database, User, X, Play, ChevronLeft, ChevronRight, Building2, Calendar, Target, Bell } from 'lucide-react';
 import { DemoEndModal } from './DemoEndModal';
 
 export const DemoBanner: React.FC = () => {
   const { isDemoMode, demoRole, startedAt, dataStats, endDemo, isLoading, startTour, tourActive } = useDemoContext();
+  const { t } = useLanguage();
   const [elapsedTime, setElapsedTime] = useState('00:00');
   const [showEndModal, setShowEndModal] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -29,10 +31,17 @@ export const DemoBanner: React.FC = () => {
 
   if (!isDemoMode) return null;
 
-  const roleLabels: Record<string, string> = {
-    director_comercial: 'Director de Negoci',
-    gestor: 'Gestor Comercial',
-    superadmin: 'Administrador'
+  const getRoleLabel = (role: string | null) => {
+    switch (role) {
+      case 'director_comercial':
+        return t('demo.role.director');
+      case 'gestor':
+        return t('demo.role.gestor');
+      case 'superadmin':
+        return t('demo.role.admin');
+      default:
+        return role || '';
+    }
   };
 
   return (
@@ -70,13 +79,13 @@ export const DemoBanner: React.FC = () => {
                       transition={{ duration: 2, repeat: Infinity }}
                       className="w-3 h-3 rounded-full bg-white shadow-lg"
                     />
-                    <span className="font-bold text-sm uppercase tracking-wide">Demo Activa</span>
+                    <span className="font-bold text-sm uppercase tracking-wide">{t('demo.active')}</span>
                   </div>
 
                   {/* Role */}
                   <div className="flex items-center gap-2 text-sm bg-white/20 px-3 py-2 rounded-lg">
                     <User className="h-4 w-4" />
-                    <span className="font-medium">{roleLabels[demoRole || ''] || demoRole}</span>
+                    <span className="font-medium">{getRoleLabel(demoRole)}</span>
                   </div>
 
                   {/* Timer */}
@@ -88,23 +97,23 @@ export const DemoBanner: React.FC = () => {
                   {/* Stats */}
                   {dataStats && (
                     <div className="space-y-2">
-                      <p className="text-xs text-white/70 uppercase tracking-wide">Datos Demo</p>
+                      <p className="text-xs text-white/70 uppercase tracking-wide">{t('demo.demoData')}</p>
                       <div className="grid gap-2 text-xs">
                         <div className="flex items-center gap-2 bg-white/15 px-2 py-1.5 rounded">
                           <Building2 className="h-3.5 w-3.5" />
-                          <span>{dataStats.companies} empresas</span>
+                          <span>{dataStats.companies} {t('demo.companies')}</span>
                         </div>
                         <div className="flex items-center gap-2 bg-white/15 px-2 py-1.5 rounded">
                           <Calendar className="h-3.5 w-3.5" />
-                          <span>{dataStats.visits} visitas</span>
+                          <span>{dataStats.visits} {t('demo.visits')}</span>
                         </div>
                         <div className="flex items-center gap-2 bg-white/15 px-2 py-1.5 rounded">
                           <Target className="h-3.5 w-3.5" />
-                          <span>{dataStats.goals} objetivos</span>
+                          <span>{dataStats.goals} {t('demo.goals')}</span>
                         </div>
                         <div className="flex items-center gap-2 bg-white/15 px-2 py-1.5 rounded">
                           <Bell className="h-3.5 w-3.5" />
-                          <span>{dataStats.notifications} notificaciones</span>
+                          <span>{dataStats.notifications} {t('demo.notifications')}</span>
                         </div>
                       </div>
                     </div>
@@ -120,7 +129,7 @@ export const DemoBanner: React.FC = () => {
                         className="text-white hover:bg-white/20 justify-start"
                       >
                         <Play className="h-4 w-4 mr-2" />
-                        Ver Tour
+                        {t('demo.viewTour')}
                       </Button>
                     )}
                     
@@ -132,7 +141,7 @@ export const DemoBanner: React.FC = () => {
                       className="bg-white text-orange-600 hover:bg-white/90 font-medium justify-start"
                     >
                       <X className="h-4 w-4 mr-2" />
-                      Finalizar Demo
+                      {t('demo.endDemo')}
                     </Button>
                   </div>
                 </motion.div>

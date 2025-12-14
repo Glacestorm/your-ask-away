@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useDemoContext, DemoRole } from '@/contexts/DemoContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Building2, User, Settings, Play, Clock, Database, Sparkles, Shield, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -11,35 +12,36 @@ interface DemoStartModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const roles: { id: DemoRole; title: string; description: string; icon: React.ReactNode; features: string[] }[] = [
-  {
-    id: 'director_comercial',
-    title: 'Director de Negoci',
-    description: 'Vista ejecutiva completa con KPIs, métricas y control total del equipo comercial',
-    icon: <Building2 className="h-8 w-8" />,
-    features: ['Dashboard ejecutivo', 'Métricas globales', 'Gestión de equipos', 'Reportes avanzados']
-  },
-  {
-    id: 'gestor',
-    title: 'Gestor Comercial',
-    description: 'Experiencia del día a día: visitas, empresas asignadas y objetivos personales',
-    icon: <User className="h-8 w-8" />,
-    features: ['Cartera de clientes', 'Planificación visitas', 'Fichas comerciales', 'Objetivos personales']
-  },
-  {
-    id: 'superadmin',
-    title: 'Administrador',
-    description: 'Acceso completo a configuración, usuarios, productos y herramientas del sistema',
-    icon: <Settings className="h-8 w-8" />,
-    features: ['Configuración sistema', 'Gestión usuarios', 'Productos bancarios', 'Compliance']
-  }
-];
-
 export const DemoStartModal: React.FC<DemoStartModalProps> = ({ open, onOpenChange }) => {
   const { startDemo, isLoading } = useDemoContext();
+  const { t } = useLanguage();
   const [selectedRole, setSelectedRole] = useState<DemoRole | null>(null);
   const [step, setStep] = useState<'select' | 'loading' | 'error'>('select');
   const [error, setError] = useState<string | null>(null);
+
+  const roles: { id: DemoRole; titleKey: string; descKey: string; icon: React.ReactNode; featureKeys: string[] }[] = [
+    {
+      id: 'director_comercial',
+      titleKey: 'demo.role.director',
+      descKey: 'demo.role.director.desc',
+      icon: <Building2 className="h-8 w-8" />,
+      featureKeys: ['demo.role.director.feat1', 'demo.role.director.feat2', 'demo.role.director.feat3', 'demo.role.director.feat4']
+    },
+    {
+      id: 'gestor',
+      titleKey: 'demo.role.gestor',
+      descKey: 'demo.role.gestor.desc',
+      icon: <User className="h-8 w-8" />,
+      featureKeys: ['demo.role.gestor.feat1', 'demo.role.gestor.feat2', 'demo.role.gestor.feat3', 'demo.role.gestor.feat4']
+    },
+    {
+      id: 'superadmin',
+      titleKey: 'demo.role.admin',
+      descKey: 'demo.role.admin.desc',
+      icon: <Settings className="h-8 w-8" />,
+      featureKeys: ['demo.role.admin.feat1', 'demo.role.admin.feat2', 'demo.role.admin.feat3', 'demo.role.admin.feat4']
+    }
+  ];
 
   const handleStartDemo = async () => {
     if (!selectedRole) return;
@@ -53,7 +55,7 @@ export const DemoStartModal: React.FC<DemoStartModalProps> = ({ open, onOpenChan
       onOpenChange(false);
     } else {
       setStep('error');
-      setError('No se pudo iniciar la demo. Por favor, inténtalo de nuevo.');
+      setError(t('demo.couldNotStart'));
     }
   };
 
@@ -78,11 +80,11 @@ export const DemoStartModal: React.FC<DemoStartModalProps> = ({ open, onOpenChan
                   <Sparkles className="h-6 w-6 text-primary" />
                 </div>
                 <DialogTitle className="text-2xl font-bold">
-                  Prueba ObelixIA
+                  {t('demo.title')}
                 </DialogTitle>
               </div>
               <DialogDescription className="text-base">
-                Experimenta todas las funcionalidades del CRM bancario más avanzado con datos de demostración realistas.
+                {t('demo.subtitle')}
               </DialogDescription>
             </DialogHeader>
           </div>
@@ -100,20 +102,20 @@ export const DemoStartModal: React.FC<DemoStartModalProps> = ({ open, onOpenChan
                 <div className="flex flex-wrap gap-2 mb-6">
                   <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-sm">
                     <Clock className="h-4 w-4" />
-                    <span>15-30 min</span>
+                    <span>{t('demo.duration')}</span>
                   </div>
                   <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-sm">
                     <Database className="h-4 w-4" />
-                    <span>50 empresas, 100 visitas</span>
+                    <span>{t('demo.dataCount')}</span>
                   </div>
                   <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-muted-foreground text-sm">
                     <Shield className="h-4 w-4" />
-                    <span>Datos ficticios aislados</span>
+                    <span>{t('demo.dataIsolated')}</span>
                   </div>
                 </div>
 
                 {/* Role selection */}
-                <p className="text-sm font-medium text-foreground mb-3">Selecciona tu perfil de demostración:</p>
+                <p className="text-sm font-medium text-foreground mb-3">{t('demo.selectProfile')}</p>
                 <div className="grid gap-3">
                   {roles.map((role) => (
                     <motion.button
@@ -135,15 +137,15 @@ export const DemoStartModal: React.FC<DemoStartModalProps> = ({ open, onOpenChan
                         {role.icon}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-foreground">{role.title}</h3>
-                        <p className="text-sm text-muted-foreground mt-0.5">{role.description}</p>
+                        <h3 className="font-semibold text-foreground">{t(role.titleKey)}</h3>
+                        <p className="text-sm text-muted-foreground mt-0.5">{t(role.descKey)}</p>
                         <div className="flex flex-wrap gap-1.5 mt-2">
-                          {role.features.map((feature) => (
+                          {role.featureKeys.map((featureKey) => (
                             <span
-                              key={feature}
+                              key={featureKey}
                               className="px-2 py-0.5 rounded-md bg-muted text-xs text-muted-foreground"
                             >
-                              {feature}
+                              {t(featureKey)}
                             </span>
                           ))}
                         </div>
@@ -170,13 +172,13 @@ export const DemoStartModal: React.FC<DemoStartModalProps> = ({ open, onOpenChan
                     className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground gap-2"
                   >
                     <Play className="h-5 w-5" />
-                    Iniciar Demo Gratuita
+                    {t('demo.startFree')}
                   </Button>
                 </div>
 
                 {/* Disclaimer */}
                 <p className="mt-4 text-xs text-muted-foreground text-center">
-                  Los datos mostrados son completamente ficticios y se eliminarán automáticamente al finalizar.
+                  {t('demo.disclaimer')}
                 </p>
               </motion.div>
             )}
@@ -202,13 +204,13 @@ export const DemoStartModal: React.FC<DemoStartModalProps> = ({ open, onOpenChan
                     <Sparkles className="h-8 w-8 text-primary" />
                   </div>
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Preparando tu demo...</h3>
+                <h3 className="text-xl font-semibold mb-2">{t('demo.preparing')}</h3>
                 <p className="text-muted-foreground text-center max-w-sm">
-                  Generando 50 empresas, 100 visitas, objetivos y más datos realistas para tu experiencia.
+                  {t('demo.generatingData')}
                 </p>
                 <div className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
                   <Clock className="h-4 w-4" />
-                  <span>Esto tardará unos segundos...</span>
+                  <span>{t('demo.waitSeconds')}</span>
                 </div>
               </motion.div>
             )}
@@ -224,10 +226,10 @@ export const DemoStartModal: React.FC<DemoStartModalProps> = ({ open, onOpenChan
                 <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
                   <span className="text-3xl">⚠️</span>
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Error al iniciar demo</h3>
+                <h3 className="text-xl font-semibold mb-2">{t('demo.errorTitle')}</h3>
                 <p className="text-muted-foreground text-center max-w-sm mb-6">{error}</p>
                 <Button onClick={() => setStep('select')} variant="outline">
-                  Volver a intentar
+                  {t('demo.errorRetry')}
                 </Button>
               </motion.div>
             )}

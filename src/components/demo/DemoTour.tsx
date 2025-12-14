@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDemoContext } from '@/contexts/DemoContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { 
   Map, LayoutDashboard, Building2, Calendar, FileSpreadsheet, 
@@ -11,98 +12,99 @@ import { useNavigate, useLocation } from 'react-router-dom';
 
 interface TourStep {
   id: number;
-  title: string;
-  description: string;
+  titleKey: string;
+  descKey: string;
   icon: React.ReactNode;
   path: string;
   section?: string;
 }
 
-const tourSteps: TourStep[] = [
-  {
-    id: 0,
-    title: 'Bienvenido a ObelixIA',
-    description: 'El CRM bancario inteligente que revoluciona la gestión comercial. Explora todas las funcionalidades con datos de demostración reales.',
-    icon: <Sparkles className="h-6 w-6" />,
-    path: '/home'
-  },
-  {
-    id: 1,
-    title: 'Mapa Geográfico',
-    description: 'Visualiza tu cartera de clientes en el mapa interactivo. Filtra por estado, productos, vinculación y más. Planifica rutas de visitas optimizadas.',
-    icon: <Map className="h-6 w-6" />,
-    path: '/admin',
-    section: 'map'
-  },
-  {
-    id: 2,
-    title: 'Dashboard Ejecutivo',
-    description: 'KPIs en tiempo real, métricas de rendimiento, gráficos interactivos y análisis de tu equipo comercial en un solo lugar.',
-    icon: <LayoutDashboard className="h-6 w-6" />,
-    path: '/admin',
-    section: 'dashboard'
-  },
-  {
-    id: 3,
-    title: 'Gestión de Empresas',
-    description: 'Administra tu cartera de clientes: datos de contacto, vinculación bancaria, productos contratados, documentos y fotos.',
-    icon: <Building2 className="h-6 w-6" />,
-    path: '/admin',
-    section: 'companies'
-  },
-  {
-    id: 4,
-    title: 'Planificación de Visitas',
-    description: 'Calendario interactivo para programar visitas, con integración de rutas, recordatorios automáticos y fichas de visita.',
-    icon: <Calendar className="h-6 w-6" />,
-    path: '/admin',
-    section: 'visits'
-  },
-  {
-    id: 5,
-    title: 'Contabilidad y Análisis',
-    description: 'Balances, cuentas de resultados, ratios financieros y análisis IFRS 9 para cada empresa de tu cartera.',
-    icon: <FileSpreadsheet className="h-6 w-6" />,
-    path: '/admin',
-    section: 'accounting'
-  },
-  {
-    id: 6,
-    title: 'Objetivos y Gamificación',
-    description: 'Define y sigue objetivos comerciales con sistema de puntos, logros y rankings para motivar al equipo.',
-    icon: <Target className="h-6 w-6" />,
-    path: '/admin',
-    section: 'goals'
-  },
-  {
-    id: 7,
-    title: 'Asistente IA',
-    description: 'Chat inteligente con contexto bancario, consultas por voz, y acceso a la base de conocimiento de productos y regulaciones.',
-    icon: <Bot className="h-6 w-6" />,
-    path: '/admin',
-    section: 'ai-assistant'
-  },
-  {
-    id: 8,
-    title: 'Configuración',
-    description: 'Personaliza el sistema: usuarios, productos, alertas, integraciones y white-labeling para tu entidad.',
-    icon: <Settings className="h-6 w-6" />,
-    path: '/admin',
-    section: 'settings'
-  },
-  {
-    id: 9,
-    title: '¡Listo para explorar!',
-    description: 'Has completado el tour. Ahora puedes explorar libremente todas las funcionalidades. Los datos de demostración se eliminarán al finalizar.',
-    icon: <CheckCircle className="h-6 w-6" />,
-    path: '/home'
-  }
-];
-
 export const DemoTour: React.FC = () => {
   const { tourActive, tourStep, setTourStep, skipTour, markSectionVisited } = useDemoContext();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const tourSteps: TourStep[] = useMemo(() => [
+    {
+      id: 0,
+      titleKey: 'demo.tour.welcome.title',
+      descKey: 'demo.tour.welcome.desc',
+      icon: <Sparkles className="h-6 w-6" />,
+      path: '/home'
+    },
+    {
+      id: 1,
+      titleKey: 'demo.tour.map.title',
+      descKey: 'demo.tour.map.desc',
+      icon: <Map className="h-6 w-6" />,
+      path: '/admin',
+      section: 'map'
+    },
+    {
+      id: 2,
+      titleKey: 'demo.tour.dashboard.title',
+      descKey: 'demo.tour.dashboard.desc',
+      icon: <LayoutDashboard className="h-6 w-6" />,
+      path: '/admin',
+      section: 'dashboard'
+    },
+    {
+      id: 3,
+      titleKey: 'demo.tour.companies.title',
+      descKey: 'demo.tour.companies.desc',
+      icon: <Building2 className="h-6 w-6" />,
+      path: '/admin',
+      section: 'companies'
+    },
+    {
+      id: 4,
+      titleKey: 'demo.tour.visits.title',
+      descKey: 'demo.tour.visits.desc',
+      icon: <Calendar className="h-6 w-6" />,
+      path: '/admin',
+      section: 'visits'
+    },
+    {
+      id: 5,
+      titleKey: 'demo.tour.accounting.title',
+      descKey: 'demo.tour.accounting.desc',
+      icon: <FileSpreadsheet className="h-6 w-6" />,
+      path: '/admin',
+      section: 'accounting'
+    },
+    {
+      id: 6,
+      titleKey: 'demo.tour.goals.title',
+      descKey: 'demo.tour.goals.desc',
+      icon: <Target className="h-6 w-6" />,
+      path: '/admin',
+      section: 'goals'
+    },
+    {
+      id: 7,
+      titleKey: 'demo.tour.assistant.title',
+      descKey: 'demo.tour.assistant.desc',
+      icon: <Bot className="h-6 w-6" />,
+      path: '/admin',
+      section: 'ai-assistant'
+    },
+    {
+      id: 8,
+      titleKey: 'demo.tour.settings.title',
+      descKey: 'demo.tour.settings.desc',
+      icon: <Settings className="h-6 w-6" />,
+      path: '/admin',
+      section: 'settings'
+    },
+    {
+      id: 9,
+      titleKey: 'demo.tour.ready.title',
+      descKey: 'demo.tour.ready.desc',
+      icon: <CheckCircle className="h-6 w-6" />,
+      path: '/home'
+    }
+  ], []);
 
   const currentStep = tourSteps[tourStep] || tourSteps[0];
   const isFirstStep = tourStep === 0;
@@ -189,10 +191,10 @@ export const DemoTour: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground mb-0.5">
-                      Paso {tourStep + 1} de {tourSteps.length}
+                      {t('demo.tour.step').replace('{current}', String(tourStep + 1)).replace('{total}', String(tourSteps.length))}
                     </p>
                     <h3 className="font-semibold text-lg text-foreground">
-                      {currentStep.title}
+                      {t(currentStep.titleKey)}
                     </h3>
                   </div>
                 </div>
@@ -208,7 +210,7 @@ export const DemoTour: React.FC = () => {
 
               {/* Description */}
               <p className="text-muted-foreground mb-6">
-                {currentStep.description}
+                {t(currentStep.descKey)}
               </p>
 
               {/* Navigation */}
@@ -220,7 +222,7 @@ export const DemoTour: React.FC = () => {
                   className="gap-1"
                 >
                   <ChevronLeft className="h-4 w-4" />
-                  Anterior
+                  {t('demo.tour.previous')}
                 </Button>
 
                 <div className="flex gap-1">
@@ -244,7 +246,7 @@ export const DemoTour: React.FC = () => {
                 </div>
 
                 <Button onClick={handleNext} className="gap-1">
-                  {isLastStep ? 'Finalizar' : 'Siguiente'}
+                  {isLastStep ? t('demo.tour.finish') : t('demo.tour.next')}
                   {!isLastStep && <ChevronRight className="h-4 w-4" />}
                 </Button>
               </div>
@@ -255,7 +257,7 @@ export const DemoTour: React.FC = () => {
                   onClick={handleSkip}
                   className="text-sm text-muted-foreground hover:text-foreground underline"
                 >
-                  Saltar tour y explorar libremente
+                  {t('demo.tour.skip')}
                 </button>
               </div>
             </div>
