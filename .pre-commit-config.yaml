@@ -1,20 +1,27 @@
 repos:
   # ================================
-  # GITLEAKS - Secret Scanning
+  # GITLEAKS - Secret Scanning (local)
   # ================================
-  - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.18.0
+  - repo: local
     hooks:
       - id: gitleaks
-        args: ["protect", "--verbose", "--redact"]
+        name: Gitleaks Secret Scanner
+        entry: gitleaks
+        language: system
+        types: [text]
+        args: ["detect", "--source=.", "--verbose", "--redact"]
         stages: [commit]
 
   # ================================
-  # SEMGREP - SAST Local
+  # SEMGREP - SAST Local (no checkout)
   # ================================
-  - repo: https://github.com/semgrep/semgrep
-    rev: v1.45.0
+  - repo: local
     hooks:
       - id: semgrep
-        args: ["--config=security/semgrep-rules.yaml"]
+        name: Semgrep Security Scan
+        entry: semgrep
+        language: system
+        types: [javascript, ts, tsx, jsx]
+        args:
+          ["scan", "--config", "security/semgrep-rules.yaml"]
         stages: [commit]
