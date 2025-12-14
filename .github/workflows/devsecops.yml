@@ -1,0 +1,31 @@
+name: DevSecOps Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+jobs:
+  msdo:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Microsoft Security DevOps (SAST, SCA, secretos, configuración)
+      - name: Run Microsoft Security DevOps
+        uses: microsoft/security-devops-action@v1
+
+  semgrep:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: returntocorp/semgrep-action@v1
+        with:
+          config: |
+            p/owasp-top-ten
+            p/javascript
+            p/react
+            p/secrets
