@@ -979,7 +979,7 @@ function getDefaultAnalysis(componentsList: string[], hooksList: string[], edgeF
         { category: "Testing y QA", hours: 120, cost: 12600 },
         { category: "Documentación", hours: 80, cost: 8400 }
       ],
-      marketValue: 950000,
+      marketValue: 880000,
       roi5Years: "520% considerando ahorro licencias, productividad y compliance",
       comparisonWithCompetitors: "Funcionalidad Salesforce FSC + SAP a 1/8 del coste. Superior en especialización bancaria y compliance."
     },
@@ -1070,7 +1070,7 @@ function getDefaultAnalysis(componentsList: string[], hooksList: string[], edgeF
     pricingStrategy: {
       recommendedModel: "Licencia perpetua + mantenimiento anual",
       oneTimeLicense: {
-        price: "150.000€ - 350.000€",
+        price: "880.000€",
         pros: ["Coste predecible", "Propiedad total", "Sin dependencia"],
         cons: ["Inversión inicial alta", "Actualizaciones separadas"],
         whenToUse: "Bancos establecidos con presupuesto capex"
@@ -1094,7 +1094,7 @@ function getDefaultAnalysis(componentsList: string[], hooksList: string[], edgeF
         { competitor: "Salesforce FSC", model: "Suscripción", priceRange: "150€-300€/usuario/mes" },
         { competitor: "SAP Banking", model: "Perpetua + mantenimiento", priceRange: "3.000€-8.000€/usuario" }
       ],
-      recommendation: "Para bancos Andorra: licencia perpetua 180.000€ + 20% mantenimiento. Para cajas rurales España: suscripción Professional 145€/usuario/mes."
+      recommendation: "Licencia perpetua 880.000€ con propiedad total del código fuente. Mantenimiento anual 18% (158.400€). Incluye todas las funcionalidades enterprise, IA avanzada, DORA/NIS2 y soporte prioritario."
     },
     feasibilityAnalysis: {
       spanishMarket: {
@@ -1326,40 +1326,40 @@ function getDefaultAnalysis(componentsList: string[], hooksList: string[], edgeF
     },
     tcoAnalysis: {
       year1: [
-        { category: "Licencia/Desarrollo", cost: 180000, description: "Licencia perpetua o desarrollo" },
-        { category: "Implementación", cost: 35000, description: "Configuración, migración, formación" },
-        { category: "Infraestructura", cost: 7764, description: "Supabase Pro + servicios" },
-        { category: "Soporte y mantenimiento", cost: 32400, description: "Soporte L1/L2, actualizaciones" }
+        { category: "Licencia/Desarrollo", cost: 880000, description: "Licencia perpetua completa ObelixIA" },
+        { category: "Implementación", cost: 60000, description: "Configuración, migración, formación" },
+        { category: "Infraestructura", cost: 7200, description: "Supabase Pro + servicios cloud" },
+        { category: "Soporte y mantenimiento", cost: 158400, description: "18% licencia anual" }
       ],
       year3: [
-        { category: "Mantenimiento acumulado", cost: 108000, description: "20% licencia × 3 años" },
-        { category: "Infraestructura acumulada", cost: 23292, description: "Cloud + servicios × 3" },
-        { category: "Actualizaciones mayores", cost: 25000, description: "1 actualización major" }
+        { category: "Mantenimiento acumulado", cost: 475200, description: "18% licencia × 3 años" },
+        { category: "Infraestructura acumulada", cost: 21600, description: "Cloud + servicios × 3" },
+        { category: "Formación continua", cost: 24000, description: "Actualizaciones equipo" }
       ],
       year5: [
-        { category: "Mantenimiento acumulado", cost: 180000, description: "20% licencia × 5 años" },
-        { category: "Infraestructura acumulada", cost: 38820, description: "Cloud + servicios × 5" },
-        { category: "Actualizaciones mayores", cost: 50000, description: "2 actualizaciones major" },
-        { category: "Renovación tecnológica", cost: 30000, description: "Modernización stack" }
+        { category: "Mantenimiento acumulado", cost: 792000, description: "18% licencia × 5 años" },
+        { category: "Infraestructura acumulada", cost: 36000, description: "Cloud + servicios × 5" },
+        { category: "Formación continua", cost: 40000, description: "Actualizaciones equipo 5 años" },
+        { category: "Renovación tecnológica", cost: 0, description: "Incluido en mantenimiento" }
       ],
-      totalYear1: 255164,
-      totalYear3: 411456,
-      totalYear5: 553984,
+      totalYear1: 1105600,
+      totalYear3: 1460800,
+      totalYear5: 1808000,
       costPerUser: [
-        { users: 10, costPerUser: 25516 },
-        { users: 25, costPerUser: 10206 },
-        { users: 50, costPerUser: 5103 },
-        { users: 100, costPerUser: 2552 }
+        { users: 50, costPerUser: 36160 },
+        { users: 100, costPerUser: 18080 },
+        { users: 200, costPerUser: 9040 },
+        { users: 500, costPerUser: 3616 }
       ],
       breakEvenAnalysis: [
-        { scenario: "vs Salesforce FSC (50 users)", months: 14, savingsPerYear: 180000 },
-        { scenario: "vs SAP Banking (50 users)", months: 8, savingsPerYear: 450000 },
-        { scenario: "vs desarrollo interno", months: 6, savingsPerYear: 200000 }
+        { scenario: "vs Salesforce FSC (100 users)", months: 36, savingsPerYear: 54000 },
+        { scenario: "vs SAP Banking (100 users)", months: 18, savingsPerYear: 314000 },
+        { scenario: "vs desarrollo interno", months: 12, savingsPerYear: 300000 }
       ],
       comparisonVsCompetitors: [
-        { competitor: "Salesforce FSC", tco5Years: 1500000, difference: "-63% vs Salesforce" },
-        { competitor: "SAP S/4HANA", tco5Years: 3500000, difference: "-84% vs SAP" },
-        { competitor: "Microsoft Dynamics", tco5Years: 950000, difference: "-42% vs Dynamics" }
+        { competitor: "Salesforce FSC", tco5Years: 2100000, difference: "-14% vs Salesforce con más funcionalidades" },
+        { competitor: "SAP S/4HANA", tco5Years: 3400000, difference: "-47% vs SAP" },
+        { competitor: "Microsoft Dynamics", tco5Years: 1750000, difference: "+3% vs Dynamics pero con contabilidad/GIS/DORA" }
       ]
     },
     bcpPlan: {

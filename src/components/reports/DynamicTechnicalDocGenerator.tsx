@@ -2351,25 +2351,25 @@ security/
         'success');
 
       const pricingData = [
-        ['Licencia Perpetua (Recomendado)', '180.000€ - 350.000€', 'Propiedad total, amortización 3 años'],
-        ['SaaS Starter (25 usuarios)', '1.500€/mes', 'CRM + Dashboard + GIS'],
-        ['SaaS Professional (50 usuarios)', '4.500€/mes', '+ Contabilidad PGC + Alertas'],
-        ['SaaS Enterprise (100+ usuarios)', '8.000€/mes', 'Todas funcionalidades + SLA 99.9%'],
-        ['Mantenimiento Anual', '18% licencia', 'Actualizaciones + Soporte L2'],
+        ['Licencia Perpetua (Recomendado)', '880.000€', 'Propiedad total código, todas funcionalidades'],
+        ['SaaS Starter (25 usuarios)', '2.500€/mes', 'CRM + Dashboard + GIS'],
+        ['SaaS Professional (50 usuarios)', '6.500€/mes', '+ Contabilidad PGC + Alertas + IA'],
+        ['SaaS Enterprise (100+ usuarios)', '12.000€/mes', 'Todas funcionalidades + SLA 99.9%'],
+        ['Mantenimiento Anual', '18% licencia (158.400€)', 'Actualizaciones + Soporte L2/L3'],
       ];
 
       h.addTable(['Modelo', 'Precio', 'Incluye'], pricingData, [55, 50, 65]);
 
       h.addSubtitle('Comparativa Precio vs Competencia');
       h.addTable(
-        ['Competidor', 'Precio 50 usuarios/año', 'vs Creand'],
+        ['Competidor', 'TCO 5 años (100 usuarios)', 'vs ObelixIA'],
         [
-          ['Salesforce FSC', '180.000€ - 360.000€', 'Creand 70% más barato'],
-          ['Microsoft Dynamics', '126.000€ - 216.000€', 'Creand 60% más barato'],
-          ['SAP Banking', '250.000€+', 'Creand 80% más barato'],
-          ['CRM Creand SaaS', '54.000€', 'REFERENCIA'],
+          ['Salesforce FSC', '1.500.000€ - 3.000.000€', 'ObelixIA 60-70% más económico'],
+          ['Microsoft Dynamics', '950.000€ - 1.800.000€', 'ObelixIA comparable con más funcionalidades'],
+          ['SAP Banking', '2.000.000€ - 15.000.000€', 'ObelixIA 80-95% más económico'],
+          ['ObelixIA Licencia Perpetua', '880.000€ + 792.000€ mant.', 'REFERENCIA: 1.672.000€ TCO 5 años'],
         ],
-        [55, 55, 60]
+        [55, 60, 55]
       );
 
       // 23. CANALES DE VENTA
@@ -2779,26 +2779,26 @@ security/
       h.addParagraph('Inversion inicial unica con mantenimiento anual. Ideal para entidades que prefieren CAPEX y quieren control total del activo.');
 
       h.addTable(
-        ['Concepto', 'Rango Precio', 'Incluye'],
+        ['Concepto', 'Precio', 'Incluye'],
         [
-          ['Licencia perpetua base', '150.000 - 250.000 EUR', 'Codigo fuente, actualizaciones 3 anos'],
-          ['Implementacion', '25.000 - 45.000 EUR', 'Configuracion, migracion, formacion'],
-          ['Formacion avanzada', '12.000 - 18.000 EUR', '5 dias onsite, certificacion interna'],
-          ['Migracion datos', '8.000 - 15.000 EUR', 'ETL, validacion, reconciliacion'],
+          ['Licencia perpetua completa', '880.000 EUR', 'Codigo fuente completo, todas funcionalidades, actualizaciones 5 anos'],
+          ['Implementacion', '45.000 - 75.000 EUR', 'Configuracion enterprise, migracion completa, formacion equipo'],
+          ['Formacion avanzada', '18.000 - 28.000 EUR', '10 dias onsite, certificacion interna, train-the-trainer'],
+          ['Migracion datos', '15.000 - 25.000 EUR', 'ETL completo, validacion, reconciliacion, historico 10 anos'],
         ],
-        [50, 50, 70]
+        [50, 45, 75]
       );
 
       h.addSubtitle('Costes Recurrentes Anuales');
       h.addTable(
         ['Concepto', 'Coste Anual', 'Descripcion'],
         [
-          ['Mantenimiento 18%', '27.000 - 45.000 EUR', 'Actualizaciones, parches seguridad, mejoras'],
-          ['Soporte L2 8x5', 'Incluido', 'Tickets, documentacion, hotfixes'],
-          ['Hosting Cloud (opcional)', '2.400 - 4.800 EUR', 'Si no on-premise'],
-          ['Soporte 24x7 (opcional)', '+40% mantenimiento', 'Guardia, SLA critico 30min'],
+          ['Mantenimiento 18%', '158.400 EUR', 'Actualizaciones continuas, parches seguridad, nuevas funcionalidades'],
+          ['Soporte L2/L3 8x5', 'Incluido en mantenimiento', 'Tickets ilimitados, documentacion, hotfixes prioritarios'],
+          ['Hosting Cloud (opcional)', '4.800 - 9.600 EUR', 'Infraestructura enterprise HA'],
+          ['Soporte 24x7 (opcional)', '+40% mantenimiento (63.360 EUR)', 'Guardia permanente, SLA critico 15min'],
         ],
-        [50, 45, 75]
+        [50, 55, 65]
       );
 
       h.addPageNumber();
@@ -2853,13 +2853,13 @@ security/
       h.addTable(
         ['Componente', 'Ano 1', 'Ano 3 (acum)', 'Ano 5 (acum)'],
         [
-          ['Licencia perpetua', '200.000 EUR', '200.000 EUR', '200.000 EUR'],
-          ['Implementacion', '35.000 EUR', '35.000 EUR', '35.000 EUR'],
-          ['Formacion inicial', '15.000 EUR', '15.000 EUR', '15.000 EUR'],
-          ['Mantenimiento 18%', '36.000 EUR', '108.000 EUR', '180.000 EUR'],
-          ['Hosting cloud', '3.600 EUR', '10.800 EUR', '18.000 EUR'],
-          ['Formacion recurrente', '5.000 EUR', '15.000 EUR', '25.000 EUR'],
-          ['TOTAL ACUMULADO', '294.600 EUR', '383.800 EUR', '473.000 EUR'],
+          ['Licencia perpetua', '880.000 EUR', '880.000 EUR', '880.000 EUR'],
+          ['Implementacion', '60.000 EUR', '60.000 EUR', '60.000 EUR'],
+          ['Formacion inicial', '23.000 EUR', '23.000 EUR', '23.000 EUR'],
+          ['Mantenimiento 18%', '158.400 EUR', '475.200 EUR', '792.000 EUR'],
+          ['Hosting cloud', '7.200 EUR', '21.600 EUR', '36.000 EUR'],
+          ['Formacion recurrente', '8.000 EUR', '24.000 EUR', '40.000 EUR'],
+          ['TOTAL ACUMULADO', '1.136.600 EUR', '1.483.800 EUR', '1.831.000 EUR'],
         ],
         [50, 40, 40, 40]
       );
@@ -2873,19 +2873,19 @@ security/
       h.addSubtitle('Comparativa TCO vs Alternativas Enterprise');
 
       h.addTable(
-        ['Solucion', 'TCO 1 Ano', 'TCO 3 Anos', 'TCO 5 Anos', 'Ahorro vs ObelixIA'],
+        ['Solucion', 'TCO 1 Ano', 'TCO 3 Anos', 'TCO 5 Anos', 'Diferencia vs ObelixIA'],
         [
-          ['ObelixIA', '294.600 EUR', '383.800 EUR', '473.000 EUR', 'Baseline'],
-          ['Salesforce FSC', '420.000 EUR', '980.000 EUR', '1.450.000 EUR', '66% ahorro'],
-          ['MS Dynamics 365', '350.000 EUR', '780.000 EUR', '1.180.000 EUR', '60% ahorro'],
-          ['SAP Banking', '580.000 EUR', '1.350.000 EUR', '2.100.000 EUR', '77% ahorro'],
-          ['Temenos T24', '450.000 EUR', '1.100.000 EUR', '1.680.000 EUR', '72% ahorro'],
+          ['ObelixIA (880K licencia)', '1.136.600 EUR', '1.483.800 EUR', '1.831.000 EUR', 'Baseline'],
+          ['Salesforce FSC', '420.000 EUR', '1.260.000 EUR', '2.100.000 EUR', '+15% más caro a 5 años'],
+          ['MS Dynamics 365', '350.000 EUR', '1.050.000 EUR', '1.750.000 EUR', 'Similar pero sin funcionalidades'],
+          ['SAP Banking', '680.000 EUR', '2.040.000 EUR', '3.400.000 EUR', '+86% más caro'],
+          ['Temenos T24', '550.000 EUR', '1.650.000 EUR', '2.750.000 EUR', '+50% más caro'],
         ],
-        [35, 35, 35, 35, 30]
+        [40, 33, 33, 33, 35]
       );
 
-      h.addHighlightBox('AHORRO MEDIO', 
-        'ObelixIA genera un ahorro medio del 65-70% en TCO a 5 anos comparado con las principales alternativas enterprise del mercado bancario.',
+      h.addHighlightBox('VALOR DIFERENCIAL', 
+        'ObelixIA ofrece funcionalidades enterprise completas (contabilidad PGC, GIS, DORA, eIDAS) que otros competidores no incluyen. El precio de 880.000€ refleja el valor real de desarrollo de 4+ años y representa un TCO competitivo a 5 años frente a alternativas que cobran por usuario.',
         'success');
 
       h.addSubtitle('Costes Ocultos Evitados');
@@ -2906,10 +2906,10 @@ security/
       h.addTable(
         ['Escenario', 'Usuarios', 'TCO 5 Anos', 'Coste/Usuario/Ano'],
         [
-          ['Pequeno', '50', '380.000 EUR', '1.520 EUR'],
-          ['Mediano', '100', '473.000 EUR', '946 EUR'],
-          ['Grande', '200', '590.000 EUR', '590 EUR'],
-          ['Enterprise', '500', '850.000 EUR', '340 EUR'],
+          ['Pequeno', '50', '1.650.000 EUR', '6.600 EUR'],
+          ['Mediano', '100', '1.831.000 EUR', '3.662 EUR'],
+          ['Grande', '200', '2.100.000 EUR', '2.100 EUR'],
+          ['Enterprise', '500', '2.600.000 EUR', '1.040 EUR'],
         ],
         [45, 40, 50, 45]
       );
