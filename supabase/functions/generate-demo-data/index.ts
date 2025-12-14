@@ -187,7 +187,7 @@ serve(async (req) => {
         vinculacion_entidad_1: randomNumber(0, 100),
         vinculacion_entidad_2: randomNumber(0, 100),
         vinculacion_entidad_3: randomNumber(0, 100),
-        vinculacion_modo: randomElement(['Exclusivo', 'Compartido', 'Principal']),
+        vinculacion_modo: randomElement(['manual', 'automatica']),
         pl_banco: randomNumber(1000, 100000),
         bp: `AD${randomNumber(10, 99)}${randomNumber(1000, 9999)}${randomNumber(100000000000, 999999999999)}`,
         email: `contacto@${name.toLowerCase().replace(/demo_/i, '').replace(/\s+/g, '').slice(0, 15)}.ad`,
