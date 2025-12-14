@@ -1,0 +1,20 @@
+repos:
+  # ================================
+  # GITLEAKS - Secret Scanning
+  # ================================
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.0
+    hooks:
+      - id: gitleaks
+        args: ["protect", "--verbose", "--redact"]
+        stages: [commit]
+
+  # ================================
+  # SEMGREP - SAST Local
+  # ================================
+  - repo: https://github.com/semgrep/semgrep
+    rev: v1.45.0
+    hooks:
+      - id: semgrep
+        args: ["--config=security/semgrep-rules.yaml"]
+        stages: [commit]
