@@ -1,0 +1,20 @@
+rules:
+  - id: edge-missing-jwt-check
+    message: "Edge Function sin validación de JWT"
+    severity: ERROR
+    languages: [javascript, typescript]
+    pattern-not: |
+      supabaseClient.auth.getUser
+
+  - id: react-dangerous-innerhtml
+    message: "dangerouslySetInnerHTML sin sanitización"
+    severity: ERROR
+    pattern: >
+      dangerouslySetInnerHTML
+
+  - id: missing-rls-check
+    message: "Posible falta de RLS en consulta SQL"
+    severity: WARNING
+    languages: [javascript, typescript, sql]
+    pattern: |
+      select *
