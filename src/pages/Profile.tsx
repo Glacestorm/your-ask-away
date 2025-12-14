@@ -83,7 +83,7 @@ const Profile = () => {
       }
     } catch (error: any) {
       console.error('Error fetching profile:', error);
-      toast.error('Error al cargar el perfil');
+      toast.error(t('profile.errorLoading'));
     }
   };
 
@@ -114,13 +114,13 @@ const Profile = () => {
 
       if (error) throw error;
 
-      toast.success('Perfil actualizado correctamente');
+      toast.success(t('profile.profileUpdated'));
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
       } else {
         console.error('Error updating profile:', error);
-        toast.error('Error al actualizar el perfil');
+        toast.error(t('profile.errorUpdating'));
       }
     } finally {
       setLoading(false);
@@ -133,13 +133,13 @@ const Profile = () => {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast.error('Por favor selecciona una imagen válida');
+      toast.error(t('profile.selectValidImage'));
       return;
     }
 
     // Validate file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
-      toast.error('La imagen debe ser menor a 2MB');
+      toast.error(t('profile.imageTooLarge'));
       return;
     }
 
@@ -184,10 +184,10 @@ const Profile = () => {
       if (updateError) throw updateError;
 
       setAvatarUrl(publicUrl);
-      toast.success('Avatar actualizado correctamente');
+      toast.success(t('profile.avatarUpdated'));
     } catch (error: any) {
       console.error('Error uploading avatar:', error);
-      toast.error('Error al subir el avatar');
+      toast.error(t('profile.errorAvatar'));
     } finally {
       setUploadingAvatar(false);
     }
@@ -213,7 +213,7 @@ const Profile = () => {
       });
 
       if (signInError) {
-        toast.error('La contraseña actual es incorrecta');
+        toast.error(t('profile.wrongPassword'));
         return;
       }
 
@@ -229,13 +229,13 @@ const Profile = () => {
       setNewPassword('');
       setConfirmPassword('');
 
-      toast.success('Contraseña actualizada correctamente');
+      toast.success(t('profile.passwordUpdated'));
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
       } else {
         console.error('Error changing password:', error);
-        toast.error('Error al cambiar la contraseña');
+        toast.error(t('profile.errorPassword'));
       }
     } finally {
       setPasswordLoading(false);
@@ -253,17 +253,17 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="mx-auto max-w-4xl space-y-6">
-        <GlobalNavHeader title="Mi Perfil" subtitle="Gestiona tu información personal" />
+        <GlobalNavHeader title={t('profile.title')} subtitle={t('profile.subtitle')} />
 
         {/* Profile Information Card */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="h-5 w-5" />
-              Información Personal
+              {t('profile.personalInfo')}
             </CardTitle>
             <CardDescription>
-              Actualiza tu nombre, avatar y datos profesionales
+              {t('profile.personalInfoDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -280,7 +280,7 @@ const Profile = () => {
                   <Label htmlFor="avatar" className="cursor-pointer">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                       <Upload className="h-4 w-4" />
-                      Cambiar foto de perfil
+                      {t('profile.changePhoto')}
                     </div>
                   </Label>
                   <Input
@@ -292,7 +292,7 @@ const Profile = () => {
                     className="max-w-xs"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    JPG, PNG o WEBP. Máximo 2MB.
+                    {t('profile.photoFormat')}
                   </p>
                 </div>
               </div>
@@ -300,7 +300,7 @@ const Profile = () => {
               <Separator />
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('profile.email')}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -309,14 +309,14 @@ const Profile = () => {
                   className="bg-muted"
                 />
                 <p className="text-xs text-muted-foreground">
-                  El email no se puede modificar
+                  {t('profile.emailCannotChange')}
                 </p>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="userRole" className="flex items-center gap-2">
                   <Shield className="h-4 w-4" />
-                  Rol
+                  {t('profile.role')}
                 </Label>
                 <Input
                   id="userRole"
@@ -326,25 +326,25 @@ const Profile = () => {
                   className="bg-muted capitalize"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Asignado por el administrador
+                  {t('profile.roleAssigned')}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="fullName">Nombre Completo *</Label>
+                <Label htmlFor="fullName">{t('profile.fullNameRequired')}</Label>
                 <Input
                   id="fullName"
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Tu nombre completo"
+                  placeholder={t('profile.fullNamePlaceholder')}
                   maxLength={100}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="gestorNumber">Número de Gestor</Label>
+                <Label htmlFor="gestorNumber">{t('profile.managerNumber')}</Label>
                 <Input
                   id="gestorNumber"
                   type="text"
@@ -359,37 +359,37 @@ const Profile = () => {
                   pattern="\d{4}"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Formato: 4 dígitos (Ej: 0001)
+                  {t('profile.managerNumberFormat')}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="oficina">Oficina Asignada</Label>
+                <Label htmlFor="oficina">{t('profile.officeAssigned')}</Label>
                 <Input
                   id="oficina"
                   type="text"
                   value={oficina}
                   onChange={(e) => setOficina(e.target.value)}
-                  placeholder="Ej: Oficina Central"
+                  placeholder={t('profile.officePlaceholder')}
                   maxLength={100}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="cargo">Cargo Actual</Label>
+                <Label htmlFor="cargo">{t('profile.currentPosition')}</Label>
                 <Input
                   id="cargo"
                   type="text"
                   value={cargo}
                   onChange={(e) => setCargo(e.target.value)}
-                  placeholder="Ej: Gestor Comercial"
+                  placeholder={t('profile.positionPlaceholder')}
                   maxLength={100}
                 />
               </div>
 
               <Button type="submit" disabled={loading}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Guardar Cambios
+                {t('profile.saveChanges')}
               </Button>
             </form>
           </CardContent>
@@ -402,48 +402,48 @@ const Profile = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Lock className="h-5 w-5" />
-              Cambiar Contraseña
+              {t('profile.changePassword')}
             </CardTitle>
             <CardDescription>
-              Actualiza tu contraseña de acceso
+              {t('profile.changePasswordDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleChangePassword} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="currentPassword">Contraseña Actual</Label>
+                <Label htmlFor="currentPassword">{t('profile.currentPassword')}</Label>
                 <Input
                   id="currentPassword"
                   type="password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  placeholder="Tu contraseña actual"
+                  placeholder={t('profile.currentPasswordPlaceholder')}
                   minLength={6}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="newPassword">Nueva Contraseña</Label>
+                <Label htmlFor="newPassword">{t('profile.newPassword')}</Label>
                 <Input
                   id="newPassword"
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder={t('profile.newPasswordPlaceholder')}
                   minLength={6}
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirmar Nueva Contraseña</Label>
+                <Label htmlFor="confirmPassword">{t('profile.confirmPassword')}</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Repite la nueva contraseña"
+                  placeholder={t('profile.confirmPasswordPlaceholder')}
                   minLength={6}
                   required
                 />
@@ -451,7 +451,7 @@ const Profile = () => {
 
               <Button type="submit" disabled={passwordLoading}>
                 {passwordLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Cambiar Contraseña
+                {t('profile.updatePassword')}
               </Button>
             </form>
           </CardContent>
