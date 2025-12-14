@@ -150,19 +150,22 @@ export const DemoEndModal: React.FC<DemoEndModalProps> = ({ open, onOpenChange }
                 {t('demo.contactUs')}
               </p>
               <div className="flex flex-col gap-2">
+                <p className="text-xs text-center text-muted-foreground">
+                  Sr. Jaime FERNANDEZ GARCIA - Representante y Cofundador
+                </p>
                 <a 
-                  href="mailto:comercial@obelixia.com" 
+                  href="mailto:jfernandez@obelixia.com" 
                   className="flex items-center justify-center gap-2 text-sm text-primary hover:underline"
                 >
                   <Mail className="h-4 w-4" />
-                  comercial@obelixia.com
+                  jfernandez@obelixia.com
                 </a>
                 <a 
-                  href="tel:+376123456" 
+                  href="tel:+34606770033" 
                   className="flex items-center justify-center gap-2 text-sm text-primary hover:underline"
                 >
                   <Phone className="h-4 w-4" />
-                  +376 123 456
+                  +34 606 770 033
                 </a>
               </div>
             </div>

@@ -2551,8 +2551,8 @@ security/
         'Solicite una demo personalizada sin compromiso. En 60 minutos le mostraremos cómo CRM Creand transformará la gestión comercial de su entidad.',
         'success');
 
-      h.addHighlightBox('📞 CONTACTO', 
-        'comercial@creand.ad | +376 XXX XXX | www.crmcreand.com',
+      h.addHighlightBox('📞 CONTACTO COMERCIAL', 
+        'Sr. Jaime FERNANDEZ GARCIA, Representante y Cofundador de ObelixIA | Tel: +34 606770033 | Email: jfernandez@obelixia.com',
         'info');
 
       h.addHighlightBox('🎁 OFERTA ESPECIAL', 
@@ -3414,11 +3414,11 @@ security/
         'warning');
 
       h.addSubtitle('Informacion de Contacto');
-      h.addParagraph('Equipo Comercial ObelixIA:');
-      h.addParagraph('- Email: comercial@obelixia.com');
-      h.addParagraph('- Telefono: +376 XXX XXX / +34 91 XXX XX XX');
-      h.addParagraph('- Web: www.obelixia.com/demo');
-      h.addParagraph('- LinkedIn: linkedin.com/company/obelixia');
+      h.addParagraph('Contacto Comercial ObelixIA:');
+      h.addParagraph('- Representante: Sr. Jaime FERNANDEZ GARCIA, Representante y Cofundador');
+      h.addParagraph('- Telefono: +34 606770033');
+      h.addParagraph('- Email: jfernandez@obelixia.com');
+      h.addParagraph('- Web: www.obelixia.com');
 
       h.addSubtitle('Siguiente Accion Recomendada');
       h.addHighlightBox('SOLICITE SU DEMO', 

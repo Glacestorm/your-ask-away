@@ -1855,9 +1855,9 @@ export function ApplicationStateAnalyzer() {
       doc.setFont('helvetica', 'bold');
       doc.text('CONTACTE', pageWidth / 2, 215, { align: 'center' });
       
-      doc.setFontSize(12);
+      doc.setFontSize(11);
       doc.setFont('times', 'normal');
-      doc.text('Email: comercial@obelixia.com | Tel: +376 XXX XXX', pageWidth / 2, 228, { align: 'center' });
+      doc.text('Sr. Jaime FERNANDEZ GARCIA | Tel: +34 606770033 | Email: jfernandez@obelixia.com', pageWidth / 2, 228, { align: 'center' });
       
       // Confidentiality footer
       doc.setTextColor(...colors.gold);
