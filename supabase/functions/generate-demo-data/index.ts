@@ -289,7 +289,7 @@ serve(async (req) => {
       console.log(`Created ${dataIds.companyProducts.length} company-product assignments`);
     }
 
-    // 9. Generate 150 visits with detailed data
+    // 9. Generate 150 visits with detailed data - ALL fields populated
     const visitTypes = ['commercial', 'follow_up', 'presentation', 'negotiation', 'closing', 'support', 'onboarding'];
     const visitResults = ['positive', 'neutral', 'negative', 'pending'];
     const visitsData: any[] = [];
@@ -299,6 +299,8 @@ serve(async (req) => {
       const visitDate = generateRandomDate(180, 60);
       const isPast = new Date(visitDate) < new Date();
       const status = isPast ? (Math.random() > 0.15 ? 'completed' : 'cancelled') : 'scheduled';
+      const startHour = randomNumber(8, 18);
+      const durationMins = randomNumber(30, 180);
       
       visitsData.push({
         company_id: companyId,
@@ -307,10 +309,25 @@ serve(async (req) => {
         visit_type: randomElement(visitTypes),
         status: status,
         result: status === 'completed' ? randomElement(visitResults) : null,
-        notes: `DEMO - Visita de demostración ${i + 1}. ${randomElement(['Reunión con dirección', 'Presentación de productos', 'Seguimiento comercial', 'Negociación de condiciones'])}`,
-        objectives: `Objetivos: ${randomElement(['Presentar nuevos productos', 'Revisar cartera', 'Negociar condiciones', 'Seguimiento de propuesta', 'Cierre de operación'])}`,
-        duration_minutes: randomNumber(30, 180),
-        location: randomElement(['Oficina cliente', 'Oficina banco', 'Videoconferencia', 'Restaurante'])
+        notes: `DEMO - Visita de demostración ${i + 1}. ${randomElement([
+          'Reunión muy productiva con el equipo directivo de la empresa.',
+          'Presentación de nuevos productos financieros y servicios bancarios.',
+          'Seguimiento comercial del último trimestre con análisis detallado.',
+          'Negociación de condiciones especiales para cliente VIP.',
+          'Primera visita de prospección a potencial cliente.',
+          'Revisión de cartera y propuesta de optimización.',
+          'Cierre de operación de financiación importante.',
+          'Onboarding de nuevo cliente con configuración de servicios.'
+        ])}`,
+        objectives: `DEMO - Objetivos principales: ${randomElement([
+          '1) Presentar nuevos productos de inversión 2) Revisar condiciones actuales 3) Identificar oportunidades de cross-selling',
+          '1) Revisar cartera de productos 2) Proponer mejoras en condiciones 3) Agendar próxima reunión',
+          '1) Negociar condiciones de financiación 2) Cerrar operación pendiente 3) Fidelizar cliente',
+          '1) Analizar necesidades del cliente 2) Preparar propuesta personalizada 3) Definir plan de acción',
+          '1) Seguimiento de propuesta enviada 2) Resolver dudas 3) Avanzar hacia el cierre'
+        ])}`,
+        duration_minutes: durationMins,
+        location: randomElement(['Oficina cliente', 'Oficina banco', 'Videoconferencia', 'Restaurante de negocios', 'Sala de reuniones'])
       });
     }
 

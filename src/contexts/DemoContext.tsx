@@ -10,6 +10,8 @@ interface DemoDataStats {
   visitSheets: number;
   goals: number;
   notifications: number;
+  financialStatements: number;
+  opportunities: number;
 }
 
 interface DemoContextType {
