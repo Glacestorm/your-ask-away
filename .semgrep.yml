@@ -1,0 +1,22 @@
+# =====================================================
+# Semgrep CI configuration for ObelixIA (Banking Grade)
+# =====================================================
+
+scan:
+  paths:
+    - src
+    - supabase/functions
+
+  config:
+    - security/semgrep-rules.yaml     # <-- TUS REGLAS PERSONALIZADAS
+    - p/owasp-top-ten                 # Opcional: reglas OWASP
+    - p/jwt                           # Opcional: reglas de autenticación
+    - p/typescript                    # Reglas oficiales TS
+    - p/javascript                    # Reglas JS
+
+  exclude:
+    - node_modules
+    - build
+    - dist
+    - .next
+    - coverage
