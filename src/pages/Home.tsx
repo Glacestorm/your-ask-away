@@ -35,99 +35,99 @@ interface MenuOption {
   roles: string[];
 }
 
-// Feature menu options (excluding role-based dashboards)
-const featureMenuOptions: MenuOption[] = [
+// Feature menu options (excluding role-based dashboards) - translation keys
+const featureMenuOptionsKeys = [
   {
-    title: 'Administración',
-    description: 'Panel de administración del sistema',
+    titleKey: 'menu.administration',
+    descKey: 'menu.administration.desc',
     icon: Settings,
     path: '/admin?section=administration',
     roles: ['superadmin', 'director_comercial', 'responsable_comercial']
   },
   {
-    title: 'Mapa',
-    description: 'Visualización geográfica de clientes',
+    titleKey: 'menu.map',
+    descKey: 'menu.map.desc',
     icon: Map,
     path: '/admin?section=map',
     roles: ['superadmin', 'admin', 'user', 'director_comercial', 'director_oficina', 'responsable_comercial']
   },
   {
-    title: 'Contabilidad',
-    description: 'Gestión contable y estados financieros',
+    titleKey: 'menu.accounting',
+    descKey: 'menu.accounting.desc',
     icon: Calculator,
     path: '/admin?section=accounting&view=menu',
     roles: ['superadmin', 'admin', 'user', 'director_comercial', 'director_oficina', 'responsable_comercial']
   },
   {
-    title: 'Calendario de Visitas',
-    description: 'Calendario compartido de visitas comerciales',
+    titleKey: 'menu.calendar',
+    descKey: 'menu.calendar.desc',
     icon: CalendarDays,
     path: '/admin?section=shared-calendar',
     roles: ['superadmin', 'admin', 'user', 'director_comercial', 'director_oficina', 'responsable_comercial']
   },
   {
-    title: 'Métricas y Análisis',
-    description: 'Análisis detallado de métricas comerciales',
+    titleKey: 'menu.metrics',
+    descKey: 'menu.metrics.desc',
     icon: BarChart3,
     path: '/admin?section=visits',
     roles: ['superadmin', 'admin', 'director_comercial', 'director_oficina', 'responsable_comercial']
   },
   {
-    title: 'Gestión de Datos',
-    description: 'Administración de empresas y productos',
+    titleKey: 'menu.dataManagement',
+    descKey: 'menu.dataManagement.desc',
     icon: Package,
     path: '/admin?section=companies',
     roles: ['superadmin', 'admin', 'responsable_comercial']
   },
   {
-    title: 'Configuración',
-    description: 'Configuración del sistema',
+    titleKey: 'menu.configuration',
+    descKey: 'menu.configuration.desc',
     icon: Activity,
     path: '/admin?section=colors',
     roles: ['superadmin', 'admin', 'responsable_comercial']
   },
 ];
 
-// Role configurations with their dashboard paths
-const roleConfig: Record<string, { title: string; icon: React.ElementType; path: string; color: string }> = {
+// Role configurations with their dashboard paths - translation keys
+const roleConfigKeys: Record<string, { titleKey: string; icon: React.ElementType; path: string; color: string }> = {
   superadmin: {
-    title: 'Superadministrador',
+    titleKey: 'role.superadmin',
     icon: Settings,
     path: '/admin?section=director',
     color: 'bg-purple-500'
   },
   director_comercial: {
-    title: 'Director de Negoci',
+    titleKey: 'role.director_comercial',
     icon: TrendingUp,
     path: '/admin?section=director',
     color: 'bg-emerald-500'
   },
   director_oficina: {
-    title: 'Director d\'Oficina',
+    titleKey: 'role.director_oficina',
     icon: Building2,
     path: '/admin?section=office-director',
     color: 'bg-emerald-500'
   },
   responsable_comercial: {
-    title: 'Responsable Comercial',
+    titleKey: 'role.responsable_comercial',
     icon: Briefcase,
     path: '/admin?section=commercial-manager',
     color: 'bg-emerald-500'
   },
   admin: {
-    title: 'Administrador',
+    titleKey: 'role.admin',
     icon: Settings,
     path: '/admin?section=director',
     color: 'bg-blue-500'
   },
   user: {
-    title: 'Gestor',
+    titleKey: 'role.user',
     icon: Users,
     path: '/admin?section=gestor-dashboard',
     color: 'bg-emerald-500'
   },
   auditor: {
-    title: 'Auditor',
+    titleKey: 'role.auditor',
     icon: UserCog,
     path: '/admin?section=audit',
     color: 'bg-amber-500'
@@ -182,14 +182,14 @@ const Home = () => {
   // Memoize computed values to avoid recalculations on every render
   const availableFeatures = useMemo(() => {
     const effectiveRole = userRole || 'user';
-    return featureMenuOptions.filter(option => 
+    return featureMenuOptionsKeys.filter(option => 
       option.roles.includes(effectiveRole)
     );
   }, [userRole]);
 
-  const currentRole = useMemo(() => {
+  const currentRoleConfig = useMemo(() => {
     const effectiveRole = userRole || 'user';
-    return roleConfig[effectiveRole] || roleConfig.user;
+    return roleConfigKeys[effectiveRole] || roleConfigKeys.user;
   }, [userRole]);
 
   // Show loading state
@@ -204,9 +204,8 @@ const Home = () => {
     );
   }
 
-  const RoleIcon = currentRole.icon;
-
-  return (
+  const RoleIcon = currentRoleConfig.icon;
+  const currentRoleTitle = t(currentRoleConfig.titleKey);
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 flex flex-col">
       {/* Header */}
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
@@ -257,22 +256,22 @@ const Home = () => {
           {/* Role Dashboard Card - Direct access to role-specific dashboard */}
           <Card
             className="group relative overflow-hidden hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 cursor-pointer border-2 hover:border-primary/50 bg-gradient-to-br from-card via-card to-primary/5"
-            onClick={() => navigate(currentRole.path)}
+            onClick={() => navigate(currentRoleConfig.path)}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             
             <CardHeader className="relative">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className={`p-4 rounded-xl ${currentRole.color} text-white shadow-lg`}>
+                  <div className={`p-4 rounded-xl ${currentRoleConfig.color} text-white shadow-lg`}>
                     <RoleIcon className="h-8 w-8" />
                   </div>
                   <div>
                     <CardTitle className="text-2xl group-hover:text-primary transition-colors">
-                      Mi Panel
+                      {t('home.myPanel')}
                     </CardTitle>
                     <CardDescription className="text-base mt-1">
-                      Accede a tu panel personalizado
+                      {t('home.accessPanel')}
                     </CardDescription>
                   </div>
                 </div>
@@ -301,10 +300,10 @@ const Home = () => {
                       <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
                     </div>
                     <CardTitle className="mt-4 text-xl group-hover:text-primary transition-colors">
-                      {option.title}
+                      {t(option.titleKey)}
                     </CardTitle>
                     <CardDescription className="text-sm">
-                      {option.description}
+                      {t(option.descKey)}
                     </CardDescription>
                   </CardHeader>
                 </Card>
@@ -314,7 +313,7 @@ const Home = () => {
 
           {/* Quick Actions */}
           <div className="mt-16 pt-8 border-t">
-            <h3 className="text-xl font-semibold mb-6">Acciones Rápidas</h3>
+            <h3 className="text-xl font-semibold mb-6">{t('home.quickActions')}</h3>
             <div className="flex flex-wrap gap-4">
               <Button
                 variant="outline"
@@ -322,7 +321,7 @@ const Home = () => {
                 className="gap-2"
               >
                 <BarChart3 className="h-4 w-4" />
-                Panel General
+                {t('home.generalPanel')}
               </Button>
               <Button
                 variant="outline"
@@ -330,7 +329,7 @@ const Home = () => {
                 className="gap-2"
               >
                 <Users className="h-4 w-4" />
-                Mi Perfil
+                {t('home.myProfile')}
               </Button>
             </div>
           </div>
@@ -342,10 +341,10 @@ const Home = () => {
         <div className="container mx-auto px-6 py-6">
           <div className="flex flex-col items-center gap-4">
             <div className="flex flex-col items-center gap-3">
-              <span className="text-sm text-muted-foreground font-medium">Mis roles:</span>
+              <span className="text-sm text-muted-foreground font-medium">{t('home.myRoles')}:</span>
               <div className="flex flex-wrap items-center justify-center gap-3">
                 {allUserRoles.map((role) => {
-                  const config = roleConfig[role] || roleConfig.user;
+                  const config = roleConfigKeys[role] || roleConfigKeys.user;
                   const Icon = config.icon;
                   return (
                     <div key={role} className="flex items-center gap-2 bg-card/80 px-3 py-2 rounded-lg border shadow-sm">
@@ -353,21 +352,21 @@ const Home = () => {
                         <Icon className="h-4 w-4" />
                       </div>
                       <Badge variant="secondary" className="text-sm font-medium">
-                        {config.title}
+                        {t(config.titleKey)}
                       </Badge>
                     </div>
                   );
                 })}
                 {allUserRoles.length === 0 && (
                   <Badge variant="outline" className="text-sm">
-                    Cargando roles...
+                    {t('home.loadingRoles')}
                   </Badge>
                 )}
               </div>
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span className="font-semibold bg-gradient-to-r from-primary to-emerald-500 bg-clip-text text-transparent">ObelixIA</span>
-              <span>© 2024 - CRM Bancario Inteligente</span>
+              <span>{t('home.copyright')}</span>
             </div>
           </div>
         </div>

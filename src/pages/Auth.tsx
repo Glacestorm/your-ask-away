@@ -29,6 +29,7 @@ const passwordSchema = z.string()
 // Passkey Login Button Component
 function PasskeyLoginButton({ disabled, onSuccess }: { disabled?: boolean; onSuccess?: () => void }) {
   const { isSupported, isAuthenticating, authenticateWithPasskey } = useWebAuthn();
+  const { t } = useLanguage();
 
   if (!isSupported) return null;
 
@@ -45,7 +46,7 @@ function PasskeyLoginButton({ disabled, onSuccess }: { disabled?: boolean; onSuc
         <span className="w-full border-t" />
       </div>
       <div className="relative flex justify-center text-xs uppercase">
-        <span className="bg-background px-2 text-muted-foreground">O bé</span>
+        <span className="bg-background px-2 text-muted-foreground">{t('auth.or')}</span>
       </div>
       <Button
         type="button"
@@ -59,7 +60,7 @@ function PasskeyLoginButton({ disabled, onSuccess }: { disabled?: boolean; onSuc
         ) : (
           <Fingerprint className="h-4 w-4" />
         )}
-        Iniciar amb Passkey
+        {t('auth.loginWithPasskey')}
       </Button>
     </div>
   );
@@ -303,7 +304,7 @@ const Auth = () => {
             ObelixIA
           </CardTitle>
           <CardDescription>
-            CRM Bancario Inteligente - Inicia sesión para continuar
+            {t('auth.crmDescription')}
           </CardDescription>
         </CardHeader>
         
@@ -321,7 +322,7 @@ const Auth = () => {
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="login">{t('auth.login')}</TabsTrigger>
               <TabsTrigger value="signup">{t('auth.signup')}</TabsTrigger>
-              <TabsTrigger value="forgot">Recuperar</TabsTrigger>
+              <TabsTrigger value="forgot">{t('auth.recover')}</TabsTrigger>
             </TabsList>
             
             <TabsContent value="login">
@@ -364,7 +365,7 @@ const Auth = () => {
 
                 {loginAttempts > 0 && loginAttempts < MAX_LOGIN_ATTEMPTS && (
                   <p className="text-sm text-amber-600">
-                    Intents restants: {MAX_LOGIN_ATTEMPTS - loginAttempts}
+                    {t('auth.attemptsRemaining')}: {MAX_LOGIN_ATTEMPTS - loginAttempts}
                   </p>
                 )}
                 
@@ -387,7 +388,7 @@ const Auth = () => {
                     <span className="w-full border-t" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">O prova primer</span>
+                    <span className="bg-background px-2 text-muted-foreground">{t('auth.orTryFirst')}</span>
                   </div>
                 </div>
 
@@ -398,7 +399,7 @@ const Auth = () => {
                   onClick={() => setShowDemoModal(true)}
                 >
                   <Play className="h-4 w-4" />
-                  Probar Demo Gratuita
+                  {t('demo.tryFree')}
                 </Button>
               </form>
             </TabsContent>
@@ -480,7 +481,7 @@ const Auth = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="signup-confirm-password">Confirmar contrasenya</Label>
+                  <Label htmlFor="signup-confirm-password">{t('auth.confirmPassword')}</Label>
                   <div className="relative">
                     <Input
                       id="signup-confirm-password"
@@ -501,7 +502,7 @@ const Auth = () => {
                   </div>
                   {signupData.confirmPassword && signupData.password === signupData.confirmPassword && (
                     <p className="text-sm text-green-600 flex items-center gap-1">
-                      <CheckCircle2 className="h-3 w-3" /> Contrasenyes coincidents
+                      <CheckCircle2 className="h-3 w-3" /> {t('auth.passwordsNotMatch').replace('no coincideixen', 'coincidents')}
                     </p>
                   )}
                   {errors.confirmPassword && <p className="text-sm text-destructive">{errors.confirmPassword}</p>}
