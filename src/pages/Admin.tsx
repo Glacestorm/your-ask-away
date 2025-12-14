@@ -280,9 +280,9 @@ const Admin = () => {
         return (
           <div className="rounded-lg border bg-card p-6">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold">Calendario de Visitas</h2>
+              <h2 className="text-2xl font-bold">{t('admin.section.calendar.title')}</h2>
               <p className="text-sm text-muted-foreground">
-                Visualiza todas tus visitas individuales y conjuntas en un calendario compartido
+                {t('admin.section.calendar.subtitle')}
               </p>
             </div>
             <SharedVisitsCalendar />
@@ -372,9 +372,9 @@ const Admin = () => {
         return (
           <div className="rounded-lg border bg-card p-6">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold">Historial de Importaciones</h2>
+              <h2 className="text-2xl font-bold">{t('admin.section.importHistory.title')}</h2>
               <p className="text-sm text-muted-foreground">
-                Consulta y exporta el historial completo de importaciones de empresas
+                {t('admin.section.importHistory.subtitle')}
               </p>
             </div>
             <ImportHistoryViewer />
@@ -393,9 +393,9 @@ const Admin = () => {
         return (
           <div className="rounded-lg border bg-card p-6">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold">Gestió d'Alertes</h2>
+              <h2 className="text-2xl font-bold">{t('admin.section.alerts.title')}</h2>
               <p className="text-sm text-muted-foreground">
-                Configura alertes automàtiques per mètriques clau del negoci
+                {t('admin.section.alerts.subtitle')}
               </p>
             </div>
             <AlertsManager />
@@ -416,9 +416,9 @@ const Admin = () => {
         return (
           <div className="rounded-lg border bg-card p-6">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold">Preferències de Notificacions</h2>
+              <h2 className="text-2xl font-bold">{t('admin.section.notificationPrefs.title')}</h2>
               <p className="text-sm text-muted-foreground">
-                Personalitza com i quan reps notificacions d'alertes
+                {t('admin.section.notificationPrefs.subtitle')}
               </p>
             </div>
             <NotificationPreferences />
@@ -437,9 +437,9 @@ const Admin = () => {
         return (
           <div className="rounded-lg border bg-card p-6">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold">Assignació Massiva d'Objectius</h2>
+              <h2 className="text-2xl font-bold">{t('admin.section.bulkGoals.title')}</h2>
               <p className="text-sm text-muted-foreground">
-                Assigna objectius a múltiples gestors simultàniament
+                {t('admin.section.bulkGoals.subtitle')}
               </p>
             </div>
             <BulkGoalsAssignment />
@@ -458,9 +458,9 @@ const Admin = () => {
         return (
           <div className="rounded-lg border bg-card p-6">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold">Seguiment d'Objectius</h2>
+              <h2 className="text-2xl font-bold">{t('admin.section.goalsProgress.title')}</h2>
               <p className="text-sm text-muted-foreground">
-                Visualitza el progrés en temps real de tots els gestors
+                {t('admin.section.goalsProgress.subtitle')}
               </p>
             </div>
             <GoalsProgressTracker />
@@ -490,9 +490,9 @@ const Admin = () => {
         return (
           <div className="rounded-lg border bg-card p-6">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold">Dashboard KPI d'Objectius</h2>
+              <h2 className="text-2xl font-bold">{t('admin.section.goalsKPI.title')}</h2>
               <p className="text-sm text-muted-foreground">
-                Resum visual dels indicadors clau de rendiment de tots els objectius actius
+                {t('admin.section.goalsKPI.subtitle')}
               </p>
             </div>
             <GoalsKPIDashboard />
@@ -1163,8 +1163,8 @@ case 'administration':
                       <Activity className="h-4 w-4 text-emerald-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-emerald-700 dark:text-emerald-400">Doc. Tècnica</h4>
-                      <p className="text-xs text-muted-foreground">PDF complet</p>
+                      <h4 className="font-medium text-sm text-emerald-700 dark:text-emerald-400">{t('admin.card.techDocs')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.techDocs.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1177,8 +1177,8 @@ case 'administration':
                       <Activity className="h-4 w-4 text-purple-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-purple-700 dark:text-purple-400">Competència</h4>
-                      <p className="text-xs text-muted-foreground">Gap analysis</p>
+                      <h4 className="font-medium text-sm text-purple-700 dark:text-purple-400">{t('admin.card.competitor')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.competitor.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1191,8 +1191,8 @@ case 'administration':
                       <Activity className="h-4 w-4 text-blue-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-blue-700 dark:text-blue-400">Estat App</h4>
-                      <p className="text-xs text-muted-foreground">Mòduls i progrés</p>
+                      <h4 className="font-medium text-sm text-blue-700 dark:text-blue-400">{t('admin.card.appStatus')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.appStatus.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1205,8 +1205,8 @@ case 'administration':
                       <Activity className="h-4 w-4 text-teal-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-teal-700 dark:text-teal-400">Índex Codi</h4>
-                      <p className="text-xs text-muted-foreground">Funcionalitats</p>
+                      <h4 className="font-medium text-sm text-teal-700 dark:text-teal-400">{t('admin.card.codeIndex')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.codeIndex.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1216,7 +1216,7 @@ case 'administration':
             {/* SECCIÓ 5: Comunicació Omnicanal - FASE 3 */}
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-pink-600 dark:text-pink-400 flex items-center gap-2">
-                <MessagesSquare className="h-5 w-5" /> Comunicació Omnicanal
+                <MessagesSquare className="h-5 w-5" /> {t('admin.section.omnichannel')}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 <Card 
@@ -1228,8 +1228,8 @@ case 'administration':
                       <MessageSquare className="h-4 w-4 text-pink-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-pink-700 dark:text-pink-400">SMS Gateway</h4>
-                      <p className="text-xs text-muted-foreground">Plantilles i enviaments</p>
+                      <h4 className="font-medium text-sm text-pink-700 dark:text-pink-400">{t('admin.card.sms')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.sms.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1242,8 +1242,8 @@ case 'administration':
                       <MessagesSquare className="h-4 w-4 text-violet-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-violet-700 dark:text-violet-400">Chat Temps Real</h4>
-                      <p className="text-xs text-muted-foreground">Sales i missatges</p>
+                      <h4 className="font-medium text-sm text-violet-700 dark:text-violet-400">{t('admin.card.realtimeChat')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.realtimeChat.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1256,8 +1256,8 @@ case 'administration':
                       <Bell className="h-4 w-4 text-orange-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-orange-700 dark:text-orange-400">Push Notifications</h4>
-                      <p className="text-xs text-muted-foreground">Web i mòbil</p>
+                      <h4 className="font-medium text-sm text-orange-700 dark:text-orange-400">{t('admin.card.pushNotifications')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.pushNotifications.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1267,7 +1267,7 @@ case 'administration':
             {/* SECCIÓ 6: Eines i Historial */}
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-2">
-                <History className="h-5 w-5" /> Eines i Historial
+                <History className="h-5 w-5" /> {t('admin.section.tools')}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 <Card 
@@ -1279,8 +1279,8 @@ case 'administration':
                       <Activity className="h-4 w-4 text-amber-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-amber-700 dark:text-amber-400">Geolocalització</h4>
-                      <p className="text-xs text-muted-foreground">Recalcular coords</p>
+                      <h4 className="font-medium text-sm text-amber-700 dark:text-amber-400">{t('admin.card.geocoding')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.geocoding.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1290,8 +1290,8 @@ case 'administration':
                       <History className="h-4 w-4 text-orange-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm">Importacions</h4>
-                      <p className="text-xs text-muted-foreground">Historial empreses</p>
+                      <h4 className="font-medium text-sm">{t('admin.card.imports')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.imports.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1305,8 +1305,8 @@ case 'administration':
                       <Bot className="h-4 w-4 text-green-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-green-700 dark:text-green-400">Asistente IA</h4>
-                      <p className="text-xs text-muted-foreground">Chat intern intel·ligent</p>
+                      <h4 className="font-medium text-sm text-green-700 dark:text-green-400">{t('admin.card.internalAssistant')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.internalAssistant.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1328,9 +1328,9 @@ case 'administration':
         return (
           <div className="rounded-lg border bg-card p-6">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold">Selector de Visió</h2>
+              <h2 className="text-2xl font-bold">{t('admin.roleSelector.title')}</h2>
               <p className="text-sm text-muted-foreground">
-                Escull el rol per visualitzar el seu dashboard corresponent
+                {t('admin.roleSelector.subtitle')}
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1343,8 +1343,8 @@ case 'administration':
                     <Activity className="h-7 w-7 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg">Director de Negoci</h3>
-                    <p className="text-sm text-muted-foreground">Visió global del negoci</p>
+                    <h3 className="font-semibold text-lg">{t('admin.roleSelector.director')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('admin.roleSelector.director.desc')}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -1357,8 +1357,8 @@ case 'administration':
                     <Activity className="h-7 w-7 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg">Director d'Oficina</h3>
-                    <p className="text-sm text-muted-foreground">Gestió de l'oficina</p>
+                    <h3 className="font-semibold text-lg">{t('admin.roleSelector.officeDirector')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('admin.roleSelector.officeDirector.desc')}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -1371,8 +1371,8 @@ case 'administration':
                     <Activity className="h-7 w-7 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg">Responsable Comercial</h3>
-                    <p className="text-sm text-muted-foreground">Gestió comercial</p>
+                    <h3 className="font-semibold text-lg">{t('admin.roleSelector.commercialManager')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('admin.roleSelector.commercialManager.desc')}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -1385,8 +1385,8 @@ case 'administration':
                     <Activity className="h-7 w-7 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg">Gestor</h3>
-                    <p className="text-sm text-muted-foreground">Dashboard personal</p>
+                    <h3 className="font-semibold text-lg">{t('admin.roleSelector.gestor')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('admin.roleSelector.gestor.desc')}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -1399,8 +1399,8 @@ case 'administration':
                     <Activity className="h-7 w-7 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg">Auditor</h3>
-                    <p className="text-sm text-muted-foreground">Auditoria i registres</p>
+                    <h3 className="font-semibold text-lg">{t('admin.roleSelector.auditor')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('admin.roleSelector.auditor.desc')}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -1413,8 +1413,8 @@ case 'administration':
                     <Shield className="h-7 w-7 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg text-red-700 dark:text-red-400">DORA / NIS2</h3>
-                    <p className="text-sm text-muted-foreground">Compliment normatiu bancari</p>
+                    <h3 className="font-semibold text-lg text-red-700 dark:text-red-400">{t('admin.roleSelector.dora')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('admin.roleSelector.dora.desc')}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -1428,8 +1428,8 @@ case 'administration':
                     <Shield className="h-7 w-7 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg text-cyan-700 dark:text-cyan-400">AMA</h3>
-                    <p className="text-sm text-muted-foreground">Autenticació Multifactor Adaptativa</p>
+                    <h3 className="font-semibold text-lg text-cyan-700 dark:text-cyan-400">{t('admin.card.ama')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('admin.card.ama.desc')}</p>
                   </div>
                 </CardContent>
               </Card>
