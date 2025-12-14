@@ -205,7 +205,8 @@ const Home = () => {
   }
 
   const RoleIcon = currentRoleConfig.icon;
-  const currentRoleTitle = t(currentRoleConfig.titleKey);
+
+  return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/10 flex flex-col">
       {/* Header */}
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
