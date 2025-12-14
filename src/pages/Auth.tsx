@@ -7,14 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPin, Loader2, Eye, EyeOff, AlertTriangle, CheckCircle2, Fingerprint } from 'lucide-react';
+import { MapPin, Loader2, Eye, EyeOff, AlertTriangle, CheckCircle2, Fingerprint, Play } from 'lucide-react';
 import { z } from 'zod';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useWebAuthn } from '@/hooks/useWebAuthn';
-
+import { DemoStartModal } from '@/components/demo/DemoStartModal';
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -78,6 +78,7 @@ const Auth = () => {
   const [lockoutUntil, setLockoutUntil] = useState<number | null>(null);
   const [passwordStrength, setPasswordStrength] = useState<{ score: number; feedback: string[] }>({ score: 0, feedback: [] });
   const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [showDemoModal, setShowDemoModal] = useState(false);
   
   const { signIn, signUp, user } = useAuth();
   const { t } = useLanguage();
@@ -380,6 +381,25 @@ const Auth = () => {
                   disabled={loading || (lockoutUntil !== null && lockoutUntil > Date.now())}
                   onSuccess={() => navigate('/home')}
                 />
+
+                <div className="relative mt-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">O prova primer</span>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full mt-4 gap-2 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border-emerald-500/30 hover:border-emerald-500/50 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400"
+                  onClick={() => setShowDemoModal(true)}
+                >
+                  <Play className="h-4 w-4" />
+                  Probar Demo Gratuita
+                </Button>
               </form>
             </TabsContent>
             
@@ -538,6 +558,11 @@ const Auth = () => {
           {t('auth.footer')}
         </CardFooter>
       </Card>
+
+      <DemoStartModal 
+        open={showDemoModal} 
+        onOpenChange={setShowDemoModal} 
+      />
     </div>
   );
 };

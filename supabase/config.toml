@@ -173,3 +173,9 @@ verify_jwt = true
 
 [functions.mapbox-directions]
 verify_jwt = true
+
+[functions.generate-demo-data]
+verify_jwt = false
+
+[functions.cleanup-demo-data]
+verify_jwt = false
