@@ -7,11 +7,14 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { PresenceProvider } from "@/contexts/PresenceContext";
+import { DemoProvider } from "@/contexts/DemoContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { PageStreamingSkeleton, StreamingBoundary } from "@/components/performance/StreamingBoundary";
 import { MFAEnforcementDialog } from "@/components/security/MFAEnforcementDialog";
 import { HelpButton } from "@/components/help/HelpButton";
 import { FloatingChatButton } from "@/components/chat/FloatingChatButton";
+import { DemoBanner } from "@/components/demo/DemoBanner";
+import { DemoTour } from "@/components/demo/DemoTour";
 
 // Lazy load pages with React 19 preload hints for better streaming SSR
 const Auth = lazy(() => import("./pages/Auth"));
@@ -43,53 +46,57 @@ const App = () => (
       <ThemeProvider>
         <LanguageProvider>
           <AuthProvider>
-            <PresenceProvider>
-              <TooltipProvider>
-                <MFAEnforcementDialog />
-                <Toaster />
-                <Sonner />
-                <HelpButton />
-                <FloatingChatButton />
-                {/* React 19 Streaming SSR with progressive Suspense boundaries */}
-                <StreamingBoundary priority="high" fallback={<PageStreamingSkeleton />}>
-                  <Routes>
-                    <Route path="/" element={<Navigate to="/home" replace />} />
-                    <Route path="/auth" element={
-                      <StreamingBoundary priority="high">
-                        <Auth />
-                      </StreamingBoundary>
-                    } />
-                    <Route path="/home" element={
-                      <StreamingBoundary priority="high">
-                        <Home />
-                      </StreamingBoundary>
-                    } />
-                    <Route path="/map" element={<Navigate to="/admin?section=map" replace />} />
-                    <Route path="/dashboard" element={
-                      <StreamingBoundary priority="medium" delay={50}>
-                        <Dashboard />
-                      </StreamingBoundary>
-                    } />
-                    <Route path="/admin" element={
-                      <StreamingBoundary priority="medium" delay={50}>
-                        <Admin />
-                      </StreamingBoundary>
-                    } />
-                    <Route path="/profile" element={
-                      <StreamingBoundary priority="low" delay={100}>
-                        <Profile />
-                      </StreamingBoundary>
-                    } />
-                    <Route path="/map-3d" element={
-                      <StreamingBoundary priority="medium">
-                        <Map3D />
-                      </StreamingBoundary>
-                    } />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </StreamingBoundary>
-              </TooltipProvider>
-            </PresenceProvider>
+            <DemoProvider>
+              <PresenceProvider>
+                <TooltipProvider>
+                  <MFAEnforcementDialog />
+                  <Toaster />
+                  <Sonner />
+                  <HelpButton />
+                  <FloatingChatButton />
+                  <DemoBanner />
+                  <DemoTour />
+                  {/* React 19 Streaming SSR with progressive Suspense boundaries */}
+                  <StreamingBoundary priority="high" fallback={<PageStreamingSkeleton />}>
+                    <Routes>
+                      <Route path="/" element={<Navigate to="/home" replace />} />
+                      <Route path="/auth" element={
+                        <StreamingBoundary priority="high">
+                          <Auth />
+                        </StreamingBoundary>
+                      } />
+                      <Route path="/home" element={
+                        <StreamingBoundary priority="high">
+                          <Home />
+                        </StreamingBoundary>
+                      } />
+                      <Route path="/map" element={<Navigate to="/admin?section=map" replace />} />
+                      <Route path="/dashboard" element={
+                        <StreamingBoundary priority="medium" delay={50}>
+                          <Dashboard />
+                        </StreamingBoundary>
+                      } />
+                      <Route path="/admin" element={
+                        <StreamingBoundary priority="medium" delay={50}>
+                          <Admin />
+                        </StreamingBoundary>
+                      } />
+                      <Route path="/profile" element={
+                        <StreamingBoundary priority="low" delay={100}>
+                          <Profile />
+                        </StreamingBoundary>
+                      } />
+                      <Route path="/map-3d" element={
+                        <StreamingBoundary priority="medium">
+                          <Map3D />
+                        </StreamingBoundary>
+                      } />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </StreamingBoundary>
+                </TooltipProvider>
+              </PresenceProvider>
+            </DemoProvider>
           </AuthProvider>
         </LanguageProvider>
       </ThemeProvider>
