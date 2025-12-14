@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Activity, Target, Building2, Users, Clock, CheckCircle, XCircle, TrendingUp, TrendingDown, LayoutDashboard, LineChart, Compass, Award, ArrowUpRight, ArrowDownRight, ClipboardCheck, Timer } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
 import { DateRangeFilter } from '@/components/dashboard/DateRangeFilter';
@@ -15,6 +14,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { QuickVisitManager } from '@/components/dashboard/QuickVisitManager';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { ProgressiveDashboardSkeleton } from '@/components/dashboard/ProgressiveDashboardSkeleton';
+import { useCommercialManagerData } from '@/hooks/useCommercialManagerData';
 
 import { MapDashboardCard } from '@/components/dashboard/MapDashboardCard';
 import { QuickVisitSheetCard } from '@/components/dashboard/QuickVisitSheetCard';
@@ -272,20 +273,7 @@ export function CommercialManagerDashboard() {
   };
 
   if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-4">
-          {[1, 2, 3, 4].map(i => (
-            <Card key={i} className="overflow-hidden">
-              <CardContent className="p-6">
-                <Skeleton className="h-24 w-full" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-        <Skeleton className="h-96 w-full rounded-xl" />
-      </div>
-    );
+    return <ProgressiveDashboardSkeleton />;
   }
 
   const visitsTrend = previousStats ? getTrend(stats.totalVisits, previousStats.totalVisits) : null;
