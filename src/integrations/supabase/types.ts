@@ -2917,6 +2917,66 @@ export type Database = {
         }
         Relationships: []
       }
+      demo_sessions: {
+        Row: {
+          cleanup_status: string | null
+          created_at: string
+          created_companies: number | null
+          created_goals: number | null
+          created_visits: number | null
+          data_ids: Json | null
+          demo_user_id: string | null
+          ended_at: string | null
+          id: string
+          ip_address: string | null
+          sections_visited: string[] | null
+          selected_role: string
+          started_at: string
+          tour_completed: boolean | null
+          tour_step: number | null
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          cleanup_status?: string | null
+          created_at?: string
+          created_companies?: number | null
+          created_goals?: number | null
+          created_visits?: number | null
+          data_ids?: Json | null
+          demo_user_id?: string | null
+          ended_at?: string | null
+          id?: string
+          ip_address?: string | null
+          sections_visited?: string[] | null
+          selected_role: string
+          started_at?: string
+          tour_completed?: boolean | null
+          tour_step?: number | null
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          cleanup_status?: string | null
+          created_at?: string
+          created_companies?: number | null
+          created_goals?: number | null
+          created_visits?: number | null
+          data_ids?: Json | null
+          demo_user_id?: string | null
+          ended_at?: string | null
+          id?: string
+          ip_address?: string | null
+          sections_visited?: string[] | null
+          selected_role?: string
+          started_at?: string
+          tour_completed?: boolean | null
+          tour_step?: number | null
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       dora_compliance_items: {
         Row: {
           article: string
