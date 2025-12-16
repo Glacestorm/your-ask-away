@@ -8664,6 +8664,10 @@ export type Database = {
         Args: { _user_id: string; _visit_id: string }
         Returns: boolean
       }
+      load_sector_compliance: {
+        Args: { p_organization_id: string; p_sector: string }
+        Returns: number
+      }
       log_audit_event: {
         Args: {
           p_action: string
