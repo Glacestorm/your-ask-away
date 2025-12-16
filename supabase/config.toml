@@ -200,3 +200,6 @@ verify_jwt = true
 
 [functions.suggest-cnae-bundles]
 verify_jwt = true
+
+[functions.create-store-checkout]
+verify_jwt = false
