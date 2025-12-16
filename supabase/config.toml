@@ -185,3 +185,12 @@ verify_jwt = true
 
 [functions.update-sector-regulations]
 verify_jwt = false
+
+[functions.generate-audit-report]
+verify_jwt = true
+
+[functions.generate-auditor-response]
+verify_jwt = true
+
+[functions.send-audit-report]
+verify_jwt = true
