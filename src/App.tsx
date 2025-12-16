@@ -28,6 +28,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Store pages
 const StoreLanding = lazy(() => import("./pages/store/StoreLanding"));
+const StoreModules = lazy(() => import("./pages/store/StoreModules"));
 const StoreCheckout = lazy(() => import("./pages/store/StoreCheckout"));
 const CheckoutSuccess = lazy(() => import("./pages/store/CheckoutSuccess"));
 
@@ -102,6 +103,11 @@ const App = () => (
                         <Route path="/store" element={
                           <StreamingBoundary priority="high">
                             <StoreLanding />
+                          </StreamingBoundary>
+                        } />
+                        <Route path="/store/modules" element={
+                          <StreamingBoundary priority="high">
+                            <StoreModules />
                           </StreamingBoundary>
                         } />
                         <Route path="/store/checkout" element={
