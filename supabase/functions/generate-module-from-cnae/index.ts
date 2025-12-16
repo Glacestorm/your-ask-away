@@ -9,6 +9,7 @@ const corsHeaders = {
 interface ModuleGenerationRequest {
   cnae_code: string;
   custom_name?: string;
+  organization_id?: string;
 }
 
 serve(async (req) => {
@@ -31,7 +32,7 @@ serve(async (req) => {
       });
     }
 
-    const { cnae_code, custom_name } = await req.json() as ModuleGenerationRequest;
+    const { cnae_code, custom_name, organization_id } = await req.json() as ModuleGenerationRequest;
     
     if (!cnae_code) {
       return new Response(JSON.stringify({ error: 'CNAE code is required' }), {
@@ -54,16 +55,15 @@ serve(async (req) => {
     let defaultKpis: string[] = [];
     let defaultRegulations: string[] = [];
     let aiGenerated = false;
+    let aiRegulationsData: any = null;
 
     if (cnaeMapping) {
-      // CNAE found in mapping
       sector = cnaeMapping.sector;
       sectorName = cnaeMapping.sector_name;
       defaultKpis = cnaeMapping.default_kpis || [];
       defaultRegulations = cnaeMapping.default_regulations || [];
       console.log(`Found CNAE mapping: ${sector} - ${sectorName}`);
     } else {
-      // CNAE not found - use AI to identify sector
       console.log('CNAE not in mapping, using AI to identify sector...');
       aiGenerated = true;
       
@@ -76,6 +76,7 @@ serve(async (req) => {
         });
       }
 
+      // AI call to identify sector AND search official regulations
       const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -84,22 +85,35 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           model: 'google/gemini-2.5-flash',
-          max_tokens: 4000,
+          max_tokens: 6000,
           messages: [
             {
               role: 'system',
-              content: `Eres un experto en clasificación económica CNAE de España. Dado un código CNAE, debes:
+              content: `Eres un experto en clasificación económica CNAE de España y normativa bancaria/empresarial europea.
+Dado un código CNAE, debes:
 1. Identificar el sector económico más cercano
-2. Proporcionar regulaciones aplicables buscando en BOE (Boletín Oficial del Estado) y DOUE
-3. Definir KPIs específicos del sector
-4. Proporcionar ratios contables específicos para análisis Z-Score sectorial
+2. BUSCAR y listar normativas oficiales aplicables del BOE (Boletín Oficial del Estado) y DOUE (Diario Oficial UE)
+3. Incluir referencias reales a leyes, reales decretos, directivas UE
+4. Definir KPIs específicos del sector
+5. Proporcionar ratios contables específicos para análisis Z-Score sectorial
 
 Responde SIEMPRE en formato JSON con esta estructura exacta:
 {
   "sector": "codigo_sector_snake_case",
   "sector_name": "Nombre del Sector",
   "description": "Descripción del sector",
-  "regulations": ["Regulación 1", "Regulación 2"],
+  "official_regulations": [
+    {
+      "name": "Nombre completo de la normativa",
+      "source": "BOE/DOUE",
+      "reference": "Referencia oficial (ej: BOE-A-2023-12345)",
+      "url": "https://www.boe.es/...",
+      "effective_date": "2023-01-01",
+      "is_mandatory": true,
+      "summary": "Breve resumen de la normativa",
+      "requirements": ["Requisito 1", "Requisito 2"]
+    }
+  ],
   "kpis": ["KPI 1", "KPI 2", "KPI 3"],
   "accounting_ratios": {
     "z_score_coefficients": {
@@ -121,7 +135,7 @@ Responde SIEMPRE en formato JSON con esta estructura exacta:
             },
             {
               role: 'user',
-              content: `Analiza el código CNAE ${cnae_code} y genera la configuración completa del módulo sectorial.`
+              content: `Analiza el código CNAE ${cnae_code} y genera la configuración completa del módulo sectorial, incluyendo normativas oficiales reales del BOE y DOUE aplicables a este sector.`
             }
           ]
         })
@@ -149,7 +163,6 @@ Responde SIEMPRE en formato JSON con esta estructura exacta:
         });
       }
 
-      // Parse AI response
       let aiParsed;
       try {
         const cleanContent = aiContent.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
@@ -168,9 +181,10 @@ Responde SIEMPRE en formato JSON con esta estructura exacta:
       sector = aiParsed.sector || `sector_${cnae_code}`;
       sectorName = aiParsed.sector_name || `Sector CNAE ${cnae_code}`;
       defaultKpis = aiParsed.kpis || [];
-      defaultRegulations = aiParsed.regulations || [];
+      defaultRegulations = (aiParsed.official_regulations || []).map((r: any) => r.name);
+      aiRegulationsData = aiParsed.official_regulations || [];
 
-      // Also save the new mapping for future use
+      // Save the new mapping
       await supabase.from('cnae_sector_mapping').insert({
         cnae_code: cnae_code,
         sector: sector,
@@ -181,20 +195,73 @@ Responde SIEMPRE en formato JSON con esta estructura exacta:
       });
     }
 
-    // Step 2: Retrieve sector regulations from sector_regulations table
+    // Step 2: Create official regulation documents in organization_compliance_documents
+    const createdRegulations: any[] = [];
+    
+    if (aiRegulationsData && aiRegulationsData.length > 0) {
+      console.log(`Creating ${aiRegulationsData.length} official regulation documents...`);
+      
+      for (const reg of aiRegulationsData) {
+        const { data: regDoc, error: regError } = await supabase
+          .from('organization_compliance_documents')
+          .insert({
+            organization_id: organization_id || null,
+            document_type: 'official_regulation',
+            title: reg.name,
+            description: reg.summary || null,
+            sector: sector,
+            sector_key: sector,
+            regulation_source: reg.source || 'BOE',
+            effective_date: reg.effective_date || null,
+            is_mandatory: reg.is_mandatory !== false,
+            requires_acknowledgment: reg.is_mandatory !== false,
+            status: 'active',
+            metadata: {
+              reference: reg.reference,
+              url: reg.url,
+              cnae_code: cnae_code,
+              ai_generated: true
+            }
+          })
+          .select()
+          .single();
+
+        if (regDoc) {
+          createdRegulations.push(regDoc);
+          
+          // Create compliance requirements for each regulation
+          if (reg.requirements && reg.requirements.length > 0) {
+            for (let i = 0; i < reg.requirements.length; i++) {
+              await supabase.from('compliance_requirements').insert({
+                document_id: regDoc.id,
+                organization_id: organization_id || null,
+                requirement_key: `${sector}_req_${i + 1}`,
+                requirement_title: reg.requirements[i],
+                requirement_description: `Requisito derivado de ${reg.name}`,
+                category: 'regulatory',
+                priority: reg.is_mandatory ? 'high' : 'medium',
+                status: 'pending'
+              });
+            }
+          }
+        }
+      }
+    }
+
+    // Step 3: Retrieve sector regulations from sector_regulations table
     const { data: sectorRegulations } = await supabase
       .from('sector_regulations')
       .select('*')
       .eq('sector', sector);
 
-    // Step 3: Generate module specification
+    // Step 4: Generate module specification
     const moduleKey = custom_name 
       ? custom_name.toLowerCase().replace(/\s+/g, '_')
       : `mod_${sector}_${cnae_code}`;
     
     const moduleName = custom_name || `Módulo ${sectorName}`;
 
-    // Build components array based on sector
+    // Build components array - includes compliance panel
     const components = [
       {
         component_key: 'sector_dashboard',
@@ -214,10 +281,12 @@ Responde SIEMPRE en formato JSON con esta estructura exacta:
       },
       {
         component_key: 'sector_compliance',
-        component_name: `Compliance ${sectorName}`,
+        component_name: `Panel Compliance ${sectorName}`,
         config: {
           regulations: defaultRegulations,
-          auto_checks: true
+          official_documents: createdRegulations.map(r => r.id),
+          auto_checks: true,
+          acknowledgment_required: true
         }
       },
       {
@@ -235,7 +304,7 @@ Responde SIEMPRE en formato JSON con esta estructura exacta:
     const regulations = [
       ...defaultRegulations.map((reg: string) => ({
         name: reg,
-        source: 'cnae_mapping',
+        source: aiGenerated ? 'ai_boe_doue' : 'cnae_mapping',
         mandatory: true
       })),
       ...(sectorRegulations || []).map((reg: any) => ({
@@ -279,15 +348,17 @@ Responde SIEMPRE en formato JSON con esta estructura exacta:
       ]
     };
 
-    // Build compliance panel config
+    // Build compliance panel config - includes official regulations
     const compliancePanelConfig = {
       regulations: defaultRegulations,
+      official_document_ids: createdRegulations.map(r => r.id),
       check_frequency: 'monthly',
       alert_threshold: 0.8,
-      auto_report: true
+      auto_report: true,
+      acknowledgment_workflow: true
     };
 
-    // Step 4: Save to generated_modules table
+    // Step 5: Save to generated_modules table
     const { data: generatedModule, error: insertError } = await supabase
       .from('generated_modules')
       .insert({
@@ -306,8 +377,9 @@ Responde SIEMPRE en formato JSON con esta estructura exacta:
         ai_generated: aiGenerated,
         generation_metadata: {
           generated_at: new Date().toISOString(),
-          source: aiGenerated ? 'ai_gemini' : 'cnae_mapping',
-          cnae_code: cnae_code
+          source: aiGenerated ? 'ai_gemini_boe_doue' : 'cnae_mapping',
+          cnae_code: cnae_code,
+          official_regulations_created: createdRegulations.length
         },
         is_published: false
       })
@@ -325,12 +397,13 @@ Responde SIEMPRE en formato JSON con esta estructura exacta:
       });
     }
 
-    console.log(`Successfully generated module: ${moduleKey}`);
+    console.log(`Successfully generated module: ${moduleKey} with ${createdRegulations.length} official regulations`);
 
     return new Response(JSON.stringify({
       success: true,
       module: generatedModule,
-      message: `Módulo "${moduleName}" generado correctamente para CNAE ${cnae_code}`
+      official_regulations_created: createdRegulations.length,
+      message: `Módulo "${moduleName}" generado correctamente para CNAE ${cnae_code} con ${createdRegulations.length} normativas oficiales`
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
