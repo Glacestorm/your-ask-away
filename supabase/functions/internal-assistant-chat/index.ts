@@ -145,13 +145,15 @@ ObelixIA es un CRM Bancario Inteligente diseñado específicamente para la gesti
 **¿Cómo se garantiza la seguridad?** - Cifrado AES-256, WebAuthn/Passkeys, MFA obligatorio, RLS, audit logging, cumplimiento GDPR/DORA/ISO27001.
 `;
 
-async function getContextData(supabase: any, contextType: string, userQuery: string): Promise<string> {
+async function getContextData(supabase: any, contextType: string, userQuery: string, userId?: string): Promise<string> {
   let contextData = '';
   
   // Always include ObelixIA help knowledge for system-related queries
   const helpKeywords = ['obelixia', 'ayuda', 'help', 'módulo', 'función', 'cómo', 'qué es', 'para qué', 'normativa', 'cumplimiento', 'compliance', 'seguridad', 'menú', 'rol'];
+  const complianceKeywords = ['normativa', 'compliance', 'documento', 'firma', 'firmar', 'pendiente', 'regulación', 'protocolo', 'procedimiento', 'interno', 'oficial', 'gdpr', 'dora', 'nis2', 'iso', 'mifid', 'psd'];
   const queryLower = userQuery.toLowerCase();
   const isHelpQuery = helpKeywords.some(kw => queryLower.includes(kw));
+  const isComplianceQuery = complianceKeywords.some(kw => queryLower.includes(kw));
   
   if (isHelpQuery) {
     contextData += '\n\nCONOCIMIENTO DEL SISTEMA OBELIXIA:\n' + OBELIXIA_HELP_KNOWLEDGE;
@@ -177,6 +179,120 @@ async function getContextData(supabase: any, contextType: string, userQuery: str
       
       if (products && products.length > 0) {
         contextData += `\n\nPRODUCTOS BANCARIOS DISPONIBLES:\n${JSON.stringify(products, null, 2)}`;
+      }
+    }
+    
+    // FASE 6: Compliance Integration - Query compliance documents
+    if (contextType === 'regulations' || isComplianceQuery) {
+      // Get user's sector from profile
+      let userSector = null;
+      if (userId) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('sector')
+          .eq('id', userId)
+          .single();
+        userSector = profile?.sector;
+      }
+
+      // Query official regulations for user's sector
+      const regulationsQuery = supabase
+        .from('organization_compliance_documents')
+        .select('id, title, description, document_type, sector, regulation_source, effective_date, is_mandatory, status')
+        .eq('status', 'active')
+        .limit(15);
+      
+      if (userSector) {
+        regulationsQuery.eq('sector', userSector);
+      }
+      
+      const { data: officialDocs } = await regulationsQuery;
+      
+      if (officialDocs && officialDocs.length > 0) {
+        const officialRegs = officialDocs.filter((d: any) => d.document_type === 'official_regulation');
+        const internalDocs = officialDocs.filter((d: any) => d.document_type !== 'official_regulation');
+        
+        if (officialRegs.length > 0) {
+          contextData += `\n\nNORMATIVAS OFICIALES DEL SECTOR:\n${officialRegs.map((d: any) => 
+            `- ${d.title} (${d.regulation_source || 'BOE/DOUE'})${d.is_mandatory ? ' [OBLIGATORIA]' : ''}: ${d.description || 'Sin descripción'}`
+          ).join('\n')}`;
+        }
+        
+        if (internalDocs.length > 0) {
+          contextData += `\n\nDOCUMENTOS INTERNOS DE LA ORGANIZACIÓN:\n${internalDocs.map((d: any) => 
+            `- ${d.title}: ${d.description || 'Sin descripción'}`
+          ).join('\n')}`;
+        }
+      }
+
+      // Query sector regulations
+      const { data: sectorRegs } = await supabase
+        .from('sector_regulations')
+        .select('regulation_name, regulation_code, sector, description, mandatory, compliance_deadline')
+        .eq('is_active', true)
+        .limit(10);
+
+      if (sectorRegs && sectorRegs.length > 0) {
+        contextData += `\n\nREGULACIONES SECTORIALES:\n${sectorRegs.map((r: any) => 
+          `- ${r.regulation_name} (${r.regulation_code}): ${r.description || ''} ${r.mandatory ? '[OBLIGATORIA]' : ''}`
+        ).join('\n')}`;
+      }
+
+      // Check for pending acknowledgments for the user
+      if (userId) {
+        const { data: pendingAcks } = await supabase
+          .from('organization_compliance_documents')
+          .select(`
+            id, title, acknowledgment_deadline,
+            compliance_acknowledgments!left(id, employee_id)
+          `)
+          .eq('requires_acknowledgment', true)
+          .eq('status', 'active')
+          .is('compliance_acknowledgments.employee_id', null);
+
+        // Re-query to get documents not acknowledged by this user
+        const { data: allDocsRequiringAck } = await supabase
+          .from('organization_compliance_documents')
+          .select('id, title, acknowledgment_deadline')
+          .eq('requires_acknowledgment', true)
+          .eq('status', 'active');
+
+        if (allDocsRequiringAck && allDocsRequiringAck.length > 0) {
+          const { data: userAcks } = await supabase
+            .from('compliance_acknowledgments')
+            .select('document_id')
+            .eq('employee_id', userId);
+
+          const acknowledgedIds = new Set((userAcks || []).map((a: any) => a.document_id));
+          const pendingDocs = allDocsRequiringAck.filter((d: any) => !acknowledgedIds.has(d.id));
+
+          if (pendingDocs.length > 0) {
+            contextData += `\n\n⚠️ DOCUMENTOS PENDIENTES DE FIRMA (${pendingDocs.length}):\n${pendingDocs.map((d: any) => 
+              `- ${d.title}${d.acknowledgment_deadline ? ` (Vence: ${new Date(d.acknowledgment_deadline).toLocaleDateString('es-ES')})` : ''}`
+            ).join('\n')}`;
+            contextData += `\n\n📝 IMPORTANTE: Tienes ${pendingDocs.length} documento(s) pendiente(s) de firma. Puedes acceder a ellos desde el panel de Compliance en Administración.`;
+          } else {
+            contextData += `\n\n✅ No tienes documentos pendientes de firma.`;
+          }
+        }
+      }
+
+      // Query compliance requirements status
+      if (userId) {
+        const { data: requirements } = await supabase
+          .from('compliance_requirements')
+          .select('requirement_title, status, priority, due_date')
+          .in('status', ['pending', 'in_progress', 'non_compliant'])
+          .limit(10);
+
+        if (requirements && requirements.length > 0) {
+          const critical = requirements.filter((r: any) => r.status === 'non_compliant' || r.priority === 'critical');
+          if (critical.length > 0) {
+            contextData += `\n\n🚨 REQUISITOS CRÍTICOS DE COMPLIANCE:\n${critical.map((r: any) => 
+              `- ${r.requirement_title} [${r.status.toUpperCase()}]${r.due_date ? ` - Vence: ${new Date(r.due_date).toLocaleDateString('es-ES')}` : ''}`
+            ).join('\n')}`;
+          }
+        }
       }
     }
     
@@ -228,9 +344,9 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get context-specific data from database
+    // Get context-specific data from database (including compliance - FASE 6)
     const lastUserMessage = messages.filter(m => m.role === 'user').pop();
-    const contextData = lastUserMessage ? await getContextData(supabase, contextType, lastUserMessage.content) : '';
+    const contextData = lastUserMessage ? await getContextData(supabase, contextType, lastUserMessage.content, userId) : '';
 
     // Build context-aware system prompt
     const systemPrompt = buildSystemPrompt(userRole, contextType, userOffice) + contextData;
@@ -367,7 +483,20 @@ function buildSystemPrompt(userRole: string, contextType: string, userOffice?: s
 - Normativas bancarias (Andorra, España, Europa)
 - Productos y servicios bancarios
 - Procedimientos internos
+- CUMPLIMIENTO NORMATIVO: documentos oficiales del sector, documentos internos, firmas pendientes
 - INFORMACIÓN SOBRE OBELIXIA: arquitectura, módulos, funcionalidades, cumplimiento normativo, menús por rol, FAQs
+
+CAPACIDAD ESPECIAL - COMPLIANCE Y NORMATIVAS (FASE 6):
+Tienes acceso completo a:
+- Normativas oficiales del sector del usuario (BOE, DOUE)
+- Documentos internos de la organización
+- Estado de firmas y reconocimientos pendientes
+- Requisitos de compliance y su estado actual
+Cuando el usuario pregunte sobre normativas, documentos, firmas pendientes o compliance:
+1. Consulta el contexto proporcionado con datos reales de la base de datos
+2. Indica claramente qué documentos tiene pendientes de firma
+3. Explica los requisitos de cada normativa aplicable
+4. Advierte sobre deadlines próximos
 
 CAPACIDAD ESPECIAL - CONOCIMIENTO DEL SISTEMA:
 Tienes acceso completo a la documentación de ObelixIA incluyendo:
@@ -407,7 +536,8 @@ FORMATO DE RESPUESTA:
 - Cita normativas específicas cuando aplique
 - Indica siempre si la información requiere verificación adicional
 - Responde en el mismo idioma que la pregunta del usuario
-- Cuando expliques funcionalidades de ObelixIA, sé detallado y preciso`;
+- Cuando expliques funcionalidades de ObelixIA, sé detallado y preciso
+- Si hay documentos pendientes de firma, SIEMPRE menciónalos al inicio de la respuesta`;
 
   const roleSpecificContext = getRoleContext(userRole);
   
