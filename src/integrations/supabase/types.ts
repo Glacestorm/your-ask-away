@@ -3770,6 +3770,72 @@ export type Database = {
           },
         ]
       }
+      generated_modules: {
+        Row: {
+          accounting_ratios: Json | null
+          ai_generated: boolean | null
+          cnae_code: string
+          compliance_panel_config: Json | null
+          components: Json | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          generation_metadata: Json | null
+          id: string
+          is_published: boolean | null
+          kpis: Json | null
+          module_key: string
+          module_name: string
+          regulations: Json | null
+          sector: string
+          sector_name: string
+          updated_at: string
+          visit_form_config: Json | null
+        }
+        Insert: {
+          accounting_ratios?: Json | null
+          ai_generated?: boolean | null
+          cnae_code: string
+          compliance_panel_config?: Json | null
+          components?: Json | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          generation_metadata?: Json | null
+          id?: string
+          is_published?: boolean | null
+          kpis?: Json | null
+          module_key: string
+          module_name: string
+          regulations?: Json | null
+          sector: string
+          sector_name: string
+          updated_at?: string
+          visit_form_config?: Json | null
+        }
+        Update: {
+          accounting_ratios?: Json | null
+          ai_generated?: boolean | null
+          cnae_code?: string
+          compliance_panel_config?: Json | null
+          components?: Json | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          generation_metadata?: Json | null
+          id?: string
+          is_published?: boolean | null
+          kpis?: Json | null
+          module_key?: string
+          module_name?: string
+          regulations?: Json | null
+          sector?: string
+          sector_name?: string
+          updated_at?: string
+          visit_form_config?: Json | null
+        }
+        Relationships: []
+      }
       geocode_rate_limits: {
         Row: {
           created_at: string | null
