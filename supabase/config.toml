@@ -182,3 +182,6 @@ verify_jwt = false
 
 [functions.generate-module-from-cnae]
 verify_jwt = true
+
+[functions.update-sector-regulations]
+verify_jwt = false

@@ -2136,6 +2136,192 @@ export type Database = {
           },
         ]
       }
+      compliance_acknowledgments: {
+        Row: {
+          acknowledged_at: string | null
+          document_id: string
+          employee_id: string
+          id: string
+          ip_address: string | null
+          notes: string | null
+          signature_hash: string | null
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          document_id: string
+          employee_id: string
+          id?: string
+          ip_address?: string | null
+          notes?: string | null
+          signature_hash?: string | null
+        }
+        Update: {
+          acknowledged_at?: string | null
+          document_id?: string
+          employee_id?: string
+          id?: string
+          ip_address?: string | null
+          notes?: string | null
+          signature_hash?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_acknowledgments_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "organization_compliance_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      compliance_requirements: {
+        Row: {
+          category: string | null
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string | null
+          document_id: string
+          due_date: string | null
+          evidence_urls: string[] | null
+          id: string
+          notes: string | null
+          organization_id: string | null
+          priority: string | null
+          requirement_description: string | null
+          requirement_key: string
+          requirement_title: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string | null
+          document_id: string
+          due_date?: string | null
+          evidence_urls?: string[] | null
+          id?: string
+          notes?: string | null
+          organization_id?: string | null
+          priority?: string | null
+          requirement_description?: string | null
+          requirement_key: string
+          requirement_title: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string | null
+          document_id?: string
+          due_date?: string | null
+          evidence_urls?: string[] | null
+          id?: string
+          notes?: string | null
+          organization_id?: string | null
+          priority?: string | null
+          requirement_description?: string | null
+          requirement_key?: string
+          requirement_title?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_requirements_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "organization_compliance_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compliance_requirements_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      compliance_review_tasks: {
+        Row: {
+          assigned_to: string | null
+          completed_at: string | null
+          created_at: string | null
+          description: string | null
+          document_id: string | null
+          due_date: string | null
+          id: string
+          organization_id: string | null
+          priority: string | null
+          requirement_id: string | null
+          result: string | null
+          status: string | null
+          task_type: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          description?: string | null
+          document_id?: string | null
+          due_date?: string | null
+          id?: string
+          organization_id?: string | null
+          priority?: string | null
+          requirement_id?: string | null
+          result?: string | null
+          status?: string | null
+          task_type: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          description?: string | null
+          document_id?: string | null
+          due_date?: string | null
+          id?: string
+          organization_id?: string | null
+          priority?: string | null
+          requirement_id?: string | null
+          result?: string | null
+          status?: string | null
+          task_type?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_review_tasks_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "organization_compliance_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compliance_review_tasks_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compliance_review_tasks_requirement_id_fkey"
+            columns: ["requirement_id"]
+            isOneToOne: false
+            referencedRelation: "compliance_requirements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       concepts: {
         Row: {
           active: boolean | null
@@ -5274,6 +5460,96 @@ export type Database = {
           },
         ]
       }
+      organization_compliance_documents: {
+        Row: {
+          acknowledgment_deadline: string | null
+          content: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          document_type: string
+          effective_date: string | null
+          expiry_date: string | null
+          file_url: string | null
+          id: string
+          is_mandatory: boolean | null
+          metadata: Json | null
+          organization_id: string | null
+          parent_document_id: string | null
+          regulation_source: string | null
+          requires_acknowledgment: boolean | null
+          sector: string | null
+          sector_key: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+          version: string | null
+        }
+        Insert: {
+          acknowledgment_deadline?: string | null
+          content?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          document_type: string
+          effective_date?: string | null
+          expiry_date?: string | null
+          file_url?: string | null
+          id?: string
+          is_mandatory?: boolean | null
+          metadata?: Json | null
+          organization_id?: string | null
+          parent_document_id?: string | null
+          regulation_source?: string | null
+          requires_acknowledgment?: boolean | null
+          sector?: string | null
+          sector_key?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+          version?: string | null
+        }
+        Update: {
+          acknowledgment_deadline?: string | null
+          content?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          document_type?: string
+          effective_date?: string | null
+          expiry_date?: string | null
+          file_url?: string | null
+          id?: string
+          is_mandatory?: boolean | null
+          metadata?: Json | null
+          organization_id?: string | null
+          parent_document_id?: string | null
+          regulation_source?: string | null
+          requires_acknowledgment?: boolean | null
+          sector?: string | null
+          sector_key?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_compliance_documents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_compliance_documents_parent_document_id_fkey"
+            columns: ["parent_document_id"]
+            isOneToOne: false
+            referencedRelation: "organization_compliance_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pipeline_snapshots: {
         Row: {
           avg_deal_age_days: number | null
@@ -5790,6 +6066,56 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      regulation_update_notifications: {
+        Row: {
+          affected_organizations: string[] | null
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          notification_type: string
+          notified_users: string[] | null
+          read_at: string | null
+          regulation_id: string | null
+          sector: string
+          title: string
+        }
+        Insert: {
+          affected_organizations?: string[] | null
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          notification_type: string
+          notified_users?: string[] | null
+          read_at?: string | null
+          regulation_id?: string | null
+          sector: string
+          title: string
+        }
+        Update: {
+          affected_organizations?: string[] | null
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          notification_type?: string
+          notified_users?: string[] | null
+          read_at?: string | null
+          regulation_id?: string | null
+          sector?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "regulation_update_notifications_regulation_id_fkey"
+            columns: ["regulation_id"]
+            isOneToOne: false
+            referencedRelation: "organization_compliance_documents"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       regulation_updates: {
         Row: {
