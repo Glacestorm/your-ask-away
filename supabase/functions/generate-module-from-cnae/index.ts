@@ -43,8 +43,15 @@ serve(async (req) => {
 
     console.log(`Generating module for CNAE: ${cnae_code}`);
 
-    // Step 1: Look up CNAE in mapping table
-    const { data: cnaeMapping, error: cnaeMappingError } = await supabase
+    // Step 1: Check if sector_chart_of_accounts already has config for this CNAE
+    const { data: existingSectorChart } = await supabase
+      .from('sector_chart_of_accounts')
+      .select('*')
+      .contains('cnae_codes', [cnae_code])
+      .single();
+
+    // Step 2: Look up CNAE in mapping table
+    const { data: cnaeMapping } = await supabase
       .from('cnae_sector_mapping')
       .select('*')
       .eq('cnae_code', cnae_code)
@@ -56,15 +63,22 @@ serve(async (req) => {
     let defaultRegulations: string[] = [];
     let aiGenerated = false;
     let aiRegulationsData: any = null;
+    let sectorChartData: any = null;
 
-    if (cnaeMapping) {
+    if (existingSectorChart) {
+      // Use existing sector chart configuration
+      sector = existingSectorChart.sector_key;
+      sectorName = existingSectorChart.sector_name;
+      sectorChartData = existingSectorChart;
+      console.log(`Using existing sector chart: ${sector}`);
+    } else if (cnaeMapping) {
       sector = cnaeMapping.sector;
       sectorName = cnaeMapping.sector_name;
       defaultKpis = cnaeMapping.default_kpis || [];
       defaultRegulations = cnaeMapping.default_regulations || [];
       console.log(`Found CNAE mapping: ${sector} - ${sectorName}`);
     } else {
-      console.log('CNAE not in mapping, using AI to identify sector...');
+      console.log('CNAE not in mapping, using AI to generate full accounting plan...');
       aiGenerated = true;
       
       if (!lovableApiKey) {
@@ -76,7 +90,7 @@ serve(async (req) => {
         });
       }
 
-      // AI call to identify sector AND search official regulations
+      // AI call to generate complete sector accounting plan
       const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -85,57 +99,85 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           model: 'google/gemini-2.5-flash',
-          max_tokens: 6000,
+          max_tokens: 8000,
           messages: [
             {
               role: 'system',
-              content: `Eres un experto en clasificación económica CNAE de España y normativa bancaria/empresarial europea.
-Dado un código CNAE, debes:
-1. Identificar el sector económico más cercano
-2. BUSCAR y listar normativas oficiales aplicables del BOE (Boletín Oficial del Estado) y DOUE (Diario Oficial UE)
-3. Incluir referencias reales a leyes, reales decretos, directivas UE
-4. Definir KPIs específicos del sector
-5. Proporcionar ratios contables específicos para análisis Z-Score sectorial
+              content: `Eres un experto en contabilidad sectorial española (PGC 2007) y análisis financiero.
+Dado un código CNAE, debes generar un PLAN CONTABLE COMPLETO adaptado al sector, incluyendo:
+
+1. ESTRUCTURA DE CUENTAS: Grupos contables relevantes y cuentas críticas según PGC
+2. RATIOS FINANCIEROS: Fórmulas específicas del sector con pesos y rangos óptimos
+3. MODELO Z-SCORE: Coeficientes apropiados (Altman Original para industria, Altman Services para servicios, Zmijewski para retail)
+4. BENCHMARKS SECTORIALES: Rangos min/max/óptimo basados en datos reales del sector español
+5. NORMATIVAS: Regulaciones BOE/DOUE aplicables
+6. REGLAS DE CUMPLIMIENTO: Requisitos contables específicos
 
 Responde SIEMPRE en formato JSON con esta estructura exacta:
 {
-  "sector": "codigo_sector_snake_case",
-  "sector_name": "Nombre del Sector",
-  "description": "Descripción del sector",
+  "sector_key": "codigo_sector_snake_case",
+  "sector_name": "Nombre del Sector en Español",
+  "cnae_codes": ["${cnae_code}"],
+  "account_structure": {
+    "groups": ["Grupo 1", "Grupo 2", "Grupo 3"],
+    "critical_accounts": ["100", "200", "300", "400", "572"]
+  },
+  "ratio_definitions": {
+    "ratio_key": {
+      "formula": "numerator / denominator",
+      "weight": 1.0,
+      "optimal_range": [0.5, 1.5]
+    }
+  },
+  "zscore_model": "altman_original|altman_services|zmijewski",
+  "zscore_coefficients": {
+    "a": 1.2,
+    "b": 1.4,
+    "c": 3.3,
+    "d": 0.6,
+    "e": 1.0,
+    "thresholds": {
+      "safe": 2.99,
+      "grey_upper": 2.99,
+      "grey_lower": 1.81,
+      "distress": 1.81
+    }
+  },
+  "benchmark_ranges": {
+    "current_ratio": {"min": 1.0, "max": 2.0, "optimal": 1.5},
+    "debt_ratio": {"min": 0.3, "max": 0.6, "optimal": 0.45}
+  },
+  "compliance_rules": {
+    "pgc_compliance": true,
+    "inventory_valuation": "FIFO|LIFO|weighted_average",
+    "depreciation_methods": ["linear", "declining_balance"]
+  },
+  "tax_implications": {
+    "vat_regime": "general|simplified|special",
+    "special_deductions": []
+  },
   "official_regulations": [
     {
-      "name": "Nombre completo de la normativa",
+      "name": "Nombre normativa",
       "source": "BOE/DOUE",
-      "reference": "Referencia oficial (ej: BOE-A-2023-12345)",
+      "reference": "BOE-A-XXXX-XXXXX",
       "url": "https://www.boe.es/...",
       "effective_date": "2023-01-01",
       "is_mandatory": true,
-      "summary": "Breve resumen de la normativa",
+      "summary": "Breve descripción",
       "requirements": ["Requisito 1", "Requisito 2"]
     }
   ],
   "kpis": ["KPI 1", "KPI 2", "KPI 3"],
-  "accounting_ratios": {
-    "z_score_coefficients": {
-      "working_capital_ta": 1.2,
-      "retained_earnings_ta": 1.4,
-      "ebit_ta": 3.3,
-      "equity_tl": 0.6,
-      "sales_ta": 1.0
-    },
-    "sector_benchmarks": {
-      "liquidity_ratio": 1.5,
-      "debt_ratio": 0.4,
-      "roe": 0.12
-    }
-  },
-  "visit_form_fields": ["Campo 1", "Campo 2"],
-  "compliance_checks": ["Check 1", "Check 2"]
+  "visit_form_fields": ["Campo 1", "Campo 2"]
 }`
             },
             {
               role: 'user',
-              content: `Analiza el código CNAE ${cnae_code} y genera la configuración completa del módulo sectorial, incluyendo normativas oficiales reales del BOE y DOUE aplicables a este sector.`
+              content: `Genera el plan contable completo para el código CNAE ${cnae_code}. 
+Incluye ratios financieros específicos del sector, modelo Z-Score apropiado con coeficientes ajustados, 
+benchmarks basados en datos reales del sector español, y normativas oficiales del BOE/DOUE aplicables.
+Asegúrate de que los coeficientes Z-Score estén calibrados para el sector específico.`
             }
           ]
         })
@@ -178,24 +220,57 @@ Responde SIEMPRE en formato JSON con esta estructura exacta:
         });
       }
 
-      sector = aiParsed.sector || `sector_${cnae_code}`;
+      sector = aiParsed.sector_key || `sector_${cnae_code}`;
       sectorName = aiParsed.sector_name || `Sector CNAE ${cnae_code}`;
       defaultKpis = aiParsed.kpis || [];
       defaultRegulations = (aiParsed.official_regulations || []).map((r: any) => r.name);
       aiRegulationsData = aiParsed.official_regulations || [];
 
-      // Save the new mapping
-      await supabase.from('cnae_sector_mapping').insert({
+      // Step 3: Save to sector_chart_of_accounts (atomic sync source)
+      const { data: newSectorChart, error: sectorChartError } = await supabase
+        .from('sector_chart_of_accounts')
+        .upsert({
+          sector_key: sector,
+          sector_name: sectorName,
+          cnae_codes: aiParsed.cnae_codes || [cnae_code],
+          account_structure: aiParsed.account_structure || { groups: [], critical_accounts: [] },
+          ratio_definitions: aiParsed.ratio_definitions || {},
+          zscore_model: aiParsed.zscore_model || 'altman_original',
+          zscore_coefficients: aiParsed.zscore_coefficients || {
+            a: 1.2, b: 1.4, c: 3.3, d: 0.6, e: 1.0,
+            thresholds: { safe: 2.99, grey_upper: 2.99, grey_lower: 1.81, distress: 1.81 }
+          },
+          benchmark_ranges: aiParsed.benchmark_ranges || {},
+          compliance_rules: aiParsed.compliance_rules || {},
+          tax_implications: aiParsed.tax_implications || {},
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'sector_key'
+        })
+        .select()
+        .single();
+
+      if (sectorChartError) {
+        console.error('Error saving sector chart:', sectorChartError);
+      } else {
+        sectorChartData = newSectorChart;
+        console.log(`Created/updated sector_chart_of_accounts: ${sector}`);
+      }
+
+      // Save the new mapping to cnae_sector_mapping
+      await supabase.from('cnae_sector_mapping').upsert({
         cnae_code: cnae_code,
         sector: sector,
         sector_name: sectorName,
-        cnae_description: aiParsed.description || null,
+        cnae_description: `Sector ${sectorName}`,
         default_kpis: defaultKpis,
         default_regulations: defaultRegulations
+      }, {
+        onConflict: 'cnae_code'
       });
     }
 
-    // Step 2: Create official regulation documents in organization_compliance_documents
+    // Step 4: Create official regulation documents in organization_compliance_documents
     const createdRegulations: any[] = [];
     
     if (aiRegulationsData && aiRegulationsData.length > 0) {
@@ -248,20 +323,39 @@ Responde SIEMPRE en formato JSON con esta estructura exacta:
       }
     }
 
-    // Step 3: Retrieve sector regulations from sector_regulations table
+    // Step 5: Retrieve sector regulations from sector_regulations table
     const { data: sectorRegulations } = await supabase
       .from('sector_regulations')
       .select('*')
       .eq('sector', sector);
 
-    // Step 4: Generate module specification
+    // Step 6: Generate module specification
     const moduleKey = custom_name 
       ? custom_name.toLowerCase().replace(/\s+/g, '_')
       : `mod_${sector}_${cnae_code}`;
     
     const moduleName = custom_name || `Módulo ${sectorName}`;
 
-    // Build components array - includes compliance panel
+    // Get accounting ratios from sector chart or defaults
+    const accountingRatios = sectorChartData ? {
+      z_score_model: sectorChartData.zscore_model,
+      z_score_coefficients: sectorChartData.zscore_coefficients,
+      sector_benchmarks: sectorChartData.benchmark_ranges,
+      ratio_definitions: sectorChartData.ratio_definitions
+    } : {
+      z_score_model: 'altman_original',
+      z_score_coefficients: {
+        a: 1.2, b: 1.4, c: 3.3, d: 0.6, e: 1.0,
+        thresholds: { safe: 2.99, grey_upper: 2.99, grey_lower: 1.81, distress: 1.81 }
+      },
+      sector_benchmarks: {
+        current_ratio: { min: 1.0, max: 2.0, optimal: 1.5 },
+        debt_ratio: { min: 0.3, max: 0.6, optimal: 0.45 }
+      },
+      ratio_definitions: {}
+    };
+
+    // Build components array
     const components = [
       {
         component_key: 'sector_dashboard',
@@ -269,6 +363,16 @@ Responde SIEMPRE en formato JSON con esta estructura exacta:
         config: {
           kpis: defaultKpis,
           charts: ['revenue_trend', 'performance_gauge', 'comparison_chart']
+        }
+      },
+      {
+        component_key: 'sector_accounting',
+        component_name: `Contabilidad ${sectorName}`,
+        config: {
+          account_structure: sectorChartData?.account_structure || null,
+          ratio_definitions: accountingRatios.ratio_definitions,
+          zscore_model: accountingRatios.z_score_model,
+          benchmarks: accountingRatios.sector_benchmarks
         }
       },
       {
@@ -295,7 +399,8 @@ Responde SIEMPRE en formato JSON con esta estructura exacta:
         config: {
           ratios: true,
           benchmarks: true,
-          z_score: true
+          z_score: true,
+          z_score_coefficients: accountingRatios.z_score_coefficients
         }
       }
     ];
@@ -315,23 +420,6 @@ Responde SIEMPRE en formato JSON con esta estructura exacta:
       }))
     ];
 
-    // Build accounting ratios
-    const accountingRatios = {
-      z_score_coefficients: {
-        working_capital_ta: 1.2,
-        retained_earnings_ta: 1.4,
-        ebit_ta: 3.3,
-        equity_tl: 0.6,
-        sales_ta: 1.0
-      },
-      sector_benchmarks: {
-        liquidity_ratio: 1.5,
-        debt_ratio: 0.4,
-        roe: 0.12,
-        roa: 0.08
-      }
-    };
-
     // Build visit form config
     const visitFormConfig = {
       custom_fields: defaultKpis.slice(0, 8).map((kpi: string, idx: number) => ({
@@ -348,7 +436,7 @@ Responde SIEMPRE en formato JSON con esta estructura exacta:
       ]
     };
 
-    // Build compliance panel config - includes official regulations
+    // Build compliance panel config
     const compliancePanelConfig = {
       regulations: defaultRegulations,
       official_document_ids: createdRegulations.map(r => r.id),
@@ -358,7 +446,7 @@ Responde SIEMPRE en formato JSON con esta estructura exacta:
       acknowledgment_workflow: true
     };
 
-    // Step 5: Save to generated_modules table
+    // Step 7: Save to generated_modules table
     const { data: generatedModule, error: insertError } = await supabase
       .from('generated_modules')
       .insert({
@@ -377,9 +465,10 @@ Responde SIEMPRE en formato JSON con esta estructura exacta:
         ai_generated: aiGenerated,
         generation_metadata: {
           generated_at: new Date().toISOString(),
-          source: aiGenerated ? 'ai_gemini_boe_doue' : 'cnae_mapping',
+          source: aiGenerated ? 'ai_gemini_sector_chart' : 'cnae_mapping',
           cnae_code: cnae_code,
-          official_regulations_created: createdRegulations.length
+          official_regulations_created: createdRegulations.length,
+          sector_chart_id: sectorChartData?.id || null
         },
         is_published: false
       })
@@ -402,8 +491,9 @@ Responde SIEMPRE en formato JSON con esta estructura exacta:
     return new Response(JSON.stringify({
       success: true,
       module: generatedModule,
+      sector_chart: sectorChartData,
       official_regulations_created: createdRegulations.length,
-      message: `Módulo "${moduleName}" generado correctamente para CNAE ${cnae_code} con ${createdRegulations.length} normativas oficiales`
+      message: `Módulo "${moduleName}" generado correctamente para CNAE ${cnae_code} con plan contable sectorial y ${createdRegulations.length} normativas oficiales`
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
