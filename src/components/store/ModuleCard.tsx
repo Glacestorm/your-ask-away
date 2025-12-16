@@ -99,7 +99,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, show
 
       {/* Core Badge */}
       {module.is_core && (
-        <div className="absolute top-3 left-3">
+        <div className="absolute top-3 right-3">
           <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-xs">
             CORE
           </Badge>
