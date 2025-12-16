@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShoppingCart, Menu, X, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,15 +10,34 @@ const StoreNavbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const { itemCount, setIsCartOpen } = useCart();
   const location = useLocation();
+  const navigate = useNavigate();
+  const [activeSection, setActiveSection] = React.useState('inicio');
 
   const navLinks = [
-    { href: '/store', label: 'Inicio' },
-    { href: '/store/modules', label: 'Módulos' },
-    { href: '/store/bundles', label: 'Packs' },
-    { href: '/store/pricing', label: 'Precios' },
+    { id: 'inicio', label: 'Inicio' },
+    { id: 'modules', label: 'Módulos' },
+    { id: 'bundles', label: 'Packs' },
+    { id: 'pricing', label: 'Precios' },
   ];
 
-  const isActive = (href: string) => location.pathname === href;
+  const scrollToSection = (sectionId: string) => {
+    if (location.pathname !== '/store') {
+      navigate('/store');
+      setTimeout(() => {
+        const element = document.getElementById(sectionId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    } else {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+    setActiveSection(sectionId);
+    setIsMenuOpen(false);
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/50">
@@ -38,23 +57,23 @@ const StoreNavbar: React.FC = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                to={link.href}
+              <button
+                key={link.id}
+                onClick={() => scrollToSection(link.id)}
                 className={`text-sm font-medium transition-colors ${
-                  isActive(link.href)
+                  activeSection === link.id
                     ? 'text-emerald-400'
                     : 'text-slate-300 hover:text-white'
                 }`}
               >
                 {link.label}
-                {isActive(link.href) && (
+                {activeSection === link.id && (
                   <motion.div
                     layoutId="navbar-indicator"
                     className="h-0.5 bg-emerald-400 mt-1"
                   />
                 )}
-              </Link>
+              </button>
             ))}
           </div>
 
@@ -86,14 +105,14 @@ const StoreNavbar: React.FC = () => {
               </Button>
             </Link>
 
-            <Link to="/store/modules" className="hidden md:block">
+            <button onClick={() => scrollToSection('modules')} className="hidden md:block">
               <Button 
                 size="sm"
                 className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white"
               >
                 Comprar Ahora
               </Button>
-            </Link>
+            </button>
 
             {/* Mobile Menu Toggle */}
             <Button
@@ -115,24 +134,23 @@ const StoreNavbar: React.FC = () => {
             className="md:hidden py-4 border-t border-slate-800"
           >
             {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                to={link.href}
+              <button
+                key={link.id}
+                onClick={() => scrollToSection(link.id)}
                 className={`block py-2 text-sm font-medium ${
-                  isActive(link.href) ? 'text-emerald-400' : 'text-slate-300'
+                  activeSection === link.id ? 'text-emerald-400' : 'text-slate-300'
                 }`}
-                onClick={() => setIsMenuOpen(false)}
               >
                 {link.label}
-              </Link>
+              </button>
             ))}
             <div className="flex gap-2 mt-4">
               <Link to="/auth" className="flex-1">
                 <Button variant="outline" className="w-full">Iniciar Sesión</Button>
               </Link>
-              <Link to="/store/modules" className="flex-1">
+              <button onClick={() => scrollToSection('modules')} className="flex-1">
                 <Button className="w-full bg-emerald-500">Comprar</Button>
-              </Link>
+              </button>
             </div>
           </motion.div>
         )}

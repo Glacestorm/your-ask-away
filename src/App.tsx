@@ -66,7 +66,7 @@ const App = () => (
                     {/* React 19 Streaming SSR with progressive Suspense boundaries */}
                     <StreamingBoundary priority="high" fallback={<PageStreamingSkeleton />}>
                       <Routes>
-                        <Route path="/" element={<Navigate to="/home" replace />} />
+                        <Route path="/" element={<Navigate to="/store" replace />} />
                         <Route path="/auth" element={
                           <StreamingBoundary priority="high">
                             <Auth />
