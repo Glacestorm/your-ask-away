@@ -693,6 +693,17 @@ const Admin = () => {
           );
         }
         return <SPMDashboard />;
+      case 'app-store':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <AppStoreManager />;
       case 'cascade-goals':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager && !isOfficeDirector) {
           return (
@@ -873,6 +884,20 @@ case 'administration':
                     <div>
                       <h4 className="font-medium text-sm">{t('admin.card.spm')}</h4>
                       <p className="text-xs text-muted-foreground">{t('admin.card.spm.desc')}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-cyan-500/20 bg-gradient-to-br from-cyan-500/5 to-cyan-500/10"
+                  onClick={() => handleSectionChange('app-store')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+                      <Store className="h-4 w-4 text-cyan-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm">{t('admin.card.appStore')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.appStore.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
