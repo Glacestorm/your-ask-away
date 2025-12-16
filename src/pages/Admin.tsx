@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigationHistory } from '@/hooks/useNavigationHistory';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Activity, History, Shield, Rocket, Bot, BarChart3, Users, Palette, FileCode2, Eye, MessageSquare, Bell, MessagesSquare, Database, Trophy, Store } from 'lucide-react';
+import { ArrowLeft, Activity, History, Shield, Rocket, Bot, BarChart3, Users, Palette, FileCode2, Eye, MessageSquare, Bell, MessagesSquare, Database, Trophy, Store, ClipboardCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import VisitSheets from '@/pages/VisitSheets';
 import { GlobalNavHeader } from '@/components/GlobalNavHeader';
@@ -73,6 +73,7 @@ import { CoreBankingManager } from '@/components/admin/CoreBankingManager';
 import { PredictiveAnalyticsDashboard } from '@/components/admin/PredictiveAnalyticsDashboard';
 import { SPMDashboard } from '@/components/admin/spm/SPMDashboard';
 import { AppStoreManager } from '@/components/admin/appstore/AppStoreManager';
+import { AuditReportingDashboard } from '@/components/admin/auditor-reporting';
 
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
@@ -770,6 +771,17 @@ const Admin = () => {
           );
         }
         return <APIDocumentation />;
+      case 'auditor-reporting':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager && !isAuditor) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <AuditReportingDashboard />;
 case 'administration':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
           return (
@@ -1169,6 +1181,20 @@ case 'administration':
                     <div>
                       <h4 className="font-medium text-sm text-amber-700 dark:text-amber-400">{t('admin.card.predictiveKPIs')}</h4>
                       <p className="text-xs text-muted-foreground">{t('admin.card.predictiveKPIs.desc')}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-orange-500/30 bg-gradient-to-br from-orange-500/5 to-orange-500/10"
+                  onClick={() => handleSectionChange('auditor-reporting')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                      <ClipboardCheck className="h-4 w-4 text-orange-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-orange-700 dark:text-orange-400">{t('admin.card.auditorReporting')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.auditorReporting.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>

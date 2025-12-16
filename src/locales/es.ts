@@ -202,6 +202,8 @@ export default {
   'admin.card.advancedML.desc': 'Ensemble + A/B Testing',
   'admin.card.predictiveKPIs': 'KPIs Predictivos',
   'admin.card.predictiveKPIs.desc': '50+ indicadores + forecast',
+  'admin.card.auditorReporting': 'Reporting Auditores',
+  'admin.card.auditorReporting.desc': 'Informes automáticos por sector',
   
   // Admin Cards - Documentation
   'admin.card.techDocs': 'Doc. Técnica',
