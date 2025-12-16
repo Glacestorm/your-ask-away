@@ -1608,6 +1608,39 @@ export type Database = {
           },
         ]
       }
+      cnae_sector_mapping: {
+        Row: {
+          cnae_code: string
+          cnae_description: string | null
+          created_at: string
+          default_kpis: string[] | null
+          default_regulations: string[] | null
+          id: string
+          sector: string
+          sector_name: string
+        }
+        Insert: {
+          cnae_code: string
+          cnae_description?: string | null
+          created_at?: string
+          default_kpis?: string[] | null
+          default_regulations?: string[] | null
+          id?: string
+          sector: string
+          sector_name: string
+        }
+        Update: {
+          cnae_code?: string
+          cnae_description?: string | null
+          created_at?: string
+          default_kpis?: string[] | null
+          default_regulations?: string[] | null
+          id?: string
+          sector?: string
+          sector_name?: string
+        }
+        Relationships: []
+      }
       companies: {
         Row: {
           address: string
