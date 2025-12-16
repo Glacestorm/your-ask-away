@@ -7898,6 +7898,296 @@ export type Database = {
         }
         Relationships: []
       }
+      store_bundles: {
+        Row: {
+          badge: string | null
+          bundle_key: string
+          bundle_name: string
+          bundle_price: number
+          created_at: string
+          current_uses: number | null
+          description: string | null
+          discount_percent: number
+          id: string
+          is_active: boolean | null
+          is_featured: boolean | null
+          max_uses: number | null
+          module_keys: string[]
+          original_price: number
+          updated_at: string
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          badge?: string | null
+          bundle_key: string
+          bundle_name: string
+          bundle_price: number
+          created_at?: string
+          current_uses?: number | null
+          description?: string | null
+          discount_percent: number
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          max_uses?: number | null
+          module_keys: string[]
+          original_price: number
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          badge?: string | null
+          bundle_key?: string
+          bundle_name?: string
+          bundle_price?: number
+          created_at?: string
+          current_uses?: number | null
+          description?: string | null
+          discount_percent?: number
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          max_uses?: number | null
+          module_keys?: string[]
+          original_price?: number
+          updated_at?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
+      store_cart: {
+        Row: {
+          added_at: string
+          id: string
+          license_type: string | null
+          module_id: string | null
+          module_key: string
+          quantity: number
+          session_id: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          added_at?: string
+          id?: string
+          license_type?: string | null
+          module_id?: string | null
+          module_key: string
+          quantity?: number
+          session_id: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          added_at?: string
+          id?: string
+          license_type?: string | null
+          module_id?: string | null
+          module_key?: string
+          quantity?: number
+          session_id?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_cart_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "app_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      store_order_items: {
+        Row: {
+          created_at: string
+          discount_percent: number | null
+          id: string
+          license_duration_months: number | null
+          module_id: string | null
+          module_key: string
+          module_name: string
+          order_id: string
+          quantity: number
+          total_price: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          discount_percent?: number | null
+          id?: string
+          license_duration_months?: number | null
+          module_id?: string | null
+          module_key: string
+          module_name: string
+          order_id: string
+          quantity?: number
+          total_price: number
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          discount_percent?: number | null
+          id?: string
+          license_duration_months?: number | null
+          module_id?: string | null
+          module_key?: string
+          module_name?: string
+          order_id?: string
+          quantity?: number
+          total_price?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_order_items_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "app_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "store_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      store_orders: {
+        Row: {
+          billing_address: string | null
+          company_name: string | null
+          country: string | null
+          created_at: string
+          currency: string | null
+          customer_email: string
+          customer_name: string | null
+          discount_amount: number | null
+          id: string
+          license_type: string | null
+          metadata: Json | null
+          notes: string | null
+          order_number: string
+          phone: string | null
+          promo_code: string | null
+          status: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          subtotal: number
+          tax_amount: number | null
+          tax_id: string | null
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          billing_address?: string | null
+          company_name?: string | null
+          country?: string | null
+          created_at?: string
+          currency?: string | null
+          customer_email: string
+          customer_name?: string | null
+          discount_amount?: number | null
+          id?: string
+          license_type?: string | null
+          metadata?: Json | null
+          notes?: string | null
+          order_number?: string
+          phone?: string | null
+          promo_code?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          subtotal?: number
+          tax_amount?: number | null
+          tax_id?: string | null
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          billing_address?: string | null
+          company_name?: string | null
+          country?: string | null
+          created_at?: string
+          currency?: string | null
+          customer_email?: string
+          customer_name?: string | null
+          discount_amount?: number | null
+          id?: string
+          license_type?: string | null
+          metadata?: Json | null
+          notes?: string | null
+          order_number?: string
+          phone?: string | null
+          promo_code?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          subtotal?: number
+          tax_amount?: number | null
+          tax_id?: string | null
+          total?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      store_promotions: {
+        Row: {
+          applicable_modules: string[] | null
+          created_at: string
+          current_uses: number | null
+          description: string | null
+          discount_type: string
+          discount_value: number
+          id: string
+          is_active: boolean | null
+          max_discount_amount: number | null
+          max_uses: number | null
+          min_order_amount: number | null
+          promo_code: string
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          applicable_modules?: string[] | null
+          created_at?: string
+          current_uses?: number | null
+          description?: string | null
+          discount_type: string
+          discount_value: number
+          id?: string
+          is_active?: boolean | null
+          max_discount_amount?: number | null
+          max_uses?: number | null
+          min_order_amount?: number | null
+          promo_code: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          applicable_modules?: string[] | null
+          created_at?: string
+          current_uses?: number | null
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          is_active?: boolean | null
+          max_discount_amount?: number | null
+          max_uses?: number | null
+          min_order_amount?: number | null
+          promo_code?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
       stress_test_executions: {
         Row: {
           created_at: string
