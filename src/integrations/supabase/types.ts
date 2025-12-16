@@ -579,6 +579,72 @@ export type Database = {
         }
         Relationships: []
       }
+      app_modules: {
+        Row: {
+          base_price: number | null
+          category: Database["public"]["Enums"]["module_category"]
+          changelog: Json | null
+          created_at: string | null
+          dependencies: string[] | null
+          description: string | null
+          documentation_url: string | null
+          features: Json | null
+          id: string
+          is_core: boolean | null
+          is_required: boolean | null
+          min_core_version: string | null
+          module_icon: string | null
+          module_key: string
+          module_name: string
+          screenshots: Json | null
+          sector: Database["public"]["Enums"]["sector_type"] | null
+          updated_at: string | null
+          version: string | null
+        }
+        Insert: {
+          base_price?: number | null
+          category?: Database["public"]["Enums"]["module_category"]
+          changelog?: Json | null
+          created_at?: string | null
+          dependencies?: string[] | null
+          description?: string | null
+          documentation_url?: string | null
+          features?: Json | null
+          id?: string
+          is_core?: boolean | null
+          is_required?: boolean | null
+          min_core_version?: string | null
+          module_icon?: string | null
+          module_key: string
+          module_name: string
+          screenshots?: Json | null
+          sector?: Database["public"]["Enums"]["sector_type"] | null
+          updated_at?: string | null
+          version?: string | null
+        }
+        Update: {
+          base_price?: number | null
+          category?: Database["public"]["Enums"]["module_category"]
+          changelog?: Json | null
+          created_at?: string | null
+          dependencies?: string[] | null
+          description?: string | null
+          documentation_url?: string | null
+          features?: Json | null
+          id?: string
+          is_core?: boolean | null
+          is_required?: boolean | null
+          min_core_version?: string | null
+          module_icon?: string | null
+          module_key?: string
+          module_name?: string
+          screenshots?: Json | null
+          sector?: Database["public"]["Enums"]["sector_type"] | null
+          updated_at?: string | null
+          version?: string | null
+        }
+        Relationships: []
+      }
       asset_inventory: {
         Row: {
           asset_name: string
@@ -3896,6 +3962,68 @@ export type Database = {
           },
         ]
       }
+      installed_modules: {
+        Row: {
+          created_at: string | null
+          id: string
+          installed_at: string | null
+          installed_by: string | null
+          is_active: boolean | null
+          last_used_at: string | null
+          license_key: string | null
+          license_type: Database["public"]["Enums"]["license_type"]
+          module_id: string
+          organization_id: string
+          settings: Json | null
+          updated_at: string | null
+          usage_stats: Json | null
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          installed_at?: string | null
+          installed_by?: string | null
+          is_active?: boolean | null
+          last_used_at?: string | null
+          license_key?: string | null
+          license_type?: Database["public"]["Enums"]["license_type"]
+          module_id: string
+          organization_id?: string
+          settings?: Json | null
+          updated_at?: string | null
+          usage_stats?: Json | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          installed_at?: string | null
+          installed_by?: string | null
+          is_active?: boolean | null
+          last_used_at?: string | null
+          license_key?: string | null
+          license_type?: Database["public"]["Enums"]["license_type"]
+          module_id?: string
+          organization_id?: string
+          settings?: Json | null
+          updated_at?: string | null
+          usage_stats?: Json | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "installed_modules_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "app_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       integration_mappings: {
         Row: {
           config_id: string | null
@@ -4554,6 +4682,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      module_components: {
+        Row: {
+          admin_section_key: string | null
+          component_name: string
+          component_path: string
+          component_type: string | null
+          created_at: string | null
+          id: string
+          is_visible: boolean | null
+          menu_icon: string | null
+          menu_label: string | null
+          menu_order: number | null
+          module_key: string
+          permissions_required: string[] | null
+          props_config: Json | null
+          route_path: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          admin_section_key?: string | null
+          component_name: string
+          component_path: string
+          component_type?: string | null
+          created_at?: string | null
+          id?: string
+          is_visible?: boolean | null
+          menu_icon?: string | null
+          menu_label?: string | null
+          menu_order?: number | null
+          module_key: string
+          permissions_required?: string[] | null
+          props_config?: Json | null
+          route_path?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          admin_section_key?: string | null
+          component_name?: string
+          component_path?: string
+          component_type?: string | null
+          created_at?: string | null
+          id?: string
+          is_visible?: boolean | null
+          menu_icon?: string | null
+          menu_label?: string | null
+          menu_order?: number | null
+          module_key?: string
+          permissions_required?: string[] | null
+          props_config?: Json | null
+          route_path?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       notification_channels: {
         Row: {
@@ -5510,6 +5692,69 @@ export type Database = {
         }
         Relationships: []
       }
+      regulation_updates: {
+        Row: {
+          action_required: boolean | null
+          affected_regulations: string[] | null
+          ai_analysis: string | null
+          created_at: string | null
+          id: string
+          keywords: string[] | null
+          notified_at: string | null
+          notified_users: string[] | null
+          priority: Database["public"]["Enums"]["impact_level"] | null
+          processed: boolean | null
+          publication_date: string | null
+          relevance_score: number | null
+          sector_key: string
+          source: string
+          source_url: string | null
+          summary: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          action_required?: boolean | null
+          affected_regulations?: string[] | null
+          ai_analysis?: string | null
+          created_at?: string | null
+          id?: string
+          keywords?: string[] | null
+          notified_at?: string | null
+          notified_users?: string[] | null
+          priority?: Database["public"]["Enums"]["impact_level"] | null
+          processed?: boolean | null
+          publication_date?: string | null
+          relevance_score?: number | null
+          sector_key: string
+          source: string
+          source_url?: string | null
+          summary?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          action_required?: boolean | null
+          affected_regulations?: string[] | null
+          ai_analysis?: string | null
+          created_at?: string | null
+          id?: string
+          keywords?: string[] | null
+          notified_at?: string | null
+          notified_users?: string[] | null
+          priority?: Database["public"]["Enums"]["impact_level"] | null
+          processed?: boolean | null
+          publication_date?: string | null
+          relevance_score?: number | null
+          sector_key?: string
+          source?: string
+          source_url?: string | null
+          summary?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       resilience_tests: {
         Row: {
           conducted_by: string | null
@@ -6045,6 +6290,80 @@ export type Database = {
           warning_modules?: number
         }
         Relationships: []
+      }
+      sector_regulations: {
+        Row: {
+          authority: string
+          created_at: string | null
+          effective_date: string | null
+          expiration_date: string | null
+          full_text_url: string | null
+          id: string
+          impact_level: Database["public"]["Enums"]["impact_level"] | null
+          is_mandatory: boolean | null
+          iso_codes: string[] | null
+          publication_date: string | null
+          regulation_code: string
+          regulation_name: string
+          requirements: Json | null
+          sector_key: string
+          status: Database["public"]["Enums"]["regulation_status"] | null
+          summary: string | null
+          superseded_by: string | null
+          tags: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          authority: string
+          created_at?: string | null
+          effective_date?: string | null
+          expiration_date?: string | null
+          full_text_url?: string | null
+          id?: string
+          impact_level?: Database["public"]["Enums"]["impact_level"] | null
+          is_mandatory?: boolean | null
+          iso_codes?: string[] | null
+          publication_date?: string | null
+          regulation_code: string
+          regulation_name: string
+          requirements?: Json | null
+          sector_key: string
+          status?: Database["public"]["Enums"]["regulation_status"] | null
+          summary?: string | null
+          superseded_by?: string | null
+          tags?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          authority?: string
+          created_at?: string | null
+          effective_date?: string | null
+          expiration_date?: string | null
+          full_text_url?: string | null
+          id?: string
+          impact_level?: Database["public"]["Enums"]["impact_level"] | null
+          is_mandatory?: boolean | null
+          iso_codes?: string[] | null
+          publication_date?: string | null
+          regulation_code?: string
+          regulation_name?: string
+          requirements?: Json | null
+          sector_key?: string
+          status?: Database["public"]["Enums"]["regulation_status"] | null
+          summary?: string | null
+          superseded_by?: string | null
+          tags?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sector_regulations_superseded_by_fkey"
+            columns: ["superseded_by"]
+            isOneToOne: false
+            referencedRelation: "sector_regulations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       security_audit_logs: {
         Row: {
@@ -7867,6 +8186,30 @@ export type Database = {
       cleanup_rate_limits: { Args: never; Returns: undefined }
       cleanup_tpp_rate_limits: { Args: never; Returns: undefined }
       expire_open_banking_consents: { Args: never; Returns: undefined }
+      get_installed_modules: {
+        Args: { _organization_id?: string }
+        Returns: {
+          category: Database["public"]["Enums"]["module_category"]
+          license_type: Database["public"]["Enums"]["license_type"]
+          module_key: string
+          module_name: string
+          sector: Database["public"]["Enums"]["sector_type"]
+          settings: Json
+          valid_until: string
+        }[]
+      }
+      get_sector_regulations: {
+        Args: { _sector_key: string }
+        Returns: {
+          authority: string
+          id: string
+          impact_level: Database["public"]["Enums"]["impact_level"]
+          regulation_code: string
+          regulation_name: string
+          requirements: Json
+          summary: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -7877,6 +8220,10 @@ export type Database = {
       is_admin_or_superadmin: { Args: { _user_id: string }; Returns: boolean }
       is_mfa_required_for_role: {
         Args: { p_user_id: string }
+        Returns: boolean
+      }
+      is_module_installed: {
+        Args: { _module_key: string; _organization_id?: string }
         Returns: boolean
       }
       is_visit_gestor: {
@@ -7975,7 +8322,30 @@ export type Database = {
       financial_data_source: "manual" | "pdf_import"
       financial_statement_status: "draft" | "submitted" | "approved"
       financial_statement_type: "normal" | "abreujat" | "simplificat"
+      impact_level: "critical" | "high" | "medium" | "low" | "informative"
+      license_type: "perpetual" | "subscription" | "trial" | "free"
+      module_category: "core" | "horizontal" | "vertical" | "addon"
       provisional_period_type: "quarterly" | "semiannual" | "annual"
+      regulation_status:
+        | "active"
+        | "pending"
+        | "superseded"
+        | "expired"
+        | "draft"
+      sector_type:
+        | "banking"
+        | "health"
+        | "industry"
+        | "retail"
+        | "realestate"
+        | "technology"
+        | "education"
+        | "hospitality"
+        | "logistics"
+        | "energy"
+        | "agriculture"
+        | "professional"
+        | "government"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -8124,7 +8494,32 @@ export const Constants = {
       financial_data_source: ["manual", "pdf_import"],
       financial_statement_status: ["draft", "submitted", "approved"],
       financial_statement_type: ["normal", "abreujat", "simplificat"],
+      impact_level: ["critical", "high", "medium", "low", "informative"],
+      license_type: ["perpetual", "subscription", "trial", "free"],
+      module_category: ["core", "horizontal", "vertical", "addon"],
       provisional_period_type: ["quarterly", "semiannual", "annual"],
+      regulation_status: [
+        "active",
+        "pending",
+        "superseded",
+        "expired",
+        "draft",
+      ],
+      sector_type: [
+        "banking",
+        "health",
+        "industry",
+        "retail",
+        "realestate",
+        "technology",
+        "education",
+        "hospitality",
+        "logistics",
+        "energy",
+        "agriculture",
+        "professional",
+        "government",
+      ],
     },
   },
 } as const
