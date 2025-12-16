@@ -55,6 +55,8 @@ interface WebhookLog {
   created_at: string;
 }
 
+import { FileText } from 'lucide-react';
+
 const channelIcons: Record<string, React.ReactNode> = {
   'dora_nis2_compliance': <Shield className="h-4 w-4" />,
   'fraud_detection': <AlertTriangle className="h-4 w-4" />,
@@ -64,6 +66,7 @@ const channelIcons: Record<string, React.ReactNode> = {
   'security_incidents': <Shield className="h-4 w-4" />,
   'system_health': <Activity className="h-4 w-4" />,
   'high_value_opportunities': <TrendingUp className="h-4 w-4" />,
+  'compliance_normativas': <FileText className="h-4 w-4" />,
 };
 
 const channelLabels: Record<string, string> = {
@@ -75,6 +78,11 @@ const channelLabels: Record<string, string> = {
   'security_incidents': 'Incidentes Seguridad',
   'system_health': 'Estado del Sistema',
   'high_value_opportunities': 'Oportunidades Alto Valor',
+  'compliance_normativas': 'Compliance y Normativas',
+};
+
+const channelDescriptions: Record<string, string> = {
+  'compliance_normativas': 'Notificaciones de nuevas normativas oficiales, documentos internos, firmas pendientes, renovaciones y alertas de incumplimiento',
 };
 
 export function NotificationCenterManager() {

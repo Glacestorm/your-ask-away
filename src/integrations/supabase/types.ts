@@ -5477,6 +5477,7 @@ export type Database = {
           organization_id: string | null
           parent_document_id: string | null
           regulation_source: string | null
+          renewal_frequency: string | null
           requires_acknowledgment: boolean | null
           sector: string | null
           sector_key: string | null
@@ -5501,6 +5502,7 @@ export type Database = {
           organization_id?: string | null
           parent_document_id?: string | null
           regulation_source?: string | null
+          renewal_frequency?: string | null
           requires_acknowledgment?: boolean | null
           sector?: string | null
           sector_key?: string | null
@@ -5525,6 +5527,7 @@ export type Database = {
           organization_id?: string | null
           parent_document_id?: string | null
           regulation_source?: string | null
+          renewal_frequency?: string | null
           requires_acknowledgment?: boolean | null
           sector?: string | null
           sector_key?: string | null
@@ -8603,6 +8606,8 @@ export type Database = {
         Args: { _user_id: string; _visit_sheet_id: string }
         Returns: boolean
       }
+      check_expiring_acknowledgments: { Args: never; Returns: undefined }
+      check_pending_acknowledgments: { Args: never; Returns: undefined }
       check_tpp_rate_limit: {
         Args: { p_endpoint: string; p_tpp_id: string }
         Returns: boolean
