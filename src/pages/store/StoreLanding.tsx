@@ -57,7 +57,7 @@ const StoreLanding: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+    <div id="inicio" className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
       <StoreNavbar />
       
       {/* Hero Section */}
@@ -134,16 +134,22 @@ const StoreLanding: React.FC = () => {
       </section>
 
       {/* Featured Modules */}
-      <FeaturedModules />
+      <div id="modules">
+        <FeaturedModules />
+      </div>
 
       {/* Premium Section */}
       <PremiumModulesSection />
 
       {/* Bundles */}
-      <BundlesSection />
+      <div id="bundles">
+        <BundlesSection />
+      </div>
 
-      {/* ROI Calculator */}
-      <ROICalculator />
+      {/* ROI Calculator / Pricing */}
+      <div id="pricing">
+        <ROICalculator />
+      </div>
 
       {/* Trust Badges */}
       <TrustBadges />
@@ -171,16 +177,15 @@ const StoreLanding: React.FC = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to="/store/modules">
-                <Button 
-                  size="lg"
-                  className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-8 py-6 text-lg rounded-xl shadow-lg shadow-emerald-500/25"
-                >
-                  Explorar Módulos
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
-              </Link>
-              <Link to="/demo">
+              <Button 
+                size="lg"
+                onClick={() => document.getElementById('modules')?.scrollIntoView({ behavior: 'smooth' })}
+                className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-8 py-6 text-lg rounded-xl shadow-lg shadow-emerald-500/25"
+              >
+                Explorar Módulos
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+              <Link to="/auth">
                 <Button 
                   size="lg"
                   variant="outline"
