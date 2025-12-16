@@ -7197,6 +7197,60 @@ export type Database = {
         }
         Relationships: []
       }
+      sector_ratio_benchmarks: {
+        Row: {
+          average_value: number | null
+          cnae_code: string
+          created_at: string | null
+          id: string
+          max_value: number | null
+          min_value: number | null
+          ratio_category: string
+          ratio_name: string
+          sample_size: number | null
+          sector_key: string
+          source: string | null
+          standard_deviation: number | null
+          updated_at: string | null
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          average_value?: number | null
+          cnae_code: string
+          created_at?: string | null
+          id?: string
+          max_value?: number | null
+          min_value?: number | null
+          ratio_category?: string
+          ratio_name: string
+          sample_size?: number | null
+          sector_key: string
+          source?: string | null
+          standard_deviation?: number | null
+          updated_at?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          average_value?: number | null
+          cnae_code?: string
+          created_at?: string | null
+          id?: string
+          max_value?: number | null
+          min_value?: number | null
+          ratio_category?: string
+          ratio_name?: string
+          sample_size?: number | null
+          sector_key?: string
+          source?: string | null
+          standard_deviation?: number | null
+          updated_at?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
       sector_regulations: {
         Row: {
           authority: string
@@ -7270,6 +7324,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      sector_zscore_coefficients: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          gray_zone_min: number | null
+          id: string
+          safe_zone_min: number | null
+          sector_key: string
+          sector_name: string
+          updated_at: string | null
+          x1_coefficient: number | null
+          x2_coefficient: number | null
+          x3_coefficient: number | null
+          x4_coefficient: number | null
+          x5_coefficient: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          gray_zone_min?: number | null
+          id?: string
+          safe_zone_min?: number | null
+          sector_key: string
+          sector_name: string
+          updated_at?: string | null
+          x1_coefficient?: number | null
+          x2_coefficient?: number | null
+          x3_coefficient?: number | null
+          x4_coefficient?: number | null
+          x5_coefficient?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          gray_zone_min?: number | null
+          id?: string
+          safe_zone_min?: number | null
+          sector_key?: string
+          sector_name?: string
+          updated_at?: string | null
+          x1_coefficient?: number | null
+          x2_coefficient?: number | null
+          x3_coefficient?: number | null
+          x4_coefficient?: number | null
+          x5_coefficient?: number | null
+        }
+        Relationships: []
       }
       security_audit_logs: {
         Row: {
@@ -9124,6 +9226,7 @@ export type Database = {
           valid_until: string
         }[]
       }
+      get_sector_ratios: { Args: { p_cnae_code: string }; Returns: Json }
       get_sector_regulations: {
         Args: { _sector_key: string }
         Returns: {
@@ -9138,6 +9241,7 @@ export type Database = {
       }
       get_turnover_tier: { Args: { p_turnover: number }; Returns: string }
       get_volume_discount: { Args: { p_cnae_count: number }; Returns: number }
+      get_zscore_coefficients: { Args: { p_sector_key: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
