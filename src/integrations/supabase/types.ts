@@ -1889,6 +1889,87 @@ export type Database = {
           },
         ]
       }
+      cnae_bundles: {
+        Row: {
+          bundle_description: string | null
+          bundle_name: string
+          cnae_codes: string[]
+          created_at: string | null
+          discount_percentage: number
+          id: string
+          is_active: boolean | null
+          is_ai_suggested: boolean | null
+          max_discount_cap: number | null
+          min_cnaes_required: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          bundle_description?: string | null
+          bundle_name: string
+          cnae_codes: string[]
+          created_at?: string | null
+          discount_percentage?: number
+          id?: string
+          is_active?: boolean | null
+          is_ai_suggested?: boolean | null
+          max_discount_cap?: number | null
+          min_cnaes_required?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          bundle_description?: string | null
+          bundle_name?: string
+          cnae_codes?: string[]
+          created_at?: string | null
+          discount_percentage?: number
+          id?: string
+          is_active?: boolean | null
+          is_ai_suggested?: boolean | null
+          max_discount_cap?: number | null
+          min_cnaes_required?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      cnae_pricing: {
+        Row: {
+          base_price: number
+          cnae_code: string
+          complexity_tier: string
+          created_at: string | null
+          id: string
+          includes_features: string[] | null
+          is_active: boolean | null
+          sector_category: string | null
+          tier_multipliers: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          base_price?: number
+          cnae_code: string
+          complexity_tier?: string
+          created_at?: string | null
+          id?: string
+          includes_features?: string[] | null
+          is_active?: boolean | null
+          sector_category?: string | null
+          tier_multipliers?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          base_price?: number
+          cnae_code?: string
+          complexity_tier?: string
+          created_at?: string | null
+          id?: string
+          includes_features?: string[] | null
+          is_active?: boolean | null
+          sector_category?: string | null
+          tier_multipliers?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       cnae_sector_mapping: {
         Row: {
           cnae_code: string
@@ -2119,6 +2200,66 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_cnaes: {
+        Row: {
+          cnae_code: string
+          company_id: string
+          created_at: string | null
+          discount_applied: number | null
+          id: string
+          installed_module_id: string | null
+          is_primary: boolean | null
+          license_price: number | null
+          percentage_activity: number | null
+          updated_at: string | null
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          cnae_code: string
+          company_id: string
+          created_at?: string | null
+          discount_applied?: number | null
+          id?: string
+          installed_module_id?: string | null
+          is_primary?: boolean | null
+          license_price?: number | null
+          percentage_activity?: number | null
+          updated_at?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          cnae_code?: string
+          company_id?: string
+          created_at?: string | null
+          discount_applied?: number | null
+          id?: string
+          installed_module_id?: string | null
+          is_primary?: boolean | null
+          license_price?: number | null
+          percentage_activity?: number | null
+          updated_at?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_cnaes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_cnaes_installed_module_id_fkey"
+            columns: ["installed_module_id"]
+            isOneToOne: false
+            referencedRelation: "installed_modules"
             referencedColumns: ["id"]
           },
         ]
@@ -4402,6 +4543,62 @@ export type Database = {
             columns: ["parent_goal_id"]
             isOneToOne: false
             referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      holding_subscriptions: {
+        Row: {
+          annual_total: number | null
+          created_at: string | null
+          features_included: Json | null
+          id: string
+          is_active: boolean | null
+          monthly_total: number | null
+          parent_company_id: string
+          subscription_tier: string
+          total_cnaes: number | null
+          updated_at: string | null
+          valid_from: string | null
+          valid_until: string | null
+          volume_discount: number | null
+        }
+        Insert: {
+          annual_total?: number | null
+          created_at?: string | null
+          features_included?: Json | null
+          id?: string
+          is_active?: boolean | null
+          monthly_total?: number | null
+          parent_company_id: string
+          subscription_tier?: string
+          total_cnaes?: number | null
+          updated_at?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+          volume_discount?: number | null
+        }
+        Update: {
+          annual_total?: number | null
+          created_at?: string | null
+          features_included?: Json | null
+          id?: string
+          is_active?: boolean | null
+          monthly_total?: number | null
+          parent_company_id?: string
+          subscription_tier?: string
+          total_cnaes?: number | null
+          updated_at?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+          volume_discount?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "holding_subscriptions_parent_company_id_fkey"
+            columns: ["parent_company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]
@@ -8867,6 +9064,14 @@ export type Database = {
         }
         Returns: string
       }
+      calculate_cnae_price: {
+        Args: {
+          p_cnae_code: string
+          p_company_turnover?: number
+          p_existing_cnaes?: number
+        }
+        Returns: Json
+      }
       calculate_customer_360: {
         Args: { p_company_id: string }
         Returns: undefined
@@ -8897,6 +9102,16 @@ export type Database = {
       cleanup_rate_limits: { Args: never; Returns: undefined }
       cleanup_tpp_rate_limits: { Args: never; Returns: undefined }
       expire_open_banking_consents: { Args: never; Returns: undefined }
+      find_applicable_bundles: {
+        Args: { p_cnae_codes: string[] }
+        Returns: {
+          bundle_id: string
+          bundle_name: string
+          discount_percentage: number
+          match_count: number
+          matching_cnaes: string[]
+        }[]
+      }
       get_installed_modules: {
         Args: { _organization_id?: string }
         Returns: {
@@ -8921,6 +9136,8 @@ export type Database = {
           summary: string
         }[]
       }
+      get_turnover_tier: { Args: { p_turnover: number }; Returns: string }
+      get_volume_discount: { Args: { p_cnae_count: number }; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
