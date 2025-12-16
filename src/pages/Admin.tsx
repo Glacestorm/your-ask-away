@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigationHistory } from '@/hooks/useNavigationHistory';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Activity, History, Shield, Rocket, Bot, BarChart3, Users, Palette, FileCode2, Eye, MessageSquare, Bell, MessagesSquare, Database, Trophy } from 'lucide-react';
+import { ArrowLeft, Activity, History, Shield, Rocket, Bot, BarChart3, Users, Palette, FileCode2, Eye, MessageSquare, Bell, MessagesSquare, Database, Trophy, Store } from 'lucide-react';
 import { toast } from 'sonner';
 import VisitSheets from '@/pages/VisitSheets';
 import { GlobalNavHeader } from '@/components/GlobalNavHeader';
@@ -72,6 +72,7 @@ import { RealtimeChatPanel } from '@/components/chat/RealtimeChatPanel';
 import { CoreBankingManager } from '@/components/admin/CoreBankingManager';
 import { PredictiveAnalyticsDashboard } from '@/components/admin/PredictiveAnalyticsDashboard';
 import { SPMDashboard } from '@/components/admin/spm/SPMDashboard';
+import { AppStoreManager } from '@/components/admin/appstore/AppStoreManager';
 
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
@@ -187,6 +188,7 @@ const Admin = () => {
       case 'realtime-chat': return 'Chat en Temps Real';
       case 'predictive-analytics': return 'Analítica Predictiva i KPIs';
       case 'spm-dashboard': return 'Sales Performance Management';
+      case 'app-store': return 'App Store';
       default: return '';
     }
   };
