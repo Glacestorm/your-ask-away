@@ -792,6 +792,65 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_evidence: {
+        Row: {
+          collected_at: string | null
+          created_at: string
+          data: Json
+          evidence_period_end: string
+          evidence_period_start: string
+          evidence_type: string
+          file_url: string | null
+          id: string
+          is_validated: boolean | null
+          organization_id: string | null
+          source_query: string | null
+          source_table: string | null
+          validated_at: string | null
+          validated_by: string | null
+        }
+        Insert: {
+          collected_at?: string | null
+          created_at?: string
+          data?: Json
+          evidence_period_end: string
+          evidence_period_start: string
+          evidence_type: string
+          file_url?: string | null
+          id?: string
+          is_validated?: boolean | null
+          organization_id?: string | null
+          source_query?: string | null
+          source_table?: string | null
+          validated_at?: string | null
+          validated_by?: string | null
+        }
+        Update: {
+          collected_at?: string | null
+          created_at?: string
+          data?: Json
+          evidence_period_end?: string
+          evidence_period_start?: string
+          evidence_type?: string
+          file_url?: string | null
+          id?: string
+          is_validated?: boolean | null
+          organization_id?: string | null
+          source_query?: string | null
+          source_table?: string | null
+          validated_at?: string | null
+          validated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_evidence_validated_by_fkey"
+            columns: ["validated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -842,6 +901,228 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      audit_reports_generated: {
+        Row: {
+          auditor_emails: string[] | null
+          compliance_score: number | null
+          created_at: string
+          findings_summary: Json | null
+          generated_at: string | null
+          generated_by: string | null
+          id: string
+          organization_id: string | null
+          pdf_url: string | null
+          report_period_end: string
+          report_period_start: string
+          report_type: string
+          sections_data: Json | null
+          sector_key: string
+          sent_at: string | null
+          sent_to_auditors: boolean | null
+          template_id: string | null
+        }
+        Insert: {
+          auditor_emails?: string[] | null
+          compliance_score?: number | null
+          created_at?: string
+          findings_summary?: Json | null
+          generated_at?: string | null
+          generated_by?: string | null
+          id?: string
+          organization_id?: string | null
+          pdf_url?: string | null
+          report_period_end: string
+          report_period_start: string
+          report_type: string
+          sections_data?: Json | null
+          sector_key: string
+          sent_at?: string | null
+          sent_to_auditors?: boolean | null
+          template_id?: string | null
+        }
+        Update: {
+          auditor_emails?: string[] | null
+          compliance_score?: number | null
+          created_at?: string
+          findings_summary?: Json | null
+          generated_at?: string | null
+          generated_by?: string | null
+          id?: string
+          organization_id?: string | null
+          pdf_url?: string | null
+          report_period_end?: string
+          report_period_start?: string
+          report_type?: string
+          sections_data?: Json | null
+          sector_key?: string
+          sent_at?: string | null
+          sent_to_auditors?: boolean | null
+          template_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_reports_generated_generated_by_fkey"
+            columns: ["generated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_reports_generated_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "auditor_report_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      auditor_questions: {
+        Row: {
+          category: string
+          created_at: string
+          expected_evidence: Json | null
+          id: string
+          is_active: boolean | null
+          priority: string
+          question_code: string
+          question_text: string
+          regulation_code: string
+          sector_key: string
+          standard_response_template: string | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          expected_evidence?: Json | null
+          id?: string
+          is_active?: boolean | null
+          priority?: string
+          question_code: string
+          question_text: string
+          regulation_code: string
+          sector_key: string
+          standard_response_template?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          expected_evidence?: Json | null
+          id?: string
+          is_active?: boolean | null
+          priority?: string
+          question_code?: string
+          question_text?: string
+          regulation_code?: string
+          sector_key?: string
+          standard_response_template?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      auditor_report_templates: {
+        Row: {
+          created_at: string
+          evidence_types: string[] | null
+          frequency: string
+          id: string
+          is_active: boolean | null
+          regulation_code: string
+          required_questions: Json | null
+          sections: Json
+          sector_key: string
+          template_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          evidence_types?: string[] | null
+          frequency: string
+          id?: string
+          is_active?: boolean | null
+          regulation_code: string
+          required_questions?: Json | null
+          sections?: Json
+          sector_key: string
+          template_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          evidence_types?: string[] | null
+          frequency?: string
+          id?: string
+          is_active?: boolean | null
+          regulation_code?: string
+          required_questions?: Json | null
+          sections?: Json
+          sector_key?: string
+          template_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      auditor_responses: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          auto_generated_evidence: Json | null
+          created_at: string
+          evidence_urls: string[] | null
+          id: string
+          last_updated_at: string | null
+          organization_id: string | null
+          question_id: string
+          response_text: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          auto_generated_evidence?: Json | null
+          created_at?: string
+          evidence_urls?: string[] | null
+          id?: string
+          last_updated_at?: string | null
+          organization_id?: string | null
+          question_id: string
+          response_text?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          auto_generated_evidence?: Json | null
+          created_at?: string
+          evidence_urls?: string[] | null
+          id?: string
+          last_updated_at?: string | null
+          organization_id?: string | null
+          question_id?: string
+          response_text?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auditor_responses_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auditor_responses_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "auditor_questions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       auth_challenges: {
         Row: {
