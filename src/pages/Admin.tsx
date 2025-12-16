@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigationHistory } from '@/hooks/useNavigationHistory';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Activity, History, Shield, Rocket, Bot, BarChart3, Users, Palette, FileCode2, Eye, MessageSquare, Bell, MessagesSquare, Database, Trophy, Store, ClipboardCheck } from 'lucide-react';
+import { ArrowLeft, Activity, History, Shield, Rocket, Bot, BarChart3, Users, Palette, FileCode2, Eye, MessageSquare, Bell, MessagesSquare, Database, Trophy, Store, ClipboardCheck, Building2, Layers } from 'lucide-react';
 import { toast } from 'sonner';
 import VisitSheets from '@/pages/VisitSheets';
 import { GlobalNavHeader } from '@/components/GlobalNavHeader';
@@ -74,6 +74,10 @@ import { PredictiveAnalyticsDashboard } from '@/components/admin/PredictiveAnaly
 import { SPMDashboard } from '@/components/admin/spm/SPMDashboard';
 import { AppStoreManager } from '@/components/admin/appstore/AppStoreManager';
 import { AuditReportingDashboard } from '@/components/admin/auditor-reporting';
+import { CNAEPricingCalculator } from '@/components/cnae/CNAEPricingCalculator';
+import { HoldingDashboard } from '@/components/cnae/HoldingDashboard';
+import { CNAEPricingAdmin } from '@/components/cnae/CNAEPricingAdmin';
+import { CNAEDashboard } from '@/components/cnae/CNAEDashboard';
 
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
@@ -190,6 +194,11 @@ const Admin = () => {
       case 'predictive-analytics': return 'Analítica Predictiva i KPIs';
       case 'spm-dashboard': return 'Sales Performance Management';
       case 'app-store': return 'App Store';
+      case 'cnae-pricing': return 'Calculadora de Pricing CNAE';
+      case 'cnae-manager': return 'Gestió CNAEs per Empresa';
+      case 'holding-dashboard': return 'Holding Dashboard 360°';
+      case 'cnae-bundles': return 'Packs Sectorials CNAE';
+      case 'cnae-admin': return 'Administració Pricing CNAE';
       default: return '';
     }
   };
@@ -705,6 +714,32 @@ const Admin = () => {
           );
         }
         return <AppStoreManager />;
+      case 'cnae-pricing':
+      case 'cnae-manager':
+      case 'cnae-bundles':
+        return <CNAEDashboard />;
+      case 'holding-dashboard':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <HoldingDashboard />;
+      case 'cnae-admin':
+        if (!isSuperAdmin && !isCommercialDirector) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <CNAEPricingAdmin />;
       case 'cascade-goals':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager && !isOfficeDirector) {
           return (
@@ -910,6 +945,20 @@ case 'administration':
                     <div>
                       <h4 className="font-medium text-sm">{t('admin.card.appStore')}</h4>
                       <p className="text-xs text-muted-foreground">{t('admin.card.appStore.desc')}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-emerald-500/10"
+                  onClick={() => handleSectionChange('cnae-pricing')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                      <Layers className="h-4 w-4 text-emerald-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm">Multi-CNAE Holdings</h4>
+                      <p className="text-xs text-muted-foreground">Gestió multi-sector i pricing dinàmic</p>
                     </div>
                   </CardContent>
                 </Card>

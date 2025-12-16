@@ -194,3 +194,9 @@ verify_jwt = true
 
 [functions.send-audit-report]
 verify_jwt = true
+
+[functions.calculate-multi-cnae-pricing]
+verify_jwt = true
+
+[functions.suggest-cnae-bundles]
+verify_jwt = true
