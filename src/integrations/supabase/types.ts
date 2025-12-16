@@ -7197,6 +7197,54 @@ export type Database = {
         }
         Relationships: []
       }
+      sector_chart_of_accounts: {
+        Row: {
+          account_structure: Json
+          benchmark_ranges: Json
+          cnae_codes: string[]
+          compliance_rules: Json | null
+          created_at: string | null
+          id: string
+          ratio_definitions: Json
+          sector_key: string
+          sector_name: string
+          tax_implications: Json | null
+          updated_at: string | null
+          zscore_coefficients: Json
+          zscore_model: string | null
+        }
+        Insert: {
+          account_structure?: Json
+          benchmark_ranges?: Json
+          cnae_codes?: string[]
+          compliance_rules?: Json | null
+          created_at?: string | null
+          id?: string
+          ratio_definitions?: Json
+          sector_key: string
+          sector_name: string
+          tax_implications?: Json | null
+          updated_at?: string | null
+          zscore_coefficients?: Json
+          zscore_model?: string | null
+        }
+        Update: {
+          account_structure?: Json
+          benchmark_ranges?: Json
+          cnae_codes?: string[]
+          compliance_rules?: Json | null
+          created_at?: string | null
+          id?: string
+          ratio_definitions?: Json
+          sector_key?: string
+          sector_name?: string
+          tax_implications?: Json | null
+          updated_at?: string | null
+          zscore_coefficients?: Json
+          zscore_model?: string | null
+        }
+        Relationships: []
+      }
       sector_ratio_benchmarks: {
         Row: {
           average_value: number | null
@@ -9214,6 +9262,10 @@ export type Database = {
           matching_cnaes: string[]
         }[]
       }
+      get_company_chart_of_accounts: {
+        Args: { p_company_id: string }
+        Returns: Json
+      }
       get_installed_modules: {
         Args: { _organization_id?: string }
         Returns: {
@@ -9336,6 +9388,10 @@ export type Database = {
           p_user_id: string
         }
         Returns: string
+      }
+      validate_accounting_sync: {
+        Args: { p_company_id: string }
+        Returns: Json
       }
     }
     Enums: {
