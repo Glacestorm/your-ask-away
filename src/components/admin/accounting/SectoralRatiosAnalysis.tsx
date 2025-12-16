@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { BarChart, Bar, LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
+import { useCNAESync } from '@/hooks/useCNAESync';
 
 interface SectoralRatiosAnalysisProps {
   companyId: string;
@@ -19,6 +21,11 @@ const SectoralRatiosAnalysis: React.FC<SectoralRatiosAnalysisProps> = ({ company
   const [incomeStatements, setIncomeStatements] = useState<any[]>([]);
   const [company, setCompany] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [sectorAverages, setSectorAverages] = useState<Record<string, number>>({});
+  const [sectorInfo, setSectorInfo] = useState<{ sector: string; cnaes: string[] }>({ sector: 'generic', cnaes: [] });
+
+  // Use CNAE sync hook for dynamic ratios
+  const { companyCnaes, calculateWeightedRatios, fetchSectorRatios } = useCNAESync(companyId);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -55,6 +62,103 @@ const SectoralRatiosAnalysis: React.FC<SectoralRatiosAnalysisProps> = ({ company
 
     if (companyId) fetchData();
   }, [companyId]);
+
+  // Load dynamic sector ratios based on company CNAEs
+  useEffect(() => {
+    const loadSectorRatios = async () => {
+      if (companyCnaes.length > 0) {
+        // Multi-CNAE company: calculate weighted average
+        const weightedRatios = await calculateWeightedRatios();
+        if (Object.keys(weightedRatios).length > 0) {
+          // Map DB ratio names to component ratio names
+          const mappedRatios = {
+            valorAnadidoBruto: weightedRatios.valor_anadido_bruto || weightedRatios.liquidez_general * 16 || 24.46,
+            gastosPersonal: weightedRatios.gastos_personal || 8.80,
+            resultadoEconomicoBruto: weightedRatios.resultado_economico_bruto || 3.28,
+            resultadoEconomicoDeuda: weightedRatios.resultado_economico_deuda || 1.67,
+            margenVentas: weightedRatios.margen_ventas || weightedRatios.margen_neto * 100 || -1.70,
+            cifraNegocioActivo: weightedRatios.cifra_negocio_activo || weightedRatios.rotacion_activos * 100 || 2.42,
+            resultadoNetoActivo: weightedRatios.resultado_neto_activo || weightedRatios.roa * 100 || 0.37,
+            resultadoAntesImpuestos: weightedRatios.resultado_antes_impuestos || -9.53,
+            resultadoDespuesImpuestos: weightedRatios.resultado_despues_impuestos || weightedRatios.roe * 100 || -1.72,
+            existencias: weightedRatios.existencias || -0.67,
+            deudoresComerciales: weightedRatios.deudores_comerciales || 0.71,
+            acreedoresComerciales: weightedRatios.acreedores_comerciales || 0.50,
+            capitalCirculante: weightedRatios.capital_circulante || 0.10,
+            gastosFinancieros: weightedRatios.gastos_financieros || 21.04,
+            gastosFinancierosResultado: weightedRatios.gastos_financieros_resultado || 18.93,
+            resultadosFinancieros: weightedRatios.resultados_financieros || 11.29,
+            resultadosFinancierosResultado: weightedRatios.resultados_financieros_resultado || 2.38,
+            inmovilizadoFinanciero: weightedRatios.inmovilizado_financiero || 6.47,
+            inmovilizadoMaterial: weightedRatios.inmovilizado_material || 0.18,
+            activoCorriente: weightedRatios.activo_corriente || -2.31,
+          };
+          setSectorAverages(mappedRatios);
+          setSectorInfo({
+            sector: 'multi-sector',
+            cnaes: companyCnaes.map(c => c.cnae_code)
+          });
+        }
+      } else if (company?.cnae) {
+        // Single CNAE from company record
+        const ratioData = await fetchSectorRatios(company.cnae);
+        if (ratioData?.ratios) {
+          setSectorAverages({
+            valorAnadidoBruto: ratioData.ratios.valor_anadido_bruto || 24.46,
+            gastosPersonal: ratioData.ratios.gastos_personal || 8.80,
+            resultadoEconomicoBruto: ratioData.ratios.resultado_economico_bruto || 3.28,
+            resultadoEconomicoDeuda: ratioData.ratios.resultado_economico_deuda || 1.67,
+            margenVentas: ratioData.ratios.margen_ventas || -1.70,
+            cifraNegocioActivo: ratioData.ratios.cifra_negocio_activo || 2.42,
+            resultadoNetoActivo: ratioData.ratios.resultado_neto_activo || 0.37,
+            resultadoAntesImpuestos: ratioData.ratios.resultado_antes_impuestos || -9.53,
+            resultadoDespuesImpuestos: ratioData.ratios.resultado_despues_impuestos || -1.72,
+            existencias: ratioData.ratios.existencias || -0.67,
+            deudoresComerciales: ratioData.ratios.deudores_comerciales || 0.71,
+            acreedoresComerciales: ratioData.ratios.acreedores_comerciales || 0.50,
+            capitalCirculante: ratioData.ratios.capital_circulante || 0.10,
+            gastosFinancieros: ratioData.ratios.gastos_financieros || 21.04,
+            gastosFinancierosResultado: ratioData.ratios.gastos_financieros_resultado || 18.93,
+            resultadosFinancieros: ratioData.ratios.resultados_financieros || 11.29,
+            resultadosFinancierosResultado: ratioData.ratios.resultados_financieros_resultado || 2.38,
+            inmovilizadoFinanciero: ratioData.ratios.inmovilizado_financiero || 6.47,
+            inmovilizadoMaterial: ratioData.ratios.inmovilizado_material || 0.18,
+            activoCorriente: ratioData.ratios.activo_corriente || -2.31,
+          });
+          setSectorInfo({
+            sector: ratioData.sector || 'generic',
+            cnaes: [company.cnae]
+          });
+        }
+      } else {
+        // Fallback to default values
+        setSectorAverages({
+          valorAnadidoBruto: 24.46,
+          gastosPersonal: 8.80,
+          resultadoEconomicoBruto: 3.28,
+          resultadoEconomicoDeuda: 1.67,
+          margenVentas: -1.70,
+          cifraNegocioActivo: 2.42,
+          resultadoNetoActivo: 0.37,
+          resultadoAntesImpuestos: -9.53,
+          resultadoDespuesImpuestos: -1.72,
+          existencias: -0.67,
+          deudoresComerciales: 0.71,
+          acreedoresComerciales: 0.50,
+          capitalCirculante: 0.10,
+          gastosFinancieros: 21.04,
+          gastosFinancierosResultado: 18.93,
+          resultadosFinancieros: 11.29,
+          resultadosFinancierosResultado: 2.38,
+          inmovilizadoFinanciero: 6.47,
+          inmovilizadoMaterial: 0.18,
+          activoCorriente: -2.31,
+        });
+      }
+    };
+
+    loadSectorRatios();
+  }, [companyCnaes, company, calculateWeightedRatios, fetchSectorRatios]);
 
   const years = balanceSheets.map(b => b.fiscal_year).sort((a, b) => b - a);
 
@@ -127,30 +231,6 @@ const SectoralRatiosAnalysis: React.FC<SectoralRatiosAnalysisProps> = ({ company
       inmovilizadoMaterial: (tangibleAssets / totalAssets) * 100,
       activoCorriente: (currentAssets / totalAssets) * 100,
     };
-  };
-
-  // Sector averages (simulated - in real app would come from database)
-  const sectorAverages = {
-    valorAnadidoBruto: 24.46,
-    gastosPersonal: 8.80,
-    resultadoEconomicoBruto: 3.28,
-    resultadoEconomicoDeuda: 1.67,
-    margenVentas: -1.70,
-    cifraNegocioActivo: 2.42,
-    resultadoNetoActivo: 0.37,
-    resultadoAntesImpuestos: -9.53,
-    resultadoDespuesImpuestos: -1.72,
-    existencias: -0.67,
-    deudoresComerciales: 0.71,
-    acreedoresComerciales: 0.50,
-    capitalCirculante: 0.10,
-    gastosFinancieros: 21.04,
-    gastosFinancierosResultado: 18.93,
-    resultadosFinancieros: 11.29,
-    resultadosFinancierosResultado: 2.38,
-    inmovilizadoFinanciero: 6.47,
-    inmovilizadoMaterial: 0.18,
-    activoCorriente: -2.31,
   };
 
   const formatPercent = (value: number) => `${value.toFixed(2)} %`;
@@ -277,19 +357,38 @@ const SectoralRatiosAnalysis: React.FC<SectoralRatiosAnalysisProps> = ({ company
     return <div className="flex items-center justify-center h-64 text-muted-foreground">No hi ha dades financeres disponibles</div>;
   }
 
-  const cnaeCode = company?.cnae || '011';
-  const cnaeDescription = 'Cultivos no perennes';
+  const cnaeCode = companyCnaes.length > 0 
+    ? companyCnaes.map(c => c.cnae_code).join(', ') 
+    : (company?.cnae || '011');
+  const cnaeDescription = sectorInfo.sector !== 'generic' 
+    ? `Sector: ${sectorInfo.sector}` 
+    : 'Sector genérico';
 
   return (
     <div className="flex flex-col h-full bg-background text-foreground">
       {/* Header */}
       <div className="p-3 border-b border-border bg-muted/30">
-        <div className="flex gap-8 text-sm">
-          <div><span className="text-muted-foreground">Sector:</span> <span className="font-bold text-primary">{cnaeCode}</span></div>
-          <div><span className="text-muted-foreground">Tipo:</span> <span className="font-medium">1</span></div>
+        <div className="flex gap-8 text-sm items-center">
+          <div><span className="text-muted-foreground">Sector:</span> <span className="font-bold text-primary">{sectorInfo.sector}</span></div>
+          <div><span className="text-muted-foreground">CNAEs:</span> 
+            <span className="font-medium ml-2">
+              {companyCnaes.length > 0 ? (
+                companyCnaes.map((c, i) => (
+                  <Badge key={c.cnae_code} variant="outline" className="mr-1 text-xs">
+                    {c.cnae_code} ({c.percentage_activity}%)
+                  </Badge>
+                ))
+              ) : (
+                <Badge variant="outline">{company?.cnae || 'N/A'}</Badge>
+              )}
+            </span>
+          </div>
         </div>
         <div className="mt-1">
-          <span className="text-muted-foreground">DESCRIPCIÓN:</span> <span className="font-bold text-yellow-500">{cnaeCode} {cnaeDescription}</span>
+          <span className="text-muted-foreground">DESCRIPCIÓN:</span> <span className="font-bold text-yellow-500">{cnaeDescription}</span>
+          {companyCnaes.length > 1 && (
+            <Badge variant="secondary" className="ml-2">Multi-CNAE (Ponderado)</Badge>
+          )}
         </div>
       </div>
 

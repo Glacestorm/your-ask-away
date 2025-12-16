@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, AreaChart, Area
 } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useCNAESync } from "@/hooks/useCNAESync";
 
 interface ZScoreAnalysisProps {
   companyId: string;
@@ -31,6 +33,16 @@ interface YearData {
   zScore: number;
 }
 
+interface ZScoreCoefficients {
+  x1: number;
+  x2: number;
+  x3: number;
+  x4: number;
+  x5: number;
+  safe_zone_min: number;
+  gray_zone_min: number;
+}
+
 export function ZScoreAnalysis({ companyId, companyName }: ZScoreAnalysisProps) {
   const [data, setData] = useState<YearData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,10 +52,30 @@ export function ZScoreAnalysis({ companyId, companyName }: ZScoreAnalysisProps) 
   const [chartType1, setChartType1] = useState<'bar' | 'line' | 'area'>('bar');
   const [chartGroup2, setChartGroup2] = useState('z_score');
   const [chartType2, setChartType2] = useState<'bar' | 'line' | 'area'>('bar');
+  const [coefficients, setCoefficients] = useState<ZScoreCoefficients>({
+    x1: 1.2, x2: 1.4, x3: 3.3, x4: 0.6, x5: 1.0,
+    safe_zone_min: 2.99, gray_zone_min: 1.81
+  });
+  const [sectorInfo, setSectorInfo] = useState<string>('standard');
+
+  // Use CNAE sync hook for dynamic coefficients
+  const { companyCnaes, calculateWeightedZScoreCoefficients } = useCNAESync(companyId);
+
+  // Load sector-specific coefficients
+  useEffect(() => {
+    const loadCoefficients = async () => {
+      if (companyCnaes.length > 0) {
+        const weightedCoeffs = await calculateWeightedZScoreCoefficients();
+        setCoefficients(weightedCoeffs);
+        setSectorInfo(companyCnaes.length > 1 ? 'multi-sector' : companyCnaes[0]?.cnae_code || 'standard');
+      }
+    };
+    loadCoefficients();
+  }, [companyCnaes, calculateWeightedZScoreCoefficients]);
 
   useEffect(() => {
     fetchData();
-  }, [companyId]);
+  }, [companyId, coefficients]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -105,19 +137,20 @@ export function ZScoreAnalysis({ companyId, companyName }: ZScoreAnalysisProps) 
           const depreciation = Math.abs(income?.depreciation || 0);
 
           const ebitda = netTurnover - supplies - personnelExpenses - otherExpenses;
-          const beneficioBruto = ebitda - depreciation; // EBIT / BAI
+          const beneficioBruto = ebitda - depreciation;
           const beneficioNeto = income?.corporate_tax ? beneficioBruto - Math.abs(income.corporate_tax) : beneficioBruto * 0.9;
           const dividendos = balance.interim_dividend || 0;
 
-          // Altman Z-Score components
+          // Z-Score components with dynamic coefficients
           const x1 = totalActivo > 0 ? fondoManiobra / totalActivo : 0;
           const x2 = totalActivo > 0 ? (beneficioNeto - dividendos) / totalActivo : 0;
           const x3 = totalActivo > 0 ? beneficioBruto / totalActivo : 0;
           const x4 = pasivoExigible > 0 ? patrimonioNeto / pasivoExigible : 0;
           const x5 = totalActivo > 0 ? netTurnover / totalActivo : 0;
 
-          // Z = 1.2*X1 + 1.4*X2 + 3.3*X3 + 0.6*X4 + 1.5*X5
-          const zScore = 1.2 * x1 + 1.4 * x2 + 3.3 * x3 + 0.6 * x4 + 1.5 * x5;
+          // Z-Score calculation using sector-specific coefficients
+          const zScore = coefficients.x1 * x1 + coefficients.x2 * x2 + 
+                        coefficients.x3 * x3 + coefficients.x4 * x4 + coefficients.x5 * x5;
 
           yearData.push({
             year: stmt.fiscal_year,
@@ -156,8 +189,9 @@ export function ZScoreAnalysis({ companyId, companyName }: ZScoreAnalysisProps) 
   };
 
   const getZScoreStatus = (zScore: number) => {
-    if (zScore > 3.0) return { label: 'SIN RIESGO', color: 'text-green-500' };
-    if (zScore >= 1.8) return { label: 'SITUACIÓN DUDOSA', color: 'text-yellow-500' };
+    // Use sector-specific thresholds
+    if (zScore > coefficients.safe_zone_min) return { label: 'SIN RIESGO', color: 'text-green-500' };
+    if (zScore >= coefficients.gray_zone_min) return { label: 'SITUACIÓN DUDOSA', color: 'text-yellow-500' };
     return { label: 'RIESGO DE QUIEBRA', color: 'text-red-500' };
   };
 
@@ -243,8 +277,23 @@ export function ZScoreAnalysis({ companyId, companyName }: ZScoreAnalysisProps) 
   return (
     <div className="flex flex-col h-full bg-background text-foreground">
       {/* Header */}
-      <div className="bg-card border-b p-3 text-center">
-        <h1 className="text-lg font-bold text-primary">DIAGNÓSTICO DEL ÍNDICE "Z" - Aproximación a la Quiebra</h1>
+      <div className="bg-card border-b p-3">
+        <div className="text-center">
+          <h1 className="text-lg font-bold text-primary">DIAGNÓSTICO DEL ÍNDICE "Z" - Aproximación a la Quiebra</h1>
+        </div>
+        <div className="flex items-center justify-center gap-4 mt-2 text-sm">
+          <span className="text-muted-foreground">Coeficientes:</span>
+          {companyCnaes.length > 1 ? (
+            <Badge variant="secondary">Multi-Sector (Ponderado)</Badge>
+          ) : companyCnaes.length === 1 ? (
+            <Badge variant="outline">CNAE {companyCnaes[0].cnae_code}</Badge>
+          ) : (
+            <Badge>Altman Estándar</Badge>
+          )}
+          <span className="text-xs text-muted-foreground">
+            X1={coefficients.x1.toFixed(2)} X2={coefficients.x2.toFixed(2)} X3={coefficients.x3.toFixed(2)} X4={coefficients.x4.toFixed(2)} X5={coefficients.x5.toFixed(2)}
+          </span>
+        </div>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
