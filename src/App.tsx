@@ -16,6 +16,7 @@ import { DemoBanner } from "@/components/demo/DemoBanner";
 import { DemoTour } from "@/components/demo/DemoTour";
 import CookieConsent from "@/components/cookies/CookieConsent";
 import { ObelixiaChatbot } from "@/components/chat/ObelixiaChatbot";
+import { FloatingLanguageSelector } from "@/components/FloatingLanguageSelector";
 
 // Lazy load pages
 const Auth = lazy(() => import("./pages/Auth"));
@@ -80,6 +81,7 @@ const App = () => (
                     <Toaster />
                     <Sonner />
                     <ObelixiaChatbot />
+                    <FloatingLanguageSelector />
                     <DemoBanner />
                     <DemoTour />
                     <CookieConsent />
