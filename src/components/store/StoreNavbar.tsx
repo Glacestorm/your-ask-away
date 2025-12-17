@@ -56,7 +56,7 @@ const StoreNavbar: React.FC = () => {
 
   return (
     <>
-      <nav className="fixed top-4 left-0 right-0 z-50 bg-slate-950">
+      <nav className="fixed top-4 left-0 right-0 z-50 bg-transparent">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-19">
             {/* Logo - Left */}
