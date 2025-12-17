@@ -280,20 +280,20 @@ export default function APIDocumentation() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Documentación API REST</h2>
-          <p className="text-muted-foreground">API pública para integraciones de terceros</p>
+          <h2 className="text-2xl font-bold text-white">Documentación API REST</h2>
+          <p className="text-slate-400">API pública para integraciones de terceros</p>
         </div>
-        <Button onClick={downloadOpenAPISpec}>
+        <Button onClick={downloadOpenAPISpec} className="bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700 text-white">
           <Download className="h-4 w-4 mr-2" />
           Descargar OpenAPI 3.0
         </Button>
       </div>
 
       <Tabs defaultValue="endpoints" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="endpoints">Endpoints</TabsTrigger>
-          <TabsTrigger value="authentication">Autenticación</TabsTrigger>
-          <TabsTrigger value="quickstart">Quick Start</TabsTrigger>
+        <TabsList className="bg-slate-800/50 border border-slate-700">
+          <TabsTrigger value="endpoints" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-slate-300">Endpoints</TabsTrigger>
+          <TabsTrigger value="authentication" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-slate-300">Autenticación</TabsTrigger>
+          <TabsTrigger value="quickstart" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white text-slate-300">Quick Start</TabsTrigger>
         </TabsList>
 
         <TabsContent value="endpoints" className="space-y-4">
@@ -301,7 +301,7 @@ export default function APIDocumentation() {
           <div className="flex flex-wrap gap-2">
             <Badge 
               variant={selectedCategory === null ? "default" : "outline"}
-              className="cursor-pointer"
+              className={`cursor-pointer ${selectedCategory === null ? 'bg-blue-600 text-white' : 'border-slate-600 text-slate-300 hover:bg-slate-700'}`}
               onClick={() => setSelectedCategory(null)}
             >
               Todos ({API_ENDPOINTS.length})
@@ -313,7 +313,7 @@ export default function APIDocumentation() {
                 <Badge 
                   key={cat.id}
                   variant={selectedCategory === cat.id ? "default" : "outline"}
-                  className="cursor-pointer"
+                  className={`cursor-pointer ${selectedCategory === cat.id ? 'bg-blue-600 text-white' : 'border-slate-600 text-slate-300 hover:bg-slate-700'}`}
                   onClick={() => setSelectedCategory(cat.id)}
                 >
                   <Icon className="h-3 w-3 mr-1" />
@@ -326,40 +326,40 @@ export default function APIDocumentation() {
           <ScrollArea className="h-[600px]">
             <Accordion type="multiple" className="space-y-2">
               {filteredEndpoints.map((endpoint, idx) => (
-                <AccordionItem key={idx} value={`endpoint-${idx}`} className="border rounded-lg px-4">
+                <AccordionItem key={idx} value={`endpoint-${idx}`} className="border border-slate-700 rounded-lg px-4 bg-slate-800/30">
                   <AccordionTrigger className="hover:no-underline">
                     <div className="flex items-center gap-3">
                       <Badge className={`${getMethodColor(endpoint.method)} text-white`}>
                         {endpoint.method}
                       </Badge>
-                      <code className="text-sm font-mono">{endpoint.path}</code>
+                      <code className="text-sm font-mono text-emerald-400">{endpoint.path}</code>
                       {endpoint.auth === "jwt" ? (
-                        <Lock className="h-4 w-4 text-muted-foreground" />
+                        <Lock className="h-4 w-4 text-slate-400" />
                       ) : (
                         <Unlock className="h-4 w-4 text-green-500" />
                       )}
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="space-y-4 pt-4">
-                    <p className="text-muted-foreground">{endpoint.description}</p>
+                    <p className="text-slate-300">{endpoint.description}</p>
                     
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline">{endpoint.category}</Badge>
-                      <Badge variant={endpoint.auth === "jwt" ? "destructive" : "secondary"}>
+                      <Badge variant="outline" className="border-slate-600 text-slate-300">{endpoint.category}</Badge>
+                      <Badge variant={endpoint.auth === "jwt" ? "destructive" : "secondary"} className={endpoint.auth === "jwt" ? "bg-red-600/20 text-red-400" : "bg-green-600/20 text-green-400"}>
                         {endpoint.auth === "jwt" ? "🔐 JWT Required" : "🔓 Public"}
                       </Badge>
                     </div>
 
                     {endpoint.parameters && endpoint.parameters.length > 0 && (
                       <div className="space-y-2">
-                        <p className="font-semibold text-sm">Parámetros:</p>
-                        <div className="bg-muted rounded p-3 space-y-1">
+                        <p className="font-semibold text-sm text-white">Parámetros:</p>
+                        <div className="bg-slate-900/50 rounded p-3 space-y-1 border border-slate-700">
                           {endpoint.parameters.map((param, i) => (
-                            <div key={i} className="flex items-start gap-2 text-sm">
-                              <code className="text-primary">{param.name}</code>
-                              <span className="text-muted-foreground">({param.type})</span>
-                              {param.required && <Badge variant="destructive" className="text-xs">required</Badge>}
-                              <span className="text-muted-foreground">- {param.description}</span>
+                            <div key={i} className="flex items-start gap-2 text-sm flex-wrap">
+                              <code className="text-blue-400">{param.name}</code>
+                              <span className="text-slate-500">({param.type})</span>
+                              {param.required && <Badge variant="destructive" className="text-xs bg-red-600/20 text-red-400">required</Badge>}
+                              <span className="text-slate-400">- {param.description}</span>
                             </div>
                           ))}
                         </div>
@@ -368,17 +368,17 @@ export default function APIDocumentation() {
 
                     {endpoint.requestBody && (
                       <div className="space-y-2">
-                        <p className="font-semibold text-sm">Request Body:</p>
-                        <div className="bg-muted rounded p-3 relative">
+                        <p className="font-semibold text-sm text-white">Request Body:</p>
+                        <div className="bg-slate-900/50 rounded p-3 relative border border-slate-700">
                           <Button 
                             size="icon" 
                             variant="ghost" 
-                            className="absolute top-2 right-2 h-6 w-6"
+                            className="absolute top-2 right-2 h-6 w-6 text-slate-400 hover:text-white"
                             onClick={() => copyToClipboard(JSON.stringify(endpoint.requestBody, null, 2))}
                           >
                             <Copy className="h-3 w-3" />
                           </Button>
-                          <pre className="text-xs overflow-x-auto">
+                          <pre className="text-xs overflow-x-auto text-emerald-400">
                             {JSON.stringify(endpoint.requestBody, null, 2)}
                           </pre>
                         </div>
@@ -387,17 +387,17 @@ export default function APIDocumentation() {
 
                     {endpoint.responseExample && (
                       <div className="space-y-2">
-                        <p className="font-semibold text-sm">Response Example:</p>
-                        <div className="bg-muted rounded p-3 relative">
+                        <p className="font-semibold text-sm text-white">Response Example:</p>
+                        <div className="bg-slate-900/50 rounded p-3 relative border border-slate-700">
                           <Button 
                             size="icon" 
                             variant="ghost" 
-                            className="absolute top-2 right-2 h-6 w-6"
+                            className="absolute top-2 right-2 h-6 w-6 text-slate-400 hover:text-white"
                             onClick={() => copyToClipboard(JSON.stringify(endpoint.responseExample, null, 2))}
                           >
                             <Copy className="h-3 w-3" />
                           </Button>
-                          <pre className="text-xs overflow-x-auto">
+                          <pre className="text-xs overflow-x-auto text-blue-400">
                             {JSON.stringify(endpoint.responseExample, null, 2)}
                           </pre>
                         </div>
@@ -411,54 +411,54 @@ export default function APIDocumentation() {
         </TabsContent>
 
         <TabsContent value="authentication" className="space-y-4">
-          <Card>
+          <Card className="bg-slate-800/50 border-slate-700">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-white">
+                <Shield className="h-5 w-5 text-blue-400" />
                 Autenticación JWT Bearer
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-slate-400">
                 Todas las peticiones autenticadas requieren un token JWT válido de Supabase
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <p className="font-semibold">1. Obtener token de sesión:</p>
-                <div className="bg-muted rounded p-3 relative">
+                <p className="font-semibold text-white">1. Obtener token de sesión:</p>
+                <div className="bg-slate-900/50 rounded p-3 relative border border-slate-700">
                   <Button 
                     size="icon" 
                     variant="ghost" 
-                    className="absolute top-2 right-2 h-6 w-6"
+                    className="absolute top-2 right-2 h-6 w-6 text-slate-400 hover:text-white"
                     onClick={() => copyToClipboard(`const { data: { session } } = await supabase.auth.getSession();
 const token = session?.access_token;`)}
                   >
                     <Copy className="h-3 w-3" />
                   </Button>
-                  <pre className="text-sm font-mono">{`const { data: { session } } = await supabase.auth.getSession();
+                  <pre className="text-sm font-mono text-emerald-400">{`const { data: { session } } = await supabase.auth.getSession();
 const token = session?.access_token;`}</pre>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <p className="font-semibold">2. Incluir en headers:</p>
-                <div className="bg-muted rounded p-3 relative">
+                <p className="font-semibold text-white">2. Incluir en headers:</p>
+                <div className="bg-slate-900/50 rounded p-3 relative border border-slate-700">
                   <Button 
                     size="icon" 
                     variant="ghost" 
-                    className="absolute top-2 right-2 h-6 w-6"
+                    className="absolute top-2 right-2 h-6 w-6 text-slate-400 hover:text-white"
                     onClick={() => copyToClipboard(`Authorization: Bearer {token}
 apikey: {SUPABASE_ANON_KEY}`)}
                   >
                     <Copy className="h-3 w-3" />
                   </Button>
-                  <pre className="text-sm font-mono">{`Authorization: Bearer {token}
+                  <pre className="text-sm font-mono text-blue-400">{`Authorization: Bearer {token}
 apikey: {SUPABASE_ANON_KEY}`}</pre>
                 </div>
               </div>
 
-              <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-200">⚠️ Importante:</p>
-                <ul className="text-sm text-yellow-700 dark:text-yellow-300 list-disc list-inside mt-2">
+              <div className="p-4 bg-yellow-900/30 rounded-lg border border-yellow-700">
+                <p className="text-sm font-semibold text-yellow-300">⚠️ Importante:</p>
+                <ul className="text-sm text-yellow-200 list-disc list-inside mt-2">
                   <li>Los tokens expiran después de 1 hora</li>
                   <li>RLS (Row Level Security) aplica según el rol del usuario</li>
                   <li>Rate limiting: 100 requests/minuto por IP</li>
@@ -469,17 +469,17 @@ apikey: {SUPABASE_ANON_KEY}`}</pre>
         </TabsContent>
 
         <TabsContent value="quickstart" className="space-y-4">
-          <Card>
+          <Card className="bg-slate-800/50 border-slate-700">
             <CardHeader>
-              <CardTitle>Quick Start - JavaScript/TypeScript</CardTitle>
-              <CardDescription>Ejemplo de integración básica con Supabase SDK</CardDescription>
+              <CardTitle className="text-white">Quick Start - JavaScript/TypeScript</CardTitle>
+              <CardDescription className="text-slate-400">Ejemplo de integración básica con Supabase SDK</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="bg-muted rounded p-4 relative">
+              <div className="bg-slate-900/50 rounded p-4 relative border border-slate-700">
                 <Button 
                   size="icon" 
                   variant="ghost" 
-                  className="absolute top-2 right-2 h-6 w-6"
+                  className="absolute top-2 right-2 h-6 w-6 text-slate-400 hover:text-white"
                   onClick={() => copyToClipboard(`import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -518,7 +518,7 @@ const { data: summary } = await supabase.functions.invoke('summarize-visit', {
                 >
                   <Copy className="h-4 w-4" />
                 </Button>
-                <pre className="text-xs font-mono overflow-x-auto">{`import { createClient } from '@supabase/supabase-js';
+                <pre className="text-xs font-mono overflow-x-auto text-emerald-400">{`import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
   'https://avaugfnqvvqcilhiudlf.supabase.co',
@@ -557,14 +557,14 @@ const { data: summary } = await supabase.functions.invoke('summarize-visit', {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-slate-800/50 border-slate-700">
             <CardHeader>
-              <CardTitle>Quick Start - cURL</CardTitle>
-              <CardDescription>Ejemplo con cURL para testing rápido</CardDescription>
+              <CardTitle className="text-white">Quick Start - cURL</CardTitle>
+              <CardDescription className="text-slate-400">Ejemplo con cURL para testing rápido</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="bg-muted rounded p-4 relative">
-                <pre className="text-xs font-mono overflow-x-auto">{`# Get companies
+              <div className="bg-slate-900/50 rounded p-4 relative border border-slate-700">
+                <pre className="text-xs font-mono overflow-x-auto text-blue-400">{`# Get companies
 curl -X GET \\
   'https://avaugfnqvvqcilhiudlf.supabase.co/rest/v1/companies?limit=10' \\
   -H 'apikey: YOUR_ANON_KEY' \\
