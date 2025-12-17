@@ -564,31 +564,49 @@
             <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>
           </circle>
           
-          <!-- Sparkle points that explode -->
-          <g id="sparkle-sources" filter="url(#sparkleGlow)">
-            <circle cx="20" cy="50" r="4" fill="white">
-              <animate attributeName="opacity" values="0;1;0" dur="1.8s" begin="0s" repeatCount="indefinite"/>
-              <animate attributeName="r" values="2;6;2" dur="1.8s" begin="0s" repeatCount="indefinite"/>
+          <!-- Synchrotron particles circulating along infinity path -->
+          <g id="synchrotron-particles" filter="url(#sparkleGlow)">
+            <!-- Particle 1 -->
+            <circle r="5" fill="white">
+              <animateMotion dur="3s" repeatCount="indefinite" rotate="auto">
+                <mpath href="#infinityPath"/>
+              </animateMotion>
+              <animate attributeName="r" values="4;6;4" dur="0.5s" repeatCount="indefinite"/>
             </circle>
-            <circle cx="55" cy="30" r="4" fill="white">
-              <animate attributeName="opacity" values="0;1;0" dur="1.8s" begin="0.3s" repeatCount="indefinite"/>
-              <animate attributeName="r" values="2;6;2" dur="1.8s" begin="0.3s" repeatCount="indefinite"/>
+            <!-- Particle 2 - offset -->
+            <circle r="5" fill="white">
+              <animateMotion dur="3s" repeatCount="indefinite" rotate="auto" begin="-0.5s">
+                <mpath href="#infinityPath"/>
+              </animateMotion>
+              <animate attributeName="r" values="4;6;4" dur="0.5s" repeatCount="indefinite" begin="0.1s"/>
             </circle>
-            <circle cx="145" cy="30" r="4" fill="white">
-              <animate attributeName="opacity" values="0;1;0" dur="1.8s" begin="0.6s" repeatCount="indefinite"/>
-              <animate attributeName="r" values="2;6;2" dur="1.8s" begin="0.6s" repeatCount="indefinite"/>
+            <!-- Particle 3 - offset -->
+            <circle r="5" fill="white">
+              <animateMotion dur="3s" repeatCount="indefinite" rotate="auto" begin="-1s">
+                <mpath href="#infinityPath"/>
+              </animateMotion>
+              <animate attributeName="r" values="4;6;4" dur="0.5s" repeatCount="indefinite" begin="0.2s"/>
             </circle>
-            <circle cx="180" cy="50" r="4" fill="white">
-              <animate attributeName="opacity" values="0;1;0" dur="1.8s" begin="0.9s" repeatCount="indefinite"/>
-              <animate attributeName="r" values="2;6;2" dur="1.8s" begin="0.9s" repeatCount="indefinite"/>
+            <!-- Particle 4 - offset -->
+            <circle r="5" fill="white">
+              <animateMotion dur="3s" repeatCount="indefinite" rotate="auto" begin="-1.5s">
+                <mpath href="#infinityPath"/>
+              </animateMotion>
+              <animate attributeName="r" values="4;6;4" dur="0.5s" repeatCount="indefinite" begin="0.3s"/>
             </circle>
-            <circle cx="145" cy="70" r="4" fill="white">
-              <animate attributeName="opacity" values="0;1;0" dur="1.8s" begin="1.2s" repeatCount="indefinite"/>
-              <animate attributeName="r" values="2;6;2" dur="1.8s" begin="1.2s" repeatCount="indefinite"/>
+            <!-- Particle 5 - offset -->
+            <circle r="5" fill="white">
+              <animateMotion dur="3s" repeatCount="indefinite" rotate="auto" begin="-2s">
+                <mpath href="#infinityPath"/>
+              </animateMotion>
+              <animate attributeName="r" values="4;6;4" dur="0.5s" repeatCount="indefinite" begin="0.4s"/>
             </circle>
-            <circle cx="55" cy="70" r="4" fill="white">
-              <animate attributeName="opacity" values="0;1;0" dur="1.8s" begin="1.5s" repeatCount="indefinite"/>
-              <animate attributeName="r" values="2;6;2" dur="1.8s" begin="1.5s" repeatCount="indefinite"/>
+            <!-- Particle 6 - offset -->
+            <circle r="5" fill="white">
+              <animateMotion dur="3s" repeatCount="indefinite" rotate="auto" begin="-2.5s">
+                <mpath href="#infinityPath"/>
+              </animateMotion>
+              <animate attributeName="r" values="4;6;4" dur="0.5s" repeatCount="indefinite" begin="0.5s"/>
             </circle>
           </g>
         </svg>
