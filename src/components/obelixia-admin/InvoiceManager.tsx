@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Plus, Search, Mail, Receipt, Euro, Send, 
-  Printer, Eye, Check, Clock, AlertCircle, Trash2, Edit
+  Printer, Eye, Check, Clock, AlertCircle, Trash2, Edit, Download, Save
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -242,6 +244,106 @@ export const InvoiceManager: React.FC = () => {
     } finally {
       setIsSending(false);
     }
+  };
+
+  const generateInvoicePDF = (invoice: Invoice) => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    
+    // Dark header background
+    doc.setFillColor(10, 10, 15);
+    doc.rect(0, 0, pageWidth, 50, 'F');
+    
+    // Logo text with gradient simulation
+    doc.setFontSize(24);
+    doc.setTextColor(59, 130, 246); // Blue
+    doc.text('Obelix', 20, 30);
+    doc.setTextColor(16, 185, 129); // Emerald
+    doc.text('IA', 58, 30);
+    
+    // Invoice number
+    doc.setFontSize(12);
+    doc.setTextColor(148, 163, 184);
+    doc.text(`Factura: ${invoice.invoice_number}`, pageWidth - 20, 25, { align: 'right' });
+    doc.text(`Fecha: ${new Date(invoice.issue_date).toLocaleDateString('es-ES')}`, pageWidth - 20, 35, { align: 'right' });
+    
+    // Reset colors
+    doc.setTextColor(0, 0, 0);
+    
+    // Company info
+    doc.setFontSize(10);
+    doc.text('ObelixIA Software Solutions', 20, 65);
+    doc.text('CIF: B12345678', 20, 72);
+    doc.text('jfernandez@obelixia.com | +34 606 770 033', 20, 79);
+    
+    // Customer info
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Facturar a:', 20, 95);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(invoice.customer_company || invoice.customer_name || '-', 20, 103);
+    doc.text(`CIF/NIF: ${invoice.customer_tax_id || '-'}`, 20, 110);
+    doc.text(invoice.customer_email, 20, 117);
+    if (invoice.customer_address) {
+      doc.text(invoice.customer_address, 20, 124);
+    }
+    
+    // Items table
+    const tableData = (invoice.items || []).map((item: InvoiceItem) => [
+      item.module_name,
+      item.quantity.toString(),
+      `${item.unit_price.toLocaleString('es-ES')} €`,
+      `${item.total.toLocaleString('es-ES')} €`
+    ]);
+    
+    (doc as any).autoTable({
+      startY: 135,
+      head: [['Módulo', 'Cant.', 'Precio Unit.', 'Total']],
+      body: tableData,
+      theme: 'striped',
+      headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255] },
+      styles: { fontSize: 10 },
+      columnStyles: {
+        2: { halign: 'right' },
+        3: { halign: 'right' }
+      }
+    });
+    
+    // Totals
+    const finalY = (doc as any).lastAutoTable.finalY + 10;
+    doc.setFontSize(10);
+    doc.text(`Subtotal: ${invoice.subtotal.toLocaleString('es-ES')} €`, pageWidth - 20, finalY, { align: 'right' });
+    doc.text(`IVA (${invoice.tax_rate}%): ${invoice.tax_amount.toLocaleString('es-ES')} €`, pageWidth - 20, finalY + 7, { align: 'right' });
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.text(`TOTAL: ${invoice.total.toLocaleString('es-ES')} €`, pageWidth - 20, finalY + 17, { align: 'right' });
+    
+    // Payment info
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    const dueDate = invoice.due_date ? new Date(invoice.due_date).toLocaleDateString('es-ES') : '-';
+    doc.text(`Fecha de vencimiento: ${dueDate}`, 20, finalY + 30);
+    
+    // Footer
+    doc.setFontSize(8);
+    doc.text('ObelixIA - CRM Bancario Inteligente | www.obelixia.com', pageWidth / 2, 285, { align: 'center' });
+    
+    return doc;
+  };
+
+  const printInvoice = (invoice: Invoice) => {
+    const doc = generateInvoicePDF(invoice);
+    doc.autoPrint();
+    window.open(doc.output('bloburl'), '_blank');
+    toast.success('Documento listo para imprimir');
+  };
+
+  const saveInvoice = (invoice: Invoice) => {
+    const doc = generateInvoicePDF(invoice);
+    doc.save(`Factura_${invoice.invoice_number}.pdf`);
+    toast.success('Factura guardada correctamente');
   };
 
   const getStatusBadge = (status: string) => {
@@ -546,12 +648,30 @@ export const InvoiceManager: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     {getStatusBadge(selectedInvoice.status)}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => saveInvoice(selectedInvoice)}
+                      className="border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10"
+                    >
+                      <Download className="w-4 h-4 mr-1" />
+                      Guardar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => printInvoice(selectedInvoice)}
+                      className="border-blue-500/50 text-blue-400 hover:bg-blue-500/10"
+                    >
+                      <Printer className="w-4 h-4 mr-1" />
+                      Imprimir
+                    </Button>
                     {selectedInvoice.status === 'draft' && (
                       <Button
                         size="sm"
                         onClick={() => sendInvoice(selectedInvoice)}
                         disabled={isSending}
-                        className="bg-blue-600 hover:bg-blue-700"
+                        className="bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700"
                       >
                         <Send className="w-4 h-4 mr-1" />
                         {isSending ? 'Enviando...' : 'Enviar'}

@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Plus, Search, Mail, Clock, Check, X, FileText, 
-  Euro, User, Building2, Send, Trash2, Edit
+  Euro, User, Building2, Send, Trash2, Edit, Download, Printer
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -194,14 +196,104 @@ const QuoteManager: React.FC = () => {
   };
 
   const sendQuoteToCustomer = async (quote: Quote) => {
-    // Here you would integrate with email service
-    // For now, just update status to 'sent'
     await updateQuoteStatus(quote.id, 'sent');
     toast.success(`Cotización enviada a ${quote.customer_email}`);
   };
 
   const getTotalQuoteValue = () => {
     return quoteItems.reduce((sum, item) => sum + (item.custom_price * item.quantity), 0);
+  };
+
+  const generateQuotePDF = (quote: Quote, items: QuoteItem[]) => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    
+    // Dark header background
+    doc.setFillColor(10, 10, 15);
+    doc.rect(0, 0, pageWidth, 50, 'F');
+    
+    // Logo text
+    doc.setFontSize(24);
+    doc.setTextColor(59, 130, 246);
+    doc.text('Obelix', 20, 30);
+    doc.setTextColor(16, 185, 129);
+    doc.text('IA', 58, 30);
+    
+    // Quote info
+    doc.setFontSize(12);
+    doc.setTextColor(148, 163, 184);
+    doc.text('PRESUPUESTO', pageWidth - 20, 25, { align: 'right' });
+    doc.text(`Fecha: ${new Date(quote.created_at).toLocaleDateString('es-ES')}`, pageWidth - 20, 35, { align: 'right' });
+    
+    doc.setTextColor(0, 0, 0);
+    
+    // Company info
+    doc.setFontSize(10);
+    doc.text('ObelixIA Software Solutions', 20, 65);
+    doc.text('CIF: B12345678', 20, 72);
+    doc.text('jfernandez@obelixia.com | +34 606 770 033', 20, 79);
+    
+    // Customer info
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Cliente:', 20, 95);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(quote.customer_company || quote.customer_name || '-', 20, 103);
+    doc.text(`CIF/NIF: ${quote.customer_tax_id || '-'}`, 20, 110);
+    doc.text(quote.customer_email, 20, 117);
+    
+    // Items table
+    const tableData = items.map(item => [
+      item.module_name,
+      item.license_type === 'monthly' ? 'Mensual' : item.license_type === 'annual' ? 'Anual' : 'Perpetua',
+      item.quantity.toString(),
+      `${(item.custom_price * item.quantity).toLocaleString('es-ES')} €`
+    ]);
+    
+    (doc as any).autoTable({
+      startY: 130,
+      head: [['Módulo', 'Licencia', 'Cant.', 'Total']],
+      body: tableData,
+      theme: 'striped',
+      headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255] },
+      styles: { fontSize: 10 },
+      columnStyles: { 3: { halign: 'right' } }
+    });
+    
+    // Total
+    const finalY = (doc as any).lastAutoTable.finalY + 15;
+    const total = items.reduce((sum, item) => sum + (item.custom_price * item.quantity), 0);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text(`TOTAL: ${total.toLocaleString('es-ES')} €`, pageWidth - 20, finalY, { align: 'right' });
+    
+    // Validity
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(100, 100, 100);
+    const validUntil = quote.valid_until ? new Date(quote.valid_until).toLocaleDateString('es-ES') : '30 días';
+    doc.text(`Validez: ${validUntil}`, 20, finalY + 15);
+    doc.text('*Precios sin IVA', 20, finalY + 22);
+    
+    // Footer
+    doc.setFontSize(8);
+    doc.text('ObelixIA - CRM Bancario Inteligente | www.obelixia.com', pageWidth / 2, 285, { align: 'center' });
+    
+    return doc;
+  };
+
+  const printQuote = (quote: Quote) => {
+    const doc = generateQuotePDF(quote, quoteItems);
+    doc.autoPrint();
+    window.open(doc.output('bloburl'), '_blank');
+    toast.success('Documento listo para imprimir');
+  };
+
+  const saveQuote = (quote: Quote) => {
+    const doc = generateQuotePDF(quote, quoteItems);
+    doc.save(`Presupuesto_${quote.customer_company || quote.customer_name || 'cliente'}_${new Date().toISOString().split('T')[0]}.pdf`);
+    toast.success('Presupuesto guardado correctamente');
   };
 
   const getStatusBadge = (status: string) => {
@@ -363,11 +455,29 @@ const QuoteManager: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-2">
                     {getStatusBadge(selectedQuote.status)}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => saveQuote(selectedQuote)}
+                      className="border-emerald-500/50 text-emerald-600 hover:bg-emerald-500/10"
+                    >
+                      <Download className="w-4 h-4 mr-1" />
+                      Guardar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => printQuote(selectedQuote)}
+                      className="border-blue-500/50 text-blue-600 hover:bg-blue-500/10"
+                    >
+                      <Printer className="w-4 h-4 mr-1" />
+                      Imprimir
+                    </Button>
                     {selectedQuote.status === 'pending' && (
                       <Button
                         size="sm"
                         onClick={() => sendQuoteToCustomer(selectedQuote)}
-                        className="bg-blue-600 hover:bg-blue-700"
+                        className="bg-gradient-to-r from-blue-600 to-emerald-600 hover:from-blue-700 hover:to-emerald-700"
                       >
                         <Send className="w-4 h-4 mr-1" />
                         Enviar
