@@ -3440,6 +3440,92 @@ export type Database = {
           },
         ]
       }
+      customer_quote_items: {
+        Row: {
+          created_at: string
+          custom_price: number
+          id: string
+          license_type: string
+          module_key: string
+          module_name: string
+          notes: string | null
+          quantity: number
+          quote_id: string
+        }
+        Insert: {
+          created_at?: string
+          custom_price: number
+          id?: string
+          license_type?: string
+          module_key: string
+          module_name: string
+          notes?: string | null
+          quantity?: number
+          quote_id: string
+        }
+        Update: {
+          created_at?: string
+          custom_price?: number
+          id?: string
+          license_type?: string
+          module_key?: string
+          module_name?: string
+          notes?: string | null
+          quantity?: number
+          quote_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_quote_items_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "customer_quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_quotes: {
+        Row: {
+          assigned_by: string | null
+          created_at: string
+          customer_company: string | null
+          customer_email: string
+          customer_name: string | null
+          customer_tax_id: string | null
+          id: string
+          notes: string | null
+          status: string
+          updated_at: string
+          valid_until: string | null
+        }
+        Insert: {
+          assigned_by?: string | null
+          created_at?: string
+          customer_company?: string | null
+          customer_email: string
+          customer_name?: string | null
+          customer_tax_id?: string | null
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Update: {
+          assigned_by?: string | null
+          created_at?: string
+          customer_company?: string | null
+          customer_email?: string
+          customer_name?: string | null
+          customer_tax_id?: string | null
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
       customer_rfm_scores: {
         Row: {
           calculated_at: string
@@ -9555,6 +9641,18 @@ export type Database = {
       get_company_chart_of_accounts: {
         Args: { p_company_id: string }
         Returns: Json
+      }
+      get_customer_quote_by_token: {
+        Args: { p_email: string; p_quote_id: string }
+        Returns: {
+          customer_company: string
+          customer_email: string
+          customer_name: string
+          items: Json
+          quote_id: string
+          status: string
+          valid_until: string
+        }[]
       }
       get_installed_modules: {
         Args: { _organization_id?: string }

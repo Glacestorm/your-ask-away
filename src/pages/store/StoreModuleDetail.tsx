@@ -4,18 +4,17 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { motion } from 'framer-motion';
 import { 
-  ArrowLeft, ShoppingCart, Check, Star, Shield, Zap, 
+  ArrowLeft, Check, Star, Shield, Zap, 
   Calendar, FileCode2, Building2, Package, Download,
   Globe, Lock, Users, BarChart3, Brain, Calculator,
   Target, FileText, Bell, MapPin, Database, Crown,
-  Layers, CheckCircle2, Clock, Award, Headphones
+  Layers, CheckCircle2, Clock, Award, Headphones, MessageSquare
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
 
 const iconMap: Record<string, React.ElementType> = {
@@ -53,7 +52,6 @@ const getSectorLabel = (sector: string | null) => {
 const StoreModuleDetail: React.FC = () => {
   const { moduleKey } = useParams<{ moduleKey: string }>();
   const navigate = useNavigate();
-  const { addItem, isInCart } = useCart();
   const { toast } = useToast();
 
   const { data: module, isLoading, error } = useQuery({
@@ -70,27 +68,15 @@ const StoreModuleDetail: React.FC = () => {
     },
     enabled: !!moduleKey,
   });
-
-  const inCart = module ? isInCart(module.module_key) : false;
   
-  const handleAddToCart = () => {
-    if (!module || inCart) return;
-
-    addItem({
-      moduleKey: module.module_key,
-      moduleName: module.module_name,
-      moduleIcon: module.module_icon || undefined,
-      price: module.base_price || 0,
-      quantity: 1,
-      licenseType: 'annual',
-      category: module.category,
-      isPremium: module.category === 'vertical',
-    });
-
+  const handleRequestQuote = () => {
+    // Scroll to contact section or show toast
     toast({
-      title: 'Añadido al carrito',
-      description: `${module.module_name} se ha añadido a tu carrito`,
+      title: 'Solicitar cotización',
+      description: `Contacte con nuestro equipo comercial para obtener un precio personalizado para ${module?.module_name}`,
     });
+    // Navigate to store with contact section
+    navigate('/store#contact');
   };
 
   if (isLoading) {
@@ -326,8 +312,8 @@ const StoreModuleDetail: React.FC = () => {
             }`}>
               <CardContent className="p-6 space-y-6">
                 <div className="text-center">
-                  <div className="text-4xl font-bold text-white mb-1">{formattedPrice}</div>
-                  <div className="text-slate-400">por año / licencia</div>
+                  <div className="text-2xl font-semibold text-slate-300 mb-1">Precio personalizado</div>
+                  <div className="text-slate-400">Solicite cotización</div>
                 </div>
 
                 <Separator className="bg-slate-700" />
@@ -353,39 +339,19 @@ const StoreModuleDetail: React.FC = () => {
 
                 <Button
                   className={`w-full ${
-                    inCart 
-                      ? 'bg-slate-700 text-slate-400' 
-                      : isPremium 
-                        ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700'
-                        : 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700'
+                    isPremium 
+                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700'
+                      : 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700'
                   }`}
                   size="lg"
-                  onClick={handleAddToCart}
-                  disabled={inCart}
+                  onClick={handleRequestQuote}
                 >
-                  {inCart ? (
-                    <>
-                      <Check className="w-5 h-5 mr-2" />
-                      Añadido al carrito
-                    </>
-                  ) : (
-                    <>
-                      <ShoppingCart className="w-5 h-5 mr-2" />
-                      Añadir al carrito
-                    </>
-                  )}
+                  <MessageSquare className="w-5 h-5 mr-2" />
+                  Solicitar Cotización
                 </Button>
 
-                {inCart && (
-                  <Link to="/store/checkout">
-                    <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:text-white">
-                      Ver carrito
-                    </Button>
-                  </Link>
-                )}
-
                 <div className="text-center text-xs text-slate-500">
-                  Garantía de devolución de 30 días
+                  Contacte con nuestro equipo comercial
                 </div>
               </CardContent>
             </Card>
@@ -680,11 +646,10 @@ const StoreModuleDetail: React.FC = () => {
                       Los módulos Premium incluyen soporte prioritario y características exclusivas
                     </p>
                     <Button
-                      onClick={handleAddToCart}
-                      disabled={inCart}
+                      onClick={handleRequestQuote}
                       className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700"
                     >
-                      {inCart ? 'Ya añadido' : 'Obtener Premium'}
+                      Solicitar Cotización Premium
                     </Button>
                   </div>
                 </CardContent>
