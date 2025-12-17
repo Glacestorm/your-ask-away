@@ -1076,4 +1076,12 @@ export default {
   'profile.selectValidImage': 'Por favor selecciona una imagen válida',
   'profile.imageTooLarge': 'La imagen debe ser menor a 2MB',
   'profile.errorLoading': 'Error al cargar el perfil',
+
+  // Store Navigation
+  'store.nav.home': 'Inicio',
+  'store.nav.modules': 'Módulos',
+  'store.nav.bundles': 'Packs',
+  'store.nav.pricing': 'Precios',
+  'store.nav.login': 'Iniciar Sesión',
+  'store.nav.register': 'Registrarse',
 };

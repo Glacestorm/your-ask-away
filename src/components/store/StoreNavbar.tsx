@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/contexts/CartContext';
 import { ObelixiaLogo } from '@/components/ui/ObelixiaLogo';
 import StoreAuthModal from './StoreAuthModal';
-
+import { LanguageSelector } from '@/components/LanguageSelector';
+import { useLanguage } from '@/contexts/LanguageContext';
 const StoreNavbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -15,12 +16,13 @@ const StoreNavbar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('inicio');
+  const { t } = useLanguage();
 
   const navLinks = [
-    { id: 'inicio', label: 'Inicio' },
-    { id: 'modules', label: 'Módulos' },
-    { id: 'bundles', label: 'Packs' },
-    { id: 'pricing', label: 'Precios' },
+    { id: 'inicio', label: t('store.nav.home') },
+    { id: 'modules', label: t('store.nav.modules') },
+    { id: 'bundles', label: t('store.nav.bundles') },
+    { id: 'pricing', label: t('store.nav.pricing') },
   ];
 
   const scrollToSection = (sectionId: string) => {
@@ -94,8 +96,11 @@ const StoreNavbar: React.FC = () => {
               ))}
             </div>
 
-            {/* Auth Buttons + Cart - Right */}
+            {/* Language Selector + Auth Buttons + Cart - Right */}
             <div className="hidden lg:flex items-center gap-3 z-10">
+              {/* Language Selector */}
+              <LanguageSelector />
+
               {/* Login Button */}
               <motion.button
                 onClick={openLogin}
@@ -105,7 +110,7 @@ const StoreNavbar: React.FC = () => {
                 style={{ fontFamily: 'Crimson Pro, serif', letterSpacing: '0.05em' }}
               >
                 <LogIn className="w-4 h-4" />
-                Iniciar Sesión
+                {t('store.nav.login')}
               </motion.button>
 
               {/* Register Button */}
@@ -117,7 +122,7 @@ const StoreNavbar: React.FC = () => {
                 style={{ fontFamily: 'Crimson Pro, serif', letterSpacing: '0.05em' }}
               >
                 <UserPlus className="w-4 h-4" />
-                Registrarse
+                {t('store.nav.register')}
               </motion.button>
 
               {/* Cart Button */}
@@ -195,6 +200,7 @@ const StoreNavbar: React.FC = () => {
               </div>
               
               <div className="flex gap-2 mt-4 pt-4 border-t border-slate-800">
+                <LanguageSelector />
                 <motion.button
                   onClick={openLogin}
                   whileTap={{ scale: 0.95 }}
@@ -202,7 +208,7 @@ const StoreNavbar: React.FC = () => {
                   style={{ fontFamily: 'Crimson Pro, serif' }}
                 >
                   <LogIn className="w-4 h-4" />
-                  Iniciar Sesión
+                  {t('store.nav.login')}
                 </motion.button>
                 <motion.button
                   onClick={openRegister}
@@ -211,7 +217,7 @@ const StoreNavbar: React.FC = () => {
                   style={{ fontFamily: 'Crimson Pro, serif' }}
                 >
                   <UserPlus className="w-4 h-4" />
-                  Registrarse
+                  {t('store.nav.register')}
                 </motion.button>
               </div>
             </motion.div>
