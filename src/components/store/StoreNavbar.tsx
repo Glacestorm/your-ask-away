@@ -56,13 +56,9 @@ const StoreNavbar: React.FC = () => {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-transparent relative">
-        {/* Soft fade to blend navbar into page background */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-b from-transparent via-background/35 to-transparent blur-xl"
-        />
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-950">
         <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-20">
             {/* Logo - Left */}
             <button onClick={() => scrollToSection('inicio')} className="flex items-center gap-2 z-10">
               <ObelixiaLogo size="md" variant="full" animated={false} dark />
