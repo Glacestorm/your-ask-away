@@ -36,7 +36,7 @@ const getInitialLanguage = (): Language => {
   } catch (e) {
     console.error('Error reading language from localStorage:', e);
   }
-  return 'ca';
+  return 'en';
 };
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {

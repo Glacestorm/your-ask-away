@@ -17,6 +17,7 @@ import { FloatingChatButton } from "@/components/chat/FloatingChatButton";
 import { DemoBanner } from "@/components/demo/DemoBanner";
 import { DemoTour } from "@/components/demo/DemoTour";
 import CookieConsent from "@/components/cookies/CookieConsent";
+import { LanguageFloatingSelector } from "@/components/LanguageFloatingSelector";
 
 // Lazy load pages
 const Auth = lazy(() => import("./pages/Auth"));
@@ -82,6 +83,7 @@ const App = () => (
                     <Sonner />
                     <HelpButton />
                     <FloatingChatButton />
+                    <LanguageFloatingSelector />
                     <DemoBanner />
                     <DemoTour />
                     <CookieConsent />
