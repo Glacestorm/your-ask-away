@@ -111,11 +111,11 @@
       /* Hollywood Rainbow Arc - Blue to Green gradient */
       .hollywood-arc {
         position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 600px;
-        height: 300px;
-        transform: translate(-50%, -60%);
+        top: 42%;
+        left: 28%;
+        width: 500px;
+        height: 250px;
+        transform: translate(-50%, -50%);
         opacity: 0;
         animation: arcReveal 3s ease-out 0.5s forwards;
       }
@@ -123,7 +123,7 @@
         content: '';
         position: absolute;
         inset: 0;
-        border-radius: 300px 300px 0 0;
+        border-radius: 250px 250px 0 0;
         background: conic-gradient(from 180deg at 50% 100%, 
           transparent 0deg, 
           #0ea5e9 30deg, 
@@ -133,8 +133,8 @@
           #10b981 150deg,
           #06b6d4 180deg,
           transparent 180deg);
-        mask: radial-gradient(ellipse 280px 140px at 50% 100%, transparent 95%, black 100%);
-        -webkit-mask: radial-gradient(ellipse 280px 140px at 50% 100%, transparent 95%, black 100%);
+        mask: radial-gradient(ellipse 230px 115px at 50% 100%, transparent 95%, black 100%);
+        -webkit-mask: radial-gradient(ellipse 230px 115px at 50% 100%, transparent 95%, black 100%);
         filter: blur(8px);
         animation: arcGlow 4s ease-in-out infinite;
       }
@@ -142,7 +142,7 @@
         content: '';
         position: absolute;
         inset: 0;
-        border-radius: 300px 300px 0 0;
+        border-radius: 250px 250px 0 0;
         background: conic-gradient(from 180deg at 50% 100%, 
           transparent 0deg, 
           rgba(14,165,233,0.6) 30deg, 
@@ -152,14 +152,14 @@
           rgba(16,185,129,0.6) 150deg,
           rgba(6,182,212,0.4) 180deg,
           transparent 180deg);
-        mask: radial-gradient(ellipse 260px 130px at 50% 100%, transparent 95%, black 100%);
-        -webkit-mask: radial-gradient(ellipse 260px 130px at 50% 100%, transparent 95%, black 100%);
+        mask: radial-gradient(ellipse 210px 105px at 50% 100%, transparent 95%, black 100%);
+        -webkit-mask: radial-gradient(ellipse 210px 105px at 50% 100%, transparent 95%, black 100%);
         filter: blur(2px);
       }
       @keyframes arcReveal {
-        0% { opacity: 0; transform: translate(-50%, -60%) scale(0.3); }
-        60% { opacity: 1; transform: translate(-50%, -60%) scale(1.1); }
-        100% { opacity: 1; transform: translate(-50%, -60%) scale(1); }
+        0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+        60% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+        100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
       }
       @keyframes arcGlow {
         0%, 100% { filter: blur(8px) brightness(1); }
