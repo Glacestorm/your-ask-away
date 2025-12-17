@@ -29,6 +29,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 // Store pages
 const StoreLanding = lazy(() => import("./pages/store/StoreLanding"));
 const StoreModules = lazy(() => import("./pages/store/StoreModules"));
+const StoreDeployment = lazy(() => import("./pages/store/StoreDeployment"));
 const StoreCheckout = lazy(() => import("./pages/store/StoreCheckout"));
 const CheckoutSuccess = lazy(() => import("./pages/store/CheckoutSuccess"));
 
@@ -108,6 +109,11 @@ const App = () => (
                         <Route path="/store/modules" element={
                           <StreamingBoundary priority="high">
                             <StoreModules />
+                          </StreamingBoundary>
+                        } />
+                        <Route path="/store/deployment" element={
+                          <StreamingBoundary priority="high">
+                            <StoreDeployment />
                           </StreamingBoundary>
                         } />
                         <Route path="/store/checkout" element={
