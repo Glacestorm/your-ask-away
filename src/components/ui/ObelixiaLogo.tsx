@@ -33,7 +33,14 @@ export function ObelixiaLogo({
   // Realistic AI Brain Icon with Neural Sparkles
   const CinematicBrainIcon = () => {
     return (
-      <div className="relative" style={{ width: currentSize.iconW, height: currentSize.iconH }}>
+      <div 
+        className="relative overflow-hidden" 
+        style={{ 
+          width: currentSize.iconW, 
+          height: currentSize.iconH,
+          borderRadius: '50%',
+        }}
+      >
         {/* Outer Glow Layer */}
         <div 
           className="absolute inset-[-50%] blur-2xl opacity-60"
@@ -42,32 +49,24 @@ export function ObelixiaLogo({
           }}
         />
         
-        {/* Brain Image Container with gradient mask to blend edges */}
+        {/* Brain Image with circular clip and gradient mask */}
         <div 
-          className="relative w-full h-full"
+          className="relative w-full h-full overflow-hidden"
           style={{
-            maskImage: 'radial-gradient(ellipse 85% 85% at center, black 40%, transparent 75%)',
-            WebkitMaskImage: 'radial-gradient(ellipse 85% 85% at center, black 40%, transparent 75%)',
+            borderRadius: '50%',
+            maskImage: 'radial-gradient(ellipse 100% 100% at center, black 50%, transparent 80%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 100% 100% at center, black 50%, transparent 80%)',
           }}
         >
           <img 
             src={brainLogo}
             alt="ObelixIA Brain"
-            className="w-full h-full object-contain"
+            className="w-full h-full object-cover scale-125"
             style={{ 
               filter: 'drop-shadow(0 0 15px rgba(6,182,212,0.6)) drop-shadow(0 0 30px rgba(16,185,129,0.4))',
             }}
           />
         </div>
-        
-        {/* Blue-green gradient overlay blending edges */}
-        <div 
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: 'radial-gradient(ellipse at center, transparent 30%, rgba(6,182,212,0.15) 60%, rgba(16,185,129,0.1) 80%, transparent 100%)',
-            mixBlendMode: 'screen',
-          }}
-        />
         
         {/* Animated sparkle overlay */}
         {animated && (
