@@ -6,8 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/contexts/CartContext';
 import { ObelixiaLogo } from '@/components/ui/ObelixiaLogo';
 import StoreAuthModal from './StoreAuthModal';
-import { LanguageSelector } from '@/components/LanguageSelector';
 import { useLanguage } from '@/contexts/LanguageContext';
+
 const StoreNavbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -96,11 +96,8 @@ const StoreNavbar: React.FC = () => {
               ))}
             </div>
 
-            {/* Language Selector + Auth Buttons + Cart - Right */}
+            {/* Auth Buttons + Cart - Right */}
             <div className="hidden lg:flex items-center gap-3 z-10">
-              {/* Language Selector */}
-              <LanguageSelector />
-
               {/* Login Button */}
               <motion.button
                 onClick={openLogin}
@@ -200,7 +197,6 @@ const StoreNavbar: React.FC = () => {
               </div>
               
               <div className="flex gap-2 mt-4 pt-4 border-t border-slate-800">
-                <LanguageSelector />
                 <motion.button
                   onClick={openLogin}
                   whileTap={{ scale: 0.95 }}
