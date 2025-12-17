@@ -30,7 +30,7 @@ const ObelixiaTeamAdmin: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <motion.div 
@@ -39,11 +39,11 @@ const ObelixiaTeamAdmin: React.FC = () => {
           className="flex items-center justify-between"
         >
           <div>
-            <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-              <Shield className="w-8 h-8 text-emerald-400" />
+            <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+              <Shield className="w-8 h-8 text-primary" />
               ObelixIA Team Admin
             </h1>
-            <p className="text-slate-400 mt-1">
+            <p className="text-muted-foreground mt-1">
               Gestión interna de presupuestos, facturas, precios y contenidos
             </p>
           </div>
@@ -58,12 +58,12 @@ const ObelixiaTeamAdmin: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card className="bg-slate-800/50 border-slate-700 hover:border-slate-600 transition-colors">
+              <Card className="bg-card border-border hover:border-primary/50 transition-colors">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-slate-400">{stat.label}</p>
-                      <p className="text-2xl font-bold text-white mt-1">{stat.value}</p>
+                      <p className="text-sm text-muted-foreground">{stat.label}</p>
+                      <p className="text-2xl font-bold text-card-foreground mt-1">{stat.value}</p>
                     </div>
                     <stat.icon className={`w-10 h-10 ${stat.color} opacity-80`} />
                   </div>
@@ -74,34 +74,34 @@ const ObelixiaTeamAdmin: React.FC = () => {
         </div>
 
         {/* Main Tabs */}
-        <Card className="bg-slate-800/50 border-slate-700">
+        <Card className="bg-card border-border">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <CardHeader className="pb-0">
-              <TabsList className="grid grid-cols-4 w-full max-w-2xl bg-slate-900/50">
+              <TabsList className="grid grid-cols-4 w-full max-w-2xl">
                 <TabsTrigger 
                   value="quotes" 
-                  className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white"
+                  className="flex items-center gap-2"
                 >
                   <FileText className="w-4 h-4" />
                   Presupuestos
                 </TabsTrigger>
                 <TabsTrigger 
                   value="invoices"
-                  className="flex items-center gap-2 data-[state=active]:bg-emerald-600 data-[state=active]:text-white"
+                  className="flex items-center gap-2"
                 >
                   <Receipt className="w-4 h-4" />
                   Facturas
                 </TabsTrigger>
                 <TabsTrigger 
                   value="pricing"
-                  className="flex items-center gap-2 data-[state=active]:bg-purple-600 data-[state=active]:text-white"
+                  className="flex items-center gap-2"
                 >
                   <Euro className="w-4 h-4" />
                   Precios
                 </TabsTrigger>
                 <TabsTrigger 
                   value="content"
-                  className="flex items-center gap-2 data-[state=active]:bg-amber-600 data-[state=active]:text-white"
+                  className="flex items-center gap-2"
                 >
                   <Settings className="w-4 h-4" />
                   Contenidos

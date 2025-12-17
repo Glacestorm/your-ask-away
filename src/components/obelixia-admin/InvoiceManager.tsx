@@ -280,91 +280,84 @@ export const InvoiceManager: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xl font-semibold text-white flex items-center gap-2">
-            <Receipt className="w-5 h-5 text-emerald-400" />
+          <h3 className="text-xl font-semibold text-foreground flex items-center gap-2">
+            <Receipt className="w-5 h-5 text-primary" />
             Gestión de Facturas
           </h3>
-          <p className="text-slate-400 text-sm">
+          <p className="text-muted-foreground text-sm">
             Crea y envía facturas con carta de presentación formal
           </p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-emerald-600 hover:bg-emerald-700">
+            <Button>
               <Plus className="w-4 h-4 mr-2" />
               Nueva Factura
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="text-white">Nueva Factura</DialogTitle>
+              <DialogTitle>Nueva Factura</DialogTitle>
             </DialogHeader>
             <div className="grid grid-cols-2 gap-6">
               {/* Left column - Customer data */}
               <div className="space-y-4">
-                <h4 className="font-medium text-white border-b border-slate-700 pb-2">
+                <h4 className="font-medium text-foreground border-b border-border pb-2">
                   Datos del Cliente
                 </h4>
                 <div>
-                  <Label className="text-slate-300">Email *</Label>
+                  <Label>Email *</Label>
                   <Input
                     type="email"
                     value={newInvoice.customer_email}
                     onChange={e => setNewInvoice({ ...newInvoice, customer_email: e.target.value })}
                     placeholder="cliente@empresa.com"
-                    className="bg-slate-800 border-slate-600"
                   />
                 </div>
                 <div>
-                  <Label className="text-slate-300">Nombre Contacto</Label>
+                  <Label>Nombre Contacto</Label>
                   <Input
                     value={newInvoice.customer_name}
                     onChange={e => setNewInvoice({ ...newInvoice, customer_name: e.target.value })}
-                    className="bg-slate-800 border-slate-600"
                   />
                 </div>
                 <div>
-                  <Label className="text-slate-300">Empresa</Label>
+                  <Label>Empresa</Label>
                   <Input
                     value={newInvoice.customer_company}
                     onChange={e => setNewInvoice({ ...newInvoice, customer_company: e.target.value })}
-                    className="bg-slate-800 border-slate-600"
                   />
                 </div>
                 <div>
-                  <Label className="text-slate-300">CIF/NIF</Label>
+                  <Label>CIF/NIF</Label>
                   <Input
                     value={newInvoice.customer_tax_id}
                     onChange={e => setNewInvoice({ ...newInvoice, customer_tax_id: e.target.value })}
-                    className="bg-slate-800 border-slate-600"
                   />
                 </div>
                 <div>
-                  <Label className="text-slate-300">Dirección</Label>
+                  <Label>Dirección</Label>
                   <Textarea
                     value={newInvoice.customer_address}
                     onChange={e => setNewInvoice({ ...newInvoice, customer_address: e.target.value })}
-                    className="bg-slate-800 border-slate-600"
                     rows={2}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-slate-300">IVA (%)</Label>
+                    <Label>IVA (%)</Label>
                     <Input
                       type="number"
                       value={newInvoice.tax_rate}
                       onChange={e => setNewInvoice({ ...newInvoice, tax_rate: Number(e.target.value) })}
-                      className="bg-slate-800 border-slate-600"
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-300">Días Vencimiento</Label>
+                    <Label>Días Vencimiento</Label>
                     <Input
                       type="number"
                       value={newInvoice.due_days}
                       onChange={e => setNewInvoice({ ...newInvoice, due_days: Number(e.target.value) })}
-                      className="bg-slate-800 border-slate-600"
                     />
                   </div>
                 </div>
@@ -372,7 +365,7 @@ export const InvoiceManager: React.FC = () => {
 
               {/* Right column - Items and Cover letter */}
               <div className="space-y-4">
-                <h4 className="font-medium text-white border-b border-slate-700 pb-2">
+                <h4 className="font-medium text-foreground border-b border-border pb-2">
                   Módulos a Facturar
                 </h4>
                 <div className="flex gap-2">
@@ -380,10 +373,10 @@ export const InvoiceManager: React.FC = () => {
                     value={newItem.module_key}
                     onValueChange={val => setNewItem({ ...newItem, module_key: val })}
                   >
-                    <SelectTrigger className="bg-slate-800 border-slate-600 flex-1">
+                    <SelectTrigger className="flex-1">
                       <SelectValue placeholder="Seleccionar módulo" />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-600">
+                    <SelectContent>
                       {modules.map(m => (
                         <SelectItem key={m.module_key} value={m.module_key}>
                           {m.module_name} - {formatPrice(m.base_price)}
@@ -396,7 +389,7 @@ export const InvoiceManager: React.FC = () => {
                     min={1}
                     value={newItem.quantity}
                     onChange={e => setNewItem({ ...newItem, quantity: Number(e.target.value) })}
-                    className="w-20 bg-slate-800 border-slate-600"
+                    className="w-20"
                   />
                   <Button onClick={addItemToInvoice} size="sm">
                     <Plus className="w-4 h-4" />
@@ -404,25 +397,25 @@ export const InvoiceManager: React.FC = () => {
                 </div>
 
                 {/* Items list */}
-                <div className="border border-slate-700 rounded-lg p-3 max-h-40 overflow-y-auto">
+                <div className="border border-border rounded-lg p-3 max-h-40 overflow-y-auto">
                   {invoiceItems.length === 0 ? (
-                    <p className="text-slate-500 text-sm text-center py-4">
+                    <p className="text-muted-foreground text-sm text-center py-4">
                       Añade módulos a la factura
                     </p>
                   ) : (
                     <div className="space-y-2">
                       {invoiceItems.map((item, idx) => (
                         <div key={idx} className="flex items-center justify-between text-sm">
-                          <span className="text-slate-300">
+                          <span className="text-foreground">
                             {item.module_name} x{item.quantity}
                           </span>
                           <div className="flex items-center gap-2">
-                            <span className="text-emerald-400">{formatPrice(item.total)}</span>
+                            <span className="text-primary">{formatPrice(item.total)}</span>
                             <Button
                               size="sm"
                               variant="ghost"
                               onClick={() => removeItem(idx)}
-                              className="h-6 w-6 p-0 text-red-400 hover:text-red-300"
+                              className="h-6 w-6 p-0 text-destructive hover:text-destructive/80"
                             >
                               <Trash2 className="w-3 h-3" />
                             </Button>
@@ -434,28 +427,28 @@ export const InvoiceManager: React.FC = () => {
                 </div>
 
                 {/* Totals */}
-                <div className="bg-slate-800/50 rounded-lg p-3 space-y-1">
+                <div className="bg-muted/50 rounded-lg p-3 space-y-1">
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-400">Subtotal</span>
-                    <span className="text-white">{formatPrice(subtotal)}</span>
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span className="text-foreground">{formatPrice(subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-400">IVA ({newInvoice.tax_rate}%)</span>
-                    <span className="text-white">{formatPrice(taxAmount)}</span>
+                    <span className="text-muted-foreground">IVA ({newInvoice.tax_rate}%)</span>
+                    <span className="text-foreground">{formatPrice(taxAmount)}</span>
                   </div>
-                  <Separator className="bg-slate-700" />
+                  <Separator />
                   <div className="flex justify-between font-bold">
-                    <span className="text-white">Total</span>
-                    <span className="text-emerald-400 text-lg">{formatPrice(total)}</span>
+                    <span className="text-foreground">Total</span>
+                    <span className="text-primary text-lg">{formatPrice(total)}</span>
                   </div>
                 </div>
 
                 <div>
-                  <Label className="text-slate-300">Carta de Presentación</Label>
+                  <Label>Carta de Presentación</Label>
                   <Textarea
                     value={newInvoice.cover_letter}
                     onChange={e => setNewInvoice({ ...newInvoice, cover_letter: e.target.value })}
-                    className="bg-slate-800 border-slate-600 text-sm"
+                    className="text-sm"
                     rows={6}
                   />
                 </div>

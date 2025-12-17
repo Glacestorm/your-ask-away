@@ -112,58 +112,57 @@ export const ModulePricingManager: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xl font-semibold text-white flex items-center gap-2">
-            <Euro className="w-5 h-5 text-purple-400" />
+          <h3 className="text-xl font-semibold text-foreground flex items-center gap-2">
+            <Euro className="w-5 h-5 text-primary" />
             Gestión de Precios de Módulos
           </h3>
-          <p className="text-slate-400 text-sm">
+          <p className="text-muted-foreground text-sm">
             Administra los precios base y descuentos de cada módulo
           </p>
         </div>
         <Button 
           variant="outline" 
           onClick={fetchModules}
-          className="border-slate-600"
         >
           <RefreshCw className="w-4 h-4 mr-2" />
           Actualizar
         </Button>
       </div>
 
-      <Card className="bg-slate-900/50 border-slate-700">
+      <Card className="bg-card border-border">
         <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <TableRow className="border-slate-700 hover:bg-transparent">
-                <TableHead className="text-slate-400">Módulo</TableHead>
-                <TableHead className="text-slate-400">Categoría</TableHead>
-                <TableHead className="text-slate-400 text-right">Precio Base (Anual)</TableHead>
-                <TableHead className="text-slate-400 text-right">Perpetua (5x)</TableHead>
-                <TableHead className="text-slate-400 text-right">Mensual (/10)</TableHead>
-                <TableHead className="text-slate-400 text-center">Descuento Max</TableHead>
-                <TableHead className="text-slate-400 text-center">Acciones</TableHead>
+              <TableRow className="border-border hover:bg-transparent">
+                <TableHead className="text-muted-foreground">Módulo</TableHead>
+                <TableHead className="text-muted-foreground">Categoría</TableHead>
+                <TableHead className="text-muted-foreground text-right">Precio Base (Anual)</TableHead>
+                <TableHead className="text-muted-foreground text-right">Perpetua (5x)</TableHead>
+                <TableHead className="text-muted-foreground text-right">Mensual (/10)</TableHead>
+                <TableHead className="text-muted-foreground text-center">Descuento Max</TableHead>
+                <TableHead className="text-muted-foreground text-center">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-slate-400 py-8">
+                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                     Cargando...
                   </TableCell>
                 </TableRow>
               ) : modules.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-slate-400 py-8">
+                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                     No hay módulos configurados
                   </TableCell>
                 </TableRow>
               ) : (
                 modules.map(module => (
-                  <TableRow key={module.id} className="border-slate-700 hover:bg-slate-800/50">
+                  <TableRow key={module.id} className="border-border hover:bg-muted/50">
                     <TableCell>
                       <div>
-                        <p className="font-medium text-white">{module.module_name}</p>
-                        <p className="text-xs text-slate-500">{module.module_key}</p>
+                        <p className="font-medium text-foreground">{module.module_name}</p>
+                        <p className="text-xs text-muted-foreground">{module.module_key}</p>
                       </div>
                     </TableCell>
                     <TableCell>{getCategoryBadge(module.category)}</TableCell>
@@ -173,18 +172,18 @@ export const ModulePricingManager: React.FC = () => {
                           type="number"
                           value={editValues.base_price}
                           onChange={e => setEditValues({ ...editValues, base_price: Number(e.target.value) })}
-                          className="w-28 bg-slate-800 border-slate-600 text-right"
+                          className="w-28 text-right"
                         />
                       ) : (
-                        <span className="text-emerald-400 font-semibold">
+                        <span className="text-primary font-semibold">
                           {formatPrice(module.base_price)}
                         </span>
                       )}
                     </TableCell>
-                    <TableCell className="text-right text-slate-300">
+                    <TableCell className="text-right text-foreground">
                       {formatPrice(module.base_price * module.perpetual_multiplier)}
                     </TableCell>
-                    <TableCell className="text-right text-slate-300">
+                    <TableCell className="text-right text-foreground">
                       {formatPrice(module.base_price / module.monthly_divisor)}
                     </TableCell>
                     <TableCell className="text-center">
@@ -193,10 +192,10 @@ export const ModulePricingManager: React.FC = () => {
                           type="number"
                           value={editValues.max_discount}
                           onChange={e => setEditValues({ ...editValues, max_discount: Number(e.target.value) })}
-                          className="w-20 bg-slate-800 border-slate-600 text-center"
+                          className="w-20 text-center"
                         />
                       ) : (
-                        <Badge variant="outline" className="border-slate-600">
+                        <Badge variant="outline">
                           {module.max_discount}%
                         </Badge>
                       )}
@@ -207,7 +206,7 @@ export const ModulePricingManager: React.FC = () => {
                           <Button 
                             size="sm" 
                             onClick={() => saveChanges(module.id)}
-                            className="bg-emerald-600 hover:bg-emerald-700 h-8 w-8 p-0"
+                            className="h-8 w-8 p-0"
                           >
                             <Check className="w-4 h-4" />
                           </Button>
@@ -215,7 +214,7 @@ export const ModulePricingManager: React.FC = () => {
                             size="sm" 
                             variant="ghost"
                             onClick={cancelEditing}
-                            className="h-8 w-8 p-0 text-slate-400 hover:text-white"
+                            className="h-8 w-8 p-0"
                           >
                             <X className="w-4 h-4" />
                           </Button>
@@ -225,7 +224,7 @@ export const ModulePricingManager: React.FC = () => {
                           size="sm" 
                           variant="ghost"
                           onClick={() => startEditing(module)}
-                          className="h-8 w-8 p-0 text-slate-400 hover:text-white"
+                          className="h-8 w-8 p-0"
                         >
                           <Edit2 className="w-4 h-4" />
                         </Button>
@@ -241,39 +240,39 @@ export const ModulePricingManager: React.FC = () => {
 
       {/* Summary */}
       <div className="grid grid-cols-3 gap-4">
-        <Card className="bg-slate-900/50 border-slate-700">
+        <Card className="bg-card border-border">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <Package className="w-8 h-8 text-blue-400" />
               <div>
-                <p className="text-sm text-slate-400">Módulos Core</p>
-                <p className="text-lg font-bold text-white">
+                <p className="text-sm text-muted-foreground">Módulos Core</p>
+                <p className="text-lg font-bold text-card-foreground">
                   {formatPrice(modules.filter(m => m.category === 'core').reduce((sum, m) => sum + m.base_price, 0))}
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-slate-900/50 border-slate-700">
+        <Card className="bg-card border-border">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <TrendingUp className="w-8 h-8 text-emerald-400" />
               <div>
-                <p className="text-sm text-slate-400">Módulos Horizontal</p>
-                <p className="text-lg font-bold text-white">
+                <p className="text-sm text-muted-foreground">Módulos Horizontal</p>
+                <p className="text-lg font-bold text-card-foreground">
                   {formatPrice(modules.filter(m => m.category === 'horizontal').reduce((sum, m) => sum + m.base_price, 0))}
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-slate-900/50 border-slate-700">
+        <Card className="bg-card border-border">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <Percent className="w-8 h-8 text-amber-400" />
               <div>
-                <p className="text-sm text-slate-400">Módulos Enterprise</p>
-                <p className="text-lg font-bold text-white">
+                <p className="text-sm text-muted-foreground">Módulos Enterprise</p>
+                <p className="text-lg font-bold text-card-foreground">
                   {formatPrice(modules.filter(m => m.category === 'enterprise').reduce((sum, m) => sum + m.base_price, 0))}
                 </p>
               </div>

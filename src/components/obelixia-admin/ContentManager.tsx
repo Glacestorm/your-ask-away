@@ -190,50 +190,49 @@ export const ContentManager: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xl font-semibold text-white flex items-center gap-2">
-            <FileText className="w-5 h-5 text-amber-400" />
+          <h3 className="text-xl font-semibold text-foreground flex items-center gap-2">
+            <FileText className="w-5 h-5 text-primary" />
             Gestión de Contenidos
           </h3>
-          <p className="text-slate-400 text-sm">
+          <p className="text-muted-foreground text-sm">
             Administra textos, HTML y configuraciones de la aplicación
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={fetchContents} className="border-slate-600">
+          <Button variant="outline" onClick={fetchContents}>
             <RefreshCw className="w-4 h-4 mr-2" />
             Actualizar
           </Button>
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-amber-600 hover:bg-amber-700">
+              <Button>
                 <Plus className="w-4 h-4 mr-2" />
                 Nuevo Contenido
               </Button>
             </DialogTrigger>
-            <DialogContent className="bg-slate-900 border-slate-700">
+            <DialogContent>
               <DialogHeader>
-                <DialogTitle className="text-white">Nuevo Contenido</DialogTitle>
+                <DialogTitle>Nuevo Contenido</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label className="text-slate-300">Clave única *</Label>
+                  <Label>Clave única *</Label>
                   <Input
                     value={newContent.content_key}
                     onChange={e => setNewContent({ ...newContent, content_key: e.target.value })}
                     placeholder="hero_title, footer_text..."
-                    className="bg-slate-800 border-slate-600"
                   />
                 </div>
                 <div>
-                  <Label className="text-slate-300">Tipo</Label>
+                  <Label>Tipo</Label>
                   <Select
                     value={newContent.content_type}
                     onValueChange={val => setNewContent({ ...newContent, content_type: val })}
                   >
-                    <SelectTrigger className="bg-slate-800 border-slate-600">
+                    <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-600">
+                    <SelectContent>
                       <SelectItem value="text">Texto</SelectItem>
                       <SelectItem value="html">HTML</SelectItem>
                       <SelectItem value="json">JSON</SelectItem>
@@ -242,19 +241,18 @@ export const ContentManager: React.FC = () => {
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-slate-300">Título descriptivo *</Label>
+                  <Label>Título descriptivo *</Label>
                   <Input
                     value={newContent.title}
                     onChange={e => setNewContent({ ...newContent, title: e.target.value })}
-                    className="bg-slate-800 border-slate-600"
                   />
                 </div>
                 <div>
-                  <Label className="text-slate-300">Contenido *</Label>
+                  <Label>Contenido *</Label>
                   <Textarea
                     value={newContent.content}
                     onChange={e => setNewContent({ ...newContent, content: e.target.value })}
-                    className="bg-slate-800 border-slate-600 font-mono text-sm"
+                    className="font-mono text-sm"
                     rows={6}
                   />
                 </div>
@@ -269,24 +267,24 @@ export const ContentManager: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Content list */}
-        <Card className="lg:col-span-1 bg-slate-900/50 border-slate-700">
+        <Card className="lg:col-span-1">
           <CardHeader className="pb-2">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
                 placeholder="Buscar contenidos..."
-                className="pl-10 bg-slate-800 border-slate-600"
+                className="pl-10"
               />
             </div>
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-[500px]">
               {loading ? (
-                <p className="text-center text-slate-400 py-8">Cargando...</p>
+                <p className="text-center text-muted-foreground py-8">Cargando...</p>
               ) : filteredContents.length === 0 ? (
-                <p className="text-center text-slate-400 py-8">No hay contenidos</p>
+                <p className="text-center text-muted-foreground py-8">No hay contenidos</p>
               ) : (
                 <div className="space-y-2">
                   {filteredContents.map(content => (
@@ -295,25 +293,25 @@ export const ContentManager: React.FC = () => {
                       onClick={() => { setSelectedContent(content); setIsEditing(false); }}
                       className={`p-3 rounded-lg border cursor-pointer transition-colors ${
                         selectedContent?.id === content.id
-                          ? 'bg-amber-500/10 border-amber-500'
-                          : 'border-slate-700 hover:bg-slate-800/50'
+                          ? 'bg-primary/10 border-primary'
+                          : 'border-border hover:bg-muted/50'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-mono text-sm text-white truncate">
+                        <span className="font-mono text-sm text-foreground truncate">
                           {content.content_key}
                         </span>
                         {getTypeBadge(content.content_type)}
                       </div>
-                      <p className="text-sm text-slate-400 truncate">{content.title}</p>
+                      <p className="text-sm text-muted-foreground truncate">{content.title}</p>
                       <div className="flex items-center justify-between mt-2">
                         <Badge 
                           variant="outline" 
-                          className={content.is_active ? 'border-emerald-500 text-emerald-400' : 'border-slate-600 text-slate-500'}
+                          className={content.is_active ? 'border-primary text-primary' : ''}
                         >
                           {content.is_active ? 'Activo' : 'Inactivo'}
                         </Badge>
-                        <span className="text-xs text-slate-500">v{content.version}</span>
+                        <span className="text-xs text-muted-foreground">v{content.version}</span>
                       </div>
                     </div>
                   ))}
@@ -324,23 +322,23 @@ export const ContentManager: React.FC = () => {
         </Card>
 
         {/* Content detail/editor */}
-        <Card className="lg:col-span-2 bg-slate-900/50 border-slate-700">
+        <Card className="lg:col-span-2">
           {selectedContent ? (
             <>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-white flex items-center gap-2">
+                    <CardTitle className="flex items-center gap-2">
                       {getTypeIcon(selectedContent.content_type)}
                       {selectedContent.title}
                     </CardTitle>
-                    <p className="text-sm text-slate-400 font-mono mt-1">
+                    <p className="text-sm text-muted-foreground font-mono mt-1">
                       {selectedContent.content_key}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-slate-400">Activo</span>
+                      <span className="text-sm text-muted-foreground">Activo</span>
                       <Switch
                         checked={selectedContent.is_active}
                         onCheckedChange={() => toggleActive(selectedContent)}
@@ -348,7 +346,7 @@ export const ContentManager: React.FC = () => {
                     </div>
                     {isEditing ? (
                       <>
-                        <Button size="sm" onClick={saveContent} className="bg-emerald-600 hover:bg-emerald-700">
+                        <Button size="sm" onClick={saveContent}>
                           <Check className="w-4 h-4 mr-1" />
                           Guardar
                         </Button>
@@ -359,7 +357,7 @@ export const ContentManager: React.FC = () => {
                       </>
                     ) : (
                       <>
-                        <Button size="sm" variant="outline" onClick={startEditing} className="border-slate-600">
+                        <Button size="sm" variant="outline" onClick={startEditing}>
                           <Edit2 className="w-4 h-4 mr-1" />
                           Editar
                         </Button>
@@ -367,7 +365,7 @@ export const ContentManager: React.FC = () => {
                           size="sm" 
                           variant="ghost" 
                           onClick={() => deleteContent(selectedContent.id)}
-                          className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                          className="text-destructive hover:text-destructive/80"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -381,17 +379,17 @@ export const ContentManager: React.FC = () => {
                   <Textarea
                     value={editedContent}
                     onChange={e => setEditedContent(e.target.value)}
-                    className="bg-slate-800 border-slate-600 font-mono text-sm min-h-[400px]"
+                    className="font-mono text-sm min-h-[400px]"
                   />
                 ) : (
-                  <div className="bg-slate-800/50 rounded-lg p-4 min-h-[400px]">
+                  <div className="bg-muted/50 rounded-lg p-4 min-h-[400px]">
                     {selectedContent.content_type === 'html' ? (
                       <div 
                         className="prose prose-invert max-w-none"
                         dangerouslySetInnerHTML={{ __html: selectedContent.content }}
                       />
                     ) : selectedContent.content_type === 'json' ? (
-                      <pre className="text-sm text-slate-300 whitespace-pre-wrap font-mono">
+                      <pre className="text-sm text-foreground whitespace-pre-wrap font-mono">
                         {JSON.stringify(JSON.parse(selectedContent.content || '{}'), null, 2)}
                       </pre>
                     ) : selectedContent.content_type === 'image' ? (
@@ -401,15 +399,15 @@ export const ContentManager: React.FC = () => {
                           alt={selectedContent.title}
                           className="max-w-full max-h-96 mx-auto rounded-lg"
                         />
-                        <p className="text-sm text-slate-500 mt-2">{selectedContent.content}</p>
+                        <p className="text-sm text-muted-foreground mt-2">{selectedContent.content}</p>
                       </div>
                     ) : (
-                      <p className="text-slate-300 whitespace-pre-wrap">{selectedContent.content}</p>
+                      <p className="text-foreground whitespace-pre-wrap">{selectedContent.content}</p>
                     )}
                   </div>
                 )}
 
-                <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
+                <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
                   <span>Versión: {selectedContent.version}</span>
                   <span>Actualizado: {new Date(selectedContent.updated_at).toLocaleString('es-ES')}</span>
                 </div>
