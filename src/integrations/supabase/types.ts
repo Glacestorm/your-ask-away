@@ -5833,6 +5833,191 @@ export type Database = {
           },
         ]
       }
+      obelixia_content: {
+        Row: {
+          content: string
+          content_key: string
+          content_type: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          metadata: Json | null
+          title: string
+          updated_at: string
+          updated_by: string | null
+          version: number | null
+        }
+        Insert: {
+          content: string
+          content_key: string
+          content_type: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number | null
+        }
+        Update: {
+          content?: string
+          content_key?: string
+          content_type?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number | null
+        }
+        Relationships: []
+      }
+      obelixia_invoices: {
+        Row: {
+          cover_letter: string | null
+          created_at: string
+          created_by: string | null
+          customer_address: string | null
+          customer_company: string | null
+          customer_email: string
+          customer_name: string | null
+          customer_tax_id: string | null
+          due_date: string | null
+          id: string
+          invoice_number: string
+          issue_date: string
+          items: Json
+          notes: string | null
+          payment_date: string | null
+          payment_method: string | null
+          quote_id: string | null
+          sent_at: string | null
+          status: string
+          subtotal: number
+          tax_amount: number
+          tax_rate: number
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          cover_letter?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_address?: string | null
+          customer_company?: string | null
+          customer_email: string
+          customer_name?: string | null
+          customer_tax_id?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_number: string
+          issue_date?: string
+          items?: Json
+          notes?: string | null
+          payment_date?: string | null
+          payment_method?: string | null
+          quote_id?: string | null
+          sent_at?: string | null
+          status?: string
+          subtotal?: number
+          tax_amount?: number
+          tax_rate?: number
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          cover_letter?: string | null
+          created_at?: string
+          created_by?: string | null
+          customer_address?: string | null
+          customer_company?: string | null
+          customer_email?: string
+          customer_name?: string | null
+          customer_tax_id?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_number?: string
+          issue_date?: string
+          items?: Json
+          notes?: string | null
+          payment_date?: string | null
+          payment_method?: string | null
+          quote_id?: string | null
+          sent_at?: string | null
+          status?: string
+          subtotal?: number
+          tax_amount?: number
+          tax_rate?: number
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "obelixia_invoices_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "customer_quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      obelixia_module_pricing: {
+        Row: {
+          base_price: number
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          max_discount: number | null
+          min_discount: number | null
+          module_key: string
+          module_name: string
+          monthly_divisor: number | null
+          perpetual_multiplier: number | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          base_price?: number
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_discount?: number | null
+          min_discount?: number | null
+          module_key: string
+          module_name: string
+          monthly_divisor?: number | null
+          perpetual_multiplier?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          base_price?: number
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_discount?: number | null
+          min_discount?: number | null
+          module_key?: string
+          module_name?: string
+          monthly_divisor?: number | null
+          perpetual_multiplier?: number | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       open_banking_audit_log: {
         Row: {
           consent_id: string | null
