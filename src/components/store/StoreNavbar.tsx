@@ -68,7 +68,7 @@ const StoreNavbar: React.FC = () => {
             </button>
 
             {/* Desktop Navigation - Center */}
-            <div className="hidden lg:flex items-center gap-3">
+            <div className="hidden lg:flex items-center gap-4">
               {navLinks.map((link) => (
                 <motion.button
                   key={link.id}
@@ -97,7 +97,7 @@ const StoreNavbar: React.FC = () => {
             </div>
 
             {/* Auth Buttons + Cart - Right */}
-            <div className="hidden lg:flex items-center gap-3 z-10">
+            <div className="hidden lg:flex items-center gap-4 z-10">
               {/* Login Button */}
               <motion.button
                 onClick={openLogin}
