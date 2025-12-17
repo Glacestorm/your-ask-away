@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MapPin, Loader2, Eye, EyeOff, AlertTriangle, CheckCircle2, Fingerprint, Play } from 'lucide-react';
+import { Loader2, Eye, EyeOff, AlertTriangle, Fingerprint, Play, CheckCircle2 } from 'lucide-react';
 import { z } from 'zod';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useWebAuthn } from '@/hooks/useWebAuthn';
 import { DemoStartModal } from '@/components/demo/DemoStartModal';
+import { ObelixiaLogo } from '@/components/ui/ObelixiaLogo';
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -296,14 +297,11 @@ const Auth = () => {
         <LanguageSelector />
       </div>
       <Card className="w-full max-w-md shadow-xl">
-        <CardHeader className="space-y-3 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-emerald-500 shadow-lg">
-            <span className="text-2xl font-bold text-white">O</span>
+        <CardHeader className="space-y-4 text-center">
+          <div className="mx-auto flex justify-center">
+            <ObelixiaLogo size="lg" variant="full" animated dark={false} />
           </div>
-          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-primary to-emerald-500 bg-clip-text text-transparent">
-            ObelixIA
-          </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-base">
             {t('auth.crmDescription')}
           </CardDescription>
         </CardHeader>

@@ -9,6 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { MapButton } from '@/components/dashboard/MapButton';
 import { OnlineUsersIndicator } from '@/components/presence/OnlineUsersIndicator';
 import { OfflineSyncIndicator } from '@/components/dashboard/OfflineSyncIndicator';
+import { ObelixiaLogo } from '@/components/ui/ObelixiaLogo';
 
 interface GlobalNavHeaderProps {
   title?: string;
@@ -36,10 +37,8 @@ export function GlobalNavHeader({
     <div className={`flex items-center ${hasTitle ? 'justify-between' : 'justify-end'} rounded-2xl bg-gradient-to-br from-card via-card to-accent/20 p-3 shadow-lg border border-border/50`}>
       {/* ObelixIA Brand + Title */}
       <div className="flex items-center gap-3">
-        {/* Brand Logo */}
-        <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-primary to-emerald-500 flex items-center justify-center shadow-md">
-          <span className="text-sm font-bold text-white">O</span>
-        </div>
+        {/* Luxury Brand Logo */}
+        <ObelixiaLogo size="sm" variant="icon" animated={false} />
         
         {/* Navigation History Buttons - only show if there's history */}
         {(canGoBack || canGoForward) && (

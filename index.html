@@ -92,7 +92,7 @@
       .theme-creand body { background-color: #fff; color: #222; }
       .theme-aurora body { background-color: #f5f3ff; color: #1a1040; }
       #root { min-height: 100vh; }
-      /* Skeleton loader for LCP improvement */
+      /* Luxury Specular Loader */
       .initial-loader {
         position: fixed;
         inset: 0;
@@ -100,33 +100,84 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        background: inherit;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
         z-index: 9999;
-        transition: opacity 0.3s ease;
-        gap: 16px;
+        transition: opacity 0.5s ease;
+        gap: 32px;
       }
       .initial-loader.hidden { opacity: 0; pointer-events: none; }
+      
+      /* Background pattern */
+      .initial-loader::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(circle at 1px 1px, rgba(16, 185, 129, 0.1) 1px, transparent 0);
+        background-size: 40px 40px;
+        opacity: 0.5;
+      }
+      
+      /* Luxury Brand Typography */
       .loader-brand {
-        font-size: 28px;
-        font-weight: 700;
-        background: linear-gradient(135deg, #1e40af, #10b981);
+        font-family: 'Crimson Pro', Georgia, serif;
+        font-size: 72px;
+        font-weight: 900;
+        letter-spacing: -0.03em;
+        background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 25%, #ffffff 50%, #e2e8f0 75%, #ffffff 100%);
+        background-size: 200% 200%;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        letter-spacing: -0.02em;
+        animation: shimmer 3s ease-in-out infinite;
+        text-shadow: 0 0 40px rgba(16, 185, 129, 0.3);
+        position: relative;
       }
-      .loader-spinner {
-        width: 40px;
-        height: 40px;
-        border: 3px solid #334155;
-        border-top-color: #10b981;
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
+      .loader-brand .accent {
+        background: linear-gradient(135deg, #10b981 0%, #14b8a6 50%, #06b6d4 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
       }
-      .theme-day .loader-spinner { border-color: #e2e8f0; border-top-color: #1e40af; }
-      .theme-creand .loader-spinner { border-top-color: #3d9970; }
-      .theme-aurora .loader-spinner { border-top-color: #8b5cf6; }
-      @keyframes spin { to { transform: rotate(360deg); } }
+      @keyframes shimmer {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+      }
+      
+      /* Infinity Symbol Spinner */
+      .loader-infinity {
+        width: 100px;
+        height: 50px;
+      }
+      .loader-infinity path {
+        fill: none;
+        stroke: url(#loaderGradient);
+        stroke-width: 5;
+        stroke-linecap: round;
+        stroke-dasharray: 200;
+        animation: infinityFlow 2s linear infinite;
+        filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.5));
+      }
+      @keyframes infinityFlow {
+        0% { stroke-dashoffset: 0; }
+        100% { stroke-dashoffset: 400; }
+      }
+      
+      /* Theme variations */
+      .theme-day .initial-loader {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
+      }
+      .theme-day .loader-brand {
+        background: linear-gradient(135deg, #0f172a 0%, #334155 25%, #0f172a 50%, #334155 75%, #0f172a 100%);
+        background-size: 200% 200%;
+        -webkit-background-clip: text;
+        background-clip: text;
+      }
+      .theme-creand .initial-loader {
+        background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 50%, #ffffff 100%);
+      }
+      .theme-aurora .initial-loader {
+        background: linear-gradient(135deg, #1a1040 0%, #2d1b69 50%, #1a1040 100%);
+      }
     </style>
 
     <!-- Open Graph -->
@@ -183,10 +234,22 @@
   </head>
 
   <body>
-    <!-- Initial loader for perceived performance -->
+    <!-- Luxury Specular Loader -->
     <div id="initial-loader" class="initial-loader">
-      <div class="loader-brand">ObelixIA</div>
-      <div class="loader-spinner"></div>
+      <div class="loader-brand">Obelix<span class="accent">IA</span></div>
+      <svg class="loader-infinity" viewBox="0 0 100 50">
+        <defs>
+          <linearGradient id="loaderGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#10b981">
+              <animate attributeName="stop-color" values="#10b981;#06b6d4;#10b981" dur="2s" repeatCount="indefinite" />
+            </stop>
+            <stop offset="100%" stop-color="#06b6d4">
+              <animate attributeName="stop-color" values="#06b6d4;#10b981;#06b6d4" dur="2s" repeatCount="indefinite" />
+            </stop>
+          </linearGradient>
+        </defs>
+        <path d="M25 25C25 15 15 10 10 15C5 20 5 30 10 35C15 40 25 35 35 25C45 15 55 10 65 15C75 20 80 25 75 35C70 45 55 40 50 25C45 10 35 35 25 25Z" />
+      </svg>
     </div>
     
     <!-- Plausible Analytics - Privacy-friendly -->
