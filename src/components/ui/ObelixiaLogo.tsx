@@ -29,68 +29,50 @@ export function ObelixiaLogo({
 
   const currentSize = sizeClasses[size];
 
-  // Cinematic Infinity Icon with Sparkles
+  // Greek-style Cinematic Infinity Icon with Explosions
   const CinematicInfinityIcon = () => (
     <div className="relative" style={{ width: currentSize.iconW, height: currentSize.iconH }}>
       {/* Outer Glow Layer */}
       <div 
-        className="absolute inset-0 blur-xl opacity-70"
+        className="absolute inset-[-50%] blur-2xl opacity-60"
         style={{
-          background: 'radial-gradient(ellipse at center, rgba(6,182,212,0.6) 0%, rgba(16,185,129,0.4) 50%, transparent 70%)',
+          background: 'radial-gradient(ellipse at center, rgba(6,182,212,0.5) 0%, rgba(16,185,129,0.3) 40%, transparent 70%)',
         }}
       />
       
       <svg 
-        viewBox="0 0 120 70" 
+        viewBox="0 0 200 100" 
         className="relative w-full h-full"
-        style={{ filter: 'drop-shadow(0 0 20px rgba(6,182,212,0.5))' }}
+        style={{ filter: 'drop-shadow(0 0 25px rgba(6,182,212,0.6)) drop-shadow(0 0 50px rgba(16,185,129,0.4))' }}
       >
         <defs>
           {/* Main Gradient - Flowing Blue to Green */}
           <linearGradient id={`infinity-main-${size}`} x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#0ea5e9">
-              {animated && <animate attributeName="stop-color" values="#0ea5e9;#10b981;#06b6d4;#0ea5e9" dur="4s" repeatCount="indefinite" />}
+              {animated && <animate attributeName="stop-color" values="#0ea5e9;#10b981;#06b6d4;#0ea5e9" dur="5s" repeatCount="indefinite" />}
             </stop>
-            <stop offset="25%" stopColor="#06b6d4">
-              {animated && <animate attributeName="stop-color" values="#06b6d4;#0ea5e9;#10b981;#06b6d4" dur="4s" repeatCount="indefinite" />}
+            <stop offset="50%" stopColor="#10b981">
+              {animated && <animate attributeName="stop-color" values="#10b981;#06b6d4;#0ea5e9;#10b981" dur="5s" repeatCount="indefinite" />}
             </stop>
-            <stop offset="50%" stopColor="#14b8a6">
-              {animated && <animate attributeName="stop-color" values="#14b8a6;#06b6d4;#0ea5e9;#14b8a6" dur="4s" repeatCount="indefinite" />}
-            </stop>
-            <stop offset="75%" stopColor="#10b981">
-              {animated && <animate attributeName="stop-color" values="#10b981;#14b8a6;#06b6d4;#10b981" dur="4s" repeatCount="indefinite" />}
-            </stop>
-            <stop offset="100%" stopColor="#0ea5e9">
-              {animated && <animate attributeName="stop-color" values="#0ea5e9;#10b981;#06b6d4;#0ea5e9" dur="4s" repeatCount="indefinite" />}
-            </stop>
-          </linearGradient>
-          
-          {/* Shine Sweep Gradient */}
-          <linearGradient id={`infinity-shine-${size}`} x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="transparent">
-              {animated && <animate attributeName="offset" values="-0.5;1.5" dur="2s" repeatCount="indefinite" />}
-            </stop>
-            <stop offset="20%" stopColor="rgba(255,255,255,0.9)">
-              {animated && <animate attributeName="offset" values="-0.3;1.7" dur="2s" repeatCount="indefinite" />}
-            </stop>
-            <stop offset="40%" stopColor="transparent">
-              {animated && <animate attributeName="offset" values="-0.1;1.9" dur="2s" repeatCount="indefinite" />}
+            <stop offset="100%" stopColor="#06b6d4">
+              {animated && <animate attributeName="stop-color" values="#06b6d4;#0ea5e9;#10b981;#06b6d4" dur="5s" repeatCount="indefinite" />}
             </stop>
           </linearGradient>
           
           {/* Glow Filter */}
           <filter id={`glow-${size}`} x="-100%" y="-100%" width="300%" height="300%">
-            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+            <feGaussianBlur stdDeviation="4" result="blur1"/>
+            <feGaussianBlur stdDeviation="8" result="blur2"/>
             <feMerge>
-              <feMergeNode in="coloredBlur"/>
-              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="blur2"/>
+              <feMergeNode in="blur1"/>
               <feMergeNode in="SourceGraphic"/>
             </feMerge>
           </filter>
           
           {/* Sparkle Filter */}
-          <filter id={`sparkle-glow-${size}`}>
-            <feGaussianBlur stdDeviation="1.5" result="blur"/>
+          <filter id={`sparkle-glow-${size}`} x="-200%" y="-200%" width="500%" height="500%">
+            <feGaussianBlur stdDeviation="2" result="blur"/>
             <feMerge>
               <feMergeNode in="blur"/>
               <feMergeNode in="blur"/>
@@ -99,115 +81,133 @@ export function ObelixiaLogo({
           </filter>
         </defs>
         
-        {/* Background Shadow Path */}
+        {/* Greek-style infinity path (elegant flowing curves, not two circles) */}
         <path
-          d="M30 35 C30 18, 45 12, 60 25 C70 34, 70 36, 60 45 C45 58, 30 52, 30 35 M90 35 C90 18, 75 12, 60 25 C50 34, 50 36, 60 45 C75 58, 90 52, 90 35"
+          d="M20 50 
+             C20 25, 35 15, 55 30 
+             Q70 42, 100 50 
+             Q130 58, 145 70 
+             C165 85, 180 75, 180 50 
+             C180 25, 165 15, 145 30 
+             Q130 42, 100 50 
+             Q70 58, 55 70 
+             C35 85, 20 75, 20 50"
           fill="none"
           stroke={dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}
-          strokeWidth="8"
+          strokeWidth="10"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
         
         {/* Main Infinity Path */}
         <path
-          d="M30 35 C30 18, 45 12, 60 25 C70 34, 70 36, 60 45 C45 58, 30 52, 30 35 M90 35 C90 18, 75 12, 60 25 C50 34, 50 36, 60 45 C75 58, 90 52, 90 35"
+          d="M20 50 
+             C20 25, 35 15, 55 30 
+             Q70 42, 100 50 
+             Q130 58, 145 70 
+             C165 85, 180 75, 180 50 
+             C180 25, 165 15, 145 30 
+             Q130 42, 100 50 
+             Q70 58, 55 70 
+             C35 85, 20 75, 20 50"
           fill="none"
           stroke={`url(#infinity-main-${size})`}
-          strokeWidth="6"
+          strokeWidth="8"
           strokeLinecap="round"
           strokeLinejoin="round"
           filter={`url(#glow-${size})`}
         />
         
-        {/* Shine Sweep Effect */}
-        <path
-          d="M30 35 C30 18, 45 12, 60 25 C70 34, 70 36, 60 45 C45 58, 30 52, 30 35 M90 35 C90 18, 75 12, 60 25 C50 34, 50 36, 60 45 C75 58, 90 52, 90 35"
-          fill="none"
-          stroke={`url(#infinity-shine-${size})`}
-          strokeWidth="6"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          opacity="0.7"
-        />
+        {/* Flowing energy along path */}
+        {animated && (
+          <>
+            <path
+              d="M20 50 
+                 C20 25, 35 15, 55 30 
+                 Q70 42, 100 50 
+                 Q130 58, 145 70 
+                 C165 85, 180 75, 180 50 
+                 C180 25, 165 15, 145 30 
+                 Q130 42, 100 50 
+                 Q70 58, 55 70 
+                 C35 85, 20 75, 20 50"
+              fill="none"
+              stroke="white"
+              strokeWidth="4"
+              strokeLinecap="round"
+              strokeDasharray="20 380"
+              filter={`url(#sparkle-glow-${size})`}
+              opacity="0.9"
+            >
+              <animate attributeName="stroke-dashoffset" values="0;-400" dur="2.5s" repeatCount="indefinite"/>
+            </path>
+            
+            <path
+              d="M20 50 
+                 C20 25, 35 15, 55 30 
+                 Q70 42, 100 50 
+                 Q130 58, 145 70 
+                 C165 85, 180 75, 180 50 
+                 C180 25, 165 15, 145 30 
+                 Q130 42, 100 50 
+                 Q70 58, 55 70 
+                 C35 85, 20 75, 20 50"
+              fill="none"
+              stroke="rgba(255,255,255,0.6)"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeDasharray="10 390"
+              filter={`url(#sparkle-glow-${size})`}
+            >
+              <animate attributeName="stroke-dashoffset" values="-200;-600" dur="2.5s" repeatCount="indefinite"/>
+            </path>
+          </>
+        )}
         
-        {/* Sparkles/Stars */}
-        {animated && Array.from({ length: currentSize.sparkles }).map((_, i) => {
-          const angle = (i / currentSize.sparkles) * Math.PI * 2 + Math.PI / 4;
-          const radiusX = 38 + (i % 3) * 8;
-          const radiusY = 22 + (i % 2) * 6;
-          const cx = 60 + Math.cos(angle) * radiusX;
-          const cy = 35 + Math.sin(angle) * radiusY;
-          const delay = (i * 0.25) % 2;
-          const starSize = 2 + (i % 3);
-          
-          return (
-            <g key={i} filter={`url(#sparkle-glow-${size})`}>
-              {/* 4-pointed star */}
-              <path
-                d={`M${cx} ${cy-starSize} L${cx+starSize*0.3} ${cy-starSize*0.3} L${cx+starSize} ${cy} L${cx+starSize*0.3} ${cy+starSize*0.3} L${cx} ${cy+starSize} L${cx-starSize*0.3} ${cy+starSize*0.3} L${cx-starSize} ${cy} L${cx-starSize*0.3} ${cy-starSize*0.3} Z`}
-                fill="white"
-                opacity="0"
-              >
-                <animate
-                  attributeName="opacity"
-                  values="0;1;0.8;0"
-                  dur={`${1 + (i % 3) * 0.3}s`}
-                  begin={`${delay}s`}
-                  repeatCount="indefinite"
-                />
-                <animateTransform
-                  attributeName="transform"
-                  type="rotate"
-                  values={`0 ${cx} ${cy};180 ${cx} ${cy};360 ${cx} ${cy}`}
-                  dur={`${2 + (i % 2)}s`}
-                  begin={`${delay}s`}
-                  repeatCount="indefinite"
-                />
-                <animateTransform
-                  attributeName="transform"
-                  type="scale"
-                  values="0.3;1.3;0.3"
-                  dur={`${1 + (i % 3) * 0.3}s`}
-                  begin={`${delay}s`}
-                  repeatCount="indefinite"
-                  additive="sum"
-                />
-              </path>
-              
-              {/* Glow circle behind star */}
+        {/* Sparkle explosion points */}
+        {animated && (
+          <g filter={`url(#sparkle-glow-${size})`}>
+            {[
+              { cx: 20, cy: 50, delay: 0 },
+              { cx: 55, cy: 30, delay: 0.3 },
+              { cx: 100, cy: 50, delay: 0.6 },
+              { cx: 145, cy: 30, delay: 0.9 },
+              { cx: 180, cy: 50, delay: 1.2 },
+              { cx: 145, cy: 70, delay: 1.5 },
+              { cx: 55, cy: 70, delay: 1.8 },
+            ].map((point, i) => (
               <circle
-                cx={cx}
-                cy={cy}
-                r={starSize * 2}
-                fill={i % 2 === 0 ? "#06b6d4" : "#10b981"}
-                opacity="0"
+                key={i}
+                cx={point.cx}
+                cy={point.cy}
+                r="4"
+                fill="white"
               >
-                <animate
-                  attributeName="opacity"
-                  values="0;0.4;0"
-                  dur={`${1 + (i % 3) * 0.3}s`}
-                  begin={`${delay}s`}
+                <animate 
+                  attributeName="opacity" 
+                  values="0;1;0" 
+                  dur="1.8s" 
+                  begin={`${point.delay}s`} 
                   repeatCount="indefinite"
                 />
-                <animate
-                  attributeName="r"
-                  values={`${starSize};${starSize * 3};${starSize}`}
-                  dur={`${1 + (i % 3) * 0.3}s`}
-                  begin={`${delay}s`}
+                <animate 
+                  attributeName="r" 
+                  values="2;6;2" 
+                  dur="1.8s" 
+                  begin={`${point.delay}s`} 
                   repeatCount="indefinite"
                 />
               </circle>
-            </g>
-          );
-        })}
+            ))}
+          </g>
+        )}
         
         {/* Central energy point */}
-        <circle cx="60" cy="35" r="3" fill="white" opacity="0.8">
+        <circle cx="100" cy="50" r="5" fill="white" filter={`url(#sparkle-glow-${size})`}>
           {animated && (
             <>
-              <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite" />
-              <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite" />
+              <animate attributeName="r" values="3;7;3" dur="2s" repeatCount="indefinite" />
+              <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite" />
             </>
           )}
         </circle>
