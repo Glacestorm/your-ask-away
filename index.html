@@ -615,23 +615,27 @@
       })();
     </script>
 
-    <!-- Script for infinity particles motion (path-based, cross-browser) -->
+    <!-- Script for infinity particles motion - starts immediately with retry -->
     <script>
       (function () {
+        var started = false;
         function initInfinityParticles() {
+          if (started) return;
           var svg = document.querySelector('.infinity-svg');
-          if (!svg) return;
+          if (!svg) return setTimeout(initInfinityParticles, 10);
 
           var path = svg.querySelector('#infinityPath');
           var group = svg.querySelector('#infinityParticles');
-          if (!path || !group || typeof path.getTotalLength !== 'function') return;
+          if (!path || !group || typeof path.getTotalLength !== 'function') {
+            return setTimeout(initInfinityParticles, 10);
+          }
 
           var circles = Array.prototype.slice.call(group.querySelectorAll('circle[data-phase]'));
           if (!circles.length) return;
 
+          started = true;
           var len = path.getTotalLength();
-          // Match the intended “orbit” feel: one loop every ~4s
-          var secondsPerLap = 4;
+          var secondsPerLap = 3;
           var speed = len / secondsPerLap;
 
           function frame(now) {
@@ -650,11 +654,8 @@
           requestAnimationFrame(frame);
         }
 
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', initInfinityParticles);
-        } else {
-          initInfinityParticles();
-        }
+        // Run immediately and keep retrying until SVG is ready
+        initInfinityParticles();
       })();
     </script>
 
