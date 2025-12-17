@@ -124,9 +124,8 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, show
           <div className="flex gap-2">
             <Link to={`/store/modules/${module.module_key}`}>
               <Button 
-                variant="outline" 
                 size="sm"
-                className="border-slate-500 text-slate-200 hover:bg-slate-700 hover:text-white hover:border-slate-400"
+                className="bg-gradient-to-b from-slate-600 to-slate-700 text-white border border-slate-500 shadow-[0_4px_0_0_rgba(30,41,59,1),0_6px_10px_rgba(0,0,0,0.3)] hover:shadow-[0_2px_0_0_rgba(30,41,59,1),0_4px_6px_rgba(0,0,0,0.3)] hover:translate-y-[2px] active:shadow-none active:translate-y-[4px] transition-all duration-150"
               >
                 Detalles
               </Button>
@@ -135,8 +134,8 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, show
               size="sm"
               onClick={handleRequestQuote}
               className={isPremium 
-                ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white'
-                : 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white'
+                ? 'bg-gradient-to-b from-amber-500 to-amber-600 text-white border border-amber-400 shadow-[0_4px_0_0_rgba(180,83,9,1),0_6px_10px_rgba(0,0,0,0.3)] hover:shadow-[0_2px_0_0_rgba(180,83,9,1),0_4px_6px_rgba(0,0,0,0.3)] hover:translate-y-[2px] active:shadow-none active:translate-y-[4px] transition-all duration-150'
+                : 'bg-gradient-to-b from-emerald-500 to-emerald-600 text-white border border-emerald-400 shadow-[0_4px_0_0_rgba(4,120,87,1),0_6px_10px_rgba(0,0,0,0.3)] hover:shadow-[0_2px_0_0_rgba(4,120,87,1),0_4px_6px_rgba(0,0,0,0.3)] hover:translate-y-[2px] active:shadow-none active:translate-y-[4px] transition-all duration-150'
               }
             >
               Solicitar Precio
