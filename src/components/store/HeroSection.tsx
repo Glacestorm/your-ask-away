@@ -76,7 +76,7 @@ const HeroSection: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-5xl md:text-7xl font-bold text-white mb-6 leading-loose"
+              className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight"
             >
               {t('store.hero.title1')}{' '}
               <span className="relative">
@@ -90,8 +90,10 @@ const HeroSection: React.FC = () => {
                   className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full"
                 />
               </span>
-              <br />
-              {t('store.hero.title3')}
+
+              <span className="block mt-4 md:mt-5">
+                {t('store.hero.title3')}
+              </span>
             </motion.h1>
 
             {/* Subheadline */}
