@@ -164,53 +164,29 @@ export function ObelixiaLogo({
           </>
         )}
         
-        {/* Sparkle explosion points */}
+        {/* Synchrotron particles (moving) - replaces fixed sparkle points */}
         {animated && (
-          <g filter={`url(#sparkle-glow-${size})`}>
-            {[
-              { cx: 20, cy: 50, delay: 0 },
-              { cx: 55, cy: 30, delay: 0.3 },
-              { cx: 100, cy: 50, delay: 0.6 },
-              { cx: 145, cy: 30, delay: 0.9 },
-              { cx: 180, cy: 50, delay: 1.2 },
-              { cx: 145, cy: 70, delay: 1.5 },
-              { cx: 55, cy: 70, delay: 1.8 },
-            ].map((point, i) => (
-              <circle
-                key={i}
-                cx={point.cx}
-                cy={point.cy}
-                r="4"
-                fill="white"
-              >
-                <animate 
-                  attributeName="opacity" 
-                  values="0;1;0" 
-                  dur="1.8s" 
-                  begin={`${point.delay}s`} 
-                  repeatCount="indefinite"
-                />
-                <animate 
-                  attributeName="r" 
-                  values="2;6;2" 
-                  dur="1.8s" 
-                  begin={`${point.delay}s`} 
-                  repeatCount="indefinite"
-                />
-              </circle>
-            ))}
-          </g>
+          <>
+            {/* Invisible motion path for mpath */}
+            <path
+              id={`infinity-motion-${size}`}
+              d="M20 50 C20 25, 35 15, 55 30 Q70 42, 100 50 Q130 58, 145 70 C165 85, 180 75, 180 50 C180 25, 165 15, 145 30 Q130 42, 100 50 Q70 58, 55 70 C35 85, 20 75, 20 50"
+              fill="none"
+              stroke="none"
+            />
+
+            <g filter={`url(#sparkle-glow-${size})`}>
+              {Array.from({ length: currentSize.sparkles }).map((_, i) => (
+                <circle key={i} r={size === 'hero' ? 3 : 2} fill="white" opacity={0.9}>
+                  <animateMotion dur="3s" repeatCount="indefinite" begin={`${-i * (3 / currentSize.sparkles)}s`}>
+                    <mpath xlinkHref={`#infinity-motion-${size}`} />
+                  </animateMotion>
+                  <animate attributeName="r" values={`${size === 'hero' ? 2 : 1};${size === 'hero' ? 4 : 3};${size === 'hero' ? 2 : 1}`} dur="0.8s" repeatCount="indefinite" begin={`${i * 0.12}s`} />
+                </circle>
+              ))}
+            </g>
+          </>
         )}
-        
-        {/* Central energy point */}
-        <circle cx="100" cy="50" r="5" fill="white" filter={`url(#sparkle-glow-${size})`}>
-          {animated && (
-            <>
-              <animate attributeName="r" values="3;7;3" dur="2s" repeatCount="indefinite" />
-              <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite" />
-            </>
-          )}
-        </circle>
       </svg>
     </div>
   );
