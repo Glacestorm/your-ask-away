@@ -16,9 +16,51 @@ interface AuditData {
 }
 
 export async function generateComprehensiveAuditPDF(
-  auditData: AuditData,
+  rawAuditData: any,
+  codebaseAnalysis?: any,
+  improvementsAnalysis?: any,
   onProgress?: (progress: number) => void
 ): Promise<void> {
+  // Normalize audit data structure
+  const auditData: AuditData = {
+    globalScore: rawAuditData?.performance?.globalScore || rawAuditData?.globalScore || 75,
+    timestamp: rawAuditData?.timestamp || new Date().toISOString(),
+    executiveSummary: rawAuditData?.executiveSummary || rawAuditData?.performance?.executiveSummary || {},
+    sections: rawAuditData?.sections || {},
+    coreWebVitals: rawAuditData?.coreWebVitals || rawAuditData?.performance?.coreWebVitals || [],
+    bundleAnalysis: rawAuditData?.bundleAnalysis || rawAuditData?.technical || {},
+    disruptiveImprovements: rawAuditData?.disruptiveImprovements || {},
+    roadmap: rawAuditData?.roadmap || [],
+    competitorBenchmark: rawAuditData?.competitorBenchmark || [],
+    visualImprovements: rawAuditData?.visualImprovements || rawAuditData?.uxVisual?.visualImprovements || [],
+    financialAnalysis: rawAuditData?.financialAnalysis || {},
+    conclusions: rawAuditData?.conclusions || {}
+  };
+
+  // Merge codebase analysis data if available
+  if (codebaseAnalysis) {
+    auditData.bundleAnalysis = {
+      ...auditData.bundleAnalysis,
+      components: codebaseAnalysis.codeStats?.totalComponents || auditData.bundleAnalysis.components,
+      hooks: codebaseAnalysis.codeStats?.totalHooks || auditData.bundleAnalysis.hooks,
+      edgeFunctions: codebaseAnalysis.codeStats?.totalEdgeFunctions || auditData.bundleAnalysis.edgeFunctions,
+      pages: codebaseAnalysis.codeStats?.totalPages || auditData.bundleAnalysis.pages,
+      linesOfCode: codebaseAnalysis.codeStats?.linesOfCode || auditData.bundleAnalysis.linesOfCode,
+      modules: codebaseAnalysis.modules || []
+    };
+  }
+
+  // Merge improvements data if available
+  if (improvementsAnalysis) {
+    auditData.disruptiveImprovements = {
+      ...auditData.disruptiveImprovements,
+      improvements: improvementsAnalysis.improvements || auditData.disruptiveImprovements.improvements,
+      technologyTrends: improvementsAnalysis.technologyTrends || [],
+      securityUpdates: improvementsAnalysis.securityUpdates || [],
+      performanceOptimizations: improvementsAnalysis.performanceOptimizations || []
+    };
+  }
+
   const pdf = createEnhancedPDF('p', 'a4');
   const doc = (pdf as any).doc;
   const pageWidth = 210;
