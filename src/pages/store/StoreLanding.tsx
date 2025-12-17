@@ -14,6 +14,7 @@ import PremiumModulesSection from '@/components/store/PremiumModulesSection';
 import BundlesSection from '@/components/store/BundlesSection';
 import TrustBadges from '@/components/store/TrustBadges';
 import ROICalculator from '@/components/store/ROICalculator';
+import PricingExplanation from '@/components/store/PricingExplanation';
 import StoreFooter from '@/components/store/StoreFooter';
 import CartSidebar from '@/components/store/CartSidebar';
 
@@ -149,6 +150,9 @@ const StoreLanding: React.FC = () => {
       {/* ROI Calculator / Pricing */}
       <div id="pricing">
         <ROICalculator />
+        <div className="container mx-auto px-4">
+          <PricingExplanation />
+        </div>
       </div>
 
       {/* Trust Badges */}

@@ -48,8 +48,8 @@ const BundlesSection: React.FC = () => {
       bundle_name: 'Pack Starter',
       description: 'Perfecto para comenzar con lo esencial',
       module_keys: ['core', 'documentation', 'visits'],
-      original_price: 180000,
-      bundle_price: 120000,
+      original_price: 149000,
+      bundle_price: 99000,
       discount_percent: 33,
       badge: 'Popular',
       is_featured: true,
@@ -60,8 +60,8 @@ const BundlesSection: React.FC = () => {
       bundle_name: 'Pack Banca Completo',
       description: 'Todo lo necesario para entidades financieras',
       module_keys: ['core', 'accounting', 'audit', 'banking_ai', 'compliance', 'risk_management'],
-      original_price: 650000,
-      bundle_price: 500000,
+      original_price: 520000,
+      bundle_price: 399000,
       discount_percent: 23,
       badge: 'Recomendado',
       is_featured: true,
@@ -70,11 +70,11 @@ const BundlesSection: React.FC = () => {
       id: 'b3',
       bundle_key: 'enterprise',
       bundle_name: 'Pack Enterprise',
-      description: 'Licencia perpetua con todos los módulos',
+      description: 'Licencia perpetua con todos los módulos y código fuente',
       module_keys: ['all'],
-      original_price: 1500000,
+      original_price: 1200000,
       bundle_price: 880000,
-      discount_percent: 41,
+      discount_percent: 27,
       badge: 'Mejor Valor',
       is_featured: true,
     },
@@ -175,8 +175,19 @@ const BundlesSection: React.FC = () => {
                   </div>
                   <div className="text-4xl font-bold text-white">{formatPrice(bundle.bundle_price)}</div>
                   <div className="text-sm text-slate-400">
-                    {bundle.bundle_key === 'enterprise' ? 'Licencia perpetua' : '/año'}
+                    {bundle.bundle_key === 'enterprise' ? (
+                      <span className="flex flex-col items-center gap-1">
+                        <span className="text-amber-300">Licencia perpetua</span>
+                        <span className="text-[10px] text-slate-500">Pago único • Tuyo para siempre</span>
+                      </span>
+                    ) : (
+                      <span className="flex flex-col items-center gap-1">
+                        <span>/año</span>
+                        <span className="text-[10px] text-slate-500">Renovable • Sin permanencia</span>
+                      </span>
+                    )}
                   </div>
+                  <div className="text-[10px] text-slate-500 mt-1">SIN IVA</div>
                 </div>
 
                 {/* Features */}

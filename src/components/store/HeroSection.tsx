@@ -106,14 +106,21 @@ const HeroSection: React.FC = () => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="inline-flex items-center gap-3 mb-10 px-6 py-3 bg-slate-800/50 backdrop-blur rounded-full border border-slate-700/50"
+            className="inline-flex flex-col items-center gap-2 mb-10 px-6 py-4 bg-slate-800/50 backdrop-blur rounded-2xl border border-slate-700/50"
           >
-            <span className="text-slate-400">Desde</span>
-            <span className="text-3xl font-bold text-white">€120,000</span>
-            <span className="text-slate-400">/año</span>
-            <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30">
-              Ahorra 40%
-            </Badge>
+            <div className="flex items-center gap-3">
+              <span className="text-slate-400">Desde</span>
+              <span className="text-3xl font-bold text-white">€99,000</span>
+              <span className="text-slate-400">/año</span>
+              <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30">
+                Ahorra 40%
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-slate-500">
+              <span>SIN IVA</span>
+              <span>•</span>
+              <span>Licencia anual renovable</span>
+            </div>
           </motion.div>
 
           {/* CTAs */}
