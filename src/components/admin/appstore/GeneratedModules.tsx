@@ -51,19 +51,67 @@ export const GeneratedModules: React.FC<GeneratedModulesProps> = ({
     }
   };
 
+  const [publishing, setPublishing] = useState<string | null>(null);
+
   const publishModule = async (moduleId: string) => {
+    setPublishing(moduleId);
     try {
-      const { error } = await supabase
+      // Get the generated module data
+      const moduleToPublish = modules.find(m => m.id === moduleId);
+      if (!moduleToPublish) throw new Error('Módulo no encontrado');
+
+      // Create module_key from module_name
+      const moduleKey = moduleToPublish.module_name
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+
+      // Check if module already exists in app_modules
+      const { data: existing } = await supabase
+        .from('app_modules')
+        .select('id')
+        .eq('module_key', moduleKey)
+        .maybeSingle();
+
+      if (existing) {
+        toast.error('Ya existe un módulo con este nombre en la tienda');
+        return;
+      }
+
+      // Insert into app_modules
+      const { error: insertError } = await supabase
+        .from('app_modules')
+        .insert({
+          module_key: moduleKey,
+          module_name: moduleToPublish.module_name,
+          description: moduleToPublish.description || `Módulo generado para sector ${moduleToPublish.sector}`,
+          category: 'vertical',
+          sector: moduleToPublish.sector as any,
+          base_price: 50000, // Default price for generated modules
+          is_core: false,
+          features: moduleToPublish.components || [],
+          module_icon: 'Puzzle'
+        });
+
+      if (insertError) throw insertError;
+
+      // Mark as published in generated_modules
+      const { error: updateError } = await supabase
         .from('generated_modules')
         .update({ is_published: true })
         .eq('id', moduleId);
 
-      if (error) throw error;
-      toast.success('Módulo publicado');
+      if (updateError) throw updateError;
+
+      toast.success('Módulo publicado en la tienda');
       onRefresh();
     } catch (error: any) {
       console.error('Error publishing module:', error);
-      toast.error('Error al publicar el módulo');
+      toast.error(error.message || 'Error al publicar el módulo');
+    } finally {
+      setPublishing(null);
     }
   };
 
