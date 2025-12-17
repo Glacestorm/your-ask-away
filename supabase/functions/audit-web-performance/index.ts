@@ -33,6 +33,7 @@ interface PerformanceAudit {
     accessibility: AuditSection;
     seo: AuditSection;
     security: AuditSection;
+    uxVisual: AuditSection;
   };
   disruptiveImprovements: {
     high: DisruptiveImprovement[];
@@ -43,6 +44,15 @@ interface PerformanceAudit {
   coreWebVitals: CoreWebVitalsAnalysis;
   bundleAnalysis: BundleAnalysis;
   competitorBenchmark: CompetitorBenchmark[];
+  visualImprovements: VisualImprovement[];
+}
+
+interface VisualImprovement {
+  area: string;
+  current: string;
+  suggestion: string;
+  impact: string;
+  effort: string;
 }
 
 interface DisruptiveImprovement {
@@ -358,6 +368,76 @@ serve(async (req) => {
         category: 'JWT',
         description: 'Verificació JWT en Edge Functions',
         impact: 'APIs protegides',
+      },
+    ];
+
+    // UX/Visual improvements
+    const uxVisualFindings: AuditFinding[] = [
+      {
+        type: 'success',
+        category: 'Design System',
+        description: 'Tailwind CSS amb tokens semàntics',
+        impact: 'Consistència visual garantida',
+      },
+      {
+        type: 'success',
+        category: 'Animacions',
+        description: 'Framer Motion per micro-interaccions',
+        impact: 'UX fluid i professional',
+      },
+      {
+        type: 'info',
+        category: 'Dark Mode',
+        description: 'Suport dark/light mode complet',
+        impact: 'Preferències usuari respectades',
+      },
+      {
+        type: 'warning',
+        category: 'Loading States',
+        description: 'Alguns components sense skeleton loaders',
+        impact: 'Percepció càrrega més lenta',
+        solution: 'Afegir skeletons a taules i cards durant fetch',
+      },
+      {
+        type: 'info',
+        category: 'Micro-animacions',
+        description: 'Potencial per més feedback visual',
+        impact: 'Millora sensació de responsivitat',
+        solution: 'Afegir hover states, transitions en botons i inputs',
+      },
+      {
+        type: 'warning',
+        category: 'Tipografia',
+        description: 'Jerarquia tipogràfica millorable',
+        impact: 'Lecturabilitat i escaneig visual',
+        solution: 'Revisar font sizes, line heights, spacing',
+      },
+      {
+        type: 'info',
+        category: 'Iconografia',
+        description: 'Lucide icons consistents',
+        impact: 'Visual coherent',
+        solution: 'Considerar icones custom per diferenciació',
+      },
+      {
+        type: 'warning',
+        category: 'Empty States',
+        description: 'Alguns empty states sense il·lustracions',
+        impact: 'Experiència freda quan no hi ha dades',
+        solution: 'Afegir il·lustracions i CTAs a empty states',
+      },
+      {
+        type: 'info',
+        category: 'Feedback Visual',
+        description: 'Toasts implementats amb Sonner',
+        impact: 'Feedback accions clar',
+      },
+      {
+        type: 'warning',
+        category: 'Scroll UX',
+        description: 'Scroll infinit parcial, paginació tradicional',
+        impact: 'UX moderna esperada per usuaris',
+        solution: 'Implementar infinite scroll amb virtualization',
       },
     ];
 
@@ -814,12 +894,97 @@ serve(async (req) => {
             'Penetration testing anual',
           ],
         },
+        uxVisual: {
+          title: 'UX i Disseny Visual',
+          score: calculateSectionScore(uxVisualFindings),
+          maxScore: 100,
+          findings: uxVisualFindings,
+          recommendations: [
+            'Afegir skeleton loaders a totes les llistes i taules',
+            'Implementar micro-animacions hover en elements interactius',
+            'Millorar jerarquia tipogràfica amb més contrast',
+            'Afegir il·lustracions als empty states',
+            'Implementar infinite scroll amb virtualization',
+          ],
+        },
       },
       disruptiveImprovements,
       roadmap,
       coreWebVitals,
       bundleAnalysis,
       competitorBenchmark,
+      visualImprovements: [
+        {
+          area: 'Hero Section',
+          current: 'Animació logo bàsica',
+          suggestion: 'Afegir partícules interactives i efecte parallax',
+          impact: 'Primera impressió més memorable',
+          effort: 'Mitjà',
+        },
+        {
+          area: 'Cards i Mòduls',
+          current: 'Hover bàsic amb scale',
+          suggestion: 'Afegir glow effect, shadows dinàmics i micro-animacions',
+          impact: 'Feedback visual més ric',
+          effort: 'Baix',
+        },
+        {
+          area: 'Taules de Dades',
+          current: 'Estil funcional estàndard',
+          suggestion: 'Row hover highlighting, striped rows, expandable details',
+          impact: 'Escaneig dades més fàcil',
+          effort: 'Baix',
+        },
+        {
+          area: 'Formularis',
+          current: 'Inputs estàndard',
+          suggestion: 'Floating labels, success states visuals, progress indicators',
+          impact: 'UX formularis més clara',
+          effort: 'Mitjà',
+        },
+        {
+          area: 'Navegació',
+          current: 'Sidebar funcional',
+          suggestion: 'Collapsed mode amb tooltips, breadcrumbs animats',
+          impact: 'Orientació millor en app complexa',
+          effort: 'Baix',
+        },
+        {
+          area: 'Loading States',
+          current: 'Spinners bàsics',
+          suggestion: 'Skeleton screens, shimmer effects, progress bars',
+          impact: 'Percepció velocitat millorada',
+          effort: 'Mitjà',
+        },
+        {
+          area: 'Empty States',
+          current: 'Text bàsic sense dades',
+          suggestion: 'Il·lustracions custom, CTAs clars, suggeriments accions',
+          impact: 'Engagement quan no hi ha contingut',
+          effort: 'Mitjà',
+        },
+        {
+          area: 'Charts i Gràfics',
+          current: 'Recharts estàndard',
+          suggestion: 'Animacions entrada, tooltips rics, drill-down interactiu',
+          impact: 'Visualització dades més atractiva',
+          effort: 'Alt',
+        },
+        {
+          area: 'Notificacions',
+          current: 'Toasts funcionals',
+          suggestion: 'Toast progress bars, actions inline, stacking intel·ligent',
+          impact: 'Feedback accions més clar',
+          effort: 'Baix',
+        },
+        {
+          area: 'Mapa',
+          current: 'Markers bàsics',
+          suggestion: 'Clusters animats, popups rics, 3D buildings toggle',
+          impact: 'Experiència cartogràfica premium',
+          effort: 'Mitjà',
+        },
+      ],
     };
 
     // Calculate overall score as average of sections
