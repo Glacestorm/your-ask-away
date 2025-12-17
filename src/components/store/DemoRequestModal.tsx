@@ -114,8 +114,8 @@ const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onClose }) 
                     </div>
                     
                     <div className="space-y-2">
-                      <h4 className="text-xl font-bold text-white">Jaime Fernández</h4>
-                      <p className="text-emerald-400 font-medium">Co-fundador & CEO</p>
+                      <h4 className="text-xl font-bold text-white">Jaime Fernández García</h4>
+                      <p className="text-emerald-400 font-medium">Co-fundador & Representante Comercial</p>
                       <p className="text-slate-400 text-sm">ObelixIA Technologies</p>
                     </div>
                   </div>
@@ -123,11 +123,11 @@ const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onClose }) 
                   <div className="mt-6 space-y-3">
                     <div className="flex items-center gap-3 text-slate-300">
                       <Mail className="w-4 h-4 text-emerald-400" />
-                      <span>jaime.fernandez@obelixia.com</span>
+                      <span>jfernandez@obelixia.com</span>
                     </div>
                     <div className="flex items-center gap-3 text-slate-300">
                       <Phone className="w-4 h-4 text-emerald-400" />
-                      <span>+376 XXX XXX</span>
+                      <span>+34 606 770 033</span>
                     </div>
                     <div className="flex items-center gap-3 text-slate-300">
                       <Linkedin className="w-4 h-4 text-emerald-400" />
