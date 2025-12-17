@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { 
   FileText, Euro, Package, Receipt, Settings, 
   BarChart3, Users, Shield, Code, Palette, 
-  Store, Layers, BookOpen, Activity, Rocket
+  Store, Layers, BookOpen, Activity, Rocket,
+  ChevronLeft, ChevronRight, Home
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { ContentManager } from '@/components/obelixia-admin/ContentManager';
 import { ModulePricingManager } from '@/components/obelixia-admin/ModulePricingManager';
 import { InvoiceManager } from '@/components/obelixia-admin/InvoiceManager';
@@ -27,6 +29,7 @@ import APIDocumentation from '@/components/admin/APIDocumentation';
 const ObelixiaTeamAdmin: React.FC = () => {
   const { isSuperAdmin, isAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState('quotes');
+  const navigate = useNavigate();
 
   // Solo accesible para admins y superadmins
   if (!isSuperAdmin && !isAdmin) {
@@ -52,18 +55,51 @@ const ObelixiaTeamAdmin: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center justify-between"
         >
-          <div>
-            <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-emerald-500">
-                <Shield className="w-6 h-6 text-white" />
-              </div>
-              <span className="bg-gradient-to-r from-blue-400 via-emerald-400 to-blue-400 bg-clip-text text-transparent">
-                ObelixIA Team Admin
-              </span>
-            </h1>
-            <p className="text-slate-400 mt-1">
-              Gestión interna de presupuestos, facturas, precios, documentación y configuración
-            </p>
+          <div className="flex items-center gap-4">
+            {/* Navigation buttons */}
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate(-1)}
+                className="h-9 w-9 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 text-slate-400 hover:text-white border border-slate-700/50"
+                title="Atrás"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate(1)}
+                className="h-9 w-9 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 text-slate-400 hover:text-white border border-slate-700/50"
+                title="Adelante"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/store')}
+                className="h-9 w-9 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 text-slate-400 hover:text-white border border-slate-700/50"
+                title="Página Principal"
+              >
+                <Home className="h-5 w-5" />
+              </Button>
+            </div>
+            
+            <div>
+              <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-emerald-500">
+                  <Shield className="w-6 h-6 text-white" />
+                </div>
+                <span className="bg-gradient-to-r from-blue-400 via-emerald-400 to-blue-400 bg-clip-text text-transparent">
+                  ObelixIA Team Admin
+                </span>
+              </h1>
+              <p className="text-slate-400 mt-1">
+                Gestión interna de presupuestos, facturas, precios, documentación y configuración
+              </p>
+            </div>
           </div>
         </motion.div>
 
