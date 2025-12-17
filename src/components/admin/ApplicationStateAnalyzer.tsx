@@ -270,6 +270,8 @@ export function ApplicationStateAnalyzer() {
   const [analysisProgress, setAnalysisProgress] = useState(0);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [isGeneratingSalesPDF, setIsGeneratingSalesPDF] = useState(false);
+  const [isGeneratingAuditPDF, setIsGeneratingAuditPDF] = useState(false);
+  const [auditProgress, setAuditProgress] = useState(0);
   const [isExportingCode, setIsExportingCode] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   const [isExportingFullCode, setIsExportingFullCode] = useState(false);
@@ -1972,6 +1974,19 @@ export function ApplicationStateAnalyzer() {
                   <Sparkles className="mr-2 h-5 w-5" />
                 )}
                 5. PROPOSTA COMERCIAL
+              </Button>
+              <Button
+                onClick={generateWebAuditPDF}
+                disabled={isGeneratingAuditPDF || !codebaseAnalysis}
+                size="lg"
+                className="min-w-[200px] bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white font-bold shadow-lg"
+              >
+                {isGeneratingAuditPDF ? (
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                  <Gauge className="mr-2 h-5 w-5" />
+                )}
+                6. AUDITORIA TOTAL
               </Button>
             </div>
             

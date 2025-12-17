@@ -1,5 +1,8 @@
 project_id = "avaugfnqvvqcilhiudlf"
 
+[functions.audit-web-performance]
+verify_jwt = true
+
 [functions.smart-column-mapping]
 verify_jwt = false
 
