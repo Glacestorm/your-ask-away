@@ -335,8 +335,14 @@ export const InvoiceManager: React.FC = () => {
 
   const printInvoice = (invoice: Invoice) => {
     const doc = generateInvoicePDF(invoice);
-    doc.autoPrint();
-    window.open(doc.output('bloburl'), '_blank');
+    const pdfBlob = doc.output('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    const printWindow = window.open(pdfUrl, '_blank');
+    if (printWindow) {
+      printWindow.onload = () => {
+        printWindow.print();
+      };
+    }
     toast.success('Documento listo para imprimir');
   };
 
