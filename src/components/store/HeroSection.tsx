@@ -137,7 +137,7 @@ const HeroSection: React.FC = () => {
               <Link to="/store/modules">
                 <Button 
                   size="lg"
-                  className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-8 py-6 text-lg rounded-xl shadow-lg shadow-emerald-500/25 w-full sm:w-auto"
+                  className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-8 h-[60px] py-0 leading-none text-lg rounded-xl shadow-lg shadow-emerald-500/25 w-full sm:w-auto inline-flex items-center justify-center"
                 >
                   Explorar Módulos
                   <ArrowRight className="ml-2 w-5 h-5" />
@@ -149,7 +149,7 @@ const HeroSection: React.FC = () => {
                 onClick={() => setIsDemoModalOpen(true)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="relative px-8 h-[60px] rounded-xl font-semibold text-lg bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500 text-white shadow-[0_6px_20px_rgba(34,211,238,0.4)] hover:from-blue-400 hover:via-cyan-400 hover:to-emerald-400 hover:shadow-[0_8px_24px_rgba(34,211,238,0.5)] transition-all duration-300 w-full sm:w-auto inline-flex items-center justify-center"
+                className="relative overflow-hidden px-8 h-[60px] py-0 leading-none rounded-xl font-semibold text-lg bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500 text-white shadow-[0_6px_20px_rgba(34,211,238,0.4)] hover:from-blue-400 hover:via-cyan-400 hover:to-emerald-400 hover:shadow-[0_8px_24px_rgba(34,211,238,0.5)] transition-all duration-300 w-full sm:w-auto inline-flex items-center justify-center"
               >
                 <span className="absolute inset-0 rounded-xl animate-ping bg-cyan-400/30" style={{ animationDuration: '1.5s' }} />
                 <span className="absolute inset-0 rounded-xl animate-pulse bg-cyan-400/20" style={{ animationDuration: '2s' }} />
