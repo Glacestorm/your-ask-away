@@ -92,7 +92,8 @@
       .theme-creand body { background-color: #fff; color: #222; }
       .theme-aurora body { background-color: #f5f3ff; color: #1a1040; }
       #root { min-height: 100vh; }
-      /* Luxury Specular Loader */
+      
+      /* Cinematic Luxury Loader */
       .initial-loader {
         position: fixed;
         inset: 0;
@@ -100,83 +101,115 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+        background: radial-gradient(ellipse at center, #1e293b 0%, #0f172a 60%, #020617 100%);
         z-index: 9999;
         transition: opacity 0.5s ease;
-        gap: 32px;
+        gap: 40px;
+        overflow: hidden;
       }
       .initial-loader.hidden { opacity: 0; pointer-events: none; }
       
-      /* Background pattern */
-      .initial-loader::before {
-        content: '';
+      /* Ambient particles */
+      .loader-particles {
         position: absolute;
         inset: 0;
-        background-image: radial-gradient(circle at 1px 1px, rgba(16, 185, 129, 0.1) 1px, transparent 0);
-        background-size: 40px 40px;
-        opacity: 0.5;
+        overflow: hidden;
+      }
+      .loader-particle {
+        position: absolute;
+        border-radius: 50%;
+        animation: particleFloat 6s ease-in-out infinite;
+      }
+      @keyframes particleFloat {
+        0%, 100% { transform: translateY(0) scale(0.5); opacity: 0; }
+        10% { opacity: 0.8; }
+        50% { transform: translateY(-40px) scale(1.2); opacity: 1; }
+        90% { opacity: 0.8; }
       }
       
-      /* Luxury Brand Typography */
+      /* Radial glow behind logo */
+      .loader-glow {
+        position: absolute;
+        width: 400px;
+        height: 200px;
+        background: radial-gradient(ellipse, rgba(6,182,212,0.3) 0%, rgba(16,185,129,0.2) 40%, transparent 70%);
+        filter: blur(40px);
+        animation: glowPulse 3s ease-in-out infinite;
+      }
+      @keyframes glowPulse {
+        0%, 100% { transform: scale(1); opacity: 0.5; }
+        50% { transform: scale(1.2); opacity: 0.8; }
+      }
+      
+      /* Dual Gradient Brand Typography */
       .loader-brand {
         font-family: 'Crimson Pro', Georgia, serif;
-        font-size: 72px;
+        font-size: clamp(48px, 12vw, 96px);
         font-weight: 900;
         letter-spacing: -0.03em;
-        background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 25%, #ffffff 50%, #e2e8f0 75%, #ffffff 100%);
-        background-size: 200% 200%;
+        background: linear-gradient(90deg, #0ea5e9 0%, #06b6d4 20%, #10b981 50%, #06b6d4 80%, #0ea5e9 100%);
+        background-size: 200% 100%;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        animation: shimmer 3s ease-in-out infinite;
-        text-shadow: 0 0 40px rgba(16, 185, 129, 0.3);
+        animation: gradientFlow 4s ease infinite;
         position: relative;
+        z-index: 10;
       }
-      .loader-brand .accent {
-        background: linear-gradient(135deg, #10b981 0%, #14b8a6 50%, #06b6d4 100%);
+      .loader-brand::after {
+        content: 'ObelixIA';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(120deg, transparent 0%, transparent 40%, rgba(255,255,255,0.5) 50%, transparent 60%, transparent 100%);
+        background-size: 200% 100%;
         -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
         background-clip: text;
+        animation: textShine 3s ease-in-out infinite;
       }
-      @keyframes shimmer {
+      @keyframes gradientFlow {
         0%, 100% { background-position: 0% 50%; }
         50% { background-position: 100% 50%; }
       }
+      @keyframes textShine {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
       
-      /* Infinity Symbol Spinner */
-      .loader-infinity {
-        width: 100px;
-        height: 50px;
+      /* Cinematic Infinity Symbol */
+      .loader-infinity-container {
+        position: relative;
+        width: 140px;
+        height: 85px;
+        z-index: 10;
       }
-      .loader-infinity path {
-        fill: none;
-        stroke: url(#loaderGradient);
-        stroke-width: 5;
-        stroke-linecap: round;
-        stroke-dasharray: 200;
-        animation: infinityFlow 2s linear infinite;
-        filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.5));
+      .loader-infinity-glow {
+        position: absolute;
+        inset: -20px;
+        background: radial-gradient(ellipse, rgba(6,182,212,0.5) 0%, rgba(16,185,129,0.3) 40%, transparent 70%);
+        filter: blur(15px);
+        animation: glowPulse 2s ease-in-out infinite;
       }
-      @keyframes infinityFlow {
-        0% { stroke-dashoffset: 0; }
-        100% { stroke-dashoffset: 400; }
+      .loader-infinity svg {
+        width: 100%;
+        height: 100%;
+        filter: drop-shadow(0 0 20px rgba(6,182,212,0.6));
       }
       
       /* Theme variations */
       .theme-day .initial-loader {
-        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f8fafc 100%);
+        background: radial-gradient(ellipse at center, #e2e8f0 0%, #f1f5f9 60%, #ffffff 100%);
       }
       .theme-day .loader-brand {
-        background: linear-gradient(135deg, #0f172a 0%, #334155 25%, #0f172a 50%, #334155 75%, #0f172a 100%);
-        background-size: 200% 200%;
+        background: linear-gradient(90deg, #0ea5e9 0%, #06b6d4 20%, #10b981 50%, #06b6d4 80%, #0ea5e9 100%);
+        background-size: 200% 100%;
         -webkit-background-clip: text;
         background-clip: text;
       }
       .theme-creand .initial-loader {
-        background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 50%, #ffffff 100%);
+        background: radial-gradient(ellipse at center, #f0fdf4 0%, #ffffff 60%, #ecfdf5 100%);
       }
       .theme-aurora .initial-loader {
-        background: linear-gradient(135deg, #1a1040 0%, #2d1b69 50%, #1a1040 100%);
+        background: radial-gradient(ellipse at center, #2d1b69 0%, #1a1040 60%, #0f0a26 100%);
       }
     </style>
 
@@ -234,22 +267,96 @@
   </head>
 
   <body>
-    <!-- Luxury Specular Loader -->
+    <!-- Cinematic Luxury Loader -->
     <div id="initial-loader" class="initial-loader">
-      <div class="loader-brand">Obelix<span class="accent">IA</span></div>
-      <svg class="loader-infinity" viewBox="0 0 100 50">
-        <defs>
-          <linearGradient id="loaderGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stop-color="#10b981">
-              <animate attributeName="stop-color" values="#10b981;#06b6d4;#10b981" dur="2s" repeatCount="indefinite" />
-            </stop>
-            <stop offset="100%" stop-color="#06b6d4">
-              <animate attributeName="stop-color" values="#06b6d4;#10b981;#06b6d4" dur="2s" repeatCount="indefinite" />
-            </stop>
-          </linearGradient>
-        </defs>
-        <path d="M25 25C25 15 15 10 10 15C5 20 5 30 10 35C15 40 25 35 35 25C45 15 55 10 65 15C75 20 80 25 75 35C70 45 55 40 50 25C45 10 35 35 25 25Z" />
-      </svg>
+      <!-- Floating particles -->
+      <div class="loader-particles">
+        <div class="loader-particle" style="width:4px;height:4px;left:10%;top:20%;background:#10b981;animation-delay:0s"></div>
+        <div class="loader-particle" style="width:3px;height:3px;left:25%;top:60%;background:#06b6d4;animation-delay:0.5s"></div>
+        <div class="loader-particle" style="width:5px;height:5px;left:40%;top:30%;background:#10b981;animation-delay:1s"></div>
+        <div class="loader-particle" style="width:3px;height:3px;left:60%;top:70%;background:#06b6d4;animation-delay:1.5s"></div>
+        <div class="loader-particle" style="width:4px;height:4px;left:75%;top:25%;background:#10b981;animation-delay:2s"></div>
+        <div class="loader-particle" style="width:6px;height:6px;left:85%;top:55%;background:#06b6d4;animation-delay:2.5s"></div>
+        <div class="loader-particle" style="width:3px;height:3px;left:15%;top:80%;background:#10b981;animation-delay:3s"></div>
+        <div class="loader-particle" style="width:4px;height:4px;left:90%;top:40%;background:#06b6d4;animation-delay:3.5s"></div>
+      </div>
+      
+      <!-- Radial glow -->
+      <div class="loader-glow"></div>
+      
+      <!-- Infinity symbol with sparkles -->
+      <div class="loader-infinity-container">
+        <div class="loader-infinity-glow"></div>
+        <svg class="loader-infinity" viewBox="0 0 120 70">
+          <defs>
+            <linearGradient id="loaderMainGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#0ea5e9">
+                <animate attributeName="stop-color" values="#0ea5e9;#10b981;#06b6d4;#0ea5e9" dur="4s" repeatCount="indefinite" />
+              </stop>
+              <stop offset="50%" stop-color="#10b981">
+                <animate attributeName="stop-color" values="#10b981;#06b6d4;#0ea5e9;#10b981" dur="4s" repeatCount="indefinite" />
+              </stop>
+              <stop offset="100%" stop-color="#06b6d4">
+                <animate attributeName="stop-color" values="#06b6d4;#0ea5e9;#10b981;#06b6d4" dur="4s" repeatCount="indefinite" />
+              </stop>
+            </linearGradient>
+            <filter id="loaderGlow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="3" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          
+          <!-- Background trace -->
+          <path d="M30 35 C30 18, 45 12, 60 25 C70 34, 70 36, 60 45 C45 58, 30 52, 30 35 M90 35 C90 18, 75 12, 60 25 C50 34, 50 36, 60 45 C75 58, 90 52, 90 35" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="6" stroke-linecap="round"/>
+          
+          <!-- Main animated path -->
+          <path d="M30 35 C30 18, 45 12, 60 25 C70 34, 70 36, 60 45 C45 58, 30 52, 30 35 M90 35 C90 18, 75 12, 60 25 C50 34, 50 36, 60 45 C75 58, 90 52, 90 35" fill="none" stroke="url(#loaderMainGrad)" stroke-width="6" stroke-linecap="round" stroke-dasharray="60 180" filter="url(#loaderGlow)">
+            <animate attributeName="stroke-dashoffset" values="0;-240" dur="2s" repeatCount="indefinite"/>
+          </path>
+          
+          <!-- Sparkles -->
+          <g filter="url(#loaderGlow)">
+            <circle cx="30" cy="35" r="3" fill="white" opacity="0">
+              <animate attributeName="opacity" values="0;1;0" dur="2s" begin="0s" repeatCount="indefinite"/>
+              <animate attributeName="r" values="2;5;2" dur="2s" begin="0s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="60" cy="18" r="3" fill="white" opacity="0">
+              <animate attributeName="opacity" values="0;1;0" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+              <animate attributeName="r" values="2;5;2" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="90" cy="35" r="3" fill="white" opacity="0">
+              <animate attributeName="opacity" values="0;1;0" dur="2s" begin="1s" repeatCount="indefinite"/>
+              <animate attributeName="r" values="2;5;2" dur="2s" begin="1s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="60" cy="52" r="3" fill="white" opacity="0">
+              <animate attributeName="opacity" values="0;1;0" dur="2s" begin="1.5s" repeatCount="indefinite"/>
+              <animate attributeName="r" values="2;5;2" dur="2s" begin="1.5s" repeatCount="indefinite"/>
+            </circle>
+            <!-- Star sparkles -->
+            <path d="M45 25 L46 23 L48 25 L46 27 Z" fill="white" opacity="0">
+              <animate attributeName="opacity" values="0;1;0" dur="1.5s" begin="0.3s" repeatCount="indefinite"/>
+            </path>
+            <path d="M75 45 L76 43 L78 45 L76 47 Z" fill="white" opacity="0">
+              <animate attributeName="opacity" values="0;1;0" dur="1.5s" begin="0.8s" repeatCount="indefinite"/>
+            </path>
+            <path d="M50 40 L51 38 L53 40 L51 42 Z" fill="white" opacity="0">
+              <animate attributeName="opacity" values="0;1;0" dur="1.5s" begin="1.2s" repeatCount="indefinite"/>
+            </path>
+            <path d="M70 28 L71 26 L73 28 L71 30 Z" fill="white" opacity="0">
+              <animate attributeName="opacity" values="0;1;0" dur="1.5s" begin="1.7s" repeatCount="indefinite"/>
+            </path>
+          </g>
+          
+          <!-- Center energy point -->
+          <circle cx="60" cy="35" r="3" fill="white" opacity="0.9">
+            <animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.6;1;0.6" dur="1.5s" repeatCount="indefinite"/>
+          </circle>
+        </svg>
+      </div>
+      
+      <!-- Brand name with dual gradient -->
+      <div class="loader-brand">ObelixIA</div>
     </div>
     
     <!-- Plausible Analytics - Privacy-friendly -->
