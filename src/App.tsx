@@ -94,6 +94,7 @@ const App = () => (
                         <Route path="/map" element={<Navigate to="/admin?section=map" replace />} />
                         <Route path="/dashboard" element={<StreamingBoundary priority="medium" delay={50}><Dashboard /></StreamingBoundary>} />
                         <Route path="/admin" element={<StreamingBoundary priority="medium" delay={50}><Admin /></StreamingBoundary>} />
+                        <Route path="/obelixia-admin" element={<StreamingBoundary priority="medium" delay={50}><ObelixiaTeamAdmin /></StreamingBoundary>} />
                         <Route path="/profile" element={<StreamingBoundary priority="low" delay={100}><Profile /></StreamingBoundary>} />
                         <Route path="/map-3d" element={<StreamingBoundary priority="medium"><Map3D /></StreamingBoundary>} />
                         {/* Store routes */}
