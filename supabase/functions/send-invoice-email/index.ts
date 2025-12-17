@@ -69,6 +69,9 @@ serve(async (req) => {
     // Parse items if string
     const items = typeof invoice.items === 'string' ? JSON.parse(invoice.items) : invoice.items;
 
+    // ObelixIA logo URL (hosted version for emails)
+    const logoUrl = 'https://avaugfnqvvqcilhiudlf.supabase.co/storage/v1/object/public/assets/obelixia-logo-official.jpg';
+
     // Build email HTML
     const emailHtml = `
 <!DOCTYPE html>
@@ -93,30 +96,33 @@ serve(async (req) => {
       overflow: hidden;
     }
     .header { 
-      background: linear-gradient(135deg, #1e3a5f 0%, #0d7377 100%); 
+      background: #0f172a; 
       color: white; 
-      padding: 40px; 
-      text-align: center; 
+      padding: 30px 40px; 
+      text-align: left; 
+    }
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo-img {
+      max-width: 200px;
+      height: auto;
     }
     .header h1 { 
       margin: 0; 
-      font-size: 28px; 
+      font-size: 24px; 
       font-weight: 300;
       letter-spacing: 2px;
+      text-align: right;
     }
     .header .invoice-number { 
-      font-size: 16px; 
+      font-size: 14px; 
       opacity: 0.9; 
-      margin-top: 10px;
+      margin-top: 8px;
       font-family: monospace;
-    }
-    .logo {
-      font-size: 32px;
-      font-weight: bold;
-      margin-bottom: 15px;
-      background: linear-gradient(90deg, #4ade80, #22d3ee);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      text-align: right;
     }
     .cover-letter {
       padding: 30px 40px;
@@ -259,9 +265,13 @@ serve(async (req) => {
 <body>
   <div class="container">
     <div class="header">
-      <div class="logo">ObelixIA</div>
-      <h1>FACTURA</h1>
-      <div class="invoice-number">${invoice.invoice_number}</div>
+      <div class="header-content">
+        <img src="${logoUrl}" alt="ObelixIA" class="logo-img" style="max-width: 180px; height: auto;">
+        <div>
+          <h1>FACTURA</h1>
+          <div class="invoice-number">${invoice.invoice_number}</div>
+        </div>
+      </div>
     </div>
     
     ${coverLetter ? `
@@ -350,10 +360,11 @@ serve(async (req) => {
       ` : ''}
     </div>
     
-    <div class="footer">
-      <p class="company">ObelixIA - CRM Bancario Inteligente</p>
-      <p>Jaime Fernández García | Director Comercial</p>
-      <p>jfernandez@obelixia.com | +34 606 770 033</p>
+    <div class="footer" style="background: #0f172a; padding: 30px; text-align: center; color: white;">
+      <img src="${logoUrl}" alt="ObelixIA" style="max-width: 120px; height: auto; margin-bottom: 15px;">
+      <p class="company" style="font-size: 14px; font-weight: 600; margin: 5px 0; color: #3b82f6;">CRM Bancario Inteligente</p>
+      <p style="font-size: 13px; margin: 5px 0; opacity: 0.9;">Jaime Fernández García | Director Comercial</p>
+      <p style="font-size: 13px; margin: 5px 0; opacity: 0.9;">jfernandez@obelixia.com | +34 606 770 033</p>
       <p style="margin-top: 15px; font-size: 11px; opacity: 0.7;">
         Este documento es una factura electrónica válida según la normativa vigente.
       </p>

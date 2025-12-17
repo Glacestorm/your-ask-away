@@ -137,7 +137,7 @@ export function MapExportButton({
       const pdf = createEnhancedPDF('l', 'a4');
       
       // Header
-      let y = pdf.addHeader('Informe de Mapa Empresarial', `${data.length} empreses`);
+      let y = pdf.addHeaderSync('Informe de Mapa Empresarial', `${data.length} empreses`);
 
       // Statistics section
       if (pdfOptions.includeTOC) {

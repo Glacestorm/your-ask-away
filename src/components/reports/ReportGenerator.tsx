@@ -49,7 +49,7 @@ export function ReportGenerator() {
                           options.reportType === 'visits' ? 'Informe de Visites' : 'Informe de Productes';
       
       // Cover page
-      let y = pdf.addHeader('Mapa Empresarial Andorra', reportTitle);
+      let y = pdf.addHeaderSync('Mapa Empresarial Andorra', reportTitle);
 
       // Fetch data based on report type
       if (options.reportType === 'companies') {
