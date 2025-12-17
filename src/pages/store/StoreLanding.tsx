@@ -18,6 +18,7 @@ import ROICalculator from '@/components/store/ROICalculator';
 import PricingExplanation from '@/components/store/PricingExplanation';
 import StoreFooter from '@/components/store/StoreFooter';
 import CartSidebar from '@/components/store/CartSidebar';
+import CNAEPricingSearch from '@/components/store/CNAEPricingSearch';
 
 const StoreLanding: React.FC = () => {
   const [scrollY, setScrollY] = useState(0);
@@ -148,6 +149,9 @@ const StoreLanding: React.FC = () => {
       <div id="bundles">
         <BundlesSection />
       </div>
+
+      {/* CNAE Pricing Search */}
+      <CNAEPricingSearch />
 
       {/* ROI Calculator / Pricing */}
       <div id="pricing">
