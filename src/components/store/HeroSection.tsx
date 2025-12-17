@@ -101,7 +101,7 @@ const HeroSection: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-xl md:text-2xl text-slate-300 mb-8 max-w-3xl mx-auto"
+              className="text-xl md:text-2xl text-slate-300 mb-12 max-w-3xl mx-auto"
             >
               {t('store.hero.subtitle')}{' '}
               <span className="text-emerald-400 font-semibold">{t('store.hero.feature1')}</span>,{' '}
@@ -109,27 +109,6 @@ const HeroSection: React.FC = () => {
               <span className="text-emerald-400 font-semibold">{t('store.hero.feature3')}</span>
             </motion.p>
 
-            {/* Price Badge */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="inline-flex flex-col items-center gap-2 mb-10 px-6 py-4 bg-slate-800/50 backdrop-blur rounded-2xl border border-slate-700/50"
-            >
-              <div className="flex items-center gap-3">
-                <span className="text-slate-400">{t('store.hero.priceFrom')}</span>
-                <span className="text-3xl font-bold text-white">€99,000</span>
-                <span className="text-slate-400">{t('store.hero.priceYear')}</span>
-                <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30">
-                  {t('store.hero.priceSave')}
-                </Badge>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-slate-500">
-                <span>SIN IVA</span>
-                <span>•</span>
-                <span>{t('store.hero.priceNote')}</span>
-              </div>
-            </motion.div>
 
             {/* CTAs */}
             <motion.div
