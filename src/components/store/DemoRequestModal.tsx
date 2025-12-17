@@ -142,7 +142,7 @@ const DemoRequestModal: React.FC<DemoRequestModalProps> = ({ isOpen, onClose }) 
                     </div>
                     <div className="flex items-center gap-3 text-slate-300">
                       <Building2 className="w-4 h-4 text-emerald-400" />
-                      <span>Andorra la Vella, Andorra</span>
+                      <span>León / España</span>
                     </div>
                   </div>
 
