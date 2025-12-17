@@ -29,8 +29,8 @@ export function ObelixiaLogo({
 
   const currentSize = sizeClasses[size];
 
-  // Greek-style Cinematic Infinity Icon with Explosions
-  const CinematicInfinityIcon = () => (
+  // Cinematic Brain Icon with Synchrotron Effects
+  const CinematicBrainIcon = () => (
     <div className="relative" style={{ width: currentSize.iconW, height: currentSize.iconH }}>
       {/* Outer Glow Layer */}
       <div 
@@ -41,13 +41,13 @@ export function ObelixiaLogo({
       />
       
       <svg 
-        viewBox="0 0 200 100" 
+        viewBox="0 0 100 120" 
         className="relative w-full h-full"
         style={{ filter: 'drop-shadow(0 0 25px rgba(6,182,212,0.6)) drop-shadow(0 0 50px rgba(16,185,129,0.4))' }}
       >
         <defs>
           {/* Main Gradient - Flowing Blue to Green */}
-          <linearGradient id={`infinity-main-${size}`} x1="0%" y1="0%" x2="100%" y2="0%">
+          <linearGradient id={`brain-main-${size}`} x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#0ea5e9">
               {animated && <animate attributeName="stop-color" values="#0ea5e9;#10b981;#06b6d4;#0ea5e9" dur="5s" repeatCount="indefinite" />}
             </stop>
@@ -60,7 +60,7 @@ export function ObelixiaLogo({
           </linearGradient>
           
           {/* Glow Filter */}
-          <filter id={`glow-${size}`} x="-100%" y="-100%" width="300%" height="300%">
+          <filter id={`brain-glow-${size}`} x="-100%" y="-100%" width="300%" height="300%">
             <feGaussianBlur stdDeviation="4" result="blur1"/>
             <feGaussianBlur stdDeviation="8" result="blur2"/>
             <feMerge>
@@ -71,7 +71,7 @@ export function ObelixiaLogo({
           </filter>
           
           {/* Sparkle Filter */}
-          <filter id={`sparkle-glow-${size}`} x="-200%" y="-200%" width="500%" height="500%">
+          <filter id={`brain-sparkle-glow-${size}`} x="-200%" y="-200%" width="500%" height="500%">
             <feGaussianBlur stdDeviation="2" result="blur"/>
             <feMerge>
               <feMergeNode in="blur"/>
@@ -81,110 +81,184 @@ export function ObelixiaLogo({
           </filter>
         </defs>
         
-        {/* Greek-style infinity path (elegant flowing curves, not two circles) */}
+        {/* Longitudinal Brain Path - Side View */}
         <path
-          d="M20 50 
-             C20 25, 35 15, 55 30 
-             Q70 42, 100 50 
-             Q130 58, 145 70 
-             C165 85, 180 75, 180 50 
-             C180 25, 165 15, 145 30 
-             Q130 42, 100 50 
-             Q70 58, 55 70 
-             C35 85, 20 75, 20 50"
+          id={`brain-outline-${size}`}
+          d="M50 10 
+             C30 10, 15 25, 15 45
+             C15 55, 20 65, 25 72
+             C18 75, 12 80, 12 88
+             C12 100, 25 110, 40 110
+             L60 110
+             C75 110, 88 100, 88 88
+             C88 80, 82 75, 75 72
+             C80 65, 85 55, 85 45
+             C85 25, 70 10, 50 10"
           fill="none"
           stroke={dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}
-          strokeWidth="10"
+          strokeWidth="6"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
         
-        {/* Main Infinity Path */}
+        {/* Main Brain Outline */}
         <path
-          d="M20 50 
-             C20 25, 35 15, 55 30 
-             Q70 42, 100 50 
-             Q130 58, 145 70 
-             C165 85, 180 75, 180 50 
-             C180 25, 165 15, 145 30 
-             Q130 42, 100 50 
-             Q70 58, 55 70 
-             C35 85, 20 75, 20 50"
+          d="M50 10 
+             C30 10, 15 25, 15 45
+             C15 55, 20 65, 25 72
+             C18 75, 12 80, 12 88
+             C12 100, 25 110, 40 110
+             L60 110
+             C75 110, 88 100, 88 88
+             C88 80, 82 75, 75 72
+             C80 65, 85 55, 85 45
+             C85 25, 70 10, 50 10"
           fill="none"
-          stroke={`url(#infinity-main-${size})`}
-          strokeWidth="8"
+          stroke={`url(#brain-main-${size})`}
+          strokeWidth="4"
           strokeLinecap="round"
           strokeLinejoin="round"
-          filter={`url(#glow-${size})`}
+          filter={`url(#brain-glow-${size})`}
         />
         
-        {/* Flowing energy along path */}
+        {/* Brain Folds/Gyri - Left hemisphere detail */}
+        <path
+          d="M25 30 C35 28, 45 35, 40 45
+             M20 50 C30 48, 40 55, 35 65
+             M30 75 C40 73, 45 80, 40 90"
+          fill="none"
+          stroke={`url(#brain-main-${size})`}
+          strokeWidth="2"
+          strokeLinecap="round"
+          opacity="0.7"
+        />
+        
+        {/* Brain Folds/Gyri - Right hemisphere detail */}
+        <path
+          d="M75 30 C65 28, 55 35, 60 45
+             M80 50 C70 48, 60 55, 65 65
+             M70 75 C60 73, 55 80, 60 90"
+          fill="none"
+          stroke={`url(#brain-main-${size})`}
+          strokeWidth="2"
+          strokeLinecap="round"
+          opacity="0.7"
+        />
+        
+        {/* Central sulcus */}
+        <path
+          d="M50 15 C50 25, 48 40, 50 60 C52 80, 50 95, 50 105"
+          fill="none"
+          stroke={`url(#brain-main-${size})`}
+          strokeWidth="2"
+          strokeLinecap="round"
+          opacity="0.5"
+        />
+        
+        {/* Flowing energy along brain outline */}
         {animated && (
           <>
             <path
-              d="M20 50 
-                 C20 25, 35 15, 55 30 
-                 Q70 42, 100 50 
-                 Q130 58, 145 70 
-                 C165 85, 180 75, 180 50 
-                 C180 25, 165 15, 145 30 
-                 Q130 42, 100 50 
-                 Q70 58, 55 70 
-                 C35 85, 20 75, 20 50"
+              d="M50 10 
+                 C30 10, 15 25, 15 45
+                 C15 55, 20 65, 25 72
+                 C18 75, 12 80, 12 88
+                 C12 100, 25 110, 40 110
+                 L60 110
+                 C75 110, 88 100, 88 88
+                 C88 80, 82 75, 75 72
+                 C80 65, 85 55, 85 45
+                 C85 25, 70 10, 50 10"
               fill="none"
               stroke="white"
-              strokeWidth="4"
+              strokeWidth="3"
               strokeLinecap="round"
-              strokeDasharray="20 380"
-              filter={`url(#sparkle-glow-${size})`}
+              strokeDasharray="15 285"
+              filter={`url(#brain-sparkle-glow-${size})`}
               opacity="0.9"
             >
-              <animate attributeName="stroke-dashoffset" values="0;-400" dur="2.5s" repeatCount="indefinite"/>
+              <animate attributeName="stroke-dashoffset" values="0;-300" dur="3s" repeatCount="indefinite"/>
             </path>
             
             <path
-              d="M20 50 
-                 C20 25, 35 15, 55 30 
-                 Q70 42, 100 50 
-                 Q130 58, 145 70 
-                 C165 85, 180 75, 180 50 
-                 C180 25, 165 15, 145 30 
-                 Q130 42, 100 50 
-                 Q70 58, 55 70 
-                 C35 85, 20 75, 20 50"
+              d="M50 10 
+                 C30 10, 15 25, 15 45
+                 C15 55, 20 65, 25 72
+                 C18 75, 12 80, 12 88
+                 C12 100, 25 110, 40 110
+                 L60 110
+                 C75 110, 88 100, 88 88
+                 C88 80, 82 75, 75 72
+                 C80 65, 85 55, 85 45
+                 C85 25, 70 10, 50 10"
               fill="none"
               stroke="rgba(255,255,255,0.6)"
               strokeWidth="2"
               strokeLinecap="round"
-              strokeDasharray="10 390"
-              filter={`url(#sparkle-glow-${size})`}
+              strokeDasharray="10 290"
+              filter={`url(#brain-sparkle-glow-${size})`}
             >
-              <animate attributeName="stroke-dashoffset" values="-200;-600" dur="2.5s" repeatCount="indefinite"/>
+              <animate attributeName="stroke-dashoffset" values="-150;-450" dur="3s" repeatCount="indefinite"/>
             </path>
           </>
         )}
         
-        {/* Synchrotron particles (moving) - replaces fixed sparkle points */}
+        {/* Synchrotron particles (moving along brain) */}
         {animated && (
           <>
-            {/* Invisible motion path for mpath */}
+            {/* Motion path for particles */}
             <path
-              id={`infinity-motion-${size}`}
-              d="M20 50 C20 25, 35 15, 55 30 Q70 42, 100 50 Q130 58, 145 70 C165 85, 180 75, 180 50 C180 25, 165 15, 145 30 Q130 42, 100 50 Q70 58, 55 70 C35 85, 20 75, 20 50"
+              id={`brain-motion-${size}`}
+              d="M50 10 C30 10, 15 25, 15 45 C15 55, 20 65, 25 72 C18 75, 12 80, 12 88 C12 100, 25 110, 40 110 L60 110 C75 110, 88 100, 88 88 C88 80, 82 75, 75 72 C80 65, 85 55, 85 45 C85 25, 70 10, 50 10"
               fill="none"
               stroke="none"
             />
 
-            <g filter={`url(#sparkle-glow-${size})`}>
+            <g filter={`url(#brain-sparkle-glow-${size})`}>
               {Array.from({ length: currentSize.sparkles }).map((_, i) => (
                 <circle key={i} r={size === 'hero' ? 3 : 2} fill="white" opacity={0.9}>
-                  <animateMotion dur="3s" repeatCount="indefinite" begin={`${-i * (3 / currentSize.sparkles)}s`}>
-                    <mpath xlinkHref={`#infinity-motion-${size}`} />
+                  <animateMotion dur="4s" repeatCount="indefinite" begin={`${-i * (4 / currentSize.sparkles)}s`}>
+                    <mpath xlinkHref={`#brain-motion-${size}`} />
                   </animateMotion>
                   <animate attributeName="r" values={`${size === 'hero' ? 2 : 1};${size === 'hero' ? 4 : 3};${size === 'hero' ? 2 : 1}`} dur="0.8s" repeatCount="indefinite" begin={`${i * 0.12}s`} />
                 </circle>
               ))}
             </g>
+            
+            {/* Neural impulse flashes inside brain */}
+            {[
+              { cx: 35, cy: 40 },
+              { cx: 65, cy: 40 },
+              { cx: 30, cy: 60 },
+              { cx: 70, cy: 60 },
+              { cx: 50, cy: 50 },
+              { cx: 40, cy: 85 },
+              { cx: 60, cy: 85 },
+            ].map((pos, i) => (
+              <circle
+                key={`neuron-${i}`}
+                cx={pos.cx}
+                cy={pos.cy}
+                r="1.5"
+                fill="white"
+                opacity="0"
+              >
+                <animate
+                  attributeName="opacity"
+                  values="0;1;0"
+                  dur="1.5s"
+                  begin={`${i * 0.2}s`}
+                  repeatCount="indefinite"
+                />
+                <animate
+                  attributeName="r"
+                  values="1;3;1"
+                  dur="1.5s"
+                  begin={`${i * 0.2}s`}
+                  repeatCount="indefinite"
+                />
+              </circle>
+            ))}
           </>
         )}
       </svg>
@@ -195,7 +269,7 @@ export function ObelixiaLogo({
   if (variant === "full") {
     return (
       <div className={cn("flex items-center gap-4", className)}>
-        <CinematicInfinityIcon />
+        <CinematicBrainIcon />
         <div className="relative">
           {/* Glow behind text */}
           <span 
@@ -279,7 +353,7 @@ export function ObelixiaLogo({
   if (variant === "icon") {
     return (
       <div className={cn("inline-flex items-center justify-center", className)}>
-        <CinematicInfinityIcon />
+        <CinematicBrainIcon />
       </div>
     );
   }
@@ -335,7 +409,7 @@ export function ObelixiaLogo({
 }
 
 /**
- * Cinematic Loading Spinner with Infinity Symbol
+ * Cinematic Loading Spinner with Brain Symbol
  */
 export function ObelixiaLoadingSpinner({ 
   size = "md",
@@ -347,9 +421,9 @@ export function ObelixiaLoadingSpinner({
   showText?: boolean;
 }) {
   const sizeClasses = {
-    sm: { width: 48, height: 30, text: "text-sm" },
-    md: { width: 80, height: 50, text: "text-base" },
-    lg: { width: 120, height: 75, text: "text-lg" },
+    sm: { width: 40, height: 48, text: "text-sm" },
+    md: { width: 60, height: 72, text: "text-base" },
+    lg: { width: 90, height: 108, text: "text-lg" },
   };
 
   const current = sizeClasses[size];
@@ -365,9 +439,9 @@ export function ObelixiaLoadingSpinner({
           }}
         />
         
-        <svg viewBox="0 0 120 70" className="w-full h-full">
+        <svg viewBox="0 0 100 120" className="w-full h-full">
           <defs>
-            <linearGradient id="spinner-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <linearGradient id="spinner-brain-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#0ea5e9">
                 <animate attributeName="stop-color" values="#0ea5e9;#10b981;#0ea5e9" dur="2s" repeatCount="indefinite" />
               </stop>
@@ -378,7 +452,7 @@ export function ObelixiaLoadingSpinner({
                 <animate attributeName="stop-color" values="#06b6d4;#0ea5e9;#06b6d4" dur="2s" repeatCount="indefinite" />
               </stop>
             </linearGradient>
-            <filter id="spinner-glow">
+            <filter id="spinner-brain-glow">
               <feGaussianBlur stdDeviation="2" result="blur"/>
               <feMerge>
                 <feMergeNode in="blur"/>
@@ -387,39 +461,41 @@ export function ObelixiaLoadingSpinner({
             </filter>
           </defs>
           
-          {/* Background path */}
+          {/* Background brain path */}
           <path
-            d="M30 35 C30 18, 45 12, 60 25 C70 34, 70 36, 60 45 C45 58, 30 52, 30 35 M90 35 C90 18, 75 12, 60 25 C50 34, 50 36, 60 45 C75 58, 90 52, 90 35"
+            d="M50 10 C30 10, 15 25, 15 45 C15 55, 20 65, 25 72 C18 75, 12 80, 12 88 C12 100, 25 110, 40 110 L60 110 C75 110, 88 100, 88 88 C88 80, 82 75, 75 72 C80 65, 85 55, 85 45 C85 25, 70 10, 50 10"
             fill="none"
             stroke="rgba(255,255,255,0.1)"
-            strokeWidth="5"
+            strokeWidth="4"
             strokeLinecap="round"
           />
           
-          {/* Animated flowing path */}
+          {/* Animated flowing brain path */}
           <path
-            d="M30 35 C30 18, 45 12, 60 25 C70 34, 70 36, 60 45 C45 58, 30 52, 30 35 M90 35 C90 18, 75 12, 60 25 C50 34, 50 36, 60 45 C75 58, 90 52, 90 35"
+            d="M50 10 C30 10, 15 25, 15 45 C15 55, 20 65, 25 72 C18 75, 12 80, 12 88 C12 100, 25 110, 40 110 L60 110 C75 110, 88 100, 88 88 C88 80, 82 75, 75 72 C80 65, 85 55, 85 45 C85 25, 70 10, 50 10"
             fill="none"
-            stroke="url(#spinner-gradient)"
-            strokeWidth="5"
+            stroke="url(#spinner-brain-gradient)"
+            strokeWidth="3"
             strokeLinecap="round"
-            strokeDasharray="60 180"
-            filter="url(#spinner-glow)"
+            strokeDasharray="50 250"
+            filter="url(#spinner-brain-glow)"
           >
             <animate
               attributeName="stroke-dashoffset"
-              values="0;-240"
-              dur="2s"
+              values="0;-300"
+              dur="2.5s"
               repeatCount="indefinite"
             />
           </path>
           
-          {/* Sparkles at key points */}
+          {/* Neural impulse sparkles */}
           {[
-            { cx: 30, cy: 35 },
-            { cx: 60, cy: 20 },
-            { cx: 90, cy: 35 },
-            { cx: 60, cy: 50 },
+            { cx: 35, cy: 40 },
+            { cx: 65, cy: 40 },
+            { cx: 50, cy: 55 },
+            { cx: 30, cy: 70 },
+            { cx: 70, cy: 70 },
+            { cx: 50, cy: 90 },
           ].map((pos, i) => (
             <g key={i}>
               <circle
@@ -432,15 +508,15 @@ export function ObelixiaLoadingSpinner({
                 <animate
                   attributeName="opacity"
                   values="0;1;0"
-                  dur="2s"
-                  begin={`${i * 0.5}s`}
+                  dur="1.5s"
+                  begin={`${i * 0.25}s`}
                   repeatCount="indefinite"
                 />
                 <animate
                   attributeName="r"
                   values="1;3;1"
-                  dur="2s"
-                  begin={`${i * 0.5}s`}
+                  dur="1.5s"
+                  begin={`${i * 0.25}s`}
                   repeatCount="indefinite"
                 />
               </circle>
