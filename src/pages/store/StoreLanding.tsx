@@ -18,7 +18,6 @@ import ROICalculator from '@/components/store/ROICalculator';
 import PricingExplanation from '@/components/store/PricingExplanation';
 import StoreFooter from '@/components/store/StoreFooter';
 import CartSidebar from '@/components/store/CartSidebar';
-import CNAEPricingSearch from '@/components/store/CNAEPricingSearch';
 
 const StoreLanding: React.FC = () => {
   const [scrollY, setScrollY] = useState(0);
@@ -150,8 +149,38 @@ const StoreLanding: React.FC = () => {
         <BundlesSection />
       </div>
 
-      {/* CNAE Pricing Search */}
-      <CNAEPricingSearch />
+      {/* Contact Section for Quote Requests */}
+      <section id="contact" className="py-24 relative">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="max-w-2xl mx-auto text-center"
+          >
+            <Badge className="mb-4 bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
+              SOLICITAR COTIZACIÓN
+            </Badge>
+            <h2 className="text-4xl font-bold text-white mb-4">
+              Precios Personalizados
+            </h2>
+            <p className="text-slate-400 mb-8">
+              Contacte con nuestro equipo comercial para obtener una cotización adaptada a las necesidades de su empresa
+            </p>
+            <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-8">
+              <p className="text-lg text-white mb-4">
+                📧 <a href="mailto:comercial@obelixia.com" className="text-emerald-400 hover:underline">comercial@obelixia.com</a>
+              </p>
+              <p className="text-lg text-white mb-4">
+                📞 <a href="tel:+34606770033" className="text-emerald-400 hover:underline">+34 606 770 033</a>
+              </p>
+              <p className="text-slate-400 text-sm">
+                Jaime Fernández García - Representante Comercial
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
 
       {/* ROI Calculator / Pricing */}
       <div id="pricing">

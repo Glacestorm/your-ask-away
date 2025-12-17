@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Crown, Sparkles, Shield, Brain, BarChart3, Lock, Zap } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import ModuleCard from './ModuleCard';
 
 const PremiumModulesSection: React.FC = () => {
@@ -12,7 +13,7 @@ const PremiumModulesSection: React.FC = () => {
       module_name: 'IA Bancaria Avanzada',
       description: 'Machine Learning para scoring crediticio, detección de fraude y predicción de riesgo con modelos IFRS 9',
       module_icon: 'Brain',
-      base_price: 149000,
+      base_price: null, // Precio oculto
       category: 'enterprise',
       is_core: false,
       features: ['ML Predictivo', 'Scoring Crediticio', 'Detección Fraude', 'IFRS 9 Compliant'],
@@ -23,7 +24,7 @@ const PremiumModulesSection: React.FC = () => {
       module_name: 'Compliance Bancario Pro',
       description: 'Suite completa de cumplimiento normativo: DORA, NIS2, PSD2, Basel III/IV, MiFID II',
       module_icon: 'Shield',
-      base_price: 119000,
+      base_price: null,
       category: 'enterprise',
       is_core: false,
       features: ['DORA/NIS2', 'PSD2/PSD3', 'Basel III/IV', 'MiFID II'],
@@ -34,7 +35,7 @@ const PremiumModulesSection: React.FC = () => {
       module_name: 'Open Banking API',
       description: 'Integración PSD2/PSD3 con APIs bancarias, consentimientos y agregación de cuentas',
       module_icon: 'Lock',
-      base_price: 79000,
+      base_price: null,
       category: 'enterprise',
       is_core: false,
       features: ['APIs FAPI', 'Gestión Consentimientos', 'TPP Integration', 'SCA Compliant'],
@@ -131,7 +132,7 @@ const PremiumModulesSection: React.FC = () => {
           ))}
         </div>
 
-        {/* Enterprise CTA */}
+        {/* Enterprise CTA - Sin precios públicos */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -141,13 +142,18 @@ const PremiumModulesSection: React.FC = () => {
           <div className="inline-flex flex-col items-center p-8 bg-gradient-to-br from-amber-500/10 to-amber-400/5 rounded-2xl border border-amber-500/30">
             <p className="text-lg text-amber-200 mb-2">¿Necesitas una solución personalizada?</p>
             <p className="text-3xl font-bold text-white mb-4">Pack Enterprise Completo</p>
-            <div className="flex items-center gap-4 text-slate-300">
-              <span className="line-through text-slate-500">€1.200.000</span>
-              <span className="text-4xl font-bold text-amber-400">€880.000</span>
-              <Badge className="bg-red-500/20 text-red-300 border-red-500/30">-27%</Badge>
-            </div>
-            <p className="text-sm text-slate-400 mt-2">Licencia perpetua • Todos los módulos incluidos</p>
-            <p className="text-[10px] text-slate-500 mt-1">SIN IVA • Pago único</p>
+            <p className="text-slate-300 mb-4">Todos los módulos incluidos con licencia perpetua</p>
+            <Button 
+              size="lg"
+              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white"
+              onClick={() => {
+                const contact = document.getElementById('contact');
+                if (contact) contact.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
+              Solicitar Cotización Enterprise
+            </Button>
+            <p className="text-sm text-slate-400 mt-4">Contacte con nuestro equipo para precio personalizado</p>
           </div>
         </motion.div>
       </div>

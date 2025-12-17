@@ -2,13 +2,12 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { 
-  ShoppingCart, Star, Check, Crown, Building2, MapPin, 
+  Star, Check, Crown, Building2, MapPin, 
   Calculator, Target, FileText, Bell, Shield, Brain,
   BarChart3, Users, Globe, Lock, Zap, Database
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
 
 interface ModuleCardProps {
@@ -33,18 +32,9 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, showFullDetails = false }) => {
-  const { addItem, isInCart } = useCart();
   const { toast } = useToast();
-  const inCart = isInCart(module.module_key);
 
   const IconComponent = iconMap[module.module_icon || 'Building2'] || Building2;
-  
-  const price = module.base_price || 0;
-  const formattedPrice = new Intl.NumberFormat('es-ES', {
-    style: 'currency',
-    currency: 'EUR',
-    maximumFractionDigits: 0,
-  }).format(price);
 
   const features = Array.isArray(module.features) 
     ? module.features 
@@ -52,30 +42,17 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, show
       ? module.features.list 
       : ['Funcionalidad completa', 'Soporte incluido', 'Actualizaciones'];
 
-  const handleAddToCart = () => {
-    if (inCart) {
+  const handleRequestQuote = () => {
+    // Scroll to contact section or open quote request modal
+    const contactSection = document.getElementById('contact');
+    if (contactSection) {
+      contactSection.scrollIntoView({ behavior: 'smooth' });
+    } else {
       toast({
-        title: 'Ya en el carrito',
-        description: `${module.module_name} ya está en tu carrito`,
+        title: 'Solicitar cotización',
+        description: `Contacte con nuestro equipo comercial para obtener un precio personalizado para ${module.module_name}`,
       });
-      return;
     }
-
-    addItem({
-      moduleKey: module.module_key,
-      moduleName: module.module_name,
-      moduleIcon: module.module_icon || undefined,
-      price: price,
-      quantity: 1,
-      licenseType: 'annual',
-      category: module.category,
-      isPremium: isPremium || module.category === 'vertical',
-    });
-
-    toast({
-      title: 'Añadido al carrito',
-      description: `${module.module_name} se ha añadido a tu carrito`,
-    });
   };
 
   return (
@@ -137,14 +114,11 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, show
           ))}
         </div>
 
-        {/* Price & Actions */}
+        {/* Actions - Sin precios públicos */}
         <div className="flex items-center justify-between pt-4 border-t border-slate-700/50">
           <div>
-            <div className="text-2xl font-bold text-white">{formattedPrice}</div>
-            <div className="flex items-center gap-1">
-              <span className="text-xs text-slate-400">/año</span>
-              <span className="text-[10px] text-slate-500">SIN IVA</span>
-            </div>
+            <div className="text-lg font-semibold text-slate-300">Precio personalizado</div>
+            <div className="text-xs text-slate-500">Solicite cotización</div>
           </div>
           
           <div className="flex gap-2">
@@ -159,26 +133,13 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, show
             </Link>
             <Button
               size="sm"
-              onClick={handleAddToCart}
-              disabled={inCart}
-              className={inCart 
-                ? 'bg-slate-700 text-slate-400' 
-                : isPremium 
-                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white'
-                  : 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white'
+              onClick={handleRequestQuote}
+              className={isPremium 
+                ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white'
+                : 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white'
               }
             >
-              {inCart ? (
-                <>
-                  <Check className="w-4 h-4 mr-1" />
-                  Añadido
-                </>
-              ) : (
-                <>
-                  <ShoppingCart className="w-4 h-4 mr-1" />
-                  Añadir
-                </>
-              )}
+              Solicitar Precio
             </Button>
           </div>
         </div>
