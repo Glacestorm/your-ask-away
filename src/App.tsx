@@ -12,12 +12,10 @@ import { CartProvider } from "@/contexts/CartContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { PageStreamingSkeleton, StreamingBoundary } from "@/components/performance/StreamingBoundary";
 import { MFAEnforcementDialog } from "@/components/security/MFAEnforcementDialog";
-import { HelpButton } from "@/components/help/HelpButton";
-import { FloatingChatButton } from "@/components/chat/FloatingChatButton";
 import { DemoBanner } from "@/components/demo/DemoBanner";
 import { DemoTour } from "@/components/demo/DemoTour";
 import CookieConsent from "@/components/cookies/CookieConsent";
-import { LanguageFloatingSelector } from "@/components/LanguageFloatingSelector";
+import { ObelixiaChatbot } from "@/components/chat/ObelixiaChatbot";
 
 // Lazy load pages
 const Auth = lazy(() => import("./pages/Auth"));
@@ -81,9 +79,7 @@ const App = () => (
                     <MFAEnforcementDialog />
                     <Toaster />
                     <Sonner />
-                    <HelpButton />
-                    <FloatingChatButton />
-                    <LanguageFloatingSelector />
+                    <ObelixiaChatbot />
                     <DemoBanner />
                     <DemoTour />
                     <CookieConsent />
