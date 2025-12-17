@@ -26,6 +26,7 @@ const Admin = lazy(() => import("./pages/Admin"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Map3D = lazy(() => import("./pages/Map3D"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const ObelixiaTeamAdmin = lazy(() => import("./pages/ObelixiaTeamAdmin"));
 
 // Store pages
 const StoreLanding = lazy(() => import("./pages/store/StoreLanding"));
