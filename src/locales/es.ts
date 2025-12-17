@@ -1084,4 +1084,51 @@ export default {
   'store.nav.pricing': 'Precios',
   'store.nav.login': 'Iniciar Sesión',
   'store.nav.register': 'Registrarse',
+
+  // Store Hero
+  'store.hero.badge': '#1 en CRM Empresarial Inteligente',
+  'store.hero.title1': 'Transforma tu',
+  'store.hero.title2': 'Empresa',
+  'store.hero.title3': 'con Inteligencia Artificial',
+  'store.hero.subtitle': 'Plataforma modular de gestión empresarial con',
+  'store.hero.feature1': 'IA integrada',
+  'store.hero.feature2': 'compliance bancario',
+  'store.hero.feature3': 'análisis predictivo',
+  'store.hero.priceFrom': 'Desde',
+  'store.hero.priceYear': '/año',
+  'store.hero.priceSave': 'Ahorra 40%',
+  'store.hero.priceNote': 'Licencia anual renovable',
+  'store.hero.cta1': 'Explorar Módulos',
+  'store.hero.cta2': 'Ver Demo',
+  'store.hero.trust1': 'ISO 27001 Certificado',
+  'store.hero.trust2': 'GDPR & DORA Compliant',
+  'store.hero.trust3': 'Rating',
+
+  // Store Stats
+  'store.stats.companies': 'Empresas Activas',
+  'store.stats.uptime': 'Uptime Garantizado',
+  'store.stats.processed': 'Procesados/Día',
+  'store.stats.support': 'Soporte Premium',
+
+  // Store Features
+  'store.features.badge': 'CARACTERÍSTICAS',
+  'store.features.title': 'Todo lo que tu Empresa Necesita',
+  'store.features.subtitle': 'Plataforma completa de gestión empresarial con tecnología de vanguardia',
+  'store.features.security.title': 'Seguridad Bancaria',
+  'store.features.security.desc': 'Cumplimiento ISO 27001, GDPR, DORA y PSD2',
+  'store.features.ai.title': 'IA Integrada',
+  'store.features.ai.desc': 'Análisis predictivo y automatización inteligente',
+  'store.features.multisector.title': 'Multi-Sector',
+  'store.features.multisector.desc': 'Adaptable a cualquier industria con CNAE',
+  'store.features.compliance.title': 'Compliance Total',
+  'store.features.compliance.desc': 'Basel III/IV, MiFID II, IFRS 9 incluidos',
+
+  // Store CTA
+  'store.cta.title': '¿Listo para Transformar tu Negocio?',
+  'store.cta.subtitle': 'Únete a las empresas líderes que ya confían en ObelixIA para su gestión empresarial',
+  'store.cta.button1': 'Explorar Módulos',
+  'store.cta.button2': 'Solicitar Demo',
+  'store.cta.note1': 'Sin compromiso',
+  'store.cta.note2': 'Demo gratuita',
+  'store.cta.note3': 'Soporte 24/7',
 };

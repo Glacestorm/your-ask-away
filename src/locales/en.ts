@@ -1084,4 +1084,51 @@ export default {
   'store.nav.pricing': 'Pricing',
   'store.nav.login': 'Sign In',
   'store.nav.register': 'Sign Up',
+
+  // Store Hero
+  'store.hero.badge': '#1 in Intelligent Business CRM',
+  'store.hero.title1': 'Transform your',
+  'store.hero.title2': 'Business',
+  'store.hero.title3': 'with Artificial Intelligence',
+  'store.hero.subtitle': 'Modular business management platform with',
+  'store.hero.feature1': 'integrated AI',
+  'store.hero.feature2': 'banking compliance',
+  'store.hero.feature3': 'predictive analytics',
+  'store.hero.priceFrom': 'From',
+  'store.hero.priceYear': '/year',
+  'store.hero.priceSave': 'Save 40%',
+  'store.hero.priceNote': 'Annual renewable license',
+  'store.hero.cta1': 'Explore Modules',
+  'store.hero.cta2': 'Watch Demo',
+  'store.hero.trust1': 'ISO 27001 Certified',
+  'store.hero.trust2': 'GDPR & DORA Compliant',
+  'store.hero.trust3': 'Rating',
+
+  // Store Stats
+  'store.stats.companies': 'Active Companies',
+  'store.stats.uptime': 'Guaranteed Uptime',
+  'store.stats.processed': 'Processed/Day',
+  'store.stats.support': 'Premium Support',
+
+  // Store Features
+  'store.features.badge': 'FEATURES',
+  'store.features.title': 'Everything Your Business Needs',
+  'store.features.subtitle': 'Complete business management platform with cutting-edge technology',
+  'store.features.security.title': 'Banking Security',
+  'store.features.security.desc': 'ISO 27001, GDPR, DORA and PSD2 Compliance',
+  'store.features.ai.title': 'Integrated AI',
+  'store.features.ai.desc': 'Predictive analytics and intelligent automation',
+  'store.features.multisector.title': 'Multi-Sector',
+  'store.features.multisector.desc': 'Adaptable to any industry with CNAE',
+  'store.features.compliance.title': 'Total Compliance',
+  'store.features.compliance.desc': 'Basel III/IV, MiFID II, IFRS 9 included',
+
+  // Store CTA
+  'store.cta.title': 'Ready to Transform Your Business?',
+  'store.cta.subtitle': 'Join the leading companies that already trust ObelixIA for their business management',
+  'store.cta.button1': 'Explore Modules',
+  'store.cta.button2': 'Request Demo',
+  'store.cta.note1': 'No commitment',
+  'store.cta.note2': 'Free demo',
+  'store.cta.note3': '24/7 Support',
 };

@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useLanguage } from '@/contexts/LanguageContext';
 import StoreNavbar from '@/components/store/StoreNavbar';
 import HeroSection from '@/components/store/HeroSection';
 import FeaturedModules from '@/components/store/FeaturedModules';
@@ -20,6 +21,7 @@ import CartSidebar from '@/components/store/CartSidebar';
 
 const StoreLanding: React.FC = () => {
   const [scrollY, setScrollY] = useState(0);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -28,32 +30,32 @@ const StoreLanding: React.FC = () => {
   }, []);
 
   const stats = [
-    { value: '500+', label: 'Empresas Activas', icon: Building2 },
-    { value: '99.9%', label: 'Uptime Garantizado', icon: Shield },
-    { value: '€2.5M', label: 'Procesados/Día', icon: TrendingUp },
-    { value: '24/7', label: 'Soporte Premium', icon: Users },
+    { value: '500+', label: t('store.stats.companies'), icon: Building2 },
+    { value: '99.9%', label: t('store.stats.uptime'), icon: Shield },
+    { value: '€2.5M', label: t('store.stats.processed'), icon: TrendingUp },
+    { value: '24/7', label: t('store.stats.support'), icon: Users },
   ];
 
   const features = [
     { 
       icon: Shield, 
-      title: 'Seguridad Bancaria', 
-      description: 'Cumplimiento ISO 27001, GDPR, DORA y PSD2' 
+      title: t('store.features.security.title'), 
+      description: t('store.features.security.desc')
     },
     { 
       icon: Zap, 
-      title: 'IA Integrada', 
-      description: 'Análisis predictivo y automatización inteligente' 
+      title: t('store.features.ai.title'), 
+      description: t('store.features.ai.desc')
     },
     { 
       icon: Globe, 
-      title: 'Multi-Sector', 
-      description: 'Adaptable a cualquier industria con CNAE' 
+      title: t('store.features.multisector.title'), 
+      description: t('store.features.multisector.desc')
     },
     { 
       icon: Lock, 
-      title: 'Compliance Total', 
-      description: 'Basel III/IV, MiFID II, IFRS 9 incluidos' 
+      title: t('store.features.compliance.title'), 
+      description: t('store.features.compliance.desc')
     },
   ];
 
@@ -103,13 +105,13 @@ const StoreLanding: React.FC = () => {
             className="text-center mb-16"
           >
             <Badge className="mb-4 bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
-              CARACTERÍSTICAS
+              {t('store.features.badge')}
             </Badge>
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Todo lo que tu Empresa Necesita
+              {t('store.features.title')}
             </h2>
             <p className="text-xl text-slate-400 max-w-2xl mx-auto">
-              Plataforma completa de gestión empresarial con tecnología de vanguardia
+              {t('store.features.subtitle')}
             </p>
           </motion.div>
 
@@ -174,10 +176,10 @@ const StoreLanding: React.FC = () => {
           >
             <Sparkles className="w-12 h-12 mx-auto mb-6 text-emerald-400" />
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              ¿Listo para Transformar tu Negocio?
+              {t('store.cta.title')}
             </h2>
             <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
-              Únete a las empresas líderes que ya confían en ObelixIA para su gestión empresarial
+              {t('store.cta.subtitle')}
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -186,7 +188,7 @@ const StoreLanding: React.FC = () => {
                 onClick={() => document.getElementById('modules')?.scrollIntoView({ behavior: 'smooth' })}
                 className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-8 py-6 text-lg rounded-xl shadow-lg shadow-emerald-500/25"
               >
-                Explorar Módulos
+                {t('store.cta.button1')}
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
               <Link to="/auth">
@@ -195,7 +197,7 @@ const StoreLanding: React.FC = () => {
                   variant="outline"
                   className="border-emerald-500/50 text-emerald-300 hover:bg-emerald-500/10 px-8 py-6 text-lg rounded-xl"
                 >
-                  Solicitar Demo
+                  {t('store.cta.button2')}
                   <ChevronRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
@@ -204,15 +206,15 @@ const StoreLanding: React.FC = () => {
             <div className="mt-12 flex items-center justify-center gap-8 text-sm text-slate-400">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                Sin compromiso
+                {t('store.cta.note1')}
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                Demo gratuita
+                {t('store.cta.note2')}
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                Soporte 24/7
+                {t('store.cta.note3')}
               </div>
             </div>
           </motion.div>
