@@ -17,6 +17,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { INTERNAL_MODULE_PRICING, calculateCustomPrice, getModulePricing } from '@/config/internalPricing';
+import { getObelixiaLogoBase64 } from '@/lib/pdfUtils';
+import { openPrintDialogForJsPdf } from '@/lib/pdfPrint';
 
 interface Quote {
   id: string;
@@ -48,6 +50,7 @@ const QuoteManager: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [logoBase64, setLogoBase64] = useState<string>('');
   
   // New quote form
   const [newQuote, setNewQuote] = useState({
@@ -69,6 +72,19 @@ const QuoteManager: React.FC = () => {
 
   useEffect(() => {
     fetchQuotes();
+
+    let active = true;
+    getObelixiaLogoBase64()
+      .then((b64) => {
+        if (active) setLogoBase64(b64);
+      })
+      .catch(() => {
+        // ignore
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -211,13 +227,21 @@ const QuoteManager: React.FC = () => {
     // Dark header background
     doc.setFillColor(10, 10, 15);
     doc.rect(0, 0, pageWidth, 50, 'F');
-    
-    // Logo text
-    doc.setFontSize(24);
-    doc.setTextColor(59, 130, 246);
-    doc.text('Obelix', 20, 30);
-    doc.setTextColor(16, 185, 129);
-    doc.text('IA', 58, 30);
+
+    // Official logo (fallback to text if not loaded)
+    if (logoBase64) {
+      try {
+        doc.addImage(logoBase64, 'PNG', 18, 12, 56, 18);
+      } catch {
+        // ignore
+      }
+    } else {
+      doc.setFontSize(24);
+      doc.setTextColor(59, 130, 246);
+      doc.text('Obelix', 20, 30);
+      doc.setTextColor(16, 185, 129);
+      doc.text('IA', 58, 30);
+    }
     
     // Quote info
     doc.setFontSize(12);
@@ -285,14 +309,7 @@ const QuoteManager: React.FC = () => {
 
   const printQuote = (quote: Quote) => {
     const doc = generateQuotePDF(quote, quoteItems);
-    const pdfBlob = doc.output('blob');
-    const pdfUrl = URL.createObjectURL(pdfBlob);
-    const printWindow = window.open(pdfUrl, '_blank');
-    if (printWindow) {
-      printWindow.onload = () => {
-        printWindow.print();
-      };
-    }
+    openPrintDialogForJsPdf(doc);
     toast.success('Documento listo para imprimir');
   };
 

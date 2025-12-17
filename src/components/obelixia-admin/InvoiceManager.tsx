@@ -17,6 +17,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { getObelixiaLogoBase64 } from '@/lib/pdfUtils';
+import { openPrintDialogForJsPdf } from '@/lib/pdfPrint';
 
 interface InvoiceItem {
   module_key: string;
@@ -74,6 +76,7 @@ export const InvoiceManager: React.FC = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [modules, setModules] = useState<any[]>([]);
+  const [logoBase64, setLogoBase64] = useState<string>('');
   
   const [newInvoice, setNewInvoice] = useState({
     customer_email: '',
@@ -96,6 +99,19 @@ export const InvoiceManager: React.FC = () => {
   useEffect(() => {
     fetchInvoices();
     fetchModules();
+
+    let active = true;
+    getObelixiaLogoBase64()
+      .then((b64) => {
+        if (active) setLogoBase64(b64);
+      })
+      .catch(() => {
+        // ignore
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const fetchInvoices = async () => {
@@ -253,13 +269,21 @@ export const InvoiceManager: React.FC = () => {
     // Dark header background
     doc.setFillColor(10, 10, 15);
     doc.rect(0, 0, pageWidth, 50, 'F');
-    
-    // Logo text with gradient simulation
-    doc.setFontSize(24);
-    doc.setTextColor(59, 130, 246); // Blue
-    doc.text('Obelix', 20, 30);
-    doc.setTextColor(16, 185, 129); // Emerald
-    doc.text('IA', 58, 30);
+
+    // Official logo (fallback to text if not loaded)
+    if (logoBase64) {
+      try {
+        doc.addImage(logoBase64, 'PNG', 18, 12, 56, 18);
+      } catch {
+        // ignore
+      }
+    } else {
+      doc.setFontSize(24);
+      doc.setTextColor(59, 130, 246); // Blue
+      doc.text('Obelix', 20, 30);
+      doc.setTextColor(16, 185, 129); // Emerald
+      doc.text('IA', 58, 30);
+    }
     
     // Invoice number
     doc.setFontSize(12);
@@ -335,14 +359,7 @@ export const InvoiceManager: React.FC = () => {
 
   const printInvoice = (invoice: Invoice) => {
     const doc = generateInvoicePDF(invoice);
-    const pdfBlob = doc.output('blob');
-    const pdfUrl = URL.createObjectURL(pdfBlob);
-    const printWindow = window.open(pdfUrl, '_blank');
-    if (printWindow) {
-      printWindow.onload = () => {
-        printWindow.print();
-      };
-    }
+    openPrintDialogForJsPdf(doc);
     toast.success('Documento listo para imprimir');
   };
 

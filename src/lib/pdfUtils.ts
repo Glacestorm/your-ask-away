@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import obelixiaLogo from '@/assets/obelixia-logo-official.jpg';
+import obelixiaLogo from '@/assets/obelixia-logo.png';
 
 interface TOCEntry {
   title: string;
@@ -51,6 +51,11 @@ async function loadLogoBase64(): Promise<string> {
   }
 }
 
+// Public helper for other PDF generators
+export async function getObelixiaLogoBase64(): Promise<string> {
+  return loadLogoBase64();
+}
+
 // Shared PDF utilities for enhanced PDF generation
 export class EnhancedPDFGenerator {
   private doc: jsPDF;
@@ -92,7 +97,7 @@ export class EnhancedPDFGenerator {
         this.doc.rect(0, 0, this.pageWidth, 45, 'F');
         
         // Add logo image
-        this.doc.addImage(logo, 'JPEG', this.margins.left, 8, 60, 20);
+        this.doc.addImage(logo, 'PNG', this.margins.left, 8, 60, 20);
         y = 35;
       }
     } catch (error) {
