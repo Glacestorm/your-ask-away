@@ -48,15 +48,15 @@ const StoreFooter: React.FC = () => {
             <div className="space-y-2 text-sm text-slate-400">
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4" />
-                <span>info@obelixia.com</span>
+                <span>jfernandez@obelixia.com</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4" />
-                <span>+376 123 456</span>
+                <span>+34 606 770 033</span>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
-                <span>Andorra la Vella, Andorra</span>
+                <span>León / España</span>
               </div>
             </div>
           </div>
