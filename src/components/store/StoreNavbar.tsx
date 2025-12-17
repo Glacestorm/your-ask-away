@@ -56,9 +56,7 @@ const StoreNavbar: React.FC = () => {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-950/90 backdrop-blur-xl">
-        {/* Gradient bottom border that fades to transparent */}
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2/3 h-px bg-gradient-to-r from-transparent via-slate-700/50 to-transparent" />
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-950/80 backdrop-blur-xl shadow-[0_16px_40px_-28px_rgba(0,0,0,0.9)]">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-19">
             {/* Logo - Left */}
