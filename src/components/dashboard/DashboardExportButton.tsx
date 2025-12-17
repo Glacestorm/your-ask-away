@@ -88,7 +88,7 @@ export function DashboardExportButton({ data, fileName = 'dashboard-export' }: D
       const pdf = createEnhancedPDF('p', 'a4');
       
       // Header
-      let y = pdf.addHeader(data.title, 'Informe del Dashboard');
+      let y = pdf.addHeaderSync(data.title, 'Informe del Dashboard');
 
       // Stats section with TOC
       if (pdfOptions.includeTOC) {

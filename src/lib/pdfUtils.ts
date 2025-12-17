@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import obelixiaLogo from '@/assets/obelixia-logo-official.jpg';
 
 interface TOCEntry {
   title: string;
@@ -25,6 +26,31 @@ interface ChartData {
   height?: number;
 }
 
+// ObelixIA official logo as base64 (loaded at runtime)
+let logoBase64: string | null = null;
+
+// Load logo as base64
+async function loadLogoBase64(): Promise<string> {
+  if (logoBase64) return logoBase64;
+  
+  try {
+    const response = await fetch(obelixiaLogo);
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        logoBase64 = reader.result as string;
+        resolve(logoBase64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (error) {
+    console.error('Error loading logo:', error);
+    return '';
+  }
+}
+
 // Shared PDF utilities for enhanced PDF generation
 export class EnhancedPDFGenerator {
   private doc: jsPDF;
@@ -32,7 +58,8 @@ export class EnhancedPDFGenerator {
   private pageWidth: number;
   private pageHeight: number;
   private margins = { left: 14, right: 14, top: 20, bottom: 20 };
-  private brandColor: [number, number, number] = [59, 130, 246]; // Primary blue
+  private brandColor: [number, number, number] = [30, 58, 95]; // ObelixIA dark blue
+  private accentColor: [number, number, number] = [13, 115, 119]; // ObelixIA teal
 
   constructor(orientation: 'p' | 'l' = 'p', format: string = 'a4') {
     this.doc = new jsPDF(orientation, 'mm', format);
@@ -52,9 +79,76 @@ export class EnhancedPDFGenerator {
     return this.pageHeight;
   }
 
-  // Add header with branding
-  addHeader(title: string, subtitle?: string): number {
-    let y = 25;
+  // Add header with ObelixIA branding and logo
+  async addHeader(title: string, subtitle?: string): Promise<number> {
+    let y = 15;
+    
+    // Add logo with dark background
+    try {
+      const logo = await loadLogoBase64();
+      if (logo) {
+        // Dark background for logo area
+        this.doc.setFillColor(15, 23, 42); // Very dark blue/black
+        this.doc.rect(0, 0, this.pageWidth, 45, 'F');
+        
+        // Add logo image
+        this.doc.addImage(logo, 'JPEG', this.margins.left, 8, 60, 20);
+        y = 35;
+      }
+    } catch (error) {
+      console.error('Error adding logo to PDF:', error);
+      // Fallback to text-based header with dark background
+      this.doc.setFillColor(15, 23, 42);
+      this.doc.rect(0, 0, this.pageWidth, 35, 'F');
+      this.doc.setFontSize(20);
+      this.doc.setFont('helvetica', 'bold');
+      this.doc.setTextColor(59, 130, 246);
+      this.doc.text('ObelixIA', this.margins.left, 22);
+      y = 30;
+    }
+    
+    y += 10;
+    
+    // Title
+    this.doc.setFontSize(22);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(...this.brandColor);
+    this.doc.text(title, this.pageWidth / 2, y, { align: 'center' });
+    y += 10;
+
+    // Subtitle
+    if (subtitle) {
+      this.doc.setFontSize(12);
+      this.doc.setFont('helvetica', 'normal');
+      this.doc.setTextColor(100, 100, 100);
+      this.doc.text(subtitle, this.pageWidth / 2, y, { align: 'center' });
+      y += 8;
+    }
+
+    // Date
+    this.doc.setFontSize(10);
+    this.doc.setTextColor(150, 150, 150);
+    this.doc.text(`Generat: ${new Date().toLocaleDateString('ca-ES')}`, this.pageWidth / 2, y, { align: 'center' });
+    y += 15;
+
+    return y;
+  }
+
+  // Add header synchronously (without logo, for backwards compatibility)
+  addHeaderSync(title: string, subtitle?: string): number {
+    let y = 15;
+    
+    // Dark background header
+    this.doc.setFillColor(15, 23, 42);
+    this.doc.rect(0, 0, this.pageWidth, 35, 'F');
+    
+    // ObelixIA text as fallback
+    this.doc.setFontSize(20);
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setTextColor(59, 130, 246);
+    this.doc.text('ObelixIA', this.margins.left, 22);
+    
+    y = 45;
     
     // Title
     this.doc.setFontSize(22);
@@ -351,32 +445,37 @@ export class EnhancedPDFGenerator {
     return (this.doc as any).lastAutoTable?.finalY || startY + 20;
   }
 
-  // Add footer to all pages
+  // Add footer to all pages with ObelixIA branding
   addFooter(): void {
     const pageCount = this.doc.getNumberOfPages();
     
     for (let i = 1; i <= pageCount; i++) {
       this.doc.setPage(i);
-      this.doc.setFontSize(8);
+      
+      // Footer background
+      this.doc.setFillColor(15, 23, 42);
+      this.doc.rect(0, this.pageHeight - 20, this.pageWidth, 20, 'F');
+      
+      // Company name
+      this.doc.setFontSize(9);
+      this.doc.setFont('helvetica', 'bold');
+      this.doc.setTextColor(59, 130, 246);
+      this.doc.text('ObelixIA', this.margins.left, this.pageHeight - 10);
+      
+      // Contact info
+      this.doc.setFontSize(7);
       this.doc.setFont('helvetica', 'normal');
-      this.doc.setTextColor(150, 150, 150);
+      this.doc.setTextColor(200, 200, 200);
+      this.doc.text('info@obelixia.com | +34 606 770 033', this.margins.left + 25, this.pageHeight - 10);
       
       // Page number
+      this.doc.setFontSize(8);
+      this.doc.setTextColor(200, 200, 200);
       this.doc.text(
         `Pàgina ${i} de ${pageCount}`,
-        this.pageWidth / 2,
-        this.pageHeight - 10,
-        { align: 'center' }
-      );
-      
-      // Footer line
-      this.doc.setDrawColor(200, 200, 200);
-      this.doc.setLineWidth(0.3);
-      this.doc.line(
-        this.margins.left,
-        this.pageHeight - 15,
         this.pageWidth - this.margins.right,
-        this.pageHeight - 15
+        this.pageHeight - 10,
+        { align: 'right' }
       );
     }
   }
