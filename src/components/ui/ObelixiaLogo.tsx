@@ -29,241 +29,269 @@ export function ObelixiaLogo({
 
   const currentSize = sizeClasses[size];
 
-  // Cinematic Brain Icon with Synchrotron Effects
-  const CinematicBrainIcon = () => (
-    <div className="relative" style={{ width: currentSize.iconW, height: currentSize.iconH }}>
-      {/* Outer Glow Layer */}
-      <div 
-        className="absolute inset-[-50%] blur-2xl opacity-60"
-        style={{
-          background: 'radial-gradient(ellipse at center, rgba(6,182,212,0.5) 0%, rgba(16,185,129,0.3) 40%, transparent 70%)',
-        }}
-      />
-      
-      <svg 
-        viewBox="0 0 100 120" 
-        className="relative w-full h-full"
-        style={{ filter: 'drop-shadow(0 0 25px rgba(6,182,212,0.6)) drop-shadow(0 0 50px rgba(16,185,129,0.4))' }}
-      >
-        <defs>
-          {/* Main Gradient - Flowing Blue to Green */}
-          <linearGradient id={`brain-main-${size}`} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#0ea5e9">
-              {animated && <animate attributeName="stop-color" values="#0ea5e9;#10b981;#06b6d4;#0ea5e9" dur="5s" repeatCount="indefinite" />}
-            </stop>
-            <stop offset="50%" stopColor="#10b981">
-              {animated && <animate attributeName="stop-color" values="#10b981;#06b6d4;#0ea5e9;#10b981" dur="5s" repeatCount="indefinite" />}
-            </stop>
-            <stop offset="100%" stopColor="#06b6d4">
-              {animated && <animate attributeName="stop-color" values="#06b6d4;#0ea5e9;#10b981;#06b6d4" dur="5s" repeatCount="indefinite" />}
-            </stop>
-          </linearGradient>
-          
-          {/* Glow Filter */}
-          <filter id={`brain-glow-${size}`} x="-100%" y="-100%" width="300%" height="300%">
-            <feGaussianBlur stdDeviation="4" result="blur1"/>
-            <feGaussianBlur stdDeviation="8" result="blur2"/>
-            <feMerge>
-              <feMergeNode in="blur2"/>
-              <feMergeNode in="blur1"/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
-          
-          {/* Sparkle Filter */}
-          <filter id={`brain-sparkle-glow-${size}`} x="-200%" y="-200%" width="500%" height="500%">
-            <feGaussianBlur stdDeviation="2" result="blur"/>
-            <feMerge>
-              <feMergeNode in="blur"/>
-              <feMergeNode in="blur"/>
-              <feMergeNode in="SourceGraphic"/>
-            </feMerge>
-          </filter>
-        </defs>
-        
-        {/* Longitudinal Brain Path - Side View */}
-        <path
-          id={`brain-outline-${size}`}
-          d="M50 10 
-             C30 10, 15 25, 15 45
-             C15 55, 20 65, 25 72
-             C18 75, 12 80, 12 88
-             C12 100, 25 110, 40 110
-             L60 110
-             C75 110, 88 100, 88 88
-             C88 80, 82 75, 75 72
-             C80 65, 85 55, 85 45
-             C85 25, 70 10, 50 10"
-          fill="none"
-          stroke={dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}
-          strokeWidth="6"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        
-        {/* Main Brain Outline */}
-        <path
-          d="M50 10 
-             C30 10, 15 25, 15 45
-             C15 55, 20 65, 25 72
-             C18 75, 12 80, 12 88
-             C12 100, 25 110, 40 110
-             L60 110
-             C75 110, 88 100, 88 88
-             C88 80, 82 75, 75 72
-             C80 65, 85 55, 85 45
-             C85 25, 70 10, 50 10"
-          fill="none"
-          stroke={`url(#brain-main-${size})`}
-          strokeWidth="4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          filter={`url(#brain-glow-${size})`}
-        />
-        
-        {/* Brain Folds/Gyri - Left hemisphere detail */}
-        <path
-          d="M25 30 C35 28, 45 35, 40 45
-             M20 50 C30 48, 40 55, 35 65
-             M30 75 C40 73, 45 80, 40 90"
-          fill="none"
-          stroke={`url(#brain-main-${size})`}
-          strokeWidth="2"
-          strokeLinecap="round"
-          opacity="0.7"
-        />
-        
-        {/* Brain Folds/Gyri - Right hemisphere detail */}
-        <path
-          d="M75 30 C65 28, 55 35, 60 45
-             M80 50 C70 48, 60 55, 65 65
-             M70 75 C60 73, 55 80, 60 90"
-          fill="none"
-          stroke={`url(#brain-main-${size})`}
-          strokeWidth="2"
-          strokeLinecap="round"
-          opacity="0.7"
-        />
-        
-        {/* Central sulcus */}
-        <path
-          d="M50 15 C50 25, 48 40, 50 60 C52 80, 50 95, 50 105"
-          fill="none"
-          stroke={`url(#brain-main-${size})`}
-          strokeWidth="2"
-          strokeLinecap="round"
-          opacity="0.5"
-        />
-        
-        {/* Flowing energy along brain outline */}
-        {animated && (
-          <>
-            <path
-              d="M50 10 
-                 C30 10, 15 25, 15 45
-                 C15 55, 20 65, 25 72
-                 C18 75, 12 80, 12 88
-                 C12 100, 25 110, 40 110
-                 L60 110
-                 C75 110, 88 100, 88 88
-                 C88 80, 82 75, 75 72
-                 C80 65, 85 55, 85 45
-                 C85 25, 70 10, 50 10"
-              fill="none"
-              stroke="white"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeDasharray="15 285"
-              filter={`url(#brain-sparkle-glow-${size})`}
-              opacity="0.9"
-            >
-              <animate attributeName="stroke-dashoffset" values="0;-300" dur="3s" repeatCount="indefinite"/>
-            </path>
-            
-            <path
-              d="M50 10 
-                 C30 10, 15 25, 15 45
-                 C15 55, 20 65, 25 72
-                 C18 75, 12 80, 12 88
-                 C12 100, 25 110, 40 110
-                 L60 110
-                 C75 110, 88 100, 88 88
-                 C88 80, 82 75, 75 72
-                 C80 65, 85 55, 85 45
-                 C85 25, 70 10, 50 10"
-              fill="none"
-              stroke="rgba(255,255,255,0.6)"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeDasharray="10 290"
-              filter={`url(#brain-sparkle-glow-${size})`}
-            >
-              <animate attributeName="stroke-dashoffset" values="-150;-450" dur="3s" repeatCount="indefinite"/>
-            </path>
-          </>
-        )}
-        
-        {/* Synchrotron particles (moving along brain) */}
-        {animated && (
-          <>
-            {/* Motion path for particles */}
-            <path
-              id={`brain-motion-${size}`}
-              d="M50 10 C30 10, 15 25, 15 45 C15 55, 20 65, 25 72 C18 75, 12 80, 12 88 C12 100, 25 110, 40 110 L60 110 C75 110, 88 100, 88 88 C88 80, 82 75, 75 72 C80 65, 85 55, 85 45 C85 25, 70 10, 50 10"
-              fill="none"
-              stroke="none"
-            />
+  // AI Brain Icon with Neural Network Connections
+  const CinematicBrainIcon = () => {
+    // Neural network nodes positions for AI brain effect
+    const neuralNodes = [
+      // Core processing nodes (center)
+      { cx: 50, cy: 35, layer: 'core' },
+      { cx: 50, cy: 55, layer: 'core' },
+      { cx: 50, cy: 75, layer: 'core' },
+      // Left hemisphere nodes
+      { cx: 25, cy: 30, layer: 'left' },
+      { cx: 20, cy: 50, layer: 'left' },
+      { cx: 25, cy: 70, layer: 'left' },
+      { cx: 30, cy: 90, layer: 'left' },
+      { cx: 35, cy: 45, layer: 'left' },
+      { cx: 30, cy: 60, layer: 'left' },
+      // Right hemisphere nodes
+      { cx: 75, cy: 30, layer: 'right' },
+      { cx: 80, cy: 50, layer: 'right' },
+      { cx: 75, cy: 70, layer: 'right' },
+      { cx: 70, cy: 90, layer: 'right' },
+      { cx: 65, cy: 45, layer: 'right' },
+      { cx: 70, cy: 60, layer: 'right' },
+      // Deep nodes
+      { cx: 40, cy: 25, layer: 'deep' },
+      { cx: 60, cy: 25, layer: 'deep' },
+      { cx: 45, cy: 85, layer: 'deep' },
+      { cx: 55, cy: 85, layer: 'deep' },
+    ];
 
-            <g filter={`url(#brain-sparkle-glow-${size})`}>
-              {Array.from({ length: currentSize.sparkles }).map((_, i) => (
-                <circle key={i} r={size === 'hero' ? 3 : 2} fill="white" opacity={0.9}>
-                  <animateMotion dur="4s" repeatCount="indefinite" begin={`${-i * (4 / currentSize.sparkles)}s`}>
-                    <mpath xlinkHref={`#brain-motion-${size}`} />
-                  </animateMotion>
-                  <animate attributeName="r" values={`${size === 'hero' ? 2 : 1};${size === 'hero' ? 4 : 3};${size === 'hero' ? 2 : 1}`} dur="0.8s" repeatCount="indefinite" begin={`${i * 0.12}s`} />
-                </circle>
-              ))}
-            </g>
+    // Neural connections between nodes
+    const connections = [
+      // Core spine
+      [0, 1], [1, 2],
+      // Left connections
+      [3, 7], [7, 4], [4, 8], [8, 5], [5, 6],
+      [0, 3], [1, 4], [2, 5],
+      [7, 0], [8, 1],
+      // Right connections  
+      [9, 13], [13, 10], [10, 14], [14, 11], [11, 12],
+      [0, 9], [1, 10], [2, 11],
+      [13, 0], [14, 1],
+      // Cross connections
+      [15, 0], [16, 0], [17, 2], [18, 2],
+      [3, 15], [9, 16], [6, 17], [12, 18],
+    ];
+
+    return (
+      <div className="relative" style={{ width: currentSize.iconW, height: currentSize.iconH }}>
+        {/* Outer Glow Layer */}
+        <div 
+          className="absolute inset-[-50%] blur-2xl opacity-60"
+          style={{
+            background: 'radial-gradient(ellipse at center, rgba(6,182,212,0.5) 0%, rgba(16,185,129,0.3) 40%, transparent 70%)',
+          }}
+        />
+        
+        <svg 
+          viewBox="0 0 100 120" 
+          className="relative w-full h-full"
+          style={{ filter: 'drop-shadow(0 0 25px rgba(6,182,212,0.6)) drop-shadow(0 0 50px rgba(16,185,129,0.4))' }}
+        >
+          <defs>
+            {/* Main Gradient - Flowing Blue to Green */}
+            <linearGradient id={`brain-main-${size}`} x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#0ea5e9">
+                {animated && <animate attributeName="stop-color" values="#0ea5e9;#10b981;#06b6d4;#0ea5e9" dur="5s" repeatCount="indefinite" />}
+              </stop>
+              <stop offset="50%" stopColor="#10b981">
+                {animated && <animate attributeName="stop-color" values="#10b981;#06b6d4;#0ea5e9;#10b981" dur="5s" repeatCount="indefinite" />}
+              </stop>
+              <stop offset="100%" stopColor="#06b6d4">
+                {animated && <animate attributeName="stop-color" values="#06b6d4;#0ea5e9;#10b981;#06b6d4" dur="5s" repeatCount="indefinite" />}
+              </stop>
+            </linearGradient>
             
-            {/* Neural impulse flashes inside brain */}
-            {[
-              { cx: 35, cy: 40 },
-              { cx: 65, cy: 40 },
-              { cx: 30, cy: 60 },
-              { cx: 70, cy: 60 },
-              { cx: 50, cy: 50 },
-              { cx: 40, cy: 85 },
-              { cx: 60, cy: 85 },
-            ].map((pos, i) => (
+            {/* Glow Filter */}
+            <filter id={`brain-glow-${size}`} x="-100%" y="-100%" width="300%" height="300%">
+              <feGaussianBlur stdDeviation="3" result="blur1"/>
+              <feGaussianBlur stdDeviation="6" result="blur2"/>
+              <feMerge>
+                <feMergeNode in="blur2"/>
+                <feMergeNode in="blur1"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+            
+            {/* Node Glow Filter */}
+            <filter id={`node-glow-${size}`} x="-300%" y="-300%" width="700%" height="700%">
+              <feGaussianBlur stdDeviation="3" result="blur"/>
+              <feMerge>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="blur"/>
+                <feMergeNode in="SourceGraphic"/>
+              </feMerge>
+            </filter>
+          </defs>
+          
+          {/* AI Brain Outline - Stylized circuit brain shape */}
+          <path
+            d="M50 8 
+               C28 8, 12 24, 12 45
+               C12 58, 18 68, 22 75
+               C16 78, 10 84, 10 92
+               C10 104, 24 112, 42 112
+               L58 112
+               C76 112, 90 104, 90 92
+               C90 84, 84 78, 78 75
+               C82 68, 88 58, 88 45
+               C88 24, 72 8, 50 8"
+            fill="none"
+            stroke={dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}
+            strokeWidth="3"
+            strokeLinecap="round"
+          />
+          
+          {/* Main Brain Outline with gradient */}
+          <path
+            d="M50 8 
+               C28 8, 12 24, 12 45
+               C12 58, 18 68, 22 75
+               C16 78, 10 84, 10 92
+               C10 104, 24 112, 42 112
+               L58 112
+               C76 112, 90 104, 90 92
+               C90 84, 84 78, 78 75
+               C82 68, 88 58, 88 45
+               C88 24, 72 8, 50 8"
+            fill="none"
+            stroke={`url(#brain-main-${size})`}
+            strokeWidth="2"
+            strokeLinecap="round"
+            filter={`url(#brain-glow-${size})`}
+          />
+          
+          {/* Neural Network Connections */}
+          {animated && connections.map(([from, to], i) => (
+            <line
+              key={`conn-${i}`}
+              x1={neuralNodes[from].cx}
+              y1={neuralNodes[from].cy}
+              x2={neuralNodes[to].cx}
+              y2={neuralNodes[to].cy}
+              stroke={`url(#brain-main-${size})`}
+              strokeWidth="0.8"
+              opacity="0.4"
+            >
+              <animate
+                attributeName="opacity"
+                values="0.2;0.7;0.2"
+                dur={`${1.5 + (i % 5) * 0.3}s`}
+                begin={`${(i * 0.15) % 2}s`}
+                repeatCount="indefinite"
+              />
+            </line>
+          ))}
+          
+          {/* Neural Nodes - Blinking AI neurons */}
+          {animated && neuralNodes.map((node, i) => (
+            <g key={`node-${i}`} filter={`url(#node-glow-${size})`}>
+              {/* Node base */}
               <circle
-                key={`neuron-${i}`}
-                cx={pos.cx}
-                cy={pos.cy}
-                r="1.5"
+                cx={node.cx}
+                cy={node.cy}
+                r={node.layer === 'core' ? 3 : 2}
                 fill="white"
-                opacity="0"
+                opacity="0.3"
+              />
+              {/* Pulsing overlay */}
+              <circle
+                cx={node.cx}
+                cy={node.cy}
+                r={node.layer === 'core' ? 3 : 2}
+                fill="white"
               >
                 <animate
                   attributeName="opacity"
-                  values="0;1;0"
-                  dur="1.5s"
-                  begin={`${i * 0.2}s`}
+                  values="0.2;1;0.2"
+                  dur={`${0.8 + (i % 7) * 0.2}s`}
+                  begin={`${(i * 0.12) % 1.5}s`}
                   repeatCount="indefinite"
                 />
                 <animate
                   attributeName="r"
-                  values="1;3;1"
-                  dur="1.5s"
-                  begin={`${i * 0.2}s`}
+                  values={`${node.layer === 'core' ? 2 : 1.5};${node.layer === 'core' ? 4 : 3};${node.layer === 'core' ? 2 : 1.5}`}
+                  dur={`${0.8 + (i % 7) * 0.2}s`}
+                  begin={`${(i * 0.12) % 1.5}s`}
                   repeatCount="indefinite"
                 />
               </circle>
-            ))}
-          </>
-        )}
-      </svg>
-    </div>
-  );
+            </g>
+          ))}
+          
+          {/* Data flow particles along connections */}
+          {animated && (
+            <>
+              {/* Particle stream 1 - Left to center */}
+              <circle r="1.5" fill="#06b6d4" opacity="0.9" filter={`url(#node-glow-${size})`}>
+                <animate attributeName="cx" values="25;35;50;50" dur="2s" repeatCount="indefinite" />
+                <animate attributeName="cy" values="30;45;35;55" dur="2s" repeatCount="indefinite" />
+                <animate attributeName="opacity" values="1;0.8;1;0.5" dur="2s" repeatCount="indefinite" />
+              </circle>
+              
+              {/* Particle stream 2 - Right to center */}
+              <circle r="1.5" fill="#10b981" opacity="0.9" filter={`url(#node-glow-${size})`}>
+                <animate attributeName="cx" values="75;65;50;50" dur="2s" begin="0.5s" repeatCount="indefinite" />
+                <animate attributeName="cy" values="30;45;35;55" dur="2s" begin="0.5s" repeatCount="indefinite" />
+                <animate attributeName="opacity" values="1;0.8;1;0.5" dur="2s" begin="0.5s" repeatCount="indefinite" />
+              </circle>
+              
+              {/* Particle stream 3 - Center to bottom */}
+              <circle r="1.5" fill="white" opacity="0.9" filter={`url(#node-glow-${size})`}>
+                <animate attributeName="cx" values="50;45;55;50" dur="2.5s" begin="1s" repeatCount="indefinite" />
+                <animate attributeName="cy" values="55;75;85;95" dur="2.5s" begin="1s" repeatCount="indefinite" />
+                <animate attributeName="opacity" values="1;0.9;0.7;0.3" dur="2.5s" begin="1s" repeatCount="indefinite" />
+              </circle>
+              
+              {/* Random impulse sparks */}
+              {Array.from({ length: 5 }).map((_, i) => (
+                <circle 
+                  key={`spark-${i}`} 
+                  r="1" 
+                  fill="white" 
+                  filter={`url(#node-glow-${size})`}
+                >
+                  <animate
+                    attributeName="cx"
+                    values={`${20 + i * 15};${30 + i * 10};${25 + i * 12}`}
+                    dur={`${1.2 + i * 0.3}s`}
+                    begin={`${i * 0.4}s`}
+                    repeatCount="indefinite"
+                  />
+                  <animate
+                    attributeName="cy"
+                    values={`${25 + i * 10};${45 + i * 8};${35 + i * 12}`}
+                    dur={`${1.2 + i * 0.3}s`}
+                    begin={`${i * 0.4}s`}
+                    repeatCount="indefinite"
+                  />
+                  <animate
+                    attributeName="opacity"
+                    values="0;1;0"
+                    dur={`${1.2 + i * 0.3}s`}
+                    begin={`${i * 0.4}s`}
+                    repeatCount="indefinite"
+                  />
+                </circle>
+              ))}
+            </>
+          )}
+          
+          {/* Circuit patterns inside brain */}
+          <g opacity="0.3" stroke={`url(#brain-main-${size})`} strokeWidth="0.5" fill="none">
+            <path d="M30 35 L40 35 L40 45" />
+            <path d="M70 35 L60 35 L60 45" />
+            <path d="M35 65 L45 65 L45 75" />
+            <path d="M65 65 L55 65 L55 75" />
+            <path d="M50 20 L50 30" />
+            <path d="M50 80 L50 95" />
+          </g>
+        </svg>
+      </div>
+    );
+  };
 
   // Full Logo with Dual Gradient Text
   if (variant === "full") {
