@@ -211,7 +211,13 @@ const StoreModuleDetail: React.FC = () => {
             <Button 
               variant="ghost" 
               size="sm" 
-              onClick={() => navigate(-1)}
+              onClick={() => {
+                if (window.history.length > 1) {
+                  navigate(-1);
+                } else {
+                  navigate('/store/modules');
+                }
+              }}
               className="text-slate-400 hover:text-white"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -371,7 +377,7 @@ const StoreModuleDetail: React.FC = () => {
                 </Button>
 
                 {inCart && (
-                  <Link to="/store/cart">
+                  <Link to="/store/checkout">
                     <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:text-white">
                       Ver carrito
                     </Button>
