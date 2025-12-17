@@ -12,7 +12,7 @@ const PremiumModulesSection: React.FC = () => {
       module_name: 'IA Bancaria Avanzada',
       description: 'Machine Learning para scoring crediticio, detección de fraude y predicción de riesgo con modelos IFRS 9',
       module_icon: 'Brain',
-      base_price: 180000,
+      base_price: 149000,
       category: 'enterprise',
       is_core: false,
       features: ['ML Predictivo', 'Scoring Crediticio', 'Detección Fraude', 'IFRS 9 Compliant'],
@@ -23,7 +23,7 @@ const PremiumModulesSection: React.FC = () => {
       module_name: 'Compliance Bancario Pro',
       description: 'Suite completa de cumplimiento normativo: DORA, NIS2, PSD2, Basel III/IV, MiFID II',
       module_icon: 'Shield',
-      base_price: 150000,
+      base_price: 119000,
       category: 'enterprise',
       is_core: false,
       features: ['DORA/NIS2', 'PSD2/PSD3', 'Basel III/IV', 'MiFID II'],
@@ -34,7 +34,7 @@ const PremiumModulesSection: React.FC = () => {
       module_name: 'Open Banking API',
       description: 'Integración PSD2/PSD3 con APIs bancarias, consentimientos y agregación de cuentas',
       module_icon: 'Lock',
-      base_price: 100000,
+      base_price: 79000,
       category: 'enterprise',
       is_core: false,
       features: ['APIs FAPI', 'Gestión Consentimientos', 'TPP Integration', 'SCA Compliant'],
@@ -142,11 +142,12 @@ const PremiumModulesSection: React.FC = () => {
             <p className="text-lg text-amber-200 mb-2">¿Necesitas una solución personalizada?</p>
             <p className="text-3xl font-bold text-white mb-4">Pack Enterprise Completo</p>
             <div className="flex items-center gap-4 text-slate-300">
-              <span className="line-through text-slate-500">€1,500,000</span>
-              <span className="text-4xl font-bold text-amber-400">€880,000</span>
-              <Badge className="bg-red-500/20 text-red-300 border-red-500/30">-41%</Badge>
+              <span className="line-through text-slate-500">€1.200.000</span>
+              <span className="text-4xl font-bold text-amber-400">€880.000</span>
+              <Badge className="bg-red-500/20 text-red-300 border-red-500/30">-27%</Badge>
             </div>
             <p className="text-sm text-slate-400 mt-2">Licencia perpetua • Todos los módulos incluidos</p>
+            <p className="text-[10px] text-slate-500 mt-1">SIN IVA • Pago único</p>
           </div>
         </motion.div>
       </div>

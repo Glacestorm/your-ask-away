@@ -141,7 +141,10 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, show
         <div className="flex items-center justify-between pt-4 border-t border-slate-700/50">
           <div>
             <div className="text-2xl font-bold text-white">{formattedPrice}</div>
-            <div className="text-xs text-slate-400">/año</div>
+            <div className="flex items-center gap-1">
+              <span className="text-xs text-slate-400">/año</span>
+              <span className="text-[10px] text-slate-500">SIN IVA</span>
+            </div>
           </div>
           
           <div className="flex gap-2">

@@ -20,7 +20,8 @@ const ROICalculator: React.FC = () => {
     const annualHoursSaved = employees * hoursSavedPerEmployee * 12;
     const annualSavings = annualHoursSaved * hourlyRate;
     
-    const obelixiaCost = Math.max(120000, employees * 2400);
+    // Precio mínimo 99,000€/año (Pack Starter)
+    const obelixiaCost = Math.max(99000, employees * 1980);
     const netSavings = annualSavings - obelixiaCost;
     const roi = ((netSavings / obelixiaCost) * 100);
     
@@ -154,7 +155,10 @@ const ROICalculator: React.FC = () => {
               <div className="p-4 bg-emerald-500/10 rounded-xl border border-emerald-500/30 mb-6">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-slate-300">Inversión ObelixIA</span>
-                  <span className="text-white font-medium">{formatCurrency(calculations.obelixiaCost)}</span>
+                  <div className="text-right">
+                    <span className="text-white font-medium">{formatCurrency(calculations.obelixiaCost)}</span>
+                    <span className="text-[10px] text-slate-500 ml-1">/año SIN IVA</span>
+                  </div>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-emerald-300 font-medium">Beneficio Neto Anual</span>

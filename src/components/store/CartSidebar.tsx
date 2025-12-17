@@ -238,7 +238,7 @@ const CartSidebar: React.FC = () => {
                 {/* Summary */}
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between text-sm text-slate-400">
-                    <span>Subtotal</span>
+                    <span>Subtotal (SIN IVA)</span>
                     <span>{formatPrice(subtotal)}</span>
                   </div>
                   {discount > 0 && (
@@ -249,12 +249,15 @@ const CartSidebar: React.FC = () => {
                   )}
                   <div className="flex justify-between text-sm text-slate-400">
                     <span>IVA (21%)</span>
-                    <span>{formatPrice(tax)}</span>
+                    <span>+{formatPrice(tax)}</span>
                   </div>
                   <div className="flex justify-between text-lg font-bold text-white pt-2 border-t border-slate-700">
-                    <span>Total</span>
+                    <span>Total (IVA incl.)</span>
                     <span>{formatPrice(total)}</span>
                   </div>
+                  <p className="text-[10px] text-slate-500 text-center">
+                    Empresas con NIF-IVA intracomunitario pueden aplicar inversión del sujeto pasivo
+                  </p>
                 </div>
 
                 {/* Actions */}
