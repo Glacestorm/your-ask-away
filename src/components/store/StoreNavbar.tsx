@@ -103,13 +103,11 @@ const StoreNavbar: React.FC = () => {
                 onClick={openLogin}
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95, y: 1 }}
-                className="relative flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-base tracking-wide bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500 text-white shadow-[0_6px_20px_rgba(34,211,238,0.4)] hover:from-blue-400 hover:via-cyan-400 hover:to-emerald-400 hover:shadow-[0_8px_24px_rgba(34,211,238,0.5)] transition-all duration-300"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-base tracking-wide bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500 text-white shadow-[0_6px_20px_rgba(34,211,238,0.4)] hover:from-blue-400 hover:via-cyan-400 hover:to-emerald-400 hover:shadow-[0_8px_24px_rgba(34,211,238,0.5)] transition-all duration-300"
                 style={{ fontFamily: 'Crimson Pro, serif', letterSpacing: '0.05em' }}
               >
-                <span className="absolute inset-0 rounded-xl animate-ping bg-cyan-400/40" style={{ animationDuration: '1.5s' }} />
-                <span className="absolute inset-0 rounded-xl animate-pulse bg-cyan-400/30" style={{ animationDuration: '2s' }} />
-                <LogIn className="w-5 h-5 relative z-10" />
-                <span className="relative z-10">{t('store.nav.login')}</span>
+                <LogIn className="w-5 h-5" />
+                <span>{t('store.nav.login')}</span>
               </motion.button>
 
               {/* Register Button */}
@@ -117,13 +115,11 @@ const StoreNavbar: React.FC = () => {
                 onClick={openRegister}
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95, y: 1 }}
-                className="relative flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-base tracking-wide bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500 text-white shadow-[0_6px_20px_rgba(34,211,238,0.4)] hover:from-blue-400 hover:via-cyan-400 hover:to-emerald-400 hover:shadow-[0_8px_24px_rgba(34,211,238,0.5)] transition-all duration-300"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-base tracking-wide bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500 text-white shadow-[0_6px_20px_rgba(34,211,238,0.4)] hover:from-blue-400 hover:via-cyan-400 hover:to-emerald-400 hover:shadow-[0_8px_24px_rgba(34,211,238,0.5)] transition-all duration-300"
                 style={{ fontFamily: 'Crimson Pro, serif', letterSpacing: '0.05em' }}
               >
-                <span className="absolute inset-0 rounded-xl animate-ping bg-cyan-400/40" style={{ animationDuration: '1.5s' }} />
-                <span className="absolute inset-0 rounded-xl animate-pulse bg-cyan-400/30" style={{ animationDuration: '2s' }} />
-                <UserPlus className="w-5 h-5 relative z-10" />
-                <span className="relative z-10">{t('store.nav.register')}</span>
+                <UserPlus className="w-5 h-5" />
+                <span>{t('store.nav.register')}</span>
               </motion.button>
 
               {/* Cart Button */}
