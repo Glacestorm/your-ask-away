@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import brainLogo from "@/assets/brain-logo.png";
+import brainLogo from "@/assets/obelixia-brain.png";
 
 interface ObelixiaLogoProps {
   size?: "sm" | "md" | "lg" | "xl" | "hero";
