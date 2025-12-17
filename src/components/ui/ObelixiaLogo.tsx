@@ -5,6 +5,7 @@ interface ObelixiaLogoProps {
   variant?: "full" | "icon" | "text";
   animated?: boolean;
   className?: string;
+  dark?: boolean;
 }
 
 /**
@@ -15,7 +16,8 @@ export function ObelixiaLogo({
   size = "md", 
   variant = "full",
   animated = false,
-  className 
+  className,
+  dark = true
 }: ObelixiaLogoProps) {
   const sizeClasses = {
     sm: { container: "h-8", text: "text-xl", icon: "w-6 h-6" },
@@ -27,8 +29,10 @@ export function ObelixiaLogo({
 
   const currentSize = sizeClasses[size];
 
-  // Specular gradient for luxury effect
-  const specularGradient = "bg-gradient-to-r from-emerald-400 via-cyan-300 to-emerald-500";
+  // Specular gradient for luxury effect - adapts to dark/light mode
+  const specularGradient = dark 
+    ? "bg-gradient-to-r from-emerald-400 via-cyan-300 to-emerald-500"
+    : "bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-600";
   const specularText = "bg-clip-text text-transparent";
   
   // Infinity Symbol SVG - Custom designed for brand

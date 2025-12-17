@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, Mail, Phone, MapPin, Linkedin, Twitter, Github } from 'lucide-react';
+import { Mail, Phone, MapPin, Linkedin, Twitter, Github } from 'lucide-react';
+import { ObelixiaLogo } from '@/components/ui/ObelixiaLogo';
 
 const StoreFooter: React.FC = () => {
   const currentYear = new Date().getFullYear();
@@ -36,13 +37,10 @@ const StoreFooter: React.FC = () => {
     <footer className="bg-slate-950 border-t border-slate-800">
       <div className="container mx-auto px-4 py-16">
         <div className="grid md:grid-cols-2 lg:grid-cols-6 gap-8 mb-12">
-          {/* Brand */}
+          {/* Luxury Brand */}
           <div className="lg:col-span-2">
-            <Link to="/store" className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
-                <Sparkles className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-xl font-bold text-white">ObelixIA</span>
+            <Link to="/store" className="inline-block mb-4">
+              <ObelixiaLogo size="md" variant="full" animated={false} dark />
             </Link>
             <p className="text-slate-400 text-sm mb-6 max-w-xs">
               Plataforma modular de gestión empresarial con IA integrada para empresas que buscan la excelencia.

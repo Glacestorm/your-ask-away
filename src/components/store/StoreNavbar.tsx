@@ -1,10 +1,11 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShoppingCart, Menu, X, Sparkles } from 'lucide-react';
+import { ShoppingCart, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/contexts/CartContext';
+import { ObelixiaLogo } from '@/components/ui/ObelixiaLogo';
 
 const StoreNavbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -43,15 +44,10 @@ const StoreNavbar: React.FC = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/store" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <span className="text-xl font-bold text-white">ObelixIA</span>
-              <span className="text-xs text-emerald-400 block -mt-1">Store</span>
-            </div>
+          {/* Luxury Logo */}
+          <Link to="/store" className="flex items-center gap-1">
+            <ObelixiaLogo size="sm" variant="full" animated={false} dark />
+            <span className="text-xs text-emerald-400 ml-1">Store</span>
           </Link>
 
           {/* Desktop Navigation */}

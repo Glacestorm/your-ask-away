@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Play, Star, Shield, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { ObelixiaLogo } from '@/components/ui/ObelixiaLogo';
 
 const HeroSection: React.FC = () => {
   return (
@@ -42,11 +43,21 @@ const HeroSection: React.FC = () => {
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-5xl mx-auto text-center">
+          {/* Hero Logo */}
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.8 }}
+            className="mb-8 flex justify-center"
+          >
+            <ObelixiaLogo size="hero" variant="full" animated dark />
+          </motion.div>
+          
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
           >
             <Badge className="mb-6 px-4 py-2 bg-emerald-500/20 text-emerald-300 border-emerald-500/30 backdrop-blur">
               <Star className="w-4 h-4 mr-2 fill-emerald-400 text-emerald-400" />
