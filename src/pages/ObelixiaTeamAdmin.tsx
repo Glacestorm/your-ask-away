@@ -41,8 +41,11 @@ const ObelixiaTeamAdmin: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-[#0a0a0f] p-6">
+      {/* Background gradient overlay */}
+      <div className="fixed inset-0 bg-gradient-to-br from-blue-950/20 via-transparent to-emerald-950/20 pointer-events-none" />
+      
+      <div className="relative max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
@@ -50,11 +53,15 @@ const ObelixiaTeamAdmin: React.FC = () => {
           className="flex items-center justify-between"
         >
           <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-              <Shield className="w-8 h-8 text-primary" />
-              ObelixIA Team Admin
+            <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-emerald-500">
+                <Shield className="w-6 h-6 text-white" />
+              </div>
+              <span className="bg-gradient-to-r from-blue-400 via-emerald-400 to-blue-400 bg-clip-text text-transparent">
+                ObelixIA Team Admin
+              </span>
             </h1>
-            <p className="text-muted-foreground mt-1">
+            <p className="text-slate-400 mt-1">
               Gestión interna de presupuestos, facturas, precios, documentación y configuración
             </p>
           </div>
@@ -69,12 +76,12 @@ const ObelixiaTeamAdmin: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card className="bg-card border-border hover:border-primary/50 transition-colors">
+              <Card className="bg-slate-900/80 border-slate-700/50 hover:border-emerald-500/50 transition-all backdrop-blur-sm">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-muted-foreground">{stat.label}</p>
-                      <p className="text-2xl font-bold text-card-foreground mt-1">{stat.value}</p>
+                      <p className="text-sm text-slate-400">{stat.label}</p>
+                      <p className="text-2xl font-bold text-white mt-1">{stat.value}</p>
                     </div>
                     <stat.icon className={`w-10 h-10 ${stat.color} opacity-80`} />
                   </div>
@@ -85,9 +92,9 @@ const ObelixiaTeamAdmin: React.FC = () => {
         </div>
 
         {/* Main Tabs */}
-        <Card className="bg-card border-border">
+        <Card className="bg-slate-900/80 border-slate-700/50 backdrop-blur-sm">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <CardHeader className="pb-0">
+            <CardHeader className="pb-0 border-b border-slate-700/50">
               <TabsList className="grid grid-cols-4 lg:grid-cols-8 w-full gap-1">
                 <TabsTrigger 
                   value="quotes" 
