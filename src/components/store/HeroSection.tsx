@@ -54,7 +54,7 @@ const HeroSection: React.FC = () => {
               initial={{ opacity: 0, y: 20, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ duration: 0.8 }}
-              className="mb-8 flex justify-center"
+              className="mb-4 flex justify-center"
             >
               <ObelixiaLogo size="hero" variant="full" animated dark />
             </motion.div>
