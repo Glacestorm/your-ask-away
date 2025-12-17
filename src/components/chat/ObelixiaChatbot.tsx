@@ -13,105 +13,217 @@ interface Message {
   timestamp: Date;
 }
 
-// Knowledge base about ObelixIA
+// Complete knowledge base about ObelixIA system capabilities
 const OBELIXIA_KNOWLEDGE = {
-  product: {
-    name: "ObelixIA",
-    description: "CRM Bancario Inteligente - An intelligent banking CRM platform for portfolio management",
-    price: "880,000€ perpetual enterprise license with full code ownership",
-    technology: "Built on React, Vite, TypeScript, Tailwind CSS, and Supabase",
+  description: "CRM Bancario Inteligente para gestión de carteras comerciales en entidades financieras",
+  
+  modules: {
+    core: [
+      "Dashboard comercial con KPIs en tiempo real",
+      "Mapa interactivo de empresas con clustering y filtros avanzados",
+      "Gestión completa de visitas comerciales con hojas de visita",
+      "Sistema de objetivos y seguimiento de metas",
+      "Gestión de contactos y relaciones empresariales",
+    ],
+    financial: [
+      "Análisis de estados financieros (Balance, PyG, Flujo de Caja)",
+      "Cálculo automático de ratios sectoriales",
+      "Z-Score (Altman Original, Services, Zmijewski) por sector",
+      "Probabilidad de default y riesgo crediticio",
+      "Sistema RAG para consultas financieras con IA",
+    ],
+    compliance: [
+      "Dashboard DORA/NIS2 completo",
+      "Gestión de incidentes de seguridad",
+      "Tests de estrés automatizados (7 escenarios)",
+      "Sistema de auditoría por sectores",
+      "Generación automática de informes para auditores",
+      "ISO 27001, GDPR, Basel III/IV, MiFID II, APDA",
+    ],
+    ai: [
+      "Asistente interno con voz para gestores",
+      "Generación automática de planes de acción",
+      "Parsing inteligente de PDFs financieros",
+      "Análisis predictivo y recomendaciones",
+      "Auto-remediación de problemas del sistema",
+      "Sugerencias de bundles CNAE mediante IA",
+    ],
+    admin: [
+      "Gestión de usuarios y roles (superadmin, director, gestor)",
+      "Configuración de alertas y notificaciones",
+      "Panel de salud del sistema con diagnósticos",
+      "Gestión de productos y conceptos bancarios",
+      "Importación masiva de datos desde Excel",
+    ],
   },
-  features: [
-    "Multi-CNAE sector support with automatic module generation",
-    "AI-powered financial analysis and predictions",
-    "Intelligent visit management and route planning",
-    "Real-time company portfolio visualization with maps",
-    "DORA/NIS2/ISO27001 compliance management",
-    "Multi-language support (EN, ES, CA, FR)",
-    "Holding Dashboard 360° for multi-sector enterprises",
-    "Automated auditor reporting system",
-    "PSD3-compliant strong customer authentication",
-    "Voice-enabled AI assistant for managers",
-  ],
-  compliance: [
-    "ISO 27001", "GDPR", "DORA", "NIS2", "PSD2/PSD3", 
-    "eIDAS", "Basel III/IV", "MiFID II", "APDA (Andorra)"
-  ],
-  deployment: ["SaaS (Cloud)", "On-Premise", "Hybrid"],
+  
+  roles: {
+    superadmin: "Acceso total al sistema, configuración y administración",
+    director_comercial: "Vista global de todos los datos, gestión de equipos",
+    director_oficina: "Vista de su oficina asignada y sus gestores",
+    responsable_comercial: "Gestión de equipos comerciales",
+    gestor: "Gestión de su cartera de empresas asignadas",
+  },
+  
   sectors: [
-    "Banking & Finance", "Healthcare", "Retail", "Industry",
-    "Construction", "Hospitality", "Professional Services"
+    "Banca y Finanzas", "Sanidad", "Retail", "Industria",
+    "Construcción", "Hostelería", "Servicios Profesionales",
+    "Agricultura", "Transporte y Logística", "Tecnología"
   ],
+  
+  deployment: {
+    saas: "Despliegue en la nube, sin infraestructura propia",
+    onpremise: "Instalación local para máximo control y seguridad",
+    hybrid: "Combinación de ambos modelos según necesidades",
+  },
+  
+  technology: {
+    frontend: "React 19, TypeScript, Tailwind CSS, Shadcn/ui, Framer Motion",
+    backend: "Supabase (PostgreSQL + Edge Functions)",
+    maps: "MapLibre GL, Mapbox con soporte 3D",
+    ai: "Integración con Gemini AI y Lovable AI Gateway",
+    security: "WebAuthn/Passkeys, RLS, AES-256-GCM, MFA",
+  },
+  
+  security: [
+    "Autenticación multifactor con WebAuthn/Passkeys",
+    "Biometría comportamental (patrones de tecleo/mouse)",
+    "Row Level Security en todas las tablas",
+    "Cifrado AES-256-GCM para datos sensibles",
+    "Detección de fraude contextual AML",
+    "Logs de auditoría completos e inmutables",
+    "Headers de seguridad HTTP estrictos (HSTS, CSP)",
+  ],
+  
+  languages: ["Español", "Inglés", "Catalán", "Francés"],
+  
+  contact: {
+    name: "Jaime Fernández García",
+    role: "Co-founder & Commercial Representative",
+    email: "jfernandez@obelixia.com",
+    phone: "+34 606 770 033",
+    location: "León, España",
+  },
 };
 
 function generateResponse(question: string): string {
-  const q = question.toLowerCase();
+  const q = question.toLowerCase().trim();
   
   // Greetings
-  if (q.match(/^(hola|hello|hi|hey|buenos|buenas)/)) {
-    return "¡Hola! 👋 Soy el asistente virtual de ObelixIA. ¿En qué puedo ayudarte? Puedo responder preguntas sobre nuestras funcionalidades, precios, compliance, sectores soportados y más.";
+  if (q.match(/^(hola|hello|hi|hey|buenos|buenas|saludos)/)) {
+    return "¡Hola! 👋 Soy el asistente de ObelixIA. Estoy aquí para ayudarte a conocer nuestra plataforma. ¿Qué te gustaría saber?";
   }
   
-  // Price questions
-  if (q.includes('precio') || q.includes('cuesta') || q.includes('coste') || q.includes('price') || q.includes('cost')) {
-    return `💰 **Precio de ObelixIA**\n\nLa licencia empresarial perpetua de ObelixIA tiene un precio de **${OBELIXIA_KNOWLEDGE.product.price}**.\n\nEsto incluye:\n• Propiedad completa del código fuente\n• 195+ componentes\n• 72 Edge Functions\n• 48+ tablas de base de datos\n• Seguridad de grado bancario\n• 35+ módulos funcionales\n\n¿Te gustaría saber más sobre lo que incluye?`;
+  // Price questions - redirect to demo/visit
+  if (q.includes('precio') || q.includes('cuesta') || q.includes('coste') || q.includes('price') || q.includes('cost') || q.includes('tarifa') || q.includes('licencia')) {
+    return `📅 **Información personalizada**\n\nPara ofrecerte la mejor propuesta adaptada a tus necesidades, te invitamos a:\n\n• **Demo online**: Agenda una demostración personalizada\n• **Visita presencial**: Nuestro equipo puede visitarte\n\n**Contacto directo:**\n${OBELIXIA_KNOWLEDGE.contact.name}\n📧 ${OBELIXIA_KNOWLEDGE.contact.email}\n📞 ${OBELIXIA_KNOWLEDGE.contact.phone}\n\n¿Te gustaría que te contactemos para coordinar una demo?`;
   }
   
-  // Features questions
-  if (q.includes('función') || q.includes('característica') || q.includes('feature') || q.includes('puede hacer') || q.includes('qué hace')) {
-    const features = OBELIXIA_KNOWLEDGE.features.slice(0, 5).map(f => `• ${f}`).join('\n');
-    return `✨ **Funcionalidades principales de ObelixIA**\n\n${features}\n\n...y muchas más.\n\n¿Te interesa conocer alguna funcionalidad en detalle?`;
+  // Features/functionality questions
+  if (q.includes('función') || q.includes('característica') || q.includes('feature') || q.includes('puede hacer') || q.includes('qué hace') || q.includes('capacidad')) {
+    const core = OBELIXIA_KNOWLEDGE.modules.core.slice(0, 3).map(f => `• ${f}`).join('\n');
+    const financial = OBELIXIA_KNOWLEDGE.modules.financial.slice(0, 2).map(f => `• ${f}`).join('\n');
+    return `✨ **Funcionalidades de ObelixIA**\n\n**Gestión Comercial:**\n${core}\n\n**Análisis Financiero:**\n${financial}\n\nTambién incluye módulos de compliance, IA y administración.\n\n¿Quieres que te explique alguna funcionalidad en detalle o prefieres verlo en una demo?`;
+  }
+  
+  // Financial analysis
+  if (q.includes('financier') || q.includes('balance') || q.includes('ratio') || q.includes('z-score') || q.includes('contab') || q.includes('análisis')) {
+    const features = OBELIXIA_KNOWLEDGE.modules.financial.map(f => `• ${f}`).join('\n');
+    return `📊 **Análisis Financiero**\n\n${features}\n\nCada empresa se analiza con ratios específicos de su sector CNAE.\n\n¿Te gustaría ver cómo funciona en una demo personalizada?`;
   }
   
   // Compliance questions
-  if (q.includes('compliance') || q.includes('normativa') || q.includes('regulación') || q.includes('gdpr') || q.includes('dora') || q.includes('iso')) {
-    const compliance = OBELIXIA_KNOWLEDGE.compliance.join(', ');
-    return `🛡️ **Compliance y Normativas**\n\nObelixIA cumple con las siguientes regulaciones:\n${compliance}\n\nNuestro sistema incluye:\n• Dashboard de cumplimiento DORA/NIS2\n• Generación automática de informes para auditores\n• Gestión de incidentes de seguridad\n• Tests de estrés automatizados\n\n¿Necesitas más información sobre alguna regulación específica?`;
+  if (q.includes('compliance') || q.includes('normativa') || q.includes('regulación') || q.includes('gdpr') || q.includes('dora') || q.includes('iso') || q.includes('audit')) {
+    const features = OBELIXIA_KNOWLEDGE.modules.compliance.map(f => `• ${f}`).join('\n');
+    return `🛡️ **Compliance y Normativas**\n\n${features}\n\nGeneramos automáticamente informes para auditores externos.\n\n¿Quieres coordinar una visita para ver el módulo de compliance en detalle?`;
   }
   
-  // Sectors
+  // AI capabilities
+  if (q.includes('ia') || q.includes('inteligencia artificial') || q.includes('ai') || q.includes('artificial') || q.includes('asistente')) {
+    const features = OBELIXIA_KNOWLEDGE.modules.ai.map(f => `• ${f}`).join('\n');
+    return `🤖 **Capacidades de IA**\n\n${features}\n\nLa IA está integrada en toda la plataforma para maximizar la productividad.\n\n¿Te gustaría una demo para ver la IA en acción?`;
+  }
+  
+  // Sectors/CNAE
   if (q.includes('sector') || q.includes('industria') || q.includes('cnae')) {
     const sectors = OBELIXIA_KNOWLEDGE.sectors.join(', ');
-    return `🏢 **Sectores soportados**\n\nObelixIA soporta múltiples sectores:\n${sectors}\n\n**Sistema Multi-CNAE único:**\n• Una empresa puede instalar múltiples sectores simultáneamente\n• Descuentos automáticos por volumen (5-18%)\n• Bundles sectoriales con descuentos del 20-30%\n• Contabilidad consolidada multi-sector\n\n¿Te interesa algún sector en particular?`;
+    return `🏢 **Sectores Soportados**\n\n${sectors}\n\n**Sistema Multi-CNAE:**\n• Una empresa puede gestionar múltiples sectores\n• Contabilidad adaptada automáticamente al sector\n• Ratios y Z-Score específicos por industria\n\n¿Trabajas con algún sector específico? Podemos mostrarte cómo se adapta.`;
   }
   
   // Deployment
-  if (q.includes('deploy') || q.includes('instalación') || q.includes('on-premise') || q.includes('cloud') || q.includes('saas')) {
-    return `☁️ **Opciones de despliegue**\n\nObelixIA ofrece tres modalidades:\n\n1. **SaaS (Cloud)**: Despliegue rápido sin infraestructura propia\n2. **On-Premise**: Instalación local para máximo control\n3. **Hybrid**: Combinación de ambos modelos\n\nRecomendamos On-Premise o Hybrid para el sector bancario por requisitos regulatorios (DORA).\n\n¿Cuál modelo te interesa?`;
+  if (q.includes('deploy') || q.includes('instalación') || q.includes('on-premise') || q.includes('cloud') || q.includes('saas') || q.includes('despliegue')) {
+    return `☁️ **Opciones de Despliegue**\n\n• **SaaS**: ${OBELIXIA_KNOWLEDGE.deployment.saas}\n• **On-Premise**: ${OBELIXIA_KNOWLEDGE.deployment.onpremise}\n• **Hybrid**: ${OBELIXIA_KNOWLEDGE.deployment.hybrid}\n\nRecomendamos On-Premise o Hybrid para entidades bancarias por requisitos regulatorios.\n\n¿Quieres que te expliquemos cuál es mejor para tu caso en una visita?`;
   }
   
   // Technology
-  if (q.includes('tecnología') || q.includes('tech') || q.includes('stack') || q.includes('react') || q.includes('supabase')) {
-    return `🔧 **Stack Tecnológico**\n\nObelixIA está construido con tecnologías modernas:\n\n• **Frontend**: React 19, TypeScript, Tailwind CSS\n• **Backend**: Supabase (PostgreSQL + Edge Functions)\n• **UI**: Shadcn/ui, Framer Motion\n• **Mapas**: MapLibre GL, Mapbox\n• **IA**: Integración con Gemini AI\n\nArquitectura escalable para 500-1000+ usuarios simultáneos.`;
-  }
-  
-  // AI features
-  if (q.includes('ia') || q.includes('inteligencia artificial') || q.includes('ai') || q.includes('artificial')) {
-    return `🤖 **Capacidades de IA**\n\nObelixIA integra inteligencia artificial en múltiples áreas:\n\n• Asistente virtual con voz para gestores\n• Análisis financiero predictivo\n• Generación automática de planes de acción\n• Detección de anomalías comportamentales\n• Auto-remediación de problemas del sistema\n• Parsing inteligente de PDFs financieros\n• Sugerencias de bundles CNAE mediante IA\n\n¿Quieres profundizar en alguna de estas capacidades?`;
+  if (q.includes('tecnología') || q.includes('tech') || q.includes('stack') || q.includes('react') || q.includes('supabase') || q.includes('desarrolla')) {
+    return `🔧 **Tecnología**\n\n• **Frontend**: ${OBELIXIA_KNOWLEDGE.technology.frontend}\n• **Backend**: ${OBELIXIA_KNOWLEDGE.technology.backend}\n• **Mapas**: ${OBELIXIA_KNOWLEDGE.technology.maps}\n• **IA**: ${OBELIXIA_KNOWLEDGE.technology.ai}\n\nArquitectura escalable para 500-1000+ usuarios simultáneos.`;
   }
   
   // Security
-  if (q.includes('seguridad') || q.includes('security') || q.includes('autenticación') || q.includes('mfa')) {
-    return `🔒 **Seguridad de Grado Bancario**\n\nObelixIA implementa múltiples capas de seguridad:\n\n• Autenticación multifactor (MFA) con WebAuthn/Passkeys\n• Biometría comportamental (patrones de tecleo/mouse)\n• Row Level Security (RLS) en toda la base de datos\n• Cifrado AES-256-GCM para datos sensibles\n• Detección de fraude contextual AML\n• Logs de auditoría completos\n• Headers de seguridad HTTP estrictos\n\nCumplimos con PSD3/SCA para autenticación fuerte.`;
+  if (q.includes('seguridad') || q.includes('security') || q.includes('autenticación') || q.includes('mfa') || q.includes('protección')) {
+    const security = OBELIXIA_KNOWLEDGE.security.slice(0, 5).map(s => `• ${s}`).join('\n');
+    return `🔒 **Seguridad Bancaria**\n\n${security}\n\nCumplimos con PSD3/SCA para autenticación fuerte.\n\n¿Te gustaría ver los controles de seguridad en una demo?`;
   }
   
   // What is ObelixIA
-  if (q.includes('qué es') || q.includes('what is') || q.includes('obelixia')) {
-    return `🧠 **¿Qué es ObelixIA?**\n\nObelixIA es un **CRM Bancario Inteligente** diseñado para la gestión de carteras comerciales en entidades financieras.\n\n**Valor principal:**\n• Gestión geográfica de empresas con mapas interactivos\n• Sistema de visitas y seguimiento comercial\n• Análisis financiero automático (Z-Score, ratios sectoriales)\n• Cumplimiento normativo automatizado\n• IA integrada para productividad\n\nIdeal para bancos, gestoras y entidades financieras en España, Andorra y Europa.\n\n¿Qué aspecto te gustaría explorar?`;
+  if (q.includes('qué es') || q.includes('what is') || q.match(/^obelixia$/)) {
+    return `🧠 **ObelixIA**\n\n${OBELIXIA_KNOWLEDGE.description}\n\n**Incluye:**\n• Gestión de carteras con mapas interactivos\n• Análisis financiero automatizado\n• Cumplimiento normativo (DORA, ISO27001...)\n• IA integrada para productividad\n\nIdeal para bancos y entidades financieras en España, Andorra y Europa.\n\n¿Quieres conocerlo mejor en una demo personalizada?`;
   }
   
-  // Demo
-  if (q.includes('demo') || q.includes('prueba') || q.includes('trial') || q.includes('probar')) {
-    return `🎮 **Demo de ObelixIA**\n\nPuedes probar ObelixIA con nuestra demo gratuita que incluye:\n\n• 50 empresas de ejemplo\n• 100+ visitas simuladas\n• Estados financieros completos\n• Todas las funcionalidades activas\n• Duración: 2 horas\n\nHaz clic en "Probar Demo Gratuita" en la página de inicio de sesión para comenzar.\n\n¿Necesitas ayuda para iniciar la demo?`;
+  // Demo request
+  if (q.includes('demo') || q.includes('prueba') || q.includes('trial') || q.includes('probar') || q.includes('ver')) {
+    return `🎮 **Demo de ObelixIA**\n\nOfrecemos dos opciones:\n\n**1. Demo Online Gratuita**\nPuedes probar la plataforma con datos de ejemplo haciendo clic en "Probar Demo Gratuita".\n\n**2. Demo Personalizada**\nNuestro equipo te muestra la plataforma adaptada a tu caso.\n\n**Contacto:**\n${OBELIXIA_KNOWLEDGE.contact.name}\n📧 ${OBELIXIA_KNOWLEDGE.contact.email}\n📞 ${OBELIXIA_KNOWLEDGE.contact.phone}\n\n¿Prefieres la demo online o una sesión personalizada?`;
   }
   
   // Contact
-  if (q.includes('contacto') || q.includes('contact') || q.includes('hablar') || q.includes('llamar')) {
-    return `📞 **Contacto**\n\nPuedes contactarnos a través de:\n\n• Visita nuestra página /contact\n• Email: disponible en la sección de contacto\n• También puedes solicitar una demo personalizada\n\n¿Prefieres que te contactemos nosotros?`;
+  if (q.includes('contacto') || q.includes('contact') || q.includes('hablar') || q.includes('llamar') || q.includes('email') || q.includes('teléfono')) {
+    return `📞 **Contacto**\n\n**${OBELIXIA_KNOWLEDGE.contact.name}**\n${OBELIXIA_KNOWLEDGE.contact.role}\n\n📧 ${OBELIXIA_KNOWLEDGE.contact.email}\n📞 ${OBELIXIA_KNOWLEDGE.contact.phone}\n📍 ${OBELIXIA_KNOWLEDGE.contact.location}\n\nPodemos coordinar una visita presencial o una demo online según tu preferencia.`;
   }
   
-  // Default response
-  return `Gracias por tu pregunta. Puedo ayudarte con información sobre:\n\n• 💰 **Precios** - Licenciamiento y costes\n• ✨ **Funcionalidades** - Qué puede hacer ObelixIA\n• 🛡️ **Compliance** - Normativas y regulaciones\n• 🏢 **Sectores** - Industrias soportadas\n• ☁️ **Despliegue** - Cloud, On-Premise, Hybrid\n• 🤖 **IA** - Capacidades de inteligencia artificial\n• 🔒 **Seguridad** - Medidas de protección\n\n¿Sobre qué tema te gustaría saber más?`;
+  // Visit/meeting
+  if (q.includes('visita') || q.includes('reunión') || q.includes('meeting') || q.includes('cita') || q.includes('presencial')) {
+    return `📅 **Visita Presencial**\n\nNuestro equipo comercial puede visitarte para:\n\n• Presentación personalizada de la plataforma\n• Análisis de tus necesidades específicas\n• Demostración con casos de tu sector\n\n**Contacto:**\n${OBELIXIA_KNOWLEDGE.contact.name}\n📧 ${OBELIXIA_KNOWLEDGE.contact.email}\n📞 ${OBELIXIA_KNOWLEDGE.contact.phone}\n\n¿En qué ciudad te encuentras?`;
+  }
+  
+  // Roles/users
+  if (q.includes('rol') || q.includes('usuario') || q.includes('permiso') || q.includes('acceso') || q.includes('admin')) {
+    const roles = Object.entries(OBELIXIA_KNOWLEDGE.roles).map(([role, desc]) => `• **${role}**: ${desc}`).join('\n');
+    return `👥 **Roles de Usuario**\n\n${roles}\n\nCada rol tiene acceso controlado según sus responsabilidades.`;
+  }
+  
+  // Languages
+  if (q.includes('idioma') || q.includes('lenguaje') || q.includes('language') || q.includes('traducción')) {
+    return `🌍 **Idiomas**\n\nObelixIA está disponible en:\n${OBELIXIA_KNOWLEDGE.languages.join(', ')}\n\nToda la interfaz se traduce automáticamente al seleccionar el idioma.`;
+  }
+  
+  // Maps
+  if (q.includes('mapa') || q.includes('map') || q.includes('geográf') || q.includes('ubicación') || q.includes('ruta')) {
+    return `🗺️ **Mapas y Geolocalización**\n\n• Visualización de empresas en mapa interactivo\n• Clustering automático por densidad\n• Planificación de rutas de visita\n• Vista 3D de edificios\n• Filtros por sector, estado, gestor\n• Geocodificación automática de direcciones\n\n¿Te gustaría ver el sistema de mapas en una demo?`;
+  }
+  
+  // Visits
+  if (q.includes('visita comercial') || q.includes('hoja de visita') || q.includes('seguimiento')) {
+    return `📋 **Gestión de Visitas**\n\n• Registro completo de visitas comerciales\n• Hojas de visita con análisis financiero\n• Planificación de rutas optimizadas\n• Calendario integrado con recordatorios\n• Historial y seguimiento de cada empresa\n\nEl sistema facilita el trabajo diario del gestor comercial.`;
+  }
+  
+  // Goals/objectives
+  if (q.includes('objetivo') || q.includes('meta') || q.includes('kpi') || q.includes('goal')) {
+    return `🎯 **Sistema de Objetivos**\n\n• Definición de metas por gestor y oficina\n• Seguimiento en tiempo real del progreso\n• KPIs personalizables\n• Alertas automáticas de desviaciones\n• Comparativas entre equipos\n\nLos directores asignan objetivos y los gestores ven su progreso.`;
+  }
+  
+  // Thanks
+  if (q.includes('gracias') || q.includes('thank')) {
+    return "¡De nada! 😊 Si tienes más preguntas o quieres coordinar una demo, aquí estoy. ¿Hay algo más en lo que pueda ayudarte?";
+  }
+  
+  // Goodbye
+  if (q.includes('adiós') || q.includes('adios') || q.includes('bye') || q.includes('hasta luego')) {
+    return "¡Hasta pronto! 👋 Si necesitas más información, no dudes en escribirme o contactar con nuestro equipo para una demo personalizada.";
+  }
+  
+  // Default response - suggest demo
+  return `Gracias por tu interés. Puedo ayudarte con:\n\n• ✨ **Funcionalidades** - Qué puede hacer ObelixIA\n• 📊 **Análisis financiero** - Ratios y Z-Score\n• 🛡️ **Compliance** - DORA, ISO27001, GDPR\n• 🏢 **Sectores** - Multi-CNAE\n• 🤖 **IA** - Capacidades inteligentes\n• 🔒 **Seguridad** - Controles bancarios\n\n📅 También puedo ayudarte a coordinar una **demo personalizada** o **visita presencial**.\n\n¿Qué te interesa conocer?`;
 }
 
 export function ObelixiaChatbot() {
@@ -120,7 +232,7 @@ export function ObelixiaChatbot() {
     {
       id: '1',
       role: 'assistant',
-      content: '¡Hola! 👋 Soy el asistente virtual de ObelixIA. Pregúntame lo que quieras sobre nuestra plataforma de CRM bancario inteligente.',
+      content: '¡Hola! 👋 Soy el asistente de ObelixIA. Pregúntame sobre la plataforma o coordina una demo personalizada.',
       timestamp: new Date(),
     }
   ]);
@@ -158,7 +270,7 @@ export function ObelixiaChatbot() {
     setIsTyping(true);
 
     // Simulate typing delay
-    await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 700));
+    await new Promise(resolve => setTimeout(resolve, 600 + Math.random() * 400));
 
     const response = generateResponse(userMessage.content);
     
@@ -243,7 +355,7 @@ export function ObelixiaChatbot() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-white">Asistente ObelixIA</h3>
-                    <p className="text-xs text-white/80">Siempre disponible para ayudarte</p>
+                    <p className="text-xs text-white/80">Disponible para ayudarte</p>
                   </div>
                 </div>
               </div>
