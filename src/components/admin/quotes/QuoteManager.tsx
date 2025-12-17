@@ -296,6 +296,32 @@ const QuoteManager: React.FC = () => {
     toast.success('Presupuesto guardado correctamente');
   };
 
+  const deleteQuote = async (quote: Quote) => {
+    if (!confirm(`¿Está seguro de eliminar el presupuesto de ${quote.customer_company || quote.customer_name || quote.customer_email}?`)) return;
+    
+    // Delete items first
+    await supabase
+      .from('customer_quote_items')
+      .delete()
+      .eq('quote_id', quote.id);
+
+    const { error } = await supabase
+      .from('customer_quotes')
+      .delete()
+      .eq('id', quote.id);
+
+    if (error) {
+      toast.error('Error eliminando presupuesto');
+    } else {
+      setQuotes(quotes.filter(q => q.id !== quote.id));
+      if (selectedQuote?.id === quote.id) {
+        setSelectedQuote(null);
+        setQuoteItems([]);
+      }
+      toast.success('Presupuesto eliminado correctamente');
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
       pending: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30',
@@ -472,6 +498,15 @@ const QuoteManager: React.FC = () => {
                     >
                       <Printer className="w-4 h-4 mr-1" />
                       Imprimir
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => deleteQuote(selectedQuote)}
+                      className="border-red-500/50 text-red-600 hover:bg-red-500/10"
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      Eliminar
                     </Button>
                     {selectedQuote.status === 'pending' && (
                       <Button
