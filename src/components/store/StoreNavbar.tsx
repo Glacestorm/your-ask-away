@@ -101,7 +101,7 @@ const StoreNavbar: React.FC = () => {
                 onClick={openLogin}
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95, y: 1 }}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm tracking-wide bg-gradient-to-b from-slate-600 to-slate-700 text-white shadow-[0_4px_16px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-2px_4px_rgba(0,0,0,0.2)] hover:from-slate-500 hover:to-slate-600 hover:shadow-[0_6px_20px_rgba(0,0,0,0.4)] transition-all duration-300"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm tracking-wide bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500 text-white shadow-[0_6px_20px_rgba(34,211,238,0.4),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-2px_4px_rgba(0,0,0,0.2)] hover:from-blue-400 hover:via-cyan-400 hover:to-emerald-400 hover:shadow-[0_8px_24px_rgba(34,211,238,0.5)] transition-all duration-300"
                 style={{ fontFamily: 'Crimson Pro, serif', letterSpacing: '0.05em' }}
               >
                 <LogIn className="w-4 h-4" />
@@ -113,7 +113,7 @@ const StoreNavbar: React.FC = () => {
                 onClick={openRegister}
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95, y: 1 }}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm tracking-wide bg-gradient-to-b from-blue-500 to-blue-700 text-white shadow-[0_6px_20px_rgba(59,130,246,0.4),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-2px_4px_rgba(0,0,0,0.2)] hover:from-blue-400 hover:to-blue-600 hover:shadow-[0_8px_24px_rgba(59,130,246,0.5)] transition-all duration-300"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm tracking-wide bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500 text-white shadow-[0_6px_20px_rgba(34,211,238,0.4),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-2px_4px_rgba(0,0,0,0.2)] hover:from-blue-400 hover:via-cyan-400 hover:to-emerald-400 hover:shadow-[0_8px_24px_rgba(34,211,238,0.5)] transition-all duration-300"
                 style={{ fontFamily: 'Crimson Pro, serif', letterSpacing: '0.05em' }}
               >
                 <UserPlus className="w-4 h-4" />
@@ -198,7 +198,7 @@ const StoreNavbar: React.FC = () => {
                 <motion.button
                   onClick={openLogin}
                   whileTap={{ scale: 0.95 }}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold bg-gradient-to-b from-slate-600 to-slate-700 text-white shadow-lg text-sm"
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500 text-white shadow-lg text-sm"
                   style={{ fontFamily: 'Crimson Pro, serif' }}
                 >
                   <LogIn className="w-4 h-4" />
@@ -207,7 +207,7 @@ const StoreNavbar: React.FC = () => {
                 <motion.button
                   onClick={openRegister}
                   whileTap={{ scale: 0.95 }}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold bg-gradient-to-b from-blue-500 to-blue-700 text-white shadow-lg text-sm"
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-semibold bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500 text-white shadow-lg text-sm"
                   style={{ fontFamily: 'Crimson Pro, serif' }}
                 >
                   <UserPlus className="w-4 h-4" />
