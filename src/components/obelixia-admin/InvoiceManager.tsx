@@ -346,6 +346,25 @@ export const InvoiceManager: React.FC = () => {
     toast.success('Factura guardada correctamente');
   };
 
+  const deleteInvoice = async (invoice: Invoice) => {
+    if (!confirm(`¿Está seguro de eliminar la factura ${invoice.invoice_number}?`)) return;
+    
+    const { error } = await supabase
+      .from('obelixia_invoices')
+      .delete()
+      .eq('id', invoice.id);
+
+    if (error) {
+      toast.error('Error eliminando factura');
+    } else {
+      setInvoices(invoices.filter(inv => inv.id !== invoice.id));
+      if (selectedInvoice?.id === invoice.id) {
+        setSelectedInvoice(null);
+      }
+      toast.success('Factura eliminada correctamente');
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const config: Record<string, { class: string; label: string; icon: any }> = {
       draft: { class: 'bg-slate-500/20 text-slate-300', label: 'Borrador', icon: Edit },
@@ -665,6 +684,15 @@ export const InvoiceManager: React.FC = () => {
                     >
                       <Printer className="w-4 h-4 mr-1" />
                       Imprimir
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => deleteInvoice(selectedInvoice)}
+                      className="border-red-500/50 text-red-400 hover:bg-red-500/10"
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      Eliminar
                     </Button>
                     {selectedInvoice.status === 'draft' && (
                       <Button
