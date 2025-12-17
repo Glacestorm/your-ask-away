@@ -76,7 +76,7 @@ const StoreNavbar: React.FC = () => {
                   whileHover={{ scale: 1.05, y: -2 }}
                   whileTap={{ scale: 0.95, y: 1 }}
                   className={`
-                    relative px-5 py-2.5 rounded-xl font-semibold text-sm tracking-wide
+                    relative px-5 py-2.5 rounded-xl font-semibold text-base tracking-wide
                     transition-all duration-300 ease-out
                     ${activeSection === link.id
                       ? 'bg-gradient-to-b from-emerald-400 to-emerald-600 text-white shadow-[0_6px_20px_rgba(16,185,129,0.4),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-2px_4px_rgba(0,0,0,0.2)]'
@@ -103,10 +103,10 @@ const StoreNavbar: React.FC = () => {
                 onClick={openLogin}
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95, y: 1 }}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm tracking-wide bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500 text-white shadow-[0_6px_20px_rgba(34,211,238,0.4),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-2px_4px_rgba(0,0,0,0.2)] hover:from-blue-400 hover:via-cyan-400 hover:to-emerald-400 hover:shadow-[0_8px_24px_rgba(34,211,238,0.5)] transition-all duration-300"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-base tracking-wide bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500 text-white shadow-[0_6px_20px_rgba(34,211,238,0.4),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-2px_4px_rgba(0,0,0,0.2)] hover:from-blue-400 hover:via-cyan-400 hover:to-emerald-400 hover:shadow-[0_8px_24px_rgba(34,211,238,0.5)] transition-all duration-300"
                 style={{ fontFamily: 'Crimson Pro, serif', letterSpacing: '0.05em' }}
               >
-                <LogIn className="w-4 h-4" />
+                <LogIn className="w-5 h-5" />
                 {t('store.nav.login')}
               </motion.button>
 
@@ -115,10 +115,10 @@ const StoreNavbar: React.FC = () => {
                 onClick={openRegister}
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95, y: 1 }}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm tracking-wide bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500 text-white shadow-[0_6px_20px_rgba(34,211,238,0.4),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-2px_4px_rgba(0,0,0,0.2)] hover:from-blue-400 hover:via-cyan-400 hover:to-emerald-400 hover:shadow-[0_8px_24px_rgba(34,211,238,0.5)] transition-all duration-300"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-base tracking-wide bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500 text-white shadow-[0_6px_20px_rgba(34,211,238,0.4),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-2px_4px_rgba(0,0,0,0.2)] hover:from-blue-400 hover:via-cyan-400 hover:to-emerald-400 hover:shadow-[0_8px_24px_rgba(34,211,238,0.5)] transition-all duration-300"
                 style={{ fontFamily: 'Crimson Pro, serif', letterSpacing: '0.05em' }}
               >
-                <UserPlus className="w-4 h-4" />
+                <UserPlus className="w-5 h-5" />
                 {t('store.nav.register')}
               </motion.button>
 
