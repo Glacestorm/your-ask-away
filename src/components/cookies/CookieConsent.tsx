@@ -85,22 +85,20 @@ const CookieConsent: React.FC = () => {
                     <div className="flex flex-wrap gap-3">
                       <Button 
                         onClick={() => savePreferences(true)}
-                        className="bg-emerald-500 hover:bg-emerald-600 text-white"
+                        className="bg-gradient-to-b from-emerald-400 to-emerald-600 hover:from-emerald-500 hover:to-emerald-700 text-white font-semibold shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 transform hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
                       >
                         <Check className="w-4 h-4 mr-2" />
                         Aceptar todas
                       </Button>
                       <Button 
                         onClick={rejectAll}
-                        variant="outline" 
-                        className="border-slate-700 text-slate-300 hover:bg-slate-800"
+                        className="bg-gradient-to-b from-slate-600 to-slate-800 hover:from-slate-500 hover:to-slate-700 text-white font-semibold border border-slate-500 shadow-lg shadow-slate-900/50 hover:shadow-slate-700/50 transform hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
                       >
                         Rechazar
                       </Button>
                       <Button 
                         onClick={() => setShowSettings(true)}
-                        variant="ghost" 
-                        className="text-slate-400 hover:text-white"
+                        className="bg-gradient-to-b from-slate-700 to-slate-900 hover:from-slate-600 hover:to-slate-800 text-slate-200 hover:text-white font-medium border border-slate-600 shadow-md shadow-slate-900/30 transform hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
                       >
                         <Settings className="w-4 h-4 mr-2" />
                         Configurar
