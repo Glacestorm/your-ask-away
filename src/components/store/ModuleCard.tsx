@@ -124,9 +124,9 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, show
           <div className="flex gap-2">
             <Link to={`/store/modules/${module.module_key}`}>
               <Button 
-                variant="ghost" 
+                variant="outline" 
                 size="sm"
-                className="text-slate-400 hover:text-white"
+                className="border-slate-500 text-slate-200 hover:bg-slate-700 hover:text-white hover:border-slate-400"
               >
                 Detalles
               </Button>
