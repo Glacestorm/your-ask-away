@@ -512,17 +512,9 @@
             </filter>
           </defs>
           
-          <!-- Elegant Greek-style infinity path -->
+          <!-- Closed infinity path for animateMotion -->
           <path id="infinityPath" 
-            d="M20 50 
-               C20 25, 35 15, 55 30 
-               Q70 42, 100 50 
-               Q130 58, 145 70 
-               C165 85, 180 75, 180 50 
-               C180 25, 165 15, 145 30 
-               Q130 42, 100 50 
-               Q70 58, 55 70 
-               C35 85, 20 75, 20 50" 
+            d="M100,50 C100,30 130,15 160,30 C180,40 190,50 190,50 C190,50 180,60 160,70 C130,85 100,70 100,50 C100,30 70,15 40,30 C20,40 10,50 10,50 C10,50 20,60 40,70 C70,85 100,70 100,50 Z" 
             fill="none" 
             stroke="url(#infinityGrad)" 
             stroke-width="8" 
@@ -533,7 +525,7 @@
           
           <!-- Flowing energy along path -->
           <path 
-            d="M20 50 C20 25, 35 15, 55 30 Q70 42, 100 50 Q130 58, 145 70 C165 85, 180 75, 180 50 C180 25, 165 15, 145 30 Q130 42, 100 50 Q70 58, 55 70 C35 85, 20 75, 20 50" 
+            d="M100,50 C100,30 130,15 160,30 C180,40 190,50 190,50 C190,50 180,60 160,70 C130,85 100,70 100,50 C100,30 70,15 40,30 C20,40 10,50 10,50 C10,50 20,60 40,70 C70,85 100,70 100,50 Z" 
             fill="none" 
             stroke="white" 
             stroke-width="4" 
@@ -545,68 +537,49 @@
             <animate attributeName="stroke-dashoffset" values="0;-400" dur="2.5s" repeatCount="indefinite"/>
           </path>
           
-          <!-- Secondary energy trace -->
-          <path 
-            d="M20 50 C20 25, 35 15, 55 30 Q70 42, 100 50 Q130 58, 145 70 C165 85, 180 75, 180 50 C180 25, 165 15, 145 30 Q130 42, 100 50 Q70 58, 55 70 C35 85, 20 75, 20 50" 
-            fill="none" 
-            stroke="rgba(255,255,255,0.6)" 
-            stroke-width="2" 
-            stroke-linecap="round"
-            stroke-dasharray="10 390"
-            filter="url(#sparkleGlow)"
-          >
-            <animate attributeName="stroke-dashoffset" values="-200;-600" dur="2.5s" repeatCount="indefinite"/>
-          </path>
-          
-          <!-- Center energy point -->
-          <circle cx="100" cy="50" r="6" fill="white" filter="url(#sparkleGlow)">
-            <animate attributeName="r" values="4;8;4" dur="2s" repeatCount="indefinite"/>
-            <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>
-          </circle>
-          
           <!-- Synchrotron particles circulating along infinity path -->
           <g id="synchrotron-particles" filter="url(#sparkleGlow)">
             <!-- Particle 1 -->
-            <circle r="5" fill="white">
-              <animateMotion dur="3s" repeatCount="indefinite" rotate="auto">
+            <circle r="5" fill="white" opacity="1">
+              <animateMotion dur="4s" repeatCount="indefinite" calcMode="linear" keyPoints="0;1" keyTimes="0;1">
                 <mpath href="#infinityPath"/>
               </animateMotion>
-              <animate attributeName="r" values="4;6;4" dur="0.5s" repeatCount="indefinite"/>
+              <animate attributeName="r" values="4;7;4" dur="0.8s" repeatCount="indefinite"/>
             </circle>
-            <!-- Particle 2 - offset -->
-            <circle r="5" fill="white">
-              <animateMotion dur="3s" repeatCount="indefinite" rotate="auto" begin="-0.5s">
+            <!-- Particle 2 -->
+            <circle r="5" fill="white" opacity="1">
+              <animateMotion dur="4s" repeatCount="indefinite" calcMode="linear" keyPoints="0.167;1;0.167" keyTimes="0;0.833;1">
                 <mpath href="#infinityPath"/>
               </animateMotion>
-              <animate attributeName="r" values="4;6;4" dur="0.5s" repeatCount="indefinite" begin="0.1s"/>
+              <animate attributeName="r" values="4;7;4" dur="0.8s" repeatCount="indefinite" begin="0.15s"/>
             </circle>
-            <!-- Particle 3 - offset -->
-            <circle r="5" fill="white">
-              <animateMotion dur="3s" repeatCount="indefinite" rotate="auto" begin="-1s">
+            <!-- Particle 3 -->
+            <circle r="5" fill="white" opacity="1">
+              <animateMotion dur="4s" repeatCount="indefinite" calcMode="linear" keyPoints="0.333;1;0.333" keyTimes="0;0.667;1">
                 <mpath href="#infinityPath"/>
               </animateMotion>
-              <animate attributeName="r" values="4;6;4" dur="0.5s" repeatCount="indefinite" begin="0.2s"/>
+              <animate attributeName="r" values="4;7;4" dur="0.8s" repeatCount="indefinite" begin="0.3s"/>
             </circle>
-            <!-- Particle 4 - offset -->
-            <circle r="5" fill="white">
-              <animateMotion dur="3s" repeatCount="indefinite" rotate="auto" begin="-1.5s">
+            <!-- Particle 4 -->
+            <circle r="5" fill="white" opacity="1">
+              <animateMotion dur="4s" repeatCount="indefinite" calcMode="linear" keyPoints="0.5;1;0.5" keyTimes="0;0.5;1">
                 <mpath href="#infinityPath"/>
               </animateMotion>
-              <animate attributeName="r" values="4;6;4" dur="0.5s" repeatCount="indefinite" begin="0.3s"/>
+              <animate attributeName="r" values="4;7;4" dur="0.8s" repeatCount="indefinite" begin="0.45s"/>
             </circle>
-            <!-- Particle 5 - offset -->
-            <circle r="5" fill="white">
-              <animateMotion dur="3s" repeatCount="indefinite" rotate="auto" begin="-2s">
+            <!-- Particle 5 -->
+            <circle r="5" fill="white" opacity="1">
+              <animateMotion dur="4s" repeatCount="indefinite" calcMode="linear" keyPoints="0.667;1;0.667" keyTimes="0;0.333;1">
                 <mpath href="#infinityPath"/>
               </animateMotion>
-              <animate attributeName="r" values="4;6;4" dur="0.5s" repeatCount="indefinite" begin="0.4s"/>
+              <animate attributeName="r" values="4;7;4" dur="0.8s" repeatCount="indefinite" begin="0.6s"/>
             </circle>
-            <!-- Particle 6 - offset -->
-            <circle r="5" fill="white">
-              <animateMotion dur="3s" repeatCount="indefinite" rotate="auto" begin="-2.5s">
+            <!-- Particle 6 -->
+            <circle r="5" fill="white" opacity="1">
+              <animateMotion dur="4s" repeatCount="indefinite" calcMode="linear" keyPoints="0.833;1;0.833" keyTimes="0;0.167;1">
                 <mpath href="#infinityPath"/>
               </animateMotion>
-              <animate attributeName="r" values="4;6;4" dur="0.5s" repeatCount="indefinite" begin="0.5s"/>
+              <animate attributeName="r" values="4;7;4" dur="0.8s" repeatCount="indefinite" begin="0.75s"/>
             </circle>
           </g>
         </svg>
