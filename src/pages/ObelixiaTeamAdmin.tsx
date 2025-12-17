@@ -20,6 +20,7 @@ import { CompetitorGapAnalysisGenerator } from '@/components/reports/CompetitorG
 import { AppDetailedStatusGenerator } from '@/components/reports/AppDetailedStatusGenerator';
 import { CodebaseIndexGenerator } from '@/components/reports/CodebaseIndexGenerator';
 import { ApplicationStateAnalyzer } from '@/components/admin/ApplicationStateAnalyzer';
+import { AuditImprovementsTracker } from '@/components/admin/AuditImprovementsTracker';
 import { AppStoreManager } from '@/components/admin/appstore/AppStoreManager';
 import { CNAEPricingAdmin } from '@/components/cnae/CNAEPricingAdmin';
 import { CNAEDashboard } from '@/components/cnae/CNAEDashboard';
@@ -267,7 +268,7 @@ const ObelixiaTeamAdmin: React.FC = () => {
                     </CardContent>
                   </Card>
                   <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-amber-500/10 md:col-span-2"
+                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-amber-500/10"
                     onClick={() => setActiveTab('analyzer')}
                   >
                     <CardContent className="p-4 flex items-center gap-4">
@@ -277,6 +278,20 @@ const ObelixiaTeamAdmin: React.FC = () => {
                       <div>
                         <h4 className="font-semibold text-amber-400">Analizador de Aplicación</h4>
                         <p className="text-sm text-muted-foreground">Análisis completo del estado, mejoras y cumplimiento</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card 
+                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-cyan-500/30 bg-gradient-to-br from-cyan-500/5 to-cyan-500/10"
+                    onClick={() => setActiveTab('audit-improvements')}
+                  >
+                    <CardContent className="p-4 flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+                        <BarChart3 className="h-6 w-6 text-cyan-500" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-cyan-400">Mejoras Auto-Diagnóstico</h4>
+                        <p className="text-sm text-muted-foreground">Seguimiento de mejoras detectadas con % cumplimiento</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -301,6 +316,10 @@ const ObelixiaTeamAdmin: React.FC = () => {
 
               <TabsContent value="analyzer" className="m-0">
                 <ApplicationStateAnalyzer />
+              </TabsContent>
+
+              <TabsContent value="audit-improvements" className="m-0">
+                <AuditImprovementsTracker />
               </TabsContent>
 
               <TabsContent value="appstore" className="m-0 space-y-6">
