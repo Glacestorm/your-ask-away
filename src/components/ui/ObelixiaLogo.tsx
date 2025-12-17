@@ -29,34 +29,80 @@ export function ObelixiaLogo({
 
   const currentSize = sizeClasses[size];
 
-  // Realistic Longitudinal AI Brain Icon with Neural Sparks
+  // Spherical AI Brain with Neural Network Nodes
   const CinematicBrainIcon = () => {
-    // Neural spark positions distributed across brain surface
-    const neuralSparks = [
-      // Frontal lobe sparks
-      { cx: 25, cy: 35, delay: 0, duration: 1.2 },
-      { cx: 30, cy: 28, delay: 0.3, duration: 1.5 },
-      { cx: 22, cy: 42, delay: 0.6, duration: 1.1 },
-      // Parietal lobe sparks
-      { cx: 45, cy: 22, delay: 0.2, duration: 1.4 },
-      { cx: 55, cy: 20, delay: 0.8, duration: 1.3 },
-      { cx: 50, cy: 28, delay: 0.5, duration: 1.2 },
-      // Temporal lobe sparks
-      { cx: 35, cy: 55, delay: 0.4, duration: 1.6 },
-      { cx: 28, cy: 62, delay: 0.9, duration: 1.1 },
-      { cx: 42, cy: 60, delay: 0.1, duration: 1.4 },
-      // Occipital lobe sparks
-      { cx: 70, cy: 35, delay: 0.7, duration: 1.2 },
-      { cx: 75, cy: 42, delay: 0.3, duration: 1.5 },
-      { cx: 72, cy: 28, delay: 1.0, duration: 1.3 },
-      // Cerebellum sparks
-      { cx: 68, cy: 58, delay: 0.5, duration: 1.4 },
-      { cx: 75, cy: 52, delay: 0.8, duration: 1.1 },
-      // Deep brain sparks
-      { cx: 48, cy: 45, delay: 0.2, duration: 1.6 },
-      { cx: 55, cy: 48, delay: 0.6, duration: 1.2 },
-      { cx: 40, cy: 40, delay: 0.9, duration: 1.3 },
-      { cx: 60, cy: 38, delay: 0.4, duration: 1.5 },
+    // Neural nodes distributed across the spherical brain surface
+    const neuralNodes = [
+      // Outer ring nodes
+      { cx: 50, cy: 12, delay: 0, duration: 1.5 },
+      { cx: 25, cy: 25, delay: 0.3, duration: 1.2 },
+      { cx: 75, cy: 25, delay: 0.6, duration: 1.4 },
+      { cx: 12, cy: 50, delay: 0.9, duration: 1.3 },
+      { cx: 88, cy: 50, delay: 0.2, duration: 1.5 },
+      { cx: 25, cy: 75, delay: 0.5, duration: 1.1 },
+      { cx: 75, cy: 75, delay: 0.8, duration: 1.4 },
+      { cx: 50, cy: 88, delay: 0.1, duration: 1.2 },
+      // Middle ring nodes
+      { cx: 35, cy: 20, delay: 0.4, duration: 1.6 },
+      { cx: 65, cy: 20, delay: 0.7, duration: 1.3 },
+      { cx: 20, cy: 35, delay: 1.0, duration: 1.5 },
+      { cx: 80, cy: 35, delay: 0.3, duration: 1.2 },
+      { cx: 20, cy: 65, delay: 0.6, duration: 1.4 },
+      { cx: 80, cy: 65, delay: 0.9, duration: 1.1 },
+      { cx: 35, cy: 80, delay: 0.2, duration: 1.5 },
+      { cx: 65, cy: 80, delay: 0.5, duration: 1.3 },
+      // Inner nodes
+      { cx: 38, cy: 35, delay: 0.8, duration: 1.4 },
+      { cx: 62, cy: 35, delay: 0.1, duration: 1.2 },
+      { cx: 30, cy: 50, delay: 0.4, duration: 1.6 },
+      { cx: 70, cy: 50, delay: 0.7, duration: 1.3 },
+      { cx: 38, cy: 65, delay: 1.0, duration: 1.1 },
+      { cx: 62, cy: 65, delay: 0.3, duration: 1.5 },
+      // Center nodes
+      { cx: 50, cy: 35, delay: 0.6, duration: 1.4 },
+      { cx: 45, cy: 50, delay: 0.9, duration: 1.2 },
+      { cx: 55, cy: 50, delay: 0.2, duration: 1.3 },
+      { cx: 50, cy: 65, delay: 0.5, duration: 1.5 },
+    ];
+
+    // Neural connections between nodes
+    const connections = [
+      // Outer connections
+      { x1: 50, y1: 12, x2: 25, y2: 25 },
+      { x1: 50, y1: 12, x2: 75, y2: 25 },
+      { x1: 25, y1: 25, x2: 12, y2: 50 },
+      { x1: 75, y1: 25, x2: 88, y2: 50 },
+      { x1: 12, y1: 50, x2: 25, y2: 75 },
+      { x1: 88, y1: 50, x2: 75, y2: 75 },
+      { x1: 25, y1: 75, x2: 50, y2: 88 },
+      { x1: 75, y1: 75, x2: 50, y2: 88 },
+      // Cross connections
+      { x1: 35, y1: 20, x2: 65, y2: 20 },
+      { x1: 20, y1: 35, x2: 35, y2: 20 },
+      { x1: 80, y1: 35, x2: 65, y2: 20 },
+      { x1: 20, y1: 65, x2: 20, y2: 35 },
+      { x1: 80, y1: 65, x2: 80, y2: 35 },
+      { x1: 35, y1: 80, x2: 20, y2: 65 },
+      { x1: 65, y1: 80, x2: 80, y2: 65 },
+      { x1: 35, y1: 80, x2: 65, y2: 80 },
+      // Inner connections
+      { x1: 38, y1: 35, x2: 62, y2: 35 },
+      { x1: 30, y1: 50, x2: 38, y2: 35 },
+      { x1: 70, y1: 50, x2: 62, y2: 35 },
+      { x1: 38, y1: 65, x2: 30, y2: 50 },
+      { x1: 62, y1: 65, x2: 70, y2: 50 },
+      { x1: 38, y1: 65, x2: 62, y2: 65 },
+      // Center connections
+      { x1: 50, y1: 35, x2: 38, y2: 35 },
+      { x1: 50, y1: 35, x2: 62, y2: 35 },
+      { x1: 45, y1: 50, x2: 30, y2: 50 },
+      { x1: 55, y1: 50, x2: 70, y2: 50 },
+      { x1: 50, y1: 65, x2: 38, y2: 65 },
+      { x1: 50, y1: 65, x2: 62, y2: 65 },
+      { x1: 45, y1: 50, x2: 50, y2: 35 },
+      { x1: 55, y1: 50, x2: 50, y2: 35 },
+      { x1: 45, y1: 50, x2: 50, y2: 65 },
+      { x1: 55, y1: 50, x2: 50, y2: 65 },
     ];
 
     return (
@@ -70,7 +116,7 @@ export function ObelixiaLogo({
         />
         
         <svg 
-          viewBox="0 0 100 80" 
+          viewBox="0 0 100 100" 
           className="relative w-full h-full"
           style={{ filter: 'drop-shadow(0 0 20px rgba(6,182,212,0.5)) drop-shadow(0 0 40px rgba(16,185,129,0.3))' }}
         >
@@ -89,9 +135,9 @@ export function ObelixiaLogo({
             </linearGradient>
             
             {/* Inner brain gradient for depth */}
-            <radialGradient id={`brain-inner-${size}`} cx="40%" cy="40%" r="60%">
-              <stop offset="0%" stopColor="rgba(6,182,212,0.3)" />
-              <stop offset="100%" stopColor="rgba(16,185,129,0.1)" />
+            <radialGradient id={`brain-inner-${size}`} cx="30%" cy="30%" r="70%">
+              <stop offset="0%" stopColor="rgba(6,182,212,0.15)" />
+              <stop offset="100%" stopColor="rgba(16,185,129,0.05)" />
             </radialGradient>
             
             {/* Glow Filter */}
@@ -105,8 +151,8 @@ export function ObelixiaLogo({
               </feMerge>
             </filter>
             
-            {/* Spark Glow Filter */}
-            <filter id={`spark-glow-${size}`} x="-400%" y="-400%" width="900%" height="900%">
+            {/* Node Glow Filter */}
+            <filter id={`node-glow-${size}`} x="-400%" y="-400%" width="900%" height="900%">
               <feGaussianBlur stdDeviation="2" result="blur"/>
               <feMerge>
                 <feMergeNode in="blur"/>
@@ -117,204 +163,134 @@ export function ObelixiaLogo({
             </filter>
           </defs>
           
-          {/* Brain outer shape - Realistic longitudinal view */}
+          {/* Main spherical outline */}
           <g filter={`url(#brain-glow-${size})`}>
-            {/* Main brain silhouette */}
-            <path
-              d="M18 40 
-                 C18 25, 28 12, 45 10
-                 C55 9, 65 12, 72 18
-                 C80 25, 85 35, 85 45
-                 C85 55, 80 62, 72 67
-                 C65 72, 55 75, 48 72
-                 C40 75, 30 72, 25 65
-                 C18 58, 15 50, 18 40Z"
+            {/* Outer sphere */}
+            <circle
+              cx="50"
+              cy="50"
+              r="42"
               fill={`url(#brain-inner-${size})`}
               stroke={`url(#brain-gradient-${size})`}
               strokeWidth="1.5"
               opacity="0.9"
             />
             
-            {/* Frontal lobe detail */}
-            <path
-              d="M20 42 C22 30, 32 18, 42 15 C35 22, 28 32, 25 42"
-              fill="none"
-              stroke={`url(#brain-gradient-${size})`}
-              strokeWidth="1"
-              opacity="0.6"
-            />
-            
-            {/* Parietal lobe curve */}
-            <path
-              d="M45 12 C55 10, 68 15, 75 25"
-              fill="none"
-              stroke={`url(#brain-gradient-${size})`}
-              strokeWidth="1"
-              opacity="0.6"
-            />
-            
-            {/* Central sulcus */}
-            <path
-              d="M42 15 C45 25, 48 40, 50 55"
-              fill="none"
-              stroke={`url(#brain-gradient-${size})`}
-              strokeWidth="0.8"
-              opacity="0.5"
-            />
-            
-            {/* Lateral sulcus (Sylvian fissure) */}
-            <path
-              d="M25 48 C35 52, 45 55, 55 52"
-              fill="none"
-              stroke={`url(#brain-gradient-${size})`}
-              strokeWidth="0.8"
-              opacity="0.5"
-            />
-            
-            {/* Temporal lobe lower boundary */}
-            <path
-              d="M28 55 C35 62, 45 68, 50 70"
-              fill="none"
-              stroke={`url(#brain-gradient-${size})`}
-              strokeWidth="0.8"
-              opacity="0.5"
-            />
-            
-            {/* Occipital detail */}
-            <path
-              d="M75 30 C80 40, 82 50, 78 60"
-              fill="none"
-              stroke={`url(#brain-gradient-${size})`}
-              strokeWidth="0.8"
-              opacity="0.5"
-            />
-            
-            {/* Brain stem */}
-            <path
-              d="M55 68 C60 72, 65 73, 68 70 C70 68, 72 64, 70 60"
-              fill="none"
-              stroke={`url(#brain-gradient-${size})`}
-              strokeWidth="1"
-              opacity="0.6"
-            />
-            
-            {/* Cerebellum */}
-            <ellipse
-              cx="72"
-              cy="58"
-              rx="10"
-              ry="8"
-              fill="none"
-              stroke={`url(#brain-gradient-${size})`}
-              strokeWidth="1"
-              opacity="0.6"
-            />
-            
-            {/* Gyri details (brain folds) */}
-            <path
-              d="M30 32 C35 30, 38 35, 35 38"
+            {/* Inner depth circle */}
+            <circle
+              cx="50"
+              cy="50"
+              r="35"
               fill="none"
               stroke={`url(#brain-gradient-${size})`}
               strokeWidth="0.5"
-              opacity="0.4"
-            />
-            <path
-              d="M55 25 C60 23, 65 28, 62 32"
-              fill="none"
-              stroke={`url(#brain-gradient-${size})`}
-              strokeWidth="0.5"
-              opacity="0.4"
-            />
-            <path
-              d="M35 50 C40 48, 45 52, 42 56"
-              fill="none"
-              stroke={`url(#brain-gradient-${size})`}
-              strokeWidth="0.5"
-              opacity="0.4"
-            />
-            <path
-              d="M65 40 C70 38, 75 42, 72 46"
-              fill="none"
-              stroke={`url(#brain-gradient-${size})`}
-              strokeWidth="0.5"
-              opacity="0.4"
+              opacity="0.3"
             />
           </g>
           
-          {/* Neural Sparks - Blinking synaptic activity */}
-          {animated && neuralSparks.map((spark, i) => (
-            <g key={`spark-${i}`} filter={`url(#spark-glow-${size})`}>
-              {/* Main spark */}
+          {/* Neural connections - lines between nodes */}
+          {connections.map((conn, i) => (
+            <line
+              key={`conn-${i}`}
+              x1={conn.x1}
+              y1={conn.y1}
+              x2={conn.x2}
+              y2={conn.y2}
+              stroke={`url(#brain-gradient-${size})`}
+              strokeWidth="0.5"
+              opacity="0.4"
+            />
+          ))}
+          
+          {/* Neural Nodes - Blinking synaptic activity */}
+          {neuralNodes.map((node, i) => (
+            <g key={`node-${i}`} filter={`url(#node-glow-${size})`}>
+              {/* Main node */}
               <circle
-                cx={spark.cx}
-                cy={spark.cy}
-                r="1"
+                cx={node.cx}
+                cy={node.cy}
+                r="1.5"
                 fill="white"
               >
-                <animate
-                  attributeName="opacity"
-                  values="0;0;1;1;0;0"
-                  dur={`${spark.duration}s`}
-                  begin={`${spark.delay}s`}
-                  repeatCount="indefinite"
-                />
-                <animate
-                  attributeName="r"
-                  values="0.5;0.5;2;2.5;1;0.5"
-                  dur={`${spark.duration}s`}
-                  begin={`${spark.delay}s`}
-                  repeatCount="indefinite"
-                />
+                {animated && (
+                  <>
+                    <animate
+                      attributeName="opacity"
+                      values="0.3;0.3;1;1;0.3;0.3"
+                      dur={`${node.duration}s`}
+                      begin={`${node.delay}s`}
+                      repeatCount="indefinite"
+                    />
+                    <animate
+                      attributeName="r"
+                      values="1;1;2.5;2;1.5;1"
+                      dur={`${node.duration}s`}
+                      begin={`${node.delay}s`}
+                      repeatCount="indefinite"
+                    />
+                  </>
+                )}
               </circle>
-              {/* Spark halo */}
+              {/* Node halo */}
               <circle
-                cx={spark.cx}
-                cy={spark.cy}
-                r="3"
+                cx={node.cx}
+                cy={node.cy}
+                r="4"
                 fill="none"
-                stroke="rgba(255,255,255,0.5)"
-                strokeWidth="0.5"
+                stroke="rgba(255,255,255,0.4)"
+                strokeWidth="0.3"
               >
-                <animate
-                  attributeName="opacity"
-                  values="0;0;0.6;0.3;0;0"
-                  dur={`${spark.duration}s`}
-                  begin={`${spark.delay}s`}
-                  repeatCount="indefinite"
-                />
-                <animate
-                  attributeName="r"
-                  values="1;1;4;6;4;1"
-                  dur={`${spark.duration}s`}
-                  begin={`${spark.delay}s`}
-                  repeatCount="indefinite"
-                />
+                {animated && (
+                  <>
+                    <animate
+                      attributeName="opacity"
+                      values="0;0;0.5;0.3;0;0"
+                      dur={`${node.duration}s`}
+                      begin={`${node.delay}s`}
+                      repeatCount="indefinite"
+                    />
+                    <animate
+                      attributeName="r"
+                      values="2;2;5;7;5;2"
+                      dur={`${node.duration}s`}
+                      begin={`${node.delay}s`}
+                      repeatCount="indefinite"
+                    />
+                  </>
+                )}
               </circle>
             </g>
           ))}
           
-          {/* Traveling neural impulses */}
+          {/* Traveling neural impulses along connections */}
           {animated && (
             <>
-              {/* Impulse 1 - Frontal to parietal */}
-              <circle r="1.5" fill="#06b6d4" filter={`url(#spark-glow-${size})`}>
-                <animate attributeName="cx" values="25;35;50;60" dur="2s" repeatCount="indefinite" />
-                <animate attributeName="cy" values="35;25;22;30" dur="2s" repeatCount="indefinite" />
-                <animate attributeName="opacity" values="0;1;1;0" dur="2s" repeatCount="indefinite" />
+              {/* Impulse 1 */}
+              <circle r="1.5" fill="#06b6d4" filter={`url(#node-glow-${size})`}>
+                <animate attributeName="cx" values="50;35;20;35;50" dur="3s" repeatCount="indefinite" />
+                <animate attributeName="cy" values="12;20;35;50;35" dur="3s" repeatCount="indefinite" />
+                <animate attributeName="opacity" values="0;1;1;1;0" dur="3s" repeatCount="indefinite" />
               </circle>
               
-              {/* Impulse 2 - Parietal to occipital */}
-              <circle r="1.5" fill="#10b981" filter={`url(#spark-glow-${size})`}>
-                <animate attributeName="cx" values="55;65;72;75" dur="1.8s" begin="0.5s" repeatCount="indefinite" />
-                <animate attributeName="cy" values="22;28;38;48" dur="1.8s" begin="0.5s" repeatCount="indefinite" />
-                <animate attributeName="opacity" values="0;1;1;0" dur="1.8s" begin="0.5s" repeatCount="indefinite" />
+              {/* Impulse 2 */}
+              <circle r="1.5" fill="#10b981" filter={`url(#node-glow-${size})`}>
+                <animate attributeName="cx" values="50;65;80;65;50" dur="3s" begin="1s" repeatCount="indefinite" />
+                <animate attributeName="cy" values="12;20;35;50;35" dur="3s" begin="1s" repeatCount="indefinite" />
+                <animate attributeName="opacity" values="0;1;1;1;0" dur="3s" begin="1s" repeatCount="indefinite" />
               </circle>
               
-              {/* Impulse 3 - Temporal loop */}
-              <circle r="1.2" fill="white" filter={`url(#spark-glow-${size})`}>
-                <animate attributeName="cx" values="30;38;45;38;30" dur="2.5s" begin="1s" repeatCount="indefinite" />
-                <animate attributeName="cy" values="55;58;55;50;55" dur="2.5s" begin="1s" repeatCount="indefinite" />
-                <animate attributeName="opacity" values="0;1;1;1;0" dur="2.5s" begin="1s" repeatCount="indefinite" />
+              {/* Impulse 3 */}
+              <circle r="1.2" fill="white" filter={`url(#node-glow-${size})`}>
+                <animate attributeName="cx" values="45;38;30;38;45" dur="2.5s" begin="0.5s" repeatCount="indefinite" />
+                <animate attributeName="cy" values="50;65;50;35;50" dur="2.5s" begin="0.5s" repeatCount="indefinite" />
+                <animate attributeName="opacity" values="0;1;1;1;0" dur="2.5s" begin="0.5s" repeatCount="indefinite" />
+              </circle>
+              
+              {/* Impulse 4 */}
+              <circle r="1.2" fill="#0ea5e9" filter={`url(#node-glow-${size})`}>
+                <animate attributeName="cx" values="55;62;70;62;55" dur="2.5s" begin="1.5s" repeatCount="indefinite" />
+                <animate attributeName="cy" values="50;65;50;35;50" dur="2.5s" begin="1.5s" repeatCount="indefinite" />
+                <animate attributeName="opacity" values="0;1;1;1;0" dur="2.5s" begin="1.5s" repeatCount="indefinite" />
               </circle>
             </>
           )}
@@ -467,7 +443,7 @@ export function ObelixiaLogo({
 }
 
 /**
- * Cinematic Loading Spinner with Brain Symbol
+ * Cinematic Loading Spinner with Spherical Brain Symbol
  */
 export function ObelixiaLoadingSpinner({ 
   size = "md",
@@ -486,16 +462,41 @@ export function ObelixiaLoadingSpinner({
 
   const current = sizeClasses[size];
 
-  // Neural spark positions for spinner
-  const sparks = [
-    { cx: 25, cy: 35, delay: 0 },
-    { cx: 45, cy: 22, delay: 0.2 },
-    { cx: 70, cy: 35, delay: 0.4 },
-    { cx: 55, cy: 50, delay: 0.6 },
-    { cx: 35, cy: 55, delay: 0.8 },
-    { cx: 72, cy: 58, delay: 1.0 },
-    { cx: 30, cy: 28, delay: 0.3 },
-    { cx: 60, cy: 38, delay: 0.7 },
+  // Neural nodes distributed on sphere
+  const nodes = [
+    { cx: 50, cy: 12, delay: 0 },
+    { cx: 25, cy: 25, delay: 0.2 },
+    { cx: 75, cy: 25, delay: 0.4 },
+    { cx: 12, cy: 50, delay: 0.6 },
+    { cx: 88, cy: 50, delay: 0.8 },
+    { cx: 25, cy: 75, delay: 1.0 },
+    { cx: 75, cy: 75, delay: 0.3 },
+    { cx: 50, cy: 88, delay: 0.5 },
+    { cx: 38, cy: 38, delay: 0.7 },
+    { cx: 62, cy: 38, delay: 0.9 },
+    { cx: 50, cy: 50, delay: 0.1 },
+    { cx: 38, cy: 62, delay: 0.4 },
+    { cx: 62, cy: 62, delay: 0.6 },
+  ];
+
+  // Connections between nodes
+  const connections = [
+    { x1: 50, y1: 12, x2: 25, y2: 25 },
+    { x1: 50, y1: 12, x2: 75, y2: 25 },
+    { x1: 25, y1: 25, x2: 12, y2: 50 },
+    { x1: 75, y1: 25, x2: 88, y2: 50 },
+    { x1: 12, y1: 50, x2: 25, y2: 75 },
+    { x1: 88, y1: 50, x2: 75, y2: 75 },
+    { x1: 25, y1: 75, x2: 50, y2: 88 },
+    { x1: 75, y1: 75, x2: 50, y2: 88 },
+    { x1: 38, y1: 38, x2: 50, y2: 50 },
+    { x1: 62, y1: 38, x2: 50, y2: 50 },
+    { x1: 38, y1: 62, x2: 50, y2: 50 },
+    { x1: 62, y1: 62, x2: 50, y2: 50 },
+    { x1: 25, y1: 25, x2: 38, y2: 38 },
+    { x1: 75, y1: 25, x2: 62, y2: 38 },
+    { x1: 25, y1: 75, x2: 38, y2: 62 },
+    { x1: 75, y1: 75, x2: 62, y2: 62 },
   ];
 
   return (
@@ -509,7 +510,7 @@ export function ObelixiaLoadingSpinner({
           }}
         />
         
-        <svg viewBox="0 0 100 80" className="w-full h-full">
+        <svg viewBox="0 0 100 100" className="w-full h-full">
           <defs>
             <linearGradient id="spinner-brain-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#0ea5e9">
@@ -529,7 +530,7 @@ export function ObelixiaLoadingSpinner({
                 <feMergeNode in="SourceGraphic"/>
               </feMerge>
             </filter>
-            <filter id="spinner-spark-glow">
+            <filter id="spinner-node-glow">
               <feGaussianBlur stdDeviation="1.5" result="blur"/>
               <feMerge>
                 <feMergeNode in="blur"/>
@@ -539,82 +540,70 @@ export function ObelixiaLoadingSpinner({
             </filter>
           </defs>
           
-          {/* Brain silhouette */}
-          <path
-            d="M18 40 
-               C18 25, 28 12, 45 10
-               C55 9, 65 12, 72 18
-               C80 25, 85 35, 85 45
-               C85 55, 80 62, 72 67
-               C65 72, 55 75, 48 72
-               C40 75, 30 72, 25 65
-               C18 58, 15 50, 18 40Z"
+          {/* Spherical outline */}
+          <circle
+            cx="50"
+            cy="50"
+            r="42"
             fill="rgba(6,182,212,0.1)"
             stroke="rgba(255,255,255,0.2)"
             strokeWidth="2"
           />
           
           {/* Animated flowing outline */}
-          <path
-            d="M18 40 
-               C18 25, 28 12, 45 10
-               C55 9, 65 12, 72 18
-               C80 25, 85 35, 85 45
-               C85 55, 80 62, 72 67
-               C65 72, 55 75, 48 72
-               C40 75, 30 72, 25 65
-               C18 58, 15 50, 18 40Z"
+          <circle
+            cx="50"
+            cy="50"
+            r="42"
             fill="none"
             stroke="url(#spinner-brain-gradient)"
             strokeWidth="2"
-            strokeDasharray="40 160"
+            strokeDasharray="40 224"
             filter="url(#spinner-brain-glow)"
           >
             <animate
               attributeName="stroke-dashoffset"
-              values="0;-200"
+              values="0;-264"
               dur="2s"
               repeatCount="indefinite"
             />
-          </path>
+          </circle>
           
-          {/* Brain details */}
-          <path
-            d="M42 15 C45 25, 48 40, 50 55"
-            fill="none"
-            stroke="url(#spinner-brain-gradient)"
-            strokeWidth="0.8"
-            opacity="0.4"
-          />
-          <path
-            d="M25 48 C35 52, 45 55, 55 52"
-            fill="none"
-            stroke="url(#spinner-brain-gradient)"
-            strokeWidth="0.8"
-            opacity="0.4"
-          />
+          {/* Neural connections */}
+          {connections.map((conn, i) => (
+            <line
+              key={i}
+              x1={conn.x1}
+              y1={conn.y1}
+              x2={conn.x2}
+              y2={conn.y2}
+              stroke="url(#spinner-brain-gradient)"
+              strokeWidth="0.5"
+              opacity="0.4"
+            />
+          ))}
           
-          {/* Neural sparks */}
-          {sparks.map((spark, i) => (
-            <g key={i} filter="url(#spinner-spark-glow)">
+          {/* Neural nodes */}
+          {nodes.map((node, i) => (
+            <g key={i} filter="url(#spinner-node-glow)">
               <circle
-                cx={spark.cx}
-                cy={spark.cy}
+                cx={node.cx}
+                cy={node.cy}
                 r="1.5"
                 fill="white"
               >
                 <animate
                   attributeName="opacity"
-                  values="0;1;0"
+                  values="0.3;1;0.3"
                   dur="1.5s"
-                  begin={`${spark.delay}s`}
+                  begin={`${node.delay}s`}
                   repeatCount="indefinite"
                 />
                 <animate
                   attributeName="r"
                   values="1;2.5;1"
                   dur="1.5s"
-                  begin={`${spark.delay}s`}
+                  begin={`${node.delay}s`}
                   repeatCount="indefinite"
                 />
               </circle>
