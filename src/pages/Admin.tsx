@@ -934,34 +934,6 @@ case 'administration':
                     </div>
                   </CardContent>
                 </Card>
-                <Card 
-                  className="cursor-pointer hover:shadow-md transition-all border-2 border-cyan-500/20 bg-gradient-to-br from-cyan-500/5 to-cyan-500/10"
-                  onClick={() => handleSectionChange('app-store')}
-                >
-                  <CardContent className="p-3 flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-lg bg-cyan-500/20 flex items-center justify-center">
-                      <Store className="h-4 w-4 text-cyan-500" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-sm">{t('admin.card.appStore')}</h4>
-                      <p className="text-xs text-muted-foreground">{t('admin.card.appStore.desc')}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card 
-                  className="cursor-pointer hover:shadow-md transition-all border-2 border-emerald-500/20 bg-gradient-to-br from-emerald-500/5 to-emerald-500/10"
-                  onClick={() => handleSectionChange('cnae-pricing')}
-                >
-                  <CardContent className="p-3 flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-                      <Layers className="h-4 w-4 text-emerald-500" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-sm">Multi-CNAE Holdings</h4>
-                      <p className="text-xs text-muted-foreground">Gestió multi-sector i pricing dinàmic</p>
-                    </div>
-                  </CardContent>
-                </Card>
               </div>
             </div>
 
@@ -1070,34 +1042,6 @@ case 'administration':
                     <div>
                       <h4 className="font-medium text-sm text-purple-700 dark:text-purple-400">{t('admin.card.internalAI')}</h4>
                       <p className="text-xs text-muted-foreground">{t('admin.card.internalAI.desc')}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card 
-                  className="cursor-pointer hover:shadow-md transition-all border-2 border-cyan-500/30 bg-gradient-to-br from-cyan-500/5 to-cyan-500/10"
-                  onClick={() => handleSectionChange('whitelabel')}
-                >
-                  <CardContent className="p-3 flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-lg bg-cyan-500/20 flex items-center justify-center">
-                      <Palette className="h-4 w-4 text-cyan-500" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-sm text-cyan-700 dark:text-cyan-400">{t('admin.card.whiteLabel')}</h4>
-                      <p className="text-xs text-muted-foreground">{t('admin.card.whiteLabel.desc')}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card 
-                  className="cursor-pointer hover:shadow-md transition-all border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-emerald-500/10"
-                  onClick={() => handleSectionChange('api-docs')}
-                >
-                  <CardContent className="p-3 flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-                      <FileCode2 className="h-4 w-4 text-emerald-500" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-sm text-emerald-700 dark:text-emerald-400">{t('admin.card.apiDocs')}</h4>
-                      <p className="text-xs text-muted-foreground">{t('admin.card.apiDocs.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1250,70 +1194,6 @@ case 'administration':
               </div>
             </div>
 
-            {/* SECCIÓ 4: Documentació i Anàlisi */}
-            <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
-                <Activity className="h-5 w-5" /> {t('admin.section.documentation')}
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                <Card 
-                  className="cursor-pointer hover:shadow-md transition-all border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-emerald-500/10"
-                  onClick={() => handleSectionChange('technical-docs')}
-                >
-                  <CardContent className="p-3 flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-                      <Activity className="h-4 w-4 text-emerald-500" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-sm text-emerald-700 dark:text-emerald-400">{t('admin.card.techDocs')}</h4>
-                      <p className="text-xs text-muted-foreground">{t('admin.card.techDocs.desc')}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card 
-                  className="cursor-pointer hover:shadow-md transition-all border-2 border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-purple-500/10"
-                  onClick={() => handleSectionChange('competitor-gap')}
-                >
-                  <CardContent className="p-3 flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                      <Activity className="h-4 w-4 text-purple-500" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-sm text-purple-700 dark:text-purple-400">{t('admin.card.competitor')}</h4>
-                      <p className="text-xs text-muted-foreground">{t('admin.card.competitor.desc')}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card 
-                  className="cursor-pointer hover:shadow-md transition-all border-2 border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-blue-500/10"
-                  onClick={() => handleSectionChange('app-status')}
-                >
-                  <CardContent className="p-3 flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                      <Activity className="h-4 w-4 text-blue-500" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-sm text-blue-700 dark:text-blue-400">{t('admin.card.appStatus')}</h4>
-                      <p className="text-xs text-muted-foreground">{t('admin.card.appStatus.desc')}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card 
-                  className="cursor-pointer hover:shadow-md transition-all border-2 border-teal-500/30 bg-gradient-to-br from-teal-500/5 to-teal-500/10"
-                  onClick={() => handleSectionChange('codebase-index')}
-                >
-                  <CardContent className="p-3 flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-lg bg-teal-500/20 flex items-center justify-center">
-                      <Activity className="h-4 w-4 text-teal-500" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-sm text-teal-700 dark:text-teal-400">{t('admin.card.codeIndex')}</h4>
-                      <p className="text-xs text-muted-foreground">{t('admin.card.codeIndex.desc')}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
 
             {/* SECCIÓ 5: Comunicació Omnicanal - FASE 3 */}
             <div className="space-y-3">
