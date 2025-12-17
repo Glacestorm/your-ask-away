@@ -68,7 +68,7 @@ const StoreNavbar: React.FC = () => {
             </button>
 
             {/* Desktop Navigation - Center */}
-            <div className="hidden lg:flex items-center gap-4">
+            <div className="hidden lg:flex items-center gap-5">
               {navLinks.map((link) => (
                 <motion.button
                   key={link.id}
@@ -97,17 +97,19 @@ const StoreNavbar: React.FC = () => {
             </div>
 
             {/* Auth Buttons + Cart - Right */}
-            <div className="hidden lg:flex items-center gap-4 z-10">
+            <div className="hidden lg:flex items-center gap-5 z-10">
               {/* Login Button */}
               <motion.button
                 onClick={openLogin}
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95, y: 1 }}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-base tracking-wide bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500 text-white shadow-[0_6px_20px_rgba(34,211,238,0.4),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-2px_4px_rgba(0,0,0,0.2)] hover:from-blue-400 hover:via-cyan-400 hover:to-emerald-400 hover:shadow-[0_8px_24px_rgba(34,211,238,0.5)] transition-all duration-300"
+                className="relative overflow-hidden flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-base tracking-wide bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500 text-white shadow-[0_6px_20px_rgba(34,211,238,0.4)] hover:from-blue-400 hover:via-cyan-400 hover:to-emerald-400 hover:shadow-[0_8px_24px_rgba(34,211,238,0.5)] transition-all duration-300"
                 style={{ fontFamily: 'Crimson Pro, serif', letterSpacing: '0.05em' }}
               >
-                <LogIn className="w-5 h-5" />
-                {t('store.nav.login')}
+                <span className="absolute inset-0 rounded-xl animate-ping bg-cyan-400/30" style={{ animationDuration: '1.5s' }} />
+                <span className="absolute inset-0 rounded-xl animate-pulse bg-cyan-400/20" style={{ animationDuration: '2s' }} />
+                <LogIn className="w-5 h-5 relative z-10" />
+                <span className="relative z-10">{t('store.nav.login')}</span>
               </motion.button>
 
               {/* Register Button */}
@@ -115,11 +117,13 @@ const StoreNavbar: React.FC = () => {
                 onClick={openRegister}
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95, y: 1 }}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-base tracking-wide bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500 text-white shadow-[0_6px_20px_rgba(34,211,238,0.4),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-2px_4px_rgba(0,0,0,0.2)] hover:from-blue-400 hover:via-cyan-400 hover:to-emerald-400 hover:shadow-[0_8px_24px_rgba(34,211,238,0.5)] transition-all duration-300"
+                className="relative overflow-hidden flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-base tracking-wide bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500 text-white shadow-[0_6px_20px_rgba(34,211,238,0.4)] hover:from-blue-400 hover:via-cyan-400 hover:to-emerald-400 hover:shadow-[0_8px_24px_rgba(34,211,238,0.5)] transition-all duration-300"
                 style={{ fontFamily: 'Crimson Pro, serif', letterSpacing: '0.05em' }}
               >
-                <UserPlus className="w-5 h-5" />
-                {t('store.nav.register')}
+                <span className="absolute inset-0 rounded-xl animate-ping bg-cyan-400/30" style={{ animationDuration: '1.5s' }} />
+                <span className="absolute inset-0 rounded-xl animate-pulse bg-cyan-400/20" style={{ animationDuration: '2s' }} />
+                <UserPlus className="w-5 h-5 relative z-10" />
+                <span className="relative z-10">{t('store.nav.register')}</span>
               </motion.button>
 
               {/* Cart Button */}
