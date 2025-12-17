@@ -1,7 +1,7 @@
 import React, { Suspense, ReactNode, useState, useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+import { ObelixiaLogo, ObelixiaLoadingSpinner } from '@/components/ui/ObelixiaLogo';
 
 interface StreamingBoundaryProps {
   children: ReactNode;
@@ -128,24 +128,34 @@ export function DashboardStreamingSkeleton({ cards = 4 }: { cards?: number }) {
 }
 
 /**
- * Full page streaming skeleton
+ * Full page streaming skeleton with ObelixIA branding
  */
 export function PageStreamingSkeleton() {
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8 space-y-6 animate-pulse">
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-10 w-48" />
-        <div className="flex gap-2">
-          <Skeleton className="h-10 w-10 rounded-full" />
-          <Skeleton className="h-10 w-10 rounded-full" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex flex-col items-center justify-center">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-5">
+        <div 
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0)`,
+            backgroundSize: '40px 40px'
+          }}
+        />
+      </div>
+
+      {/* Logo */}
+      <div className="relative z-10 flex flex-col items-center gap-8">
+        <ObelixiaLogo size="xl" variant="full" animated />
+        
+        <div className="mt-4">
+          <ObelixiaLoadingSpinner size="lg" text="Cargando..." />
         </div>
       </div>
-      <DashboardStreamingSkeleton cards={4} />
-      <ChartStreamingSkeleton height={300} />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <TableStreamingSkeleton rows={5} cols={3} />
-        <TableStreamingSkeleton rows={5} cols={3} />
-      </div>
+
+      {/* Animated corner accents */}
+      <div className="absolute top-0 left-0 w-24 h-24 border-l-2 border-t-2 border-emerald-500/20 animate-pulse" />
+      <div className="absolute bottom-0 right-0 w-24 h-24 border-r-2 border-b-2 border-cyan-500/20 animate-pulse" />
     </div>
   );
 }
@@ -155,8 +165,8 @@ export function PageStreamingSkeleton() {
  */
 export function InlineStreamingIndicator({ text = 'Carregant...' }: { text?: string }) {
   return (
-    <div className="flex items-center gap-2 text-muted-foreground">
-      <Loader2 className="h-4 w-4 animate-spin" />
+    <div className="flex items-center gap-3 text-muted-foreground">
+      <ObelixiaLoadingSpinner size="sm" showText={false} />
       <span className="text-sm">{text}</span>
     </div>
   );
