@@ -1076,4 +1076,12 @@ export default {
   'profile.selectValidImage': 'Please select a valid image',
   'profile.imageTooLarge': 'Image must be less than 2MB',
   'profile.errorLoading': 'Error loading profile',
+
+  // Store Navigation
+  'store.nav.home': 'Home',
+  'store.nav.modules': 'Modules',
+  'store.nav.bundles': 'Bundles',
+  'store.nav.pricing': 'Pricing',
+  'store.nav.login': 'Sign In',
+  'store.nav.register': 'Sign Up',
 };

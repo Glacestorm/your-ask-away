@@ -1076,4 +1076,12 @@ export default {
   'profile.selectValidImage': 'Si us plau selecciona una imatge vàlida',
   'profile.imageTooLarge': 'La imatge ha de ser menor a 2MB',
   'profile.errorLoading': 'Error en carregar el perfil',
+
+  // Store Navigation
+  'store.nav.home': 'Inici',
+  'store.nav.modules': 'Mòduls',
+  'store.nav.bundles': 'Paquets',
+  'store.nav.pricing': 'Preus',
+  'store.nav.login': 'Iniciar Sessió',
+  'store.nav.register': 'Registrar-se',
 };
