@@ -5,10 +5,12 @@ import { ArrowRight, Play, Star, Shield, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ObelixiaLogo } from '@/components/ui/ObelixiaLogo';
+import { useLanguage } from '@/contexts/LanguageContext';
 import DemoRequestModal from './DemoRequestModal';
 
 const HeroSection: React.FC = () => {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+  const { t } = useLanguage();
 
   return (
     <>
@@ -65,7 +67,7 @@ const HeroSection: React.FC = () => {
             >
               <Badge className="mb-6 px-4 py-2 bg-emerald-500/20 text-emerald-300 border-emerald-500/30 backdrop-blur">
                 <Star className="w-4 h-4 mr-2 fill-emerald-400 text-emerald-400" />
-                #1 en CRM Empresarial Inteligente
+                {t('store.hero.badge')}
               </Badge>
             </motion.div>
 
@@ -76,10 +78,10 @@ const HeroSection: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight"
             >
-              Transforma tu{' '}
+              {t('store.hero.title1')}{' '}
               <span className="relative">
                 <span className="bg-gradient-to-r from-emerald-400 via-emerald-300 to-teal-400 bg-clip-text text-transparent">
-                  Empresa
+                  {t('store.hero.title2')}
                 </span>
                 <motion.div
                   initial={{ width: 0 }}
@@ -89,7 +91,7 @@ const HeroSection: React.FC = () => {
                 />
               </span>
               <br />
-              con Inteligencia Artificial
+              {t('store.hero.title3')}
             </motion.h1>
 
             {/* Subheadline */}
@@ -99,10 +101,10 @@ const HeroSection: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-xl md:text-2xl text-slate-300 mb-8 max-w-3xl mx-auto"
             >
-              Plataforma modular de gestión empresarial con{' '}
-              <span className="text-emerald-400 font-semibold">IA integrada</span>,{' '}
-              <span className="text-emerald-400 font-semibold">compliance bancario</span> y{' '}
-              <span className="text-emerald-400 font-semibold">análisis predictivo</span>
+              {t('store.hero.subtitle')}{' '}
+              <span className="text-emerald-400 font-semibold">{t('store.hero.feature1')}</span>,{' '}
+              <span className="text-emerald-400 font-semibold">{t('store.hero.feature2')}</span> y{' '}
+              <span className="text-emerald-400 font-semibold">{t('store.hero.feature3')}</span>
             </motion.p>
 
             {/* Price Badge */}
@@ -113,17 +115,17 @@ const HeroSection: React.FC = () => {
               className="inline-flex flex-col items-center gap-2 mb-10 px-6 py-4 bg-slate-800/50 backdrop-blur rounded-2xl border border-slate-700/50"
             >
               <div className="flex items-center gap-3">
-                <span className="text-slate-400">Desde</span>
+                <span className="text-slate-400">{t('store.hero.priceFrom')}</span>
                 <span className="text-3xl font-bold text-white">€99,000</span>
-                <span className="text-slate-400">/año</span>
+                <span className="text-slate-400">{t('store.hero.priceYear')}</span>
                 <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30">
-                  Ahorra 40%
+                  {t('store.hero.priceSave')}
                 </Badge>
               </div>
               <div className="flex items-center gap-2 text-xs text-slate-500">
                 <span>SIN IVA</span>
                 <span>•</span>
-                <span>Licencia anual renovable</span>
+                <span>{t('store.hero.priceNote')}</span>
               </div>
             </motion.div>
 
@@ -139,7 +141,7 @@ const HeroSection: React.FC = () => {
                   size="lg"
                   className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-8 h-[60px] py-0 leading-none text-lg rounded-xl shadow-lg shadow-emerald-500/25 w-full sm:w-auto inline-flex items-center justify-center"
                 >
-                  Explorar Módulos
+                  {t('store.hero.cta1')}
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
@@ -155,7 +157,7 @@ const HeroSection: React.FC = () => {
                 <span className="absolute inset-0 rounded-xl animate-pulse bg-cyan-400/20" style={{ animationDuration: '2s' }} />
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   <Play className="w-5 h-5" />
-                  Ver Demo
+                  {t('store.hero.cta2')}
                 </span>
               </motion.button>
             </motion.div>
@@ -169,15 +171,15 @@ const HeroSection: React.FC = () => {
             >
               <div className="flex items-center gap-2">
                 <Shield className="w-5 h-5 text-emerald-400" />
-                <span>ISO 27001 Certificado</span>
+                <span>{t('store.hero.trust1')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Zap className="w-5 h-5 text-emerald-400" />
-                <span>GDPR & DORA Compliant</span>
+                <span>{t('store.hero.trust2')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
-                <span>4.9/5 Rating</span>
+                <span>4.9/5 {t('store.hero.trust3')}</span>
               </div>
             </motion.div>
           </div>
