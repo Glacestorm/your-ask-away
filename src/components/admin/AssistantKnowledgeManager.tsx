@@ -50,7 +50,7 @@ interface KnowledgeDocument {
   content: string | null;
   file_url: string | null;
   external_url: string | null;
-  is_active: boolean;
+  is_active: boolean | null;
   created_at: string;
 }
 

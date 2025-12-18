@@ -19,7 +19,7 @@ interface ErrorLogEntry {
   timestamp: string;
   error: string;
   stack?: string;
-  componentStack?: string;
+  componentStack?: string | null;
   url: string;
   userAgent: string;
 }

@@ -18,7 +18,7 @@ interface AuditLog {
   record_id: string | null;
   old_data: any;
   new_data: any;
-  created_at: string;
+  created_at: string | null;
 }
 
 export function AuditLogsViewer() {

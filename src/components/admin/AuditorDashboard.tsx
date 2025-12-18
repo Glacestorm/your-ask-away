@@ -99,7 +99,7 @@ interface RecentLog {
   id: string;
   action: string;
   table_name: string;
-  created_at: string;
+  created_at: string | null;
   user_id: string | null;
 }
 
@@ -111,7 +111,7 @@ interface FullLog {
   record_id: string | null;
   old_data: any;
   new_data: any;
-  created_at: string;
+  created_at: string | null;
 }
 
 const CHART_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];

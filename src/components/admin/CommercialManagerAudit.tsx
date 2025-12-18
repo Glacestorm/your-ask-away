@@ -20,7 +20,7 @@ interface AuditLog {
   record_id: string | null;
   old_data: any;
   new_data: any;
-  created_at: string;
+  created_at: string | null;
   user?: {
     full_name: string | null;
     email: string;
