@@ -296,7 +296,18 @@ export const AuditImprovementsTracker: React.FC = () => {
       'navegació fluida': 100, // Smooth navigation transitions
       'startviewtransition': 100, // startViewTransition function
       'navigatewithtransition': 100, // navigateWithTransition function
-      'transicions fluides': 100 // Smooth transitions between pages
+      'transicions fluides': 100, // Smooth transitions between pages
+      // React Query staleTime/gcTime optimization
+      'react query': 100, // src/lib/queryClient.ts full configuration
+      'staletime': 100, // staleTime: 5 * 60 * 1000 (5 minutes)
+      'gctime': 100, // gcTime: 30 * 60 * 1000 (30 minutes)
+      'query client': 100, // Optimized QueryClient configuration
+      'cache time': 100, // gcTime (formerly cacheTime) configured
+      'query keys': 100, // Query key factories for cache management
+      'invalidate queries': 100, // Invalidation helpers
+      'prefetch queries': 100, // Prefetch helpers
+      'optimistic updates': 100, // Optimistic update helpers
+      'request deduplication': 100 // deduplicatedFetch function
     };
 
     // Check for exact matches first
