@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 import { 
   Plus, Search, Save, Edit2, Trash2, 
   FileText, Image, Code, Type, RefreshCw, Check, X
@@ -386,7 +387,7 @@ export const ContentManager: React.FC = () => {
                     {selectedContent.content_type === 'html' ? (
                       <div 
                         className="prose prose-invert max-w-none"
-                        dangerouslySetInnerHTML={{ __html: selectedContent.content }}
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedContent.content || '') }}
                       />
                     ) : selectedContent.content_type === 'json' ? (
                       <pre className="text-sm text-foreground whitespace-pre-wrap font-mono">
