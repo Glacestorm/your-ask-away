@@ -27,6 +27,11 @@ import { SEOManager } from './SEOManager';
 import { IntegrationsHub } from './IntegrationsHub';
 import { AuditDashboard } from './AuditDashboard';
 import { ContentAnalyticsDashboard } from './ContentAnalyticsDashboard';
+import { EditorialCalendar } from './EditorialCalendar';
+import { WorkflowManager } from './WorkflowManager';
+import { TaskAssignment } from './TaskAssignment';
+import { AIContentStudio } from './AIContentStudio';
+import { AccessibilityChecker } from './AccessibilityChecker';
 
 interface SectionItem {
   id: string;
@@ -164,6 +169,37 @@ const sections: Section[] = [
       { id: 'restore', label: 'Restaurar Versiones', icon: RotateCcw, description: 'Recuperar cambios' },
     ]
   },
+  {
+    id: 'workflow',
+    title: 'Workflow Editorial',
+    icon: Clock,
+    items: [
+      { id: 'calendar', label: 'Calendario Editorial', icon: Clock, description: 'Planificación de contenido', badge: 'Nuevo' },
+      { id: 'workflow', label: 'Gestión de Estados', icon: ToggleLeft, description: 'Flujo de aprobaciones' },
+      { id: 'tasks', label: 'Asignación de Tareas', icon: Users, description: 'Revisores y asignaciones' },
+    ]
+  },
+  {
+    id: 'ai-content',
+    title: 'IA Generativa',
+    icon: Sparkles,
+    items: [
+      { id: 'studio', label: 'AI Content Studio', icon: Sparkles, description: 'Generación con IA', badge: 'Nuevo' },
+      { id: 'seo-ai', label: 'SEO con IA', icon: Search, description: 'Sugerencias automáticas' },
+      { id: 'quality', label: 'Quality Score', icon: Target, description: 'Análisis de calidad' },
+    ]
+  },
+  {
+    id: 'accessibility',
+    title: 'Accesibilidad WCAG',
+    icon: Eye,
+    items: [
+      { id: 'scanner', label: 'Scanner WCAG', icon: Search, description: 'Análisis automático', badge: 'Nuevo' },
+      { id: 'alttext', label: 'Gestión Alt Texts', icon: Image, description: 'Textos alternativos' },
+      { id: 'contrast', label: 'Verificador Contraste', icon: Palette, description: 'Ratios de contraste' },
+      { id: 'checklist', label: 'Checklist Compliance', icon: FileText, description: 'Lista de verificación' },
+    ]
+  },
 ];
 
 export const CMSDashboard: React.FC = () => {
@@ -244,6 +280,22 @@ export const CMSDashboard: React.FC = () => {
       'audit': {
         'timeline': <AuditDashboard />,
         'restore': <AuditDashboard />,
+      },
+      'workflow': {
+        'calendar': <EditorialCalendar />,
+        'workflow': <WorkflowManager />,
+        'tasks': <TaskAssignment />,
+      },
+      'ai-content': {
+        'studio': <AIContentStudio />,
+        'seo-ai': <AIContentStudio />,
+        'quality': <AIContentStudio />,
+      },
+      'accessibility': {
+        'scanner': <AccessibilityChecker />,
+        'alttext': <AccessibilityChecker />,
+        'contrast': <AccessibilityChecker />,
+        'checklist': <AccessibilityChecker />,
       },
     };
 
