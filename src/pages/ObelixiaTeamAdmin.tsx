@@ -6,7 +6,7 @@ import {
   FileText, Euro, Package, Receipt, Settings, 
   BarChart3, Users, Shield, Code, Palette, 
   Store, Layers, BookOpen, Activity, Rocket,
-  ChevronLeft, ChevronRight, Home
+  ChevronLeft, ChevronRight, Home, LayoutGrid
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
@@ -26,6 +26,7 @@ import { CNAEPricingAdmin } from '@/components/cnae/CNAEPricingAdmin';
 import { CNAEDashboard } from '@/components/cnae/CNAEDashboard';
 import WhiteLabelConfig from '@/components/admin/WhiteLabelConfig';
 import APIDocumentation from '@/components/admin/APIDocumentation';
+import { CMSDashboard } from '@/components/cms-admin';
 
 const ObelixiaTeamAdmin: React.FC = () => {
   const { isSuperAdmin, isAdmin } = useAuth();
@@ -132,7 +133,7 @@ const ObelixiaTeamAdmin: React.FC = () => {
         <Card className="bg-slate-900/80 border-slate-700/50 backdrop-blur-sm">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <CardHeader className="pb-0 border-b border-slate-700/50">
-              <TabsList className="grid grid-cols-4 lg:grid-cols-8 w-full gap-1">
+              <TabsList className="grid grid-cols-5 lg:grid-cols-9 w-full gap-1">
                 <TabsTrigger 
                   value="quotes" 
                   className="flex items-center gap-2 text-xs"
@@ -160,6 +161,13 @@ const ObelixiaTeamAdmin: React.FC = () => {
                 >
                   <Settings className="w-4 h-4" />
                   <span className="hidden sm:inline">Contenidos</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="cms"
+                  className="flex items-center gap-2 text-xs"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                  <span className="hidden sm:inline">CMS</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="docs"
@@ -207,6 +215,10 @@ const ObelixiaTeamAdmin: React.FC = () => {
 
               <TabsContent value="content" className="m-0">
                 <ContentManager />
+              </TabsContent>
+
+              <TabsContent value="cms" className="m-0">
+                <CMSDashboard />
               </TabsContent>
 
               <TabsContent value="docs" className="m-0 space-y-6">
