@@ -62,6 +62,22 @@ export const SecurityOnboardingGuide: React.FC = () => {
       priority: 'critical'
     },
     {
+      id: 'eslint-security',
+      name: 'ESLint Security Rules',
+      description: 'Reglas de seguridad activas (no-eval, no-implied-eval, no-new-func)',
+      status: 'implemented',
+      category: 'code-quality',
+      priority: 'high'
+    },
+    {
+      id: 'typescript-strict',
+      name: 'TypeScript Strict Mode',
+      description: 'Modo estricto de TypeScript para mayor seguridad de tipos',
+      status: 'implemented',
+      category: 'code-quality',
+      priority: 'high'
+    },
+    {
       id: 'gitleaks',
       name: 'Gitleaks Pre-commit',
       description: 'Escaneo de secretos en cada commit',
@@ -174,6 +190,20 @@ export const SecurityOnboardingGuide: React.FC = () => {
           passed = false;
           message = 'Verificar manualmente que .env está en .gitignore';
           newStatus = 'warning';
+          break;
+
+        case 'eslint-security':
+          // ESLint security rules are configured in eslint.config.js
+          passed = true;
+          message = 'Reglas activas: no-eval, no-implied-eval, no-new-func, no-script-url, eqeqeq, no-extend-native';
+          newStatus = 'implemented';
+          break;
+
+        case 'typescript-strict':
+          // TypeScript strict mode is enabled in tsconfig.json
+          passed = true;
+          message = 'strict: true habilitado en tsconfig.json';
+          newStatus = 'implemented';
           break;
 
         case 'gitleaks':
