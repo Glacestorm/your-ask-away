@@ -200,10 +200,10 @@ export const ContentAnalyticsDashboard: React.FC<ContentAnalyticsDashboardProps>
               <XAxis 
                 dataKey="date" 
                 stroke="hsl(var(--muted-foreground))"
-                tick={{ fontSize: 10 }}
+                tick={{ fontSize: 12, fill: 'hsl(var(--foreground))' }}
                 tickFormatter={(value) => new Date(value).toLocaleDateString('es', { day: '2-digit', month: 'short' })}
               />
-              <YAxis stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 10 }} />
+              <YAxis stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 12, fill: 'hsl(var(--foreground))' }} />
               <Tooltip
                 contentStyle={{
                   backgroundColor: 'hsl(var(--card))',
@@ -277,13 +277,13 @@ export const ContentAnalyticsDashboard: React.FC<ContentAnalyticsDashboardProps>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={engagementSummary} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-              <XAxis type="number" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 10 }} />
+              <XAxis type="number" stroke="hsl(var(--muted-foreground))" tick={{ fontSize: 12, fill: 'hsl(var(--foreground))' }} />
               <YAxis 
                 dataKey="content_title" 
                 type="category" 
                 stroke="hsl(var(--muted-foreground))" 
-                tick={{ fontSize: 10 }}
-                width={100}
+                tick={{ fontSize: 13, fill: 'hsl(var(--foreground))', fontWeight: 500 }}
+                width={140}
               />
               <Tooltip
                 contentStyle={{
@@ -298,12 +298,12 @@ export const ContentAnalyticsDashboard: React.FC<ContentAnalyticsDashboardProps>
         </div>
         <div className="grid grid-cols-3 gap-4 mt-4">
           {engagementSummary.slice(0, 3).map((item, index) => (
-            <div key={index} className="text-center p-2 rounded-lg bg-muted/30">
-              <div className="flex items-center justify-center gap-1 text-muted-foreground text-xs mb-1">
-                <Share2 className="h-3 w-3" />
+            <div key={index} className="text-center p-3 rounded-lg bg-muted/30">
+              <div className="flex items-center justify-center gap-1.5 text-muted-foreground text-sm mb-1">
+                <Share2 className="h-4 w-4" />
                 Shares
               </div>
-              <p className="font-semibold text-foreground">{formatNumber(item.total_shares)}</p>
+              <p className="text-lg font-bold text-foreground">{formatNumber(item.total_shares)}</p>
             </div>
           ))}
         </div>
@@ -401,14 +401,14 @@ export const ContentAnalyticsDashboard: React.FC<ContentAnalyticsDashboardProps>
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div className="flex justify-center gap-4 mt-2">
+          <div className="flex justify-center gap-6 mt-3">
             {pieData.map((item, index) => (
-              <div key={item.name} className="flex items-center gap-1">
+              <div key={item.name} className="flex items-center gap-2">
                 <div 
                   className="w-3 h-3 rounded-full" 
                   style={{ backgroundColor: CHART_COLORS[index % CHART_COLORS.length] }}
                 />
-                <span className="text-xs text-muted-foreground capitalize">{item.name}</span>
+                <span className="text-sm font-medium text-foreground capitalize">{item.name}</span>
               </div>
             ))}
           </div>
@@ -503,23 +503,23 @@ export const ContentAnalyticsDashboard: React.FC<ContentAnalyticsDashboardProps>
               <CardContent>
                 <div className="space-y-2 max-h-[300px] overflow-y-auto">
                   {topPages.map((page) => (
-                    <div key={page.page_path} className="p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                    <div key={page.page_path} className="p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium text-foreground text-sm">{page.page_title || page.page_path}</span>
-                        <Badge variant="outline">{formatNumber(page.total_views)} vistas</Badge>
+                        <span className="font-semibold text-foreground">{page.page_title || page.page_path}</span>
+                        <Badge variant="outline" className="text-sm">{formatNumber(page.total_views)} vistas</Badge>
                       </div>
-                      <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
-                        <div>
-                          <Users className="h-3 w-3 inline mr-1" />
-                          {formatNumber(page.total_visitors)}
+                      <div className="grid grid-cols-3 gap-3 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1.5">
+                          <Users className="h-4 w-4" />
+                          <span className="font-medium text-foreground">{formatNumber(page.total_visitors)}</span>
                         </div>
-                        <div>
-                          <TrendingDown className="h-3 w-3 inline mr-1" />
-                          {page.avg_bounce_rate.toFixed(1)}%
+                        <div className="flex items-center gap-1.5">
+                          <TrendingDown className="h-4 w-4" />
+                          <span className="font-medium text-foreground">{page.avg_bounce_rate.toFixed(1)}%</span>
                         </div>
-                        <div>
-                          <Target className="h-3 w-3 inline mr-1" />
-                          {page.avg_conversion_rate.toFixed(1)}%
+                        <div className="flex items-center gap-1.5">
+                          <Target className="h-4 w-4" />
+                          <span className="font-medium text-foreground">{page.avg_conversion_rate.toFixed(1)}%</span>
                         </div>
                       </div>
                     </div>
@@ -538,30 +538,30 @@ export const ContentAnalyticsDashboard: React.FC<ContentAnalyticsDashboardProps>
                 <CardTitle className="text-lg">Desglose de Engagement</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {engagementSummary.map((item, index) => (
-                    <div key={index} className="p-3 rounded-lg bg-muted/30">
-                      <p className="font-medium text-foreground text-sm mb-2">{item.content_title}</p>
-                      <div className="grid grid-cols-4 gap-2 text-xs">
+                    <div key={index} className="p-4 rounded-lg bg-muted/30">
+                      <p className="font-semibold text-foreground text-base mb-3">{item.content_title}</p>
+                      <div className="grid grid-cols-4 gap-3">
                         <div className="text-center">
-                          <MousePointer className="h-3 w-3 mx-auto mb-1 text-primary" />
-                          <p className="font-semibold">{formatNumber(item.total_clicks)}</p>
-                          <p className="text-muted-foreground">Clicks</p>
+                          <MousePointer className="h-4 w-4 mx-auto mb-1.5 text-primary" />
+                          <p className="text-lg font-bold text-foreground">{formatNumber(item.total_clicks)}</p>
+                          <p className="text-sm text-muted-foreground">Clicks</p>
                         </div>
                         <div className="text-center">
-                          <BarChart3 className="h-3 w-3 mx-auto mb-1 text-blue-500" />
-                          <p className="font-semibold">{item.avg_scroll_depth.toFixed(0)}%</p>
-                          <p className="text-muted-foreground">Scroll</p>
+                          <BarChart3 className="h-4 w-4 mx-auto mb-1.5 text-blue-500" />
+                          <p className="text-lg font-bold text-foreground">{item.avg_scroll_depth.toFixed(0)}%</p>
+                          <p className="text-sm text-muted-foreground">Scroll</p>
                         </div>
                         <div className="text-center">
-                          <Share2 className="h-3 w-3 mx-auto mb-1 text-green-500" />
-                          <p className="font-semibold">{formatNumber(item.total_shares)}</p>
-                          <p className="text-muted-foreground">Shares</p>
+                          <Share2 className="h-4 w-4 mx-auto mb-1.5 text-green-500" />
+                          <p className="text-lg font-bold text-foreground">{formatNumber(item.total_shares)}</p>
+                          <p className="text-sm text-muted-foreground">Shares</p>
                         </div>
                         <div className="text-center">
-                          <Heart className="h-3 w-3 mx-auto mb-1 text-red-500" />
-                          <p className="font-semibold">{formatNumber(item.total_likes)}</p>
-                          <p className="text-muted-foreground">Likes</p>
+                          <Heart className="h-4 w-4 mx-auto mb-1.5 text-red-500" />
+                          <p className="text-lg font-bold text-foreground">{formatNumber(item.total_likes)}</p>
+                          <p className="text-sm text-muted-foreground">Likes</p>
                         </div>
                       </div>
                     </div>
@@ -592,9 +592,9 @@ export const ContentAnalyticsDashboard: React.FC<ContentAnalyticsDashboardProps>
                   .sort(([, a], [, b]) => b - a)
                   .slice(0, 4)
                   .map(([path, count]) => (
-                    <div key={path} className="p-3 rounded-lg bg-muted/30 text-center">
-                      <p className="text-2xl font-bold text-primary">{count}</p>
-                      <p className="text-xs text-muted-foreground truncate">{path}</p>
+                    <div key={path} className="p-4 rounded-lg bg-muted/30 text-center">
+                      <p className="text-3xl font-bold text-primary">{count}</p>
+                      <p className="text-sm text-muted-foreground truncate mt-1">{path}</p>
                     </div>
                   ))}
               </div>
