@@ -1293,6 +1293,22 @@ case 'administration':
                   </CardContent>
                 </Card>
                 )}
+                {(isSuperAdmin || isCommercialDirector || isCommercialManager) && (
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-blue-500/10"
+                  onClick={() => handleSectionChange('analyzer')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                      <BarChart3 className="h-4 w-4 text-blue-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-blue-700 dark:text-blue-400">{t('admin.card.analyzer')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.analyzer.desc')}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                )}
               </div>
             </div>
           </div>
