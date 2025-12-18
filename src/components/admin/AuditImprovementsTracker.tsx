@@ -307,7 +307,18 @@ export const AuditImprovementsTracker: React.FC = () => {
       'invalidate queries': 100, // Invalidation helpers
       'prefetch queries': 100, // Prefetch helpers
       'optimistic updates': 100, // Optimistic update helpers
-      'request deduplication': 100 // deduplicatedFetch function
+      'request deduplication': 100, // deduplicatedFetch function
+      // Image CDN with On-the-fly Transformations
+      'image cdn': 100, // src/lib/imageOptimization.ts + OptimizedImage.tsx
+      'cdn transformacions': 100, // On-the-fly transformations
+      'on-the-fly': 100, // getOptimizedImageUrl with params
+      'supabase storage': 100, // CDN integration with Supabase
+      'auto-format': 100, // WebP/AVIF auto-detection
+      'generatepicturesources': 100, // Picture sources generation
+      'generatesrcset': 100, // Srcset responsive generation
+      'blur-up': 100, // Blur placeholder in OptimizedImage
+      'intersection observer': 100, // createLazyImageObserver
+      'breakpoints viewport': 100 // [320, 640, 768, 1024, 1280, 1920]
     };
 
     // Check for exact matches first
