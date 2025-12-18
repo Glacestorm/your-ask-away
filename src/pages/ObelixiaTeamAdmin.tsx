@@ -27,6 +27,7 @@ import { CNAEDashboard } from '@/components/cnae/CNAEDashboard';
 import WhiteLabelConfig from '@/components/admin/WhiteLabelConfig';
 import APIDocumentation from '@/components/admin/APIDocumentation';
 import { CMSDashboard } from '@/components/cms-admin';
+import SecurityOnboardingGuide from '@/components/obelixia-admin/SecurityOnboardingGuide';
 
 const ObelixiaTeamAdmin: React.FC = () => {
   const { isSuperAdmin, isAdmin } = useAuth();
@@ -133,7 +134,7 @@ const ObelixiaTeamAdmin: React.FC = () => {
         <Card className="bg-slate-900/80 border-slate-700/50 backdrop-blur-sm">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <CardHeader className="pb-0 border-b border-slate-700/50">
-              <TabsList className="grid grid-cols-5 lg:grid-cols-9 w-full gap-1">
+              <TabsList className="grid grid-cols-5 lg:grid-cols-10 w-full gap-1">
                 <TabsTrigger 
                   value="quotes" 
                   className="flex items-center gap-2 text-xs"
@@ -196,6 +197,13 @@ const ObelixiaTeamAdmin: React.FC = () => {
                 >
                   <Code className="w-4 h-4" />
                   <span className="hidden sm:inline">API</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="security"
+                  className="flex items-center gap-2 text-xs"
+                >
+                  <Shield className="w-4 h-4" />
+                  <span className="hidden sm:inline">Seguridad</span>
                 </TabsTrigger>
               </TabsList>
             </CardHeader>
@@ -399,6 +407,10 @@ const ObelixiaTeamAdmin: React.FC = () => {
 
               <TabsContent value="api" className="m-0">
                 <APIDocumentation />
+              </TabsContent>
+
+              <TabsContent value="security" className="m-0">
+                <SecurityOnboardingGuide />
               </TabsContent>
             </CardContent>
           </Tabs>
