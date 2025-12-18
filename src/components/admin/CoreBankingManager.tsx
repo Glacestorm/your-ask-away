@@ -23,36 +23,36 @@ interface CoreBankingConfig {
   entity_name: string;
   core_type: string;
   api_endpoint: string;
-  api_version: string;
+  api_version: string | null;
   auth_type: string;
   auth_config: any;
-  is_active: boolean;
-  timeout_ms: number;
+  is_active: boolean | null;
+  timeout_ms: number | null;
   retry_config: any;
-  created_at: string;
+  created_at: string | null;
 }
 
 interface IntegrationMapping {
   id: string;
-  config_id: string;
+  config_id: string | null;
   entity_type: string;
   obelixia_field: string;
   core_field: string;
   transformation_rule: any;
   direction: string;
-  is_required: boolean;
+  is_required: boolean | null;
   default_value: string | null;
 }
 
 interface IntegrationQueueItem {
   id: string;
-  config_id: string;
+  config_id: string | null;
   operation_type: string;
   payload: any;
-  status: string;
-  priority: number;
+  status: string | null;
+  priority: number | null;
   error_message: string | null;
-  created_at: string;
+  created_at: string | null;
   started_at: string | null;
   completed_at: string | null;
 }

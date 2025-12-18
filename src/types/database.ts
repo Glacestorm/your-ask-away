@@ -107,9 +107,9 @@ export interface Concept {
   concept_key: string;
   concept_value: string;
   description: string | null;
-  active: boolean;
-  created_at: string;
-  updated_at: string;
+  active: boolean | null;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export interface AuditLog {

@@ -38,7 +38,7 @@ interface Goal {
 
 interface Profile {
   id: string;
-  full_name: string;
+  full_name: string | null;
   oficina: string | null;
 }
 
