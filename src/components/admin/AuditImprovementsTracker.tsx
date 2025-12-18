@@ -268,7 +268,18 @@ export const AuditImprovementsTracker: React.FC = () => {
       'màxima compressió': 100, // Maximum compression
       'assets estàtics': 100, // Static assets compression
       'gzip fallback': 100, // Gzip fallback for older browsers
-      'pre-compressió': 100 // Pre-compression during build
+      'pre-compressió': 100, // Pre-compression during build
+      // AVIF/WebP Image Optimization implementation
+      'avif': 100, // src/lib/imageOptimization.ts AVIF support
+      'webp': 100, // WebP format support
+      'avif/webp': 100, // Both formats supported
+      'optimització imatges': 100, // Image optimization utilities
+      'imatges avif/webp': 100, // AVIF/WebP automatic optimization
+      'imageoptimization': 100, // imageOptimization.ts module
+      'srcset': 100, // generateSrcSet function
+      'picture sources': 100, // generatePictureSources function
+      'lazy image': 100, // createLazyImageObserver
+      'preload critical': 100 // preloadCriticalImage function
     };
 
     // Check for exact matches first
