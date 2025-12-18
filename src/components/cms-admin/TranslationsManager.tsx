@@ -13,7 +13,8 @@ import { Languages, Search, Download, Upload, Wand2, Plus, Save, Loader2 } from 
 interface Translation {
   id: string;
   translation_key: string;
-  translations: Record<string, string>;
+  locale: string;
+  value: string;
   namespace: string;
 }
 
@@ -24,12 +25,18 @@ const languages = [
   { code: 'fr', name: 'Français' },
 ];
 
+interface GroupedTranslation {
+  key: string;
+  namespace: string;
+  translations: Record<string, { id: string; value: string }>;
+}
+
 export function TranslationsManager() {
-  const [translations, setTranslations] = useState<Translation[]>([]);
+  const [translations, setTranslations] = useState<GroupedTranslation[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedLang, setSelectedLang] = useState('en');
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingKey, setEditingKey] = useState<string | null>(null);
   const [newKey, setNewKey] = useState('');
   const [newTranslations, setNewTranslations] = useState<Record<string, string>>({});
 
@@ -37,9 +44,18 @@ export function TranslationsManager() {
 
   const loadTranslations = async () => {
     try {
-      const { data, error } = await supabase.from('cms_translations').select('*').order('translation_key');
+      const { data, error } = await (supabase.from('cms_translations') as any).select('*').order('translation_key');
       if (error) throw error;
-      setTranslations(data?.map(t => ({ ...t, translations: t.translations as Record<string, string> })) || []);
+      
+      // Group by translation_key
+      const grouped: Record<string, GroupedTranslation> = {};
+      (data || []).forEach((t: Translation) => {
+        if (!grouped[t.translation_key]) {
+          grouped[t.translation_key] = { key: t.translation_key, namespace: t.namespace, translations: {} };
+        }
+        grouped[t.translation_key].translations[t.locale] = { id: t.id, value: t.value };
+      });
+      setTranslations(Object.values(grouped));
     } catch (error) {
       console.error('Error loading translations:', error);
     } finally {
@@ -47,11 +63,16 @@ export function TranslationsManager() {
     }
   };
 
-  const saveTranslation = async (t: Translation) => {
+  const saveTranslation = async (t: GroupedTranslation, locale: string, value: string) => {
     try {
-      await supabase.from('cms_translations').update({ translations: t.translations }).eq('id', t.id);
+      const existing = t.translations[locale];
+      if (existing) {
+        await (supabase.from('cms_translations') as any).update({ value }).eq('id', existing.id);
+      } else {
+        await (supabase.from('cms_translations') as any).insert({ translation_key: t.key, locale, value, namespace: t.namespace });
+      }
       toast.success('Traducción guardada');
-      setEditingId(null);
+      loadTranslations();
     } catch (error) {
       toast.error('Error al guardar');
     }
@@ -60,7 +81,16 @@ export function TranslationsManager() {
   const addTranslation = async () => {
     if (!newKey.trim()) return;
     try {
-      await supabase.from('cms_translations').insert({ translation_key: newKey, translations: newTranslations, namespace: 'common' });
+      const inserts = Object.entries(newTranslations).filter(([_, v]) => v.trim()).map(([locale, value]) => ({
+        translation_key: newKey,
+        locale,
+        value,
+        namespace: 'common'
+      }));
+      if (inserts.length === 0) {
+        inserts.push({ translation_key: newKey, locale: 'en', value: '', namespace: 'common' });
+      }
+      await (supabase.from('cms_translations') as any).insert(inserts);
       toast.success('Traducción añadida');
       setNewKey('');
       setNewTranslations({});
@@ -70,13 +100,13 @@ export function TranslationsManager() {
     }
   };
 
-  const autoTranslate = async (t: Translation, targetLang: string) => {
-    const sourceLang = Object.keys(t.translations).find(k => t.translations[k]);
+  const autoTranslate = async (t: GroupedTranslation, targetLang: string) => {
+    const sourceLang = Object.keys(t.translations).find(k => t.translations[k]?.value);
     if (!sourceLang) return;
     toast.info(`Traduciendo a ${targetLang}...`);
-    setTimeout(() => {
-      const updated = { ...t, translations: { ...t.translations, [targetLang]: `[Auto] ${t.translations[sourceLang]}` } };
-      setTranslations(prev => prev.map(tr => tr.id === t.id ? updated : tr));
+    setTimeout(async () => {
+      const autoValue = `[Auto] ${t.translations[sourceLang].value}`;
+      await saveTranslation(t, targetLang, autoValue);
       toast.success('Traducción automática completada');
     }, 1000);
   };
@@ -86,7 +116,7 @@ export function TranslationsManager() {
       const data: Record<string, Record<string, string>> = {};
       languages.forEach(l => { data[l.code] = {}; });
       translations.forEach(t => {
-        languages.forEach(l => { data[l.code][t.translation_key] = t.translations[l.code] || ''; });
+        languages.forEach(l => { data[l.code][t.key] = t.translations[l.code]?.value || ''; });
       });
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -97,7 +127,7 @@ export function TranslationsManager() {
     } else {
       const rows = [['key', ...languages.map(l => l.code)]];
       translations.forEach(t => {
-        rows.push([t.translation_key, ...languages.map(l => t.translations[l.code] || '')]);
+        rows.push([t.key, ...languages.map(l => t.translations[l.code]?.value || '')]);
       });
       const csv = rows.map(r => r.join(',')).join('\n');
       const blob = new Blob([csv], { type: 'text/csv' });
@@ -112,11 +142,11 @@ export function TranslationsManager() {
 
   const getProgress = (lang: string) => {
     if (translations.length === 0) return 0;
-    const filled = translations.filter(t => t.translations[lang]?.trim()).length;
+    const filled = translations.filter(t => t.translations[lang]?.value?.trim()).length;
     return Math.round((filled / translations.length) * 100);
   };
 
-  const filtered = translations.filter(t => t.translation_key.toLowerCase().includes(search.toLowerCase()) || Object.values(t.translations).some(v => v?.toLowerCase().includes(search.toLowerCase())));
+  const filtered = translations.filter(t => t.key.toLowerCase().includes(search.toLowerCase()) || Object.values(t.translations).some(v => v?.value?.toLowerCase().includes(search.toLowerCase())));
 
   if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>;
 
@@ -172,26 +202,35 @@ export function TranslationsManager() {
 
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {filtered.map(t => (
-                <div key={t.id} className="p-3 border rounded-lg">
+                <div key={t.key} className="p-3 border rounded-lg">
                   <div className="flex items-center justify-between mb-2">
-                    <code className="text-sm bg-muted px-2 py-1 rounded">{t.translation_key}</code>
+                    <code className="text-sm bg-muted px-2 py-1 rounded">{t.key}</code>
                     <div className="flex gap-1">
                       <Button variant="ghost" size="sm" onClick={() => autoTranslate(t, selectedLang)}><Wand2 className="h-4 w-4" /></Button>
-                      <Button variant="ghost" size="sm" onClick={() => setEditingId(editingId === t.id ? null : t.id)}>{editingId === t.id ? 'Cerrar' : 'Editar'}</Button>
+                      <Button variant="ghost" size="sm" onClick={() => setEditingKey(editingKey === t.key ? null : t.key)}>{editingKey === t.key ? 'Cerrar' : 'Editar'}</Button>
                     </div>
                   </div>
-                  {editingId === t.id ? (
+                  {editingKey === t.key ? (
                     <div className="space-y-2">
                       {languages.map(l => (
                         <div key={l.code} className="flex gap-2 items-center">
                           <span className="w-8 text-xs font-medium">{l.code}</span>
-                          <Input value={t.translations[l.code] || ''} onChange={e => setTranslations(prev => prev.map(tr => tr.id === t.id ? { ...tr, translations: { ...tr.translations, [l.code]: e.target.value } } : tr))} />
+                          <Input 
+                            value={t.translations[l.code]?.value || ''} 
+                            onChange={e => setTranslations(prev => prev.map(tr => tr.key === t.key ? { 
+                              ...tr, 
+                              translations: { 
+                                ...tr.translations, 
+                                [l.code]: { id: tr.translations[l.code]?.id || '', value: e.target.value } 
+                              } 
+                            } : tr))} 
+                          />
+                          <Button size="sm" variant="ghost" onClick={() => saveTranslation(t, l.code, t.translations[l.code]?.value || '')}><Save className="h-3 w-3" /></Button>
                         </div>
                       ))}
-                      <Button size="sm" onClick={() => saveTranslation(t)}><Save className="h-4 w-4 mr-2" />Guardar</Button>
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground">{t.translations[selectedLang] || <em>Sin traducción</em>}</p>
+                    <p className="text-sm text-muted-foreground">{t.translations[selectedLang]?.value || <em>Sin traducción</em>}</p>
                   )}
                 </div>
               ))}
