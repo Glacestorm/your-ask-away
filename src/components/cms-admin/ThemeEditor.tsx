@@ -37,12 +37,12 @@ export function ThemeEditor() {
 
   const loadThemes = async () => {
     try {
-      const { data, error } = await supabase.from('cms_themes').select('*').order('created_at', { ascending: false });
+      const { data, error } = await (supabase.from('cms_themes') as any).select('*').order('created_at', { ascending: false });
       if (error) throw error;
       setThemes(data || []);
-      const active = data?.find(t => t.is_active);
+      const active = data?.find((t: any) => t.is_active);
       if (active) {
-        setSelectedTheme(active);
+        setSelectedTheme(active as Theme);
         setEditedColors(active.color_palette as Record<string, string>);
       }
     } catch (error) {
@@ -55,7 +55,7 @@ export function ThemeEditor() {
   const saveTheme = async () => {
     if (!selectedTheme) return;
     try {
-      await supabase.from('cms_themes').update({ color_palette: editedColors }).eq('id', selectedTheme.id);
+      await (supabase.from('cms_themes') as any).update({ color_palette: editedColors }).eq('id', selectedTheme.id);
       toast.success('Tema guardado');
       loadThemes();
     } catch (error) {
@@ -65,8 +65,8 @@ export function ThemeEditor() {
 
   const activateTheme = async (theme: Theme) => {
     try {
-      await supabase.from('cms_themes').update({ is_active: false }).neq('id', theme.id);
-      await supabase.from('cms_themes').update({ is_active: true }).eq('id', theme.id);
+      await (supabase.from('cms_themes') as any).update({ is_active: false }).neq('id', theme.id);
+      await (supabase.from('cms_themes') as any).update({ is_active: true }).eq('id', theme.id);
       toast.success('Tema activado');
       loadThemes();
     } catch (error) {
@@ -76,7 +76,7 @@ export function ThemeEditor() {
 
   const createFromPreset = async (preset: typeof presets[0]) => {
     try {
-      await supabase.from('cms_themes').insert({
+      await (supabase.from('cms_themes') as any).insert({
         theme_name: preset.name,
         color_palette: preset.colors,
         is_active: false,
@@ -91,7 +91,7 @@ export function ThemeEditor() {
 
   const deleteTheme = async (id: string) => {
     try {
-      await supabase.from('cms_themes').delete().eq('id', id);
+      await (supabase.from('cms_themes') as any).delete().eq('id', id);
       toast.success('Tema eliminado');
       if (selectedTheme?.id === id) setSelectedTheme(null);
       loadThemes();
@@ -117,7 +117,7 @@ export function ThemeEditor() {
     reader.onload = async (event) => {
       try {
         const data = JSON.parse(event.target?.result as string);
-        await supabase.from('cms_themes').insert({
+        await (supabase.from('cms_themes') as any).insert({
           theme_name: data.name || 'Imported Theme',
           color_palette: data.colors,
           is_active: false,

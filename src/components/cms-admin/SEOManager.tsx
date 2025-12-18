@@ -38,15 +38,23 @@ export function SEOManager() {
 
   const loadData = async () => {
     try {
-      const { data, error } = await supabase.from('cms_seo_meta').select('*').order('page_path');
+      const { data, error } = await (supabase.from('cms_seo_meta') as any).select('*').order('page_path');
       if (error) throw error;
-      setSeoMetas(data?.map(s => ({
+      setSeoMetas(data?.map((s: any) => ({
         ...s,
+        page_id: s.page_id || null,
+        title: s.title?.en || s.title || '',
+        description: s.description?.en || s.description || '',
+        og_title: s.og_title?.en || s.og_title || '',
+        og_description: s.og_description?.en || s.og_description || '',
+        twitter_title: s.twitter_title || '',
+        twitter_description: s.twitter_description || '',
+        twitter_image: s.twitter_image || '',
         keywords: (s.keywords as string[]) || [],
         structured_data: (s.structured_data as Record<string, any>) || {}
       })) || []);
 
-      const { data: settings } = await supabase.from('cms_site_settings').select('setting_value').eq('setting_key', 'seo').single();
+      const { data: settings } = await (supabase.from('cms_site_settings') as any).select('setting_value').eq('setting_key', 'seo').single();
       if (settings?.setting_value) {
         const seoSettings = settings.setting_value as any;
         setRobotsTxt(seoSettings.robots_txt || robotsTxt);
@@ -63,25 +71,22 @@ export function SEOManager() {
     const path = prompt('Ruta de la página (ej: /about):');
     if (!path) return;
     try {
-      const { data, error } = await supabase.from('cms_seo_meta').insert({
+      const { data, error } = await (supabase.from('cms_seo_meta') as any).insert({
         page_path: path,
-        title: '',
-        description: '',
+        title: { en: '' },
+        description: { en: '' },
         keywords: [],
-        og_title: '',
-        og_description: '',
+        og_title: { en: '' },
+        og_description: { en: '' },
         og_image: '',
         twitter_card: 'summary_large_image',
-        twitter_title: '',
-        twitter_description: '',
-        twitter_image: '',
         canonical_url: '',
         structured_data: {}
       }).select().single();
       if (error) throw error;
       toast.success('Meta SEO creado');
       loadData();
-      setSelected(data as any);
+      setSelected({ ...data, page_id: null, title: '', description: '', og_title: '', og_description: '', twitter_title: '', twitter_description: '', twitter_image: '', keywords: [], structured_data: {} } as any);
     } catch (error) {
       toast.error('Error al crear');
     }
@@ -90,17 +95,14 @@ export function SEOManager() {
   const saveMeta = async () => {
     if (!selected) return;
     try {
-      await supabase.from('cms_seo_meta').update({
-        title: selected.title,
-        description: selected.description,
+      await (supabase.from('cms_seo_meta') as any).update({
+        title: { en: selected.title },
+        description: { en: selected.description },
         keywords: selected.keywords,
-        og_title: selected.og_title,
-        og_description: selected.og_description,
+        og_title: { en: selected.og_title },
+        og_description: { en: selected.og_description },
         og_image: selected.og_image,
         twitter_card: selected.twitter_card,
-        twitter_title: selected.twitter_title,
-        twitter_description: selected.twitter_description,
-        twitter_image: selected.twitter_image,
         canonical_url: selected.canonical_url,
         structured_data: selected.structured_data
       }).eq('id', selected.id);
@@ -113,8 +115,9 @@ export function SEOManager() {
 
   const saveGlobalSEO = async () => {
     try {
-      await supabase.from('cms_site_settings').upsert({
+      await (supabase.from('cms_site_settings') as any).upsert({
         setting_key: 'seo',
+        label: 'SEO Settings',
         setting_value: { robots_txt: robotsTxt, sitemap: sitemapConfig }
       }, { onConflict: 'setting_key' });
       toast.success('Configuración SEO guardada');

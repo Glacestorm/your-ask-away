@@ -80,14 +80,12 @@ export function SiteSettingsManager() {
       const { id, ...settingValue } = settings;
       
       if (id) {
-        await supabase
-          .from('cms_site_settings')
+        await (supabase.from('cms_site_settings') as any)
           .update({ setting_value: settingValue as any, updated_at: new Date().toISOString() })
           .eq('id', id);
       } else {
-        await supabase
-          .from('cms_site_settings')
-          .insert({ setting_key: 'general', setting_value: settingValue as any });
+        await (supabase.from('cms_site_settings') as any)
+          .insert({ setting_key: 'general', label: 'General Settings', setting_value: settingValue as any });
       }
       
       toast.success('Configuración guardada');

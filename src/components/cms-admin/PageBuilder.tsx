@@ -56,9 +56,9 @@ export function PageBuilder() {
 
   const loadPages = async () => {
     try {
-      const { data, error } = await supabase.from('cms_pages').select('*').order('created_at', { ascending: false });
+      const { data, error } = await (supabase.from('cms_pages') as any).select('*').order('created_at', { ascending: false });
       if (error) throw error;
-      setPages(data?.map(p => ({ ...p, blocks: (p.content as any)?.blocks || [] })) || []);
+      setPages(data?.map((p: any) => ({ ...p, title: p.title?.en || p.title || '', blocks: p.content?.blocks || [] })) || []);
     } catch (error) {
       console.error('Error loading pages:', error);
     } finally {
@@ -68,11 +68,11 @@ export function PageBuilder() {
 
   const createPage = async () => {
     try {
-      const { data, error } = await supabase.from('cms_pages').insert({ title: 'Nueva Página', slug: `page-${Date.now()}`, content: { blocks: [] }, status: 'draft' }).select().single();
+      const { data, error } = await (supabase.from('cms_pages') as any).insert({ title: { en: 'Nueva Página' }, slug: `page-${Date.now()}`, content: { blocks: [] }, status: 'draft' }).select().single();
       if (error) throw error;
       toast.success('Página creada');
       loadPages();
-      setSelectedPage({ ...data, blocks: [] });
+      setSelectedPage({ ...data, title: data.title?.en || 'Nueva Página', blocks: [] } as any);
       setBlocks([]);
     } catch (error) {
       toast.error('Error al crear página');
@@ -82,8 +82,8 @@ export function PageBuilder() {
   const savePage = async () => {
     if (!selectedPage) return;
     try {
-      await supabase.from('cms_page_revisions').insert({ page_id: selectedPage.id, content: { blocks }, version_number: Date.now() });
-      await supabase.from('cms_pages').update({ content: { blocks }, updated_at: new Date().toISOString() }).eq('id', selectedPage.id);
+      await (supabase.from('cms_page_revisions') as any).insert({ page_id: selectedPage.id, content: { blocks }, revision_number: Date.now() });
+      await (supabase.from('cms_pages') as any).update({ content: { blocks }, updated_at: new Date().toISOString() }).eq('id', selectedPage.id);
       toast.success('Página guardada');
     } catch (error) {
       toast.error('Error al guardar');
@@ -93,7 +93,7 @@ export function PageBuilder() {
   const publishPage = async () => {
     if (!selectedPage) return;
     try {
-      await supabase.from('cms_pages').update({ status: 'published', published_at: new Date().toISOString() }).eq('id', selectedPage.id);
+      await (supabase.from('cms_pages') as any).update({ status: 'published', published_at: new Date().toISOString() }).eq('id', selectedPage.id);
       toast.success('Página publicada');
       loadPages();
     } catch (error) {
