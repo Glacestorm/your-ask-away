@@ -230,3 +230,15 @@ verify_jwt = true
 
 [functions.cms-validate-config]
 verify_jwt = true
+
+[functions.cms-generate-content]
+verify_jwt = true
+
+[functions.cms-analyze-content-quality]
+verify_jwt = true
+
+[functions.cms-suggest-seo]
+verify_jwt = true
+
+[functions.cms-auto-tag]
+verify_jwt = true
