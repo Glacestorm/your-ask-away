@@ -94,6 +94,30 @@ export const SecurityOnboardingGuide: React.FC = () => {
       priority: 'high'
     },
     {
+      id: 'error-boundary',
+      name: 'React Error Boundary',
+      description: 'Captura de errores en componentes con recuperación y logging',
+      status: 'implemented',
+      category: 'code-quality',
+      priority: 'high'
+    },
+    {
+      id: 'e2e-tests',
+      name: 'Playwright E2E Tests',
+      description: 'Tests de integración end-to-end para flujos críticos',
+      status: 'implemented',
+      category: 'code-quality',
+      priority: 'medium'
+    },
+    {
+      id: 'test-coverage',
+      name: 'Test Coverage (60%+)',
+      description: 'Cobertura mínima de tests unitarios configurada',
+      status: 'implemented',
+      category: 'code-quality',
+      priority: 'medium'
+    },
+    {
       id: 'gitleaks',
       name: 'Gitleaks Pre-commit',
       description: 'Escaneo de secretos en cada commit',
