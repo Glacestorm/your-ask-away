@@ -16,3 +16,4 @@ export { EditorialCalendar } from './EditorialCalendar';
 export { WorkflowManager } from './WorkflowManager';
 export { TaskAssignment } from './TaskAssignment';
 export { AIContentStudio } from './AIContentStudio';
+export { AccessibilityChecker } from './AccessibilityChecker';
