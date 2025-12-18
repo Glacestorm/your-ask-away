@@ -243,7 +243,11 @@ export const AuditImprovementsTracker: React.FC = () => {
       'chunked rendering': 100, // useChunkedRender hook
       'prefetch': 100, // usePrefetchOnHover hook
       'web vitals': 100, // web-vitals integration in main.tsx
-      'tree shaking': 100, // Vite config
+      'tree shaking': 100, // Vite config rollupOptions.treeshake
+      'tree-shaking': 100, // Aggressive tree-shaking in vite.config.ts
+      'tree-shaking agressiu': 100, // Catalan: rollupOptions.treeshake optimized
+      'treeshake optimitzat': 100, // Optimized treeshake configuration
+      'rollup treeshake': 100, // Rollup tree-shaking with moduleSideEffects
       'minification': 100, // Vite esbuild config
       // WebAssembly implementation
       'webassembly': 100, // src/lib/wasm/* fully implemented
