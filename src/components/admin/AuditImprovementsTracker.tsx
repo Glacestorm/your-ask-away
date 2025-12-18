@@ -271,6 +271,15 @@ export const AuditImprovementsTracker: React.FC = () => {
       'pre-compressió': 100, // Pre-compression during build
       // AVIF/WebP Image Optimization implementation
       'avif': 100, // src/lib/imageOptimization.ts AVIF support
+      // Partytown implementation (usePartytown hook)
+      'partytown': 100, // src/hooks/usePartytown.ts + src/lib/partytown/config.ts
+      'usepartytown': 100, // usePartytown hook
+      'third-party scripts': 100, // Third-party script offloading
+      'web workers': 100, // Script offloading to web workers
+      'offload scripts': 100, // canOffloadScript function
+      'worker safe': 100, // WORKER_SAFE_SCRIPTS list
+      'partytown config': 100, // partytownConfig object
+      'analytics offload': 100, // offloadAnalytics function
       'webp': 100, // WebP format support
       'avif/webp': 100, // Both formats supported
       'optimització imatges': 100, // Image optimization utilities
