@@ -2203,6 +2203,51 @@ export type Database = {
         }
         Relationships: []
       }
+      cms_content_workflow: {
+        Row: {
+          assignee: string | null
+          content_id: string
+          content_title: string | null
+          content_type: string
+          created_at: string | null
+          due_date: string | null
+          id: string
+          notes: string | null
+          priority: string | null
+          reviewer: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          assignee?: string | null
+          content_id: string
+          content_title?: string | null
+          content_type?: string
+          created_at?: string | null
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          priority?: string | null
+          reviewer?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          assignee?: string | null
+          content_id?: string
+          content_title?: string | null
+          content_type?: string
+          created_at?: string | null
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          priority?: string | null
+          reviewer?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       cms_dashboard_layouts: {
         Row: {
           created_at: string | null
@@ -2238,6 +2283,68 @@ export type Database = {
           widgets?: Json
         }
         Relationships: []
+      }
+      cms_editorial_calendar: {
+        Row: {
+          assignee: string | null
+          channel: string | null
+          color: string | null
+          content_id: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          metadata: Json | null
+          scheduled_date: string
+          scheduled_time: string | null
+          status: string
+          title: string
+          updated_at: string | null
+          workflow_id: string | null
+        }
+        Insert: {
+          assignee?: string | null
+          channel?: string | null
+          color?: string | null
+          content_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          scheduled_date: string
+          scheduled_time?: string | null
+          status?: string
+          title: string
+          updated_at?: string | null
+          workflow_id?: string | null
+        }
+        Update: {
+          assignee?: string | null
+          channel?: string | null
+          color?: string | null
+          content_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          scheduled_date?: string
+          scheduled_time?: string | null
+          status?: string
+          title?: string
+          updated_at?: string | null
+          workflow_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_editorial_calendar_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "cms_content_workflow"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cms_email_templates: {
         Row: {
@@ -3266,6 +3373,47 @@ export type Database = {
           widget_type?: string
         }
         Relationships: []
+      }
+      cms_workflow_history: {
+        Row: {
+          changed_by: string | null
+          comment: string | null
+          content_id: string
+          created_at: string | null
+          from_status: string | null
+          id: string
+          to_status: string
+          workflow_id: string | null
+        }
+        Insert: {
+          changed_by?: string | null
+          comment?: string | null
+          content_id: string
+          created_at?: string | null
+          from_status?: string | null
+          id?: string
+          to_status: string
+          workflow_id?: string | null
+        }
+        Update: {
+          changed_by?: string | null
+          comment?: string | null
+          content_id?: string
+          created_at?: string | null
+          from_status?: string | null
+          id?: string
+          to_status?: string
+          workflow_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_workflow_history_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "cms_content_workflow"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cnae_bundles: {
         Row: {
