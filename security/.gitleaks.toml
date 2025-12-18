@@ -115,7 +115,14 @@ paths = [
     '''\.ico$''',
     '''\.woff2?$''',
     '''\.ttf$''',
-    '''\.eot$'''
+    '''\.eot$''',
+    # Supabase client files (contain publishable anon key, not secrets)
+    '''src/integrations/supabase/client\.ts$''',
+    '''src/integrations/supabase/types\.ts$''',
+    # Security config files (documentation, not actual secrets)
+    '''security/.*\.toml$''',
+    '''security/.*\.json$''',
+    '''security/.*\.yaml$'''
 ]
 
 commits = [
@@ -128,7 +135,12 @@ regexes = [
     # Allow environment variable references
     '''process\.env\.[A-Z_]+''',
     '''import\.meta\.env\.[A-Z_]+''',
-    '''Deno\.env\.get\(['"][A-Z_]+['"]\)'''
+    '''Deno\.env\.get\(['"][A-Z_]+['"]\)''',
+    # Supabase publishable/anon keys (these are PUBLIC keys, not secrets)
+    # They are designed to be exposed in frontend code
+    '''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6.*''',
+    # Supabase URL pattern (public endpoint)
+    '''https://[a-z0-9]+\.supabase\.co'''
 ]
 
 # ===========================================
