@@ -2012,6 +2012,116 @@ export type Database = {
         }
         Relationships: []
       }
+      cms_categories: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          description: Json | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          name: Json
+          parent_id: string | null
+          slug: string
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          description?: Json | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: Json
+          parent_id?: string | null
+          slug: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          description?: Json | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: Json
+          parent_id?: string | null
+          slug?: string
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "cms_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_comments: {
+        Row: {
+          author_email: string | null
+          author_id: string | null
+          author_name: string | null
+          content: string
+          created_at: string | null
+          id: string
+          is_pinned: boolean | null
+          likes_count: number | null
+          parent_id: string | null
+          post_id: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          author_email?: string | null
+          author_id?: string | null
+          author_name?: string | null
+          content: string
+          created_at?: string | null
+          id?: string
+          is_pinned?: boolean | null
+          likes_count?: number | null
+          parent_id?: string | null
+          post_id: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          author_email?: string | null
+          author_id?: string | null
+          author_name?: string | null
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_pinned?: boolean | null
+          likes_count?: number | null
+          parent_id?: string | null
+          post_id?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "cms_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cms_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "cms_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cms_content_versions: {
         Row: {
           change_summary: string | null
@@ -2376,6 +2486,47 @@ export type Database = {
         }
         Relationships: []
       }
+      cms_page_revisions: {
+        Row: {
+          change_summary: string | null
+          content: Json
+          created_at: string | null
+          created_by: string | null
+          id: string
+          page_id: string
+          revision_number: number
+          title: Json
+        }
+        Insert: {
+          change_summary?: string | null
+          content?: Json
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          page_id: string
+          revision_number?: number
+          title?: Json
+        }
+        Update: {
+          change_summary?: string | null
+          content?: Json
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          page_id?: string
+          revision_number?: number
+          title?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_page_revisions_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "cms_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cms_pages: {
         Row: {
           allowed_roles: Database["public"]["Enums"]["app_role"][] | null
@@ -2446,6 +2597,157 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "cms_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_post_revisions: {
+        Row: {
+          change_summary: string | null
+          content: Json
+          created_at: string | null
+          created_by: string | null
+          id: string
+          post_id: string
+          revision_number: number
+          title: Json
+        }
+        Insert: {
+          change_summary?: string | null
+          content?: Json
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          post_id: string
+          revision_number?: number
+          title?: Json
+        }
+        Update: {
+          change_summary?: string | null
+          content?: Json
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          post_id?: string
+          revision_number?: number
+          title?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_post_revisions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "cms_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_post_tags: {
+        Row: {
+          created_at: string | null
+          id: string
+          post_id: string
+          tag_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          post_id: string
+          tag_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          post_id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_post_tags_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "cms_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cms_post_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "cms_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_posts: {
+        Row: {
+          allow_comments: boolean | null
+          author_id: string | null
+          category_id: string | null
+          content: Json
+          created_at: string | null
+          excerpt: Json | null
+          featured_image: string | null
+          id: string
+          is_featured: boolean | null
+          meta_description: Json | null
+          meta_title: Json | null
+          published_at: string | null
+          reading_time_minutes: number | null
+          scheduled_at: string | null
+          slug: string
+          status: string
+          title: Json
+          updated_at: string | null
+          view_count: number | null
+        }
+        Insert: {
+          allow_comments?: boolean | null
+          author_id?: string | null
+          category_id?: string | null
+          content?: Json
+          created_at?: string | null
+          excerpt?: Json | null
+          featured_image?: string | null
+          id?: string
+          is_featured?: boolean | null
+          meta_description?: Json | null
+          meta_title?: Json | null
+          published_at?: string | null
+          reading_time_minutes?: number | null
+          scheduled_at?: string | null
+          slug: string
+          status?: string
+          title?: Json
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Update: {
+          allow_comments?: boolean | null
+          author_id?: string | null
+          category_id?: string | null
+          content?: Json
+          created_at?: string | null
+          excerpt?: Json | null
+          featured_image?: string | null
+          id?: string
+          is_featured?: boolean | null
+          meta_description?: Json | null
+          meta_title?: Json | null
+          published_at?: string | null
+          reading_time_minutes?: number | null
+          scheduled_at?: string | null
+          slug?: string
+          status?: string
+          title?: Json
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_posts_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "cms_categories"
             referencedColumns: ["id"]
           },
         ]
@@ -2573,6 +2875,42 @@ export type Database = {
           setting_value?: Json
           sort_order?: number | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      cms_tags: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          description: Json | null
+          id: string
+          is_active: boolean | null
+          name: Json
+          slug: string
+          updated_at: string | null
+          usage_count: number | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          description?: Json | null
+          id?: string
+          is_active?: boolean | null
+          name?: Json
+          slug: string
+          updated_at?: string | null
+          usage_count?: number | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          description?: Json | null
+          id?: string
+          is_active?: boolean | null
+          name?: Json
+          slug?: string
+          updated_at?: string | null
+          usage_count?: number | null
         }
         Relationships: []
       }
