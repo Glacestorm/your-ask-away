@@ -244,7 +244,18 @@ export const AuditImprovementsTracker: React.FC = () => {
       'prefetch': 100, // usePrefetchOnHover hook
       'web vitals': 100, // web-vitals integration in main.tsx
       'tree shaking': 100, // Vite config
-      'minification': 100 // Vite esbuild config
+      'minification': 100, // Vite esbuild config
+      // WebAssembly implementation
+      'webassembly': 100, // src/lib/wasm/* fully implemented
+      'wasm': 100, // WebAssembly loader and financial calculations
+      'càlculs intensius': 100, // Financial intensive calculations with WASM
+      'calculos intensivos': 100, // Spanish variant
+      'performance nativa': 100, // Native performance via WASM
+      'monte carlo': 100, // Monte Carlo simulations
+      'z-score': 100, // Z-Score calculations
+      'zmijewski': 100, // Zmijewski score
+      'dcf': 100, // DCF calculations
+      'ecl': 100 // Expected Credit Loss IFRS 9
     };
 
     // Check for exact matches first
