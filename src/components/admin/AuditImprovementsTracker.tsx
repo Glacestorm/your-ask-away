@@ -288,7 +288,15 @@ export const AuditImprovementsTracker: React.FC = () => {
       'srcset': 100, // generateSrcSet function
       'picture sources': 100, // generatePictureSources function
       'lazy image': 100, // createLazyImageObserver
-      'preload critical': 100 // preloadCriticalImage function
+      'preload critical': 100, // preloadCriticalImage function
+      // View Transitions API implementation (useViewTransitions hook)
+      'view transitions': 100, // src/hooks/useViewTransitions.ts
+      'useviewtransitions': 100, // useViewTransitions hook
+      'view transitions api': 100, // View Transitions API support
+      'navegació fluida': 100, // Smooth navigation transitions
+      'startviewtransition': 100, // startViewTransition function
+      'navigatewithtransition': 100, // navigateWithTransition function
+      'transicions fluides': 100 // Smooth transitions between pages
     };
 
     // Check for exact matches first
