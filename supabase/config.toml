@@ -206,3 +206,27 @@ verify_jwt = true
 
 [functions.create-store-checkout]
 verify_jwt = false
+
+[functions.cms-publish-content]
+verify_jwt = true
+
+[functions.cms-preview-content]
+verify_jwt = true
+
+[functions.cms-optimize-media]
+verify_jwt = true
+
+[functions.cms-translate-content]
+verify_jwt = true
+
+[functions.cms-export-translations]
+verify_jwt = true
+
+[functions.cms-import-translations]
+verify_jwt = true
+
+[functions.cms-sync-theme]
+verify_jwt = true
+
+[functions.cms-validate-config]
+verify_jwt = true
