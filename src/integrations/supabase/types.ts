@@ -1889,6 +1889,870 @@ export type Database = {
           },
         ]
       }
+      cms_api_keys: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          key_hash: string
+          key_name: string
+          last_used_at: string | null
+          permissions: string[] | null
+          prefix: string
+          rate_limit: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          key_hash: string
+          key_name: string
+          last_used_at?: string | null
+          permissions?: string[] | null
+          prefix: string
+          rate_limit?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          key_hash?: string
+          key_name?: string
+          last_used_at?: string | null
+          permissions?: string[] | null
+          prefix?: string
+          rate_limit?: number | null
+        }
+        Relationships: []
+      }
+      cms_audit_log: {
+        Row: {
+          action: string
+          created_at: string | null
+          entity_id: string | null
+          entity_name: string | null
+          entity_type: string
+          id: string
+          ip_address: unknown
+          new_value: Json | null
+          old_value: Json | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          entity_id?: string | null
+          entity_name?: string | null
+          entity_type: string
+          id?: string
+          ip_address?: unknown
+          new_value?: Json | null
+          old_value?: Json | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          entity_id?: string | null
+          entity_name?: string | null
+          entity_type?: string
+          id?: string
+          ip_address?: unknown
+          new_value?: Json | null
+          old_value?: Json | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      cms_blocks: {
+        Row: {
+          block_key: string
+          block_name: string
+          block_type: string
+          content: Json
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_global: boolean | null
+          settings: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          block_key: string
+          block_name: string
+          block_type?: string
+          content?: Json
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_global?: boolean | null
+          settings?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          block_key?: string
+          block_name?: string
+          block_type?: string
+          content?: Json
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_global?: boolean | null
+          settings?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      cms_content_versions: {
+        Row: {
+          change_summary: string | null
+          content: Json
+          created_at: string | null
+          created_by: string | null
+          entity_id: string
+          entity_type: string
+          id: string
+          is_current: boolean | null
+          version_number: number
+        }
+        Insert: {
+          change_summary?: string | null
+          content: Json
+          created_at?: string | null
+          created_by?: string | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          is_current?: boolean | null
+          version_number: number
+        }
+        Update: {
+          change_summary?: string | null
+          content?: Json
+          created_at?: string | null
+          created_by?: string | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          is_current?: boolean | null
+          version_number?: number
+        }
+        Relationships: []
+      }
+      cms_dashboard_layouts: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          grid_config: Json | null
+          id: string
+          is_default: boolean | null
+          layout_name: string
+          target_role: Database["public"]["Enums"]["app_role"] | null
+          updated_at: string | null
+          widgets: Json
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          grid_config?: Json | null
+          id?: string
+          is_default?: boolean | null
+          layout_name: string
+          target_role?: Database["public"]["Enums"]["app_role"] | null
+          updated_at?: string | null
+          widgets?: Json
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          grid_config?: Json | null
+          id?: string
+          is_default?: boolean | null
+          layout_name?: string
+          target_role?: Database["public"]["Enums"]["app_role"] | null
+          updated_at?: string | null
+          widgets?: Json
+        }
+        Relationships: []
+      }
+      cms_email_templates: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          created_by: string | null
+          html_content: Json
+          id: string
+          is_active: boolean | null
+          subject: Json
+          template_key: string
+          template_name: string
+          text_content: Json | null
+          updated_at: string | null
+          variables: string[] | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          html_content?: Json
+          id?: string
+          is_active?: boolean | null
+          subject?: Json
+          template_key: string
+          template_name: string
+          text_content?: Json | null
+          updated_at?: string | null
+          variables?: string[] | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          html_content?: Json
+          id?: string
+          is_active?: boolean | null
+          subject?: Json
+          template_key?: string
+          template_name?: string
+          text_content?: Json | null
+          updated_at?: string | null
+          variables?: string[] | null
+        }
+        Relationships: []
+      }
+      cms_feature_flags: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          end_date: string | null
+          flag_key: string
+          flag_name: string
+          id: string
+          is_enabled: boolean | null
+          metadata: Json | null
+          rollout_percentage: number | null
+          start_date: string | null
+          target_offices: string[] | null
+          target_roles: Database["public"]["Enums"]["app_role"][] | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          flag_key: string
+          flag_name: string
+          id?: string
+          is_enabled?: boolean | null
+          metadata?: Json | null
+          rollout_percentage?: number | null
+          start_date?: string | null
+          target_offices?: string[] | null
+          target_roles?: Database["public"]["Enums"]["app_role"][] | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          flag_key?: string
+          flag_name?: string
+          id?: string
+          is_enabled?: boolean | null
+          metadata?: Json | null
+          rollout_percentage?: number | null
+          start_date?: string | null
+          target_offices?: string[] | null
+          target_roles?: Database["public"]["Enums"]["app_role"][] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      cms_media_folders: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          folder_name: string
+          id: string
+          parent_id: string | null
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          folder_name: string
+          id?: string
+          parent_id?: string | null
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          folder_name?: string
+          id?: string
+          parent_id?: string | null
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_media_folders_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "cms_media_folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_media_library: {
+        Row: {
+          alt_text: Json | null
+          caption: Json | null
+          created_at: string | null
+          file_name: string
+          file_size: number
+          file_type: string
+          file_url: string
+          folder_id: string | null
+          id: string
+          metadata: Json | null
+          mime_type: string
+          original_name: string
+          tags: string[] | null
+          thumbnail_url: string | null
+          updated_at: string | null
+          uploaded_by: string | null
+        }
+        Insert: {
+          alt_text?: Json | null
+          caption?: Json | null
+          created_at?: string | null
+          file_name: string
+          file_size: number
+          file_type: string
+          file_url: string
+          folder_id?: string | null
+          id?: string
+          metadata?: Json | null
+          mime_type: string
+          original_name: string
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Update: {
+          alt_text?: Json | null
+          caption?: Json | null
+          created_at?: string | null
+          file_name?: string
+          file_size?: number
+          file_type?: string
+          file_url?: string
+          folder_id?: string | null
+          id?: string
+          metadata?: Json | null
+          mime_type?: string
+          original_name?: string
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
+      cms_navigation_items: {
+        Row: {
+          badge_color: string | null
+          badge_text: string | null
+          created_at: string | null
+          icon: string | null
+          id: string
+          is_external: boolean | null
+          is_visible: boolean | null
+          label: Json
+          menu_location: string
+          parent_id: string | null
+          sort_order: number | null
+          target: string | null
+          updated_at: string | null
+          url: string | null
+          visible_to_roles: Database["public"]["Enums"]["app_role"][] | null
+        }
+        Insert: {
+          badge_color?: string | null
+          badge_text?: string | null
+          created_at?: string | null
+          icon?: string | null
+          id?: string
+          is_external?: boolean | null
+          is_visible?: boolean | null
+          label?: Json
+          menu_location: string
+          parent_id?: string | null
+          sort_order?: number | null
+          target?: string | null
+          updated_at?: string | null
+          url?: string | null
+          visible_to_roles?: Database["public"]["Enums"]["app_role"][] | null
+        }
+        Update: {
+          badge_color?: string | null
+          badge_text?: string | null
+          created_at?: string | null
+          icon?: string | null
+          id?: string
+          is_external?: boolean | null
+          is_visible?: boolean | null
+          label?: Json
+          menu_location?: string
+          parent_id?: string | null
+          sort_order?: number | null
+          target?: string | null
+          updated_at?: string | null
+          url?: string | null
+          visible_to_roles?: Database["public"]["Enums"]["app_role"][] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_navigation_items_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "cms_navigation_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_notification_templates: {
+        Row: {
+          action_url: string | null
+          category: string | null
+          created_at: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          message: Json
+          template_key: string
+          template_name: string
+          title: Json
+          updated_at: string | null
+        }
+        Insert: {
+          action_url?: string | null
+          category?: string | null
+          created_at?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          message?: Json
+          template_key: string
+          template_name: string
+          title?: Json
+          updated_at?: string | null
+        }
+        Update: {
+          action_url?: string | null
+          category?: string | null
+          created_at?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          message?: Json
+          template_key?: string
+          template_name?: string
+          title?: Json
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      cms_pages: {
+        Row: {
+          allowed_roles: Database["public"]["Enums"]["app_role"][] | null
+          author_id: string | null
+          content: Json
+          created_at: string | null
+          featured_image: string | null
+          id: string
+          is_homepage: boolean | null
+          meta_description: Json | null
+          meta_title: Json | null
+          parent_id: string | null
+          published_at: string | null
+          requires_auth: boolean | null
+          scheduled_at: string | null
+          slug: string
+          sort_order: number | null
+          status: string | null
+          template: string | null
+          title: Json
+          updated_at: string | null
+        }
+        Insert: {
+          allowed_roles?: Database["public"]["Enums"]["app_role"][] | null
+          author_id?: string | null
+          content?: Json
+          created_at?: string | null
+          featured_image?: string | null
+          id?: string
+          is_homepage?: boolean | null
+          meta_description?: Json | null
+          meta_title?: Json | null
+          parent_id?: string | null
+          published_at?: string | null
+          requires_auth?: boolean | null
+          scheduled_at?: string | null
+          slug: string
+          sort_order?: number | null
+          status?: string | null
+          template?: string | null
+          title?: Json
+          updated_at?: string | null
+        }
+        Update: {
+          allowed_roles?: Database["public"]["Enums"]["app_role"][] | null
+          author_id?: string | null
+          content?: Json
+          created_at?: string | null
+          featured_image?: string | null
+          id?: string
+          is_homepage?: boolean | null
+          meta_description?: Json | null
+          meta_title?: Json | null
+          parent_id?: string | null
+          published_at?: string | null
+          requires_auth?: boolean | null
+          scheduled_at?: string | null
+          slug?: string
+          sort_order?: number | null
+          status?: string | null
+          template?: string | null
+          title?: Json
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_pages_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "cms_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_redirects: {
+        Row: {
+          created_at: string | null
+          hit_count: number | null
+          id: string
+          is_active: boolean | null
+          redirect_type: number | null
+          source_path: string
+          target_path: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          hit_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          redirect_type?: number | null
+          source_path: string
+          target_path: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          hit_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          redirect_type?: number | null
+          source_path?: string
+          target_path?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      cms_seo_meta: {
+        Row: {
+          canonical_url: string | null
+          created_at: string | null
+          description: Json | null
+          id: string
+          keywords: Json | null
+          og_description: Json | null
+          og_image: string | null
+          og_title: Json | null
+          page_path: string
+          robots: string | null
+          structured_data: Json | null
+          title: Json | null
+          twitter_card: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          canonical_url?: string | null
+          created_at?: string | null
+          description?: Json | null
+          id?: string
+          keywords?: Json | null
+          og_description?: Json | null
+          og_image?: string | null
+          og_title?: Json | null
+          page_path: string
+          robots?: string | null
+          structured_data?: Json | null
+          title?: Json | null
+          twitter_card?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          canonical_url?: string | null
+          created_at?: string | null
+          description?: Json | null
+          id?: string
+          keywords?: Json | null
+          og_description?: Json | null
+          og_image?: string | null
+          og_title?: Json | null
+          page_path?: string
+          robots?: string | null
+          structured_data?: Json | null
+          title?: Json | null
+          twitter_card?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      cms_site_settings: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_public: boolean | null
+          label: string
+          setting_key: string
+          setting_type: string
+          setting_value: Json
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          label: string
+          setting_key: string
+          setting_type?: string
+          setting_value?: Json
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_public?: boolean | null
+          label?: string
+          setting_key?: string
+          setting_type?: string
+          setting_value?: Json
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      cms_theme_config: {
+        Row: {
+          animations: Json | null
+          borders: Json | null
+          colors: Json | null
+          created_at: string | null
+          created_by: string | null
+          custom_css: string | null
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          shadows: Json | null
+          spacing: Json | null
+          theme_name: string
+          typography: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          animations?: Json | null
+          borders?: Json | null
+          colors?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          custom_css?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          shadows?: Json | null
+          spacing?: Json | null
+          theme_name: string
+          typography?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          animations?: Json | null
+          borders?: Json | null
+          colors?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          custom_css?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          shadows?: Json | null
+          spacing?: Json | null
+          theme_name?: string
+          typography?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      cms_translations: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_reviewed: boolean | null
+          locale: string
+          namespace: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          translation_key: string
+          updated_at: string | null
+          value: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_reviewed?: boolean | null
+          locale: string
+          namespace?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          translation_key: string
+          updated_at?: string | null
+          value: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_reviewed?: boolean | null
+          locale?: string
+          namespace?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          translation_key?: string
+          updated_at?: string | null
+          value?: string
+        }
+        Relationships: []
+      }
+      cms_webhooks_config: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          endpoint_url: string
+          events: string[]
+          headers: Json | null
+          id: string
+          is_active: boolean | null
+          last_status: number | null
+          last_triggered_at: string | null
+          retry_count: number | null
+          secret_key: string | null
+          updated_at: string | null
+          webhook_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          endpoint_url: string
+          events: string[]
+          headers?: Json | null
+          id?: string
+          is_active?: boolean | null
+          last_status?: number | null
+          last_triggered_at?: string | null
+          retry_count?: number | null
+          secret_key?: string | null
+          updated_at?: string | null
+          webhook_name: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          endpoint_url?: string
+          events?: string[]
+          headers?: Json | null
+          id?: string
+          is_active?: boolean | null
+          last_status?: number | null
+          last_triggered_at?: string | null
+          retry_count?: number | null
+          secret_key?: string | null
+          updated_at?: string | null
+          webhook_name?: string
+        }
+        Relationships: []
+      }
+      cms_widgets: {
+        Row: {
+          allowed_roles: Database["public"]["Enums"]["app_role"][] | null
+          component_name: string
+          created_at: string | null
+          default_config: Json | null
+          id: string
+          is_active: boolean | null
+          updated_at: string | null
+          widget_key: string
+          widget_name: string
+          widget_type: string
+        }
+        Insert: {
+          allowed_roles?: Database["public"]["Enums"]["app_role"][] | null
+          component_name: string
+          created_at?: string | null
+          default_config?: Json | null
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+          widget_key: string
+          widget_name: string
+          widget_type: string
+        }
+        Update: {
+          allowed_roles?: Database["public"]["Enums"]["app_role"][] | null
+          component_name?: string
+          created_at?: string | null
+          default_config?: Json | null
+          id?: string
+          is_active?: boolean | null
+          updated_at?: string | null
+          widget_key?: string
+          widget_name?: string
+          widget_type?: string
+        }
+        Relationships: []
+      }
       cnae_bundles: {
         Row: {
           bundle_description: string | null
@@ -9906,6 +10770,17 @@ export type Database = {
           p_severity?: string
           p_table_name: string
           p_user_agent?: string
+        }
+        Returns: string
+      }
+      log_cms_audit: {
+        Args: {
+          p_action: string
+          p_entity_id: string
+          p_entity_name?: string
+          p_entity_type: string
+          p_new_value?: Json
+          p_old_value?: Json
         }
         Returns: string
       }

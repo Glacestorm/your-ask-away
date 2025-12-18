@@ -77,34 +77,38 @@ export const AuditImprovementsTracker: React.FC = () => {
     setIsAnalyzing(true);
     toast.info('Iniciando auto-diagnóstico completo...', { duration: 3000 });
 
+    const invokeRequired = async <T,>(functionName: string, body: Record<string, unknown>): Promise<T> => {
+      const { data, error } = await supabase.functions.invoke(functionName, { body });
+      if (error) {
+        // Provide a helpful, user-safe message
+        const msg = (error as any)?.message || `No se pudo ejecutar ${functionName}`;
+        throw new Error(msg);
+      }
+      return data as T;
+    };
+
     try {
       // 1. Analyze codebase
-      const { data: codebaseData } = await supabase.functions.invoke('analyze-codebase', {
-        body: { forceRefresh: true }
-      });
+      const codebaseData = await invokeRequired<any>('analyze-codebase', { forceRefresh: true });
 
       // 2. Search improvements
-      const { data: improvementsData } = await supabase.functions.invoke('search-improvements', {
-        body: { forceRefresh: true }
-      });
+      const improvementsData = await invokeRequired<any>('search-improvements', { forceRefresh: true });
 
       // 3. Run web audit
-      const { data: auditData } = await supabase.functions.invoke('audit-web-performance', {
-        body: {
-          includeCodeAnalysis: true,
-          includeVisualAudit: true,
-          includeSecurityAudit: true,
-          includeAccessibilityAudit: true,
-          includeSEOAudit: true,
-          forceRefresh: true
-        }
+      const auditData = await invokeRequired<any>('audit-web-performance', {
+        includeCodeAnalysis: true,
+        includeVisualAudit: true,
+        includeSecurityAudit: true,
+        includeAccessibilityAudit: true,
+        includeSEOAudit: true,
+        forceRefresh: true,
       });
 
       // Parse and merge improvements from all sources
       const newImprovements = parseAndMergeImprovements(
-        codebaseData,
-        improvementsData,
-        auditData,
+        codebaseData ?? {},
+        improvementsData ?? {},
+        auditData ?? {},
         improvements
       );
 
@@ -114,7 +118,7 @@ export const AuditImprovementsTracker: React.FC = () => {
       toast.success(`Auto-diagnóstico completado: ${newImprovements.length} mejoras identificadas`);
     } catch (error) {
       console.error('Error running autodiagnostic:', error);
-      toast.error('Error al ejecutar el auto-diagnóstico');
+      toast.error(error instanceof Error ? error.message : 'Error al ejecutar el auto-diagnóstico');
     } finally {
       setIsAnalyzing(false);
     }
