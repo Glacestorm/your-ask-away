@@ -2337,28 +2337,40 @@ export type Database = {
       }
       cms_media_folders: {
         Row: {
+          color: string | null
           created_at: string | null
           created_by: string | null
+          description: string | null
           folder_name: string
+          icon: string | null
           id: string
           parent_id: string | null
           sort_order: number | null
+          updated_at: string | null
         }
         Insert: {
+          color?: string | null
           created_at?: string | null
           created_by?: string | null
+          description?: string | null
           folder_name: string
+          icon?: string | null
           id?: string
           parent_id?: string | null
           sort_order?: number | null
+          updated_at?: string | null
         }
         Update: {
+          color?: string | null
           created_at?: string | null
           created_by?: string | null
+          description?: string | null
           folder_name?: string
+          icon?: string | null
           id?: string
           parent_id?: string | null
           sort_order?: number | null
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -2375,55 +2387,70 @@ export type Database = {
           alt_text: Json | null
           caption: Json | null
           created_at: string | null
+          description: string | null
+          duration: number | null
           file_name: string
           file_size: number
           file_type: string
           file_url: string
           folder_id: string | null
+          height: number | null
           id: string
           metadata: Json | null
           mime_type: string
           original_name: string
           tags: string[] | null
           thumbnail_url: string | null
+          title: string | null
           updated_at: string | null
           uploaded_by: string | null
+          width: number | null
         }
         Insert: {
           alt_text?: Json | null
           caption?: Json | null
           created_at?: string | null
+          description?: string | null
+          duration?: number | null
           file_name: string
           file_size: number
           file_type: string
           file_url: string
           folder_id?: string | null
+          height?: number | null
           id?: string
           metadata?: Json | null
           mime_type: string
           original_name: string
           tags?: string[] | null
           thumbnail_url?: string | null
+          title?: string | null
           updated_at?: string | null
           uploaded_by?: string | null
+          width?: number | null
         }
         Update: {
           alt_text?: Json | null
           caption?: Json | null
           created_at?: string | null
+          description?: string | null
+          duration?: number | null
           file_name?: string
           file_size?: number
           file_type?: string
           file_url?: string
           folder_id?: string | null
+          height?: number | null
           id?: string
           metadata?: Json | null
           mime_type?: string
           original_name?: string
           tags?: string[] | null
           thumbnail_url?: string | null
+          title?: string | null
           updated_at?: string | null
           uploaded_by?: string | null
+          width?: number | null
         }
         Relationships: []
       }
