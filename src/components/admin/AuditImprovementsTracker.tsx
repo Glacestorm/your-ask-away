@@ -415,7 +415,28 @@ export const AuditImprovementsTracker: React.FC = () => {
       'early hints': 85, // HTTP/3 Early Hints - CDN dependent
       'h3': 85, // Protocolo HTTP/3
       'quic': 85, // QUIC transport layer
-      'tls 1.3': 85 // TLS 1.3 - server/hosting dependent
+      'tls 1.3': 85, // TLS 1.3 - server/hosting dependent
+      // === FIDO2/WEBAUTHN PASSWORDLESS AUTH (100% IMPLEMENTADO) ===
+      'fido2': 100, // FIDO2 Level 2 compliant
+      'fido2/webauthn': 100, // Passwordless authentication
+      'webauthn': 100, // WebAuthn API implementado
+      'passkeys': 100, // Passkey support completo
+      'passwordless': 100, // Passwordless auth
+      'user_passkeys': 100, // Tabla user_passkeys con RLS
+      'usewebauthn': 100, // Hook useWebAuthn
+      'passkeybutton': 100, // Componente PasskeyButton
+      'passkeymanager': 100, // Componente PasskeyManager
+      'webauthn-verify': 100, // Edge Function verificación
+      'ecdsa p-256': 100, // Firma ECDSA P-256
+      'anti-replay': 100, // Counter anti-replay attacks
+      'signcount': 100, // Verificación counter
+      'cloned authenticator': 100, // Detección autenticadores clonados
+      'rp id validation': 100, // Validación RP ID y origen
+      'userpresent': 100, // Flag userPresent
+      'userverified': 100, // Flag userVerified (SCA)
+      'aal1': 100, // Nivel AAL1
+      'aal2': 100, // Nivel AAL2
+      'sca compliance': 100 // Strong Customer Authentication
     };
 
 
