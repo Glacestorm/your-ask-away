@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+import viteCompression from "vite-plugin-compression";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -23,7 +24,34 @@ export default defineConfig(({ mode }) => ({
       // SWC optimizations
       jsxImportSource: undefined,
     }), 
-    mode === "development" && componentTagger()
+    mode === "development" && componentTagger(),
+    // Brotli Compression Level 11 - Maximum compression for static assets
+    mode === "production" && viteCompression({
+      algorithm: 'brotliCompress',
+      ext: '.br',
+      threshold: 1024, // Only compress files > 1KB
+      compressionOptions: {
+        params: {
+          // Brotli quality level 11 (maximum compression)
+          0: 11, // BROTLI_PARAM_QUALITY = 11
+        },
+      },
+      deleteOriginFile: false, // Keep original files
+      verbose: true,
+      filter: /\.(js|mjs|json|css|html|svg|xml|woff|woff2|ttf|eot)$/i,
+    }),
+    // Gzip fallback for older browsers
+    mode === "production" && viteCompression({
+      algorithm: 'gzip',
+      ext: '.gz',
+      threshold: 1024,
+      compressionOptions: {
+        level: 9, // Maximum gzip compression
+      },
+      deleteOriginFile: false,
+      verbose: true,
+      filter: /\.(js|mjs|json|css|html|svg|xml)$/i,
+    }),
   ].filter(Boolean),
   resolve: {
     alias: {

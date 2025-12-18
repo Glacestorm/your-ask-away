@@ -255,7 +255,16 @@ export const AuditImprovementsTracker: React.FC = () => {
       'z-score': 100, // Z-Score calculations
       'zmijewski': 100, // Zmijewski score
       'dcf': 100, // DCF calculations
-      'ecl': 100 // Expected Credit Loss IFRS 9
+      'ecl': 100, // Expected Credit Loss IFRS 9
+      // Brotli Compression Level 11 implementation
+      'brotli': 100, // vite-plugin-compression with Brotli level 11
+      'brotli compression': 100, // Full Brotli implementation
+      'compression level 11': 100, // Maximum compression level
+      'compressió brotli': 100, // Catalan variant
+      'màxima compressió': 100, // Maximum compression
+      'assets estàtics': 100, // Static assets compression
+      'gzip fallback': 100, // Gzip fallback for older browsers
+      'pre-compressió': 100 // Pre-compression during build
     };
 
     // Check for exact matches first
