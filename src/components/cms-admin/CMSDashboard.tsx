@@ -9,7 +9,7 @@ import {
   Layers, Clock, Upload, FileImage, Video,
   Bell, FileOutput, ToggleLeft, TestTube, Tag, Map,
   ArrowLeft, Key, Webhook, Lock, Timer, RotateCcw,
-  ChevronRight, Sparkles
+  ChevronRight, Sparkles, BarChart3, Activity, Target, Eye, TrendingUp
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -26,6 +26,7 @@ import { FeatureFlagsManager } from './FeatureFlagsManager';
 import { SEOManager } from './SEOManager';
 import { IntegrationsHub } from './IntegrationsHub';
 import { AuditDashboard } from './AuditDashboard';
+import { ContentAnalyticsDashboard } from './ContentAnalyticsDashboard';
 
 interface SectionItem {
   id: string;
@@ -43,6 +44,18 @@ interface Section {
 }
 
 const sections: Section[] = [
+  {
+    id: 'analytics',
+    title: 'Analytics y Métricas',
+    icon: BarChart3,
+    items: [
+      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, description: 'Vista general de métricas', badge: 'Nuevo' },
+      { id: 'pages', label: 'Métricas por Página', icon: Eye, description: 'Rendimiento de páginas' },
+      { id: 'engagement', label: 'Engagement', icon: TrendingUp, description: 'Interacciones del usuario' },
+      { id: 'realtime', label: 'Tiempo Real', icon: Activity, description: 'Visitantes activos ahora' },
+      { id: 'conversions', label: 'Conversiones', icon: Target, description: 'Funnels y objetivos' },
+    ]
+  },
   {
     id: 'site-settings',
     title: 'Configuración del Sitio',
@@ -172,6 +185,13 @@ export const CMSDashboard: React.FC = () => {
     if (!activeSection || !activeSubSection) return null;
 
     const componentMap: Record<string, Record<string, React.ReactNode>> = {
+      'analytics': {
+        'dashboard': <ContentAnalyticsDashboard view="dashboard" />,
+        'pages': <ContentAnalyticsDashboard view="pages" />,
+        'engagement': <ContentAnalyticsDashboard view="engagement" />,
+        'realtime': <ContentAnalyticsDashboard view="realtime" />,
+        'conversions': <ContentAnalyticsDashboard view="conversions" />,
+      },
       'site-settings': {
         'general': <SiteSettingsManager />,
         'theme': <ThemeEditor />,

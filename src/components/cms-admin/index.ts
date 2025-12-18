@@ -11,3 +11,4 @@ export { SEOManager } from './SEOManager';
 export { IntegrationsHub } from './IntegrationsHub';
 export { AuditDashboard } from './AuditDashboard';
 export { CMSDashboard } from './CMSDashboard';
+export { ContentAnalyticsDashboard } from './ContentAnalyticsDashboard';
