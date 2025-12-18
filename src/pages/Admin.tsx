@@ -199,6 +199,7 @@ const Admin = () => {
       case 'holding-dashboard': return 'Holding Dashboard 360°';
       case 'cnae-bundles': return 'Packs Sectorials CNAE';
       case 'cnae-admin': return 'Administració Pricing CNAE';
+      case 'analyzer': return 'Analitzador de Codi';
       default: return '';
     }
   };
@@ -577,6 +578,17 @@ const Admin = () => {
         }
         return <CompetitorGapAnalysisGenerator />;
       case 'app-status':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <ApplicationStateAnalyzer />;
+      case 'analyzer':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
           return (
             <Card>
