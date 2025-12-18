@@ -39,9 +39,6 @@ interface Section {
   id: string;
   title: string;
   icon: React.ElementType;
-  gradient: string;
-  shadowColor: string;
-  iconGlow: string;
   items: SectionItem[];
 }
 
@@ -50,9 +47,6 @@ const sections: Section[] = [
     id: 'site-settings',
     title: 'Configuración del Sitio',
     icon: Settings,
-    gradient: 'from-blue-600 via-blue-500 to-cyan-400',
-    shadowColor: 'shadow-blue-500/30',
-    iconGlow: 'shadow-[0_0_30px_rgba(59,130,246,0.5)]',
     items: [
       { id: 'general', label: 'General', icon: Settings, description: 'Nombre, logo, favicon' },
       { id: 'theme', label: 'Colores y Tema', icon: Palette, description: 'Personalización visual' },
@@ -64,9 +58,6 @@ const sections: Section[] = [
     id: 'pages-content',
     title: 'Páginas y Contenido',
     icon: FileText,
-    gradient: 'from-emerald-600 via-emerald-500 to-teal-400',
-    shadowColor: 'shadow-emerald-500/30',
-    iconGlow: 'shadow-[0_0_30px_rgba(16,185,129,0.5)]',
     items: [
       { id: 'pages', label: 'Páginas Dinámicas', icon: FileText, description: 'Constructor de páginas' },
       { id: 'blocks', label: 'Bloques Reutilizables', icon: Layers, description: 'Componentes compartidos' },
@@ -77,9 +68,6 @@ const sections: Section[] = [
     id: 'navigation',
     title: 'Navegación',
     icon: Navigation,
-    gradient: 'from-violet-600 via-purple-500 to-fuchsia-400',
-    shadowColor: 'shadow-purple-500/30',
-    iconGlow: 'shadow-[0_0_30px_rgba(139,92,246,0.5)]',
     items: [
       { id: 'main-menu', label: 'Menú Principal', icon: Menu, description: 'Navegación superior' },
       { id: 'sidebar', label: 'Sidebar', icon: PanelLeft, description: 'Menú lateral' },
@@ -90,9 +78,6 @@ const sections: Section[] = [
     id: 'dashboards',
     title: 'Dashboards',
     icon: LayoutDashboard,
-    gradient: 'from-amber-500 via-orange-500 to-yellow-400',
-    shadowColor: 'shadow-amber-500/30',
-    iconGlow: 'shadow-[0_0_30px_rgba(245,158,11,0.5)]',
     items: [
       { id: 'layouts', label: 'Layouts por Rol', icon: Users, description: 'Configuración por perfil' },
       { id: 'widgets', label: 'Widgets Disponibles', icon: LayoutDashboard, description: 'Componentes de dashboard' },
@@ -102,9 +87,6 @@ const sections: Section[] = [
     id: 'translations',
     title: 'Traducciones',
     icon: Globe,
-    gradient: 'from-cyan-500 via-sky-500 to-blue-400',
-    shadowColor: 'shadow-cyan-500/30',
-    iconGlow: 'shadow-[0_0_30px_rgba(6,182,212,0.5)]',
     items: [
       { id: 'editor', label: 'Editor de Textos', icon: FileText, description: 'Gestionar traducciones' },
       { id: 'progress', label: 'Progreso por Idioma', icon: Globe, description: 'Estado de traducción' },
@@ -115,9 +97,6 @@ const sections: Section[] = [
     id: 'media',
     title: 'Biblioteca de Medios',
     icon: Image,
-    gradient: 'from-pink-500 via-rose-500 to-red-400',
-    shadowColor: 'shadow-pink-500/30',
-    iconGlow: 'shadow-[0_0_30px_rgba(236,72,153,0.5)]',
     items: [
       { id: 'images', label: 'Imágenes', icon: FileImage, description: 'Galería de imágenes' },
       { id: 'documents', label: 'Documentos', icon: FileText, description: 'PDFs y documentos' },
@@ -128,9 +107,6 @@ const sections: Section[] = [
     id: 'templates',
     title: 'Plantillas',
     icon: Mail,
-    gradient: 'from-orange-500 via-amber-500 to-yellow-400',
-    shadowColor: 'shadow-orange-500/30',
-    iconGlow: 'shadow-[0_0_30px_rgba(249,115,22,0.5)]',
     items: [
       { id: 'emails', label: 'Emails', icon: Mail, description: 'Plantillas de correo' },
       { id: 'notifications', label: 'Notificaciones', icon: Bell, description: 'Alertas del sistema' },
@@ -141,9 +117,6 @@ const sections: Section[] = [
     id: 'feature-flags',
     title: 'Feature Flags',
     icon: Flag,
-    gradient: 'from-red-600 via-rose-500 to-pink-400',
-    shadowColor: 'shadow-red-500/30',
-    iconGlow: 'shadow-[0_0_30px_rgba(239,68,68,0.5)]',
     items: [
       { id: 'active', label: 'Funciones Activas', icon: ToggleLeft, description: 'Features habilitadas' },
       { id: 'ab-tests', label: 'A/B Tests', icon: TestTube, description: 'Experimentos activos', badge: 'Beta' },
@@ -153,9 +126,6 @@ const sections: Section[] = [
     id: 'seo',
     title: 'SEO',
     icon: Search,
-    gradient: 'from-teal-500 via-emerald-500 to-green-400',
-    shadowColor: 'shadow-teal-500/30',
-    iconGlow: 'shadow-[0_0_30px_rgba(20,184,166,0.5)]',
     items: [
       { id: 'meta-tags', label: 'Meta Tags', icon: Tag, description: 'Metadatos de páginas' },
       { id: 'sitemap', label: 'Sitemap', icon: Map, description: 'Mapa del sitio' },
@@ -166,9 +136,6 @@ const sections: Section[] = [
     id: 'integrations',
     title: 'Integraciones',
     icon: Link2,
-    gradient: 'from-indigo-600 via-violet-500 to-purple-400',
-    shadowColor: 'shadow-indigo-500/30',
-    iconGlow: 'shadow-[0_0_30px_rgba(99,102,241,0.5)]',
     items: [
       { id: 'api-keys', label: 'API Keys', icon: Key, description: 'Claves de API' },
       { id: 'webhooks', label: 'Webhooks', icon: Webhook, description: 'Endpoints externos' },
@@ -179,9 +146,6 @@ const sections: Section[] = [
     id: 'audit',
     title: 'Auditoría',
     icon: History,
-    gradient: 'from-slate-500 via-gray-500 to-zinc-400',
-    shadowColor: 'shadow-slate-500/30',
-    iconGlow: 'shadow-[0_0_30px_rgba(100,116,139,0.5)]',
     items: [
       { id: 'timeline', label: 'Timeline', icon: Timer, description: 'Historial de cambios' },
       { id: 'restore', label: 'Restaurar Versiones', icon: RotateCcw, description: 'Recuperar cambios' },
@@ -282,18 +246,18 @@ export const CMSDashboard: React.FC = () => {
             variant="ghost"
             size="sm"
             onClick={handleBack}
-            className="text-slate-400 hover:text-white hover:bg-white/10 transition-all"
+            className="text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Volver al Dashboard CMS
           </Button>
-          <div className="flex items-center gap-2 text-slate-500">
+          <div className="flex items-center gap-2 text-muted-foreground">
             <ChevronRight className="w-4 h-4" />
-            <span className={`bg-gradient-to-r ${section?.gradient} bg-clip-text text-transparent font-semibold`}>
+            <span className="text-primary font-semibold">
               {section?.title}
             </span>
             <ChevronRight className="w-4 h-4" />
-            <span className="text-white font-medium">{item?.label}</span>
+            <span className="text-foreground font-medium">{item?.label}</span>
           </div>
         </div>
         
@@ -306,14 +270,14 @@ export const CMSDashboard: React.FC = () => {
     <div className="space-y-8">
       {/* Hero Header */}
       <motion.div 
-        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8 border border-white/10"
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-card via-card/90 to-background p-8 border border-border"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
       >
         {/* Animated background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-emerald-500/10 animate-pulse" />
-        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-500/20 to-transparent rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-emerald-500/20 to-transparent rounded-full blur-3xl" />
+        <div className="absolute inset-0 bg-gradient-primary opacity-10 animate-pulse" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-secondary/20 rounded-full blur-3xl" />
         
         <div className="relative z-10 flex items-center justify-between">
           <div className="flex items-center gap-5">
@@ -323,30 +287,30 @@ export const CMSDashboard: React.FC = () => {
               whileHover={{ scale: 1.1, rotateY: 15 }}
               transition={{ type: "spring", stiffness: 300 }}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-emerald-500 rounded-2xl blur-xl opacity-60" />
-              <div className="relative p-4 rounded-2xl bg-gradient-to-br from-blue-500 via-blue-600 to-emerald-500 shadow-2xl shadow-blue-500/30 transform perspective-1000">
-                <Settings className="w-8 h-8 text-white drop-shadow-lg" />
+              <div className="absolute inset-0 bg-gradient-primary rounded-2xl blur-xl opacity-60" />
+              <div className="relative p-4 rounded-2xl bg-gradient-primary shadow-2xl shadow-primary/30 transform perspective-1000">
+                <Settings className="w-8 h-8 text-primary-foreground drop-shadow-lg" />
               </div>
             </motion.div>
             
             <div>
               <h2 className="text-3xl font-black tracking-tight">
-                <span className="bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent">
+                <span className="text-foreground">
                   Dashboard CMS
                 </span>
               </h2>
-              <p className="text-slate-400 mt-1 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-amber-400" />
+              <p className="text-muted-foreground mt-1 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-primary" />
                 Gestión completa del contenido y configuración del sitio
               </p>
             </div>
           </div>
 
           <div className="hidden lg:flex items-center gap-3">
-            <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 px-3 py-1">
+            <Badge className="bg-primary/20 text-primary border-primary/30 px-3 py-1">
               <span className="relative flex h-2 w-2 mr-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
               </span>
               Sistema Activo
             </Badge>
@@ -389,7 +353,7 @@ export const CMSDashboard: React.FC = () => {
                   {/* Glow Effect */}
                   <div 
                     className={`
-                      absolute -inset-1 bg-gradient-to-r ${section.gradient} rounded-2xl blur-xl opacity-0 
+                      absolute -inset-1 bg-gradient-primary rounded-2xl blur-xl opacity-0 
                       group-hover:opacity-40 transition-opacity duration-500
                     `}
                   />
@@ -397,23 +361,21 @@ export const CMSDashboard: React.FC = () => {
                   {/* Card */}
                   <Card 
                     className={`
-                      relative overflow-hidden border-0 
-                      bg-gradient-to-br from-slate-800/90 via-slate-800/80 to-slate-900/90
-                      backdrop-blur-xl shadow-xl ${section.shadowColor}
-                      group-hover:shadow-2xl transition-all duration-500
-                      before:absolute before:inset-0 before:rounded-2xl before:p-[1px]
-                      before:bg-gradient-to-br before:${section.gradient} before:opacity-30
-                      before:group-hover:opacity-60 before:transition-opacity
+                      relative overflow-hidden border border-border
+                      bg-card/90 backdrop-blur-xl 
+                      shadow-lg shadow-background/50
+                      group-hover:shadow-2xl group-hover:shadow-primary/20 
+                      transition-all duration-500
                     `}
                   >
                     {/* Glass overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-foreground/5 to-transparent pointer-events-none" />
                     
                     {/* Shine effect on hover */}
                     <div 
                       className={`
                         absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700
-                        bg-gradient-to-r from-transparent via-white/5 to-transparent
+                        bg-gradient-to-r from-transparent via-foreground/5 to-transparent
                         transform -skew-x-12 -translate-x-full group-hover:translate-x-full
                         transition-transform duration-1000
                       `}
@@ -427,21 +389,14 @@ export const CMSDashboard: React.FC = () => {
                           whileHover={{ rotate: [0, -10, 10, 0] }}
                           transition={{ duration: 0.5 }}
                         >
-                          <div className={`
-                            absolute inset-0 bg-gradient-to-br ${section.gradient} rounded-xl blur-lg opacity-50
-                            group-hover:opacity-80 transition-opacity
-                          `} />
-                          <div className={`
-                            relative p-3 rounded-xl bg-gradient-to-br ${section.gradient}
-                            shadow-lg ${section.iconGlow} group-hover:shadow-xl
-                            transform transition-transform group-hover:scale-110
-                          `}>
-                            <SectionIcon className="w-6 h-6 text-white drop-shadow-md" />
+                          <div className="absolute inset-0 bg-gradient-primary rounded-xl blur-lg opacity-50 group-hover:opacity-80 transition-opacity" />
+                          <div className="relative p-3 rounded-xl bg-gradient-primary shadow-lg shadow-primary/30 group-hover:shadow-xl transform transition-transform group-hover:scale-110">
+                            <SectionIcon className="w-6 h-6 text-primary-foreground drop-shadow-md" />
                           </div>
                         </motion.div>
                         
                         <CardTitle className="text-lg font-bold">
-                          <span className={`bg-gradient-to-r ${section.gradient} bg-clip-text text-transparent`}>
+                          <span className="text-foreground group-hover:text-primary transition-colors">
                             {section.title}
                           </span>
                         </CardTitle>
@@ -462,41 +417,33 @@ export const CMSDashboard: React.FC = () => {
                               variant="ghost"
                               className={`
                                 w-full justify-start text-left h-auto py-3 px-4 
-                                rounded-xl hover:bg-white/10 
-                                border border-transparent hover:border-white/10
+                                rounded-xl hover:bg-accent/50 
+                                border border-transparent hover:border-border
                                 transition-all duration-300 group/item
-                                hover:shadow-lg hover:shadow-black/20
+                                hover:shadow-lg hover:shadow-background/20
                                 transform hover:translate-x-1
                               `}
                               onClick={() => handleSectionClick(section.id, item.id)}
                             >
-                              <div className={`
-                                p-2 rounded-lg bg-slate-700/50 mr-4
-                                group-hover/item:bg-gradient-to-br group-hover/item:${section.gradient}
-                                transition-all duration-300
-                              `}>
-                                <ItemIcon className="w-4 h-4 text-slate-400 group-hover/item:text-white transition-colors" />
+                              <div className="p-2 rounded-lg bg-muted/50 mr-4 group-hover/item:bg-primary group-hover/item:shadow-lg group-hover/item:shadow-primary/30 transition-all duration-300">
+                                <ItemIcon className="w-4 h-4 text-muted-foreground group-hover/item:text-primary-foreground transition-colors" />
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-sm font-semibold text-slate-200 group-hover/item:text-white transition-colors">
+                                  <span className="text-sm font-semibold text-foreground/80 group-hover/item:text-foreground transition-colors">
                                     {item.label}
                                   </span>
                                   {item.badge && (
-                                    <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] px-2 py-0 border-0 shadow-lg shadow-amber-500/30">
+                                    <Badge className="bg-primary text-primary-foreground text-[10px] px-2 py-0 border-0 shadow-lg shadow-primary/30">
                                       {item.badge}
                                     </Badge>
                                   )}
                                 </div>
-                                <p className="text-xs text-slate-500 group-hover/item:text-slate-400 transition-colors truncate">
+                                <p className="text-xs text-muted-foreground group-hover/item:text-muted-foreground/80 transition-colors truncate">
                                   {item.description}
                                 </p>
                               </div>
-                              <ChevronRight className={`
-                                w-5 h-5 text-slate-600 group-hover/item:text-slate-300
-                                transform transition-all duration-300
-                                group-hover/item:translate-x-1
-                              `} />
+                              <ChevronRight className="w-5 h-5 text-muted-foreground group-hover/item:text-foreground transform transition-all duration-300 group-hover/item:translate-x-1" />
                             </Button>
                           </motion.div>
                         );
