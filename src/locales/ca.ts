@@ -232,6 +232,8 @@ export default {
   'admin.card.alertHistory.desc': 'Registre alertes',
   'admin.card.internalAssistant': 'Assistent IA',
   'admin.card.internalAssistant.desc': 'Chat intern intel·ligent',
+  'admin.card.analyzer': 'Analitzar Codi',
+  'admin.card.analyzer.desc': 'Rendiment i mètriques',
 
   // Admin Role Selector
   'admin.roleSelector.title': 'Selector de Visió',
