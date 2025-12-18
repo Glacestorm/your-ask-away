@@ -44,6 +44,7 @@
     "@radix-ui/react-tooltip": "^1.2.7",
     "@supabase/supabase-js": "^2.84.0",
     "@tanstack/react-query": "^5.83.0",
+    "@testing-library/react": "^16.3.1",
     "@types/dompurify": "^3.2.0",
     "@types/maplibre-gl": "^1.14.0",
     "@types/react-big-calendar": "^1.16.3",
@@ -80,6 +81,7 @@
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.9",
     "vite-plugin-compression": "^0.5.1",
+    "vitest": "^4.0.16",
     "web-vitals": "^5.1.0",
     "xlsx": "^0.18.5",
     "zod": "^3.25.76"

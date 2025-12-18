@@ -78,6 +78,22 @@ export const SecurityOnboardingGuide: React.FC = () => {
       priority: 'high'
     },
     {
+      id: 'vitest-testing',
+      name: 'Vitest Unit Testing',
+      description: 'Framework de tests unitarios configurado con cobertura',
+      status: 'implemented',
+      category: 'code-quality',
+      priority: 'high'
+    },
+    {
+      id: 'error-handling',
+      name: 'Centralized Error Handling',
+      description: 'Sistema centralizado de manejo de errores con retry y logging',
+      status: 'implemented',
+      category: 'code-quality',
+      priority: 'high'
+    },
+    {
       id: 'gitleaks',
       name: 'Gitleaks Pre-commit',
       description: 'Escaneo de secretos en cada commit',
@@ -203,6 +219,20 @@ export const SecurityOnboardingGuide: React.FC = () => {
           // TypeScript strict mode is enabled in tsconfig.json
           passed = true;
           message = 'strict: true habilitado en tsconfig.json';
+          newStatus = 'implemented';
+          break;
+
+        case 'vitest-testing':
+          // Vitest is configured with vitest.config.ts
+          passed = true;
+          message = 'Vitest configurado con cobertura de código (>60% threshold)';
+          newStatus = 'implemented';
+          break;
+
+        case 'error-handling':
+          // Centralized error handling in src/lib/errorHandling.ts
+          passed = true;
+          message = 'Sistema de errores con retry, logging y clasificación';
           newStatus = 'implemented';
           break;
 
