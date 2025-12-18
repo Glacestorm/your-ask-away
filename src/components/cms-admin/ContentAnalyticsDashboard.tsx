@@ -477,11 +477,11 @@ export const ContentAnalyticsDashboard: React.FC<ContentAnalyticsDashboardProps>
 
       {/* Main Content */}
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="bg-muted/50">
-          <TabsTrigger value="overview">Vista General</TabsTrigger>
-          <TabsTrigger value="pages">Páginas</TabsTrigger>
-          <TabsTrigger value="engagement">Engagement</TabsTrigger>
-          <TabsTrigger value="realtime">Tiempo Real</TabsTrigger>
+        <TabsList className="bg-card/80 border border-border/50">
+          <TabsTrigger value="overview" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground">Vista General</TabsTrigger>
+          <TabsTrigger value="pages" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground">Páginas</TabsTrigger>
+          <TabsTrigger value="engagement" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground">Engagement</TabsTrigger>
+          <TabsTrigger value="realtime" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-foreground">Tiempo Real</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
