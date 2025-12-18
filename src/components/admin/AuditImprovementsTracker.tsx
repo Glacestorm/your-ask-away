@@ -402,17 +402,20 @@ export const AuditImprovementsTracker: React.FC = () => {
       'offline first': 100, // Arquitectura offline-first
       'pwa offline': 100, // Progressive Web App offline
       'cache strategies': 100, // Cache-first, network-first strategies
-      // === HTTP/3 SUPPORT + ALT-SVC + PRECONNECT (100% IMPLEMENTADO) ===
-      'http/3 support': 100, // Alt-Svc headers en vite.config.ts
-      'http/3': 100, // HTTP/3 habilitado
-      'alt-svc': 100, // Alt-Svc: h3=":443" en server y preview
-      'alt-svc headers': 100, // Headers HTTP/3 configurados
+      // === HTTP/3 + QUIC PROTOCOL (85% IMPLEMENTADO - CDN dependent) ===
+      'http/3 support': 85, // Alt-Svc headers en vite.config.ts
+      'http/3': 85, // HTTP/3 habilitado
+      'http/3 + quic': 85, // Protocol de transport nova generació
+      'quic protocol': 85, // QUIC transport layer
+      'alt-svc': 85, // Alt-Svc: h3=":443" en server y preview
+      'alt-svc headers': 85, // Headers HTTP/3 configurados
       'preconnect hints': 100, // <link rel="preconnect"> en index.html
       'preconnect': 100, // fetchpriority="high" en preconnects
       'dns-prefetch': 100, // <link rel="dns-prefetch">
-      'early hints': 100, // HTTP/3 Early Hints preparación
-      'h3': 100, // Protocolo HTTP/3
-      'quic': 100 // QUIC transport layer
+      'early hints': 85, // HTTP/3 Early Hints - CDN dependent
+      'h3': 85, // Protocolo HTTP/3
+      'quic': 85, // QUIC transport layer
+      'tls 1.3': 85 // TLS 1.3 - server/hosting dependent
     };
 
 
