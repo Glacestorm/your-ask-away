@@ -5,3 +5,4 @@ export { useCMSContent, useCMSPages } from './useCMSContent';
 export { useCMSTranslation } from './useCMSTranslation';
 export { useNavigationConfig } from './useNavigationConfig';
 export { useDashboardLayout } from './useDashboardLayout';
+export { useContentAnalytics } from './useContentAnalytics';

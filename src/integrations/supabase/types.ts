@@ -2122,6 +2122,51 @@ export type Database = {
           },
         ]
       }
+      cms_content_engagement: {
+        Row: {
+          avg_read_time: number | null
+          clicks: number | null
+          comments_count: number | null
+          content_id: string
+          content_title: string | null
+          content_type: string
+          created_at: string | null
+          date: string
+          id: string
+          likes: number | null
+          scroll_depth: number | null
+          shares: number | null
+        }
+        Insert: {
+          avg_read_time?: number | null
+          clicks?: number | null
+          comments_count?: number | null
+          content_id: string
+          content_title?: string | null
+          content_type?: string
+          created_at?: string | null
+          date?: string
+          id?: string
+          likes?: number | null
+          scroll_depth?: number | null
+          shares?: number | null
+        }
+        Update: {
+          avg_read_time?: number | null
+          clicks?: number | null
+          comments_count?: number | null
+          content_id?: string
+          content_title?: string | null
+          content_type?: string
+          created_at?: string | null
+          date?: string
+          id?: string
+          likes?: number | null
+          scroll_depth?: number | null
+          shares?: number | null
+        }
+        Relationships: []
+      }
       cms_content_versions: {
         Row: {
           change_summary: string | null
@@ -2486,6 +2531,62 @@ export type Database = {
         }
         Relationships: []
       }
+      cms_page_analytics: {
+        Row: {
+          avg_time_on_page: number | null
+          bounce_rate: number | null
+          conversion_rate: number | null
+          conversions: number | null
+          created_at: string | null
+          date: string
+          id: string
+          page_id: string | null
+          page_path: string
+          page_title: string | null
+          unique_visitors: number | null
+          updated_at: string | null
+          views: number | null
+        }
+        Insert: {
+          avg_time_on_page?: number | null
+          bounce_rate?: number | null
+          conversion_rate?: number | null
+          conversions?: number | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          page_id?: string | null
+          page_path: string
+          page_title?: string | null
+          unique_visitors?: number | null
+          updated_at?: string | null
+          views?: number | null
+        }
+        Update: {
+          avg_time_on_page?: number | null
+          bounce_rate?: number | null
+          conversion_rate?: number | null
+          conversions?: number | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          page_id?: string | null
+          page_path?: string
+          page_title?: string | null
+          unique_visitors?: number | null
+          updated_at?: string | null
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_page_analytics_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "cms_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cms_page_revisions: {
         Row: {
           change_summary: string | null
@@ -2751,6 +2852,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      cms_realtime_visitors: {
+        Row: {
+          city: string | null
+          country: string | null
+          created_at: string | null
+          device_type: string | null
+          first_seen: string | null
+          id: string
+          is_active: boolean | null
+          last_activity: string | null
+          page_path: string
+          page_title: string | null
+          referrer: string | null
+          session_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          device_type?: string | null
+          first_seen?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_activity?: string | null
+          page_path: string
+          page_title?: string | null
+          referrer?: string | null
+          session_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          created_at?: string | null
+          device_type?: string | null
+          first_seen?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_activity?: string | null
+          page_path?: string
+          page_title?: string | null
+          referrer?: string | null
+          session_id?: string
+          user_agent?: string | null
+        }
+        Relationships: []
       }
       cms_redirects: {
         Row: {
