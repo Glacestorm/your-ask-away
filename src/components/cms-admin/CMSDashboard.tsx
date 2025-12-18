@@ -1,19 +1,17 @@
 import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Settings, FileText, Navigation, LayoutDashboard, Globe,
   Image, Mail, Flag, Search, Link2, History, Palette,
   Type, Phone, Users, Menu, PanelLeft, PanelBottom,
-  Layers, Clock, Upload, Download, FileImage, Video,
+  Layers, Clock, Upload, FileImage, Video,
   Bell, FileOutput, ToggleLeft, TestTube, Tag, Map,
   ArrowLeft, Key, Webhook, Lock, Timer, RotateCcw,
-  ChevronRight
+  ChevronRight, Sparkles
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Import CMS Admin Components
 import { SiteSettingsManager } from './SiteSettingsManager';
@@ -41,7 +39,9 @@ interface Section {
   id: string;
   title: string;
   icon: React.ElementType;
-  color: string;
+  gradient: string;
+  shadowColor: string;
+  iconGlow: string;
   items: SectionItem[];
 }
 
@@ -50,7 +50,9 @@ const sections: Section[] = [
     id: 'site-settings',
     title: 'Configuración del Sitio',
     icon: Settings,
-    color: 'blue',
+    gradient: 'from-blue-600 via-blue-500 to-cyan-400',
+    shadowColor: 'shadow-blue-500/30',
+    iconGlow: 'shadow-[0_0_30px_rgba(59,130,246,0.5)]',
     items: [
       { id: 'general', label: 'General', icon: Settings, description: 'Nombre, logo, favicon' },
       { id: 'theme', label: 'Colores y Tema', icon: Palette, description: 'Personalización visual' },
@@ -62,7 +64,9 @@ const sections: Section[] = [
     id: 'pages-content',
     title: 'Páginas y Contenido',
     icon: FileText,
-    color: 'emerald',
+    gradient: 'from-emerald-600 via-emerald-500 to-teal-400',
+    shadowColor: 'shadow-emerald-500/30',
+    iconGlow: 'shadow-[0_0_30px_rgba(16,185,129,0.5)]',
     items: [
       { id: 'pages', label: 'Páginas Dinámicas', icon: FileText, description: 'Constructor de páginas' },
       { id: 'blocks', label: 'Bloques Reutilizables', icon: Layers, description: 'Componentes compartidos' },
@@ -73,7 +77,9 @@ const sections: Section[] = [
     id: 'navigation',
     title: 'Navegación',
     icon: Navigation,
-    color: 'purple',
+    gradient: 'from-violet-600 via-purple-500 to-fuchsia-400',
+    shadowColor: 'shadow-purple-500/30',
+    iconGlow: 'shadow-[0_0_30px_rgba(139,92,246,0.5)]',
     items: [
       { id: 'main-menu', label: 'Menú Principal', icon: Menu, description: 'Navegación superior' },
       { id: 'sidebar', label: 'Sidebar', icon: PanelLeft, description: 'Menú lateral' },
@@ -84,7 +90,9 @@ const sections: Section[] = [
     id: 'dashboards',
     title: 'Dashboards',
     icon: LayoutDashboard,
-    color: 'amber',
+    gradient: 'from-amber-500 via-orange-500 to-yellow-400',
+    shadowColor: 'shadow-amber-500/30',
+    iconGlow: 'shadow-[0_0_30px_rgba(245,158,11,0.5)]',
     items: [
       { id: 'layouts', label: 'Layouts por Rol', icon: Users, description: 'Configuración por perfil' },
       { id: 'widgets', label: 'Widgets Disponibles', icon: LayoutDashboard, description: 'Componentes de dashboard' },
@@ -94,7 +102,9 @@ const sections: Section[] = [
     id: 'translations',
     title: 'Traducciones',
     icon: Globe,
-    color: 'cyan',
+    gradient: 'from-cyan-500 via-sky-500 to-blue-400',
+    shadowColor: 'shadow-cyan-500/30',
+    iconGlow: 'shadow-[0_0_30px_rgba(6,182,212,0.5)]',
     items: [
       { id: 'editor', label: 'Editor de Textos', icon: FileText, description: 'Gestionar traducciones' },
       { id: 'progress', label: 'Progreso por Idioma', icon: Globe, description: 'Estado de traducción' },
@@ -105,7 +115,9 @@ const sections: Section[] = [
     id: 'media',
     title: 'Biblioteca de Medios',
     icon: Image,
-    color: 'pink',
+    gradient: 'from-pink-500 via-rose-500 to-red-400',
+    shadowColor: 'shadow-pink-500/30',
+    iconGlow: 'shadow-[0_0_30px_rgba(236,72,153,0.5)]',
     items: [
       { id: 'images', label: 'Imágenes', icon: FileImage, description: 'Galería de imágenes' },
       { id: 'documents', label: 'Documentos', icon: FileText, description: 'PDFs y documentos' },
@@ -116,7 +128,9 @@ const sections: Section[] = [
     id: 'templates',
     title: 'Plantillas',
     icon: Mail,
-    color: 'orange',
+    gradient: 'from-orange-500 via-amber-500 to-yellow-400',
+    shadowColor: 'shadow-orange-500/30',
+    iconGlow: 'shadow-[0_0_30px_rgba(249,115,22,0.5)]',
     items: [
       { id: 'emails', label: 'Emails', icon: Mail, description: 'Plantillas de correo' },
       { id: 'notifications', label: 'Notificaciones', icon: Bell, description: 'Alertas del sistema' },
@@ -127,7 +141,9 @@ const sections: Section[] = [
     id: 'feature-flags',
     title: 'Feature Flags',
     icon: Flag,
-    color: 'red',
+    gradient: 'from-red-600 via-rose-500 to-pink-400',
+    shadowColor: 'shadow-red-500/30',
+    iconGlow: 'shadow-[0_0_30px_rgba(239,68,68,0.5)]',
     items: [
       { id: 'active', label: 'Funciones Activas', icon: ToggleLeft, description: 'Features habilitadas' },
       { id: 'ab-tests', label: 'A/B Tests', icon: TestTube, description: 'Experimentos activos', badge: 'Beta' },
@@ -137,7 +153,9 @@ const sections: Section[] = [
     id: 'seo',
     title: 'SEO',
     icon: Search,
-    color: 'teal',
+    gradient: 'from-teal-500 via-emerald-500 to-green-400',
+    shadowColor: 'shadow-teal-500/30',
+    iconGlow: 'shadow-[0_0_30px_rgba(20,184,166,0.5)]',
     items: [
       { id: 'meta-tags', label: 'Meta Tags', icon: Tag, description: 'Metadatos de páginas' },
       { id: 'sitemap', label: 'Sitemap', icon: Map, description: 'Mapa del sitio' },
@@ -148,7 +166,9 @@ const sections: Section[] = [
     id: 'integrations',
     title: 'Integraciones',
     icon: Link2,
-    color: 'indigo',
+    gradient: 'from-indigo-600 via-violet-500 to-purple-400',
+    shadowColor: 'shadow-indigo-500/30',
+    iconGlow: 'shadow-[0_0_30px_rgba(99,102,241,0.5)]',
     items: [
       { id: 'api-keys', label: 'API Keys', icon: Key, description: 'Claves de API' },
       { id: 'webhooks', label: 'Webhooks', icon: Webhook, description: 'Endpoints externos' },
@@ -159,7 +179,9 @@ const sections: Section[] = [
     id: 'audit',
     title: 'Auditoría',
     icon: History,
-    color: 'slate',
+    gradient: 'from-slate-500 via-gray-500 to-zinc-400',
+    shadowColor: 'shadow-slate-500/30',
+    iconGlow: 'shadow-[0_0_30px_rgba(100,116,139,0.5)]',
     items: [
       { id: 'timeline', label: 'Timeline', icon: Timer, description: 'Historial de cambios' },
       { id: 'restore', label: 'Restaurar Versiones', icon: RotateCcw, description: 'Recuperar cambios' },
@@ -167,23 +189,10 @@ const sections: Section[] = [
   },
 ];
 
-const colorClasses: Record<string, { bg: string; border: string; text: string; icon: string }> = {
-  blue: { bg: 'from-blue-500/10 to-blue-500/5', border: 'border-blue-500/30', text: 'text-blue-400', icon: 'bg-blue-500/20 text-blue-400' },
-  emerald: { bg: 'from-emerald-500/10 to-emerald-500/5', border: 'border-emerald-500/30', text: 'text-emerald-400', icon: 'bg-emerald-500/20 text-emerald-400' },
-  purple: { bg: 'from-purple-500/10 to-purple-500/5', border: 'border-purple-500/30', text: 'text-purple-400', icon: 'bg-purple-500/20 text-purple-400' },
-  amber: { bg: 'from-amber-500/10 to-amber-500/5', border: 'border-amber-500/30', text: 'text-amber-400', icon: 'bg-amber-500/20 text-amber-400' },
-  cyan: { bg: 'from-cyan-500/10 to-cyan-500/5', border: 'border-cyan-500/30', text: 'text-cyan-400', icon: 'bg-cyan-500/20 text-cyan-400' },
-  pink: { bg: 'from-pink-500/10 to-pink-500/5', border: 'border-pink-500/30', text: 'text-pink-400', icon: 'bg-pink-500/20 text-pink-400' },
-  orange: { bg: 'from-orange-500/10 to-orange-500/5', border: 'border-orange-500/30', text: 'text-orange-400', icon: 'bg-orange-500/20 text-orange-400' },
-  red: { bg: 'from-red-500/10 to-red-500/5', border: 'border-red-500/30', text: 'text-red-400', icon: 'bg-red-500/20 text-red-400' },
-  teal: { bg: 'from-teal-500/10 to-teal-500/5', border: 'border-teal-500/30', text: 'text-teal-400', icon: 'bg-teal-500/20 text-teal-400' },
-  indigo: { bg: 'from-indigo-500/10 to-indigo-500/5', border: 'border-indigo-500/30', text: 'text-indigo-400', icon: 'bg-indigo-500/20 text-indigo-400' },
-  slate: { bg: 'from-slate-500/10 to-slate-500/5', border: 'border-slate-500/30', text: 'text-slate-400', icon: 'bg-slate-500/20 text-slate-400' },
-};
-
 export const CMSDashboard: React.FC = () => {
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [activeSubSection, setActiveSubSection] = useState<string | null>(null);
+  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
   const handleSectionClick = (sectionId: string, itemId: string) => {
     setActiveSection(sectionId);
@@ -195,7 +204,6 @@ export const CMSDashboard: React.FC = () => {
     setActiveSubSection(null);
   };
 
-  // Render active component based on selection
   const renderActiveComponent = () => {
     if (!activeSection || !activeSubSection) return null;
 
@@ -258,106 +266,248 @@ export const CMSDashboard: React.FC = () => {
     return componentMap[activeSection]?.[activeSubSection] || null;
   };
 
-  // If a section is active, show the component
   if (activeSection && activeSubSection) {
     const section = sections.find(s => s.id === activeSection);
     const item = section?.items.find(i => i.id === activeSubSection);
-    const colors = colorClasses[section?.color || 'blue'];
 
     return (
-      <div className="space-y-4">
+      <motion.div 
+        className="space-y-4"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -20 }}
+      >
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="sm"
             onClick={handleBack}
-            className="text-slate-400 hover:text-white"
+            className="text-slate-400 hover:text-white hover:bg-white/10 transition-all"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Volver al Dashboard CMS
           </Button>
           <div className="flex items-center gap-2 text-slate-500">
             <ChevronRight className="w-4 h-4" />
-            <span className={colors.text}>{section?.title}</span>
+            <span className={`bg-gradient-to-r ${section?.gradient} bg-clip-text text-transparent font-semibold`}>
+              {section?.title}
+            </span>
             <ChevronRight className="w-4 h-4" />
-            <span className="text-white">{item?.label}</span>
+            <span className="text-white font-medium">{item?.label}</span>
           </div>
         </div>
         
         {renderActiveComponent()}
-      </div>
+      </motion.div>
     );
   }
 
-  // Main dashboard grid
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-emerald-500">
-              <Settings className="w-5 h-5 text-white" />
+    <div className="space-y-8">
+      {/* Hero Header */}
+      <motion.div 
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8 border border-white/10"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        {/* Animated background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-emerald-500/10 animate-pulse" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-500/20 to-transparent rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-emerald-500/20 to-transparent rounded-full blur-3xl" />
+        
+        <div className="relative z-10 flex items-center justify-between">
+          <div className="flex items-center gap-5">
+            {/* 3D Icon Container */}
+            <motion.div 
+              className="relative"
+              whileHover={{ scale: 1.1, rotateY: 15 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-emerald-500 rounded-2xl blur-xl opacity-60" />
+              <div className="relative p-4 rounded-2xl bg-gradient-to-br from-blue-500 via-blue-600 to-emerald-500 shadow-2xl shadow-blue-500/30 transform perspective-1000">
+                <Settings className="w-8 h-8 text-white drop-shadow-lg" />
+              </div>
+            </motion.div>
+            
+            <div>
+              <h2 className="text-3xl font-black tracking-tight">
+                <span className="bg-gradient-to-r from-white via-blue-100 to-white bg-clip-text text-transparent">
+                  Dashboard CMS
+                </span>
+              </h2>
+              <p className="text-slate-400 mt-1 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-400" />
+                Gestión completa del contenido y configuración del sitio
+              </p>
             </div>
-            Dashboard CMS
-          </h2>
-          <p className="text-slate-400 mt-1">Gestión completa del contenido y configuración del sitio</p>
+          </div>
+
+          <div className="hidden lg:flex items-center gap-3">
+            <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 px-3 py-1">
+              <span className="relative flex h-2 w-2 mr-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              Sistema Activo
+            </Badge>
+          </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Sections Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {sections.map((section, sectionIndex) => {
-          const colors = colorClasses[section.color];
-          const SectionIcon = section.icon;
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <AnimatePresence>
+          {sections.map((section, sectionIndex) => {
+            const SectionIcon = section.icon;
+            const isHovered = hoveredCard === section.id;
 
-          return (
-            <motion.div
-              key={section.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: sectionIndex * 0.05 }}
-            >
-              <Card className={`bg-gradient-to-br ${colors.bg} ${colors.border} border-2 hover:shadow-lg transition-all`}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${colors.icon}`}>
-                      <SectionIcon className="w-5 h-5" />
-                    </div>
-                    <CardTitle className={`text-lg ${colors.text}`}>{section.title}</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {section.items.map((item) => {
-                    const ItemIcon = item.icon;
-                    return (
-                      <Button
-                        key={item.id}
-                        variant="ghost"
-                        className="w-full justify-start text-left h-auto py-2 px-3 hover:bg-white/5"
-                        onClick={() => handleSectionClick(section.id, item.id)}
-                      >
-                        <ItemIcon className="w-4 h-4 mr-3 text-slate-400" />
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm text-slate-200">{item.label}</span>
-                            {item.badge && (
-                              <Badge variant="secondary" className="text-xs py-0">
-                                {item.badge}
-                              </Badge>
-                            )}
+            return (
+              <motion.div
+                key={section.id}
+                initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ 
+                  delay: sectionIndex * 0.06,
+                  type: "spring",
+                  stiffness: 100
+                }}
+                onMouseEnter={() => setHoveredCard(section.id)}
+                onMouseLeave={() => setHoveredCard(null)}
+                className="group"
+              >
+                {/* 3D Card Container */}
+                <div 
+                  className={`
+                    relative rounded-2xl transition-all duration-500 ease-out
+                    ${isHovered ? 'transform -translate-y-2 scale-[1.02]' : ''}
+                  `}
+                  style={{
+                    transformStyle: 'preserve-3d',
+                    perspective: '1000px',
+                  }}
+                >
+                  {/* Glow Effect */}
+                  <div 
+                    className={`
+                      absolute -inset-1 bg-gradient-to-r ${section.gradient} rounded-2xl blur-xl opacity-0 
+                      group-hover:opacity-40 transition-opacity duration-500
+                    `}
+                  />
+                  
+                  {/* Card */}
+                  <Card 
+                    className={`
+                      relative overflow-hidden border-0 
+                      bg-gradient-to-br from-slate-800/90 via-slate-800/80 to-slate-900/90
+                      backdrop-blur-xl shadow-xl ${section.shadowColor}
+                      group-hover:shadow-2xl transition-all duration-500
+                      before:absolute before:inset-0 before:rounded-2xl before:p-[1px]
+                      before:bg-gradient-to-br before:${section.gradient} before:opacity-30
+                      before:group-hover:opacity-60 before:transition-opacity
+                    `}
+                  >
+                    {/* Glass overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+                    
+                    {/* Shine effect on hover */}
+                    <div 
+                      className={`
+                        absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700
+                        bg-gradient-to-r from-transparent via-white/5 to-transparent
+                        transform -skew-x-12 -translate-x-full group-hover:translate-x-full
+                        transition-transform duration-1000
+                      `}
+                    />
+
+                    <CardHeader className="pb-4 relative z-10">
+                      <div className="flex items-center gap-4">
+                        {/* 3D Icon */}
+                        <motion.div 
+                          className="relative"
+                          whileHover={{ rotate: [0, -10, 10, 0] }}
+                          transition={{ duration: 0.5 }}
+                        >
+                          <div className={`
+                            absolute inset-0 bg-gradient-to-br ${section.gradient} rounded-xl blur-lg opacity-50
+                            group-hover:opacity-80 transition-opacity
+                          `} />
+                          <div className={`
+                            relative p-3 rounded-xl bg-gradient-to-br ${section.gradient}
+                            shadow-lg ${section.iconGlow} group-hover:shadow-xl
+                            transform transition-transform group-hover:scale-110
+                          `}>
+                            <SectionIcon className="w-6 h-6 text-white drop-shadow-md" />
                           </div>
-                          <p className="text-xs text-slate-500">{item.description}</p>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-slate-500" />
-                      </Button>
-                    );
-                  })}
-                </CardContent>
-              </Card>
-            </motion.div>
-          );
-        })}
+                        </motion.div>
+                        
+                        <CardTitle className="text-lg font-bold">
+                          <span className={`bg-gradient-to-r ${section.gradient} bg-clip-text text-transparent`}>
+                            {section.title}
+                          </span>
+                        </CardTitle>
+                      </div>
+                    </CardHeader>
+
+                    <CardContent className="space-y-1 relative z-10">
+                      {section.items.map((item, itemIndex) => {
+                        const ItemIcon = item.icon;
+                        return (
+                          <motion.div
+                            key={item.id}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: sectionIndex * 0.06 + itemIndex * 0.05 }}
+                          >
+                            <Button
+                              variant="ghost"
+                              className={`
+                                w-full justify-start text-left h-auto py-3 px-4 
+                                rounded-xl hover:bg-white/10 
+                                border border-transparent hover:border-white/10
+                                transition-all duration-300 group/item
+                                hover:shadow-lg hover:shadow-black/20
+                                transform hover:translate-x-1
+                              `}
+                              onClick={() => handleSectionClick(section.id, item.id)}
+                            >
+                              <div className={`
+                                p-2 rounded-lg bg-slate-700/50 mr-4
+                                group-hover/item:bg-gradient-to-br group-hover/item:${section.gradient}
+                                transition-all duration-300
+                              `}>
+                                <ItemIcon className="w-4 h-4 text-slate-400 group-hover/item:text-white transition-colors" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-semibold text-slate-200 group-hover/item:text-white transition-colors">
+                                    {item.label}
+                                  </span>
+                                  {item.badge && (
+                                    <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] px-2 py-0 border-0 shadow-lg shadow-amber-500/30">
+                                      {item.badge}
+                                    </Badge>
+                                  )}
+                                </div>
+                                <p className="text-xs text-slate-500 group-hover/item:text-slate-400 transition-colors truncate">
+                                  {item.description}
+                                </p>
+                              </div>
+                              <ChevronRight className={`
+                                w-5 h-5 text-slate-600 group-hover/item:text-slate-300
+                                transform transition-all duration-300
+                                group-hover/item:translate-x-1
+                              `} />
+                            </Button>
+                          </motion.div>
+                        );
+                      })}
+                    </CardContent>
+                  </Card>
+                </div>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
       </div>
     </div>
   );
