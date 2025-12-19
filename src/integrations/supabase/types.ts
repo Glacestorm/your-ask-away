@@ -5236,6 +5236,86 @@ export type Database = {
         }
         Relationships: []
       }
+      demo_requests: {
+        Row: {
+          assigned_to: string | null
+          availability: Json | null
+          company: string
+          company_size: string | null
+          contacted_at: string | null
+          created_at: string | null
+          email: string
+          full_name: string
+          id: string
+          message: string | null
+          notes: string | null
+          phone: string | null
+          position: string | null
+          scheduled_at: string | null
+          sector: string | null
+          source_page: string | null
+          status: string | null
+          updated_at: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          availability?: Json | null
+          company: string
+          company_size?: string | null
+          contacted_at?: string | null
+          created_at?: string | null
+          email: string
+          full_name: string
+          id?: string
+          message?: string | null
+          notes?: string | null
+          phone?: string | null
+          position?: string | null
+          scheduled_at?: string | null
+          sector?: string | null
+          source_page?: string | null
+          status?: string | null
+          updated_at?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          availability?: Json | null
+          company?: string
+          company_size?: string | null
+          contacted_at?: string | null
+          created_at?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          message?: string | null
+          notes?: string | null
+          phone?: string | null
+          position?: string | null
+          scheduled_at?: string | null
+          sector?: string | null
+          source_page?: string | null
+          status?: string | null
+          updated_at?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demo_requests_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       demo_sessions: {
         Row: {
           cleanup_status: string | null
@@ -6630,6 +6710,63 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_magnet_downloads: {
+        Row: {
+          company: string | null
+          downloaded_at: string | null
+          email: string
+          email_sent: boolean | null
+          email_sent_at: string | null
+          full_name: string
+          id: string
+          lead_magnet_key: string
+          lead_magnet_name: string
+          phone: string | null
+          position: string | null
+          sector: string | null
+          source_page: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          company?: string | null
+          downloaded_at?: string | null
+          email: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          full_name: string
+          id?: string
+          lead_magnet_key: string
+          lead_magnet_name: string
+          phone?: string | null
+          position?: string | null
+          sector?: string | null
+          source_page?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          company?: string | null
+          downloaded_at?: string | null
+          email?: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          full_name?: string
+          id?: string
+          lead_magnet_key?: string
+          lead_magnet_name?: string
+          phone?: string | null
+          position?: string | null
+          sector?: string | null
+          source_page?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: []
+      }
       map_color_mode: {
         Row: {
           created_at: string | null
@@ -6705,6 +6842,45 @@ export type Database = {
           field_name?: string
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      marketing_events: {
+        Row: {
+          created_at: string | null
+          event_name: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          page_path: string | null
+          referrer: string | null
+          sector: string | null
+          session_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_name: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          page_path?: string | null
+          referrer?: string | null
+          sector?: string | null
+          session_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_name?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          page_path?: string | null
+          referrer?: string | null
+          sector?: string | null
+          session_id?: string | null
+          user_agent?: string | null
         }
         Relationships: []
       }
