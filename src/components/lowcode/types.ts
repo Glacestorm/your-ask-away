@@ -141,14 +141,22 @@ export type ActionType =
   | 'execute_rule'
   | 'log_event';
 
+export interface RuleTriggerConfig {
+  form_id?: string;
+  formId?: string;
+  table?: string;
+  tableName?: string;
+  cron?: string;
+  schedule?: string;
+  timezone?: string;
+  webhookPath?: string;
+  method?: string;
+  secret?: string;
+}
+
 export interface RuleTrigger {
   type: TriggerType;
-  config: {
-    formId?: string;
-    tableName?: string;
-    schedule?: string; // cron expression
-    webhookPath?: string;
-  };
+  config: RuleTriggerConfig;
 }
 
 export interface RuleCondition {
@@ -156,6 +164,7 @@ export interface RuleCondition {
   field: string;
   operator: ConditionOperator;
   value: any;
+  logic?: 'AND' | 'OR';
   logicalOperator?: 'AND' | 'OR';
 }
 
@@ -164,6 +173,23 @@ export interface RuleAction {
   type: ActionType;
   config: Record<string, any>;
   order: number;
+}
+
+export interface LowCodeRule {
+  id: string;
+  rule_key: string;
+  rule_name: string;
+  description?: string;
+  module_id?: string;
+  trigger_type: TriggerType;
+  trigger_config: RuleTrigger;
+  conditions: RuleCondition[];
+  actions: RuleAction[];
+  is_active: boolean;
+  priority: number;
+  created_by?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface RuleDefinition {
