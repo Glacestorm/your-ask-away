@@ -26,10 +26,15 @@ const DemoInteractiva: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-16"
         >
-          <div className="w-20 h-20 mx-auto mb-6 bg-emerald-500/20 rounded-2xl flex items-center justify-center">
+          <button 
+            onClick={() => document.getElementById('demo-form')?.scrollIntoView({ behavior: 'smooth' })}
+            className="w-20 h-20 mx-auto mb-6 bg-emerald-500/20 rounded-2xl flex items-center justify-center hover:bg-emerald-500/30 transition-colors cursor-pointer"
+          >
             <Play className="w-10 h-10 text-emerald-400" />
-          </div>
-          <Badge className="mb-4 bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
+          </button>
+          <Badge className="mb-4 bg-emerald-500/20 text-emerald-300 border-emerald-500/30 cursor-pointer hover:bg-emerald-500/30 transition-colors"
+            onClick={() => document.getElementById('demo-form')?.scrollIntoView({ behavior: 'smooth' })}
+          >
             DEMO INTERACTIVA
           </Badge>
           <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
@@ -41,7 +46,7 @@ const DemoInteractiva: React.FC = () => {
           </p>
         </motion.div>
 
-        <div className="max-w-4xl mx-auto bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
+        <div id="demo-form" className="max-w-4xl mx-auto bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
           <DemoRequestForm />
         </div>
       </div>
