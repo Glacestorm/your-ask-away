@@ -242,3 +242,12 @@ verify_jwt = true
 
 [functions.cms-auto-tag]
 verify_jwt = true
+
+[functions.emit-process-event]
+verify_jwt = true
+
+[functions.bpmn-engine]
+verify_jwt = false
+
+[functions.process-mining-analyze]
+verify_jwt = true
