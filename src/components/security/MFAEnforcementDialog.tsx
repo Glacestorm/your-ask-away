@@ -20,10 +20,19 @@ import { useMFAEnforcement } from '@/hooks/useMFAEnforcement';
 import { PasskeyManager } from '@/components/auth/PasskeyManager';
 
 export function MFAEnforcementDialog() {
-  const { showMFASetup, dismissMFAReminder, completeMFASetup } = useMFAEnforcement();
   const [setupMode, setSetupMode] = useState<'choose' | 'webauthn'>('choose');
   const [isLoading, setIsLoading] = useState(false);
   const [localOpen, setLocalOpen] = useState(true);
+  
+  // Call hook unconditionally - it handles null user internally
+  const mfaEnforcement = useMFAEnforcement();
+  
+  // Early return AFTER all hooks are called
+  if (!mfaEnforcement) {
+    return null;
+  }
+  
+  const { showMFASetup, dismissMFAReminder, completeMFASetup } = mfaEnforcement;
 
   const handlePasskeyRegistered = async () => {
     setIsLoading(true);
