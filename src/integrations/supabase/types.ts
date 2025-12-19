@@ -1501,6 +1501,166 @@ export type Database = {
           },
         ]
       }
+      bpmn_process_definitions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          edges: Json
+          entity_type: string
+          escalation_rules: Json | null
+          id: string
+          is_active: boolean | null
+          is_template: boolean | null
+          name: string
+          nodes: Json
+          sla_config: Json | null
+          tenant_id: string | null
+          trigger_conditions: Json | null
+          updated_at: string
+          updated_by: string | null
+          variables_schema: Json | null
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          edges?: Json
+          entity_type: string
+          escalation_rules?: Json | null
+          id?: string
+          is_active?: boolean | null
+          is_template?: boolean | null
+          name: string
+          nodes?: Json
+          sla_config?: Json | null
+          tenant_id?: string | null
+          trigger_conditions?: Json | null
+          updated_at?: string
+          updated_by?: string | null
+          variables_schema?: Json | null
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          edges?: Json
+          entity_type?: string
+          escalation_rules?: Json | null
+          id?: string
+          is_active?: boolean | null
+          is_template?: boolean | null
+          name?: string
+          nodes?: Json
+          sla_config?: Json | null
+          tenant_id?: string | null
+          trigger_conditions?: Json | null
+          updated_at?: string
+          updated_by?: string | null
+          variables_schema?: Json | null
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bpmn_process_definitions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bpmn_process_definitions_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bpmn_process_instances: {
+        Row: {
+          actual_completion: string | null
+          completed_by: string | null
+          created_at: string
+          created_by: string | null
+          current_node_id: string
+          entity_id: string
+          entity_type: string
+          expected_completion: string | null
+          history: Json | null
+          id: string
+          previous_node_id: string | null
+          process_definition_id: string
+          sla_status: string | null
+          started_at: string
+          status: string
+          updated_at: string
+          variables: Json | null
+        }
+        Insert: {
+          actual_completion?: string | null
+          completed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_node_id: string
+          entity_id: string
+          entity_type: string
+          expected_completion?: string | null
+          history?: Json | null
+          id?: string
+          previous_node_id?: string | null
+          process_definition_id: string
+          sla_status?: string | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+          variables?: Json | null
+        }
+        Update: {
+          actual_completion?: string | null
+          completed_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_node_id?: string
+          entity_id?: string
+          entity_type?: string
+          expected_completion?: string | null
+          history?: Json | null
+          id?: string
+          previous_node_id?: string | null
+          process_definition_id?: string
+          sla_status?: string | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+          variables?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bpmn_process_instances_completed_by_fkey"
+            columns: ["completed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bpmn_process_instances_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bpmn_process_instances_process_definition_id_fkey"
+            columns: ["process_definition_id"]
+            isOneToOne: false
+            referencedRelation: "bpmn_process_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cash_flow_statements: {
         Row: {
           corporate_tax_paid: number | null
@@ -8243,6 +8403,223 @@ export type Database = {
         }
         Relationships: []
       }
+      process_events: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_type: string
+          created_at: string
+          duration_ms: number | null
+          entity_id: string
+          entity_type: string
+          from_state: string | null
+          id: string
+          metadata: Json | null
+          node_id: string | null
+          occurred_at: string
+          process_definition_id: string | null
+          process_instance_id: string | null
+          tenant_id: string | null
+          to_state: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_type?: string
+          created_at?: string
+          duration_ms?: number | null
+          entity_id: string
+          entity_type: string
+          from_state?: string | null
+          id?: string
+          metadata?: Json | null
+          node_id?: string | null
+          occurred_at?: string
+          process_definition_id?: string | null
+          process_instance_id?: string | null
+          tenant_id?: string | null
+          to_state?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_type?: string
+          created_at?: string
+          duration_ms?: number | null
+          entity_id?: string
+          entity_type?: string
+          from_state?: string | null
+          id?: string
+          metadata?: Json | null
+          node_id?: string | null
+          occurred_at?: string
+          process_definition_id?: string | null
+          process_instance_id?: string | null
+          tenant_id?: string | null
+          to_state?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "process_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      process_mining_snapshots: {
+        Row: {
+          analysis_results: Json
+          created_at: string
+          created_by: string | null
+          date_from: string | null
+          date_to: string | null
+          description: string | null
+          entity_type: string | null
+          id: string
+          name: string
+          process_definition_id: string | null
+        }
+        Insert: {
+          analysis_results?: Json
+          created_at?: string
+          created_by?: string | null
+          date_from?: string | null
+          date_to?: string | null
+          description?: string | null
+          entity_type?: string | null
+          id?: string
+          name: string
+          process_definition_id?: string | null
+        }
+        Update: {
+          analysis_results?: Json
+          created_at?: string
+          created_by?: string | null
+          date_from?: string | null
+          date_to?: string | null
+          description?: string | null
+          entity_type?: string | null
+          id?: string
+          name?: string
+          process_definition_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "process_mining_snapshots_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "process_mining_snapshots_process_definition_id_fkey"
+            columns: ["process_definition_id"]
+            isOneToOne: false
+            referencedRelation: "bpmn_process_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      process_sla_violations: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          actual_duration: unknown
+          created_at: string
+          escalated_to: string[] | null
+          escalation_level: number | null
+          exceeded_by: unknown
+          exceeded_percentage: number | null
+          expected_duration: unknown
+          id: string
+          instance_id: string
+          node_id: string
+          node_name: string | null
+          notification_sent: boolean | null
+          notification_sent_at: string | null
+          process_definition_id: string | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          violation_type: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          actual_duration?: unknown
+          created_at?: string
+          escalated_to?: string[] | null
+          escalation_level?: number | null
+          exceeded_by?: unknown
+          exceeded_percentage?: number | null
+          expected_duration?: unknown
+          id?: string
+          instance_id: string
+          node_id: string
+          node_name?: string | null
+          notification_sent?: boolean | null
+          notification_sent_at?: string | null
+          process_definition_id?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          violation_type: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          actual_duration?: unknown
+          created_at?: string
+          escalated_to?: string[] | null
+          escalation_level?: number | null
+          exceeded_by?: unknown
+          exceeded_percentage?: number | null
+          expected_duration?: unknown
+          id?: string
+          instance_id?: string
+          node_id?: string
+          node_name?: string | null
+          notification_sent?: boolean | null
+          notification_sent_at?: string | null
+          process_definition_id?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          violation_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "process_sla_violations_acknowledged_by_fkey"
+            columns: ["acknowledged_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "process_sla_violations_instance_id_fkey"
+            columns: ["instance_id"]
+            isOneToOne: false
+            referencedRelation: "bpmn_process_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "process_sla_violations_process_definition_id_fkey"
+            columns: ["process_definition_id"]
+            isOneToOne: false
+            referencedRelation: "bpmn_process_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "process_sla_violations_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           active: boolean | null
@@ -11655,6 +12032,29 @@ export type Database = {
       cleanup_expired_training_data: { Args: never; Returns: number }
       cleanup_rate_limits: { Args: never; Returns: undefined }
       cleanup_tpp_rate_limits: { Args: never; Returns: undefined }
+      detect_process_bottlenecks: {
+        Args: { p_date_from?: string; p_process_definition_id?: string }
+        Returns: {
+          avg_duration_ms: number
+          bottleneck_score: number
+          event_count: number
+          max_duration_ms: number
+          min_duration_ms: number
+          node_id: string
+        }[]
+      }
+      emit_process_event: {
+        Args: {
+          p_action: string
+          p_actor_type?: string
+          p_entity_id: string
+          p_entity_type: string
+          p_from_state?: string
+          p_metadata?: Json
+          p_to_state?: string
+        }
+        Returns: string
+      }
       expire_open_banking_consents: { Args: never; Returns: undefined }
       find_applicable_bundles: {
         Args: { p_cnae_codes: string[] }
@@ -11693,6 +12093,14 @@ export type Database = {
           settings: Json
           valid_until: string
         }[]
+      }
+      get_process_mining_stats: {
+        Args: {
+          p_date_from?: string
+          p_date_to?: string
+          p_entity_type?: string
+        }
+        Returns: Json
       }
       get_sector_ratios: { Args: { p_cnae_code: string }; Returns: Json }
       get_sector_regulations: {
