@@ -251,3 +251,6 @@ verify_jwt = false
 
 [functions.process-mining-analyze]
 verify_jwt = true
+
+[functions.execute-lowcode-rule]
+verify_jwt = true
