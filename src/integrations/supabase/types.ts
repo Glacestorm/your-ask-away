@@ -1661,6 +1661,48 @@ export type Database = {
           },
         ]
       }
+      business_telemetry: {
+        Row: {
+          channel: string | null
+          created_at: string
+          id: string
+          metadata: Json | null
+          metric_type: string
+          period_end: string
+          period_start: string
+          segment: string | null
+          updated_at: string
+          user_id: string | null
+          value: number
+        }
+        Insert: {
+          channel?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          metric_type: string
+          period_end: string
+          period_start: string
+          segment?: string | null
+          updated_at?: string
+          user_id?: string | null
+          value: number
+        }
+        Update: {
+          channel?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          metric_type?: string
+          period_end?: string
+          period_start?: string
+          segment?: string | null
+          updated_at?: string
+          user_id?: string | null
+          value?: number
+        }
+        Relationships: []
+      }
       cash_flow_statements: {
         Row: {
           corporate_tax_paid: number | null
