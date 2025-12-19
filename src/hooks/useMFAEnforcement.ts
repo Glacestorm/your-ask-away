@@ -29,12 +29,16 @@ interface UseMFAEnforcementReturn {
 // Admin roles that require MFA
 const ADMIN_ROLES = ['superadmin', 'admin', 'director_comercial', 'responsable_comercial'];
 
-export function useMFAEnforcement(): UseMFAEnforcementReturn {
-  const { user, userRole } = useAuth();
+export function useMFAEnforcement(): UseMFAEnforcementReturn | null {
+  const auth = useAuth();
   const [mfaStatus, setMFAStatus] = useState<MFAStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [showMFASetup, setShowMFASetup] = useState(false);
 
+  // Handle case where auth context is not ready
+  const user = auth?.user ?? null;
+  const userRole = auth?.userRole ?? null;
+  
   const isAdminRole = userRole ? ADMIN_ROLES.includes(userRole) : false;
 
   const checkMFAStatus = useCallback(async () => {
