@@ -184,15 +184,6 @@ export function ProcessMiningDashboard({ entityType }: ProcessMiningDashboardPro
 
   return (
     <div className="space-y-6">
-      {/* Header with GlobalNavHeader */}
-      <GlobalNavHeader
-        title="Process Mining"
-        subtitle="Análisis de procesos y detección de cuellos de botella"
-        canGoBack={true}
-        canGoForward={true}
-        onGoBack={handleGoBack}
-        onGoForward={handleGoForward}
-      />
 
       {/* Filters */}
       <div className="flex items-center justify-end gap-3">
