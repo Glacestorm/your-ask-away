@@ -70,6 +70,7 @@ const BancaLanding = lazy(() => import("./pages/sectors/BancaLanding"));
 const ComparativasCRM = lazy(() => import("./pages/comparativas/ComparativasCRM"));
 const Seguridad = lazy(() => import("./pages/Seguridad"));
 const DemoInteractiva = lazy(() => import("./pages/DemoInteractiva"));
+const LowCodePage = lazy(() => import("./pages/LowCodePage"));
 const preloadRoute = (importFn: () => Promise<unknown>) => {
   startTransition(() => {
     importFn();
@@ -141,6 +142,7 @@ const App = () => (
                           <Route path="/comparativas" element={<StreamingBoundary priority="high"><ComparativasCRM /></StreamingBoundary>} />
                           <Route path="/seguridad" element={<StreamingBoundary priority="high"><Seguridad /></StreamingBoundary>} />
                           <Route path="/demo" element={<StreamingBoundary priority="high"><DemoInteractiva /></StreamingBoundary>} />
+                          <Route path="/lowcode" element={<StreamingBoundary priority="medium"><LowCodePage /></StreamingBoundary>} />
                           <Route path="*" element={<NotFound />} />
                         </Routes>
                       </StreamingBoundary>
