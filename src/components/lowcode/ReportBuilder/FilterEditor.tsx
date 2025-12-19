@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ReportFilter } from '../types';
+import { ReportFilter, ConditionOperator } from '../types';
 import { Plus, Trash2 } from 'lucide-react';
 
 interface FilterEditorProps {
@@ -13,7 +13,7 @@ interface FilterEditorProps {
   availableFields: { key: string; label: string; type: string }[];
 }
 
-const OPERATORS = [
+const OPERATORS: { value: ConditionOperator; label: string }[] = [
   { value: 'equals', label: 'Igual a' },
   { value: 'not_equals', label: 'Diferente de' },
   { value: 'contains', label: 'Contiene' },
@@ -34,7 +34,7 @@ export function FilterEditor({ filters, onChange, availableFields }: FilterEdito
       field: '',
       operator: 'equals',
       value: '',
-      isRequired: false,
+      isUserInput: false,
     };
     onChange([...filters, newFilter]);
   };
@@ -93,7 +93,7 @@ export function FilterEditor({ filters, onChange, availableFields }: FilterEdito
                   <Label className="text-xs">Operador</Label>
                   <Select
                     value={filter.operator}
-                    onValueChange={(value) => updateFilter(index, { operator: value as ReportFilter['operator'] })}
+                    onValueChange={(value) => updateFilter(index, { operator: value as ConditionOperator })}
                   >
                     <SelectTrigger className="h-8">
                       <SelectValue />

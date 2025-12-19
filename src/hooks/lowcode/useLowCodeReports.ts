@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { LowCodeReport } from '@/components/lowcode/types';
+import { LowCodeReport, ReportColumn, ReportFilter, ReportGrouping, ReportSorting, ChartConfig } from '@/components/lowcode/types';
 import { toast } from 'sonner';
 
 export function useLowCodeReports(moduleId?: string) {
@@ -22,12 +22,21 @@ export function useLowCodeReports(moduleId?: string) {
       if (error) throw error;
       
       return data.map(report => ({
-        ...report,
-        columns: (report.columns as unknown as LowCodeReport['columns']) || [],
-        filters: (report.filters as unknown as LowCodeReport['filters']) || [],
-        grouping: (report.grouping as unknown as LowCodeReport['grouping']) || [],
-        sorting: (report.sorting as unknown as LowCodeReport['sorting']) || [],
-        chart_config: (report.chart_config as unknown as LowCodeReport['chart_config']) || undefined,
+        id: report.id,
+        report_key: report.report_key,
+        report_name: report.report_name,
+        description: report.description || '',
+        module_id: report.module_id || undefined,
+        data_source: (report.data_source as unknown as { table?: string })?.table || 'companies',
+        columns: (report.columns as unknown as ReportColumn[]) || [],
+        filters: (report.filters as unknown as ReportFilter[]) || [],
+        grouping: (report.grouping as unknown as ReportGrouping[]) || [],
+        sorting: (report.sorting as unknown as ReportSorting[]) || [],
+        chart_config: (report.visualizations as unknown as ChartConfig) || undefined,
+        is_public: false,
+        created_by: report.created_by || undefined,
+        created_at: report.created_at || undefined,
+        updated_at: report.updated_at || undefined,
       })) as LowCodeReport[];
     },
   });
@@ -43,13 +52,13 @@ export function useLowCodeReports(moduleId?: string) {
           report_key: report.report_key || `report_${Date.now()}`,
           description: report.description,
           module_id: report.module_id,
-          data_source: report.data_source || 'companies',
+          data_source: JSON.parse(JSON.stringify({ table: report.data_source || 'companies' })),
           columns: JSON.parse(JSON.stringify(report.columns || [])),
           filters: JSON.parse(JSON.stringify(report.filters || [])),
           grouping: JSON.parse(JSON.stringify(report.grouping || [])),
           sorting: JSON.parse(JSON.stringify(report.sorting || [])),
-          chart_config: report.chart_config ? JSON.parse(JSON.stringify(report.chart_config)) : null,
-          is_public: report.is_public ?? false,
+          visualizations: report.chart_config ? JSON.parse(JSON.stringify(report.chart_config)) : null,
+          status: report.is_public ? 'published' : 'draft',
           created_by: user.user?.id,
         })
         .select()
@@ -75,13 +84,13 @@ export function useLowCodeReports(moduleId?: string) {
       if (updates.report_name) updateData.report_name = updates.report_name;
       if (updates.report_key) updateData.report_key = updates.report_key;
       if (updates.description !== undefined) updateData.description = updates.description;
-      if (updates.data_source) updateData.data_source = updates.data_source;
+      if (updates.data_source) updateData.data_source = JSON.parse(JSON.stringify({ table: updates.data_source }));
       if (updates.columns) updateData.columns = JSON.parse(JSON.stringify(updates.columns));
       if (updates.filters) updateData.filters = JSON.parse(JSON.stringify(updates.filters));
       if (updates.grouping) updateData.grouping = JSON.parse(JSON.stringify(updates.grouping));
       if (updates.sorting) updateData.sorting = JSON.parse(JSON.stringify(updates.sorting));
-      if (updates.chart_config !== undefined) updateData.chart_config = updates.chart_config ? JSON.parse(JSON.stringify(updates.chart_config)) : null;
-      if (updates.is_public !== undefined) updateData.is_public = updates.is_public;
+      if (updates.chart_config !== undefined) updateData.visualizations = updates.chart_config ? JSON.parse(JSON.stringify(updates.chart_config)) : null;
+      if (updates.is_public !== undefined) updateData.status = updates.is_public ? 'published' : 'draft';
 
       const { data, error } = await supabase
         .from('lowcode_report_definitions')
