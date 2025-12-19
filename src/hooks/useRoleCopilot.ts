@@ -208,7 +208,7 @@ export function useRoleCopilot() {
         await supabase
           .from('copilot_sessions')
           .update({
-            active_suggestions: suggestions as unknown[],
+            active_suggestions: JSON.parse(JSON.stringify(suggestions)),
             last_interaction: new Date().toISOString(),
           })
           .eq('id', session.id);
@@ -254,7 +254,7 @@ export function useRoleCopilot() {
         action_source: 'copilot',
         entity_type: suggestion.entityType,
         entity_id: suggestion.entityId,
-        action_data: { suggestion, actionId } as unknown,
+        action_data: JSON.parse(JSON.stringify({ suggestion, actionId })),
         ai_reasoning: suggestion.reasoning,
         outcome: 'completed',
         outcome_value: suggestion.estimatedValue || 0,
@@ -292,7 +292,7 @@ export function useRoleCopilot() {
         action_source: 'copilot',
         entity_type: suggestion.entityType,
         entity_id: suggestion.entityId,
-        action_data: { suggestion, dismissReason: reason } as unknown,
+        action_data: JSON.parse(JSON.stringify({ suggestion, dismissReason: reason })),
         outcome: 'dismissed',
         outcome_value: 0,
       }]);
