@@ -1,0 +1,79 @@
+{
+  "bundles": {
+    "main": {
+      "maxSize": "200KB",
+      "maxGzippedSize": "60KB"
+    },
+    "vendor-react": {
+      "maxSize": "150KB",
+      "maxGzippedSize": "50KB"
+    },
+    "vendor-ui": {
+      "maxSize": "100KB",
+      "maxGzippedSize": "35KB"
+    },
+    "vendor-charts": {
+      "maxSize": "150KB",
+      "maxGzippedSize": "50KB"
+    },
+    "total": {
+      "maxSize": "800KB",
+      "maxGzippedSize": "250KB"
+    }
+  },
+  "webVitals": {
+    "LCP": {
+      "good": 2500,
+      "needsImprovement": 4000,
+      "unit": "ms"
+    },
+    "FID": {
+      "good": 100,
+      "needsImprovement": 300,
+      "unit": "ms"
+    },
+    "CLS": {
+      "good": 0.1,
+      "needsImprovement": 0.25,
+      "unit": "score"
+    },
+    "INP": {
+      "good": 200,
+      "needsImprovement": 500,
+      "unit": "ms"
+    },
+    "FCP": {
+      "good": 1800,
+      "needsImprovement": 3000,
+      "unit": "ms"
+    },
+    "TTFB": {
+      "good": 800,
+      "needsImprovement": 1800,
+      "unit": "ms"
+    }
+  },
+  "resources": {
+    "images": {
+      "maxSingleSize": "200KB",
+      "formats": ["webp", "avif", "png", "jpg"]
+    },
+    "fonts": {
+      "maxTotalSize": "100KB",
+      "formats": ["woff2"]
+    },
+    "css": {
+      "maxTotalSize": "50KB"
+    }
+  },
+  "requests": {
+    "maxInitialRequests": 20,
+    "maxTotalRequests": 50,
+    "maxThirdPartyRequests": 10
+  },
+  "timing": {
+    "timeToInteractive": 3500,
+    "firstMeaningfulPaint": 2000,
+    "domContentLoaded": 1500
+  }
+}

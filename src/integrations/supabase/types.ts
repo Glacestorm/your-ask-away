@@ -5842,6 +5842,57 @@ export type Database = {
           },
         ]
       }
+      error_logs: {
+        Row: {
+          component_name: string | null
+          created_at: string
+          error_code: string | null
+          error_message: string
+          error_stack: string | null
+          id: string
+          metadata: Json | null
+          resolved_at: string | null
+          resolved_by: string | null
+          session_id: string | null
+          severity: string | null
+          url: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          component_name?: string | null
+          created_at?: string
+          error_code?: string | null
+          error_message: string
+          error_stack?: string | null
+          id?: string
+          metadata?: Json | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          session_id?: string | null
+          severity?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          component_name?: string | null
+          created_at?: string
+          error_code?: string | null
+          error_message?: string
+          error_stack?: string | null
+          id?: string
+          metadata?: Json | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          session_id?: string | null
+          severity?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       financial_document_embeddings: {
         Row: {
           chunk_index: number
@@ -8003,6 +8054,96 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      performance_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          actual_value: number
+          alert_type: string
+          created_at: string
+          id: string
+          message: string | null
+          metadata: Json | null
+          metric_name: string
+          severity: string | null
+          threshold_value: number
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          actual_value: number
+          alert_type: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          metadata?: Json | null
+          metric_name: string
+          severity?: string | null
+          threshold_value: number
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          actual_value?: number
+          alert_type?: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          metadata?: Json | null
+          metric_name?: string
+          severity?: string | null
+          threshold_value?: number
+        }
+        Relationships: []
+      }
+      performance_metrics: {
+        Row: {
+          connection_type: string | null
+          created_at: string
+          delta: number | null
+          device_type: string | null
+          id: string
+          metadata: Json | null
+          metric_name: string
+          page_path: string | null
+          rating: string | null
+          session_id: string | null
+          url: string | null
+          user_agent: string | null
+          value: number
+        }
+        Insert: {
+          connection_type?: string | null
+          created_at?: string
+          delta?: number | null
+          device_type?: string | null
+          id?: string
+          metadata?: Json | null
+          metric_name: string
+          page_path?: string | null
+          rating?: string | null
+          session_id?: string | null
+          url?: string | null
+          user_agent?: string | null
+          value: number
+        }
+        Update: {
+          connection_type?: string | null
+          created_at?: string
+          delta?: number | null
+          device_type?: string | null
+          id?: string
+          metadata?: Json | null
+          metric_name?: string
+          page_path?: string | null
+          rating?: string | null
+          session_id?: string | null
+          url?: string | null
+          user_agent?: string | null
+          value?: number
+        }
+        Relationships: []
       }
       pipeline_snapshots: {
         Row: {
