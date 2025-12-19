@@ -254,3 +254,15 @@ verify_jwt = true
 
 [functions.execute-lowcode-rule]
 verify_jwt = true
+
+[functions.copilot-assistant]
+verify_jwt = true
+
+[functions.generate-nba-actions]
+verify_jwt = true
+
+[functions.execute-nba-action]
+verify_jwt = true
+
+[functions.run-continuous-controls]
+verify_jwt = false
