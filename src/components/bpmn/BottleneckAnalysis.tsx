@@ -5,19 +5,28 @@ import { Progress } from '@/components/ui/progress';
 import { AlertTriangle, Clock, TrendingDown, ArrowUpRight } from 'lucide-react';
 import type { ProcessEvent, BottleneckData } from '@/types/bpmn';
 
+interface RawBottleneck {
+  avg_duration_ms?: number;
+  bottleneck_score?: number;
+  event_count?: number;
+  max_duration_ms?: number;
+  min_duration_ms?: number;
+  node_id?: string;
+}
+
 interface BottleneckAnalysisProps {
-  bottlenecks: BottleneckData[] | { avg_duration_ms: number; bottleneck_score: number; event_count: number; max_duration_ms: number; min_duration_ms: number; node_id: string; }[] | undefined;
+  bottlenecks: BottleneckData[] | RawBottleneck[] | undefined;
   events: ProcessEvent[];
 }
 
 export function BottleneckAnalysis({ bottlenecks = [], events }: BottleneckAnalysisProps) {
-  const normalizedBottlenecks = (bottlenecks || []).map((b: any) => ({
-    nodeId: b.node_id || b.nodeId,
-    avgDurationMs: b.avg_duration_ms || b.avgDurationMs || 0,
-    maxDurationMs: b.max_duration_ms || b.maxDurationMs || 0,
-    minDurationMs: b.min_duration_ms || b.minDurationMs || 0,
-    eventCount: b.event_count || b.eventCount || 0,
-    bottleneckScore: b.bottleneck_score || b.bottleneckScore || 0,
+  const normalizedBottlenecks = (bottlenecks || []).map((b: BottleneckData | RawBottleneck) => ({
+    nodeId: ('node_id' in b ? b.node_id : (b as BottleneckData).nodeId) || 'unknown',
+    avgDurationMs: ('avg_duration_ms' in b ? b.avg_duration_ms : (b as BottleneckData).avgDurationMs) || 0,
+    maxDurationMs: ('max_duration_ms' in b ? b.max_duration_ms : (b as BottleneckData).maxDurationMs) || 0,
+    minDurationMs: ('min_duration_ms' in b ? b.min_duration_ms : (b as BottleneckData).minDurationMs) || 0,
+    eventCount: ('event_count' in b ? b.event_count : (b as BottleneckData).eventCount) || 0,
+    bottleneckScore: ('bottleneck_score' in b ? b.bottleneck_score : (b as BottleneckData).bottleneckScore) || 0,
   }));
 
   const getSeverityColor = (score: number) => {
@@ -73,7 +82,6 @@ export function BottleneckAnalysis({ bottlenecks = [], events }: BottleneckAnaly
                           new Date(sorted[i].occurred_at).getTime();
           m.avgStay = (m.avgStay * (m.exits - 1) + stayTime) / m.exits;
         } else {
-          // Last state - check if it's stuck (no exit in last 24h)
           const age = Date.now() - new Date(sorted[i].occurred_at).getTime();
           if (age > 24 * 60 * 60 * 1000) {
             m.stuck++;
@@ -108,12 +116,6 @@ export function BottleneckAnalysis({ bottlenecks = [], events }: BottleneckAnaly
             </div>
           </CardContent>
         </Card>
-                </div>
-                <p className="text-sm text-muted-foreground">Cuellos críticos</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         <Card>
           <CardContent className="pt-6">
@@ -142,16 +144,6 @@ export function BottleneckAnalysis({ bottlenecks = [], events }: BottleneckAnaly
                   {normalizedBottlenecks.length > 0 
                     ? formatDuration(
                         normalizedBottlenecks.reduce((acc, b) => acc + b.avgDurationMs, 0) / normalizedBottlenecks.length
-                      )
-                    : '--'}
-                </div>
-                <p className="text-sm text-muted-foreground">Tiempo promedio</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-                    ? formatDuration(
-                        bottlenecks.reduce((acc, b) => acc + b.avg_duration_hours, 0) / bottlenecks.length
                       )
                     : '--'}
                 </div>
