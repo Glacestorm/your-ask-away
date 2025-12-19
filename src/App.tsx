@@ -54,7 +54,12 @@ const APIReference = lazy(() => import("./pages/resources/APIReference"));
 const Blog = lazy(() => import("./pages/resources/Blog"));
 const CaseStudies = lazy(() => import("./pages/resources/CaseStudies"));
 
-// Preload critical routes
+// Sector pages
+const SectorLanding = lazy(() => import("./pages/sectors/SectorLanding"));
+const BancaLanding = lazy(() => import("./pages/sectors/BancaLanding"));
+const ComparativasCRM = lazy(() => import("./pages/comparativas/ComparativasCRM"));
+const Seguridad = lazy(() => import("./pages/Seguridad"));
+const DemoInteractiva = lazy(() => import("./pages/DemoInteractiva"));
 const preloadRoute = (importFn: () => Promise<unknown>) => {
   startTransition(() => {
     importFn();
@@ -119,6 +124,12 @@ const App = () => (
                         <Route path="/api" element={<StreamingBoundary priority="low"><APIReference /></StreamingBoundary>} />
                         <Route path="/blog" element={<StreamingBoundary priority="low"><Blog /></StreamingBoundary>} />
                         <Route path="/cases" element={<StreamingBoundary priority="low"><CaseStudies /></StreamingBoundary>} />
+                        {/* Sector & Marketing routes */}
+                        <Route path="/sectores" element={<StreamingBoundary priority="high"><SectorLanding /></StreamingBoundary>} />
+                        <Route path="/sectores/banca" element={<StreamingBoundary priority="high"><BancaLanding /></StreamingBoundary>} />
+                        <Route path="/comparativas" element={<StreamingBoundary priority="high"><ComparativasCRM /></StreamingBoundary>} />
+                        <Route path="/seguridad" element={<StreamingBoundary priority="high"><Seguridad /></StreamingBoundary>} />
+                        <Route path="/demo" element={<StreamingBoundary priority="high"><DemoInteractiva /></StreamingBoundary>} />
                         <Route path="*" element={<NotFound />} />
                       </Routes>
                     </StreamingBoundary>
