@@ -4880,6 +4880,215 @@ export type Database = {
           },
         ]
       }
+      continuous_controls: {
+        Row: {
+          auto_generate_evidence: boolean | null
+          check_frequency: string
+          check_logic: Json | null
+          check_query: string | null
+          control_category: string
+          control_code: string
+          control_description: string | null
+          control_name: string
+          created_at: string | null
+          evidence_template: Json | null
+          id: string
+          is_active: boolean | null
+          last_execution_at: string | null
+          notification_channels: string[] | null
+          notification_recipients: Json | null
+          remediation_steps: Json | null
+          severity_on_failure: string | null
+          threshold_config: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          auto_generate_evidence?: boolean | null
+          check_frequency: string
+          check_logic?: Json | null
+          check_query?: string | null
+          control_category: string
+          control_code: string
+          control_description?: string | null
+          control_name: string
+          created_at?: string | null
+          evidence_template?: Json | null
+          id?: string
+          is_active?: boolean | null
+          last_execution_at?: string | null
+          notification_channels?: string[] | null
+          notification_recipients?: Json | null
+          remediation_steps?: Json | null
+          severity_on_failure?: string | null
+          threshold_config?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          auto_generate_evidence?: boolean | null
+          check_frequency?: string
+          check_logic?: Json | null
+          check_query?: string | null
+          control_category?: string
+          control_code?: string
+          control_description?: string | null
+          control_name?: string
+          created_at?: string | null
+          evidence_template?: Json | null
+          id?: string
+          is_active?: boolean | null
+          last_execution_at?: string | null
+          notification_channels?: string[] | null
+          notification_recipients?: Json | null
+          remediation_steps?: Json | null
+          severity_on_failure?: string | null
+          threshold_config?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      control_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          affected_count: number | null
+          affected_entities: Json | null
+          alert_type: string
+          control_id: string
+          created_at: string | null
+          description: string | null
+          evidence_summary: Json | null
+          execution_id: string | null
+          id: string
+          recommended_actions: Json | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          affected_count?: number | null
+          affected_entities?: Json | null
+          alert_type: string
+          control_id: string
+          created_at?: string | null
+          description?: string | null
+          evidence_summary?: Json | null
+          execution_id?: string | null
+          id?: string
+          recommended_actions?: Json | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity: string
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          affected_count?: number | null
+          affected_entities?: Json | null
+          alert_type?: string
+          control_id?: string
+          created_at?: string | null
+          description?: string | null
+          evidence_summary?: Json | null
+          execution_id?: string | null
+          id?: string
+          recommended_actions?: Json | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "control_alerts_control_id_fkey"
+            columns: ["control_id"]
+            isOneToOne: false
+            referencedRelation: "continuous_controls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "control_alerts_execution_id_fkey"
+            columns: ["execution_id"]
+            isOneToOne: false
+            referencedRelation: "control_executions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      control_executions: {
+        Row: {
+          ai_analysis: string | null
+          ai_recommendations: Json | null
+          control_id: string
+          created_at: string | null
+          error_message: string | null
+          evidence_ids: string[] | null
+          execution_end: string | null
+          execution_start: string
+          findings: Json | null
+          id: string
+          items_checked: number | null
+          items_failed: number | null
+          items_passed: number | null
+          metrics_collected: Json | null
+          status: string
+        }
+        Insert: {
+          ai_analysis?: string | null
+          ai_recommendations?: Json | null
+          control_id: string
+          created_at?: string | null
+          error_message?: string | null
+          evidence_ids?: string[] | null
+          execution_end?: string | null
+          execution_start?: string
+          findings?: Json | null
+          id?: string
+          items_checked?: number | null
+          items_failed?: number | null
+          items_passed?: number | null
+          metrics_collected?: Json | null
+          status?: string
+        }
+        Update: {
+          ai_analysis?: string | null
+          ai_recommendations?: Json | null
+          control_id?: string
+          created_at?: string | null
+          error_message?: string | null
+          evidence_ids?: string[] | null
+          execution_end?: string | null
+          execution_start?: string
+          findings?: Json | null
+          id?: string
+          items_checked?: number | null
+          items_failed?: number | null
+          items_passed?: number | null
+          metrics_collected?: Json | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "control_executions_control_id_fkey"
+            columns: ["control_id"]
+            isOneToOne: false
+            referencedRelation: "continuous_controls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversation_summaries: {
         Row: {
           company_id: string | null
@@ -4933,6 +5142,146 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      copilot_action_log: {
+        Row: {
+          action_data: Json | null
+          action_source: string
+          action_type: string
+          ai_reasoning: string | null
+          created_at: string | null
+          entity_id: string | null
+          entity_type: string | null
+          executed_at: string | null
+          id: string
+          outcome: string | null
+          outcome_details: Json | null
+          outcome_value: number | null
+          session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          action_data?: Json | null
+          action_source: string
+          action_type: string
+          ai_reasoning?: string | null
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          executed_at?: string | null
+          id?: string
+          outcome?: string | null
+          outcome_details?: Json | null
+          outcome_value?: number | null
+          session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          action_data?: Json | null
+          action_source?: string
+          action_type?: string
+          ai_reasoning?: string | null
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          executed_at?: string | null
+          id?: string
+          outcome?: string | null
+          outcome_details?: Json | null
+          outcome_value?: number | null
+          session_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "copilot_action_log_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "copilot_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      copilot_role_configs: {
+        Row: {
+          available_tools: Json | null
+          context_sources: string[] | null
+          copilot_description: string | null
+          copilot_name: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          priority_metrics: string[] | null
+          quick_actions: Json | null
+          role: string
+          system_prompt: string
+          updated_at: string | null
+        }
+        Insert: {
+          available_tools?: Json | null
+          context_sources?: string[] | null
+          copilot_description?: string | null
+          copilot_name: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          priority_metrics?: string[] | null
+          quick_actions?: Json | null
+          role: string
+          system_prompt: string
+          updated_at?: string | null
+        }
+        Update: {
+          available_tools?: Json | null
+          context_sources?: string[] | null
+          copilot_description?: string | null
+          copilot_name?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          priority_metrics?: string[] | null
+          quick_actions?: Json | null
+          role?: string
+          system_prompt?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      copilot_sessions: {
+        Row: {
+          active_suggestions: Json | null
+          context_data: Json | null
+          created_at: string | null
+          id: string
+          last_interaction: string | null
+          metrics_snapshot: Json | null
+          role: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          active_suggestions?: Json | null
+          context_data?: Json | null
+          created_at?: string | null
+          id?: string
+          last_interaction?: string | null
+          metrics_snapshot?: Json | null
+          role: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          active_suggestions?: Json | null
+          context_data?: Json | null
+          created_at?: string | null
+          id?: string
+          last_interaction?: string | null
+          metrics_snapshot?: Json | null
+          role?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       core_banking_configs: {
         Row: {
@@ -8284,6 +8633,128 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      nba_action_types: {
+        Row: {
+          action_category: string
+          action_code: string
+          action_description: string | null
+          action_name: string
+          created_at: string | null
+          effort_level: string | null
+          estimated_mrr_impact: number | null
+          execution_config: Json | null
+          execution_type: string
+          id: string
+          is_active: boolean | null
+          priority_weight: number | null
+          target_roles: string[]
+          updated_at: string | null
+        }
+        Insert: {
+          action_category: string
+          action_code: string
+          action_description?: string | null
+          action_name: string
+          created_at?: string | null
+          effort_level?: string | null
+          estimated_mrr_impact?: number | null
+          execution_config?: Json | null
+          execution_type: string
+          id?: string
+          is_active?: boolean | null
+          priority_weight?: number | null
+          target_roles: string[]
+          updated_at?: string | null
+        }
+        Update: {
+          action_category?: string
+          action_code?: string
+          action_description?: string | null
+          action_name?: string
+          created_at?: string | null
+          effort_level?: string | null
+          estimated_mrr_impact?: number | null
+          execution_config?: Json | null
+          execution_type?: string
+          id?: string
+          is_active?: boolean | null
+          priority_weight?: number | null
+          target_roles?: string[]
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      nba_queue: {
+        Row: {
+          action_type_id: string | null
+          ai_reasoning: string | null
+          context_data: Json | null
+          created_at: string | null
+          entity_id: string
+          entity_type: string
+          estimated_value: number | null
+          executed_at: string | null
+          executed_by: string | null
+          execution_result: Json | null
+          expires_at: string | null
+          id: string
+          mrr_impact_actual: number | null
+          priority: number | null
+          score: number | null
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          action_type_id?: string | null
+          ai_reasoning?: string | null
+          context_data?: Json | null
+          created_at?: string | null
+          entity_id: string
+          entity_type: string
+          estimated_value?: number | null
+          executed_at?: string | null
+          executed_by?: string | null
+          execution_result?: Json | null
+          expires_at?: string | null
+          id?: string
+          mrr_impact_actual?: number | null
+          priority?: number | null
+          score?: number | null
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          action_type_id?: string | null
+          ai_reasoning?: string | null
+          context_data?: Json | null
+          created_at?: string | null
+          entity_id?: string
+          entity_type?: string
+          estimated_value?: number | null
+          executed_at?: string | null
+          executed_by?: string | null
+          execution_result?: Json | null
+          expires_at?: string | null
+          id?: string
+          mrr_impact_actual?: number | null
+          priority?: number | null
+          score?: number | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nba_queue_action_type_id_fkey"
+            columns: ["action_type_id"]
+            isOneToOne: false
+            referencedRelation: "nba_action_types"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notification_channels: {
         Row: {
