@@ -6978,6 +6978,405 @@ export type Database = {
         }
         Relationships: []
       }
+      lowcode_form_definitions: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          fields: Json
+          form_key: string
+          form_name: string
+          id: string
+          module_id: string | null
+          permissions: Json | null
+          settings: Json | null
+          status: string | null
+          updated_at: string | null
+          validations: Json | null
+          version: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          fields?: Json
+          form_key: string
+          form_name: string
+          id?: string
+          module_id?: string | null
+          permissions?: Json | null
+          settings?: Json | null
+          status?: string | null
+          updated_at?: string | null
+          validations?: Json | null
+          version?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          fields?: Json
+          form_key?: string
+          form_name?: string
+          id?: string
+          module_id?: string | null
+          permissions?: Json | null
+          settings?: Json | null
+          status?: string | null
+          updated_at?: string | null
+          validations?: Json | null
+          version?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lowcode_form_definitions_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "app_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lowcode_form_submissions: {
+        Row: {
+          created_at: string | null
+          data: Json
+          form_id: string | null
+          id: string
+          metadata: Json | null
+          status: string | null
+          submitted_by: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          data: Json
+          form_id?: string | null
+          id?: string
+          metadata?: Json | null
+          status?: string | null
+          submitted_by?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          data?: Json
+          form_id?: string | null
+          id?: string
+          metadata?: Json | null
+          status?: string | null
+          submitted_by?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lowcode_form_submissions_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "lowcode_form_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lowcode_modules: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          forms: string[] | null
+          icon: string | null
+          id: string
+          module_key: string
+          module_name: string
+          pages: string[] | null
+          permissions: Json | null
+          published_at: string | null
+          reports: string[] | null
+          rules: string[] | null
+          settings: Json | null
+          status: string | null
+          updated_at: string | null
+          version: number | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          forms?: string[] | null
+          icon?: string | null
+          id?: string
+          module_key: string
+          module_name: string
+          pages?: string[] | null
+          permissions?: Json | null
+          published_at?: string | null
+          reports?: string[] | null
+          rules?: string[] | null
+          settings?: Json | null
+          status?: string | null
+          updated_at?: string | null
+          version?: number | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          forms?: string[] | null
+          icon?: string | null
+          id?: string
+          module_key?: string
+          module_name?: string
+          pages?: string[] | null
+          permissions?: Json | null
+          published_at?: string | null
+          reports?: string[] | null
+          rules?: string[] | null
+          settings?: Json | null
+          status?: string | null
+          updated_at?: string | null
+          version?: number | null
+        }
+        Relationships: []
+      }
+      lowcode_page_definitions: {
+        Row: {
+          blocks: Json
+          created_at: string | null
+          created_by: string | null
+          data_sources: Json | null
+          description: string | null
+          id: string
+          layout: Json
+          module_id: string | null
+          page_key: string
+          page_name: string
+          settings: Json | null
+          status: string | null
+          updated_at: string | null
+          visibility_rules: Json | null
+        }
+        Insert: {
+          blocks?: Json
+          created_at?: string | null
+          created_by?: string | null
+          data_sources?: Json | null
+          description?: string | null
+          id?: string
+          layout?: Json
+          module_id?: string | null
+          page_key: string
+          page_name: string
+          settings?: Json | null
+          status?: string | null
+          updated_at?: string | null
+          visibility_rules?: Json | null
+        }
+        Update: {
+          blocks?: Json
+          created_at?: string | null
+          created_by?: string | null
+          data_sources?: Json | null
+          description?: string | null
+          id?: string
+          layout?: Json
+          module_id?: string | null
+          page_key?: string
+          page_name?: string
+          settings?: Json | null
+          status?: string | null
+          updated_at?: string | null
+          visibility_rules?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lowcode_page_definitions_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "app_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lowcode_report_definitions: {
+        Row: {
+          aggregations: Json | null
+          columns: Json
+          created_at: string | null
+          created_by: string | null
+          data_source: Json
+          description: string | null
+          export_formats: string[] | null
+          filters: Json | null
+          grouping: Json | null
+          id: string
+          module_id: string | null
+          permissions: Json | null
+          report_key: string
+          report_name: string
+          schedule: Json | null
+          sorting: Json | null
+          updated_at: string | null
+          visualizations: Json | null
+        }
+        Insert: {
+          aggregations?: Json | null
+          columns?: Json
+          created_at?: string | null
+          created_by?: string | null
+          data_source: Json
+          description?: string | null
+          export_formats?: string[] | null
+          filters?: Json | null
+          grouping?: Json | null
+          id?: string
+          module_id?: string | null
+          permissions?: Json | null
+          report_key: string
+          report_name: string
+          schedule?: Json | null
+          sorting?: Json | null
+          updated_at?: string | null
+          visualizations?: Json | null
+        }
+        Update: {
+          aggregations?: Json | null
+          columns?: Json
+          created_at?: string | null
+          created_by?: string | null
+          data_source?: Json
+          description?: string | null
+          export_formats?: string[] | null
+          filters?: Json | null
+          grouping?: Json | null
+          id?: string
+          module_id?: string | null
+          permissions?: Json | null
+          report_key?: string
+          report_name?: string
+          schedule?: Json | null
+          sorting?: Json | null
+          updated_at?: string | null
+          visualizations?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lowcode_report_definitions_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "app_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lowcode_rule_executions: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          execution_time_ms: number | null
+          id: string
+          input_data: Json | null
+          output_data: Json | null
+          rule_id: string | null
+          status: string | null
+          trigger_data: Json | null
+          triggered_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          error_message?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          input_data?: Json | null
+          output_data?: Json | null
+          rule_id?: string | null
+          status?: string | null
+          trigger_data?: Json | null
+          triggered_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          input_data?: Json | null
+          output_data?: Json | null
+          rule_id?: string | null
+          status?: string | null
+          trigger_data?: Json | null
+          triggered_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lowcode_rule_executions_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "lowcode_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lowcode_rules: {
+        Row: {
+          actions: Json
+          conditions: Json
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          module_id: string | null
+          priority: number | null
+          rule_key: string
+          rule_name: string
+          trigger_config: Json
+          trigger_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          actions?: Json
+          conditions?: Json
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          module_id?: string | null
+          priority?: number | null
+          rule_key: string
+          rule_name: string
+          trigger_config?: Json
+          trigger_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          actions?: Json
+          conditions?: Json
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          module_id?: string | null
+          priority?: number | null
+          rule_key?: string
+          rule_name?: string
+          trigger_config?: Json
+          trigger_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lowcode_rules_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "app_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       map_color_mode: {
         Row: {
           created_at: string | null
