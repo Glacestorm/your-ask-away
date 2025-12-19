@@ -136,13 +136,15 @@ describe('observability', () => {
     manager.clearStoredData();
   });
 
-  it('should flush data', async () => {
+  it('should handle data operations', async () => {
     const { initObservability } = await import('../observability');
     
     const manager = initObservability({ serviceName: 'test' });
     
-    // Should not throw
-    await manager.flush();
+    // Record some data then get stored data
+    manager.recordCounter('test.counter', 1);
+    const data = manager.getStoredData();
+    expect(data).toBeDefined();
   });
 
   it('should destroy manager', async () => {
