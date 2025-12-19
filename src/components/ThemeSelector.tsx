@@ -1,5 +1,4 @@
 import { Sun, Moon, Building2, Sparkles, Monitor } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,6 +7,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useTheme, ThemeMode } from '@/contexts/ThemeContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { NavButton3D } from '@/components/ui/NavButton3D';
 
 const themes: { value: ThemeMode; labelKey: string; icon: typeof Sun }[] = [
   { value: 'system', labelKey: 'theme.system', icon: Monitor },
@@ -32,23 +32,27 @@ export function ThemeSelector() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon" className="h-9 w-9">
-          <Icon className="h-4 w-4" />
-        </Button>
+        <NavButton3D
+          variant="default"
+          size="md"
+          icon={<Icon className="h-4 w-4" />}
+          aria-label="Cambiar tema"
+        />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="bg-background border-border">
+      <DropdownMenuContent align="end" className="bg-popover border-border min-w-[160px]">
         {themes.map((themeOption) => {
           const ThemeIcon = themeOption.icon;
+          const isActive = theme === themeOption.value;
           return (
             <DropdownMenuItem
               key={themeOption.value}
               onClick={() => setTheme(themeOption.value)}
-              className="cursor-pointer"
+              className={`cursor-pointer gap-2 ${isActive ? 'bg-accent' : ''}`}
             >
-              <ThemeIcon className="mr-2 h-4 w-4" />
-              {t(themeOption.labelKey)}
-              {theme === themeOption.value && (
-                <span className="ml-auto text-primary">✓</span>
+              <ThemeIcon className="h-4 w-4" />
+              <span className="flex-1">{t(themeOption.labelKey)}</span>
+              {isActive && (
+                <span className="text-primary text-xs">✓</span>
               )}
             </DropdownMenuItem>
           );
