@@ -75,6 +75,7 @@ const Seguridad = lazy(() => import("./pages/Seguridad"));
 const Precios = lazy(() => import("./pages/Precios"));
 const DemoInteractiva = lazy(() => import("./pages/DemoInteractiva"));
 const LowCodePage = lazy(() => import("./pages/LowCodePage"));
+const CDPDashboard = lazy(() => import("./pages/CDPDashboard"));
 const preloadRoute = (importFn: () => Promise<unknown>) => {
   startTransition(() => {
     importFn();
@@ -152,6 +153,7 @@ const App = () => (
                           <Route path="/demo" element={<StreamingBoundary priority="high"><DemoInteractiva /></StreamingBoundary>} />
                           <Route path="/demo-request" element={<StreamingBoundary priority="high"><DemoInteractiva /></StreamingBoundary>} />
                           <Route path="/lowcode" element={<StreamingBoundary priority="medium"><LowCodePage /></StreamingBoundary>} />
+                          <Route path="/cdp" element={<StreamingBoundary priority="medium"><CDPDashboard /></StreamingBoundary>} />
                           <Route path="*" element={<NotFound />} />
                         </Routes>
                       </StreamingBoundary>
