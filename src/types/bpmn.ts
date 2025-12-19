@@ -4,14 +4,14 @@
 
 // Node types in BPMN
 export type BPMNNodeType = 
-  | 'start_event'
-  | 'end_event'
+  | 'start'
+  | 'end'
   | 'task'
   | 'user_task'
   | 'service_task'
-  | 'gateway_exclusive' // XOR
-  | 'gateway_parallel'  // AND
-  | 'gateway_inclusive' // OR
+  | 'gateway_xor'      // Exclusive (XOR)
+  | 'gateway_and'      // Parallel (AND)
+  | 'gateway_or'       // Inclusive (OR)
   | 'intermediate_event'
   | 'timer_event'
   | 'message_event';
@@ -28,6 +28,11 @@ export interface BPMNNodeConfig {
   priority?: 'low' | 'medium' | 'high' | 'critical';
   actions?: BPMNAction[];
   form?: Record<string, any>;
+  sla_hours?: number;
+  escalation_hours?: number;
+  escalation_to?: string[];
+  auto_advance?: boolean;
+  conditions?: Record<string, unknown>;
 }
 
 export interface BPMNAction {
@@ -55,7 +60,8 @@ export interface BPMNEdge {
   source: string;
   target: string;
   label?: string;
-  condition?: BPMNEdgeCondition;
+  condition?: string; // Simple condition string for evaluation
+  conditionObject?: BPMNEdgeCondition; // Structured condition
   isDefault?: boolean;
 }
 
