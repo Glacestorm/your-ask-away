@@ -1870,6 +1870,54 @@ export type Database = {
           },
         ]
       }
+      channel_connectors: {
+        Row: {
+          channel_type: string
+          config: Json | null
+          created_at: string | null
+          credentials_valid: boolean | null
+          daily_limit: number | null
+          health_status: string | null
+          id: string
+          is_active: boolean | null
+          last_health_check: string | null
+          provider: string
+          rate_limit: number | null
+          stats: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          channel_type: string
+          config?: Json | null
+          created_at?: string | null
+          credentials_valid?: boolean | null
+          daily_limit?: number | null
+          health_status?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_health_check?: string | null
+          provider: string
+          rate_limit?: number | null
+          stats?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          channel_type?: string
+          config?: Json | null
+          created_at?: string | null
+          credentials_valid?: boolean | null
+          daily_limit?: number | null
+          health_status?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_health_check?: string | null
+          provider?: string
+          rate_limit?: number | null
+          stats?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       chat_attachments: {
         Row: {
           created_at: string
@@ -5106,6 +5154,78 @@ export type Database = {
           },
         ]
       }
+      customer_consents: {
+        Row: {
+          company_id: string | null
+          consent_type: string
+          contact_id: string | null
+          created_at: string | null
+          expires_at: string | null
+          granted_at: string | null
+          id: string
+          ip_address: string | null
+          legal_basis: string | null
+          metadata: Json | null
+          source: string | null
+          status: string
+          updated_at: string | null
+          user_agent: string | null
+          version: string | null
+          withdrawn_at: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          consent_type: string
+          contact_id?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          granted_at?: string | null
+          id?: string
+          ip_address?: string | null
+          legal_basis?: string | null
+          metadata?: Json | null
+          source?: string | null
+          status?: string
+          updated_at?: string | null
+          user_agent?: string | null
+          version?: string | null
+          withdrawn_at?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          consent_type?: string
+          contact_id?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          granted_at?: string | null
+          id?: string
+          ip_address?: string | null
+          legal_basis?: string | null
+          metadata?: Json | null
+          source?: string | null
+          status?: string
+          updated_at?: string | null
+          user_agent?: string | null
+          version?: string | null
+          withdrawn_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_consents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_consents_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "company_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_interactions: {
         Row: {
           channel: string | null
@@ -5164,6 +5284,65 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_journeys: {
+        Row: {
+          bpmn_process_id: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          entry_segment_id: string | null
+          exit_conditions: Json | null
+          goals: Json | null
+          id: string
+          name: string
+          stats: Json | null
+          status: string
+          trigger_config: Json | null
+          trigger_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          bpmn_process_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          entry_segment_id?: string | null
+          exit_conditions?: Json | null
+          goals?: Json | null
+          id?: string
+          name: string
+          stats?: Json | null
+          status?: string
+          trigger_config?: Json | null
+          trigger_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          bpmn_process_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          entry_segment_id?: string | null
+          exit_conditions?: Json | null
+          goals?: Json | null
+          id?: string
+          name?: string
+          stats?: Json | null
+          status?: string
+          trigger_config?: Json | null
+          trigger_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_journeys_bpmn_process_id_fkey"
+            columns: ["bpmn_process_id"]
+            isOneToOne: false
+            referencedRelation: "bpmn_process_definitions"
             referencedColumns: ["id"]
           },
         ]
@@ -6927,6 +7106,172 @@ export type Database = {
           },
         ]
       }
+      journey_enrollments: {
+        Row: {
+          company_id: string
+          completed_at: string | null
+          contact_id: string | null
+          created_at: string | null
+          current_step_id: string | null
+          enrolled_at: string | null
+          exit_reason: string | null
+          exited_at: string | null
+          id: string
+          journey_id: string
+          next_action_at: string | null
+          status: string
+          step_history: Json | null
+          updated_at: string | null
+          variables: Json | null
+        }
+        Insert: {
+          company_id: string
+          completed_at?: string | null
+          contact_id?: string | null
+          created_at?: string | null
+          current_step_id?: string | null
+          enrolled_at?: string | null
+          exit_reason?: string | null
+          exited_at?: string | null
+          id?: string
+          journey_id: string
+          next_action_at?: string | null
+          status?: string
+          step_history?: Json | null
+          updated_at?: string | null
+          variables?: Json | null
+        }
+        Update: {
+          company_id?: string
+          completed_at?: string | null
+          contact_id?: string | null
+          created_at?: string | null
+          current_step_id?: string | null
+          enrolled_at?: string | null
+          exit_reason?: string | null
+          exited_at?: string | null
+          id?: string
+          journey_id?: string
+          next_action_at?: string | null
+          status?: string
+          step_history?: Json | null
+          updated_at?: string | null
+          variables?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journey_enrollments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journey_enrollments_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "company_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journey_enrollments_current_step_id_fkey"
+            columns: ["current_step_id"]
+            isOneToOne: false
+            referencedRelation: "journey_steps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journey_enrollments_journey_id_fkey"
+            columns: ["journey_id"]
+            isOneToOne: false
+            referencedRelation: "customer_journeys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      journey_steps: {
+        Row: {
+          action_type: string | null
+          config: Json | null
+          created_at: string | null
+          delay_duration: unknown
+          delay_until_time: string | null
+          id: string
+          journey_id: string
+          next_step_id: string | null
+          no_step_id: string | null
+          stats: Json | null
+          step_order: number
+          step_type: string
+          template_id: string | null
+          updated_at: string | null
+          yes_step_id: string | null
+        }
+        Insert: {
+          action_type?: string | null
+          config?: Json | null
+          created_at?: string | null
+          delay_duration?: unknown
+          delay_until_time?: string | null
+          id?: string
+          journey_id: string
+          next_step_id?: string | null
+          no_step_id?: string | null
+          stats?: Json | null
+          step_order: number
+          step_type: string
+          template_id?: string | null
+          updated_at?: string | null
+          yes_step_id?: string | null
+        }
+        Update: {
+          action_type?: string | null
+          config?: Json | null
+          created_at?: string | null
+          delay_duration?: unknown
+          delay_until_time?: string | null
+          id?: string
+          journey_id?: string
+          next_step_id?: string | null
+          no_step_id?: string | null
+          stats?: Json | null
+          step_order?: number
+          step_type?: string
+          template_id?: string | null
+          updated_at?: string | null
+          yes_step_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journey_steps_journey_id_fkey"
+            columns: ["journey_id"]
+            isOneToOne: false
+            referencedRelation: "customer_journeys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journey_steps_next_step_id_fkey"
+            columns: ["next_step_id"]
+            isOneToOne: false
+            referencedRelation: "journey_steps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journey_steps_no_step_id_fkey"
+            columns: ["no_step_id"]
+            isOneToOne: false
+            referencedRelation: "journey_steps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journey_steps_yes_step_id_fkey"
+            columns: ["yes_step_id"]
+            isOneToOne: false
+            referencedRelation: "journey_steps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kpi_report_history: {
         Row: {
           created_at: string
@@ -8369,6 +8714,188 @@ export type Database = {
           perpetual_multiplier?: number | null
           updated_at?: string
           updated_by?: string | null
+        }
+        Relationships: []
+      }
+      omnichannel_messages: {
+        Row: {
+          channel: string
+          clicked_at: string | null
+          company_id: string | null
+          contact_id: string | null
+          content: string | null
+          cost: number | null
+          created_at: string | null
+          delivered_at: string | null
+          direction: string
+          engagement_data: Json | null
+          external_id: string | null
+          failed_at: string | null
+          failure_reason: string | null
+          id: string
+          journey_id: string | null
+          journey_step_id: string | null
+          message_type: string | null
+          metadata: Json | null
+          opened_at: string | null
+          sent_at: string | null
+          sent_by: string | null
+          status: string
+          subject: string | null
+          template_id: string | null
+          template_variables: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          channel: string
+          clicked_at?: string | null
+          company_id?: string | null
+          contact_id?: string | null
+          content?: string | null
+          cost?: number | null
+          created_at?: string | null
+          delivered_at?: string | null
+          direction?: string
+          engagement_data?: Json | null
+          external_id?: string | null
+          failed_at?: string | null
+          failure_reason?: string | null
+          id?: string
+          journey_id?: string | null
+          journey_step_id?: string | null
+          message_type?: string | null
+          metadata?: Json | null
+          opened_at?: string | null
+          sent_at?: string | null
+          sent_by?: string | null
+          status?: string
+          subject?: string | null
+          template_id?: string | null
+          template_variables?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          channel?: string
+          clicked_at?: string | null
+          company_id?: string | null
+          contact_id?: string | null
+          content?: string | null
+          cost?: number | null
+          created_at?: string | null
+          delivered_at?: string | null
+          direction?: string
+          engagement_data?: Json | null
+          external_id?: string | null
+          failed_at?: string | null
+          failure_reason?: string | null
+          id?: string
+          journey_id?: string | null
+          journey_step_id?: string | null
+          message_type?: string | null
+          metadata?: Json | null
+          opened_at?: string | null
+          sent_at?: string | null
+          sent_by?: string | null
+          status?: string
+          subject?: string | null
+          template_id?: string | null
+          template_variables?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "omnichannel_messages_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "omnichannel_messages_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "company_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "omnichannel_messages_journey_id_fkey"
+            columns: ["journey_id"]
+            isOneToOne: false
+            referencedRelation: "customer_journeys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "omnichannel_messages_journey_step_id_fkey"
+            columns: ["journey_step_id"]
+            isOneToOne: false
+            referencedRelation: "journey_steps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      omnichannel_templates: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          attachments: Json | null
+          category: string | null
+          channel: string
+          content: string
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          html_content: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          preview_text: string | null
+          stats: Json | null
+          subject: string | null
+          updated_at: string | null
+          variables: string[] | null
+          version: number | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          attachments?: Json | null
+          category?: string | null
+          channel: string
+          content: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          html_content?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          preview_text?: string | null
+          stats?: Json | null
+          subject?: string | null
+          updated_at?: string | null
+          variables?: string[] | null
+          version?: number | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          attachments?: Json | null
+          category?: string | null
+          channel?: string
+          content?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          html_content?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          preview_text?: string | null
+          stats?: Json | null
+          subject?: string | null
+          updated_at?: string | null
+          variables?: string[] | null
+          version?: number | null
         }
         Relationships: []
       }
@@ -10515,6 +11042,118 @@ export type Database = {
           target_metrics?: Json | null
           updated_at?: string
           visit_frequency_days?: number | null
+        }
+        Relationships: []
+      }
+      segment_members: {
+        Row: {
+          added_at: string | null
+          company_id: string
+          contact_id: string | null
+          id: string
+          is_active: boolean | null
+          match_score: number | null
+          metadata: Json | null
+          removed_at: string | null
+          segment_id: string
+        }
+        Insert: {
+          added_at?: string | null
+          company_id: string
+          contact_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          match_score?: number | null
+          metadata?: Json | null
+          removed_at?: string | null
+          segment_id: string
+        }
+        Update: {
+          added_at?: string | null
+          company_id?: string
+          contact_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          match_score?: number | null
+          metadata?: Json | null
+          removed_at?: string | null
+          segment_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "segment_members_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "segment_members_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "company_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "segment_members_segment_id_fkey"
+            columns: ["segment_id"]
+            isOneToOne: false
+            referencedRelation: "segment_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      segment_rules: {
+        Row: {
+          auto_enroll_journeys: string[] | null
+          condition_logic: string | null
+          conditions: Json
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          last_refreshed_at: string | null
+          member_count: number | null
+          name: string
+          refresh_frequency: unknown
+          rule_type: string
+          tags: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          auto_enroll_journeys?: string[] | null
+          condition_logic?: string | null
+          conditions?: Json
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_refreshed_at?: string | null
+          member_count?: number | null
+          name: string
+          refresh_frequency?: unknown
+          rule_type?: string
+          tags?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          auto_enroll_journeys?: string[] | null
+          condition_logic?: string | null
+          conditions?: Json
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          last_refreshed_at?: string | null
+          member_count?: number | null
+          name?: string
+          refresh_frequency?: unknown
+          rule_type?: string
+          tags?: string[] | null
+          updated_at?: string | null
         }
         Relationships: []
       }
