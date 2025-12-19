@@ -142,6 +142,7 @@ const App = () => (
                           <Route path="/comparativas" element={<StreamingBoundary priority="high"><ComparativasCRM /></StreamingBoundary>} />
                           <Route path="/seguridad" element={<StreamingBoundary priority="high"><Seguridad /></StreamingBoundary>} />
                           <Route path="/demo" element={<StreamingBoundary priority="high"><DemoInteractiva /></StreamingBoundary>} />
+                          <Route path="/demo-request" element={<StreamingBoundary priority="high"><DemoInteractiva /></StreamingBoundary>} />
                           <Route path="/lowcode" element={<StreamingBoundary priority="medium"><LowCodePage /></StreamingBoundary>} />
                           <Route path="*" element={<NotFound />} />
                         </Routes>
