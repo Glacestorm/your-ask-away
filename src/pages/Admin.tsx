@@ -78,6 +78,8 @@ import { CNAEPricingCalculator } from '@/components/cnae/CNAEPricingCalculator';
 import { HoldingDashboard } from '@/components/cnae/HoldingDashboard';
 import { CNAEPricingAdmin } from '@/components/cnae/CNAEPricingAdmin';
 import { CNAEDashboard } from '@/components/cnae/CNAEDashboard';
+import BPMNDesigner from '@/components/bpmn/BPMNDesigner';
+import { ProcessMiningDashboard } from '@/components/bpmn/ProcessMiningDashboard';
 
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
@@ -200,6 +202,8 @@ const Admin = () => {
       case 'cnae-bundles': return 'Packs Sectorials CNAE';
       case 'cnae-admin': return 'Administració Pricing CNAE';
       case 'analyzer': return 'Analitzador de Codi';
+      case 'bpmn-designer': return 'Dissenyador de Processos BPMN';
+      case 'process-mining': return 'Process Mining Dashboard';
       default: return '';
     }
   };
@@ -829,7 +833,29 @@ const Admin = () => {
           );
         }
         return <AuditReportingDashboard />;
-case 'administration':
+      case 'bpmn-designer':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <BPMNDesigner entityType="opportunity" />;
+      case 'process-mining':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <ProcessMiningDashboard entityType="opportunity" />;
+      case 'administration':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
           return (
             <Card>
@@ -1252,6 +1278,43 @@ case 'administration':
                     <div>
                       <h4 className="font-medium text-sm text-orange-700 dark:text-orange-400">{t('admin.card.pushNotifications')}</h4>
                       <p className="text-xs text-muted-foreground">{t('admin.card.pushNotifications.desc')}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* SECCIÓ: Process Mining & BPMN */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-sky-600 dark:text-sky-400 flex items-center gap-2">
+                <Layers className="h-5 w-5" /> Process Mining & BPMN
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-sky-500/30 bg-gradient-to-br from-sky-500/5 to-sky-500/10"
+                  onClick={() => handleSectionChange('bpmn-designer')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-sky-500/20 flex items-center justify-center">
+                      <Layers className="h-4 w-4 text-sky-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-sky-700 dark:text-sky-400">Dissenyador BPMN</h4>
+                      <p className="text-xs text-muted-foreground">Crea i edita processos de negoci</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-cyan-500/30 bg-gradient-to-br from-cyan-500/5 to-cyan-500/10"
+                  onClick={() => handleSectionChange('process-mining')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+                      <BarChart3 className="h-4 w-4 text-cyan-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-cyan-700 dark:text-cyan-400">Process Mining</h4>
+                      <p className="text-xs text-muted-foreground">Analitza i optimitza processos</p>
                     </div>
                   </CardContent>
                 </Card>
