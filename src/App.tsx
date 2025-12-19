@@ -1,4 +1,5 @@
 import { Suspense, lazy, useTransition, startTransition } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,6 +18,15 @@ import { DemoTour } from "@/components/demo/DemoTour";
 import CookieConsent from "@/components/cookies/CookieConsent";
 import { ObelixiaChatbot } from "@/components/chat/ObelixiaChatbot";
 import { FloatingLanguageSelector } from "@/components/FloatingLanguageSelector";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 // Lazy load pages
 const Auth = lazy(() => import("./pages/Auth"));
@@ -75,72 +85,74 @@ export const routePreloaders = {
 
 const App = () => (
   <ErrorBoundary>
-    <BrowserRouter>
-      <ThemeProvider>
-        <LanguageProvider>
-          <AuthProvider>
-            <DemoProvider>
-              <CartProvider>
-                <PresenceProvider>
-                  <TooltipProvider>
-                    <MFAEnforcementDialog />
-                    <Toaster />
-                    <Sonner />
-                    <ObelixiaChatbot />
-                    <FloatingLanguageSelector />
-                    <DemoBanner />
-                    <DemoTour />
-                    <CookieConsent />
-                    <StreamingBoundary priority="high" fallback={<PageStreamingSkeleton />}>
-                      <Routes>
-                        <Route path="/" element={<Navigate to="/store" replace />} />
-                        <Route path="/auth" element={<StreamingBoundary priority="high"><Auth /></StreamingBoundary>} />
-                        <Route path="/home" element={<StreamingBoundary priority="high"><Home /></StreamingBoundary>} />
-                        <Route path="/map" element={<Navigate to="/admin?section=map" replace />} />
-                        <Route path="/dashboard" element={<StreamingBoundary priority="medium" delay={50}><Dashboard /></StreamingBoundary>} />
-                        <Route path="/admin" element={<StreamingBoundary priority="medium" delay={50}><Admin /></StreamingBoundary>} />
-                        <Route path="/obelixia-admin" element={<StreamingBoundary priority="medium" delay={50}><ObelixiaTeamAdmin /></StreamingBoundary>} />
-                        <Route path="/profile" element={<StreamingBoundary priority="low" delay={100}><Profile /></StreamingBoundary>} />
-                        <Route path="/map-3d" element={<StreamingBoundary priority="medium"><Map3D /></StreamingBoundary>} />
-                        {/* Store routes */}
-                        <Route path="/store" element={<StreamingBoundary priority="high"><StoreLanding /></StreamingBoundary>} />
-                        <Route path="/store/modules" element={<StreamingBoundary priority="high"><StoreModules /></StreamingBoundary>} />
-                        <Route path="/store/modules/:moduleKey" element={<StreamingBoundary priority="high"><StoreModuleDetail /></StreamingBoundary>} />
-                        <Route path="/store/deployment" element={<StreamingBoundary priority="high"><StoreDeployment /></StreamingBoundary>} />
-                        <Route path="/store/checkout" element={<StreamingBoundary priority="high"><StoreCheckout /></StreamingBoundary>} />
-                        <Route path="/store/success" element={<StreamingBoundary priority="high"><CheckoutSuccess /></StreamingBoundary>} />
-                        {/* Legal routes */}
-                        <Route path="/terms" element={<StreamingBoundary priority="low"><TermsOfService /></StreamingBoundary>} />
-                        <Route path="/privacy" element={<StreamingBoundary priority="low"><PrivacyPolicy /></StreamingBoundary>} />
-                        <Route path="/cookies" element={<StreamingBoundary priority="low"><CookiesPolicy /></StreamingBoundary>} />
-                        <Route path="/gdpr" element={<StreamingBoundary priority="low"><GDPR /></StreamingBoundary>} />
-                        {/* Company routes */}
-                        <Route path="/about" element={<StreamingBoundary priority="low"><About /></StreamingBoundary>} />
-                        <Route path="/contact" element={<StreamingBoundary priority="low"><Contact /></StreamingBoundary>} />
-                        <Route path="/partners" element={<StreamingBoundary priority="low"><Partners /></StreamingBoundary>} />
-                        <Route path="/careers" element={<StreamingBoundary priority="low"><Careers /></StreamingBoundary>} />
-                        {/* Resource routes */}
-                        <Route path="/docs" element={<StreamingBoundary priority="low"><Documentation /></StreamingBoundary>} />
-                        <Route path="/api" element={<StreamingBoundary priority="low"><APIReference /></StreamingBoundary>} />
-                        <Route path="/blog" element={<StreamingBoundary priority="low"><Blog /></StreamingBoundary>} />
-                        <Route path="/cases" element={<StreamingBoundary priority="low"><CaseStudies /></StreamingBoundary>} />
-                        {/* Sector & Marketing routes */}
-                        <Route path="/sectores" element={<StreamingBoundary priority="high"><SectorLanding /></StreamingBoundary>} />
-                        <Route path="/sectores/banca" element={<StreamingBoundary priority="high"><BancaLanding /></StreamingBoundary>} />
-                        <Route path="/comparativas" element={<StreamingBoundary priority="high"><ComparativasCRM /></StreamingBoundary>} />
-                        <Route path="/seguridad" element={<StreamingBoundary priority="high"><Seguridad /></StreamingBoundary>} />
-                        <Route path="/demo" element={<StreamingBoundary priority="high"><DemoInteractiva /></StreamingBoundary>} />
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </StreamingBoundary>
-                  </TooltipProvider>
-                </PresenceProvider>
-              </CartProvider>
-            </DemoProvider>
-          </AuthProvider>
-        </LanguageProvider>
-      </ThemeProvider>
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <ThemeProvider>
+          <LanguageProvider>
+            <AuthProvider>
+              <DemoProvider>
+                <CartProvider>
+                  <PresenceProvider>
+                    <TooltipProvider>
+                      <MFAEnforcementDialog />
+                      <Toaster />
+                      <Sonner />
+                      <ObelixiaChatbot />
+                      <FloatingLanguageSelector />
+                      <DemoBanner />
+                      <DemoTour />
+                      <CookieConsent />
+                      <StreamingBoundary priority="high" fallback={<PageStreamingSkeleton />}>
+                        <Routes>
+                          <Route path="/" element={<Navigate to="/store" replace />} />
+                          <Route path="/auth" element={<StreamingBoundary priority="high"><Auth /></StreamingBoundary>} />
+                          <Route path="/home" element={<StreamingBoundary priority="high"><Home /></StreamingBoundary>} />
+                          <Route path="/map" element={<Navigate to="/admin?section=map" replace />} />
+                          <Route path="/dashboard" element={<StreamingBoundary priority="medium" delay={50}><Dashboard /></StreamingBoundary>} />
+                          <Route path="/admin" element={<StreamingBoundary priority="medium" delay={50}><Admin /></StreamingBoundary>} />
+                          <Route path="/obelixia-admin" element={<StreamingBoundary priority="medium" delay={50}><ObelixiaTeamAdmin /></StreamingBoundary>} />
+                          <Route path="/profile" element={<StreamingBoundary priority="low" delay={100}><Profile /></StreamingBoundary>} />
+                          <Route path="/map-3d" element={<StreamingBoundary priority="medium"><Map3D /></StreamingBoundary>} />
+                          {/* Store routes */}
+                          <Route path="/store" element={<StreamingBoundary priority="high"><StoreLanding /></StreamingBoundary>} />
+                          <Route path="/store/modules" element={<StreamingBoundary priority="high"><StoreModules /></StreamingBoundary>} />
+                          <Route path="/store/modules/:moduleKey" element={<StreamingBoundary priority="high"><StoreModuleDetail /></StreamingBoundary>} />
+                          <Route path="/store/deployment" element={<StreamingBoundary priority="high"><StoreDeployment /></StreamingBoundary>} />
+                          <Route path="/store/checkout" element={<StreamingBoundary priority="high"><StoreCheckout /></StreamingBoundary>} />
+                          <Route path="/store/success" element={<StreamingBoundary priority="high"><CheckoutSuccess /></StreamingBoundary>} />
+                          {/* Legal routes */}
+                          <Route path="/terms" element={<StreamingBoundary priority="low"><TermsOfService /></StreamingBoundary>} />
+                          <Route path="/privacy" element={<StreamingBoundary priority="low"><PrivacyPolicy /></StreamingBoundary>} />
+                          <Route path="/cookies" element={<StreamingBoundary priority="low"><CookiesPolicy /></StreamingBoundary>} />
+                          <Route path="/gdpr" element={<StreamingBoundary priority="low"><GDPR /></StreamingBoundary>} />
+                          {/* Company routes */}
+                          <Route path="/about" element={<StreamingBoundary priority="low"><About /></StreamingBoundary>} />
+                          <Route path="/contact" element={<StreamingBoundary priority="low"><Contact /></StreamingBoundary>} />
+                          <Route path="/partners" element={<StreamingBoundary priority="low"><Partners /></StreamingBoundary>} />
+                          <Route path="/careers" element={<StreamingBoundary priority="low"><Careers /></StreamingBoundary>} />
+                          {/* Resource routes */}
+                          <Route path="/docs" element={<StreamingBoundary priority="low"><Documentation /></StreamingBoundary>} />
+                          <Route path="/api" element={<StreamingBoundary priority="low"><APIReference /></StreamingBoundary>} />
+                          <Route path="/blog" element={<StreamingBoundary priority="low"><Blog /></StreamingBoundary>} />
+                          <Route path="/cases" element={<StreamingBoundary priority="low"><CaseStudies /></StreamingBoundary>} />
+                          {/* Sector & Marketing routes */}
+                          <Route path="/sectores" element={<StreamingBoundary priority="high"><SectorLanding /></StreamingBoundary>} />
+                          <Route path="/sectores/banca" element={<StreamingBoundary priority="high"><BancaLanding /></StreamingBoundary>} />
+                          <Route path="/comparativas" element={<StreamingBoundary priority="high"><ComparativasCRM /></StreamingBoundary>} />
+                          <Route path="/seguridad" element={<StreamingBoundary priority="high"><Seguridad /></StreamingBoundary>} />
+                          <Route path="/demo" element={<StreamingBoundary priority="high"><DemoInteractiva /></StreamingBoundary>} />
+                          <Route path="*" element={<NotFound />} />
+                        </Routes>
+                      </StreamingBoundary>
+                    </TooltipProvider>
+                  </PresenceProvider>
+                </CartProvider>
+              </DemoProvider>
+            </AuthProvider>
+          </LanguageProvider>
+        </ThemeProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
   </ErrorBoundary>
 );
 
