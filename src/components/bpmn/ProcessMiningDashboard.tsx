@@ -3,17 +3,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Activity, 
-  Clock, 
-  AlertTriangle, 
-  TrendingUp, 
-  BarChart3, 
+import { toast } from 'sonner';
+import * as XLSX from 'xlsx';
+import {
+  Activity,
+  Clock,
+  AlertTriangle,
+  TrendingUp,
+  BarChart3,
   GitBranch,
   RefreshCw,
-  Download
+  Download,
+  Loader2,
 } from 'lucide-react';
 import { useProcessEvents } from '@/hooks/useProcessEvents';
 import { useProcessDefinitions } from '@/hooks/useProcessDefinitions';
@@ -31,7 +33,9 @@ interface ProcessMiningDashboardProps {
 export function ProcessMiningDashboard({ entityType }: ProcessMiningDashboardProps) {
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
   const [selectedDefinition, setSelectedDefinition] = useState<string | null>(null);
-  
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
   const dateFrom = useMemo(() => {
     const days = selectedPeriod === '7d' ? 7 : selectedPeriod === '30d' ? 30 : 90;
     return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
@@ -48,18 +52,18 @@ export function ProcessMiningDashboard({ entityType }: ProcessMiningDashboardPro
     return 'custom';
   }, [entityType]);
 
-  const { 
-    events, 
-    isLoading: eventsLoading, 
-    miningStats, 
+  const {
+    events,
+    isLoading: eventsLoading,
+    miningStats,
     fetchMiningStats,
     bottlenecks,
     fetchBottlenecks,
-    refetch: refetchEvents
-  } = useProcessEvents({ 
-    entityType, 
+    refetch: refetchEvents,
+  } = useProcessEvents({
+    entityType,
     dateFrom,
-    limit: 1000 
+    limit: 1000,
   });
 
   const { definitions } = useProcessDefinitions({ entityType: bpmnEntityType, activeOnly: true });
@@ -79,12 +83,76 @@ export function ProcessMiningDashboard({ entityType }: ProcessMiningDashboardPro
     fetchComplianceStats();
   }, [selectedPeriod, entityType, fetchMiningStats, fetchBottlenecks, fetchComplianceStats]);
 
-  const handleRefresh = () => {
-    refetchEvents();
-    fetchMiningStats();
-    fetchBottlenecks();
-    fetchComplianceStats();
-    refetchSLA();
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([
+        refetchEvents(),
+        fetchMiningStats(),
+        fetchBottlenecks(),
+        fetchComplianceStats(),
+        refetchSLA(),
+      ]);
+      toast.success('Datos actualizados');
+    } catch (e) {
+      console.error(e);
+      toast.error('No se pudo actualizar');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  const handleExport = async () => {
+    if (!events.length) {
+      toast.error('No hay eventos para exportar');
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      const exportEvents = events.map((e) => ({
+        Fecha: e.occurred_at,
+        Tipo: e.entity_type,
+        Entidad: e.entity_id,
+        Acción: e.action,
+        "Estado origen": e.from_state || '',
+        "Estado destino": e.to_state || '',
+        Actor: e.actor_type || '',
+        Metadata: e.metadata ? JSON.stringify(e.metadata) : '',
+      }));
+
+      const summary = [
+        { Métrica: 'Período', Valor: selectedPeriod },
+        { Métrica: 'Total eventos', Valor: events.length },
+        { Métrica: 'Definición seleccionada', Valor: selectedDefinition || 'Todos' },
+        { Métrica: 'Exportado el', Valor: new Date().toISOString() },
+      ];
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summary), 'Resumen');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(exportEvents), 'Eventos');
+
+      if (Array.isArray(bottlenecks) && bottlenecks.length) {
+        const exportBottlenecks = bottlenecks.map((b: any) => ({
+          Nodo: b.nodeId ?? b.node_id ?? '',
+          "Duración media (ms)": b.avgDurationMs ?? b.avg_duration_ms ?? '',
+          "Duración máx (ms)": b.maxDurationMs ?? b.max_duration_ms ?? '',
+          "Duración mín (ms)": b.minDurationMs ?? b.min_duration_ms ?? '',
+          Eventos: b.eventCount ?? b.event_count ?? '',
+          Score: b.bottleneckScore ?? b.bottleneck_score ?? '',
+        }));
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(exportBottlenecks), 'Cuellos de botella');
+      }
+
+      const fileName = `process-mining_${entityType || 'all'}_${selectedPeriod}_${new Date().toISOString().split('T')[0]}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+      toast.success('Exportación completada');
+    } catch (e) {
+      console.error(e);
+      toast.error('Error al exportar');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   // Calculate summary metrics
@@ -140,11 +208,27 @@ export function ProcessMiningDashboard({ entityType }: ProcessMiningDashboardPro
             </SelectContent>
           </Select>
 
-          <Button variant="outline" size="icon" onClick={handleRefresh}>
-            <RefreshCw className="h-4 w-4" />
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            aria-label="Actualizar"
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           </Button>
-          <Button variant="outline" size="icon">
-            <Download className="h-4 w-4" />
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleExport}
+            disabled={isExporting || eventsLoading}
+            aria-label="Descargar"
+          >
+            {isExporting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Download className="h-4 w-4" />
+            )}
           </Button>
         </div>
       </div>
