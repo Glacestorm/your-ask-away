@@ -65,6 +65,7 @@ import { CustomerSegmentationPanel } from '@/components/admin/CustomerSegmentati
 import WhiteLabelConfig from '@/components/admin/WhiteLabelConfig';
 import APIDocumentation from '@/components/admin/APIDocumentation';
 import { Customer360Panel } from '@/components/admin/Customer360Panel';
+import { CDPFullDashboard } from '@/components/admin/CDPFullDashboard';
 import { MLExplainabilityPanel } from '@/components/admin/MLExplainabilityPanel';
 import { AdvancedMLDashboard } from '@/components/admin/AdvancedMLDashboard';
 import { SMSManager } from '@/components/admin/SMSManager';
@@ -659,7 +660,7 @@ const Admin = () => {
         }
         return <CoreBankingManager />;
       case 'cdp-360':
-        return <Customer360Panel />;
+        return <CDPFullDashboard />;
       case 'ml-explainability':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
           return (
