@@ -1,15 +1,14 @@
 import { useNavigate } from 'react-router-dom';
-import { Home, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Home, ChevronLeft, ChevronRight, Map } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import { ThemeSelector } from '@/components/ThemeSelector';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { MapButton } from '@/components/dashboard/MapButton';
 import { OnlineUsersIndicator } from '@/components/presence/OnlineUsersIndicator';
 import { OfflineSyncIndicator } from '@/components/dashboard/OfflineSyncIndicator';
 import { ObelixiaLogo } from '@/components/ui/ObelixiaLogo';
+import { NavButton3D } from '@/components/ui/NavButton3D';
 
 interface GlobalNavHeaderProps {
   title?: string;
@@ -34,105 +33,121 @@ export function GlobalNavHeader({
   const hasTitle = title || subtitle;
 
   return (
-    <div className={`flex items-center ${hasTitle ? 'justify-between' : 'justify-end'} rounded-2xl bg-gradient-to-br from-card via-card to-accent/20 p-3 shadow-lg border border-border/50`}>
-      {/* ObelixIA Brand + Title */}
-      <div className="flex items-center gap-3">
-        {/* Luxury Brand Logo */}
+    <header className="flex items-center justify-between gap-4 rounded-2xl bg-gradient-to-br from-card via-card to-accent/10 px-4 py-3 shadow-lg border border-border/40 backdrop-blur-sm">
+      {/* Left Section: Logo + Navigation + Title */}
+      <div className="flex items-center gap-3 min-w-0">
+        {/* Logo */}
         <ObelixiaLogo size="sm" variant="icon" animated={false} />
         
-        {/* Navigation History Buttons - only show if there's history */}
+        {/* Navigation Arrows */}
         {(canGoBack || canGoForward) && (
           <div className="flex items-center gap-1">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
+                <NavButton3D
                   variant="ghost"
-                  size="icon"
+                  size="sm"
                   onClick={onGoBack}
                   disabled={!canGoBack}
-                  className="h-8 w-8 rounded-lg hover:bg-accent/50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
+                  icon={<ChevronLeft className="h-4 w-4" />}
+                  aria-label="Atrás"
+                />
               </TooltipTrigger>
-              <TooltipContent side="bottom">
-                <p>Atrás</p>
-              </TooltipContent>
+              <TooltipContent side="bottom">Atrás</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
+                <NavButton3D
                   variant="ghost"
-                  size="icon"
+                  size="sm"
                   onClick={onGoForward}
                   disabled={!canGoForward}
-                  className="h-8 w-8 rounded-lg hover:bg-accent/50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
+                  icon={<ChevronRight className="h-4 w-4" />}
+                  aria-label="Adelante"
+                />
               </TooltipTrigger>
-              <TooltipContent side="bottom">
-                <p>Adelante</p>
-              </TooltipContent>
+              <TooltipContent side="bottom">Adelante</TooltipContent>
             </Tooltip>
           </div>
         )}
         
+        {/* Title */}
         {hasTitle && (
-          <div>
+          <div className="min-w-0">
             {title && (
-              <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-foreground">
+              <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground truncate">
                 {title}
               </h1>
             )}
-            {subtitle && <p className="text-xs text-muted-foreground font-medium">{subtitle}</p>}
+            {subtitle && (
+              <p className="text-xs text-muted-foreground font-medium truncate">{subtitle}</p>
+            )}
           </div>
         )}
       </div>
       
-      <div className="flex items-center gap-2">
-        {/* Online Users Indicator */}
-        <OnlineUsersIndicator />
-        
-        {/* Offline Sync Indicator */}
-        <OfflineSyncIndicator />
+      {/* Right Section: Actions */}
+      <nav className="flex items-center gap-2" aria-label="Acciones principales">
+        {/* Status Indicators */}
+        <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-muted/50 border border-border/30">
+          <OfflineSyncIndicator />
+          <OnlineUsersIndicator />
+        </div>
         
         {/* Home Button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate('/home')}
-          className="hover:bg-accent/50 transition-all rounded-xl h-9 w-9 bg-gradient-to-b from-background to-muted border border-border/50 shadow-[0_2px_4px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.2)] hover:shadow-[0_1px_2px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.15)] hover:translate-y-[1px] active:translate-y-[2px] active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]"
-          title="Inicio"
-        >
-          <Home className="h-5 w-5" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <NavButton3D
+              variant="default"
+              size="md"
+              onClick={() => navigate('/home')}
+              icon={<Home className="h-4 w-4" />}
+              aria-label="Inicio"
+            />
+          </TooltipTrigger>
+          <TooltipContent side="bottom">Inicio</TooltipContent>
+        </Tooltip>
         
         {/* Map Button */}
-        <MapButton />
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <NavButton3D
+              variant="primary"
+              size="md"
+              onClick={() => navigate('/admin?section=map')}
+              icon={<Map className="h-4 w-4" />}
+              label="Mapa"
+              aria-label="Mapa de empresas"
+            />
+          </TooltipTrigger>
+          <TooltipContent side="bottom">Mapa de empresas</TooltipContent>
+        </Tooltip>
         
         {/* Profile Avatar */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate('/profile')}
-          className="hover:bg-accent/50 transition-colors rounded-xl h-9 w-9"
-          title="Mi Perfil"
-        >
-          <Avatar className="h-7 w-7">
-            <AvatarImage src={user?.user_metadata?.avatar_url} />
-            <AvatarFallback className="bg-primary text-primary-foreground text-xs">
-              {user?.email?.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={() => navigate('/profile')}
+              className="relative h-9 w-9 rounded-xl overflow-hidden border-2 border-primary/30 shadow-md hover:border-primary/50 hover:scale-105 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-label="Mi Perfil"
+            >
+              <Avatar className="h-full w-full">
+                <AvatarImage src={user?.user_metadata?.avatar_url} />
+                <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground text-sm font-semibold">
+                  {user?.email?.charAt(0).toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">Mi Perfil</TooltipContent>
+        </Tooltip>
         
         {/* Theme Selector */}
         <ThemeSelector />
         
         {/* Language Selector */}
         <LanguageSelector />
-      </div>
-    </div>
+      </nav>
+    </header>
   );
 }
