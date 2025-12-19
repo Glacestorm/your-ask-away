@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ColumnEditor } from './ColumnEditor';
 import { FilterEditor } from './FilterEditor';
 import { ChartEditor } from './ChartEditor';
-import { LowCodeReport, ReportColumn, ReportFilter, ChartConfig } from '../types';
+import { LowCodeReport } from '../types';
 import { useLowCodeReports } from '@/hooks/lowcode/useLowCodeReports';
 import { Save, Eye, Play, Download } from 'lucide-react';
 

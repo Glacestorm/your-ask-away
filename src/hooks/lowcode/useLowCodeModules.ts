@@ -17,9 +17,27 @@ export function useLowCodeModules() {
       if (error) throw error;
       
       return data.map(mod => ({
-        ...mod,
-        settings: (mod.settings as unknown as LowCodeModule['settings']) || {},
-        dependencies: mod.dependencies || [],
+        id: mod.id,
+        module_key: mod.module_key,
+        module_name: mod.module_name,
+        description: mod.description || '',
+        icon: mod.icon || 'Box',
+        color: '#3b82f6',
+        category: mod.category || '',
+        forms: mod.forms || [],
+        pages: mod.pages || [],
+        rules: mod.rules || [],
+        reports: mod.reports || [],
+        permissions: (mod.permissions as unknown as LowCodeModule['permissions']) || { viewRoles: [], adminRoles: [] },
+        settings: (mod.settings as unknown as Record<string, unknown>) || {},
+        dependencies: [],
+        status: mod.status as LowCodeModule['status'] || 'draft',
+        is_active: true,
+        version: String(mod.version || '1.0.0'),
+        created_by: mod.created_by || undefined,
+        published_at: mod.published_at || undefined,
+        created_at: mod.created_at || undefined,
+        updated_at: mod.updated_at || undefined,
       })) as LowCodeModule[];
     },
   });
@@ -35,11 +53,8 @@ export function useLowCodeModules() {
           module_key: module.module_key || `module_${Date.now()}`,
           description: module.description,
           icon: module.icon || 'Box',
-          color: module.color || '#3b82f6',
-          version: module.version || '1.0.0',
-          is_active: module.is_active ?? true,
+          version: 1,
           settings: JSON.parse(JSON.stringify(module.settings || {})),
-          dependencies: module.dependencies || [],
           created_by: user.user?.id,
         })
         .select()
@@ -66,11 +81,8 @@ export function useLowCodeModules() {
       if (updates.module_key) updateData.module_key = updates.module_key;
       if (updates.description !== undefined) updateData.description = updates.description;
       if (updates.icon) updateData.icon = updates.icon;
-      if (updates.color) updateData.color = updates.color;
-      if (updates.version) updateData.version = updates.version;
-      if (updates.is_active !== undefined) updateData.is_active = updates.is_active;
+      if (updates.version) updateData.version = parseInt(updates.version) || 1;
       if (updates.settings) updateData.settings = JSON.parse(JSON.stringify(updates.settings));
-      if (updates.dependencies) updateData.dependencies = updates.dependencies;
 
       const { data, error } = await supabase
         .from('lowcode_modules')

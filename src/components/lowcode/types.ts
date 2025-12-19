@@ -126,7 +126,11 @@ export type ConditionOperator =
   | 'is_not_empty'
   | 'in_list'
   | 'not_in_list'
-  | 'matches_regex';
+  | 'matches_regex'
+  | 'between'
+  | 'in'
+  | 'is_null'
+  | 'is_not_null';
 
 export type ActionType = 
   | 'send_email' 
@@ -230,11 +234,12 @@ export interface ReportColumn {
   id: string;
   field: string;
   label: string;
-  type: 'string' | 'number' | 'date' | 'boolean';
+  type: 'string' | 'number' | 'date' | 'boolean' | 'text' | 'currency' | 'badge';
   format?: string;
   width?: number;
   sortable?: boolean;
   filterable?: boolean;
+  visible?: boolean;
   aggregation?: AggregationType;
   formula?: string;
 }
@@ -392,6 +397,7 @@ export interface LowCodeModule {
   module_name: string;
   description?: string;
   icon: string;
+  color: string;
   category: string;
   forms: string[];
   pages: string[];
@@ -402,10 +408,68 @@ export interface LowCodeModule {
     adminRoles: string[];
   };
   settings: Record<string, any>;
+  dependencies: string[];
   status: 'draft' | 'published' | 'archived';
-  version: number;
+  is_active: boolean;
+  version: string;
   created_by?: string;
   published_at?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Page Builder Types for Components
+export interface PageComponent {
+  id: string;
+  type: string;
+  props: Record<string, unknown>;
+  styles: Record<string, string>;
+  children?: PageComponent[];
+}
+
+export interface LowCodePage {
+  id: string;
+  page_key: string;
+  page_name: string;
+  description?: string;
+  module_id?: string;
+  layout: 'single' | 'two-column' | 'three-column' | 'sidebar-left' | 'sidebar-right';
+  components: PageComponent[];
+  route_path: string;
+  is_public: boolean;
+  permissions: {
+    roles: string[];
+    users: string[];
+  };
+  created_by?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Report Builder Types Extended
+export interface ChartConfig {
+  type: 'bar' | 'line' | 'pie' | 'area';
+  xAxis: string;
+  yAxis: string;
+  aggregation: 'count' | 'sum' | 'avg' | 'min' | 'max';
+  groupBy?: string;
+  title?: string;
+}
+
+export interface LowCodeReport {
+  id: string;
+  report_key: string;
+  report_name: string;
+  description?: string;
+  module_id?: string;
+  data_source: string;
+  columns: ReportColumn[];
+  filters: ReportFilter[];
+  grouping: ReportGrouping[];
+  sorting: ReportSorting[];
+  chart_config?: ChartConfig;
+  is_public: boolean;
+  created_by?: string;
   created_at?: string;
   updated_at?: string;
 }

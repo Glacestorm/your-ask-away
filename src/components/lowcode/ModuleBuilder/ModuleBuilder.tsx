@@ -15,7 +15,7 @@ import { useLowCodeReports } from '@/hooks/lowcode/useLowCodeReports';
 import { useLowCodePages } from '@/hooks/lowcode/useLowCodePages';
 import { 
   Save, Plus, FileText, GitBranch, BarChart3, Layout, 
-  Box, Palette, Settings, Trash2, Play, Eye
+  Box, Palette, Settings, Play, Eye
 } from 'lucide-react';
 
 interface ModuleBuilderProps {
@@ -35,10 +35,10 @@ const COLORS = [
 
 export function ModuleBuilder({ module, onSave }: ModuleBuilderProps) {
   const { createModule, updateModule } = useLowCodeModules();
-  const { forms } = useLowCodeForms(module?.id);
-  const { rules } = useLowCodeRules(module?.id);
-  const { reports } = useLowCodeReports(module?.id);
-  const { pages } = useLowCodePages(module?.id);
+  const { forms } = useLowCodeForms();
+  const { rules } = useLowCodeRules();
+  const { reports } = useLowCodeReports();
+  const { pages } = useLowCodePages();
 
   const [formData, setFormData] = useState<Partial<LowCodeModule>>({
     module_name: module?.module_name || '',
@@ -292,8 +292,8 @@ export function ModuleBuilder({ module, onSave }: ModuleBuilderProps) {
                         <p className="font-medium">{form.form_name}</p>
                         <p className="text-xs text-muted-foreground">{form.form_key}</p>
                       </div>
-                      <Badge variant={form.is_active ? 'default' : 'secondary'}>
-                        {form.is_active ? 'Activo' : 'Inactivo'}
+                      <Badge variant={form.status === 'published' ? 'default' : 'secondary'}>
+                        {form.status === 'published' ? 'Activo' : 'Inactivo'}
                       </Badge>
                     </div>
                   ))}

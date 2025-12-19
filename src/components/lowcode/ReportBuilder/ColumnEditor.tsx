@@ -20,7 +20,7 @@ export function ColumnEditor({ columns, onChange, availableFields }: ColumnEdito
       id: `col_${Date.now()}`,
       field: '',
       label: 'Nueva Columna',
-      type: 'text',
+      type: 'string',
       visible: true,
       sortable: true,
       filterable: true,
@@ -110,6 +110,7 @@ export function ColumnEditor({ columns, onChange, availableFields }: ColumnEdito
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="string">Texto</SelectItem>
                       <SelectItem value="text">Texto</SelectItem>
                       <SelectItem value="number">Número</SelectItem>
                       <SelectItem value="currency">Moneda</SelectItem>
@@ -133,7 +134,7 @@ export function ColumnEditor({ columns, onChange, availableFields }: ColumnEdito
                 <div className="col-span-2 flex items-center gap-4">
                   <div className="flex items-center gap-2">
                     <Switch
-                      checked={column.visible}
+                      checked={column.visible ?? true}
                       onCheckedChange={(checked) => updateColumn(index, { visible: checked })}
                     />
                     <Label className="text-xs">Visible</Label>

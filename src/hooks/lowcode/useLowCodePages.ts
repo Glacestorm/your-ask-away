@@ -22,9 +22,19 @@ export function useLowCodePages(moduleId?: string) {
       if (error) throw error;
       
       return data.map(page => ({
-        ...page,
-        components: (page.components as unknown as PageComponent[]) || [],
-        permissions: (page.permissions as unknown as LowCodePage['permissions']) || { roles: [], users: [] },
+        id: page.id,
+        page_key: page.page_key,
+        page_name: page.page_name,
+        description: page.description || '',
+        module_id: page.module_id || undefined,
+        layout: ((page.layout as unknown as { type?: string })?.type || 'single') as LowCodePage['layout'],
+        components: (page.blocks as unknown as PageComponent[]) || [],
+        route_path: `/custom/${page.page_key}`,
+        is_public: page.status === 'published',
+        permissions: { roles: [], users: [] },
+        created_by: page.created_by || undefined,
+        created_at: page.created_at || undefined,
+        updated_at: page.updated_at || undefined,
       })) as LowCodePage[];
     },
   });
@@ -40,11 +50,10 @@ export function useLowCodePages(moduleId?: string) {
           page_key: page.page_key || `page_${Date.now()}`,
           description: page.description,
           module_id: page.module_id,
-          layout: page.layout || 'single',
-          components: JSON.parse(JSON.stringify(page.components || [])),
-          route_path: page.route_path || `/custom/${Date.now()}`,
-          is_public: page.is_public ?? false,
-          permissions: JSON.parse(JSON.stringify(page.permissions || { roles: [], users: [] })),
+          layout: JSON.parse(JSON.stringify({ type: page.layout || 'single' })),
+          blocks: JSON.parse(JSON.stringify(page.components || [])),
+          status: page.is_public ? 'published' : 'draft',
+          visibility_rules: JSON.parse(JSON.stringify(page.permissions || { roles: [], users: [] })),
           created_by: user.user?.id,
         })
         .select()
@@ -70,11 +79,10 @@ export function useLowCodePages(moduleId?: string) {
       if (updates.page_name) updateData.page_name = updates.page_name;
       if (updates.page_key) updateData.page_key = updates.page_key;
       if (updates.description !== undefined) updateData.description = updates.description;
-      if (updates.layout) updateData.layout = updates.layout;
-      if (updates.components) updateData.components = JSON.parse(JSON.stringify(updates.components));
-      if (updates.route_path) updateData.route_path = updates.route_path;
-      if (updates.is_public !== undefined) updateData.is_public = updates.is_public;
-      if (updates.permissions) updateData.permissions = JSON.parse(JSON.stringify(updates.permissions));
+      if (updates.layout) updateData.layout = JSON.parse(JSON.stringify({ type: updates.layout }));
+      if (updates.components) updateData.blocks = JSON.parse(JSON.stringify(updates.components));
+      if (updates.is_public !== undefined) updateData.status = updates.is_public ? 'published' : 'draft';
+      if (updates.permissions) updateData.visibility_rules = JSON.parse(JSON.stringify(updates.permissions));
 
       const { data, error } = await supabase
         .from('lowcode_page_definitions')
