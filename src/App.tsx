@@ -67,8 +67,12 @@ const CaseStudies = lazy(() => import("./pages/resources/CaseStudies"));
 // Sector pages
 const SectorLanding = lazy(() => import("./pages/sectors/SectorLanding"));
 const BancaLanding = lazy(() => import("./pages/sectors/BancaLanding"));
+const SegurosLanding = lazy(() => import("./pages/sectors/SegurosLanding"));
+const RetailLanding = lazy(() => import("./pages/sectors/RetailLanding"));
+const ManufacturaLanding = lazy(() => import("./pages/sectors/ManufacturaLanding"));
 const ComparativasCRM = lazy(() => import("./pages/comparativas/ComparativasCRM"));
 const Seguridad = lazy(() => import("./pages/Seguridad"));
+const Precios = lazy(() => import("./pages/Precios"));
 const DemoInteractiva = lazy(() => import("./pages/DemoInteractiva"));
 const LowCodePage = lazy(() => import("./pages/LowCodePage"));
 const preloadRoute = (importFn: () => Promise<unknown>) => {
@@ -139,8 +143,12 @@ const App = () => (
                           {/* Sector & Marketing routes */}
                           <Route path="/sectores" element={<StreamingBoundary priority="high"><SectorLanding /></StreamingBoundary>} />
                           <Route path="/sectores/banca" element={<StreamingBoundary priority="high"><BancaLanding /></StreamingBoundary>} />
+                          <Route path="/sectores/seguros" element={<StreamingBoundary priority="high"><SegurosLanding /></StreamingBoundary>} />
+                          <Route path="/sectores/retail" element={<StreamingBoundary priority="high"><RetailLanding /></StreamingBoundary>} />
+                          <Route path="/sectores/manufactura" element={<StreamingBoundary priority="high"><ManufacturaLanding /></StreamingBoundary>} />
                           <Route path="/comparativas" element={<StreamingBoundary priority="high"><ComparativasCRM /></StreamingBoundary>} />
                           <Route path="/seguridad" element={<StreamingBoundary priority="high"><Seguridad /></StreamingBoundary>} />
+                          <Route path="/precios" element={<StreamingBoundary priority="high"><Precios /></StreamingBoundary>} />
                           <Route path="/demo" element={<StreamingBoundary priority="high"><DemoInteractiva /></StreamingBoundary>} />
                           <Route path="/demo-request" element={<StreamingBoundary priority="high"><DemoInteractiva /></StreamingBoundary>} />
                           <Route path="/lowcode" element={<StreamingBoundary priority="medium"><LowCodePage /></StreamingBoundary>} />
