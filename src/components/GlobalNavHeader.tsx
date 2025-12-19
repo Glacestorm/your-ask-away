@@ -91,12 +91,13 @@ export function GlobalNavHeader({
       </div>
       
       <div className="flex items-center gap-2">
-        {/* Offline Sync Indicator */}
-        <OfflineSyncIndicator />
-        
         {/* Online Users Indicator */}
         <OnlineUsersIndicator />
         
+        {/* Offline Sync Indicator */}
+        <OfflineSyncIndicator />
+        
+        {/* Home Button */}
         <Button
           variant="ghost"
           size="icon"
@@ -107,8 +108,10 @@ export function GlobalNavHeader({
           <Home className="h-5 w-5" />
         </Button>
         
+        {/* Map Button */}
         <MapButton />
         
+        {/* Profile Avatar */}
         <Button
           variant="ghost"
           size="icon"
@@ -124,7 +127,10 @@ export function GlobalNavHeader({
           </Avatar>
         </Button>
         
+        {/* Theme Selector */}
         <ThemeSelector />
+        
+        {/* Language Selector */}
         <LanguageSelector />
       </div>
     </div>

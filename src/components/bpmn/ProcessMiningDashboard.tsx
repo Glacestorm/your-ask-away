@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,7 @@ import { ProcessFlowVisualization } from './ProcessFlowVisualization';
 import { BottleneckAnalysis } from './BottleneckAnalysis';
 import { SLADashboard } from './SLADashboard';
 import { ProcessVariantsChart } from './ProcessVariantsChart';
+import { GlobalNavHeader } from '@/components/GlobalNavHeader';
 import type { ProcessEventEntityType, BPMNEntityType } from '@/types/bpmn';
 
 interface ProcessMiningDashboardProps {
@@ -31,10 +33,13 @@ interface ProcessMiningDashboardProps {
 }
 
 export function ProcessMiningDashboard({ entityType }: ProcessMiningDashboardProps) {
+  const navigate = useNavigate();
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
   const [selectedDefinition, setSelectedDefinition] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [historyStack, setHistoryStack] = useState<string[]>([]);
+  const [forwardStack, setForwardStack] = useState<string[]>([]);
 
   const dateFrom = useMemo(() => {
     const days = selectedPeriod === '7d' ? 7 : selectedPeriod === '30d' ? 30 : 90;
@@ -169,68 +174,78 @@ export function ProcessMiningDashboard({ entityType }: ProcessMiningDashboardPro
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5);
 
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
+  const handleGoForward = () => {
+    navigate(1);
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Process Mining</h2>
-          <p className="text-muted-foreground">
-            Análisis de procesos y detección de cuellos de botella
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="7d">7 días</SelectItem>
-              <SelectItem value="30d">30 días</SelectItem>
-              <SelectItem value="90d">90 días</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          <Select 
-            value={selectedDefinition || 'all'} 
-            onValueChange={(v) => setSelectedDefinition(v === 'all' ? null : v)}
-          >
-            <SelectTrigger className="w-48">
-              <SelectValue placeholder="Todos los procesos" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos los procesos</SelectItem>
-              {definitions.map(def => (
-                <SelectItem key={def.id} value={def.id}>
-                  {def.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {/* Header with GlobalNavHeader */}
+      <GlobalNavHeader
+        title="Process Mining"
+        subtitle="Análisis de procesos y detección de cuellos de botella"
+        canGoBack={true}
+        canGoForward={true}
+        onGoBack={handleGoBack}
+        onGoForward={handleGoForward}
+      />
 
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            aria-label="Actualizar"
-          >
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleExport}
-            disabled={isExporting || eventsLoading}
-            aria-label="Descargar"
-          >
-            {isExporting ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Download className="h-4 w-4" />
-            )}
-          </Button>
-        </div>
+      {/* Filters */}
+      <div className="flex items-center justify-end gap-3">
+        <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+          <SelectTrigger className="w-32">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="7d">7 días</SelectItem>
+            <SelectItem value="30d">30 días</SelectItem>
+            <SelectItem value="90d">90 días</SelectItem>
+          </SelectContent>
+        </Select>
+        
+        <Select 
+          value={selectedDefinition || 'all'} 
+          onValueChange={(v) => setSelectedDefinition(v === 'all' ? null : v)}
+        >
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Todos los procesos" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos los procesos</SelectItem>
+            {definitions.map(def => (
+              <SelectItem key={def.id} value={def.id}>
+                {def.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          aria-label="Actualizar"
+        >
+          <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handleExport}
+          disabled={isExporting || eventsLoading}
+          aria-label="Descargar"
+        >
+          {isExporting ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Download className="h-4 w-4" />
+          )}
+        </Button>
       </div>
 
       {/* Summary Cards */}
