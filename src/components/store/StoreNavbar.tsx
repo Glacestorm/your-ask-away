@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -33,15 +33,34 @@ const StoreNavbar: React.FC = () => {
   const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
+  const closeTimeoutRef = useRef<number | null>(null);
+
   const { itemCount, setIsCartOpen } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useLanguage();
 
+  const cancelDesktopClose = () => {
+    if (closeTimeoutRef.current) {
+      window.clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+  };
+
+  const scheduleDesktopClose = (delay = 140) => {
+    cancelDesktopClose();
+    closeTimeoutRef.current = window.setTimeout(() => {
+      setActiveMenu(null);
+    }, delay);
+  };
+
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      cancelDesktopClose();
+    };
   }, []);
 
   // Navigation structure with mega menus
@@ -169,15 +188,21 @@ const StoreNavbar: React.FC = () => {
             {/* Desktop Navigation */}
             <div 
               className="hidden lg:flex items-center gap-1"
-              onMouseLeave={() => setActiveMenu(null)}
+              onMouseEnter={cancelDesktopClose}
+              onMouseLeave={() => scheduleDesktopClose()}
             >
               {navItems.map((item) => (
                 <div
                   key={item.id}
-                  onMouseEnter={() => item.megaMenu && setActiveMenu(item.id)}
+                  onMouseEnter={() => {
+                    cancelDesktopClose();
+                    if (item.megaMenu) setActiveMenu(item.id);
+                    else setActiveMenu(null);
+                  }}
                 >
                   {item.megaMenu ? (
                     <button
+                      type="button"
                       className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
                         isScrolled 
                           ? 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
@@ -205,19 +230,24 @@ const StoreNavbar: React.FC = () => {
 
             {/* Mega Menu - Rendered outside nav items for proper positioning */}
             <AnimatePresence>
-              {activeMenu && navItems.find(item => item.id === activeMenu)?.megaMenu && (
-                <div 
-                  className="absolute top-full left-0 right-0 z-50"
-                  onMouseEnter={() => {}}
-                  onMouseLeave={() => setActiveMenu(null)}
-                >
-                  <MegaMenu
-                    sections={navItems.find(item => item.id === activeMenu)!.megaMenu!.sections}
-                    featured={navItems.find(item => item.id === activeMenu)?.megaMenu?.featured}
-                    onClose={() => setActiveMenu(null)}
-                  />
-                </div>
-              )}
+              {(() => {
+                const item = activeMenu ? navItems.find((i) => i.id === activeMenu) : undefined;
+                if (!item?.megaMenu) return null;
+
+                return (
+                  <div
+                    className="absolute top-full left-0 right-0 z-50"
+                    onMouseEnter={cancelDesktopClose}
+                    onMouseLeave={() => scheduleDesktopClose()}
+                  >
+                    <MegaMenu
+                      sections={item.megaMenu.sections}
+                      featured={item.megaMenu.featured}
+                      onClose={() => setActiveMenu(null)}
+                    />
+                  </div>
+                );
+              })()}
             </AnimatePresence>
 
             {/* Right Section */}
