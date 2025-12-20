@@ -157,9 +157,10 @@ const sectors: SectorCardData[] = [
       "Certificados fiscales automáticos",
       "Reporting de impacto social"
     ],
-    available: false,
-    gradient: "from-slate-500/20 to-zinc-500/20",
-    iconBg: "bg-gradient-to-br from-slate-500 to-zinc-500"
+    link: "/sectores/educacion",
+    available: true,
+    gradient: "from-teal-500/20 to-cyan-500/20",
+    iconBg: "bg-gradient-to-br from-teal-500 to-cyan-500"
   }
 ];
 
