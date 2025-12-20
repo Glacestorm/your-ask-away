@@ -61,16 +61,16 @@ export interface NavGroup {
 }
 
 // ============================================
-// NAVEGACIÓN PRINCIPAL (Header/Navbar)
+// NAVEGACIÓN HEADER (Solo 4 dropdowns principales)
 // ============================================
 
-export const mainNavigation: NavItem[] = [
+export const headerNavigation: NavItem[] = [
   {
-    id: 'store',
-    label: 'Store',
-    labelKey: 'nav.store',
+    id: 'productos',
+    label: 'Productos',
+    labelKey: 'nav.products',
     href: '/store',
-    icon: Store,
+    icon: Package,
     children: [
       { id: 'modules', label: 'Módulos', href: '/store/modules', icon: Package },
       { id: 'bundles', label: 'Packs', href: '/store#bundles', icon: Boxes },
@@ -78,7 +78,7 @@ export const mainNavigation: NavItem[] = [
     ],
   },
   {
-    id: 'solutions',
+    id: 'soluciones',
     label: 'Soluciones',
     labelKey: 'nav.solutions',
     href: '/sectores',
@@ -91,7 +91,7 @@ export const mainNavigation: NavItem[] = [
     ],
   },
   {
-    id: 'platform',
+    id: 'plataforma',
     label: 'Plataforma',
     labelKey: 'nav.platform',
     href: '#',
@@ -100,12 +100,11 @@ export const mainNavigation: NavItem[] = [
       { id: 'marketplace', label: 'Marketplace', href: '/marketplace', icon: Store, badge: 'Nuevo' },
       { id: 'lowcode', label: 'Low Code', href: '/lowcode', icon: Code },
       { id: 'cdp', label: 'CDP Analytics', href: '/cdp', icon: BarChart3 },
-      { id: 'security', label: 'Seguridad', href: '/seguridad', icon: Shield },
       { id: 'chat', label: 'Chat IA', href: '/chat', icon: MessageSquare, badge: 'IA' },
     ],
   },
   {
-    id: 'developers',
+    id: 'desarrolladores',
     label: 'Desarrolladores',
     labelKey: 'nav.developers',
     href: '/developers',
@@ -114,23 +113,12 @@ export const mainNavigation: NavItem[] = [
       { id: 'docs', label: 'Documentación', href: '/docs', icon: BookOpen },
       { id: 'api', label: 'API Reference', href: '/api', icon: Code },
       { id: 'developer-portal', label: 'Portal Dev', href: '/developers', icon: Rocket },
-      { id: 'partner-portal', label: 'Portal Partners', href: '/partner-portal', icon: Handshake },
-    ],
-  },
-  {
-    id: 'resources',
-    label: 'Recursos',
-    labelKey: 'nav.resources',
-    href: '#',
-    icon: FileText,
-    children: [
-      { id: 'blog', label: 'Blog', href: '/blog', icon: FileText },
-      { id: 'cases', label: 'Casos de Éxito', href: '/cases', icon: Award },
-      { id: 'comparativas', label: 'Comparativas', href: '/comparativas', icon: BarChart3 },
-      { id: 'demo', label: 'Demo Interactiva', href: '/demo', icon: Rocket },
     ],
   },
 ];
+
+// Mantener mainNavigation como alias para compatibilidad
+export const mainNavigation = headerNavigation;
 
 // ============================================
 // NAVEGACIÓN FOOTER
