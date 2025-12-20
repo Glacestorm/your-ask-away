@@ -1,0 +1,282 @@
+/**
+ * Configuración centralizada de navegación
+ * Define todos los menús y enlaces de la aplicación
+ */
+
+import {
+  Home,
+  Package,
+  Boxes,
+  DollarSign,
+  Building2,
+  Users,
+  Handshake,
+  Briefcase,
+  BookOpen,
+  Code,
+  FileText,
+  Award,
+  Shield,
+  Scale,
+  Cookie,
+  FileCheck,
+  MessageSquare,
+  Store,
+  Rocket,
+  Cpu,
+  BarChart3,
+  Globe,
+  Landmark,
+  ShieldCheck,
+  ShoppingBag,
+  Factory,
+  LayoutDashboard,
+  Map,
+  Settings,
+  LogOut,
+  type LucideIcon,
+} from 'lucide-react';
+
+// ============================================
+// TIPOS
+// ============================================
+
+export interface NavItem {
+  id: string;
+  label: string;
+  labelKey?: string; // Para i18n
+  href: string;
+  icon?: LucideIcon;
+  description?: string;
+  badge?: string;
+  external?: boolean;
+  children?: NavItem[];
+}
+
+export interface NavGroup {
+  id: string;
+  title: string;
+  titleKey?: string;
+  items: NavItem[];
+}
+
+// ============================================
+// NAVEGACIÓN PRINCIPAL (Header/Navbar)
+// ============================================
+
+export const mainNavigation: NavItem[] = [
+  {
+    id: 'store',
+    label: 'Store',
+    labelKey: 'nav.store',
+    href: '/store',
+    icon: Store,
+    children: [
+      { id: 'modules', label: 'Módulos', href: '/store/modules', icon: Package },
+      { id: 'bundles', label: 'Packs', href: '/store#bundles', icon: Boxes },
+      { id: 'pricing', label: 'Precios', href: '/precios', icon: DollarSign },
+    ],
+  },
+  {
+    id: 'solutions',
+    label: 'Soluciones',
+    labelKey: 'nav.solutions',
+    href: '/sectores',
+    icon: Globe,
+    children: [
+      { id: 'banca', label: 'Banca', href: '/sectores/banca', icon: Landmark },
+      { id: 'seguros', label: 'Seguros', href: '/sectores/seguros', icon: ShieldCheck },
+      { id: 'retail', label: 'Retail', href: '/sectores/retail', icon: ShoppingBag },
+      { id: 'manufactura', label: 'Manufactura', href: '/sectores/manufactura', icon: Factory },
+    ],
+  },
+  {
+    id: 'platform',
+    label: 'Plataforma',
+    labelKey: 'nav.platform',
+    href: '#',
+    icon: Cpu,
+    children: [
+      { id: 'marketplace', label: 'Marketplace', href: '/marketplace', icon: Store, badge: 'Nuevo' },
+      { id: 'lowcode', label: 'Low Code', href: '/lowcode', icon: Code },
+      { id: 'cdp', label: 'CDP Analytics', href: '/cdp', icon: BarChart3 },
+      { id: 'security', label: 'Seguridad', href: '/seguridad', icon: Shield },
+      { id: 'chat', label: 'Chat IA', href: '/chat', icon: MessageSquare, badge: 'IA' },
+    ],
+  },
+  {
+    id: 'developers',
+    label: 'Desarrolladores',
+    labelKey: 'nav.developers',
+    href: '/developers',
+    icon: Code,
+    children: [
+      { id: 'docs', label: 'Documentación', href: '/docs', icon: BookOpen },
+      { id: 'api', label: 'API Reference', href: '/api', icon: Code },
+      { id: 'developer-portal', label: 'Portal Dev', href: '/developers', icon: Rocket },
+      { id: 'partner-portal', label: 'Portal Partners', href: '/partner-portal', icon: Handshake },
+    ],
+  },
+  {
+    id: 'resources',
+    label: 'Recursos',
+    labelKey: 'nav.resources',
+    href: '#',
+    icon: FileText,
+    children: [
+      { id: 'blog', label: 'Blog', href: '/blog', icon: FileText },
+      { id: 'cases', label: 'Casos de Éxito', href: '/cases', icon: Award },
+      { id: 'comparativas', label: 'Comparativas', href: '/comparativas', icon: BarChart3 },
+      { id: 'demo', label: 'Demo Interactiva', href: '/demo', icon: Rocket },
+    ],
+  },
+];
+
+// ============================================
+// NAVEGACIÓN FOOTER
+// ============================================
+
+export const footerNavigation: NavGroup[] = [
+  {
+    id: 'productos',
+    title: 'Productos',
+    titleKey: 'footer.products',
+    items: [
+      { id: 'modules', label: 'Módulos', href: '/store/modules', icon: Package },
+      { id: 'bundles', label: 'Packs', href: '/store#bundles', icon: Boxes },
+      { id: 'precios', label: 'Precios', href: '/precios', icon: DollarSign },
+      { id: 'marketplace', label: 'Marketplace', href: '/marketplace', icon: Store },
+      { id: 'chat', label: 'Chat IA', href: '/chat', icon: MessageSquare },
+    ],
+  },
+  {
+    id: 'soluciones',
+    title: 'Soluciones',
+    titleKey: 'footer.solutions',
+    items: [
+      { id: 'banca', label: 'Banca', href: '/sectores/banca', icon: Landmark },
+      { id: 'seguros', label: 'Seguros', href: '/sectores/seguros', icon: ShieldCheck },
+      { id: 'retail', label: 'Retail', href: '/sectores/retail', icon: ShoppingBag },
+      { id: 'manufactura', label: 'Manufactura', href: '/sectores/manufactura', icon: Factory },
+    ],
+  },
+  {
+    id: 'desarrolladores',
+    title: 'Desarrolladores',
+    titleKey: 'footer.developers',
+    items: [
+      { id: 'docs', label: 'Documentación', href: '/docs', icon: BookOpen },
+      { id: 'api', label: 'API Reference', href: '/api', icon: Code },
+      { id: 'developers', label: 'Portal Dev', href: '/developers', icon: Rocket },
+      { id: 'partners', label: 'Portal Partners', href: '/partner-portal', icon: Handshake },
+    ],
+  },
+  {
+    id: 'empresa',
+    title: 'Empresa',
+    titleKey: 'footer.company',
+    items: [
+      { id: 'about', label: 'Sobre Nosotros', href: '/about', icon: Building2 },
+      { id: 'contact', label: 'Contacto', href: '/contact', icon: Users },
+      { id: 'partners', label: 'Partners', href: '/partners', icon: Handshake },
+      { id: 'careers', label: 'Carreras', href: '/careers', icon: Briefcase },
+      { id: 'blog', label: 'Blog', href: '/blog', icon: FileText },
+    ],
+  },
+  {
+    id: 'recursos',
+    title: 'Recursos',
+    titleKey: 'footer.resources',
+    items: [
+      { id: 'cases', label: 'Casos de Éxito', href: '/cases', icon: Award },
+      { id: 'comparativas', label: 'Comparativas', href: '/comparativas', icon: BarChart3 },
+      { id: 'demo', label: 'Demo', href: '/demo', icon: Rocket },
+      { id: 'security', label: 'Seguridad', href: '/seguridad', icon: Shield },
+    ],
+  },
+  {
+    id: 'legal',
+    title: 'Legal',
+    titleKey: 'footer.legal',
+    items: [
+      { id: 'terms', label: 'Términos de Servicio', href: '/terms', icon: Scale },
+      { id: 'privacy', label: 'Política de Privacidad', href: '/privacy', icon: Shield },
+      { id: 'cookies', label: 'Cookies', href: '/cookies', icon: Cookie },
+      { id: 'gdpr', label: 'GDPR', href: '/gdpr', icon: FileCheck },
+    ],
+  },
+];
+
+// ============================================
+// NAVEGACIÓN USUARIO (Dashboard)
+// ============================================
+
+export const userNavigation: NavItem[] = [
+  { id: 'home', label: 'Inicio', href: '/home', icon: Home },
+  { id: 'dashboard', label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { id: 'map', label: 'Mapa', href: '/admin?section=map', icon: Map },
+  { id: 'profile', label: 'Perfil', href: '/profile', icon: Users },
+];
+
+export const adminNavigation: NavItem[] = [
+  { id: 'admin', label: 'Administración', href: '/admin', icon: Settings },
+  { id: 'obelixia-admin', label: 'Obelixia Admin', href: '/obelixia-admin', icon: Shield },
+];
+
+// ============================================
+// ACCIONES RÁPIDAS
+// ============================================
+
+export const quickActions: NavItem[] = [
+  { id: 'demo', label: 'Solicitar Demo', href: '/demo', icon: Rocket },
+  { id: 'contact', label: 'Contacto', href: '/contact', icon: Users },
+  { id: 'chat', label: 'Chat IA', href: '/chat', icon: MessageSquare },
+];
+
+// ============================================
+// HELPERS
+// ============================================
+
+/**
+ * Obtiene un item de navegación por su ID
+ */
+export function getNavItemById(id: string): NavItem | undefined {
+  const searchInItems = (items: NavItem[]): NavItem | undefined => {
+    for (const item of items) {
+      if (item.id === id) return item;
+      if (item.children) {
+        const found = searchInItems(item.children);
+        if (found) return found;
+      }
+    }
+    return undefined;
+  };
+  
+  return searchInItems(mainNavigation);
+}
+
+/**
+ * Obtiene todos los items de navegación como array plano
+ */
+export function getFlatNavItems(): NavItem[] {
+  const flatten = (items: NavItem[]): NavItem[] => {
+    return items.reduce<NavItem[]>((acc, item) => {
+      acc.push(item);
+      if (item.children) {
+        acc.push(...flatten(item.children));
+      }
+      return acc;
+    }, []);
+  };
+  
+  return flatten(mainNavigation);
+}
+
+/**
+ * Verifica si una ruta está activa
+ */
+export function isRouteActive(currentPath: string, href: string): boolean {
+  if (href === '#') return false;
+  if (href === '/') return currentPath === '/';
+  return currentPath.startsWith(href);
+}
