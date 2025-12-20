@@ -76,6 +76,13 @@ const Precios = lazy(() => import("./pages/Precios"));
 const DemoInteractiva = lazy(() => import("./pages/DemoInteractiva"));
 const LowCodePage = lazy(() => import("./pages/LowCodePage"));
 const CDPDashboard = lazy(() => import("./pages/CDPDashboard"));
+
+// Marketplace & Partner Program - Phase 8
+const Marketplace = lazy(() => import("./pages/Marketplace"));
+const MarketplaceAppDetail = lazy(() => import("./pages/MarketplaceAppDetail"));
+const PartnerPortal = lazy(() => import("./pages/PartnerPortal"));
+const DeveloperPortal = lazy(() => import("./pages/DeveloperPortal"));
+
 const preloadRoute = (importFn: () => Promise<unknown>) => {
   startTransition(() => {
     importFn();
@@ -154,6 +161,11 @@ const App = () => (
                           <Route path="/demo-request" element={<StreamingBoundary priority="high"><DemoInteractiva /></StreamingBoundary>} />
                           <Route path="/lowcode" element={<StreamingBoundary priority="medium"><LowCodePage /></StreamingBoundary>} />
                           <Route path="/cdp" element={<StreamingBoundary priority="medium"><CDPDashboard /></StreamingBoundary>} />
+                          {/* Marketplace & Partner Program - Phase 8 */}
+                          <Route path="/marketplace" element={<StreamingBoundary priority="high"><Marketplace /></StreamingBoundary>} />
+                          <Route path="/marketplace/:appKey" element={<StreamingBoundary priority="high"><MarketplaceAppDetail /></StreamingBoundary>} />
+                          <Route path="/partner-portal" element={<StreamingBoundary priority="medium"><PartnerPortal /></StreamingBoundary>} />
+                          <Route path="/developers" element={<StreamingBoundary priority="medium"><DeveloperPortal /></StreamingBoundary>} />
                           <Route path="*" element={<NotFound />} />
                         </Routes>
                       </StreamingBoundary>

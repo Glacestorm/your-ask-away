@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/components/auth/AuthProvider';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import type { 
   PartnerApplication, 
@@ -161,8 +161,11 @@ export function useInstallApp() {
 
       if (error) throw error;
 
-      // Increment install count
-      await supabase.rpc('increment_install_count', { app_id: applicationId });
+      // Increment install count directly
+      await supabase
+        .from('partner_applications')
+        .update({ install_count: (await supabase.from('partner_applications').select('install_count').eq('id', applicationId).single()).data?.install_count + 1 || 1 })
+        .eq('id', applicationId);
 
       return data;
     },
