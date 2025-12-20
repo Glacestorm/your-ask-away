@@ -88,8 +88,8 @@ export interface RouteConfig {
 // RUTAS PÚBLICAS (Store, Landing, Marketing)
 // ============================================
 export const publicRoutes: RouteConfig[] = [
-  // Store
-  { path: '/store', component: StoreLanding, layout: 'public', priority: 'high', meta: { title: 'Store' } },
+  // Store - StoreLanding tiene su propio navbar integrado, usa 'none'
+  { path: '/store', component: StoreLanding, layout: 'none', priority: 'high', meta: { title: 'Store' } },
   { path: '/store/modules', component: StoreModules, layout: 'public', priority: 'high', meta: { title: 'Módulos' } },
   { path: '/store/modules/:moduleKey', component: StoreModuleDetail, layout: 'public', priority: 'high' },
   { path: '/store/deployment', component: StoreDeployment, layout: 'public', priority: 'high' },
