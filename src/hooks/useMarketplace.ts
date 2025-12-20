@@ -238,19 +238,14 @@ export function useMarketplaceStats() {
         supabase.from('partner_companies').select('id', { count: 'exact', head: true }).eq('status', 'active'),
       ]);
 
-      console.log('Stats results:', { 
-        apps: appsResult.count, 
-        integrations: integrationsResult.count, 
-        partners: partnersResult.count,
-        appsError: appsResult.error
-      });
-
       return {
         totalApps: appsResult.count || 0,
         totalIntegrations: integrationsResult.count || 0,
         totalPartners: partnersResult.count || 0,
       };
     },
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
   });
 }
 
