@@ -59,6 +59,7 @@ export interface CopilotMetrics {
   actionsCompleted: number;
   actionsDismissed: number;
   totalMrrImpact: number;
+  totalValueGenerated: number;
   averageConfidence: number;
   suggestionsAccepted: number;
   suggestionsTotal: number;
@@ -344,13 +345,13 @@ export function useRoleCopilot() {
   return {
     copilotConfig,
     session,
-    suggestions: currentSuggestions,
+    currentSuggestions,
     metrics,
-    isLoading: configLoading,
+    configLoading,
     isProcessing,
     generateSuggestions,
-    executeAction: executeAction.mutate,
-    dismissSuggestion: dismissSuggestion.mutate,
+    executeAction,
+    dismissSuggestion,
     executeQuickAction,
     refetchSession,
   };
