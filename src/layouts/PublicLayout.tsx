@@ -6,8 +6,7 @@
 
 import React, { ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import StoreNavbar from '@/components/store/StoreNavbar';
-import StoreFooter from '@/components/store/StoreFooter';
+import { MainNavbar, MainFooter } from '@/components/navigation';
 import CartSidebar from '@/components/store/CartSidebar';
 
 interface PublicLayoutProps {
@@ -20,6 +19,8 @@ interface PublicLayoutProps {
   className?: string;
   /** Fondo oscuro estilo store */
   darkBackground?: boolean;
+  /** Padding top para compensar navbar fijo */
+  navbarPadding?: boolean;
 }
 
 export function PublicLayout({
@@ -28,6 +29,7 @@ export function PublicLayout({
   hideFooter = false,
   className = '',
   darkBackground = true,
+  navbarPadding = true,
 }: PublicLayoutProps) {
   const baseClassName = darkBackground
     ? 'min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950'
@@ -36,20 +38,20 @@ export function PublicLayout({
   return (
     <div className={`${baseClassName} ${className}`}>
       {/* Navbar */}
-      {!hideNavbar && <StoreNavbar />}
+      {!hideNavbar && <MainNavbar />}
 
       {/* Main Content */}
       <motion.main
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
-        className="flex-1"
+        className={`flex-1 ${navbarPadding && !hideNavbar ? 'pt-24' : ''}`}
       >
         {children}
       </motion.main>
 
       {/* Footer */}
-      {!hideFooter && <StoreFooter />}
+      {!hideFooter && <MainFooter />}
 
       {/* Cart Sidebar - Siempre disponible en páginas públicas */}
       <CartSidebar />
