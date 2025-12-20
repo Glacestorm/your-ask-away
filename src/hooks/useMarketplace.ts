@@ -233,10 +233,17 @@ export function useMarketplaceStats() {
     queryKey: ['marketplace-stats'],
     queryFn: async () => {
       const [appsResult, integrationsResult, partnersResult] = await Promise.all([
-        supabase.from('partner_applications').select('id', { count: 'exact' }).eq('status', 'published'),
-        supabase.from('premium_integrations').select('id', { count: 'exact' }).eq('is_active', true),
-        supabase.from('partner_companies').select('id', { count: 'exact' }).eq('status', 'active'),
+        supabase.from('partner_applications').select('id', { count: 'exact', head: true }).eq('status', 'published'),
+        supabase.from('premium_integrations').select('id', { count: 'exact', head: true }).eq('is_active', true),
+        supabase.from('partner_companies').select('id', { count: 'exact', head: true }).eq('status', 'active'),
       ]);
+
+      console.log('Stats results:', { 
+        apps: appsResult.count, 
+        integrations: integrationsResult.count, 
+        partners: partnersResult.count,
+        appsError: appsResult.error
+      });
 
       return {
         totalApps: appsResult.count || 0,
@@ -251,19 +258,29 @@ export function useCategoryCounts() {
   return useQuery({
     queryKey: ['category-counts'],
     queryFn: async () => {
+      // Use the same query as useMarketplaceApps to ensure consistency
       const { data, error } = await supabase
         .from('partner_applications')
-        .select('category')
+        .select('id, category, status')
         .eq('status', 'published');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching category counts:', error);
+        return {};
+      }
 
       const counts: Record<string, number> = {};
-      data?.forEach((app) => {
-        counts[app.category] = (counts[app.category] || 0) + 1;
-      });
+      if (data && Array.isArray(data)) {
+        data.forEach((app: { id: string; category: string; status: string }) => {
+          if (app.category) {
+            counts[app.category] = (counts[app.category] || 0) + 1;
+          }
+        });
+      }
 
       return counts;
     },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false,
   });
 }
