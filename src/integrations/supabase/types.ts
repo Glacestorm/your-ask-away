@@ -12906,6 +12906,248 @@ export type Database = {
         }
         Relationships: []
       }
+      vertical_bpmn_templates: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          is_default: boolean | null
+          process_definition: Json | null
+          template_key: string
+          template_name: string
+          vertical_pack_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          process_definition?: Json | null
+          template_key: string
+          template_name: string
+          vertical_pack_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          process_definition?: Json | null
+          template_key?: string
+          template_name?: string
+          vertical_pack_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vertical_bpmn_templates_vertical_pack_id_fkey"
+            columns: ["vertical_pack_id"]
+            isOneToOne: false
+            referencedRelation: "vertical_packs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vertical_dashboards: {
+        Row: {
+          created_at: string | null
+          dashboard_key: string
+          dashboard_name: string
+          id: string
+          is_default: boolean | null
+          layout: Json | null
+          vertical_pack_id: string | null
+          widgets: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          dashboard_key: string
+          dashboard_name: string
+          id?: string
+          is_default?: boolean | null
+          layout?: Json | null
+          vertical_pack_id?: string | null
+          widgets?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          dashboard_key?: string
+          dashboard_name?: string
+          id?: string
+          is_default?: boolean | null
+          layout?: Json | null
+          vertical_pack_id?: string | null
+          widgets?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vertical_dashboards_vertical_pack_id_fkey"
+            columns: ["vertical_pack_id"]
+            isOneToOne: false
+            referencedRelation: "vertical_packs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vertical_integrations: {
+        Row: {
+          api_type: string | null
+          config_schema: Json | null
+          created_at: string | null
+          documentation_url: string | null
+          id: string
+          integration_key: string
+          integration_name: string
+          is_active: boolean | null
+          is_required: boolean | null
+          provider: string | null
+          vertical_pack_id: string | null
+        }
+        Insert: {
+          api_type?: string | null
+          config_schema?: Json | null
+          created_at?: string | null
+          documentation_url?: string | null
+          id?: string
+          integration_key: string
+          integration_name: string
+          is_active?: boolean | null
+          is_required?: boolean | null
+          provider?: string | null
+          vertical_pack_id?: string | null
+        }
+        Update: {
+          api_type?: string | null
+          config_schema?: Json | null
+          created_at?: string | null
+          documentation_url?: string | null
+          id?: string
+          integration_key?: string
+          integration_name?: string
+          is_active?: boolean | null
+          is_required?: boolean | null
+          provider?: string | null
+          vertical_pack_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vertical_integrations_vertical_pack_id_fkey"
+            columns: ["vertical_pack_id"]
+            isOneToOne: false
+            referencedRelation: "vertical_packs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vertical_modules: {
+        Row: {
+          component_path: string | null
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          features: Json | null
+          id: string
+          is_core: boolean | null
+          module_key: string
+          module_name: string
+          updated_at: string | null
+          vertical_pack_id: string | null
+        }
+        Insert: {
+          component_path?: string | null
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          features?: Json | null
+          id?: string
+          is_core?: boolean | null
+          module_key: string
+          module_name: string
+          updated_at?: string | null
+          vertical_pack_id?: string | null
+        }
+        Update: {
+          component_path?: string | null
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          features?: Json | null
+          id?: string
+          is_core?: boolean | null
+          module_key?: string
+          module_name?: string
+          updated_at?: string | null
+          vertical_pack_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vertical_modules_vertical_pack_id_fkey"
+            columns: ["vertical_pack_id"]
+            isOneToOne: false
+            referencedRelation: "vertical_packs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vertical_packs: {
+        Row: {
+          bpmn_templates: Json | null
+          cnae_codes: string[]
+          color_scheme: Json | null
+          created_at: string | null
+          dashboard_templates: Json | null
+          demo_config: Json | null
+          description: string | null
+          display_order: number | null
+          icon_name: string | null
+          id: string
+          included_integrations: string[] | null
+          included_modules: string[]
+          is_active: boolean | null
+          pricing_config: Json | null
+          updated_at: string | null
+          vertical_key: string
+          vertical_name: string
+        }
+        Insert: {
+          bpmn_templates?: Json | null
+          cnae_codes?: string[]
+          color_scheme?: Json | null
+          created_at?: string | null
+          dashboard_templates?: Json | null
+          demo_config?: Json | null
+          description?: string | null
+          display_order?: number | null
+          icon_name?: string | null
+          id?: string
+          included_integrations?: string[] | null
+          included_modules?: string[]
+          is_active?: boolean | null
+          pricing_config?: Json | null
+          updated_at?: string | null
+          vertical_key: string
+          vertical_name: string
+        }
+        Update: {
+          bpmn_templates?: Json | null
+          cnae_codes?: string[]
+          color_scheme?: Json | null
+          created_at?: string | null
+          dashboard_templates?: Json | null
+          demo_config?: Json | null
+          description?: string | null
+          display_order?: number | null
+          icon_name?: string | null
+          id?: string
+          included_integrations?: string[] | null
+          included_modules?: string[]
+          is_active?: boolean | null
+          pricing_config?: Json | null
+          updated_at?: string | null
+          vertical_key?: string
+          vertical_name?: string
+        }
+        Relationships: []
+      }
       visit_participants: {
         Row: {
           created_at: string | null
