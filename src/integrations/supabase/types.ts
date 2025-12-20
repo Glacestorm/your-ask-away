@@ -14661,6 +14661,10 @@ export type Database = {
         Args: { _module_key: string; _organization_id?: string }
         Returns: boolean
       }
+      is_partner_member: {
+        Args: { _partner_company_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_visit_gestor: {
         Args: { _user_id: string; _visit_id: string }
         Returns: boolean
