@@ -13,11 +13,12 @@ interface VerticalPack {
   id: string;
   vertical_key: string;
   vertical_name: string;
-  description: string;
+  description: string | null;
   cnae_codes: string[];
   included_modules: string[];
-  pricing_config: { setup_fee: number; monthly_fee: number };
-  is_active: boolean;
+  pricing_config: { setup_fee?: number; monthly_fee?: number } | null;
+  is_active: boolean | null;
+  icon_name: string | null;
 }
 
 const iconMap: Record<string, any> = {
@@ -35,7 +36,7 @@ export const VerticalPacksManager: React.FC = () => {
   const fetchPacks = async () => {
     const { data } = await supabase
       .from('vertical_packs')
-      .select('*')
+      .select('id, vertical_key, vertical_name, description, cnae_codes, included_modules, pricing_config, is_active, icon_name')
       .order('display_order');
     if (data) setPacks(data as VerticalPack[]);
     setLoading(false);
@@ -76,7 +77,7 @@ export const VerticalPacksManager: React.FC = () => {
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
-                <p className="text-sm text-muted-foreground line-clamp-2">{pack.description}</p>
+                <p className="text-sm text-muted-foreground line-clamp-2">{pack.description || 'Sin descripción'}</p>
                 <div className="flex items-center justify-between text-sm">
                   <span>CNAEs incluidos:</span>
                   <Badge variant="outline">{pack.cnae_codes?.length || 0}</Badge>
