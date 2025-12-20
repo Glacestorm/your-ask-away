@@ -6106,6 +6106,80 @@ export type Database = {
         }
         Relationships: []
       }
+      developer_api_keys: {
+        Row: {
+          allowed_ips: string[] | null
+          allowed_origins: string[] | null
+          api_key_hash: string
+          created_at: string | null
+          environment: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          key_name: string
+          key_prefix: string
+          last_used_at: string | null
+          partner_company_id: string | null
+          rate_limit_per_day: number | null
+          rate_limit_per_minute: number | null
+          revoked_at: string | null
+          revoked_reason: string | null
+          scopes: string[] | null
+          total_requests: number | null
+          user_id: string
+        }
+        Insert: {
+          allowed_ips?: string[] | null
+          allowed_origins?: string[] | null
+          api_key_hash: string
+          created_at?: string | null
+          environment?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          key_name: string
+          key_prefix: string
+          last_used_at?: string | null
+          partner_company_id?: string | null
+          rate_limit_per_day?: number | null
+          rate_limit_per_minute?: number | null
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          scopes?: string[] | null
+          total_requests?: number | null
+          user_id: string
+        }
+        Update: {
+          allowed_ips?: string[] | null
+          allowed_origins?: string[] | null
+          api_key_hash?: string
+          created_at?: string | null
+          environment?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          key_name?: string
+          key_prefix?: string
+          last_used_at?: string | null
+          partner_company_id?: string | null
+          rate_limit_per_day?: number | null
+          rate_limit_per_minute?: number | null
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          scopes?: string[] | null
+          total_requests?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "developer_api_keys_partner_company_id_fkey"
+            columns: ["partner_company_id"]
+            isOneToOne: false
+            referencedRelation: "partner_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dora_compliance_items: {
         Row: {
           article: string
@@ -8230,6 +8304,133 @@ export type Database = {
         }
         Relationships: []
       }
+      marketplace_installations: {
+        Row: {
+          application_id: string | null
+          config: Json | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          installed_by: string
+          is_active: boolean | null
+          last_used_at: string | null
+          license_key: string | null
+          license_type: string | null
+          organization_id: string
+          uninstall_reason: string | null
+          uninstalled_at: string | null
+          updated_at: string | null
+          usage_count: number | null
+        }
+        Insert: {
+          application_id?: string | null
+          config?: Json | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          installed_by: string
+          is_active?: boolean | null
+          last_used_at?: string | null
+          license_key?: string | null
+          license_type?: string | null
+          organization_id: string
+          uninstall_reason?: string | null
+          uninstalled_at?: string | null
+          updated_at?: string | null
+          usage_count?: number | null
+        }
+        Update: {
+          application_id?: string | null
+          config?: Json | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          installed_by?: string
+          is_active?: boolean | null
+          last_used_at?: string | null
+          license_key?: string | null
+          license_type?: string | null
+          organization_id?: string
+          uninstall_reason?: string | null
+          uninstalled_at?: string | null
+          updated_at?: string | null
+          usage_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_installations_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "partner_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_reviews: {
+        Row: {
+          application_id: string | null
+          cons: string | null
+          created_at: string | null
+          helpful_count: number | null
+          id: string
+          is_verified_purchase: boolean | null
+          pros: string | null
+          rating: number
+          response_at: string | null
+          response_by: string | null
+          response_text: string | null
+          review_text: string | null
+          status: string | null
+          title: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          application_id?: string | null
+          cons?: string | null
+          created_at?: string | null
+          helpful_count?: number | null
+          id?: string
+          is_verified_purchase?: boolean | null
+          pros?: string | null
+          rating: number
+          response_at?: string | null
+          response_by?: string | null
+          response_text?: string | null
+          review_text?: string | null
+          status?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          application_id?: string | null
+          cons?: string | null
+          created_at?: string | null
+          helpful_count?: number | null
+          id?: string
+          is_verified_purchase?: boolean | null
+          pros?: string | null
+          rating?: number
+          response_at?: string | null
+          response_by?: string | null
+          response_text?: string | null
+          review_text?: string | null
+          status?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_reviews_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "partner_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mfa_requirements: {
         Row: {
           created_at: string | null
@@ -9654,6 +9855,403 @@ export type Database = {
           },
         ]
       }
+      partner_applications: {
+        Row: {
+          api_scopes: string[] | null
+          app_key: string
+          app_name: string
+          banner_url: string | null
+          billing_period: string | null
+          category: string
+          changelog: Json | null
+          created_at: string | null
+          description: string | null
+          documentation_url: string | null
+          icon_url: string | null
+          id: string
+          install_count: number | null
+          is_certified: boolean | null
+          is_featured: boolean | null
+          is_premium: boolean | null
+          min_plan: string | null
+          partner_company_id: string | null
+          price_amount: number | null
+          price_currency: string | null
+          price_type: string | null
+          privacy_policy_url: string | null
+          rating_average: number | null
+          rating_count: number | null
+          rejection_reason: string | null
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          screenshots: Json | null
+          short_description: string | null
+          status: string | null
+          subcategory: string | null
+          submitted_at: string | null
+          support_url: string | null
+          tags: string[] | null
+          terms_url: string | null
+          trial_days: number | null
+          updated_at: string | null
+          version: string | null
+          video_url: string | null
+          webhook_url: string | null
+        }
+        Insert: {
+          api_scopes?: string[] | null
+          app_key: string
+          app_name: string
+          banner_url?: string | null
+          billing_period?: string | null
+          category: string
+          changelog?: Json | null
+          created_at?: string | null
+          description?: string | null
+          documentation_url?: string | null
+          icon_url?: string | null
+          id?: string
+          install_count?: number | null
+          is_certified?: boolean | null
+          is_featured?: boolean | null
+          is_premium?: boolean | null
+          min_plan?: string | null
+          partner_company_id?: string | null
+          price_amount?: number | null
+          price_currency?: string | null
+          price_type?: string | null
+          privacy_policy_url?: string | null
+          rating_average?: number | null
+          rating_count?: number | null
+          rejection_reason?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          screenshots?: Json | null
+          short_description?: string | null
+          status?: string | null
+          subcategory?: string | null
+          submitted_at?: string | null
+          support_url?: string | null
+          tags?: string[] | null
+          terms_url?: string | null
+          trial_days?: number | null
+          updated_at?: string | null
+          version?: string | null
+          video_url?: string | null
+          webhook_url?: string | null
+        }
+        Update: {
+          api_scopes?: string[] | null
+          app_key?: string
+          app_name?: string
+          banner_url?: string | null
+          billing_period?: string | null
+          category?: string
+          changelog?: Json | null
+          created_at?: string | null
+          description?: string | null
+          documentation_url?: string | null
+          icon_url?: string | null
+          id?: string
+          install_count?: number | null
+          is_certified?: boolean | null
+          is_featured?: boolean | null
+          is_premium?: boolean | null
+          min_plan?: string | null
+          partner_company_id?: string | null
+          price_amount?: number | null
+          price_currency?: string | null
+          price_type?: string | null
+          privacy_policy_url?: string | null
+          rating_average?: number | null
+          rating_count?: number | null
+          rejection_reason?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          screenshots?: Json | null
+          short_description?: string | null
+          status?: string | null
+          subcategory?: string | null
+          submitted_at?: string | null
+          support_url?: string | null
+          tags?: string[] | null
+          terms_url?: string | null
+          trial_days?: number | null
+          updated_at?: string | null
+          version?: string | null
+          video_url?: string | null
+          webhook_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_applications_partner_company_id_fkey"
+            columns: ["partner_company_id"]
+            isOneToOne: false
+            referencedRelation: "partner_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_companies: {
+        Row: {
+          approved_by: string | null
+          company_name: string
+          contact_email: string
+          contact_phone: string | null
+          contract_expires_at: string | null
+          contract_signed_at: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          joined_at: string | null
+          legal_name: string | null
+          logo_url: string | null
+          metadata: Json | null
+          partner_tier: string | null
+          revenue_share_percent: number | null
+          status: string | null
+          tax_id: string | null
+          total_installations: number | null
+          total_revenue: number | null
+          updated_at: string | null
+          website: string | null
+        }
+        Insert: {
+          approved_by?: string | null
+          company_name: string
+          contact_email: string
+          contact_phone?: string | null
+          contract_expires_at?: string | null
+          contract_signed_at?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          joined_at?: string | null
+          legal_name?: string | null
+          logo_url?: string | null
+          metadata?: Json | null
+          partner_tier?: string | null
+          revenue_share_percent?: number | null
+          status?: string | null
+          tax_id?: string | null
+          total_installations?: number | null
+          total_revenue?: number | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Update: {
+          approved_by?: string | null
+          company_name?: string
+          contact_email?: string
+          contact_phone?: string | null
+          contract_expires_at?: string | null
+          contract_signed_at?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          joined_at?: string | null
+          legal_name?: string | null
+          logo_url?: string | null
+          metadata?: Json | null
+          partner_tier?: string | null
+          revenue_share_percent?: number | null
+          status?: string | null
+          tax_id?: string | null
+          total_installations?: number | null
+          total_revenue?: number | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
+      partner_revenue_transactions: {
+        Row: {
+          application_id: string | null
+          created_at: string | null
+          currency: string | null
+          external_transaction_id: string | null
+          gross_amount: number
+          id: string
+          installation_id: string | null
+          invoice_url: string | null
+          metadata: Json | null
+          organization_id: string | null
+          paid_at: string | null
+          partner_amount: number
+          partner_company_id: string | null
+          payment_method: string | null
+          period_end: string | null
+          period_start: string | null
+          platform_fee: number
+          status: string | null
+          transaction_type: string
+        }
+        Insert: {
+          application_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          external_transaction_id?: string | null
+          gross_amount: number
+          id?: string
+          installation_id?: string | null
+          invoice_url?: string | null
+          metadata?: Json | null
+          organization_id?: string | null
+          paid_at?: string | null
+          partner_amount: number
+          partner_company_id?: string | null
+          payment_method?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          platform_fee: number
+          status?: string | null
+          transaction_type: string
+        }
+        Update: {
+          application_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          external_transaction_id?: string | null
+          gross_amount?: number
+          id?: string
+          installation_id?: string | null
+          invoice_url?: string | null
+          metadata?: Json | null
+          organization_id?: string | null
+          paid_at?: string | null
+          partner_amount?: number
+          partner_company_id?: string | null
+          payment_method?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          platform_fee?: number
+          status?: string | null
+          transaction_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_revenue_transactions_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "partner_applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_revenue_transactions_installation_id_fkey"
+            columns: ["installation_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_installations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_revenue_transactions_partner_company_id_fkey"
+            columns: ["partner_company_id"]
+            isOneToOne: false
+            referencedRelation: "partner_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_users: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_primary_contact: boolean | null
+          partner_company_id: string | null
+          role: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_primary_contact?: boolean | null
+          partner_company_id?: string | null
+          role?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_primary_contact?: boolean | null
+          partner_company_id?: string | null
+          role?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_users_partner_company_id_fkey"
+            columns: ["partner_company_id"]
+            isOneToOne: false
+            referencedRelation: "partner_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_webhooks: {
+        Row: {
+          created_at: string | null
+          events: string[]
+          failure_count: number | null
+          id: string
+          is_active: boolean | null
+          last_response_body: string | null
+          last_response_code: number | null
+          last_triggered_at: string | null
+          partner_company_id: string | null
+          secret_hash: string
+          success_count: number | null
+          updated_at: string | null
+          webhook_name: string
+          webhook_url: string
+        }
+        Insert: {
+          created_at?: string | null
+          events: string[]
+          failure_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_response_body?: string | null
+          last_response_code?: number | null
+          last_triggered_at?: string | null
+          partner_company_id?: string | null
+          secret_hash: string
+          success_count?: number | null
+          updated_at?: string | null
+          webhook_name: string
+          webhook_url: string
+        }
+        Update: {
+          created_at?: string | null
+          events?: string[]
+          failure_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_response_body?: string | null
+          last_response_code?: number | null
+          last_triggered_at?: string | null
+          partner_company_id?: string | null
+          secret_hash?: string
+          success_count?: number | null
+          updated_at?: string | null
+          webhook_name?: string
+          webhook_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_webhooks_partner_company_id_fkey"
+            columns: ["partner_company_id"]
+            isOneToOne: false
+            referencedRelation: "partner_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       performance_alerts: {
         Row: {
           acknowledged_at: string | null
@@ -9803,6 +10401,53 @@ export type Database = {
           },
         ]
       }
+      plugin_permissions: {
+        Row: {
+          application_id: string | null
+          category: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          is_required: boolean | null
+          is_sensitive: boolean | null
+          permission_key: string
+          permission_name: string
+          requires_approval: boolean | null
+        }
+        Insert: {
+          application_id?: string | null
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_required?: boolean | null
+          is_sensitive?: boolean | null
+          permission_key: string
+          permission_name: string
+          requires_approval?: boolean | null
+        }
+        Update: {
+          application_id?: string | null
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_required?: boolean | null
+          is_sensitive?: boolean | null
+          permission_key?: string
+          permission_name?: string
+          requires_approval?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plugin_permissions_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "partner_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       premium_api_tiers: {
         Row: {
           created_at: string | null
@@ -9841,6 +10486,95 @@ export type Database = {
           tier_name?: string
         }
         Relationships: []
+      }
+      premium_integrations: {
+        Row: {
+          category: string
+          certification_expires_at: string | null
+          certification_level: string | null
+          certified_at: string | null
+          certified_by: string | null
+          config_schema: Json | null
+          created_at: string | null
+          description: string | null
+          documentation_url: string | null
+          features: Json | null
+          id: string
+          install_count: number | null
+          integration_key: string
+          integration_name: string
+          is_active: boolean | null
+          is_featured: boolean | null
+          logo_url: string | null
+          partner_company_id: string | null
+          pricing_info: Json | null
+          provider: string
+          required_secrets: string[] | null
+          setup_guide_url: string | null
+          supported_regions: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          certification_expires_at?: string | null
+          certification_level?: string | null
+          certified_at?: string | null
+          certified_by?: string | null
+          config_schema?: Json | null
+          created_at?: string | null
+          description?: string | null
+          documentation_url?: string | null
+          features?: Json | null
+          id?: string
+          install_count?: number | null
+          integration_key: string
+          integration_name: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          logo_url?: string | null
+          partner_company_id?: string | null
+          pricing_info?: Json | null
+          provider: string
+          required_secrets?: string[] | null
+          setup_guide_url?: string | null
+          supported_regions?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          certification_expires_at?: string | null
+          certification_level?: string | null
+          certified_at?: string | null
+          certified_by?: string | null
+          config_schema?: Json | null
+          created_at?: string | null
+          description?: string | null
+          documentation_url?: string | null
+          features?: Json | null
+          id?: string
+          install_count?: number | null
+          integration_key?: string
+          integration_name?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          logo_url?: string | null
+          partner_company_id?: string | null
+          pricing_info?: Json | null
+          provider?: string
+          required_secrets?: string[] | null
+          setup_guide_url?: string | null
+          supported_regions?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "premium_integrations_partner_company_id_fkey"
+            columns: ["partner_company_id"]
+            isOneToOne: false
+            referencedRelation: "partner_companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       process_events: {
         Row: {
