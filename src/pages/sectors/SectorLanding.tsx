@@ -141,9 +141,10 @@ const sectors: SectorCardData[] = [
       "Mantenimiento preventivo",
       "Control de calidad"
     ],
-    available: false,
-    gradient: "from-slate-500/20 to-zinc-500/20",
-    iconBg: "bg-gradient-to-br from-slate-500 to-zinc-500"
+    link: "/sectores/manufactura",
+    available: true,
+    gradient: "from-purple-500/20 to-indigo-500/20",
+    iconBg: "bg-gradient-to-br from-purple-500 to-indigo-500"
   },
   {
     icon: GraduationCap,
