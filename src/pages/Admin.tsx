@@ -81,6 +81,8 @@ import { CNAEPricingAdmin } from '@/components/cnae/CNAEPricingAdmin';
 import { CNAEDashboard } from '@/components/cnae/CNAEDashboard';
 import BPMNDesigner from '@/components/bpmn/BPMNDesigner';
 import { ProcessMiningDashboard } from '@/components/bpmn/ProcessMiningDashboard';
+import { RoleCopilotPanel, NBADashboard, ContinuousControlsDashboard } from '@/components/ai-control';
+import { Zap } from 'lucide-react';
 
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
@@ -205,6 +207,9 @@ const Admin = () => {
       case 'analyzer': return 'Analitzador de Codi';
       case 'bpmn-designer': return 'Dissenyador de Processos BPMN';
       case 'process-mining': return 'Process Mining Dashboard';
+      case 'ai-copilot': return 'Copilot Intel·ligent per Rol';
+      case 'ai-nba': return 'Next Best Action (NBA)';
+      case 'ai-controls': return 'Controls Continus';
       default: return '';
     }
   };
@@ -1322,6 +1327,57 @@ const Admin = () => {
               </div>
             </div>
 
+            {/* SECCIÓ: IA que Vende - FASE 6 */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-gradient bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-500 bg-clip-text text-transparent flex items-center gap-2">
+                <Zap className="h-5 w-5 text-fuchsia-500" /> IA que Vende (Fase 6)
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-violet-500/30 bg-gradient-to-br from-violet-500/5 to-violet-500/10"
+                  onClick={() => handleSectionChange('ai-copilot')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-violet-500/20 flex items-center justify-center">
+                      <Bot className="h-4 w-4 text-violet-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-violet-700 dark:text-violet-400">Copilot Intel·ligent</h4>
+                      <p className="text-xs text-muted-foreground">Assistent IA per rol amb suggeriments</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-fuchsia-500/30 bg-gradient-to-br from-fuchsia-500/5 to-fuchsia-500/10"
+                  onClick={() => handleSectionChange('ai-nba')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-fuchsia-500/20 flex items-center justify-center">
+                      <Zap className="h-4 w-4 text-fuchsia-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-fuchsia-700 dark:text-fuchsia-400">Next Best Action</h4>
+                      <p className="text-xs text-muted-foreground">Accions prioritzades amb IA</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-pink-500/30 bg-gradient-to-br from-pink-500/5 to-pink-500/10"
+                  onClick={() => handleSectionChange('ai-controls')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-pink-500/20 flex items-center justify-center">
+                      <Shield className="h-4 w-4 text-pink-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-pink-700 dark:text-pink-400">Controls Continus</h4>
+                      <p className="text-xs text-muted-foreground">Monitorització i alertes automàtiques</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
             {/* SECCIÓ 6: Eines i Historial */}
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-2">
@@ -1510,6 +1566,12 @@ const Admin = () => {
             </div>
           </div>
         );
+      case 'ai-copilot':
+        return <RoleCopilotPanel />;
+      case 'ai-nba':
+        return <NBADashboard />;
+      case 'ai-controls':
+        return <ContinuousControlsDashboard />;
       case 'geocoding':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
           return (
