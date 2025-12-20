@@ -36,10 +36,10 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ sections, featured, onClose }) => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.2, ease: 'easeOut' }}
-      className="absolute top-full left-0 right-0 mt-2"
+      className="pt-2"
     >
       <div className="container mx-auto px-6">
-        <div className="bg-white rounded-2xl shadow-2xl shadow-slate-900/10 border border-slate-100 overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-2xl shadow-slate-900/10 border border-slate-100">
           <div className="grid grid-cols-12 divide-x divide-slate-100">
             {/* Main Content */}
             <div className={`${featured ? 'col-span-9' : 'col-span-12'} p-8`}>

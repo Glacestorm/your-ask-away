@@ -167,13 +167,14 @@ const StoreNavbar: React.FC = () => {
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center gap-1">
+            <div 
+              className="hidden lg:flex items-center gap-1"
+              onMouseLeave={() => setActiveMenu(null)}
+            >
               {navItems.map((item) => (
                 <div
                   key={item.id}
-                  className="relative"
                   onMouseEnter={() => item.megaMenu && setActiveMenu(item.id)}
-                  onMouseLeave={() => setActiveMenu(null)}
                 >
                   {item.megaMenu ? (
                     <button
@@ -198,20 +199,26 @@ const StoreNavbar: React.FC = () => {
                       {item.label}
                     </Link>
                   )}
-
-                  {/* Mega Menu */}
-                  <AnimatePresence>
-                    {item.megaMenu && activeMenu === item.id && (
-                      <MegaMenu
-                        sections={item.megaMenu.sections}
-                        featured={item.megaMenu.featured}
-                        onClose={() => setActiveMenu(null)}
-                      />
-                    )}
-                  </AnimatePresence>
                 </div>
               ))}
             </div>
+
+            {/* Mega Menu - Rendered outside nav items for proper positioning */}
+            <AnimatePresence>
+              {activeMenu && navItems.find(item => item.id === activeMenu)?.megaMenu && (
+                <div 
+                  className="absolute top-full left-0 right-0 z-50"
+                  onMouseEnter={() => {}}
+                  onMouseLeave={() => setActiveMenu(null)}
+                >
+                  <MegaMenu
+                    sections={navItems.find(item => item.id === activeMenu)!.megaMenu!.sections}
+                    featured={navItems.find(item => item.id === activeMenu)?.megaMenu?.featured}
+                    onClose={() => setActiveMenu(null)}
+                  />
+                </div>
+              )}
+            </AnimatePresence>
 
             {/* Right Section */}
             <div className="hidden lg:flex items-center gap-3">
