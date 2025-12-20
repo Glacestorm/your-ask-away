@@ -83,6 +83,9 @@ const MarketplaceAppDetail = lazy(() => import("./pages/MarketplaceAppDetail"));
 const PartnerPortal = lazy(() => import("./pages/PartnerPortal"));
 const DeveloperPortal = lazy(() => import("./pages/DeveloperPortal"));
 
+// Subscription pages - Phase 9
+const SubscriptionSuccess = lazy(() => import("./pages/subscription/Success"));
+
 const preloadRoute = (importFn: () => Promise<unknown>) => {
   startTransition(() => {
     importFn();
@@ -166,6 +169,8 @@ const App = () => (
                           <Route path="/marketplace/:appKey" element={<StreamingBoundary priority="high"><MarketplaceAppDetail /></StreamingBoundary>} />
                           <Route path="/partner-portal" element={<StreamingBoundary priority="medium"><PartnerPortal /></StreamingBoundary>} />
                           <Route path="/developers" element={<StreamingBoundary priority="medium"><DeveloperPortal /></StreamingBoundary>} />
+                          {/* Subscription - Phase 9 */}
+                          <Route path="/subscription/success" element={<StreamingBoundary priority="high"><SubscriptionSuccess /></StreamingBoundary>} />
                           <Route path="*" element={<NotFound />} />
                         </Routes>
                       </StreamingBoundary>
