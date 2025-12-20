@@ -11,9 +11,6 @@ const HeroSection: React.FC = () => {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
   const { t } = useLanguage();
 
-  const trustedBy = [
-    'Santander', 'BBVA', 'CaixaBank', 'Mapfre', 'Zurich'
-  ];
 
   return (
     <>
@@ -104,29 +101,14 @@ const HeroSection: React.FC = () => {
               </Button>
             </motion.div>
 
-            {/* Trust Indicators */}
+            {/* ObelixIA Logo with Brain */}
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="text-center"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              className="flex justify-center"
             >
-              <p className="text-sm text-slate-500 mb-6 uppercase tracking-wider">
-                Empresas que confían en nosotros
-              </p>
-              <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
-                {trustedBy.map((company, index) => (
-                  <motion.span
-                    key={company}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.5 + index * 0.1 }}
-                    className="text-lg font-medium text-slate-500/60 hover:text-slate-400 transition-colors cursor-default"
-                  >
-                    {company}
-                  </motion.span>
-                ))}
-              </div>
+              <ObelixiaLogo size="hero" variant="full" animated />
             </motion.div>
           </div>
         </div>
