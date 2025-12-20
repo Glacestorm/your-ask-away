@@ -15,3 +15,6 @@ export * from './legal';
 
 // Fabricación / Industria
 export * from './manufacturing';
+
+// Educación / ONGs
+export * from './education';
