@@ -96,7 +96,7 @@ export default function Marketplace() {
         )}
 
         {/* All Apps */}
-        <div className="space-y-4">
+        <div className="space-y-4" id="marketplace-results">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">
               {selectedCategory ? `Apps de ${selectedCategory.toUpperCase()}` : 'Todas las Apps'}
@@ -124,21 +124,24 @@ export default function Marketplace() {
                 <Store className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                 <h4 className="font-semibold mb-2">No se encontraron apps</h4>
                 <p className="text-muted-foreground mb-4">
-                  {searchTerm 
+                  {searchTerm
                     ? 'Prueba con otros términos de búsqueda'
-                    : 'No hay apps disponibles en esta categoría'
-                  }
+                    : 'No hay apps disponibles en esta categoría'}
                 </p>
-                <Button variant="outline" onClick={() => {
-                  setSearchTerm('');
-                  setSelectedCategory(null);
-                }}>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setSelectedCategory(null);
+                  }}
+                >
                   Ver todas las apps
                 </Button>
               </CardContent>
             </Card>
           )}
         </div>
+
 
         {/* CTA for Partners */}
         <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-primary/20">

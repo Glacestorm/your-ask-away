@@ -1,16 +1,17 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { 
-  Building2, 
-  Users, 
-  Receipt, 
-  Landmark, 
-  Truck, 
-  BarChart3, 
-  Briefcase, 
-  MessageSquare, 
-  Shield, 
-  Layers 
+import {
+  Building2,
+  Users,
+  Receipt,
+  Landmark,
+  Truck,
+  BarChart3,
+  Briefcase,
+  MessageSquare,
+  Shield,
+  Layers,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import type { AppCategory } from '@/types/marketplace';
 import { APP_CATEGORY_LABELS } from '@/types/marketplace';
 
@@ -46,25 +47,52 @@ const CATEGORY_COLORS: Record<AppCategory, string> = {
   other: 'from-gray-500/20 to-gray-600/10 hover:from-gray-500/30 hover:to-gray-600/20 border-gray-500/30',
 };
 
-export function MarketplaceCategories({ 
-  selectedCategory, 
-  onSelectCategory, 
-  counts = {} 
+export function MarketplaceCategories({
+  selectedCategory,
+  onSelectCategory,
+  counts = {},
 }: MarketplaceCategoriesProps) {
   const categories = Object.entries(APP_CATEGORY_LABELS) as [AppCategory, string][];
+
+  const scrollToResults = () => {
+    document.getElementById('marketplace-results')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  };
+
+  const handleSelect = (category: AppCategory | null) => {
+    const next = selectedCategory === category ? null : category;
+    onSelectCategory(next);
+
+    toast.info(next ? `Filtrando por ${APP_CATEGORY_LABELS[next]}` : 'Mostrando todas las apps', {
+      duration: 1200,
+    });
+
+    // Ensure it scrolls even if the list below reflows after data loads
+    requestAnimationFrame(scrollToResults);
+  };
+
+  const handleKeyDown = (category: AppCategory | null) => (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleSelect(category);
+    }
+  };
 
   return (
     <div className="space-y-3">
       <h3 className="text-lg font-semibold">Categorías</h3>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
         {/* All category */}
-        <Card 
+        <Card
+          role="button"
+          tabIndex={0}
           className={`cursor-pointer transition-all duration-200 ${
-            selectedCategory === null 
-              ? 'ring-2 ring-primary bg-primary/10' 
-              : 'hover:bg-muted/50'
+            selectedCategory === null ? 'ring-2 ring-primary bg-primary/10' : 'hover:bg-muted/50'
           }`}
-          onClick={() => onSelectCategory(null)}
+          onClick={() => handleSelect(null)}
+          onKeyDown={handleKeyDown(null)}
         >
           <CardContent className="p-3 flex flex-col items-center gap-2 text-center">
             <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
@@ -80,24 +108,27 @@ export function MarketplaceCategories({
         </Card>
 
         {categories.map(([key, label]) => (
-          <Card 
+          <Card
             key={key}
+            role="button"
+            tabIndex={0}
             className={`cursor-pointer transition-all duration-200 ${
-              selectedCategory === key 
-                ? `ring-2 ring-primary bg-gradient-to-br ${CATEGORY_COLORS[key]}` 
+              selectedCategory === key
+                ? `ring-2 ring-primary bg-gradient-to-br ${CATEGORY_COLORS[key]}`
                 : `hover:bg-gradient-to-br ${CATEGORY_COLORS[key]}`
             }`}
-            onClick={() => onSelectCategory(key)}
+            onClick={() => handleSelect(key)}
+            onKeyDown={handleKeyDown(key)}
           >
             <CardContent className="p-3 flex flex-col items-center gap-2 text-center">
-              <div className={`h-10 w-10 rounded-lg bg-gradient-to-br ${CATEGORY_COLORS[key]} flex items-center justify-center`}>
+              <div
+                className={`h-10 w-10 rounded-lg bg-gradient-to-br ${CATEGORY_COLORS[key]} flex items-center justify-center`}
+              >
                 {CATEGORY_ICONS[key]}
               </div>
               <div>
                 <p className="text-sm font-medium">{label}</p>
-                <p className="text-xs text-muted-foreground">
-                  {counts[key] || 0} apps
-                </p>
+                <p className="text-xs text-muted-foreground">{counts[key] || 0} apps</p>
               </div>
             </CardContent>
           </Card>
@@ -108,3 +139,4 @@ export function MarketplaceCategories({
 }
 
 export default MarketplaceCategories;
+
