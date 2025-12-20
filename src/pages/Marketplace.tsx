@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useMarketplaceApps, useMarketplaceStats } from '@/hooks/useMarketplace';
+import { useMarketplaceApps, useMarketplaceStats, useCategoryCounts } from '@/hooks/useMarketplace';
 import { AppCard, MarketplaceCategories, FeaturedApps, PremiumIntegrationsGrid } from '@/components/marketplace';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ export default function Marketplace() {
 
   const { data: apps, isLoading } = useMarketplaceApps(selectedCategory || undefined);
   const { data: stats } = useMarketplaceStats();
+  const { data: categoryCounts } = useCategoryCounts();
 
   const filteredApps = apps?.filter(app => 
     !searchTerm || 
@@ -81,6 +82,7 @@ export default function Marketplace() {
         <MarketplaceCategories 
           selectedCategory={selectedCategory}
           onSelectCategory={setSelectedCategory}
+          counts={categoryCounts || {}}
         />
 
         {/* Featured Apps - Only show when no filters */}
