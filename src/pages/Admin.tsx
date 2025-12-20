@@ -82,7 +82,8 @@ import { CNAEDashboard } from '@/components/cnae/CNAEDashboard';
 import BPMNDesigner from '@/components/bpmn/BPMNDesigner';
 import { ProcessMiningDashboard } from '@/components/bpmn/ProcessMiningDashboard';
 import { RoleCopilotPanel, NBADashboard, ContinuousControlsDashboard } from '@/components/ai-control';
-import { Zap } from 'lucide-react';
+import { VerticalPacksManager } from '@/components/admin/verticals';
+import { Zap, ShoppingCart } from 'lucide-react';
 
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
@@ -210,6 +211,7 @@ const Admin = () => {
       case 'ai-copilot': return 'Copilot Intel·ligent per Rol';
       case 'ai-nba': return 'Next Best Action (NBA)';
       case 'ai-controls': return 'Controls Continus';
+      case 'vertical-packs': return 'Verticales CNAE (Fase 7)';
       default: return '';
     }
   };
@@ -861,6 +863,17 @@ const Admin = () => {
           );
         }
         return <ProcessMiningDashboard entityType="opportunity" />;
+      case 'vertical-packs':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <VerticalPacksManager />;
       case 'administration':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
           return (
@@ -1372,6 +1385,29 @@ const Admin = () => {
                     <div>
                       <h4 className="font-medium text-sm text-pink-700 dark:text-pink-400">Controls Continus</h4>
                       <p className="text-xs text-muted-foreground">Monitorització i alertes automàtiques</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            {/* SECCIÓ: Verticales CNAE - FASE 7 */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-gradient bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 bg-clip-text text-transparent flex items-center gap-2">
+                <ShoppingCart className="h-5 w-5 text-emerald-500" /> Verticales CNAE (Fase 7)
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-emerald-500/10"
+                  onClick={() => handleSectionChange('vertical-packs')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                      <ShoppingCart className="h-4 w-4 text-emerald-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-emerald-700 dark:text-emerald-400">Packs Verticales</h4>
+                      <p className="text-xs text-muted-foreground">Retail, Construcción, Salud, Logística, Legal</p>
                     </div>
                   </CardContent>
                 </Card>
