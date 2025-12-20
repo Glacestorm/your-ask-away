@@ -20,7 +20,7 @@ export function ContinuousControlsDashboard() {
     alerts,
     isLoading,
     isRunning,
-    runAllControls,
+    runControls,
     acknowledgeAlert,
     resolveAlert,
   } = useContinuousControls();
@@ -92,7 +92,7 @@ export function ContinuousControlsDashboard() {
             <Shield className="h-5 w-5 text-primary" />
             Controls Continus
           </CardTitle>
-          <Button onClick={() => runAllControls()} disabled={isRunning} className="gap-2">
+          <Button onClick={() => runControls(undefined)} disabled={isRunning} className="gap-2">
             {isRunning ? <RefreshCw className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
             Executar Tots
           </Button>
@@ -143,7 +143,7 @@ export function ContinuousControlsDashboard() {
                     <p className="text-xs text-muted-foreground">{alert.description}</p>
                   </div>
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => acknowledgeAlert({ alertId: alert.id })}>
+                    <Button size="sm" variant="outline" onClick={() => acknowledgeAlert(alert.id)}>
                       Reconèixer
                     </Button>
                     <Button size="sm" onClick={() => resolveAlert({ alertId: alert.id })}>
