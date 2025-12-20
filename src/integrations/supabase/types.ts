@@ -10661,6 +10661,9 @@ export type Database = {
           max_users: number | null
           name: string
           sort_order: number
+          stripe_price_id: string | null
+          stripe_product_id: string | null
+          tier_key: string | null
           updated_at: string
         }
         Insert: {
@@ -10675,6 +10678,9 @@ export type Database = {
           max_users?: number | null
           name: string
           sort_order?: number
+          stripe_price_id?: string | null
+          stripe_product_id?: string | null
+          tier_key?: string | null
           updated_at?: string
         }
         Update: {
@@ -10689,6 +10695,9 @@ export type Database = {
           max_users?: number | null
           name?: string
           sort_order?: number
+          stripe_price_id?: string | null
+          stripe_product_id?: string | null
+          tier_key?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -13699,6 +13708,48 @@ export type Database = {
           created_at?: string | null
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean | null
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          tier_key: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          tier_key: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          tier_key?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
