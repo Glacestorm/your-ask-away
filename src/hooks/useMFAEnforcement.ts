@@ -5,7 +5,6 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from './useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { logAuthEvent } from '@/lib/security/auditLogger';
 
@@ -29,16 +28,56 @@ interface UseMFAEnforcementReturn {
 // Admin roles that require MFA
 const ADMIN_ROLES = ['superadmin', 'admin', 'director_comercial', 'responsable_comercial'];
 
+// Lazy import to avoid circular dependency issues
+let useAuthHook: (() => any) | null = null;
+
 export function useMFAEnforcement(): UseMFAEnforcementReturn | null {
-  const auth = useAuth();
   const [mfaStatus, setMFAStatus] = useState<MFAStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [showMFASetup, setShowMFASetup] = useState(false);
-
-  // Handle case where auth context is not ready
-  const user = auth?.user ?? null;
-  const userRole = auth?.userRole ?? null;
+  const [user, setUser] = useState<any>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   
+  // Safely get auth context
+  useEffect(() => {
+    const loadAuth = async () => {
+      try {
+        if (!useAuthHook) {
+          const authModule = await import('./useAuth');
+          useAuthHook = authModule.useAuth;
+        }
+      } catch (e) {
+        console.warn('Could not load auth hook:', e);
+      }
+    };
+    loadAuth();
+  }, []);
+
+  // Get current session directly from Supabase
+  useEffect(() => {
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser(session.user);
+        // Fetch role
+        const { data } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', session.user.id)
+          .limit(1)
+          .maybeSingle();
+        setUserRole(data?.role ?? null);
+      }
+    };
+    getSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   const isAdminRole = userRole ? ADMIN_ROLES.includes(userRole) : false;
 
   const checkMFAStatus = useCallback(async () => {
