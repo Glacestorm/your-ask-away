@@ -246,3 +246,24 @@ export function useMarketplaceStats() {
     },
   });
 }
+
+export function useCategoryCounts() {
+  return useQuery({
+    queryKey: ['category-counts'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('partner_applications')
+        .select('category')
+        .eq('status', 'published');
+
+      if (error) throw error;
+
+      const counts: Record<string, number> = {};
+      data?.forEach((app) => {
+        counts[app.category] = (counts[app.category] || 0) + 1;
+      });
+
+      return counts;
+    },
+  });
+}
