@@ -7,8 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   Receipt, CreditCard, Calculator, WifiOff, 
-  Plus, Minus, Trash2, Search, ShoppingCart, Euro
+  Plus, Minus, Trash2, Search, ShoppingCart, Euro, Coffee, UtensilsCrossed, Percent
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface CartItem {
   id: string;
@@ -23,12 +24,12 @@ export const RetailPOSModule: React.FC = () => {
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'mixed'>('cash');
 
   const demoProducts = [
-    { id: '1', name: 'Café Solo', price: 1.50, category: 'Bebidas' },
-    { id: '2', name: 'Café con Leche', price: 1.80, category: 'Bebidas' },
-    { id: '3', name: 'Tostada', price: 2.50, category: 'Comida' },
-    { id: '4', name: 'Croissant', price: 1.90, category: 'Comida' },
-    { id: '5', name: 'Zumo Naranja', price: 3.00, category: 'Bebidas' },
-    { id: '6', name: 'Bocadillo Jamón', price: 4.50, category: 'Comida' },
+    { id: '1', name: 'Café Solo', price: 1.50, category: 'Bebidas', icon: Coffee },
+    { id: '2', name: 'Café con Leche', price: 1.80, category: 'Bebidas', icon: Coffee },
+    { id: '3', name: 'Tostada', price: 2.50, category: 'Comida', icon: UtensilsCrossed },
+    { id: '4', name: 'Croissant', price: 1.90, category: 'Comida', icon: UtensilsCrossed },
+    { id: '5', name: 'Zumo Naranja', price: 3.00, category: 'Bebidas', icon: Coffee },
+    { id: '6', name: 'Bocadillo Jamón', price: 4.50, category: 'Comida', icon: UtensilsCrossed },
   ];
 
   const addToCart = (product: typeof demoProducts[0]) => {
@@ -69,14 +70,33 @@ export const RetailPOSModule: React.FC = () => {
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, scale: 0.9 },
+    visible: { opacity: 1, scale: 1 }
+  };
+
   return (
-    <div className="space-y-4">
+    <motion.div 
+      className="space-y-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Punto de Venta</h2>
-          <p className="text-muted-foreground">Sistema TPV completo</p>
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/25">
+            <ShoppingCart className="h-5 w-5 text-white" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">Punto de Venta</h2>
+            <p className="text-muted-foreground">Sistema TPV completo</p>
+          </div>
         </div>
-        <Badge variant="outline" className="gap-1">
+        <Badge variant="outline" className="gap-1 bg-emerald-500/10 text-emerald-500 border-emerald-500/30">
           <WifiOff className="h-3 w-3" />
           Modo Offline Disponible
         </Badge>
@@ -88,13 +108,15 @@ export const RetailPOSModule: React.FC = () => {
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <Search className="h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar producto..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="flex-1"
-                />
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar producto..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
               </div>
             </CardHeader>
             <CardContent>
@@ -105,59 +127,92 @@ export const RetailPOSModule: React.FC = () => {
                   <TabsTrigger value="comida">Comida</TabsTrigger>
                 </TabsList>
                 <TabsContent value="all">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {filteredProducts.map((product) => (
-                      <Card
-                        key={product.id}
-                        className="cursor-pointer hover:border-primary transition-colors"
-                        onClick={() => addToCart(product)}
-                      >
-                        <CardContent className="p-4 text-center">
-                          <ShoppingCart className="h-8 w-8 mx-auto mb-2 text-amber-500" />
-                          <p className="font-medium text-sm">{product.name}</p>
-                          <p className="text-lg font-bold text-primary">{product.price.toFixed(2)} €</p>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
+                  <motion.div 
+                    className="grid grid-cols-2 md:grid-cols-3 gap-3"
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                  >
+                    {filteredProducts.map((product) => {
+                      const ProductIcon = product.icon;
+                      return (
+                        <motion.div key={product.id} variants={itemVariants}>
+                          <Card
+                            className="cursor-pointer hover:border-amber-500/50 transition-all group"
+                            onClick={() => addToCart(product)}
+                          >
+                            <CardContent className="p-4 text-center">
+                              <div className="h-12 w-12 mx-auto mb-2 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center group-hover:from-amber-500/30 group-hover:to-orange-500/30 transition-colors">
+                                <ProductIcon className="h-6 w-6 text-amber-500" />
+                              </div>
+                              <p className="font-medium text-sm">{product.name}</p>
+                              <p className="text-lg font-bold text-amber-500">{product.price.toFixed(2)} €</p>
+                            </CardContent>
+                          </Card>
+                        </motion.div>
+                      );
+                    })}
+                  </motion.div>
                 </TabsContent>
                 <TabsContent value="bebidas">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <motion.div 
+                    className="grid grid-cols-2 md:grid-cols-3 gap-3"
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                  >
                     {filteredProducts
                       .filter(p => p.category === 'Bebidas')
-                      .map((product) => (
-                        <Card
-                          key={product.id}
-                          className="cursor-pointer hover:border-primary transition-colors"
-                          onClick={() => addToCart(product)}
-                        >
-                          <CardContent className="p-4 text-center">
-                            <ShoppingCart className="h-8 w-8 mx-auto mb-2 text-amber-500" />
-                            <p className="font-medium text-sm">{product.name}</p>
-                            <p className="text-lg font-bold text-primary">{product.price.toFixed(2)} €</p>
-                          </CardContent>
-                        </Card>
-                      ))}
-                  </div>
+                      .map((product) => {
+                        const ProductIcon = product.icon;
+                        return (
+                          <motion.div key={product.id} variants={itemVariants}>
+                            <Card
+                              className="cursor-pointer hover:border-amber-500/50 transition-all group"
+                              onClick={() => addToCart(product)}
+                            >
+                              <CardContent className="p-4 text-center">
+                                <div className="h-12 w-12 mx-auto mb-2 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center group-hover:from-amber-500/30 group-hover:to-orange-500/30 transition-colors">
+                                  <ProductIcon className="h-6 w-6 text-amber-500" />
+                                </div>
+                                <p className="font-medium text-sm">{product.name}</p>
+                                <p className="text-lg font-bold text-amber-500">{product.price.toFixed(2)} €</p>
+                              </CardContent>
+                            </Card>
+                          </motion.div>
+                        );
+                      })}
+                  </motion.div>
                 </TabsContent>
                 <TabsContent value="comida">
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <motion.div 
+                    className="grid grid-cols-2 md:grid-cols-3 gap-3"
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                  >
                     {filteredProducts
                       .filter(p => p.category === 'Comida')
-                      .map((product) => (
-                        <Card
-                          key={product.id}
-                          className="cursor-pointer hover:border-primary transition-colors"
-                          onClick={() => addToCart(product)}
-                        >
-                          <CardContent className="p-4 text-center">
-                            <ShoppingCart className="h-8 w-8 mx-auto mb-2 text-amber-500" />
-                            <p className="font-medium text-sm">{product.name}</p>
-                            <p className="text-lg font-bold text-primary">{product.price.toFixed(2)} €</p>
-                          </CardContent>
-                        </Card>
-                      ))}
-                  </div>
+                      .map((product) => {
+                        const ProductIcon = product.icon;
+                        return (
+                          <motion.div key={product.id} variants={itemVariants}>
+                            <Card
+                              className="cursor-pointer hover:border-amber-500/50 transition-all group"
+                              onClick={() => addToCart(product)}
+                            >
+                              <CardContent className="p-4 text-center">
+                                <div className="h-12 w-12 mx-auto mb-2 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center group-hover:from-amber-500/30 group-hover:to-orange-500/30 transition-colors">
+                                  <ProductIcon className="h-6 w-6 text-amber-500" />
+                                </div>
+                                <p className="font-medium text-sm">{product.name}</p>
+                                <p className="text-lg font-bold text-amber-500">{product.price.toFixed(2)} €</p>
+                              </CardContent>
+                            </Card>
+                          </motion.div>
+                        );
+                      })}
+                  </motion.div>
                 </TabsContent>
               </Tabs>
             </CardContent>
@@ -165,25 +220,34 @@ export const RetailPOSModule: React.FC = () => {
         </div>
 
         {/* Cart Panel */}
-        <Card className="h-fit">
-          <CardHeader className="pb-3">
+        <Card className="h-fit border-amber-500/20">
+          <CardHeader className="pb-3 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-transparent rounded-t-lg">
             <CardTitle className="flex items-center gap-2">
-              <Receipt className="h-5 w-5" />
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/25">
+                <Receipt className="h-4 w-4 text-white" />
+              </div>
               Ticket Actual
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <ScrollArea className="h-64">
               {cart.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
-                  Carrito vacío
-                </p>
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <div className="h-16 w-16 rounded-2xl bg-muted flex items-center justify-center mb-3">
+                    <ShoppingCart className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <p className="text-muted-foreground">Carrito vacío</p>
+                  <p className="text-xs text-muted-foreground">Añade productos para empezar</p>
+                </div>
               ) : (
                 <div className="space-y-2">
-                  {cart.map((item) => (
-                    <div
+                  {cart.map((item, index) => (
+                    <motion.div
                       key={item.id}
-                      className="flex items-center justify-between p-2 bg-muted/50 rounded-lg"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="flex items-center justify-between p-3 bg-muted/50 rounded-xl hover:bg-muted transition-all"
                     >
                       <div className="flex-1">
                         <p className="font-medium text-sm">{item.name}</p>
@@ -195,16 +259,16 @@ export const RetailPOSModule: React.FC = () => {
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="h-6 w-6"
+                          className="h-7 w-7 hover:bg-amber-500/20"
                           onClick={() => updateQuantity(item.id, -1)}
                         >
                           <Minus className="h-3 w-3" />
                         </Button>
-                        <span className="w-6 text-center text-sm">{item.quantity}</span>
+                        <span className="w-6 text-center text-sm font-medium">{item.quantity}</span>
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="h-6 w-6"
+                          className="h-7 w-7 hover:bg-amber-500/20"
                           onClick={() => updateQuantity(item.id, 1)}
                         >
                           <Plus className="h-3 w-3" />
@@ -212,13 +276,13 @@ export const RetailPOSModule: React.FC = () => {
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="h-6 w-6 text-destructive"
+                          className="h-7 w-7 text-destructive hover:bg-destructive/20"
                           onClick={() => removeFromCart(item.id)}
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               )}
@@ -226,59 +290,55 @@ export const RetailPOSModule: React.FC = () => {
 
             <div className="border-t pt-4 space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Subtotal</span>
+                <span className="text-muted-foreground">Subtotal</span>
                 <span>{total.toFixed(2)} €</span>
               </div>
-              <div className="flex justify-between text-sm text-muted-foreground">
-                <span>IVA (21%)</span>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground flex items-center gap-1">
+                  <Percent className="h-3 w-3" />
+                  IVA (21%)
+                </span>
                 <span>{tax.toFixed(2)} €</span>
               </div>
-              <div className="flex justify-between font-bold text-lg">
+              <div className="flex justify-between font-bold text-xl pt-2 border-t">
                 <span>Total</span>
-                <span>{totalWithTax.toFixed(2)} €</span>
+                <span className="text-amber-500">{totalWithTax.toFixed(2)} €</span>
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-3">
               <p className="text-sm font-medium">Método de pago</p>
               <div className="grid grid-cols-3 gap-2">
-                <Button
-                  variant={paymentMethod === 'cash' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setPaymentMethod('cash')}
-                  className="gap-1"
-                >
-                  <Euro className="h-3 w-3" />
-                  Efectivo
-                </Button>
-                <Button
-                  variant={paymentMethod === 'card' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setPaymentMethod('card')}
-                  className="gap-1"
-                >
-                  <CreditCard className="h-3 w-3" />
-                  Tarjeta
-                </Button>
-                <Button
-                  variant={paymentMethod === 'mixed' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setPaymentMethod('mixed')}
-                  className="gap-1"
-                >
-                  <Calculator className="h-3 w-3" />
-                  Mixto
-                </Button>
+                {[
+                  { key: 'cash', label: 'Efectivo', icon: Euro },
+                  { key: 'card', label: 'Tarjeta', icon: CreditCard },
+                  { key: 'mixed', label: 'Mixto', icon: Calculator },
+                ].map((method) => (
+                  <Button
+                    key={method.key}
+                    variant={paymentMethod === method.key ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setPaymentMethod(method.key as 'cash' | 'card' | 'mixed')}
+                    className={`gap-1 ${paymentMethod === method.key ? 'bg-amber-500 hover:bg-amber-600' : ''}`}
+                  >
+                    <method.icon className="h-3 w-3" />
+                    {method.label}
+                  </Button>
+                ))}
               </div>
             </div>
 
-            <Button className="w-full" size="lg" disabled={cart.length === 0}>
+            <Button 
+              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-lg shadow-amber-500/25" 
+              size="lg" 
+              disabled={cart.length === 0}
+            >
               <Receipt className="h-4 w-4 mr-2" />
               Cobrar {totalWithTax.toFixed(2)} €
             </Button>
           </CardContent>
         </Card>
       </div>
-    </div>
+    </motion.div>
   );
 };
