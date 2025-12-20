@@ -7272,6 +7272,45 @@ export type Database = {
           },
         ]
       }
+      industry_packs: {
+        Row: {
+          base_price: number
+          created_at: string
+          description: string | null
+          features: Json | null
+          id: string
+          included_modules: string[] | null
+          industry_key: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          base_price?: number
+          created_at?: string
+          description?: string | null
+          features?: Json | null
+          id?: string
+          included_modules?: string[] | null
+          industry_key: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          base_price?: number
+          created_at?: string
+          description?: string | null
+          features?: Json | null
+          id?: string
+          included_modules?: string[] | null
+          industry_key?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       installed_modules: {
         Row: {
           created_at: string | null
@@ -10575,6 +10614,84 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      pricing_addons: {
+        Row: {
+          addon_type: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+          updated_at: string
+        }
+        Insert: {
+          addon_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          price?: number
+          updated_at?: string
+        }
+        Update: {
+          addon_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pricing_tiers: {
+        Row: {
+          base_price: number
+          billing_period: string
+          created_at: string
+          description: string | null
+          features: Json | null
+          id: string
+          is_active: boolean
+          max_companies: number | null
+          max_users: number | null
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          base_price?: number
+          billing_period?: string
+          created_at?: string
+          description?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean
+          max_companies?: number | null
+          max_users?: number | null
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          base_price?: number
+          billing_period?: string
+          created_at?: string
+          description?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean
+          max_companies?: number | null
+          max_users?: number | null
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       process_events: {
         Row: {
