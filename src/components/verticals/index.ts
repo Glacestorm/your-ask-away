@@ -12,3 +12,6 @@ export * from './logistics';
 
 // Legal / Servicios Profesionales
 export * from './legal';
+
+// Fabricación / Industria
+export * from './manufacturing';
