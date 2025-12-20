@@ -86,6 +86,9 @@ const DeveloperPortal = lazy(() => import("./pages/DeveloperPortal"));
 // Subscription pages - Phase 9
 const SubscriptionSuccess = lazy(() => import("./pages/subscription/Success"));
 
+// Chat page - OpenAI Integration
+const Chat = lazy(() => import("./pages/Chat"));
+
 const preloadRoute = (importFn: () => Promise<unknown>) => {
   startTransition(() => {
     importFn();
@@ -171,6 +174,8 @@ const App = () => (
                           <Route path="/developers" element={<StreamingBoundary priority="medium"><DeveloperPortal /></StreamingBoundary>} />
                           {/* Subscription - Phase 9 */}
                           <Route path="/subscription/success" element={<StreamingBoundary priority="high"><SubscriptionSuccess /></StreamingBoundary>} />
+                          {/* Chat - OpenAI Integration */}
+                          <Route path="/chat" element={<StreamingBoundary priority="high"><Chat /></StreamingBoundary>} />
                           <Route path="*" element={<NotFound />} />
                         </Routes>
                       </StreamingBoundary>

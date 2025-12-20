@@ -266,3 +266,6 @@ verify_jwt = true
 
 [functions.run-continuous-controls]
 verify_jwt = false
+
+[functions.openai-chat]
+verify_jwt = false
