@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Shield, Zap, Globe, Lock, TrendingUp, Users, Building2, Sparkles, ArrowRight, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Shield, Zap, Globe, Lock, ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/LanguageContext';
 import StoreNavbar from '@/components/store/StoreNavbar';
 import HeroSection from '@/components/store/HeroSection';
@@ -18,102 +17,62 @@ import CartSidebar from '@/components/store/CartSidebar';
 import { MarketingTabs } from '@/components/marketing';
 
 const StoreLanding: React.FC = () => {
-  const [scrollY, setScrollY] = useState(0);
   const { t } = useLanguage();
-
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const stats = [
-    { value: '500+', label: t('store.stats.companies'), icon: Building2 },
-    { value: '99.9%', label: t('store.stats.uptime'), icon: Shield },
-    { value: '€2.5M', label: t('store.stats.processed'), icon: TrendingUp },
-    { value: '24/7', label: t('store.stats.support'), icon: Users },
-  ];
 
   const features = [
     { 
       icon: Shield, 
-      title: t('store.features.security.title'), 
-      description: t('store.features.security.desc')
+      title: 'Seguridad Bancaria',
+      description: 'Cumplimiento normativo PSD2, GDPR y estándares internacionales de seguridad.'
     },
     { 
       icon: Zap, 
-      title: t('store.features.ai.title'), 
-      description: t('store.features.ai.desc')
+      title: 'IA Integrada',
+      description: 'Predicciones, automatización y análisis en tiempo real con machine learning.'
     },
     { 
       icon: Globe, 
-      title: t('store.features.multisector.title'), 
-      description: t('store.features.multisector.desc')
+      title: 'Multi-Sector',
+      description: 'Adaptable a banca, seguros, retail y manufactura con módulos especializados.'
     },
     { 
       icon: Lock, 
-      title: t('store.features.compliance.title'), 
-      description: t('store.features.compliance.desc')
+      title: 'Arquitectura Modular',
+      description: 'Implementa solo lo que necesitas, escala cuando lo requieras.'
     },
   ];
 
   return (
-    <div id="inicio" className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-slate-950">
       <StoreNavbar />
       
-      {/* Hero Section */}
+      {/* Hero */}
       <HeroSection />
 
-      {/* Stats Bar */}
-      <section className="relative z-10 -mt-16">
-        <div className="container mx-auto px-4">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="bg-gradient-to-r from-emerald-600/20 via-emerald-500/10 to-emerald-600/20 backdrop-blur-xl rounded-2xl border border-emerald-500/30 p-8"
-          >
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              {stats.map((stat, index) => (
-                <motion.div
-                  key={stat.label}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.6 + index * 0.1 }}
-                  className="text-center"
-                >
-                  <stat.icon className="w-8 h-8 mx-auto mb-2 text-emerald-400" />
-                  <div className="text-3xl md:text-4xl font-bold text-white mb-1">{stat.value}</div>
-                  <div className="text-sm text-slate-400">{stat.label}</div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Features Grid */}
-      <section className="py-24 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-emerald-950/20 to-transparent" />
-        <div className="container mx-auto px-4 relative">
+      {/* Features Section */}
+      <section className="py-32 relative">
+        <div className="container mx-auto px-6">
+          {/* Section Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="max-w-2xl mx-auto text-center mb-20"
           >
-            <Badge className="mb-4 bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
-              {t('store.features.badge')}
-            </Badge>
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              {t('store.features.title')}
+            <span className="text-sm font-medium text-primary uppercase tracking-wider mb-4 block">
+              Por qué elegirnos
+            </span>
+            <h2 className="text-4xl md:text-5xl font-display font-semibold text-white mb-6">
+              Tecnología que impulsa resultados
             </h2>
-            <p className="text-xl text-slate-400 max-w-2xl mx-auto">
-              {t('store.features.subtitle')}
+            <p className="text-lg text-slate-400">
+              Diseñado para empresas que buscan la excelencia operativa 
+              y la transformación digital real.
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Features Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
               <motion.div
                 key={feature.title}
@@ -121,23 +80,23 @@ const StoreLanding: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="group bg-slate-800/50 backdrop-blur border border-slate-700/50 rounded-xl p-6 hover:border-emerald-500/50 transition-all duration-300"
+                className="group relative bg-slate-900/50 border border-slate-800 rounded-2xl p-8 hover:border-slate-700 transition-all duration-300"
               >
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <feature.icon className="w-6 h-6 text-white" />
+                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
+                  <feature.icon className="w-7 h-7 text-primary" />
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">{feature.title}</h3>
-                <p className="text-slate-400 text-sm">{feature.description}</p>
+                <h3 className="text-xl font-semibold text-white mb-3">{feature.title}</h3>
+                <p className="text-slate-400 leading-relaxed">{feature.description}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Marketing Section with Tabs */}
+      {/* Marketing Section */}
       <MarketingTabs />
 
-      {/* Featured Modules */}
+      {/* Modules Section */}
       <div id="modules">
         <FeaturedModules />
       </div>
@@ -145,48 +104,59 @@ const StoreLanding: React.FC = () => {
       {/* Premium Section */}
       <PremiumModulesSection />
 
-      {/* Bundles */}
+      {/* Bundles Section */}
       <div id="bundles">
         <BundlesSection />
       </div>
 
-      {/* Contact Section for Quote Requests */}
-      <section id="contact" className="py-24 relative">
-        <div className="container mx-auto px-4">
+      {/* Contact Section */}
+      <section id="contact" className="py-32 relative">
+        <div className="container mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="max-w-2xl mx-auto text-center"
+            className="max-w-3xl mx-auto"
           >
-            <Badge className="mb-4 bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
-              SOLICITAR COTIZACIÓN
-            </Badge>
-            <h2 className="text-4xl font-bold text-white mb-4">
-              Precios Personalizados
-            </h2>
-            <p className="text-slate-400 mb-8">
-              Contacte con nuestro equipo comercial para obtener una cotización adaptada a las necesidades de su empresa
-            </p>
-            <div className="bg-slate-800/50 rounded-xl border border-slate-700 p-8">
-              <p className="text-lg text-white mb-4">
-                📧 <a href="mailto:comercial@obelixia.com" className="text-emerald-400 hover:underline">comercial@obelixia.com</a>
+            <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl border border-slate-700/50 p-12 text-center">
+              <span className="text-sm font-medium text-primary uppercase tracking-wider mb-4 block">
+                Contacto Comercial
+              </span>
+              <h2 className="text-3xl md:text-4xl font-display font-semibold text-white mb-4">
+                ¿Necesitas una solución personalizada?
+              </h2>
+              <p className="text-lg text-slate-400 mb-8">
+                Nuestro equipo comercial te ayudará a encontrar la configuración perfecta para tu empresa.
               </p>
-              <p className="text-lg text-white mb-4">
-                📞 <a href="tel:+34606770033" className="text-emerald-400 hover:underline">+34 606 770 033</a>
-              </p>
-              <p className="text-slate-400 text-sm">
-                Jaime Fernández García - Representante Comercial
+              
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+                <a 
+                  href="mailto:comercial@obelixia.com"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-slate-900 font-medium rounded-full hover:bg-slate-100 transition-colors"
+                >
+                  comercial@obelixia.com
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+                <a 
+                  href="tel:+34606770033"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-slate-600 text-white font-medium rounded-full hover:bg-slate-800 transition-colors"
+                >
+                  +34 606 770 033
+                </a>
+              </div>
+              
+              <p className="text-sm text-slate-500">
+                Jaime Fernández García — Representante Comercial
               </p>
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* ROI Calculator / Pricing */}
+      {/* Pricing Section */}
       <div id="pricing">
         <ROICalculator />
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-6">
           <PricingExplanation />
         </div>
       </div>
@@ -194,61 +164,59 @@ const StoreLanding: React.FC = () => {
       {/* Trust Badges */}
       <TrustBadges />
 
-      {/* CTA Section */}
-      <section className="py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/20 via-emerald-500/10 to-emerald-600/20" />
-        <div className="absolute inset-0">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-3xl" />
-        </div>
+      {/* Final CTA Section */}
+      <section className="py-32 relative overflow-hidden">
+        {/* Background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-primary/5 to-slate-950" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[150px]" />
         
-        <div className="container mx-auto px-4 relative">
+        <div className="container mx-auto px-6 relative">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center"
+            className="max-w-3xl mx-auto text-center"
           >
-            <Sparkles className="w-12 h-12 mx-auto mb-6 text-emerald-400" />
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              {t('store.cta.title')}
+            <Sparkles className="w-12 h-12 mx-auto mb-6 text-primary" />
+            <h2 className="text-4xl md:text-5xl font-display font-semibold text-white mb-6">
+              Comienza tu transformación hoy
             </h2>
-            <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
-              {t('store.cta.subtitle')}
+            <p className="text-xl text-slate-400 mb-10 max-w-2xl mx-auto">
+              Únete a más de 500 empresas que ya están optimizando sus operaciones con ObelixIA.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Button 
                 size="lg"
                 onClick={() => document.getElementById('modules')?.scrollIntoView({ behavior: 'smooth' })}
-                className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-8 py-6 text-lg rounded-xl shadow-lg shadow-emerald-500/25"
+                className="h-14 px-8 text-base font-medium bg-white text-slate-900 hover:bg-slate-100 rounded-full shadow-xl"
               >
-                {t('store.cta.button1')}
+                Explorar Módulos
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
               <Link to="/auth">
                 <Button 
                   size="lg"
                   variant="outline"
-                  className="border-emerald-500/50 text-emerald-300 hover:bg-emerald-500/10 px-8 py-6 text-lg rounded-xl"
+                  className="h-14 px-8 text-base font-medium border-white/20 text-white hover:bg-white/10 rounded-full"
                 >
-                  {t('store.cta.button2')}
-                  <ChevronRight className="ml-2 w-5 h-5" />
+                  Crear Cuenta Gratis
                 </Button>
               </Link>
             </div>
 
-            <div className="mt-12 flex items-center justify-center gap-8 text-sm text-slate-400">
+            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-sm text-slate-400">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                {t('store.cta.note1')}
+                <CheckCircle2 className="w-5 h-5 text-primary" />
+                Sin tarjeta de crédito
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                {t('store.cta.note2')}
+                <CheckCircle2 className="w-5 h-5 text-primary" />
+                Configuración en minutos
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                {t('store.cta.note3')}
+                <CheckCircle2 className="w-5 h-5 text-primary" />
+                Soporte 24/7
               </div>
             </div>
           </motion.div>
