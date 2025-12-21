@@ -107,6 +107,7 @@ export function useNewsArticles(options: UseNewsArticlesOptions = {}) {
       let query = supabase
         .from('news_articles')
         .select('*')
+        .order('relevance_score', { ascending: false })
         .order('published_at', { ascending: false })
         .limit(limit);
 
