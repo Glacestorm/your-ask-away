@@ -321,7 +321,7 @@ export const SectorCard: React.FC<SectorCardProps> = ({ sector, index }) => {
             <Link to={sector.landing_page_url || `/sectors/${sector.slug}`} className="flex-1">
               <Button 
                 variant="outline" 
-                className="w-full h-10 text-sm border-slate-700 text-white hover:bg-slate-800 transition-all group-hover:border-primary/50"
+                className="w-full h-10 text-sm bg-slate-900/60 border-slate-700 text-white hover:text-white hover:bg-slate-800 transition-all group-hover:border-primary/50"
               >
                 Ver más
                 <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
