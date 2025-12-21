@@ -308,3 +308,15 @@ verify_jwt = false
 
 [functions.news-ai-search]
 verify_jwt = false
+
+[functions.analyze-sentiment]
+verify_jwt = true
+
+[functions.predict-nps]
+verify_jwt = true
+
+[functions.generate-followup-questions]
+verify_jwt = true
+
+[functions.process-closed-loop]
+verify_jwt = true

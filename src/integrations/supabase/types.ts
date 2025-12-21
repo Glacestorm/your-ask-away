@@ -5193,6 +5193,53 @@ export type Database = {
           },
         ]
       }
+      conversational_survey_flows: {
+        Row: {
+          condition_type: string
+          condition_value: Json
+          created_at: string
+          followup_question: string
+          id: string
+          is_active: boolean | null
+          options: Json | null
+          priority: number | null
+          question_type: string | null
+          survey_id: string
+        }
+        Insert: {
+          condition_type: string
+          condition_value: Json
+          created_at?: string
+          followup_question: string
+          id?: string
+          is_active?: boolean | null
+          options?: Json | null
+          priority?: number | null
+          question_type?: string | null
+          survey_id: string
+        }
+        Update: {
+          condition_type?: string
+          condition_value?: Json
+          created_at?: string
+          followup_question?: string
+          id?: string
+          is_active?: boolean | null
+          options?: Json | null
+          priority?: number | null
+          question_type?: string | null
+          survey_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversational_survey_flows_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "satisfaction_surveys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       copilot_action_log: {
         Row: {
           action_data: Json | null
@@ -6829,6 +6876,188 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "faq_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feedback_gamification: {
+        Row: {
+          badges: string[] | null
+          best_streak: number | null
+          coins_earned_30d: number | null
+          company_id: string
+          company_rank: number | null
+          contact_id: string | null
+          created_at: string
+          id: string
+          last_response_date: string | null
+          streak_days: number | null
+          surveys_completed: number | null
+          total_coins: number | null
+          updated_at: string
+        }
+        Insert: {
+          badges?: string[] | null
+          best_streak?: number | null
+          coins_earned_30d?: number | null
+          company_id: string
+          company_rank?: number | null
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          last_response_date?: string | null
+          streak_days?: number | null
+          surveys_completed?: number | null
+          total_coins?: number | null
+          updated_at?: string
+        }
+        Update: {
+          badges?: string[] | null
+          best_streak?: number | null
+          coins_earned_30d?: number | null
+          company_id?: string
+          company_rank?: number | null
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          last_response_date?: string | null
+          streak_days?: number | null
+          surveys_completed?: number | null
+          total_coins?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_gamification_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_gamification_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "company_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feedback_loops: {
+        Row: {
+          assigned_at: string | null
+          assigned_to: string | null
+          closed_at: string | null
+          company_id: string
+          contact_id: string | null
+          created_at: string
+          escalated_at: string | null
+          escalated_to: string | null
+          escalation_level: number | null
+          escalation_reason: string | null
+          followup_date: string | null
+          followup_notes: string | null
+          id: string
+          is_recovered: boolean | null
+          original_category: string | null
+          original_feedback: string | null
+          original_score: number | null
+          priority: string | null
+          recovery_score: number | null
+          recovery_survey_scheduled: string | null
+          recovery_survey_sent_at: string | null
+          resolution_notes: string | null
+          sla_deadline: string | null
+          source_id: string
+          source_type: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_to?: string | null
+          closed_at?: string | null
+          company_id: string
+          contact_id?: string | null
+          created_at?: string
+          escalated_at?: string | null
+          escalated_to?: string | null
+          escalation_level?: number | null
+          escalation_reason?: string | null
+          followup_date?: string | null
+          followup_notes?: string | null
+          id?: string
+          is_recovered?: boolean | null
+          original_category?: string | null
+          original_feedback?: string | null
+          original_score?: number | null
+          priority?: string | null
+          recovery_score?: number | null
+          recovery_survey_scheduled?: string | null
+          recovery_survey_sent_at?: string | null
+          resolution_notes?: string | null
+          sla_deadline?: string | null
+          source_id: string
+          source_type: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_to?: string | null
+          closed_at?: string | null
+          company_id?: string
+          contact_id?: string | null
+          created_at?: string
+          escalated_at?: string | null
+          escalated_to?: string | null
+          escalation_level?: number | null
+          escalation_reason?: string | null
+          followup_date?: string | null
+          followup_notes?: string | null
+          id?: string
+          is_recovered?: boolean | null
+          original_category?: string | null
+          original_feedback?: string | null
+          original_score?: number | null
+          priority?: string | null
+          recovery_score?: number | null
+          recovery_survey_scheduled?: string | null
+          recovery_survey_sent_at?: string | null
+          resolution_notes?: string | null
+          sla_deadline?: string | null
+          source_id?: string
+          source_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_loops_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_loops_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_loops_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "company_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_loops_escalated_to_fkey"
+            columns: ["escalated_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -8641,6 +8870,132 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      microsurvey_responses: {
+        Row: {
+          company_id: string
+          contact_id: string | null
+          created_at: string
+          id: string
+          microsurvey_id: string
+          open_feedback: string | null
+          responded_at: string
+          response_score: number | null
+          response_time_seconds: number | null
+          response_value: string
+          trigger_context: Json | null
+        }
+        Insert: {
+          company_id: string
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          microsurvey_id: string
+          open_feedback?: string | null
+          responded_at?: string
+          response_score?: number | null
+          response_time_seconds?: number | null
+          response_value: string
+          trigger_context?: Json | null
+        }
+        Update: {
+          company_id?: string
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          microsurvey_id?: string
+          open_feedback?: string | null
+          responded_at?: string
+          response_score?: number | null
+          response_time_seconds?: number | null
+          response_value?: string
+          trigger_context?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "microsurvey_responses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "microsurvey_responses_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "company_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "microsurvey_responses_microsurvey_id_fkey"
+            columns: ["microsurvey_id"]
+            isOneToOne: false
+            referencedRelation: "microsurveys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      microsurveys: {
+        Row: {
+          cooldown_days: number | null
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          max_impressions_per_contact: number | null
+          name: string
+          options: Json | null
+          priority: number | null
+          question_text: string
+          question_type: string
+          target_segments: string[] | null
+          trigger_conditions: Json | null
+          trigger_type: string
+          updated_at: string
+        }
+        Insert: {
+          cooldown_days?: number | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_impressions_per_contact?: number | null
+          name: string
+          options?: Json | null
+          priority?: number | null
+          question_text: string
+          question_type?: string
+          target_segments?: string[] | null
+          trigger_conditions?: Json | null
+          trigger_type: string
+          updated_at?: string
+        }
+        Update: {
+          cooldown_days?: number | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_impressions_per_contact?: number | null
+          name?: string
+          options?: Json | null
+          priority?: number | null
+          question_text?: string
+          question_type?: string
+          target_segments?: string[] | null
+          trigger_conditions?: Json | null
+          trigger_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "microsurveys_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ml_ab_tests: {
         Row: {
@@ -11568,6 +11923,72 @@ export type Database = {
             columns: ["application_id"]
             isOneToOne: false
             referencedRelation: "partner_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      predicted_nps: {
+        Row: {
+          actual_nps: number | null
+          behavioral_signals: Json | null
+          company_id: string
+          confidence_level: number
+          contact_id: string | null
+          created_at: string
+          id: string
+          predicted_score: number
+          prediction_accuracy: number | null
+          prediction_date: string
+          prediction_model: string
+          updated_at: string
+          valid_until: string
+          validated_at: string | null
+        }
+        Insert: {
+          actual_nps?: number | null
+          behavioral_signals?: Json | null
+          company_id: string
+          confidence_level: number
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          predicted_score: number
+          prediction_accuracy?: number | null
+          prediction_date?: string
+          prediction_model?: string
+          updated_at?: string
+          valid_until?: string
+          validated_at?: string | null
+        }
+        Update: {
+          actual_nps?: number | null
+          behavioral_signals?: Json | null
+          company_id?: string
+          confidence_level?: number
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          predicted_score?: number
+          prediction_accuracy?: number | null
+          prediction_date?: string
+          prediction_model?: string
+          updated_at?: string
+          valid_until?: string
+          validated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "predicted_nps_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "predicted_nps_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "company_contacts"
             referencedColumns: ["id"]
           },
         ]
@@ -14789,6 +15210,145 @@ export type Database = {
           },
         ]
       }
+      survey_throttling: {
+        Row: {
+          company_id: string
+          contact_id: string | null
+          created_at: string
+          id: string
+          last_ces_survey: string | null
+          last_csat_survey: string | null
+          last_microsurvey: string | null
+          last_nps_survey: string | null
+          next_survey_allowed: string | null
+          opt_out_reason: string | null
+          opted_out: boolean | null
+          opted_out_at: string | null
+          preferred_channel: string | null
+          preferred_frequency: string | null
+          surveys_completed_30d: number | null
+          surveys_received_30d: number | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          last_ces_survey?: string | null
+          last_csat_survey?: string | null
+          last_microsurvey?: string | null
+          last_nps_survey?: string | null
+          next_survey_allowed?: string | null
+          opt_out_reason?: string | null
+          opted_out?: boolean | null
+          opted_out_at?: string | null
+          preferred_channel?: string | null
+          preferred_frequency?: string | null
+          surveys_completed_30d?: number | null
+          surveys_received_30d?: number | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          contact_id?: string | null
+          created_at?: string
+          id?: string
+          last_ces_survey?: string | null
+          last_csat_survey?: string | null
+          last_microsurvey?: string | null
+          last_nps_survey?: string | null
+          next_survey_allowed?: string | null
+          opt_out_reason?: string | null
+          opted_out?: boolean | null
+          opted_out_at?: string | null
+          preferred_channel?: string | null
+          preferred_frequency?: string | null
+          surveys_completed_30d?: number | null
+          surveys_received_30d?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_throttling_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_throttling_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "company_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      survey_tokens: {
+        Row: {
+          campaign_id: string
+          company_id: string
+          contact_id: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          is_used: boolean | null
+          language: string | null
+          prefill_data: Json | null
+          token: string
+          used_at: string | null
+        }
+        Insert: {
+          campaign_id: string
+          company_id: string
+          contact_id?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          is_used?: boolean | null
+          language?: string | null
+          prefill_data?: Json | null
+          token: string
+          used_at?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          company_id?: string
+          contact_id?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          is_used?: boolean | null
+          language?: string | null
+          prefill_data?: Json | null
+          token?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_tokens_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "survey_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_tokens_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_tokens_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "company_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       system_diagnostic_logs: {
         Row: {
           checks: Json
@@ -16239,6 +16799,95 @@ export type Database = {
           },
         ]
       }
+      voc_analytics_cache: {
+        Row: {
+          avg_resolution_hours: number | null
+          calculated_at: string
+          ces_avg: number | null
+          csat_avg: number | null
+          detractors_count: number | null
+          emotion_distribution: Json | null
+          feedback_loops_closed: number | null
+          feedback_loops_total: number | null
+          gestor_id: string | null
+          id: string
+          nps_responses: number | null
+          nps_score: number | null
+          office: string | null
+          passives_count: number | null
+          period_end: string
+          period_start: string
+          predicted_nps_avg: number | null
+          prediction_accuracy_avg: number | null
+          prediction_coverage: number | null
+          promoters_count: number | null
+          recovery_rate: number | null
+          segment: string | null
+          sentiment_avg: number | null
+          top_topics: Json | null
+        }
+        Insert: {
+          avg_resolution_hours?: number | null
+          calculated_at?: string
+          ces_avg?: number | null
+          csat_avg?: number | null
+          detractors_count?: number | null
+          emotion_distribution?: Json | null
+          feedback_loops_closed?: number | null
+          feedback_loops_total?: number | null
+          gestor_id?: string | null
+          id?: string
+          nps_responses?: number | null
+          nps_score?: number | null
+          office?: string | null
+          passives_count?: number | null
+          period_end: string
+          period_start: string
+          predicted_nps_avg?: number | null
+          prediction_accuracy_avg?: number | null
+          prediction_coverage?: number | null
+          promoters_count?: number | null
+          recovery_rate?: number | null
+          segment?: string | null
+          sentiment_avg?: number | null
+          top_topics?: Json | null
+        }
+        Update: {
+          avg_resolution_hours?: number | null
+          calculated_at?: string
+          ces_avg?: number | null
+          csat_avg?: number | null
+          detractors_count?: number | null
+          emotion_distribution?: Json | null
+          feedback_loops_closed?: number | null
+          feedback_loops_total?: number | null
+          gestor_id?: string | null
+          id?: string
+          nps_responses?: number | null
+          nps_score?: number | null
+          office?: string | null
+          passives_count?: number | null
+          period_end?: string
+          period_start?: string
+          predicted_nps_avg?: number | null
+          prediction_accuracy_avg?: number | null
+          prediction_coverage?: number | null
+          promoters_count?: number | null
+          recovery_rate?: number | null
+          segment?: string | null
+          sentiment_avg?: number | null
+          top_topics?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voc_analytics_cache_gestor_id_fkey"
+            columns: ["gestor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vrp_mandates: {
         Row: {
           consent_id: string | null
@@ -16436,6 +17085,14 @@ export type Database = {
       calculate_nps: {
         Args: { p_detractors: number; p_passives: number; p_promoters: number }
         Returns: number
+      }
+      can_send_survey: {
+        Args: {
+          p_company_id: string
+          p_contact_id: string
+          p_survey_type: string
+        }
+        Returns: boolean
       }
       can_view_alert: {
         Args: { _alert_id: string; _user_id: string }
