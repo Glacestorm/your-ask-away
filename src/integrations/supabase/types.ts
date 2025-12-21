@@ -4201,6 +4201,56 @@ export type Database = {
           },
         ]
       }
+      company_news_profiles: {
+        Row: {
+          alert_threshold: number | null
+          auto_subscribe: boolean | null
+          cnae_codes: string[] | null
+          company_id: string
+          competitor_ids: string[] | null
+          created_at: string
+          custom_keywords: string[] | null
+          id: string
+          regions: string[] | null
+          sectors: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          alert_threshold?: number | null
+          auto_subscribe?: boolean | null
+          cnae_codes?: string[] | null
+          company_id: string
+          competitor_ids?: string[] | null
+          created_at?: string
+          custom_keywords?: string[] | null
+          id?: string
+          regions?: string[] | null
+          sectors?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          alert_threshold?: number | null
+          auto_subscribe?: boolean | null
+          cnae_codes?: string[] | null
+          company_id?: string
+          competitor_ids?: string[] | null
+          created_at?: string
+          custom_keywords?: string[] | null
+          id?: string
+          regions?: string[] | null
+          sectors?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_news_profiles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_photos: {
         Row: {
           company_id: string
@@ -9026,6 +9076,69 @@ export type Database = {
         }
         Relationships: []
       }
+      news_alert_log: {
+        Row: {
+          article_id: string | null
+          channel: string
+          created_at: string
+          delivered_at: string | null
+          error_message: string | null
+          external_id: string | null
+          id: string
+          message_content: string | null
+          read_at: string | null
+          recipient: string
+          sent_at: string | null
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          article_id?: string | null
+          channel: string
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          external_id?: string | null
+          id?: string
+          message_content?: string | null
+          read_at?: string | null
+          recipient: string
+          sent_at?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          article_id?: string | null
+          channel?: string
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          external_id?: string | null
+          id?: string
+          message_content?: string | null
+          read_at?: string | null
+          recipient?: string
+          sent_at?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_alert_log_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "news_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "news_alert_log_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       news_articles: {
         Row: {
           ai_summary: string | null
@@ -9112,6 +9225,319 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      news_audio_summaries: {
+        Row: {
+          articles_included: string[] | null
+          audio_url: string | null
+          created_at: string
+          date: string
+          duration_seconds: number | null
+          error_message: string | null
+          generated_at: string | null
+          id: string
+          language: string | null
+          script: string | null
+          status: string | null
+          transcript: string | null
+          updated_at: string
+          voice_id: string | null
+        }
+        Insert: {
+          articles_included?: string[] | null
+          audio_url?: string | null
+          created_at?: string
+          date: string
+          duration_seconds?: number | null
+          error_message?: string | null
+          generated_at?: string | null
+          id?: string
+          language?: string | null
+          script?: string | null
+          status?: string | null
+          transcript?: string | null
+          updated_at?: string
+          voice_id?: string | null
+        }
+        Update: {
+          articles_included?: string[] | null
+          audio_url?: string | null
+          created_at?: string
+          date?: string
+          duration_seconds?: number | null
+          error_message?: string | null
+          generated_at?: string | null
+          id?: string
+          language?: string | null
+          script?: string | null
+          status?: string | null
+          transcript?: string | null
+          updated_at?: string
+          voice_id?: string | null
+        }
+        Relationships: []
+      }
+      news_chat_conversations: {
+        Row: {
+          context: Json | null
+          created_at: string
+          id: string
+          last_message_at: string | null
+          title: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          context?: Json | null
+          created_at?: string
+          id?: string
+          last_message_at?: string | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          context?: Json | null
+          created_at?: string
+          id?: string
+          last_message_at?: string | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_chat_conversations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      news_chat_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          role: string
+          sources: Json | null
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          role: string
+          sources?: Json | null
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          role?: string
+          sources?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_chat_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "news_chat_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      news_commercial_opportunities: {
+        Row: {
+          action_items: Json | null
+          article_id: string | null
+          assigned_at: string | null
+          assigned_to: string | null
+          company_id: string | null
+          confidence_score: number | null
+          converted_at: string | null
+          created_at: string
+          description: string | null
+          expires_at: string | null
+          id: string
+          opportunity_type: string
+          outcome_notes: string | null
+          potential_value: number | null
+          priority: string | null
+          status: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          action_items?: Json | null
+          article_id?: string | null
+          assigned_at?: string | null
+          assigned_to?: string | null
+          company_id?: string | null
+          confidence_score?: number | null
+          converted_at?: string | null
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          opportunity_type: string
+          outcome_notes?: string | null
+          potential_value?: number | null
+          priority?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          action_items?: Json | null
+          article_id?: string | null
+          assigned_at?: string | null
+          assigned_to?: string | null
+          company_id?: string | null
+          confidence_score?: number | null
+          converted_at?: string | null
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          opportunity_type?: string
+          outcome_notes?: string | null
+          potential_value?: number | null
+          priority?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_commercial_opportunities_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "news_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "news_commercial_opportunities_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "news_commercial_opportunities_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      news_competitor_mentions: {
+        Row: {
+          article_id: string
+          competitor_id: string
+          detected_at: string
+          id: string
+          keyword_matched: string | null
+          mention_context: string | null
+          prominence: string | null
+          sentiment: string | null
+          sentiment_score: number | null
+        }
+        Insert: {
+          article_id: string
+          competitor_id: string
+          detected_at?: string
+          id?: string
+          keyword_matched?: string | null
+          mention_context?: string | null
+          prominence?: string | null
+          sentiment?: string | null
+          sentiment_score?: number | null
+        }
+        Update: {
+          article_id?: string
+          competitor_id?: string
+          detected_at?: string
+          id?: string
+          keyword_matched?: string | null
+          mention_context?: string | null
+          prominence?: string | null
+          sentiment?: string | null
+          sentiment_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_competitor_mentions_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "news_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "news_competitor_mentions_competitor_id_fkey"
+            columns: ["competitor_id"]
+            isOneToOne: false
+            referencedRelation: "news_competitors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      news_competitors: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          keywords: string[]
+          logo_url: string | null
+          name: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          keywords?: string[]
+          logo_url?: string | null
+          name: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          keywords?: string[]
+          logo_url?: string | null
+          name?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_competitors_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       news_fetch_logs: {
         Row: {
@@ -9214,6 +9640,61 @@ export type Database = {
           },
         ]
       }
+      news_lead_links: {
+        Row: {
+          article_id: string
+          company_id: string | null
+          id: string
+          link_type: string | null
+          linked_at: string
+          linked_by: string | null
+          relevance_reason: string | null
+          relevance_score: number | null
+        }
+        Insert: {
+          article_id: string
+          company_id?: string | null
+          id?: string
+          link_type?: string | null
+          linked_at?: string
+          linked_by?: string | null
+          relevance_reason?: string | null
+          relevance_score?: number | null
+        }
+        Update: {
+          article_id?: string
+          company_id?: string | null
+          id?: string
+          link_type?: string | null
+          linked_at?: string
+          linked_by?: string | null
+          relevance_reason?: string | null
+          relevance_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_lead_links_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "news_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "news_lead_links_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "news_lead_links_linked_by_fkey"
+            columns: ["linked_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       news_sources: {
         Row: {
           articles_fetched: number | null
@@ -9256,6 +9737,87 @@ export type Database = {
           name?: string
           updated_at?: string | null
           url?: string
+        }
+        Relationships: []
+      }
+      news_trend_history: {
+        Row: {
+          article_ids: string[] | null
+          avg_sentiment: number | null
+          created_at: string
+          date: string
+          id: string
+          mention_count: number
+          trend_name: string
+        }
+        Insert: {
+          article_ids?: string[] | null
+          avg_sentiment?: number | null
+          created_at?: string
+          date: string
+          id?: string
+          mention_count?: number
+          trend_name: string
+        }
+        Update: {
+          article_ids?: string[] | null
+          avg_sentiment?: number | null
+          created_at?: string
+          date?: string
+          id?: string
+          mention_count?: number
+          trend_name?: string
+        }
+        Relationships: []
+      }
+      news_trend_predictions: {
+        Row: {
+          analysis_date: string
+          analysis_factors: Json | null
+          confidence_score: number | null
+          created_at: string
+          current_mentions: number | null
+          id: string
+          peak_prediction_date: string | null
+          predicted_growth: number | null
+          status: string | null
+          supporting_articles: string[] | null
+          trend_category: string | null
+          trend_name: string
+          updated_at: string
+          velocity_score: number | null
+        }
+        Insert: {
+          analysis_date?: string
+          analysis_factors?: Json | null
+          confidence_score?: number | null
+          created_at?: string
+          current_mentions?: number | null
+          id?: string
+          peak_prediction_date?: string | null
+          predicted_growth?: number | null
+          status?: string | null
+          supporting_articles?: string[] | null
+          trend_category?: string | null
+          trend_name: string
+          updated_at?: string
+          velocity_score?: number | null
+        }
+        Update: {
+          analysis_date?: string
+          analysis_factors?: Json | null
+          confidence_score?: number | null
+          created_at?: string
+          current_mentions?: number | null
+          id?: string
+          peak_prediction_date?: string | null
+          predicted_growth?: number | null
+          status?: string | null
+          supporting_articles?: string[] | null
+          trend_category?: string | null
+          trend_name?: string
+          updated_at?: string
+          velocity_score?: number | null
         }
         Relationships: []
       }
@@ -10688,6 +11250,51 @@ export type Database = {
           value?: number
         }
         Relationships: []
+      }
+      personalized_news_scores: {
+        Row: {
+          article_id: string
+          calculated_at: string
+          company_id: string
+          id: string
+          impact_factors: Json | null
+          personalized_score: number
+          relevance_reasons: string[] | null
+        }
+        Insert: {
+          article_id: string
+          calculated_at?: string
+          company_id: string
+          id?: string
+          impact_factors?: Json | null
+          personalized_score: number
+          relevance_reasons?: string[] | null
+        }
+        Update: {
+          article_id?: string
+          calculated_at?: string
+          company_id?: string
+          id?: string
+          impact_factors?: Json | null
+          personalized_score?: number
+          relevance_reasons?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "personalized_news_scores_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "news_articles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "personalized_news_scores_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pipeline_snapshots: {
         Row: {
@@ -13776,6 +14383,62 @@ export type Database = {
             columns: ["device_fingerprint_id"]
             isOneToOne: false
             referencedRelation: "user_device_fingerprints"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_alert_channels: {
+        Row: {
+          alert_levels: string[] | null
+          channel_config: Json
+          channel_type: string
+          cnae_filter: string[] | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          is_verified: boolean | null
+          quiet_hours_end: string | null
+          quiet_hours_start: string | null
+          sector_filter: string[] | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          alert_levels?: string[] | null
+          channel_config?: Json
+          channel_type: string
+          cnae_filter?: string[] | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          sector_filter?: string[] | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          alert_levels?: string[] | null
+          channel_config?: Json
+          channel_type?: string
+          cnae_filter?: string[] | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          sector_filter?: string[] | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_alert_channels_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
