@@ -5,10 +5,6 @@ import { MarketingTabs } from '../MarketingTabs';
 import { BrowserRouter } from 'react-router-dom';
 
 // Mock child components
-vi.mock('../SectorsGrid', () => ({
-  SectorsGrid: () => <div data-testid="sectors-grid">SectorsGrid</div>,
-}));
-
 vi.mock('../ComparisonTable', () => ({
   ComparisonTable: () => <div data-testid="comparison-table">ComparisonTable</div>,
 }));
@@ -29,7 +25,6 @@ describe('MarketingTabs', () => {
   it('should render all tab triggers', () => {
     renderWithRouter(<MarketingTabs />);
     
-    expect(screen.getByText('Sectores')).toBeInTheDocument();
     expect(screen.getByText('Comparativas')).toBeInTheDocument();
     expect(screen.getByText('Seguridad')).toBeInTheDocument();
     expect(screen.getByText('Demo')).toBeInTheDocument();
@@ -38,20 +33,11 @@ describe('MarketingTabs', () => {
   it('should render section title', () => {
     renderWithRouter(<MarketingTabs />);
     
-    expect(screen.getByText('Soluciones por Sector')).toBeInTheDocument();
+    expect(screen.getByText('Por qué elegir Obelixia')).toBeInTheDocument();
   });
 
-  it('should show sectors grid by default', () => {
+  it('should show comparison table by default', () => {
     renderWithRouter(<MarketingTabs />);
-    
-    expect(screen.getByTestId('sectors-grid')).toBeInTheDocument();
-  });
-
-  it('should switch to comparison tab when clicked', () => {
-    renderWithRouter(<MarketingTabs />);
-    
-    const comparisonTab = screen.getByText('Comparativas');
-    fireEvent.click(comparisonTab);
     
     expect(screen.getByTestId('comparison-table')).toBeInTheDocument();
   });
