@@ -14,6 +14,7 @@ import { CaseStudiesCarousel } from './CaseStudiesCarousel';
 import { ClientLogosBar } from './ClientLogosBar';
 import { AggregatedMetrics } from './AggregatedMetrics';
 import { AIRecommenderPanel } from './AIRecommenderPanel';
+import { TestimonialsCarousel } from './TestimonialsCarousel';
 import { Link } from 'react-router-dom';
 
 const companySizeFilters = [
@@ -241,8 +242,13 @@ export const SectorsShowcase: React.FC = () => {
             </div>
 
             {/* Featured case study carousel */}
-            <div className="max-w-3xl mx-auto">
+            <div className="max-w-3xl mx-auto mb-12">
               <CaseStudiesCarousel sectors={sectorsWithCaseStudies} />
+            </div>
+
+            {/* Testimonials */}
+            <div className="max-w-3xl mx-auto">
+              <TestimonialsCarousel />
             </div>
 
             {/* CTA to case studies page */}
