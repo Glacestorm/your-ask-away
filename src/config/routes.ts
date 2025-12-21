@@ -168,7 +168,7 @@ export const dashboardRoutes: RouteConfig[] = [
 // RUTAS ADMIN (Requieren roles especiales)
 // ============================================
 export const adminRoutes: RouteConfig[] = [
-  { path: '/admin', component: Admin, layout: 'dashboard', priority: 'medium', delay: 50, meta: { title: 'Admin', requiresAuth: true, roles: ['admin', 'superadmin'] } },
+  { path: '/admin', component: Admin, layout: 'none', priority: 'medium', delay: 50, meta: { title: 'Admin', requiresAuth: true, roles: ['admin', 'superadmin'] } },
   { path: '/obelixia-admin', component: ObelixiaTeamAdmin, layout: 'dashboard', priority: 'medium', delay: 50, meta: { title: 'Obelixia Admin', requiresAuth: true, roles: ['superadmin'] } },
 ];
 
