@@ -119,7 +119,7 @@ export const SectorsShowcase: React.FC = () => {
               className={`h-12 rounded-full gap-2 ${
                 showAIRecommender 
                   ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0' 
-                  : 'border-slate-700 text-white hover:bg-slate-800'
+                  : 'bg-slate-900/60 border-slate-700 text-white hover:text-white hover:bg-slate-800'
               }`}
             >
               <Sparkles className="w-4 h-4" />
@@ -198,7 +198,7 @@ export const SectorsShowcase: React.FC = () => {
             </p>
             <Button
               variant="outline"
-              className="mt-4 border-slate-700 text-white hover:bg-slate-800"
+              className="mt-4 bg-slate-900/60 border-slate-700 text-white hover:text-white hover:bg-slate-800"
               onClick={() => {
                 setSearchTerm('');
                 setActiveFilter('all');
