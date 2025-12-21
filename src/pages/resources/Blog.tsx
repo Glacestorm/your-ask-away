@@ -72,9 +72,6 @@ const Blog: React.FC = () => {
         </div>
       </header>
 
-      {/* Ticker */}
-      {tickerItems.length > 0 && <NewsTicker items={tickerItems} />}
-
       {/* Premium Hero Section */}
       <section className="py-10 px-4">
         <div className="container mx-auto max-w-7xl">
@@ -113,6 +110,9 @@ const Blog: React.FC = () => {
           />
         </div>
       </section>
+
+      {/* Ticker (justo antes de la lista de noticias) */}
+      {tickerItems.length > 0 && <NewsTicker items={tickerItems} />}
 
       {/* Main Content */}
       <section className="px-4 pb-20">

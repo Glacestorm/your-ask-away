@@ -4,6 +4,7 @@ import { ArrowRight, Clock, TrendingUp, Sparkles, Shield, Play } from 'lucide-re
 import { Button } from '@/components/ui/button';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { getNewsImageFallback } from '@/lib/news/placeholders';
 
 interface NewsArticle {
   id: string;
@@ -60,9 +61,15 @@ const PremiumNewsHero: React.FC<PremiumNewsHeroProps> = ({ article, onReadMore }
     locale: es 
   });
 
-  const imageCredit = article.image_credit || article.source_name;
+  const hasOriginalImage = Boolean(article.image_url);
+  const imageUrl = hasOriginalImage
+    ? article.image_url
+    : getNewsImageFallback(article.id, article.category || article.source_name);
 
-  return (
+  const imageCredit = hasOriginalImage
+    ? (article.image_credit || article.source_name)
+    : 'Ilustración (ObelixIA)';
+
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -75,7 +82,7 @@ const PremiumNewsHero: React.FC<PremiumNewsHeroProps> = ({ article, onReadMore }
           initial={{ scale: 1.1 }}
           animate={{ scale: 1 }}
           transition={{ duration: 20, ease: "linear" }}
-          src={article.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1920&h=1080&fit=crop'}
+          src={imageUrl}
           alt={article.title}
           className="w-full h-full object-cover"
         />

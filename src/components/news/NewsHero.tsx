@@ -4,6 +4,7 @@ import { ArrowRight, Clock, TrendingUp, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { getNewsImageFallback } from '@/lib/news/placeholders';
 
 interface NewsArticle {
   id: string;
@@ -52,7 +53,7 @@ const NewsHero: React.FC<NewsHeroProps> = ({ article, onReadMore }) => {
       {/* Background Image with Parallax Effect */}
       <div className="absolute inset-0">
         <motion.img
-          src={article.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1920&h=1080&fit=crop'}
+          src={article.image_url || getNewsImageFallback(article.id, article.category || article.source_name)}
           alt={article.title}
           className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
         />
