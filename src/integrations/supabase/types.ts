@@ -13215,6 +13215,90 @@ export type Database = {
         }
         Relationships: []
       }
+      sectors: {
+        Row: {
+          ai_capabilities: Json | null
+          availability_status: string | null
+          case_studies: Json | null
+          cnae_codes: string[] | null
+          created_at: string
+          demo_video_url: string | null
+          description: string | null
+          features: Json | null
+          gradient_from: string | null
+          gradient_to: string | null
+          icon_name: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          is_featured: boolean | null
+          landing_page_url: string | null
+          modules_recommended: string[] | null
+          name: string
+          order_position: number | null
+          regulations: Json | null
+          short_description: string | null
+          slug: string
+          stats: Json | null
+          target_company_sizes: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          ai_capabilities?: Json | null
+          availability_status?: string | null
+          case_studies?: Json | null
+          cnae_codes?: string[] | null
+          created_at?: string
+          demo_video_url?: string | null
+          description?: string | null
+          features?: Json | null
+          gradient_from?: string | null
+          gradient_to?: string | null
+          icon_name?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          landing_page_url?: string | null
+          modules_recommended?: string[] | null
+          name: string
+          order_position?: number | null
+          regulations?: Json | null
+          short_description?: string | null
+          slug: string
+          stats?: Json | null
+          target_company_sizes?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          ai_capabilities?: Json | null
+          availability_status?: string | null
+          case_studies?: Json | null
+          cnae_codes?: string[] | null
+          created_at?: string
+          demo_video_url?: string | null
+          description?: string | null
+          features?: Json | null
+          gradient_from?: string | null
+          gradient_to?: string | null
+          icon_name?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          landing_page_url?: string | null
+          modules_recommended?: string[] | null
+          name?: string
+          order_position?: number | null
+          regulations?: Json | null
+          short_description?: string | null
+          slug?: string
+          stats?: Json | null
+          target_company_sizes?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       security_audit_logs: {
         Row: {
           action: string

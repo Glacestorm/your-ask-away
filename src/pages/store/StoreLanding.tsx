@@ -20,6 +20,7 @@ import PremiumNewsCard from '@/components/news/PremiumNewsCard';
 import NewsSearch from '@/components/news/NewsSearch';
 import { useNewsArticles } from '@/hooks/useNewsArticles';
 import { FAQSection, FAQChatWidget } from '@/components/faq';
+import { SectorsShowcase } from '@/components/sectors';
 
 const StoreLanding: React.FC = () => {
   const { t } = useLanguage();
@@ -176,6 +177,9 @@ const StoreLanding: React.FC = () => {
 
       {/* Trust Badges */}
       <TrustBadges />
+
+      {/* Sectors Showcase */}
+      <SectorsShowcase />
 
       {/* Final CTA Section */}
       <section className="py-32 relative overflow-hidden">
