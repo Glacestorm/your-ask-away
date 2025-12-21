@@ -6,7 +6,7 @@ import {
   FileText, Euro, Package, Receipt, Settings, 
   BarChart3, Users, Shield, Code, Palette, 
   Store, Layers, BookOpen, Activity, Rocket,
-  ChevronLeft, ChevronRight, Home, LayoutGrid
+  ChevronLeft, ChevronRight, Home, LayoutGrid, Newspaper
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
@@ -28,6 +28,7 @@ import WhiteLabelConfig from '@/components/admin/WhiteLabelConfig';
 import APIDocumentation from '@/components/admin/APIDocumentation';
 import { CMSDashboard } from '@/components/cms-admin';
 import SecurityOnboardingGuide from '@/components/obelixia-admin/SecurityOnboardingGuide';
+import { NewsAdminDashboard } from '@/components/obelixia-admin/news';
 
 const ObelixiaTeamAdmin: React.FC = () => {
   const { isSuperAdmin, isAdmin } = useAuth();
