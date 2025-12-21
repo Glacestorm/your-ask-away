@@ -81,34 +81,87 @@ function extractImageFromRSS(itemXml: string): { url: string | null; credit: str
 }
 
 // Use Firecrawl to get OG image (handles JS-rendered pages)
-async function fetchOgImageWithFirecrawl(articleUrl: string, supabaseUrl: string, supabaseServiceKey: string): Promise<{ url: string | null; credit: string | null }> {
+async function fetchOgImageWithFirecrawl(articleUrl: string): Promise<{ url: string | null; credit: string | null }> {
   try {
+    const apiKey = Deno.env.get('FIRECRAWL_API_KEY');
+    if (!apiKey) return { url: null, credit: null };
+
+    let formattedUrl = articleUrl.trim();
+    if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+      formattedUrl = `https://${formattedUrl}`;
+    }
+
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
 
-    const funcUrl = `${supabaseUrl}/functions/v1/firecrawl-og-image`;
-
-    const response = await fetch(funcUrl, {
+    const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${supabaseServiceKey}`,
       },
-      body: JSON.stringify({ url: articleUrl }),
+      body: JSON.stringify({
+        url: formattedUrl,
+        formats: ['rawHtml'],
+        onlyMainContent: false,
+        waitFor: 2000,
+      }),
       signal: controller.signal,
     });
 
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      console.warn(`Firecrawl OG fetch failed for ${articleUrl}: ${response.status}`);
       return { url: null, credit: null };
     }
 
     const data = await response.json();
-    return { url: data.image_url || null, credit: data.credit || null };
-  } catch (err) {
-    console.warn('fetchOgImageWithFirecrawl error:', err);
+    const html: string =
+      data?.data?.rawHtml ||
+      data?.rawHtml ||
+      data?.data?.html ||
+      data?.html ||
+      '';
+
+    if (!html) return { url: null, credit: null };
+
+    const resolveUrl = (raw: string) => {
+      const cleaned = raw.trim().replace(/&amp;/g, '&');
+      if (!cleaned) return null;
+
+      try {
+        if (cleaned.startsWith('//')) {
+          const base = new URL(formattedUrl);
+          return `${base.protocol}${cleaned}`;
+        }
+        if (cleaned.startsWith('/')) {
+          return new URL(cleaned, formattedUrl).toString();
+        }
+        return new URL(cleaned).toString();
+      } catch {
+        return null;
+      }
+    };
+
+    const ogMatch =
+      html.match(/<meta[^>]*property=["']og:image:secure_url["'][^>]*content=["']([^"']+)["'][^>]*>/i) ||
+      html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image:secure_url["'][^>]*>/i) ||
+      html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["'][^>]*>/i) ||
+      html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["'][^>]*>/i);
+
+    const twitterMatch =
+      html.match(/<meta[^>]*name=["']twitter:image:src["'][^>]*content=["']([^"']+)["'][^>]*>/i) ||
+      html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']twitter:image:src["'][^>]*>/i) ||
+      html.match(/<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["'][^>]*>/i) ||
+      html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']twitter:image["'][^>]*>/i);
+
+    const imageUrl = resolveUrl((ogMatch?.[1] || twitterMatch?.[1] || '').trim());
+
+    const siteMatch = html.match(/<meta[^>]*property=["']og:site_name["'][^>]*content=["']([^"']+)["'][^>]*>/i);
+    const credit = siteMatch?.[1]?.trim() || null;
+
+    return { url: imageUrl, credit };
+  } catch {
     return { url: null, credit: null };
   }
 }
@@ -352,7 +405,7 @@ const UNIQUE_IMAGES = [
   // Finance & Economy
   'photo-1611974789855-9c2a0a7236a3', 'photo-1579532537598-459ecdaf39cc', 'photo-1554224155-6726b3ff858f',
   'photo-1460925895917-afdab827c52f', 'photo-1590283603385-17ffb3a7f29f', 'photo-1565688534245-05d6b5be184a',
-  'photo-1591696205602-2f950c417cb9', 'photo-1611974789855-9c2a0a7236a3', 'photo-1434626881859-194d67b2b86f',
+  'photo-1591696205602-2f950c417cb9', 'photo-1434626881859-194d67b2b86f',
   // Legal & Documents
   'photo-1589829545856-d10d557cf95f', 'photo-1450101499163-c8848c66ca85', 'photo-1507003211169-0a1dd7228f2d',
   'photo-1521791055366-0d553872125f', 'photo-1505664194779-8beaceb93744', 'photo-1423592707957-3b212afa6733',
@@ -380,16 +433,15 @@ const UNIQUE_IMAGES = [
   'photo-1504384308090-c894fdcc538d', 'photo-1556155092-490a1ba16284', 'photo-1516321318423-f06f85e504b3',
 ];
 
-// Get a unique image based on article title and category - NEVER the same
-function getUniqueImageForArticle(title: string, category: string): string {
-  // Create a unique hash from title + category
-  const combined = `${title}-${category}-${Date.now()}`;
+// Get a unique image based on article title, category and source URL (stable and never repeating)
+function getUniqueImageForArticle(title: string, category: string, sourceUrl: string): string {
+  const combined = `${title}-${category}-${sourceUrl}`;
   const hash = simpleHash(combined);
   const imageIndex = hash % UNIQUE_IMAGES.length;
   const imageId = UNIQUE_IMAGES[imageIndex];
-  
-  // Add unique signature to prevent caching of same image
-  const signature = (hash % 1000).toString().padStart(3, '0');
+
+  // Signature prevents overly aggressive caching and creates visual variety
+  const signature = (hash % 100000).toString();
   return `https://images.unsplash.com/${imageId}?w=800&h=450&fit=crop&sig=${signature}`;
 }
 
@@ -500,7 +552,7 @@ serve(async (req) => {
               let finalImageCredit: string | null = null;
 
               // 1) Try Firecrawl (handles JS-rendered pages)
-              const firecrawlData = await fetchOgImageWithFirecrawl(item.link, supabaseUrl, supabaseServiceKey);
+              const firecrawlData = await fetchOgImageWithFirecrawl(item.link);
               finalImageUrl = firecrawlData.url;
               finalImageCredit = firecrawlData.credit;
 
@@ -519,7 +571,7 @@ serve(async (req) => {
 
               // 4) Use UNIQUE fallback image if still no image found (never repeating)
               if (!finalImageUrl) {
-                finalImageUrl = getUniqueImageForArticle(item.title, source.category);
+                finalImageUrl = getUniqueImageForArticle(item.title, source.category, item.link);
                 finalImageCredit = 'Unsplash';
               }
               
