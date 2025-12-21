@@ -59,13 +59,14 @@ const DeferredComponents = () => {
       });
     };
 
-    const timer = typeof requestIdleCallback !== 'undefined'
+    const hasRequestIdleCallback = typeof requestIdleCallback !== 'undefined';
+    const timer = hasRequestIdleCallback
       ? requestIdleCallback(scheduleDeferred, { timeout: 2000 })
       : setTimeout(scheduleDeferred, 1000);
     
     return () => {
-      if (typeof requestIdleCallback !== 'undefined' && typeof timer === 'number') {
-        cancelIdleCallback(timer);
+      if (hasRequestIdleCallback) {
+        cancelIdleCallback(timer as number);
       } else {
         clearTimeout(timer as number);
       }
