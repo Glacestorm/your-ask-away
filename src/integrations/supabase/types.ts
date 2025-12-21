@@ -8996,6 +8996,69 @@ export type Database = {
           },
         ]
       }
+      news_articles: {
+        Row: {
+          ai_summary: string | null
+          category: string
+          content: string | null
+          created_at: string
+          excerpt: string | null
+          fetched_at: string
+          id: string
+          image_url: string | null
+          is_featured: boolean | null
+          published_at: string
+          read_count: number | null
+          relevance_score: number | null
+          slug: string
+          source_name: string
+          source_url: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          ai_summary?: string | null
+          category?: string
+          content?: string | null
+          created_at?: string
+          excerpt?: string | null
+          fetched_at?: string
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean | null
+          published_at?: string
+          read_count?: number | null
+          relevance_score?: number | null
+          slug: string
+          source_name: string
+          source_url: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          ai_summary?: string | null
+          category?: string
+          content?: string | null
+          created_at?: string
+          excerpt?: string | null
+          fetched_at?: string
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean | null
+          published_at?: string
+          read_count?: number | null
+          relevance_score?: number | null
+          slug?: string
+          source_name?: string
+          source_url?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notification_channels: {
         Row: {
           channel_name: string
