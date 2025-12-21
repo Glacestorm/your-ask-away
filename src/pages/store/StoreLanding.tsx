@@ -236,8 +236,6 @@ const StoreLanding: React.FC = () => {
       </section>
 
       {/* News Ticker (justo antes de Noticias) */}
-      {tickerItems.length > 0 && <NewsTicker items={tickerItems} />}
-
       {/* FAQ Section */}
       <FAQSection />
 
@@ -263,6 +261,13 @@ const StoreLanding: React.FC = () => {
                 Las últimas novedades del sector analizadas por inteligencia artificial
               </p>
             </motion.div>
+
+            {/* News Ticker - Above the grid */}
+            {tickerItems.length > 0 && (
+              <div className="mb-8">
+                <NewsTicker items={tickerItems} />
+              </div>
+            )}
 
             {/* News Grid */}
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
