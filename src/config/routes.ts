@@ -41,6 +41,7 @@ const Documentation = lazy(() => import('@/pages/resources/Documentation'));
 const APIReference = lazy(() => import('@/pages/resources/APIReference'));
 const Blog = lazy(() => import('@/pages/resources/Blog'));
 const CaseStudies = lazy(() => import('@/pages/resources/CaseStudies'));
+const CasosDeExito = lazy(() => import('@/pages/casos-de-exito/index'));
 const TrendsDashboard = lazy(() => import('@/pages/resources/TrendsDashboard'));
 
 // Sectors
@@ -141,6 +142,7 @@ export const resourceRoutes: RouteConfig[] = [
   { path: '/api', component: APIReference, layout: 'public', priority: 'low', meta: { title: 'API Reference' } },
   { path: '/blog', component: Blog, layout: 'public', priority: 'low', meta: { title: 'Blog' } },
   { path: '/cases', component: CaseStudies, layout: 'public', priority: 'low', meta: { title: 'Casos de Éxito' } },
+  { path: '/casos-de-exito', component: CasosDeExito, layout: 'none', priority: 'medium', meta: { title: 'Casos de Éxito' } },
   { path: '/trends', component: TrendsDashboard, layout: 'none', priority: 'medium', meta: { title: 'Tendencias del Sector' } },
 ];
 
