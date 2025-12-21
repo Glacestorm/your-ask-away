@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, ExternalLink, Sparkles, TrendingUp, Eye, ChevronDown, Shield } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { getNewsImageFallback } from '@/lib/news/placeholders';
 import NewsProductConnection from './NewsProductConnection';
 
 interface NewsArticle {
@@ -26,41 +27,6 @@ interface NewsArticle {
   importance_level?: string;
 }
 
-// Generate unique placeholder based on article ID to avoid repetition
-const getUniquePlaceholder = (id: string, category: string): string => {
-  const placeholders: Record<string, string[]> = {
-    'Legal': [
-      'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&h=450&fit=crop',
-      'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&h=450&fit=crop',
-      'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&h=450&fit=crop'
-    ],
-    'Tecnología': [
-      'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&h=450&fit=crop',
-      'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=800&h=450&fit=crop',
-      'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&h=450&fit=crop'
-    ],
-    'Economía': [
-      'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=450&fit=crop',
-      'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&h=450&fit=crop',
-      'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=800&h=450&fit=crop'
-    ],
-    'Ciberseguridad': [
-      'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&h=450&fit=crop',
-      'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&h=450&fit=crop',
-      'https://images.unsplash.com/photo-1510511459019-5dda7724fd87?w=800&h=450&fit=crop'
-    ],
-    'default': [
-      'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&h=450&fit=crop',
-      'https://images.unsplash.com/photo-1495020689067-958852a7765e?w=800&h=450&fit=crop',
-      'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=800&h=450&fit=crop'
-    ]
-  };
-  
-  const categoryImages = placeholders[category] || placeholders['default'];
-  // Use hash of ID to pick consistent but varied image
-  const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  return categoryImages[hash % categoryImages.length];
-};
 
 interface PremiumNewsCardProps {
   article: NewsArticle;
@@ -76,11 +42,17 @@ const PremiumNewsCard: React.FC<PremiumNewsCardProps> = ({
   onReadMore 
 }) => {
   const [showConnection, setShowConnection] = useState(false);
-  
-  // Get unique image URL (avoid repetition with fallback based on ID)
-  const imageUrl = article.image_url || getUniquePlaceholder(article.id, article.category);
-  const imageCredit = article.image_credit || article.source_name;
-  
+
+  const hasOriginalImage = Boolean(article.image_url);
+  const imageUrl = hasOriginalImage
+    ? article.image_url
+    : getNewsImageFallback(article.id, article.category || article.source_name);
+
+  // Legal compliance: only show source credit when we actually display the original image.
+  const imageCredit = hasOriginalImage
+    ? (article.image_credit || article.source_name)
+    : 'Ilustración (ObelixIA)';
+
   const timeAgo = formatDistanceToNow(new Date(article.published_at), { 
     addSuffix: true, 
     locale: es 

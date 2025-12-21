@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Clock, ExternalLink, Sparkles, TrendingUp } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { getNewsImageFallback } from '@/lib/news/placeholders';
 
 interface NewsArticle {
   id: string;
@@ -59,7 +60,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ article, index, onReadMore }) => {
       {/* Image Container */}
       <div className="relative h-48 overflow-hidden">
         <img
-          src={article.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&h=450&fit=crop'}
+          src={article.image_url || getNewsImageFallback(article.id, article.category || article.source_name)}
           alt={article.title}
           className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
           loading="lazy"

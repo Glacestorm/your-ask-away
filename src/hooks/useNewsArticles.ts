@@ -28,6 +28,53 @@ interface UseNewsArticlesOptions {
   limit?: number;
 }
 
+const isLikelyLogoOrIcon = (url: string) => {
+  const u = url.toLowerCase();
+  return (
+    u.includes('logo') ||
+    u.includes('favicon') ||
+    u.includes('apple-touch-icon') ||
+    u.includes('icon') ||
+    u.includes('sprite')
+  );
+};
+
+const sanitizeImageUrl = (url?: string | null) => {
+  if (!url) return '';
+  const trimmed = url.trim();
+  if (!/^https?:\/\//i.test(trimmed)) return '';
+  if (trimmed.toLowerCase().endsWith('.svg')) return '';
+  if (isLikelyLogoOrIcon(trimmed)) return '';
+  return trimmed;
+};
+
+const normalizeForDedupe = (url: string) => {
+  try {
+    const u = new URL(url);
+    u.search = '';
+    u.hash = '';
+    return u.toString();
+  } catch {
+    return url.split('#')[0].split('?')[0];
+  }
+};
+
+const dedupeImages = (items: NewsArticle[]): NewsArticle[] => {
+  const seen = new Set<string>();
+
+  return items.map((a) => {
+    const cleaned = sanitizeImageUrl(a.image_url);
+    const key = cleaned ? normalizeForDedupe(cleaned) : '';
+
+    if (key && seen.has(key)) {
+      return { ...a, image_url: '' };
+    }
+
+    if (key) seen.add(key);
+    return { ...a, image_url: cleaned };
+  });
+};
+
 export function useNewsArticles(options: UseNewsArticlesOptions = {}) {
   const { category = 'Todos', searchQuery = '', limit = 20 } = options;
   const [articles, setArticles] = useState<NewsArticle[]>([]);
@@ -59,18 +106,22 @@ export function useNewsArticles(options: UseNewsArticlesOptions = {}) {
 
       if (fetchError) throw fetchError;
 
-      const articlesData = (data || []) as NewsArticle[];
-      setArticles(articlesData.filter(a => !a.is_featured));
-      
+      const rawArticlesData = (data || []) as NewsArticle[];
+      const articlesData = dedupeImages(rawArticlesData);
+
       // Get featured article
       const featured = articlesData.find(a => a.is_featured);
       if (featured) {
         setFeaturedArticle(featured);
+        setArticles(articlesData.filter(a => !a.is_featured));
       } else if (articlesData.length > 0) {
         // Use highest relevance as featured if none marked
         const sorted = [...articlesData].sort((a, b) => b.relevance_score - a.relevance_score);
         setFeaturedArticle(sorted[0]);
         setArticles(articlesData.filter(a => a.id !== sorted[0].id));
+      } else {
+        setFeaturedArticle(null);
+        setArticles([]);
       }
 
     } catch (err: any) {
@@ -126,11 +177,29 @@ export function useNewsArticles(options: UseNewsArticlesOptions = {}) {
         },
         (payload) => {
           console.log('New news article:', payload.new);
-          const newArticle = payload.new as NewsArticle;
-          setArticles(prev => [newArticle, ...prev]);
+          const incoming = payload.new as NewsArticle;
+          const cleaned = sanitizeImageUrl(incoming.image_url);
+          const key = cleaned ? normalizeForDedupe(cleaned) : '';
+
+          setArticles(prev => {
+            const existing = new Set<string>();
+            for (const a of prev) {
+              const pCleaned = sanitizeImageUrl(a.image_url);
+              const pKey = pCleaned ? normalizeForDedupe(pCleaned) : '';
+              if (pKey) existing.add(pKey);
+            }
+
+            const nextIncoming: NewsArticle = {
+              ...incoming,
+              image_url: key && existing.has(key) ? '' : cleaned,
+            };
+
+            return [nextIncoming, ...prev];
+          });
+
           toast({
             title: '📰 Nueva noticia',
-            description: newArticle.title.substring(0, 60) + '...',
+            description: incoming.title.substring(0, 60) + '...',
           });
         }
       )

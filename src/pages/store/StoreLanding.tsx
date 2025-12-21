@@ -60,9 +60,6 @@ const StoreLanding: React.FC = () => {
       {/* Hero */}
       <HeroSection />
 
-      {/* News Ticker */}
-      {tickerItems.length > 0 && <NewsTicker items={tickerItems} />}
-
       {/* Features Section */}
       <section className="py-32 relative">
         <div className="container mx-auto px-6">
@@ -236,6 +233,9 @@ const StoreLanding: React.FC = () => {
           </motion.div>
         </div>
       </section>
+
+      {/* News Ticker (justo antes de Noticias) */}
+      {tickerItems.length > 0 && <NewsTicker items={tickerItems} />}
 
       {/* News Section */}
       {articles.length > 0 && (
