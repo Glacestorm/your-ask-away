@@ -13,7 +13,10 @@ import {
   MoreVertical,
   Eye,
   Edit,
-  FileText
+  FileText,
+  TrendingUp,
+  GraduationCap,
+  UserCheck
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -35,13 +39,19 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line
+} from 'recharts';
 
 interface Student {
   id: string;
@@ -127,6 +137,30 @@ const students: Student[] = [
   },
 ];
 
+const enrollmentByMonth = [
+  { month: 'Sep', nuevos: 45, graduados: 12 },
+  { month: 'Oct', nuevos: 32, graduados: 8 },
+  { month: 'Nov', nuevos: 28, graduados: 15 },
+  { month: 'Dic', nuevos: 15, graduados: 20 },
+  { month: 'Ene', nuevos: 38, graduados: 5 },
+  { month: 'Feb', nuevos: 22, graduados: 10 },
+];
+
+const attendanceByWeek = [
+  { week: 'S1', asistencia: 94 },
+  { week: 'S2', asistencia: 92 },
+  { week: 'S3', asistencia: 96 },
+  { week: 'S4', asistencia: 91 },
+  { week: 'S5', asistencia: 95 },
+  { week: 'S6', asistencia: 93 },
+];
+
+const statusDistribution = [
+  { name: 'Activos', value: 4, color: '#10b981' },
+  { name: 'Graduados', value: 1, color: '#8b5cf6' },
+  { name: 'Pendientes', value: 1, color: '#f59e0b' },
+];
+
 const getStatusBadge = (status: string) => {
   switch (status) {
     case 'active':
@@ -158,10 +192,20 @@ const getGradeColor = (grade: number) => {
   return 'text-red-400';
 };
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 }
+};
+
 export const EducationStudentsModule: React.FC = () => {
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [viewMode, setViewMode] = useState<'table' | 'cards'>('cards');
+  const [activeTab, setActiveTab] = useState('students');
 
   const filteredStudents = students.filter(student => {
     const matchesFilter = filter === 'all' || student.status === filter;
@@ -173,10 +217,10 @@ export const EducationStudentsModule: React.FC = () => {
   });
 
   const stats = [
-    { label: 'Total Alumnos', value: students.length, color: 'text-white' },
-    { label: 'Activos', value: students.filter(s => s.status === 'active').length, color: 'text-emerald-400' },
-    { label: 'Graduados', value: students.filter(s => s.status === 'graduated').length, color: 'text-purple-400' },
-    { label: 'Pendientes', value: students.filter(s => s.status === 'pending').length, color: 'text-amber-400' },
+    { label: 'Total Alumnos', value: students.length, icon: Users, color: 'text-blue-400', bgColor: 'bg-blue-500/20' },
+    { label: 'Activos', value: students.filter(s => s.status === 'active').length, icon: UserCheck, color: 'text-emerald-400', bgColor: 'bg-emerald-500/20' },
+    { label: 'Graduados', value: students.filter(s => s.status === 'graduated').length, icon: GraduationCap, color: 'text-purple-400', bgColor: 'bg-purple-500/20' },
+    { label: 'Asistencia Media', value: '91%', icon: TrendingUp, color: 'text-amber-400', bgColor: 'bg-amber-500/20' },
   ];
 
   return (
@@ -197,227 +241,285 @@ export const EducationStudentsModule: React.FC = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {stats.map((stat, index) => (
-          <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <Card className="bg-slate-800/50 border-slate-700">
-              <CardContent className="p-4 text-center">
-                <p className={`text-3xl font-bold ${stat.color}`}>{stat.value}</p>
-                <p className="text-sm text-slate-400">{stat.label}</p>
+      <motion.div 
+        className="grid grid-cols-2 md:grid-cols-4 gap-4"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {stats.map((stat) => (
+          <motion.div key={stat.label} variants={itemVariants}>
+            <Card className="bg-slate-800/50 border-slate-700 hover:border-slate-600 transition-colors">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className={`p-3 rounded-xl ${stat.bgColor}`}>
+                    <stat.icon className={`w-5 h-5 ${stat.color}`} />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-white">{stat.value}</p>
+                    <p className="text-sm text-slate-400">{stat.label}</p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </motion.div>
         ))}
-      </div>
+      </motion.div>
 
-      {/* Filters */}
-      <Card className="bg-slate-800/50 border-slate-700">
-        <CardContent className="p-4 flex flex-wrap gap-4">
-          <div className="flex-1 min-w-[200px] relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <Input
-              placeholder="Buscar por nombre, email o ID..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 bg-slate-900 border-slate-600 text-white"
-            />
-          </div>
-          <Select value={filter} onValueChange={setFilter}>
-            <SelectTrigger className="w-[180px] bg-slate-900 border-slate-600 text-white">
-              <Filter className="w-4 h-4 mr-2" />
-              <SelectValue placeholder="Filtrar por estado" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              <SelectItem value="active">Activos</SelectItem>
-              <SelectItem value="inactive">Inactivos</SelectItem>
-              <SelectItem value="graduated">Graduados</SelectItem>
-              <SelectItem value="pending">Pendientes</SelectItem>
-            </SelectContent>
-          </Select>
-          <div className="flex border border-slate-600 rounded-lg overflow-hidden">
-            <Button 
-              variant={viewMode === 'cards' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('cards')}
-              className={viewMode === 'cards' ? 'bg-blue-600' : 'text-slate-400'}
-            >
-              Tarjetas
-            </Button>
-            <Button 
-              variant={viewMode === 'table' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('table')}
-              className={viewMode === 'table' ? 'bg-blue-600' : 'text-slate-400'}
-            >
-              Tabla
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="bg-slate-800/50 border border-slate-700">
+          <TabsTrigger value="students">Alumnos</TabsTrigger>
+          <TabsTrigger value="analytics">Analíticas</TabsTrigger>
+          <TabsTrigger value="attendance">Asistencia</TabsTrigger>
+        </TabsList>
 
-      {/* Students List */}
-      {viewMode === 'cards' ? (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredStudents.map((student, index) => (
-            <motion.div
-              key={student.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-            >
-              <Card className="bg-slate-800/50 border-slate-700 hover:border-slate-600 transition-colors">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500">
-                        <AvatarFallback className="text-white font-semibold">
-                          {getInitials(student.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <h3 className="text-white font-semibold">{student.name}</h3>
-                        <p className="text-xs text-slate-500">{student.id}</p>
-                      </div>
-                    </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="bg-slate-800 border-slate-700">
-                        <DropdownMenuItem className="text-slate-300">
-                          <Eye className="w-4 h-4 mr-2" /> Ver Expediente
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-slate-300">
-                          <Edit className="w-4 h-4 mr-2" /> Editar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-slate-300">
-                          <FileText className="w-4 h-4 mr-2" /> Generar Certificado
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
+        <TabsContent value="students" className="space-y-6">
+          {/* Filters */}
+          <Card className="bg-slate-800/50 border-slate-700">
+            <CardContent className="p-4 flex flex-wrap gap-4">
+              <div className="flex-1 min-w-[200px] relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  placeholder="Buscar por nombre, email o ID..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9 bg-slate-900 border-slate-600 text-white"
+                />
+              </div>
+              <Select value={filter} onValueChange={setFilter}>
+                <SelectTrigger className="w-[180px] bg-slate-900 border-slate-600 text-white">
+                  <Filter className="w-4 h-4 mr-2" />
+                  <SelectValue placeholder="Filtrar por estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="active">Activos</SelectItem>
+                  <SelectItem value="inactive">Inactivos</SelectItem>
+                  <SelectItem value="graduated">Graduados</SelectItem>
+                  <SelectItem value="pending">Pendientes</SelectItem>
+                </SelectContent>
+              </Select>
+            </CardContent>
+          </Card>
 
-                  <div className="space-y-3 mb-4">
-                    <div className="flex items-center gap-2 text-sm text-slate-400">
-                      <Mail className="w-4 h-4" />
-                      {student.email}
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-slate-400">
-                      <Phone className="w-4 h-4" />
-                      {student.phone}
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-slate-400">
-                      <Calendar className="w-4 h-4" />
-                      Matrícula: {student.enrollmentDate}
-                    </div>
-                  </div>
-
-                  {student.courses.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-4">
-                      {student.courses.map((course) => (
-                        <Badge key={course} variant="outline" className="text-xs border-slate-600 text-slate-300">
-                          {course}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between pt-4 border-t border-slate-700">
-                    <div className="text-center">
-                      <p className={`text-lg font-bold ${getAttendanceColor(student.attendance)}`}>
-                        {student.attendance}%
-                      </p>
-                      <p className="text-xs text-slate-500">Asistencia</p>
-                    </div>
-                    <div className="text-center">
-                      <p className={`text-lg font-bold ${getGradeColor(student.averageGrade)}`}>
-                        {student.averageGrade || '-'}
-                      </p>
-                      <p className="text-xs text-slate-500">Nota Media</p>
-                    </div>
-                    {getStatusBadge(student.status)}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-      ) : (
-        <Card className="bg-slate-800/50 border-slate-700">
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-slate-700">
-                  <TableHead className="text-slate-400">Alumno</TableHead>
-                  <TableHead className="text-slate-400">Contacto</TableHead>
-                  <TableHead className="text-slate-400">Cursos</TableHead>
-                  <TableHead className="text-slate-400 text-center">Asistencia</TableHead>
-                  <TableHead className="text-slate-400 text-center">Nota Media</TableHead>
-                  <TableHead className="text-slate-400">Estado</TableHead>
-                  <TableHead className="text-slate-400 text-right">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredStudents.map((student) => (
-                  <TableRow key={student.id} className="border-slate-700 hover:bg-slate-700/30">
-                    <TableCell>
+          {/* Students Grid */}
+          <motion.div 
+            className="grid md:grid-cols-2 lg:grid-cols-3 gap-4"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            {filteredStudents.map((student) => (
+              <motion.div key={student.id} variants={itemVariants}>
+                <Card className="bg-slate-800/50 border-slate-700 hover:border-slate-600 transition-all hover:shadow-lg">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
-                        <Avatar className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500">
-                          <AvatarFallback className="text-white text-xs">
+                        <Avatar className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500">
+                          <AvatarFallback className="text-white font-semibold">
                             {getInitials(student.name)}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="text-white font-medium">{student.name}</p>
+                          <h3 className="text-white font-semibold">{student.name}</h3>
                           <p className="text-xs text-slate-500">{student.id}</p>
                         </div>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <p className="text-slate-300 text-sm">{student.email}</p>
-                      <p className="text-slate-500 text-xs">{student.phone}</p>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {student.courses.slice(0, 2).map((course) => (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
+                            <MoreVertical className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="bg-slate-800 border-slate-700">
+                          <DropdownMenuItem className="text-slate-300">
+                            <Eye className="w-4 h-4 mr-2" /> Ver Expediente
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-slate-300">
+                            <Edit className="w-4 h-4 mr-2" /> Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-slate-300">
+                            <FileText className="w-4 h-4 mr-2" /> Generar Certificado
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center gap-2 text-sm text-slate-400">
+                        <Mail className="w-4 h-4" />
+                        <span className="truncate">{student.email}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-slate-400">
+                        <Phone className="w-4 h-4" />
+                        {student.phone}
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-slate-400">
+                        <Calendar className="w-4 h-4" />
+                        Matrícula: {student.enrollmentDate}
+                      </div>
+                    </div>
+
+                    {student.courses.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-4">
+                        {student.courses.map((course) => (
                           <Badge key={course} variant="outline" className="text-xs border-slate-600 text-slate-300">
                             {course}
                           </Badge>
                         ))}
-                        {student.courses.length > 2 && (
-                          <Badge variant="outline" className="text-xs border-slate-600 text-slate-400">
-                            +{student.courses.length - 2}
-                          </Badge>
-                        )}
                       </div>
-                    </TableCell>
-                    <TableCell className={`text-center font-medium ${getAttendanceColor(student.attendance)}`}>
-                      {student.attendance}%
-                    </TableCell>
-                    <TableCell className={`text-center font-medium ${getGradeColor(student.averageGrade)}`}>
-                      {student.averageGrade || '-'}
-                    </TableCell>
-                    <TableCell>{getStatusBadge(student.status)}</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" className="text-slate-400 hover:text-white">
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
+                    )}
+
+                    <div className="flex items-center justify-between pt-4 border-t border-slate-700">
+                      <div className="text-center">
+                        <p className={`text-lg font-bold ${getAttendanceColor(student.attendance)}`}>
+                          {student.attendance}%
+                        </p>
+                        <p className="text-xs text-slate-500">Asistencia</p>
+                      </div>
+                      <div className="text-center">
+                        <p className={`text-lg font-bold ${getGradeColor(student.averageGrade)}`}>
+                          {student.averageGrade || '-'}
+                        </p>
+                        <p className="text-xs text-slate-500">Nota Media</p>
+                      </div>
+                      {getStatusBadge(student.status)}
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-6">
+          <div className="grid lg:grid-cols-2 gap-6">
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-blue-400" />
+                  Matriculaciones por Mes
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={enrollmentByMonth}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                    <XAxis dataKey="month" stroke="#94a3b8" fontSize={12} />
+                    <YAxis stroke="#94a3b8" fontSize={12} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#1e293b',
+                        border: '1px solid #334155',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Bar dataKey="nuevos" fill="#3b82f6" name="Nuevos" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="graduados" fill="#8b5cf6" name="Graduados" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Users className="w-5 h-5 text-emerald-400" />
+                  Distribución por Estado
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart>
+                    <Pie
+                      data={statusDistribution}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={80}
+                      paddingAngle={2}
+                      dataKey="value"
+                    >
+                      {statusDistribution.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="flex justify-center gap-6 mt-4">
+                  {statusDistribution.map((item) => (
+                    <div key={item.name} className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                      <span className="text-sm text-slate-400">{item.name}: {item.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="attendance" className="space-y-6">
+          <Card className="bg-slate-800/50 border-slate-700">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Award className="w-5 h-5 text-amber-400" />
+                Asistencia Semanal
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={attendanceByWeek}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                  <XAxis dataKey="week" stroke="#94a3b8" fontSize={12} />
+                  <YAxis stroke="#94a3b8" fontSize={12} domain={[80, 100]} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#1e293b',
+                      border: '1px solid #334155',
+                      borderRadius: '8px'
+                    }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="asistencia" 
+                    stroke="#10b981" 
+                    strokeWidth={3}
+                    dot={{ fill: '#10b981', strokeWidth: 2 }}
+                    name="Asistencia %"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <div className="grid md:grid-cols-3 gap-4">
+            {students.filter(s => s.status === 'active' && s.attendance < 80).map((student) => (
+              <Card key={student.id} className="bg-slate-800/50 border-red-500/30">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Avatar className="w-10 h-10 bg-gradient-to-br from-red-500 to-amber-500">
+                      <AvatarFallback className="text-white text-sm">
+                        {getInitials(student.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-white font-medium">{student.name}</p>
+                      <p className="text-xs text-slate-500">{student.id}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-400">Asistencia</span>
+                    <span className="text-lg font-bold text-red-400">{student.attendance}%</span>
+                  </div>
+                  <Progress value={student.attendance} className="h-2 mt-2" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
