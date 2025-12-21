@@ -1,44 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 
-// Type declarations for Web Speech API
-interface SpeechRecognitionEvent extends Event {
-  readonly resultIndex: number;
-  readonly results: SpeechRecognitionResultList;
-}
-
-interface SpeechRecognitionErrorEvent extends Event {
-  readonly error: string;
-  readonly message?: string;
-}
-
-interface SpeechRecognitionInstance extends EventTarget {
-  continuous: boolean;
-  interimResults: boolean;
-  lang: string;
-  maxAlternatives: number;
-  onresult: ((event: SpeechRecognitionEvent) => void) | null;
-  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
-  onend: (() => void) | null;
-  onstart: (() => void) | null;
-  onaudiostart: (() => void) | null;
-  onspeechstart: (() => void) | null;
-  onspeechend: (() => void) | null;
-  start(): void;
-  stop(): void;
-  abort(): void;
-}
-
-interface SpeechRecognitionConstructor {
-  new (): SpeechRecognitionInstance;
-}
-
-declare global {
-  interface Window {
-    SpeechRecognition: SpeechRecognitionConstructor;
-    webkitSpeechRecognition: SpeechRecognitionConstructor;
-  }
-}
-
 interface UseVoiceChatOptions {
   onTranscript?: (text: string) => void;
   onSpeakEnd?: () => void;
@@ -54,13 +15,14 @@ export function useVoiceChat(options: UseVoiceChatOptions = {}) {
   const [transcript, setTranscript] = useState('');
   const [error, setError] = useState<string | null>(null);
   
-  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
+  // Use any to avoid TypeScript conflicts with browser-specific SpeechRecognition implementations
+  const recognitionRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesisUtterance | null>(null);
   const isInitializedRef = useRef(false);
 
   // Initialize speech recognition
   const initRecognition = useCallback(() => {
-    const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     
     if (!SpeechRecognitionAPI) {
       console.warn('Speech Recognition API not supported in this browser');
@@ -91,7 +53,7 @@ export function useVoiceChat(options: UseVoiceChatOptions = {}) {
       console.log('Speech ended');
     };
     
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
+    recognition.onresult = (event: any) => {
       let finalTranscript = '';
       let interimTranscript = '';
       
@@ -120,7 +82,7 @@ export function useVoiceChat(options: UseVoiceChatOptions = {}) {
       }
     };
     
-    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+    recognition.onerror = (event: any) => {
       console.error('Speech recognition error:', event.error, event.message);
       setError(event.error);
       setIsListening(false);
@@ -145,7 +107,7 @@ export function useVoiceChat(options: UseVoiceChatOptions = {}) {
 
   useEffect(() => {
     // Check browser support
-    const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     const hasSpeechRecognition = !!SpeechRecognitionAPI;
     const hasSpeechSynthesis = 'speechSynthesis' in window;
     
