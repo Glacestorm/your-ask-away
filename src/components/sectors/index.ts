@@ -1,3 +1,10 @@
 export { SectorsShowcase } from './SectorsShowcase';
 export { SectorCard } from './SectorCard';
 export { SectorStatsCounter } from './SectorStatsCounter';
+export { SectorComparison } from './SectorComparison';
+export { TestimonialsCarousel } from './TestimonialsCarousel';
+export { CaseStudyCard } from './CaseStudyCard';
+export { CaseStudiesCarousel } from './CaseStudiesCarousel';
+export { ClientLogosBar } from './ClientLogosBar';
+export { AggregatedMetrics } from './AggregatedMetrics';
+export { AIRecommenderPanel } from './AIRecommenderPanel';
