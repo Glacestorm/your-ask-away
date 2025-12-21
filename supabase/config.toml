@@ -320,3 +320,12 @@ verify_jwt = true
 
 [functions.process-closed-loop]
 verify_jwt = true
+
+[functions.generate-success-plan]
+verify_jwt = true
+
+[functions.predict-time-to-value]
+verify_jwt = true
+
+[functions.generate-qbr]
+verify_jwt = true

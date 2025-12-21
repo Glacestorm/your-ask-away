@@ -157,6 +157,119 @@ export type Database = {
         }
         Relationships: []
       }
+      adoption_milestones: {
+        Row: {
+          badge_icon: string | null
+          category: string
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          milestone_key: string
+          milestone_name: string
+          order_index: number | null
+          points_value: number | null
+          required_for_activation: boolean | null
+        }
+        Insert: {
+          badge_icon?: string | null
+          category: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          milestone_key: string
+          milestone_name: string
+          order_index?: number | null
+          points_value?: number | null
+          required_for_activation?: boolean | null
+        }
+        Update: {
+          badge_icon?: string | null
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          milestone_key?: string
+          milestone_name?: string
+          order_index?: number | null
+          points_value?: number | null
+          required_for_activation?: boolean | null
+        }
+        Relationships: []
+      }
+      adoption_scores: {
+        Row: {
+          activation_score: number | null
+          breadth_score: number | null
+          company_id: string | null
+          created_at: string | null
+          depth_score: number | null
+          engagement_score: number | null
+          id: string
+          last_calculated_at: string | null
+          next_calculation_at: string | null
+          overall_score: number | null
+          recommendations: Json | null
+          risk_level: string | null
+          score_breakdown: Json | null
+          stickiness_score: number | null
+          time_to_value_score: number | null
+          trend: string | null
+          trend_percentage: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          activation_score?: number | null
+          breadth_score?: number | null
+          company_id?: string | null
+          created_at?: string | null
+          depth_score?: number | null
+          engagement_score?: number | null
+          id?: string
+          last_calculated_at?: string | null
+          next_calculation_at?: string | null
+          overall_score?: number | null
+          recommendations?: Json | null
+          risk_level?: string | null
+          score_breakdown?: Json | null
+          stickiness_score?: number | null
+          time_to_value_score?: number | null
+          trend?: string | null
+          trend_percentage?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          activation_score?: number | null
+          breadth_score?: number | null
+          company_id?: string | null
+          created_at?: string | null
+          depth_score?: number | null
+          engagement_score?: number | null
+          id?: string
+          last_calculated_at?: string | null
+          next_calculation_at?: string | null
+          overall_score?: number | null
+          recommendations?: Json | null
+          risk_level?: string | null
+          score_breakdown?: Json | null
+          stickiness_score?: number | null
+          time_to_value_score?: number | null
+          trend?: string | null
+          trend_percentage?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "adoption_scores_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_interventions: {
         Row: {
           ai_analysis: string
@@ -4201,6 +4314,57 @@ export type Database = {
           },
         ]
       }
+      company_milestones: {
+        Row: {
+          achieved_at: string | null
+          achieved_by: string | null
+          celebrated: boolean | null
+          company_id: string | null
+          context: Json | null
+          created_at: string | null
+          id: string
+          milestone_id: string | null
+          points_awarded: number | null
+        }
+        Insert: {
+          achieved_at?: string | null
+          achieved_by?: string | null
+          celebrated?: boolean | null
+          company_id?: string | null
+          context?: Json | null
+          created_at?: string | null
+          id?: string
+          milestone_id?: string | null
+          points_awarded?: number | null
+        }
+        Update: {
+          achieved_at?: string | null
+          achieved_by?: string | null
+          celebrated?: boolean | null
+          company_id?: string | null
+          context?: Json | null
+          created_at?: string | null
+          id?: string
+          milestone_id?: string | null
+          points_awarded?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_milestones_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_milestones_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: false
+            referencedRelation: "adoption_milestones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_news_profiles: {
         Row: {
           alert_threshold: number | null
@@ -6880,6 +7044,59 @@ export type Database = {
           },
         ]
       }
+      feature_usage_tracking: {
+        Row: {
+          company_id: string | null
+          created_at: string | null
+          feature_key: string
+          first_used_at: string | null
+          id: string
+          last_used_at: string | null
+          metadata: Json | null
+          product_key: string | null
+          session_duration_seconds: number | null
+          updated_at: string | null
+          usage_count: number | null
+          user_id: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string | null
+          feature_key: string
+          first_used_at?: string | null
+          id?: string
+          last_used_at?: string | null
+          metadata?: Json | null
+          product_key?: string | null
+          session_duration_seconds?: number | null
+          updated_at?: string | null
+          usage_count?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string | null
+          feature_key?: string
+          first_used_at?: string | null
+          id?: string
+          last_used_at?: string | null
+          metadata?: Json | null
+          product_key?: string | null
+          session_duration_seconds?: number | null
+          updated_at?: string | null
+          usage_count?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feature_usage_tracking_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feedback_gamification: {
         Row: {
           badges: string[] | null
@@ -8191,6 +8408,77 @@ export type Database = {
           utm_source?: string | null
         }
         Relationships: []
+      }
+      low_usage_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          alert_type: string
+          assigned_to: string | null
+          auto_action_taken: string | null
+          company_id: string | null
+          created_at: string | null
+          days_since_last_use: number | null
+          expected_usage_frequency: string | null
+          feature_key: string | null
+          id: string
+          product_key: string | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_type: string
+          assigned_to?: string | null
+          auto_action_taken?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          days_since_last_use?: number | null
+          expected_usage_frequency?: string | null
+          feature_key?: string | null
+          id?: string
+          product_key?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          alert_type?: string
+          assigned_to?: string | null
+          auto_action_taken?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          days_since_last_use?: number | null
+          expected_usage_frequency?: string | null
+          feature_key?: string | null
+          id?: string
+          product_key?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "low_usage_alerts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lowcode_form_definitions: {
         Row: {
@@ -11005,6 +11293,141 @@ export type Database = {
         }
         Relationships: []
       }
+      onboarding_progress: {
+        Row: {
+          actual_time_spent_minutes: number | null
+          assigned_to: string | null
+          badges_earned: string[] | null
+          celebration_triggered: boolean | null
+          company_id: string | null
+          completed_at: string | null
+          completed_steps: Json | null
+          created_at: string | null
+          current_step_id: string | null
+          estimated_completion_date: string | null
+          id: string
+          last_activity_at: string | null
+          progress_percentage: number | null
+          skipped_steps: string[] | null
+          stall_reason: string | null
+          stalled_at: string | null
+          started_at: string | null
+          status: string | null
+          template_id: string | null
+          total_points_earned: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          actual_time_spent_minutes?: number | null
+          assigned_to?: string | null
+          badges_earned?: string[] | null
+          celebration_triggered?: boolean | null
+          company_id?: string | null
+          completed_at?: string | null
+          completed_steps?: Json | null
+          created_at?: string | null
+          current_step_id?: string | null
+          estimated_completion_date?: string | null
+          id?: string
+          last_activity_at?: string | null
+          progress_percentage?: number | null
+          skipped_steps?: string[] | null
+          stall_reason?: string | null
+          stalled_at?: string | null
+          started_at?: string | null
+          status?: string | null
+          template_id?: string | null
+          total_points_earned?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          actual_time_spent_minutes?: number | null
+          assigned_to?: string | null
+          badges_earned?: string[] | null
+          celebration_triggered?: boolean | null
+          company_id?: string | null
+          completed_at?: string | null
+          completed_steps?: Json | null
+          created_at?: string | null
+          current_step_id?: string | null
+          estimated_completion_date?: string | null
+          id?: string
+          last_activity_at?: string | null
+          progress_percentage?: number | null
+          skipped_steps?: string[] | null
+          stall_reason?: string | null
+          stalled_at?: string | null
+          started_at?: string | null
+          status?: string | null
+          template_id?: string | null
+          total_points_earned?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_progress_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "onboarding_progress_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "onboarding_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      onboarding_templates: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          estimated_total_minutes: number | null
+          gamification_config: Json | null
+          id: string
+          is_active: boolean | null
+          product_keys: string[] | null
+          segment_type: string
+          steps: Json
+          template_name: string
+          updated_at: string | null
+          version: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          estimated_total_minutes?: number | null
+          gamification_config?: Json | null
+          id?: string
+          is_active?: boolean | null
+          product_keys?: string[] | null
+          segment_type: string
+          steps?: Json
+          template_name: string
+          updated_at?: string | null
+          version?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          estimated_total_minutes?: number | null
+          gamification_config?: Json | null
+          id?: string
+          is_active?: boolean | null
+          product_keys?: string[] | null
+          segment_type?: string
+          steps?: Json
+          template_name?: string
+          updated_at?: string | null
+          version?: number | null
+        }
+        Relationships: []
+      }
       open_banking_audit_log: {
         Row: {
           consent_id: string | null
@@ -12777,6 +13200,129 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      qbr_records: {
+        Row: {
+          achievements: Json | null
+          action_items: Json | null
+          actual_date: string | null
+          agenda: Json | null
+          ai_generated_recommendations: Json | null
+          ai_generated_summary: string | null
+          ai_risk_assessment: Json | null
+          attendees: Json | null
+          challenges: Json | null
+          company_id: string | null
+          conducted_by: string | null
+          created_at: string | null
+          customer_feedback: string | null
+          customer_satisfaction_score: number | null
+          decisions_made: Json | null
+          duration_minutes: number | null
+          expansion_opportunities: Json | null
+          health_score_at_review: number | null
+          id: string
+          metrics_reviewed: Json | null
+          next_quarter_goals: Json | null
+          notes: string | null
+          nps_at_review: number | null
+          period_summary: Json | null
+          prepared_by: string | null
+          quarter: string
+          recording_url: string | null
+          renewal_discussion: Json | null
+          scheduled_date: string | null
+          status: string | null
+          success_plan_id: string | null
+          updated_at: string | null
+          year: number
+        }
+        Insert: {
+          achievements?: Json | null
+          action_items?: Json | null
+          actual_date?: string | null
+          agenda?: Json | null
+          ai_generated_recommendations?: Json | null
+          ai_generated_summary?: string | null
+          ai_risk_assessment?: Json | null
+          attendees?: Json | null
+          challenges?: Json | null
+          company_id?: string | null
+          conducted_by?: string | null
+          created_at?: string | null
+          customer_feedback?: string | null
+          customer_satisfaction_score?: number | null
+          decisions_made?: Json | null
+          duration_minutes?: number | null
+          expansion_opportunities?: Json | null
+          health_score_at_review?: number | null
+          id?: string
+          metrics_reviewed?: Json | null
+          next_quarter_goals?: Json | null
+          notes?: string | null
+          nps_at_review?: number | null
+          period_summary?: Json | null
+          prepared_by?: string | null
+          quarter: string
+          recording_url?: string | null
+          renewal_discussion?: Json | null
+          scheduled_date?: string | null
+          status?: string | null
+          success_plan_id?: string | null
+          updated_at?: string | null
+          year: number
+        }
+        Update: {
+          achievements?: Json | null
+          action_items?: Json | null
+          actual_date?: string | null
+          agenda?: Json | null
+          ai_generated_recommendations?: Json | null
+          ai_generated_summary?: string | null
+          ai_risk_assessment?: Json | null
+          attendees?: Json | null
+          challenges?: Json | null
+          company_id?: string | null
+          conducted_by?: string | null
+          created_at?: string | null
+          customer_feedback?: string | null
+          customer_satisfaction_score?: number | null
+          decisions_made?: Json | null
+          duration_minutes?: number | null
+          expansion_opportunities?: Json | null
+          health_score_at_review?: number | null
+          id?: string
+          metrics_reviewed?: Json | null
+          next_quarter_goals?: Json | null
+          notes?: string | null
+          nps_at_review?: number | null
+          period_summary?: Json | null
+          prepared_by?: string | null
+          quarter?: string
+          recording_url?: string | null
+          renewal_discussion?: Json | null
+          scheduled_date?: string | null
+          status?: string | null
+          success_plan_id?: string | null
+          updated_at?: string | null
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "qbr_records_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "qbr_records_success_plan_id_fkey"
+            columns: ["success_plan_id"]
+            isOneToOne: false
+            referencedRelation: "success_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       registered_tpps: {
         Row: {
@@ -15017,6 +15563,160 @@ export type Database = {
         }
         Relationships: []
       }
+      success_plan_goals: {
+        Row: {
+          ai_recommendations: Json | null
+          completed_at: string | null
+          created_at: string | null
+          current_value: number | null
+          goal_description: string | null
+          goal_title: string
+          goal_type: string | null
+          id: string
+          milestones: Json | null
+          owner_id: string | null
+          plan_id: string | null
+          progress_percentage: number | null
+          start_date: string | null
+          status: string | null
+          target_date: string | null
+          target_metric: string | null
+          target_value: number | null
+          unit: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ai_recommendations?: Json | null
+          completed_at?: string | null
+          created_at?: string | null
+          current_value?: number | null
+          goal_description?: string | null
+          goal_title: string
+          goal_type?: string | null
+          id?: string
+          milestones?: Json | null
+          owner_id?: string | null
+          plan_id?: string | null
+          progress_percentage?: number | null
+          start_date?: string | null
+          status?: string | null
+          target_date?: string | null
+          target_metric?: string | null
+          target_value?: number | null
+          unit?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ai_recommendations?: Json | null
+          completed_at?: string | null
+          created_at?: string | null
+          current_value?: number | null
+          goal_description?: string | null
+          goal_title?: string
+          goal_type?: string | null
+          id?: string
+          milestones?: Json | null
+          owner_id?: string | null
+          plan_id?: string | null
+          progress_percentage?: number | null
+          start_date?: string | null
+          status?: string | null
+          target_date?: string | null
+          target_metric?: string | null
+          target_value?: number | null
+          unit?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "success_plan_goals_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "success_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      success_plans: {
+        Row: {
+          actual_completion_date: string | null
+          ai_generated: boolean | null
+          ai_generation_context: Json | null
+          company_id: string | null
+          created_at: string | null
+          current_health_score: number | null
+          id: string
+          next_review_date: string | null
+          notes: string | null
+          objectives: Json | null
+          owner_id: string | null
+          plan_name: string
+          plan_type: string | null
+          review_frequency: string | null
+          risk_factors: Json | null
+          start_date: string | null
+          status: string | null
+          success_criteria: Json | null
+          target_completion_date: string | null
+          target_health_score: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          actual_completion_date?: string | null
+          ai_generated?: boolean | null
+          ai_generation_context?: Json | null
+          company_id?: string | null
+          created_at?: string | null
+          current_health_score?: number | null
+          id?: string
+          next_review_date?: string | null
+          notes?: string | null
+          objectives?: Json | null
+          owner_id?: string | null
+          plan_name: string
+          plan_type?: string | null
+          review_frequency?: string | null
+          risk_factors?: Json | null
+          start_date?: string | null
+          status?: string | null
+          success_criteria?: Json | null
+          target_completion_date?: string | null
+          target_health_score?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          actual_completion_date?: string | null
+          ai_generated?: boolean | null
+          ai_generation_context?: Json | null
+          company_id?: string | null
+          created_at?: string | null
+          current_health_score?: number | null
+          id?: string
+          next_review_date?: string | null
+          notes?: string | null
+          objectives?: Json | null
+          owner_id?: string | null
+          plan_name?: string
+          plan_type?: string | null
+          review_frequency?: string | null
+          risk_factors?: Json | null
+          start_date?: string | null
+          status?: string | null
+          success_criteria?: Json | null
+          target_completion_date?: string | null
+          target_health_score?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "success_plans_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suggestion_votes: {
         Row: {
           created_at: string
@@ -15530,6 +16230,65 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      time_to_value_metrics: {
+        Row: {
+          achieved_at: string | null
+          actual_days: number | null
+          company_id: string | null
+          created_at: string | null
+          id: string
+          is_achieved: boolean | null
+          metric_type: string
+          predicted_days: number | null
+          prediction_confidence: number | null
+          product_key: string | null
+          target_days: number | null
+          updated_at: string | null
+          value_amount: number | null
+          value_indicator: string | null
+        }
+        Insert: {
+          achieved_at?: string | null
+          actual_days?: number | null
+          company_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_achieved?: boolean | null
+          metric_type: string
+          predicted_days?: number | null
+          prediction_confidence?: number | null
+          product_key?: string | null
+          target_days?: number | null
+          updated_at?: string | null
+          value_amount?: number | null
+          value_indicator?: string | null
+        }
+        Update: {
+          achieved_at?: string | null
+          actual_days?: number | null
+          company_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_achieved?: boolean | null
+          metric_type?: string
+          predicted_days?: number | null
+          prediction_confidence?: number | null
+          product_key?: string | null
+          target_days?: number | null
+          updated_at?: string | null
+          value_amount?: number | null
+          value_indicator?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "time_to_value_metrics_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tpp_premium_subscriptions: {
         Row: {
@@ -17070,6 +17829,10 @@ export type Database = {
         }
         Returns: string
       }
+      calculate_adoption_score: {
+        Args: { p_company_id: string }
+        Returns: Json
+      }
       calculate_cnae_price: {
         Args: {
           p_cnae_code: string
@@ -17111,6 +17874,7 @@ export type Database = {
         Returns: boolean
       }
       check_expiring_acknowledgments: { Args: never; Returns: undefined }
+      check_low_usage_alerts: { Args: never; Returns: undefined }
       check_pending_acknowledgments: { Args: never; Returns: undefined }
       check_tpp_rate_limit: {
         Args: { p_endpoint: string; p_tpp_id: string }
