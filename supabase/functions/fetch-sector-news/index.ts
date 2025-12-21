@@ -80,18 +80,50 @@ function extractImageFromRSS(itemXml: string): { url: string | null; credit: str
   return { url: null, credit: null };
 }
 
-async function fetchOgImage(articleUrl: string): Promise<{ url: string | null; credit: string | null }> {
+// Use Firecrawl to get OG image (handles JS-rendered pages)
+async function fetchOgImageWithFirecrawl(articleUrl: string, supabaseUrl: string, supabaseServiceKey: string): Promise<{ url: string | null; credit: string | null }> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+    const funcUrl = `${supabaseUrl}/functions/v1/firecrawl-og-image`;
+
+    const response = await fetch(funcUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabaseServiceKey}`,
+      },
+      body: JSON.stringify({ url: articleUrl }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      console.warn(`Firecrawl OG fetch failed for ${articleUrl}: ${response.status}`);
+      return { url: null, credit: null };
+    }
+
+    const data = await response.json();
+    return { url: data.image_url || null, credit: data.credit || null };
+  } catch (err) {
+    console.warn('fetchOgImageWithFirecrawl error:', err);
+    return { url: null, credit: null };
+  }
+}
+
+// Fallback: simple fetch for OG image (no JS rendering)
+async function fetchOgImageSimple(articleUrl: string): Promise<{ url: string | null; credit: string | null }> {
   const resolveUrl = (raw: string) => {
     const cleaned = raw.trim().replace(/&amp;/g, '&');
     if (!cleaned) return null;
 
     try {
-      // //cdn.com/image.jpg
       if (cleaned.startsWith('//')) {
         const base = new URL(articleUrl);
         return `${base.protocol}${cleaned}`;
       }
-      // /image.jpg
       if (cleaned.startsWith('/')) {
         return new URL(cleaned, articleUrl).toString();
       }
@@ -121,20 +153,17 @@ async function fetchOgImage(articleUrl: string): Promise<{ url: string | null; c
 
     const html = await response.text();
 
-    // og:image (plus secure_url)
     const ogMatch =
       html.match(/<meta[^>]*property=["']og:image:secure_url["'][^>]*content=["']([^"']+)["'][^>]*>/i) ||
       html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["'][^>]*>/i) ||
       html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["'][^>]*>/i);
 
-    // twitter:image (and twitter:image:src)
     const twitterMatch =
       html.match(/<meta[^>]*name=["']twitter:image:src["'][^>]*content=["']([^"']+)["'][^>]*>/i) ||
       html.match(/<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["'][^>]*>/i);
 
     const imageUrl = resolveUrl(ogMatch?.[1] || twitterMatch?.[1] || '');
 
-    // Try to get site name for credit
     const siteMatch = html.match(/<meta[^>]*property=["']og:site_name["'][^>]*content=["']([^"']+)["'][^>]*>/i);
     const credit = siteMatch?.[1]?.trim() || null;
 
@@ -409,22 +438,29 @@ serve(async (req) => {
             if (aiData.relevanceScore >= minRelevanceScore) {
               sourcesStatus[source.name].relevant++;
               
-              // Determine image: prefer og:image, then RSS image, then fallback
+              // Determine image: prefer og:image (via Firecrawl), then simple fetch, then RSS image, then fallback
               let finalImageUrl: string | null = null;
               let finalImageCredit: string | null = null;
 
-              // 1) Try to fetch og:image from article page (usually best “real photo”)
-              const ogData = await fetchOgImage(item.link);
-              finalImageUrl = ogData.url;
-              finalImageCredit = ogData.credit;
+              // 1) Try Firecrawl (handles JS-rendered pages)
+              const firecrawlData = await fetchOgImageWithFirecrawl(item.link, supabaseUrl, supabaseServiceKey);
+              finalImageUrl = firecrawlData.url;
+              finalImageCredit = firecrawlData.credit;
 
-              // 2) If no OG, use RSS-provided image (media:content/enclosure/etc.)
+              // 2) If Firecrawl failed, try simple fetch
+              if (!finalImageUrl) {
+                const simpleData = await fetchOgImageSimple(item.link);
+                finalImageUrl = simpleData.url;
+                finalImageCredit = simpleData.credit;
+              }
+
+              // 3) If no OG, use RSS-provided image (media:content/enclosure/etc.)
               if (!finalImageUrl) {
                 finalImageUrl = item.imageUrl;
                 finalImageCredit = item.imageCredit;
               }
 
-              // 3) Use category fallback if still no image found
+              // 4) Use category fallback if still no image found
               if (!finalImageUrl) {
                 finalImageUrl = getImageForCategory(source.category);
                 finalImageCredit = 'Unsplash';

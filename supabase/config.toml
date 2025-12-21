@@ -299,3 +299,6 @@ verify_jwt = false
 
 [functions.detect-news-opportunities]
 verify_jwt = false
+
+[functions.firecrawl-og-image]
+verify_jwt = false
