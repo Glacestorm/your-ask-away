@@ -9150,6 +9150,7 @@ export type Database = {
           excerpt: string | null
           fetched_at: string
           id: string
+          image_credit: string | null
           image_url: string | null
           importance_level: string | null
           improvement_status: string | null
@@ -9178,6 +9179,7 @@ export type Database = {
           excerpt?: string | null
           fetched_at?: string
           id?: string
+          image_credit?: string | null
           image_url?: string | null
           importance_level?: string | null
           improvement_status?: string | null
@@ -9206,6 +9208,7 @@ export type Database = {
           excerpt?: string | null
           fetched_at?: string
           id?: string
+          image_credit?: string | null
           image_url?: string | null
           importance_level?: string | null
           improvement_status?: string | null

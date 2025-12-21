@@ -11,6 +11,7 @@ interface NewsArticle {
   slug: string;
   excerpt: string;
   image_url: string;
+  image_credit?: string | null;
   source_name: string;
   source_url: string;
   category: string;
@@ -24,6 +25,42 @@ interface NewsArticle {
   product_relevance_reason?: string | null;
   importance_level?: string;
 }
+
+// Generate unique placeholder based on article ID to avoid repetition
+const getUniquePlaceholder = (id: string, category: string): string => {
+  const placeholders: Record<string, string[]> = {
+    'Legal': [
+      'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&h=450&fit=crop',
+      'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&h=450&fit=crop',
+      'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&h=450&fit=crop'
+    ],
+    'Tecnología': [
+      'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&h=450&fit=crop',
+      'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=800&h=450&fit=crop',
+      'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&h=450&fit=crop'
+    ],
+    'Economía': [
+      'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=450&fit=crop',
+      'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=800&h=450&fit=crop',
+      'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=800&h=450&fit=crop'
+    ],
+    'Ciberseguridad': [
+      'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&h=450&fit=crop',
+      'https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&h=450&fit=crop',
+      'https://images.unsplash.com/photo-1510511459019-5dda7724fd87?w=800&h=450&fit=crop'
+    ],
+    'default': [
+      'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&h=450&fit=crop',
+      'https://images.unsplash.com/photo-1495020689067-958852a7765e?w=800&h=450&fit=crop',
+      'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=800&h=450&fit=crop'
+    ]
+  };
+  
+  const categoryImages = placeholders[category] || placeholders['default'];
+  // Use hash of ID to pick consistent but varied image
+  const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return categoryImages[hash % categoryImages.length];
+};
 
 interface PremiumNewsCardProps {
   article: NewsArticle;
@@ -39,6 +76,10 @@ const PremiumNewsCard: React.FC<PremiumNewsCardProps> = ({
   onReadMore 
 }) => {
   const [showConnection, setShowConnection] = useState(false);
+  
+  // Get unique image URL (avoid repetition with fallback based on ID)
+  const imageUrl = article.image_url || getUniquePlaceholder(article.id, article.category);
+  const imageCredit = article.image_credit || article.source_name;
   
   const timeAgo = formatDistanceToNow(new Date(article.published_at), { 
     addSuffix: true, 
@@ -85,11 +126,15 @@ const PremiumNewsCard: React.FC<PremiumNewsCardProps> = ({
       >
         <div className="relative w-20 h-20 flex-shrink-0 overflow-hidden rounded-lg">
           <img
-            src={article.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=200&h=200&fit=crop'}
+            src={imageUrl}
             alt={article.title}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent" />
+          {/* Image credit overlay */}
+          <span className="absolute bottom-1 right-1 text-[8px] text-white/50 bg-black/30 px-1 rounded" title={`Imagen: ${imageCredit}`}>
+            © {imageCredit.substring(0, 10)}
+          </span>
         </div>
         <div className="flex-1 min-w-0">
           <h4 className="text-sm font-semibold text-white group-hover:text-emerald-400 transition-colors line-clamp-2">
@@ -122,7 +167,7 @@ const PremiumNewsCard: React.FC<PremiumNewsCardProps> = ({
         <motion.img
           whileHover={{ scale: 1.05 }}
           transition={{ duration: 0.6 }}
-          src={article.image_url || 'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&h=450&fit=crop'}
+          src={imageUrl}
           alt={article.title}
           className="w-full h-full object-cover"
           loading="lazy"
@@ -131,6 +176,14 @@ const PremiumNewsCard: React.FC<PremiumNewsCardProps> = ({
         {/* Gradient Overlays */}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-slate-900/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        
+        {/* Image Attribution - Legal compliance */}
+        <span 
+          className="absolute bottom-2 right-2 text-[10px] text-white/60 bg-black/40 px-2 py-0.5 rounded backdrop-blur-sm"
+          title={`Imagen: © ${imageCredit}`}
+        >
+          © {imageCredit}
+        </span>
         
         {/* Top Badges */}
         <div className="absolute top-4 left-4 flex flex-wrap items-center gap-2">
