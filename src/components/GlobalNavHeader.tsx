@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Home, ChevronLeft, ChevronRight, Map } from 'lucide-react';
+import { Home, ChevronLeft, ChevronRight, Map, Globe } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { LanguageSelector } from '@/components/LanguageSelector';
@@ -140,6 +140,20 @@ export function GlobalNavHeader({
             </button>
           </TooltipTrigger>
           <TooltipContent side="bottom">Mi Perfil</TooltipContent>
+        </Tooltip>
+        
+        {/* Back to Website Button */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <NavButton3D
+              variant="ghost"
+              size="md"
+              onClick={() => navigate('/store')}
+              icon={<Globe className="h-4 w-4" />}
+              aria-label="Volver a la web"
+            />
+          </TooltipTrigger>
+          <TooltipContent side="bottom">Volver a la web</TooltipContent>
         </Tooltip>
         
         {/* Theme Selector */}
