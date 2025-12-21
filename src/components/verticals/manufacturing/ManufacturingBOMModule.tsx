@@ -9,15 +9,29 @@ import {
   Clock,
   Plus,
   Edit,
-  Trash2,
   Copy,
-  Search
+  Search,
+  TrendingUp
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Treemap
+} from 'recharts';
 
 interface BOMItem {
   id: string;
@@ -30,7 +44,6 @@ interface BOMItem {
   children?: BOMItem[];
 }
 
-// Sample BOM data - hierarchical structure
 const bomData: BOMItem[] = [
   {
     id: '1',
@@ -96,6 +109,18 @@ const products = [
   { code: 'PROD-003', name: 'Cinta Transportadora C-300', totalCost: 8200, components: 12, leadTime: '10 días' },
 ];
 
+const costBreakdown = [
+  { name: 'Materias Primas', value: 2450, color: '#f59e0b' },
+  { name: 'Componentes', value: 5890, color: '#3b82f6' },
+  { name: 'Ensamblajes', value: 6660, color: '#8b5cf6' },
+];
+
+const costByProduct = [
+  { product: 'A-100', materia: 2450, componentes: 5890, manoObra: 3200 },
+  { product: 'B-200', materia: 4200, componentes: 12500, manoObra: 5800 },
+  { product: 'C-300', materia: 1800, componentes: 3200, manoObra: 1500 },
+];
+
 const getTypeColor = (type: string) => {
   switch (type) {
     case 'assembly': return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
@@ -136,7 +161,6 @@ const BOMTreeItem: React.FC<BOMTreeItemProps> = ({ item, level }) => {
         style={{ marginLeft: `${level * 24}px` }}
         onClick={() => hasChildren && setIsExpanded(!isExpanded)}
       >
-        {/* Expand/Collapse */}
         <div className="w-5 h-5 flex items-center justify-center">
           {hasChildren ? (
             isExpanded ? (
@@ -149,7 +173,6 @@ const BOMTreeItem: React.FC<BOMTreeItemProps> = ({ item, level }) => {
           )}
         </div>
 
-        {/* Icon based on type */}
         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
           item.type === 'assembly' ? 'bg-purple-500/20' :
           item.type === 'component' ? 'bg-blue-500/20' : 'bg-amber-500/20'
@@ -160,7 +183,6 @@ const BOMTreeItem: React.FC<BOMTreeItemProps> = ({ item, level }) => {
           }`} />
         </div>
 
-        {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-xs font-mono text-slate-500">{item.code}</span>
@@ -171,19 +193,16 @@ const BOMTreeItem: React.FC<BOMTreeItemProps> = ({ item, level }) => {
           <p className="text-white font-medium truncate">{item.name}</p>
         </div>
 
-        {/* Quantity */}
         <div className="text-right">
           <p className="text-white font-medium">{item.quantity} {item.unit}</p>
           <p className="text-xs text-slate-400">× €{item.unitCost.toFixed(2)}</p>
         </div>
 
-        {/* Total Cost */}
         <div className="w-24 text-right">
           <p className="text-emerald-400 font-semibold">€{totalCost.toLocaleString()}</p>
         </div>
       </motion.div>
 
-      {/* Children */}
       <AnimatePresence>
         {isExpanded && hasChildren && (
           <motion.div
@@ -205,6 +224,14 @@ const BOMTreeItem: React.FC<BOMTreeItemProps> = ({ item, level }) => {
 export const ManufacturingBOMModule: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState('PROD-001');
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('structure');
+
+  const stats = [
+    { label: 'Productos', value: products.length, icon: Package, color: 'text-purple-400' },
+    { label: 'Componentes Totales', value: products.reduce((a, b) => a + b.components, 0), icon: Layers, color: 'text-blue-400' },
+    { label: 'Coste Medio', value: `€${Math.round(products.reduce((a, b) => a + b.totalCost, 0) / products.length).toLocaleString()}`, icon: DollarSign, color: 'text-emerald-400' },
+    { label: 'Lead Time Medio', value: '15 días', icon: Clock, color: 'text-amber-400' },
+  ];
 
   return (
     <div className="space-y-6">
@@ -221,6 +248,30 @@ export const ManufacturingBOMModule: React.FC = () => {
           <Plus className="w-4 h-4 mr-2" />
           Nuevo BOM
         </Button>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {stats.map((stat, index) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+          >
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardContent className="p-4 flex items-center gap-4">
+                <div className="p-3 rounded-xl bg-slate-700/50">
+                  <stat.icon className={`w-6 h-6 ${stat.color}`} />
+                </div>
+                <div>
+                  <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
+                  <p className="text-sm text-slate-400">{stat.label}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
       </div>
 
       {/* Product Selection */}
@@ -269,138 +320,171 @@ export const ManufacturingBOMModule: React.FC = () => {
         ))}
       </div>
 
-      {/* BOM Tree */}
-      <Card className="bg-slate-800/50 border-slate-700">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-white flex items-center gap-2">
-            <Layers className="w-5 h-5 text-purple-400" />
-            Estructura del Producto
-          </CardTitle>
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input
-                placeholder="Buscar componente..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 bg-slate-900 border-slate-600 text-white w-64"
-              />
-            </div>
-            <Button variant="outline" size="icon" className="border-slate-600 text-slate-300">
-              <Copy className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" size="icon" className="border-slate-600 text-slate-300">
-              <Edit className="w-4 h-4" />
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {/* Legend */}
-          <div className="flex items-center gap-4 mb-4 pb-4 border-b border-slate-700">
-            <span className="text-sm text-slate-400">Leyenda:</span>
-            <Badge className={getTypeColor('assembly')} variant="outline">Ensamble</Badge>
-            <Badge className={getTypeColor('component')} variant="outline">Componente</Badge>
-            <Badge className={getTypeColor('raw')} variant="outline">Materia Prima</Badge>
-          </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="bg-slate-800/50 border border-slate-700">
+          <TabsTrigger value="structure">Estructura</TabsTrigger>
+          <TabsTrigger value="costs">Análisis Costes</TabsTrigger>
+          <TabsTrigger value="comparison">Comparativa</TabsTrigger>
+        </TabsList>
 
-          {/* Tree Structure */}
-          <div className="space-y-1">
-            {bomData.map((item) => (
-              <BOMTreeItem key={item.id} item={item} level={0} />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+        <TabsContent value="structure" className="space-y-6">
+          {/* BOM Tree */}
+          <Card className="bg-slate-800/50 border-slate-700">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-white flex items-center gap-2">
+                <Layers className="w-5 h-5 text-purple-400" />
+                Estructura del Producto
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input
+                    placeholder="Buscar componente..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9 bg-slate-900 border-slate-600 text-white w-64"
+                  />
+                </div>
+                <Button variant="outline" size="icon" className="border-slate-600 text-slate-300">
+                  <Copy className="w-4 h-4" />
+                </Button>
+                <Button variant="outline" size="icon" className="border-slate-600 text-slate-300">
+                  <Edit className="w-4 h-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-4 mb-4 pb-4 border-b border-slate-700">
+                <span className="text-sm text-slate-400">Leyenda:</span>
+                <Badge className={getTypeColor('assembly')} variant="outline">Ensamble</Badge>
+                <Badge className={getTypeColor('component')} variant="outline">Componente</Badge>
+                <Badge className={getTypeColor('raw')} variant="outline">Materia Prima</Badge>
+              </div>
 
-      {/* Cost Breakdown */}
-      <div className="grid lg:grid-cols-2 gap-6">
-        <Card className="bg-slate-800/50 border-slate-700">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <DollarSign className="w-5 h-5 text-emerald-400" />
-              Desglose de Costes
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-slate-400">Materias Primas</span>
-                <span className="text-white font-medium">€2,450</span>
+              <div className="space-y-1">
+                {bomData.map((item) => (
+                  <BOMTreeItem key={item.id} item={item} level={0} />
+                ))}
               </div>
-              <Progress value={16} className="h-2" />
-            </div>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-slate-400">Componentes</span>
-                <span className="text-white font-medium">€5,890</span>
-              </div>
-              <Progress value={39} className="h-2" />
-            </div>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-slate-400">Ensamblajes</span>
-                <span className="text-white font-medium">€6,660</span>
-              </div>
-              <Progress value={44} className="h-2" />
-            </div>
-            <div className="pt-4 border-t border-slate-700">
-              <div className="flex justify-between items-center">
-                <span className="text-white font-semibold">Coste Total</span>
-                <span className="text-emerald-400 font-bold text-xl">€15,000</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-        <Card className="bg-slate-800/50 border-slate-700">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Package className="w-5 h-5 text-blue-400" />
-              Resumen de Componentes
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                    <Layers className="w-5 h-5 text-purple-400" />
-                  </div>
-                  <div>
-                    <p className="text-white font-medium">Ensamblajes</p>
-                    <p className="text-xs text-slate-400">Subensambles y módulos</p>
+        <TabsContent value="costs" className="space-y-6">
+          <div className="grid lg:grid-cols-2 gap-6">
+            {/* Cost Breakdown Pie Chart */}
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-emerald-400" />
+                  Desglose de Costes
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex items-center justify-center gap-8">
+                <ResponsiveContainer width={200} height={200}>
+                  <PieChart>
+                    <Pie
+                      data={costBreakdown}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={80}
+                      paddingAngle={4}
+                      dataKey="value"
+                    >
+                      {costBreakdown.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: '#1e293b', 
+                        border: '1px solid #334155',
+                        borderRadius: '8px'
+                      }}
+                      formatter={(value: number) => `€${value.toLocaleString()}`}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="space-y-4">
+                  {costBreakdown.map((item) => (
+                    <div key={item.name} className="flex items-center gap-4">
+                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: item.color }} />
+                      <div>
+                        <p className="text-white font-medium">{item.name}</p>
+                        <p className="text-slate-400 text-sm">€{item.value.toLocaleString()}</p>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="pt-4 border-t border-slate-700">
+                    <p className="text-white font-semibold">Total: €15,000</p>
                   </div>
                 </div>
-                <span className="text-2xl font-bold text-purple-400">3</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                    <Package className="w-5 h-5 text-blue-400" />
-                  </div>
-                  <div>
-                    <p className="text-white font-medium">Componentes</p>
-                    <p className="text-xs text-slate-400">Piezas compradas</p>
-                  </div>
+              </CardContent>
+            </Card>
+
+            {/* Component Summary */}
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Package className="w-5 h-5 text-blue-400" />
+                  Resumen de Componentes
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {[
+                    { name: 'Ensamblajes', count: 3, color: 'purple' },
+                    { name: 'Componentes', count: 8, color: 'blue' },
+                    { name: 'Materias Primas', count: 8, color: 'amber' },
+                  ].map((item) => (
+                    <div key={item.name} className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 bg-${item.color}-500/20 rounded-lg flex items-center justify-center`}>
+                          <Layers className={`w-5 h-5 text-${item.color}-400`} />
+                        </div>
+                        <span className="text-white font-medium">{item.name}</span>
+                      </div>
+                      <span className={`text-2xl font-bold text-${item.color}-400`}>{item.count}</span>
+                    </div>
+                  ))}
                 </div>
-                <span className="text-2xl font-bold text-blue-400">8</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-amber-500/20 rounded-lg flex items-center justify-center">
-                    <Layers className="w-5 h-5 text-amber-400" />
-                  </div>
-                  <div>
-                    <p className="text-white font-medium">Materias Primas</p>
-                    <p className="text-xs text-slate-400">Materiales base</p>
-                  </div>
-                </div>
-                <span className="text-2xl font-bold text-amber-400">8</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="comparison" className="space-y-6">
+          <Card className="bg-slate-800/50 border-slate-700">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-blue-400" />
+                Comparativa de Costes por Producto
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={350}>
+                <BarChart data={costByProduct}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                  <XAxis dataKey="product" stroke="#94a3b8" />
+                  <YAxis stroke="#94a3b8" tickFormatter={(v) => `€${v/1000}k`} />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#1e293b', 
+                      border: '1px solid #334155',
+                      borderRadius: '8px'
+                    }}
+                    formatter={(value: number) => `€${value.toLocaleString()}`}
+                  />
+                  <Bar dataKey="materia" name="Materia Prima" fill="#f59e0b" radius={[4, 4, 0, 0]} stackId="a" />
+                  <Bar dataKey="componentes" name="Componentes" fill="#3b82f6" radius={[0, 0, 0, 0]} stackId="a" />
+                  <Bar dataKey="manoObra" name="Mano de Obra" fill="#8b5cf6" radius={[4, 4, 0, 0]} stackId="a" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
