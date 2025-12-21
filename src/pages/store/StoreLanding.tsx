@@ -1,38 +1,34 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Shield, Zap, Globe, Lock, ArrowRight, CheckCircle2, Sparkles, Newspaper } from 'lucide-react';
+import { Shield, Zap, Globe, Lock, ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useLanguage } from '@/contexts/LanguageContext';
 import StoreNavbar from '@/components/store/StoreNavbar';
 import HeroSection from '@/components/store/HeroSection';
-import FeaturedModules from '@/components/store/FeaturedModules';
-import PremiumModulesSection from '@/components/store/PremiumModulesSection';
-import BundlesSection from '@/components/store/BundlesSection';
-import TrustBadges from '@/components/store/TrustBadges';
-import ROICalculator from '@/components/store/ROICalculator';
-import PricingExplanation from '@/components/store/PricingExplanation';
 import StoreFooter from '@/components/store/StoreFooter';
 import CartSidebar from '@/components/store/CartSidebar';
-import { MarketingTabs } from '@/components/marketing';
-import NewsTicker from '@/components/news/NewsTicker';
-import PremiumNewsCard from '@/components/news/PremiumNewsCard';
-import NewsSearch from '@/components/news/NewsSearch';
-import { useNewsArticles } from '@/hooks/useNewsArticles';
-import { FAQSection, FAQChatWidget } from '@/components/faq';
-import { SectorsShowcase } from '@/components/sectors';
+
+// Lazy load heavy components - only load when user scrolls to them
+const FeaturedModules = lazy(() => import('@/components/store/FeaturedModules'));
+const PremiumModulesSection = lazy(() => import('@/components/store/PremiumModulesSection'));
+const BundlesSection = lazy(() => import('@/components/store/BundlesSection'));
+const TrustBadges = lazy(() => import('@/components/store/TrustBadges'));
+const ROICalculator = lazy(() => import('@/components/store/ROICalculator'));
+const PricingExplanation = lazy(() => import('@/components/store/PricingExplanation'));
+const MarketingTabs = lazy(() => import('@/components/marketing').then(m => ({ default: m.MarketingTabs })));
+const SectorsShowcase = lazy(() => import('@/components/sectors').then(m => ({ default: m.SectorsShowcase })));
+const FAQSection = lazy(() => import('@/components/faq').then(m => ({ default: m.FAQSection })));
+const FAQChatWidget = lazy(() => import('@/components/faq').then(m => ({ default: m.FAQChatWidget })));
+const NewsSection = lazy(() => import('@/components/store/NewsSection'));
+
+// Minimal loading placeholder
+const SectionSkeleton = () => (
+  <div className="py-16 flex items-center justify-center">
+    <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+  </div>
+);
 
 const StoreLanding: React.FC = () => {
-  const { t } = useLanguage();
-  const { articles } = useNewsArticles({ limit: 10 });
-
-  // Transform articles for ticker
-  const tickerItems = articles.slice(0, 6).map(article => ({
-    id: article.id,
-    title: article.title,
-    category: article.category || 'Noticias'
-  }));
-
   const features = [
     { 
       icon: Shield, 
@@ -60,13 +56,12 @@ const StoreLanding: React.FC = () => {
     <div className="min-h-screen bg-slate-950">
       <StoreNavbar />
       
-      {/* Hero */}
+      {/* Hero - loads immediately */}
       <HeroSection />
 
-      {/* Features Section */}
+      {/* Features Section - Static, no DB calls */}
       <section className="py-32 relative">
         <div className="container mx-auto px-6">
-          {/* Section Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -85,7 +80,6 @@ const StoreLanding: React.FC = () => {
             </p>
           </motion.div>
 
-          {/* Features Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
               <motion.div
@@ -107,26 +101,32 @@ const StoreLanding: React.FC = () => {
         </div>
       </section>
 
-      {/* Sectors Showcase - Industries we serve */}
-      <SectorsShowcase />
+      {/* Lazy loaded sections */}
+      <Suspense fallback={<SectionSkeleton />}>
+        <SectorsShowcase />
+      </Suspense>
 
-      {/* Marketing Section */}
-      <MarketingTabs />
+      <Suspense fallback={<SectionSkeleton />}>
+        <MarketingTabs />
+      </Suspense>
 
-      {/* Modules Section */}
       <div id="modules">
-        <FeaturedModules />
+        <Suspense fallback={<SectionSkeleton />}>
+          <FeaturedModules />
+        </Suspense>
       </div>
 
-      {/* Premium Section */}
-      <PremiumModulesSection />
+      <Suspense fallback={<SectionSkeleton />}>
+        <PremiumModulesSection />
+      </Suspense>
 
-      {/* Bundles Section */}
       <div id="bundles">
-        <BundlesSection />
+        <Suspense fallback={<SectionSkeleton />}>
+          <BundlesSection />
+        </Suspense>
       </div>
 
-      {/* Contact Section */}
+      {/* Contact Section - Static */}
       <section id="contact" className="py-32 relative">
         <div className="container mx-auto px-6">
           <motion.div
@@ -172,19 +172,22 @@ const StoreLanding: React.FC = () => {
 
       {/* Pricing Section */}
       <div id="pricing">
-        <ROICalculator />
+        <Suspense fallback={<SectionSkeleton />}>
+          <ROICalculator />
+        </Suspense>
         <div className="container mx-auto px-6">
-          <PricingExplanation />
+          <Suspense fallback={<SectionSkeleton />}>
+            <PricingExplanation />
+          </Suspense>
         </div>
       </div>
 
-      {/* Trust Badges */}
-      <TrustBadges />
+      <Suspense fallback={<SectionSkeleton />}>
+        <TrustBadges />
+      </Suspense>
 
-
-      {/* Final CTA Section */}
+      {/* Final CTA Section - Static */}
       <section className="py-32 relative overflow-hidden">
-        {/* Background */}
         <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-primary/5 to-slate-950" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[150px]" />
         
@@ -241,109 +244,21 @@ const StoreLanding: React.FC = () => {
         </div>
       </section>
 
-      {/* News Ticker (justo antes de Noticias) */}
-      {/* FAQ Section */}
-      <FAQSection />
+      <Suspense fallback={<SectionSkeleton />}>
+        <FAQSection />
+      </Suspense>
 
-      {/* News Section */}
-      {articles.length > 0 && (
-        <section id="news" className="py-24 relative">
-          <div className="container mx-auto px-6">
-            {/* Section Header */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="max-w-2xl mx-auto text-center mb-16"
-            >
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-6">
-                <Newspaper className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-primary">Actualización IA</span>
-              </div>
-              <h2 className="text-3xl md:text-4xl font-display font-semibold text-white mb-4">
-                Noticias Empresariales
-              </h2>
-              <p className="text-lg text-slate-400">
-                Las últimas novedades del sector analizadas por inteligencia artificial
-              </p>
-            </motion.div>
-
-            {/* News Search */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="mb-12"
-            >
-              <NewsSearch />
-            </motion.div>
-
-            {/* News Ticker - Above the grid */}
-            {tickerItems.length > 0 && (
-              <div className="mb-8">
-                <NewsTicker items={tickerItems} />
-              </div>
-            )}
-
-            {/* News Grid - 3 columns with larger cards */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-              {articles.slice(0, 3).map((article, index) => (
-                <motion.div
-                  key={article.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="h-full"
-                >
-                  <PremiumNewsCard
-                    article={{
-                      id: article.id,
-                      title: article.title,
-                      slug: article.slug || article.id,
-                      excerpt: article.ai_summary || article.content?.substring(0, 150) || '',
-                      image_url: article.image_url || '',
-                      image_credit: article.image_credit || article.source_name || 'Fuente',
-                      source_name: article.source_name || 'Fuente',
-                      source_url: article.source_url || '',
-                      category: article.category || 'Noticias',
-                      tags: article.tags || [],
-                      published_at: article.published_at,
-                      ai_summary: article.ai_summary || '',
-                      relevance_score: article.relevance_score || 0,
-                      fetched_at: article.fetched_at || article.published_at
-                    }}
-                    index={index}
-                    variant="default"
-                  />
-                </motion.div>
-              ))}
-            </div>
-
-            {/* CTA Button */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center"
-            >
-              <Link to="/blog">
-                <Button
-                  variant="outline"
-                  className="h-12 px-8 text-base font-medium border-slate-700 text-white hover:bg-slate-800 rounded-full"
-                >
-                  Ver todas las noticias
-                  <ArrowRight className="ml-2 w-4 h-4" />
-                </Button>
-              </Link>
-            </motion.div>
-          </div>
-        </section>
-      )}
+      {/* News - only loads when scrolled into view */}
+      <Suspense fallback={<SectionSkeleton />}>
+        <NewsSection />
+      </Suspense>
 
       <StoreFooter />
       <CartSidebar />
-      <FAQChatWidget />
+      
+      <Suspense fallback={null}>
+        <FAQChatWidget />
+      </Suspense>
     </div>
   );
 };
