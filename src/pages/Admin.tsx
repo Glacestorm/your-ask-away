@@ -84,6 +84,7 @@ import { ProcessMiningDashboard } from '@/components/bpmn/ProcessMiningDashboard
 import { RoleCopilotPanel, NBADashboard, ContinuousControlsDashboard } from '@/components/ai-control';
 import { VerticalPacksManager } from '@/components/admin/verticals';
 import { SectorsManager } from '@/components/admin/SectorsManager';
+import { CoreWebVitalsDashboard } from '@/components/admin/CoreWebVitalsDashboard';
 import { Zap, ShoppingCart, Briefcase } from 'lucide-react';
 
 const Admin = () => {
