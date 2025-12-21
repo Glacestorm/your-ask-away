@@ -9,6 +9,7 @@ import PremiumNewsCard from '@/components/news/PremiumNewsCard';
 import NewsTicker from '@/components/news/NewsTicker';
 import PremiumNewsFilters from '@/components/news/PremiumNewsFilters';
 import PremiumNewsSidebar from '@/components/news/PremiumNewsSidebar';
+import NewsAudioPlayer from '@/components/news/NewsAudioPlayer';
 import { useNewsArticles, NewsArticle } from '@/hooks/useNewsArticles';
 
 const Blog: React.FC = () => {
@@ -160,7 +161,10 @@ const Blog: React.FC = () => {
             </div>
 
             {/* Sidebar */}
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 space-y-6">
+              {/* Audio Summary Player */}
+              <NewsAudioPlayer />
+              
               <PremiumNewsSidebar
                 trendingNews={[...articles].sort((a, b) => b.relevance_score - a.relevance_score) as any}
                 popularTags={popularTags}

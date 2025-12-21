@@ -205,4 +205,5 @@ export const notFoundRoute = {
 export const redirects = [
   { from: '/', to: '/store' },
   { from: '/map', to: '/admin?section=map' },
+  { from: '/resources/blog', to: '/blog' },
 ];
