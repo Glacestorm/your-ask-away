@@ -98,10 +98,17 @@ export function useOnboarding(companyId?: string) {
       if (error) throw error;
       if (!data) return null;
 
+      const template = data.onboarding_templates ? {
+        ...data.onboarding_templates,
+        steps: (data.onboarding_templates.steps as unknown as OnboardingStep[]) || [],
+        gamification_config: data.onboarding_templates.gamification_config as OnboardingTemplate['gamification_config'],
+      } : null;
+
       return {
         ...data,
         completed_steps: (data.completed_steps as Record<string, { completed_at: string; points_earned: number }>) || {},
-      } as OnboardingProgress & { onboarding_templates: OnboardingTemplate };
+        onboarding_templates: template,
+      } as OnboardingProgress & { onboarding_templates: OnboardingTemplate | null };
     },
     enabled: !!companyId,
   });

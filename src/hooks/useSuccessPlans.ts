@@ -45,7 +45,7 @@ export interface SuccessPlan {
 export interface SuccessPlanGoal {
   id: string;
   plan_id?: string;
-  goal_name: string;
+  goal_title: string;
   goal_description?: string;
   goal_type?: string;
   target_metric?: string;
@@ -57,7 +57,9 @@ export interface SuccessPlanGoal {
   progress_percentage?: number;
   milestones?: Array<{ name: string; completed: boolean; date?: string }>;
   last_updated_at?: string;
-  achieved_at?: string;
+  completed_at?: string;
+  owner_id?: string;
+  ai_recommendations?: unknown;
 }
 
 export interface QBRRecord {
@@ -137,6 +139,7 @@ export function useSuccessPlans(companyId?: string) {
       if (error) throw error;
       return data.map(goal => ({
         ...goal,
+        goal_title: goal.goal_title,
         milestones: (goal.milestones as SuccessPlanGoal['milestones']) || [],
       })) as SuccessPlanGoal[];
     },
@@ -161,18 +164,18 @@ export function useSuccessPlans(companyId?: string) {
       if (error) throw error;
       return data.map(qbr => ({
         ...qbr,
-        attendees: (qbr.attendees as QBRRecord['attendees']) || [],
-        agenda: (qbr.agenda as QBRRecord['agenda']) || [],
-        achievements: (qbr.achievements as QBRRecord['achievements']) || [],
-        challenges: (qbr.challenges as QBRRecord['challenges']) || [],
-        metrics_reviewed: (qbr.metrics_reviewed as Record<string, number>) || {},
-        next_quarter_goals: (qbr.next_quarter_goals as SuccessPlanObjective[]) || [],
-        action_items: (qbr.action_items as QBRRecord['action_items']) || [],
-        decisions_made: (qbr.decisions_made as QBRRecord['decisions_made']) || [],
-        renewal_discussion: (qbr.renewal_discussion as QBRRecord['renewal_discussion']),
-        expansion_opportunities: (qbr.expansion_opportunities as QBRRecord['expansion_opportunities']) || [],
-        ai_generated_recommendations: (qbr.ai_generated_recommendations as QBRRecord['ai_generated_recommendations']) || [],
-        ai_risk_assessment: (qbr.ai_risk_assessment as QBRRecord['ai_risk_assessment']),
+        attendees: (qbr.attendees as unknown as QBRRecord['attendees']) || [],
+        agenda: (qbr.agenda as unknown as QBRRecord['agenda']) || [],
+        achievements: (qbr.achievements as unknown as QBRRecord['achievements']) || [],
+        challenges: (qbr.challenges as unknown as QBRRecord['challenges']) || [],
+        metrics_reviewed: (qbr.metrics_reviewed as unknown as Record<string, number>) || {},
+        next_quarter_goals: (qbr.next_quarter_goals as unknown as SuccessPlanObjective[]) || [],
+        action_items: (qbr.action_items as unknown as QBRRecord['action_items']) || [],
+        decisions_made: (qbr.decisions_made as unknown as QBRRecord['decisions_made']) || [],
+        renewal_discussion: (qbr.renewal_discussion as unknown as QBRRecord['renewal_discussion']),
+        expansion_opportunities: (qbr.expansion_opportunities as unknown as QBRRecord['expansion_opportunities']) || [],
+        ai_generated_recommendations: (qbr.ai_generated_recommendations as unknown as QBRRecord['ai_generated_recommendations']) || [],
+        ai_risk_assessment: (qbr.ai_risk_assessment as unknown as QBRRecord['ai_risk_assessment']),
       })) as QBRRecord[];
     },
   });
@@ -263,7 +266,7 @@ export function useSuccessPlans(companyId?: string) {
         .from('success_plan_goals')
         .insert({
           plan_id: goal.plan_id,
-          goal_name: goal.goal_name || 'Nuevo Objetivo',
+          goal_title: goal.goal_title || 'Nuevo Objetivo',
           goal_description: goal.goal_description,
           goal_type: goal.goal_type || 'growth',
           target_metric: goal.target_metric,
