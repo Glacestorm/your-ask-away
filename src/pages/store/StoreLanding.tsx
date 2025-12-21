@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Shield, Zap, Globe, Lock, ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
+import { Shield, Zap, Globe, Lock, ArrowRight, CheckCircle2, Sparkles, Newspaper } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import StoreNavbar from '@/components/store/StoreNavbar';
@@ -15,9 +15,20 @@ import PricingExplanation from '@/components/store/PricingExplanation';
 import StoreFooter from '@/components/store/StoreFooter';
 import CartSidebar from '@/components/store/CartSidebar';
 import { MarketingTabs } from '@/components/marketing';
+import NewsTicker from '@/components/news/NewsTicker';
+import PremiumNewsCard from '@/components/news/PremiumNewsCard';
+import { useNewsArticles } from '@/hooks/useNewsArticles';
 
 const StoreLanding: React.FC = () => {
   const { t } = useLanguage();
+  const { articles } = useNewsArticles({ limit: 4 });
+
+  // Transform articles for ticker
+  const tickerItems = articles.slice(0, 6).map(article => ({
+    id: article.id,
+    title: article.title,
+    category: article.category || 'Noticias'
+  }));
 
   const features = [
     { 
@@ -48,6 +59,9 @@ const StoreLanding: React.FC = () => {
       
       {/* Hero */}
       <HeroSection />
+
+      {/* News Ticker */}
+      {tickerItems.length > 0 && <NewsTicker items={tickerItems} />}
 
       {/* Features Section */}
       <section className="py-32 relative">
@@ -222,6 +236,83 @@ const StoreLanding: React.FC = () => {
           </motion.div>
         </div>
       </section>
+
+      {/* News Section */}
+      {articles.length > 0 && (
+        <section id="news" className="py-24 relative">
+          <div className="container mx-auto px-6">
+            {/* Section Header */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="max-w-2xl mx-auto text-center mb-16"
+            >
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-6">
+                <Newspaper className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium text-primary">Actualización IA</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-display font-semibold text-white mb-4">
+                Noticias Empresariales
+              </h2>
+              <p className="text-lg text-slate-400">
+                Las últimas novedades del sector analizadas por inteligencia artificial
+              </p>
+            </motion.div>
+
+            {/* News Grid */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+              {articles.slice(0, 4).map((article, index) => (
+                <motion.div
+                  key={article.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <PremiumNewsCard
+                    article={{
+                      id: article.id,
+                      title: article.title,
+                      slug: article.slug || article.id,
+                      excerpt: article.ai_summary || article.content?.substring(0, 150) || '',
+                      image_url: article.image_url || '',
+                      source_name: article.source_name || 'Fuente',
+                      source_url: article.source_url || '',
+                      category: article.category || 'Noticias',
+                      tags: article.tags || [],
+                      published_at: article.published_at,
+                      ai_summary: article.ai_summary || '',
+                      relevance_score: article.relevance_score || 0,
+                      fetched_at: article.fetched_at || article.published_at
+                    }}
+                    index={index}
+                    variant="compact"
+                  />
+                </motion.div>
+              ))}
+            </div>
+
+            {/* CTA Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <Link to="/resources/blog">
+                <Button
+                  variant="outline"
+                  className="h-12 px-8 text-base font-medium border-slate-700 text-white hover:bg-slate-800 rounded-full"
+                >
+                  Ver todas las noticias
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </Button>
+              </Link>
+            </motion.div>
+          </div>
+        </section>
+      )}
 
       <StoreFooter />
       <CartSidebar />
