@@ -8996,17 +8996,55 @@ export type Database = {
           },
         ]
       }
+      news_admin_config: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          setting_key: string
+          setting_value: Json
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          setting_key: string
+          setting_value?: Json
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          setting_key?: string
+          setting_value?: Json
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       news_articles: {
         Row: {
           ai_summary: string | null
+          archive_reason: string | null
           category: string
           content: string | null
           created_at: string
+          detected_trends: string[] | null
           excerpt: string | null
           fetched_at: string
           id: string
           image_url: string | null
+          importance_level: string | null
+          improvement_status: string | null
+          improvement_suggestions: string | null
+          is_archived: boolean | null
           is_featured: boolean | null
+          product_connection: string | null
+          product_relevance_reason: string | null
           published_at: string
           read_count: number | null
           relevance_score: number | null
@@ -9019,14 +9057,22 @@ export type Database = {
         }
         Insert: {
           ai_summary?: string | null
+          archive_reason?: string | null
           category?: string
           content?: string | null
           created_at?: string
+          detected_trends?: string[] | null
           excerpt?: string | null
           fetched_at?: string
           id?: string
           image_url?: string | null
+          importance_level?: string | null
+          improvement_status?: string | null
+          improvement_suggestions?: string | null
+          is_archived?: boolean | null
           is_featured?: boolean | null
+          product_connection?: string | null
+          product_relevance_reason?: string | null
           published_at?: string
           read_count?: number | null
           relevance_score?: number | null
@@ -9039,14 +9085,22 @@ export type Database = {
         }
         Update: {
           ai_summary?: string | null
+          archive_reason?: string | null
           category?: string
           content?: string | null
           created_at?: string
+          detected_trends?: string[] | null
           excerpt?: string | null
           fetched_at?: string
           id?: string
           image_url?: string | null
+          importance_level?: string | null
+          improvement_status?: string | null
+          improvement_suggestions?: string | null
+          is_archived?: boolean | null
           is_featured?: boolean | null
+          product_connection?: string | null
+          product_relevance_reason?: string | null
           published_at?: string
           read_count?: number | null
           relevance_score?: number | null
@@ -9056,6 +9110,197 @@ export type Database = {
           tags?: string[] | null
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      news_fetch_logs: {
+        Row: {
+          articles_fetched: number | null
+          articles_processed: number | null
+          articles_saved: number | null
+          created_at: string | null
+          duration_ms: number | null
+          errors: string[] | null
+          execution_time: string | null
+          id: string
+          sources_status: Json | null
+          status: string | null
+          warnings: string[] | null
+        }
+        Insert: {
+          articles_fetched?: number | null
+          articles_processed?: number | null
+          articles_saved?: number | null
+          created_at?: string | null
+          duration_ms?: number | null
+          errors?: string[] | null
+          execution_time?: string | null
+          id?: string
+          sources_status?: Json | null
+          status?: string | null
+          warnings?: string[] | null
+        }
+        Update: {
+          articles_fetched?: number | null
+          articles_processed?: number | null
+          articles_saved?: number | null
+          created_at?: string | null
+          duration_ms?: number | null
+          errors?: string[] | null
+          execution_time?: string | null
+          id?: string
+          sources_status?: Json | null
+          status?: string | null
+          warnings?: string[] | null
+        }
+        Relationships: []
+      }
+      news_improvement_insights: {
+        Row: {
+          ai_recommendation: string | null
+          created_at: string | null
+          description: string | null
+          detected_from_trends: string[] | null
+          id: string
+          insight_type: string
+          news_article_id: string | null
+          priority: string | null
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          ai_recommendation?: string | null
+          created_at?: string | null
+          description?: string | null
+          detected_from_trends?: string[] | null
+          id?: string
+          insight_type: string
+          news_article_id?: string | null
+          priority?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          ai_recommendation?: string | null
+          created_at?: string | null
+          description?: string | null
+          detected_from_trends?: string[] | null
+          id?: string
+          insight_type?: string
+          news_article_id?: string | null
+          priority?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_improvement_insights_news_article_id_fkey"
+            columns: ["news_article_id"]
+            isOneToOne: false
+            referencedRelation: "news_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      news_sources: {
+        Row: {
+          articles_fetched: number | null
+          articles_relevant: number | null
+          category: string
+          created_at: string | null
+          error_count: number | null
+          id: string
+          is_active: boolean | null
+          last_error: string | null
+          last_fetch_at: string | null
+          name: string
+          updated_at: string | null
+          url: string
+        }
+        Insert: {
+          articles_fetched?: number | null
+          articles_relevant?: number | null
+          category: string
+          created_at?: string | null
+          error_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_error?: string | null
+          last_fetch_at?: string | null
+          name: string
+          updated_at?: string | null
+          url: string
+        }
+        Update: {
+          articles_fetched?: number | null
+          articles_relevant?: number | null
+          category?: string
+          created_at?: string | null
+          error_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_error?: string | null
+          last_fetch_at?: string | null
+          name?: string
+          updated_at?: string | null
+          url?: string
+        }
+        Relationships: []
+      }
+      news_weekly_reports: {
+        Row: {
+          created_at: string | null
+          detected_trends: Json | null
+          id: string
+          improvement_proposals: Json | null
+          report_data: Json
+          sent_at: string | null
+          sent_to_emails: string[] | null
+          statistics: Json | null
+          summary: string | null
+          top_news: Json | null
+          week_end: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string | null
+          detected_trends?: Json | null
+          id?: string
+          improvement_proposals?: Json | null
+          report_data?: Json
+          sent_at?: string | null
+          sent_to_emails?: string[] | null
+          statistics?: Json | null
+          summary?: string | null
+          top_news?: Json | null
+          week_end: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string | null
+          detected_trends?: Json | null
+          id?: string
+          improvement_proposals?: Json | null
+          report_data?: Json
+          sent_at?: string | null
+          sent_to_emails?: string[] | null
+          statistics?: Json | null
+          summary?: string | null
+          top_news?: Json | null
+          week_end?: string
+          week_start?: string
         }
         Relationships: []
       }
