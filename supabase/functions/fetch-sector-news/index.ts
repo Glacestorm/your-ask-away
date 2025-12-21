@@ -44,7 +44,82 @@ function extractTextFromXML(xmlString: string, tag: string): string {
   return '';
 }
 
-async function parseRSSFeed(url: string): Promise<RSSItem[]> {
+function extractImageFromRSS(itemXml: string): { url: string | null; credit: string | null } {
+  // Try media:content
+  const mediaMatch = itemXml.match(/<media:content[^>]*url=["']([^"']+)["'][^>]*>/i);
+  if (mediaMatch) {
+    const creditMatch = itemXml.match(/<media:credit[^>]*>([^<]+)<\/media:credit>/i);
+    return { url: mediaMatch[1], credit: creditMatch?.[1]?.trim() || null };
+  }
+  
+  // Try enclosure (common in RSS)
+  const enclosureMatch = itemXml.match(/<enclosure[^>]*url=["']([^"']+)["'][^>]*type=["']image[^"']*["'][^>]*>/i) ||
+                          itemXml.match(/<enclosure[^>]*type=["']image[^"']*["'][^>]*url=["']([^"']+)["'][^>]*>/i);
+  if (enclosureMatch) {
+    return { url: enclosureMatch[1], credit: null };
+  }
+  
+  // Try media:thumbnail
+  const thumbMatch = itemXml.match(/<media:thumbnail[^>]*url=["']([^"']+)["'][^>]*>/i);
+  if (thumbMatch) {
+    return { url: thumbMatch[1], credit: null };
+  }
+  
+  // Try image tag inside item
+  const imageMatch = itemXml.match(/<image[^>]*>[\s\S]*?<url>([^<]+)<\/url>/i);
+  if (imageMatch) {
+    return { url: imageMatch[1].trim(), credit: null };
+  }
+  
+  // Try to extract from description (common pattern: img src)
+  const imgMatch = itemXml.match(/<img[^>]*src=["']([^"']+)["'][^>]*>/i);
+  if (imgMatch) {
+    return { url: imgMatch[1], credit: null };
+  }
+  
+  return { url: null, credit: null };
+}
+
+async function fetchOgImage(articleUrl: string): Promise<{ url: string | null; credit: string | null }> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
+    const response = await fetch(articleUrl, {
+      headers: { 'User-Agent': 'ObelixIA News Bot/2.0' },
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) return { url: null, credit: null };
+    
+    const html = await response.text();
+    
+    // og:image
+    const ogMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["'][^>]*>/i) ||
+                    html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["'][^>]*>/i);
+    
+    // twitter:image as fallback
+    const twitterMatch = html.match(/<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["'][^>]*>/i);
+    
+    const imageUrl = ogMatch?.[1] || twitterMatch?.[1] || null;
+    
+    // Try to get site name for credit
+    const siteMatch = html.match(/<meta[^>]*property=["']og:site_name["'][^>]*content=["']([^"']+)["'][^>]*>/i);
+    const credit = siteMatch?.[1]?.trim() || null;
+    
+    return { url: imageUrl, credit };
+  } catch {
+    return { url: null, credit: null };
+  }
+}
+
+interface RSSItemWithImage extends RSSItem {
+  imageUrl: string | null;
+  imageCredit: string | null;
+}
+
+async function parseRSSFeed(url: string): Promise<RSSItemWithImage[]> {
   try {
     console.log(`Fetching RSS from: ${url}`);
     const response = await fetch(url, {
@@ -57,7 +132,7 @@ async function parseRSSFeed(url: string): Promise<RSSItem[]> {
     }
     
     const xmlText = await response.text();
-    const items: RSSItem[] = [];
+    const items: RSSItemWithImage[] = [];
     
     const itemRegex = /<item>([\s\S]*?)<\/item>/gi;
     let match;
@@ -68,9 +143,10 @@ async function parseRSSFeed(url: string): Promise<RSSItem[]> {
       const link = extractTextFromXML(itemXml, 'link');
       const description = extractTextFromXML(itemXml, 'description');
       const pubDate = extractTextFromXML(itemXml, 'pubDate');
+      const { url: imageUrl, credit: imageCredit } = extractImageFromRSS(itemXml);
       
       if (title && link) {
-        items.push({ title, link, description, pubDate });
+        items.push({ title, link, description, pubDate, imageUrl, imageCredit });
       }
     }
     
@@ -303,14 +379,33 @@ serve(async (req) => {
             if (aiData.relevanceScore >= minRelevanceScore) {
               sourcesStatus[source.name].relevant++;
               
-              const imageUrl = getImageForCategory(source.category);
+              // Determine image: prefer RSS image, then fetch og:image, then fallback
+              let finalImageUrl = item.imageUrl;
+              let finalImageCredit = item.imageCredit;
+              
+              if (!finalImageUrl) {
+                // Try to fetch og:image from article page
+                const ogData = await fetchOgImage(item.link);
+                finalImageUrl = ogData.url;
+                finalImageCredit = ogData.credit;
+              }
+              
+              // Use category fallback if no image found
+              if (!finalImageUrl) {
+                finalImageUrl = getImageForCategory(source.category);
+                finalImageCredit = 'Unsplash';
+              }
+              
+              // Build image credit attribution
+              const imageAttribution = finalImageCredit || source.name;
               
               const newsArticle = {
                 title: item.title,
                 slug,
                 excerpt: item.description.substring(0, 300),
                 content: item.description,
-                image_url: imageUrl,
+                image_url: finalImageUrl,
+                image_credit: imageAttribution,
                 source_url: item.link,
                 source_name: source.name,
                 category: source.category,
