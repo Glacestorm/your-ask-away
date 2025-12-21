@@ -90,15 +90,17 @@ const HeroSection: React.FC = () => {
                 </Button>
               </Link>
               
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={() => setIsDemoModalOpen(true)}
-                className="h-14 px-8 text-base font-medium border-white/20 text-white hover:bg-white/10 rounded-full transition-all duration-300"
-              >
-                <Play className="mr-2 w-5 h-5" />
-                Ver Demo
-              </Button>
+              <div className="relative pulse-rings-container">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={() => setIsDemoModalOpen(true)}
+                  className="relative h-14 px-8 text-base font-medium border-white/20 text-white hover:bg-white/10 rounded-full transition-all duration-300 pulse-wave"
+                >
+                  <Play className="mr-2 w-5 h-5" />
+                  Ver Demo
+                </Button>
+              </div>
             </motion.div>
 
             {/* ObelixIA Logo with Brain */}

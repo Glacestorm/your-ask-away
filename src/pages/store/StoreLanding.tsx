@@ -17,12 +17,13 @@ import CartSidebar from '@/components/store/CartSidebar';
 import { MarketingTabs } from '@/components/marketing';
 import NewsTicker from '@/components/news/NewsTicker';
 import PremiumNewsCard from '@/components/news/PremiumNewsCard';
+import NewsSearch from '@/components/news/NewsSearch';
 import { useNewsArticles } from '@/hooks/useNewsArticles';
 import { FAQSection, FAQChatWidget } from '@/components/faq';
 
 const StoreLanding: React.FC = () => {
   const { t } = useLanguage();
-  const { articles } = useNewsArticles({ limit: 4 });
+  const { articles } = useNewsArticles({ limit: 10 });
 
   // Transform articles for ticker
   const tickerItems = articles.slice(0, 6).map(article => ({
@@ -262,6 +263,16 @@ const StoreLanding: React.FC = () => {
               </p>
             </motion.div>
 
+            {/* News Search */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="mb-12"
+            >
+              <NewsSearch />
+            </motion.div>
+
             {/* News Ticker - Above the grid */}
             {tickerItems.length > 0 && (
               <div className="mb-8">
@@ -269,15 +280,16 @@ const StoreLanding: React.FC = () => {
               </div>
             )}
 
-            {/* News Grid */}
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-              {articles.slice(0, 4).map((article, index) => (
+            {/* News Grid - 3 columns with larger cards */}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+              {articles.slice(0, 3).map((article, index) => (
                 <motion.div
                   key={article.id}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
+                  className="h-full"
                 >
                   <PremiumNewsCard
                     article={{
@@ -297,7 +309,7 @@ const StoreLanding: React.FC = () => {
                       fetched_at: article.fetched_at || article.published_at
                     }}
                     index={index}
-                    variant="compact"
+                    variant="default"
                   />
                 </motion.div>
               ))}

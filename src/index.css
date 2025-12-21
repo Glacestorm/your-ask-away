@@ -542,3 +542,53 @@
 .animate-shimmer {
   animation: shimmer 2s infinite;
 }
+
+/* ========================================
+   PULSE WAVE ANIMATION (For CTA buttons)
+   ======================================== */
+@keyframes pulse-wave {
+  0% {
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 12px hsl(var(--primary) / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0);
+  }
+}
+
+.pulse-wave {
+  animation: pulse-wave 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Multi-ring pulse wave for premium CTA */
+@keyframes pulse-rings {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.pulse-rings-container {
+  position: relative;
+}
+
+.pulse-rings-container::before,
+.pulse-rings-container::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 2px solid hsl(var(--primary) / 0.4);
+  animation: pulse-rings 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+.pulse-rings-container::after {
+  animation-delay: 0.5s;
+}
