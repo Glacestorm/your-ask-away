@@ -138,87 +138,87 @@ const ObelixiaTeamAdmin: React.FC = () => {
         <Card className="bg-slate-900/80 border-slate-700/50 backdrop-blur-sm">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <CardHeader className="pb-0 border-b border-slate-700/50">
-              <TabsList className="grid grid-cols-6 lg:grid-cols-12 w-full gap-1">
+              <TabsList className="grid grid-cols-6 lg:grid-cols-12 w-full gap-1 bg-slate-800/50 p-1">
                 <TabsTrigger 
                   value="quotes" 
-                  className="flex items-center gap-2 text-xs"
+                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-slate-700 data-[state=active]:text-white"
                 >
                   <FileText className="w-4 h-4" />
                   <span className="hidden sm:inline">Presupuestos</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="invoices"
-                  className="flex items-center gap-2 text-xs"
+                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-slate-700 data-[state=active]:text-white"
                 >
                   <Receipt className="w-4 h-4" />
                   <span className="hidden sm:inline">Facturas</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="pricing"
-                  className="flex items-center gap-2 text-xs"
+                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-slate-700 data-[state=active]:text-white"
                 >
                   <Euro className="w-4 h-4" />
                   <span className="hidden sm:inline">Precios</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="content"
-                  className="flex items-center gap-2 text-xs"
+                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-slate-700 data-[state=active]:text-white"
                 >
                   <Settings className="w-4 h-4" />
                   <span className="hidden sm:inline">Contenidos</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="cms"
-                  className="flex items-center gap-2 text-xs"
+                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-slate-700 data-[state=active]:text-white"
                 >
                   <LayoutGrid className="w-4 h-4" />
                   <span className="hidden sm:inline">CMS</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="docs"
-                  className="flex items-center gap-2 text-xs"
+                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-slate-700 data-[state=active]:text-white"
                 >
                   <BookOpen className="w-4 h-4" />
                   <span className="hidden sm:inline">Documentación</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="appstore"
-                  className="flex items-center gap-2 text-xs"
+                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-slate-700 data-[state=active]:text-white"
                 >
                   <Store className="w-4 h-4" />
                   <span className="hidden sm:inline">App Store</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="whitelabel"
-                  className="flex items-center gap-2 text-xs"
+                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-slate-700 data-[state=active]:text-white"
                 >
                   <Palette className="w-4 h-4" />
                   <span className="hidden sm:inline">White Label</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="api"
-                  className="flex items-center gap-2 text-xs"
+                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-slate-700 data-[state=active]:text-white"
                 >
                   <Code className="w-4 h-4" />
                   <span className="hidden sm:inline">API</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="security"
-                  className="flex items-center gap-2 text-xs"
+                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-slate-700 data-[state=active]:text-white"
                 >
                   <Shield className="w-4 h-4" />
                   <span className="hidden sm:inline">Seguridad</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="news"
-                  className="flex items-center gap-2 text-xs"
+                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-slate-700 data-[state=active]:text-white"
                 >
                   <Newspaper className="w-4 h-4" />
                   <span className="hidden sm:inline">Noticias</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="faq"
-                  className="flex items-center gap-2 text-xs"
+                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-slate-700 data-[state=active]:text-white"
                 >
                   <HelpCircle className="w-4 h-4" />
                   <span className="hidden sm:inline">FAQ</span>
