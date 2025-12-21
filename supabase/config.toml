@@ -295,7 +295,7 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.generate-news-audio]
-verify_jwt = true
+verify_jwt = false
 
 [functions.detect-news-opportunities]
 verify_jwt = false

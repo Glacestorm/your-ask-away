@@ -300,7 +300,7 @@ const StoreLanding: React.FC = () => {
               viewport={{ once: true }}
               className="text-center"
             >
-              <Link to="/resources/blog">
+              <Link to="/blog">
                 <Button
                   variant="outline"
                   className="h-12 px-8 text-base font-medium border-slate-700 text-white hover:bg-slate-800 rounded-full"

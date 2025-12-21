@@ -127,6 +127,7 @@ const StoreNavbar: React.FC = () => {
               { id: 'docs', label: 'Documentación', href: '/docs', icon: BookOpen, description: 'Guías y tutoriales completos' },
               { id: 'api', label: 'API Reference', href: '/api', icon: Code, description: 'Referencia técnica de la API' },
               { id: 'developer-portal', label: 'Portal Dev', href: '/developers', icon: Rocket, description: 'Herramientas para desarrolladores' },
+              { id: 'blog', label: 'Noticias IA', href: '/blog', icon: BookOpen, description: 'Noticias curadas por inteligencia artificial', badge: 'IA' },
             ],
           },
         ],
