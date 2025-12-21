@@ -18,12 +18,19 @@ const getSystemTheme = (): 'day' | 'night' => {
 };
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeMode>(() => {
-    const saved = localStorage.getItem('app-theme');
-    return (saved as ThemeMode) || 'day';
-  });
+  const [theme, setThemeState] = useState<ThemeMode>('day');
+  const [systemTheme, setSystemTheme] = useState<'day' | 'night'>('day');
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  const [systemTheme, setSystemTheme] = useState<'day' | 'night'>(getSystemTheme);
+  // Initialize theme from localStorage after mount
+  useEffect(() => {
+    const saved = localStorage.getItem('app-theme');
+    if (saved) {
+      setThemeState(saved as ThemeMode);
+    }
+    setSystemTheme(getSystemTheme());
+    setIsInitialized(true);
+  }, []);
 
   // Listen for system theme changes
   useEffect(() => {
