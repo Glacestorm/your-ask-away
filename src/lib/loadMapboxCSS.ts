@@ -3,6 +3,9 @@
  * This prevents loading the CSS in the initial bundle
  */
 
+// Mapbox GL version - update this to match your mapbox-gl package version
+const MAPBOX_GL_VERSION = 'v3.8.0';
+
 let isMapboxCSSLoaded = false;
 
 export const loadMapboxCSS = (): Promise<void> => {
@@ -23,7 +26,7 @@ export const loadMapboxCSS = (): Promise<void> => {
     // Create and inject the stylesheet
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'https://api.mapbox.com/mapbox-gl-js/v3.8.0/mapbox-gl.css';
+    link.href = `https://api.mapbox.com/mapbox-gl-js/${MAPBOX_GL_VERSION}/mapbox-gl.css`;
     
     link.onload = () => {
       isMapboxCSSLoaded = true;

@@ -59,13 +59,15 @@ const DeferredComponents = () => {
       });
     };
 
-    const timer = typeof requestIdleCallback !== 'undefined'
+    // Use requestIdleCallback if available, otherwise fall back to setTimeout
+    const hasIdleCallback = typeof requestIdleCallback !== 'undefined';
+    const timer = hasIdleCallback
       ? requestIdleCallback(loadDeferredWidgets, { timeout: 2000 })
       : setTimeout(loadDeferredWidgets, 1000);
     
     return () => {
-      if (typeof requestIdleCallback !== 'undefined' && typeof timer === 'number') {
-        cancelIdleCallback(timer);
+      if (hasIdleCallback) {
+        cancelIdleCallback(timer as number);
       } else {
         clearTimeout(timer as number);
       }
