@@ -10202,6 +10202,87 @@ export type Database = {
           },
         ]
       }
+      nps_metrics: {
+        Row: {
+          avg_ces: number | null
+          avg_csat: number | null
+          avg_sentiment: number | null
+          company_id: string | null
+          created_at: string | null
+          detractors: number | null
+          gestor_id: string | null
+          id: string
+          nps_score: number | null
+          passives: number | null
+          period_end: string
+          period_start: string
+          period_type: string | null
+          product_id: string | null
+          promoters: number | null
+          segment: string | null
+          total_responses: number | null
+          trend_vs_previous: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          avg_ces?: number | null
+          avg_csat?: number | null
+          avg_sentiment?: number | null
+          company_id?: string | null
+          created_at?: string | null
+          detractors?: number | null
+          gestor_id?: string | null
+          id?: string
+          nps_score?: number | null
+          passives?: number | null
+          period_end: string
+          period_start: string
+          period_type?: string | null
+          product_id?: string | null
+          promoters?: number | null
+          segment?: string | null
+          total_responses?: number | null
+          trend_vs_previous?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          avg_ces?: number | null
+          avg_csat?: number | null
+          avg_sentiment?: number | null
+          company_id?: string | null
+          created_at?: string | null
+          detractors?: number | null
+          gestor_id?: string | null
+          id?: string
+          nps_score?: number | null
+          passives?: number | null
+          period_end?: string
+          period_start?: string
+          period_type?: string | null
+          product_id?: string | null
+          promoters?: number | null
+          segment?: string | null
+          total_responses?: number | null
+          trend_vs_previous?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nps_metrics_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nps_metrics_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       obelixia_content: {
         Row: {
           content: string
@@ -12877,6 +12958,159 @@ export type Database = {
           },
         ]
       }
+      satisfaction_alert_history: {
+        Row: {
+          alert_id: string | null
+          company_id: string | null
+          created_at: string | null
+          id: string
+          notified_users: string[] | null
+          resolved: boolean | null
+          resolved_at: string | null
+          resolved_by: string | null
+          task_created_id: string | null
+          trigger_context: Json | null
+          trigger_value: number | null
+        }
+        Insert: {
+          alert_id?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          id?: string
+          notified_users?: string[] | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          task_created_id?: string | null
+          trigger_context?: Json | null
+          trigger_value?: number | null
+        }
+        Update: {
+          alert_id?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          id?: string
+          notified_users?: string[] | null
+          resolved?: boolean | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          task_created_id?: string | null
+          trigger_context?: Json | null
+          trigger_value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "satisfaction_alert_history_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "satisfaction_alerts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "satisfaction_alert_history_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      satisfaction_alerts: {
+        Row: {
+          alert_type: string
+          auto_create_task: boolean | null
+          condition_type: string | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          notify_gestor: boolean | null
+          notify_manager: boolean | null
+          threshold_value: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          alert_type: string
+          auto_create_task?: boolean | null
+          condition_type?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          notify_gestor?: boolean | null
+          notify_manager?: boolean | null
+          threshold_value?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          alert_type?: string
+          auto_create_task?: boolean | null
+          condition_type?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          notify_gestor?: boolean | null
+          notify_manager?: boolean | null
+          threshold_value?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      satisfaction_surveys: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          delay_hours: number | null
+          description: string | null
+          follow_up_question: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          question_text: string
+          survey_type: Database["public"]["Enums"]["survey_type"]
+          target_segment: string | null
+          trigger_config: Json | null
+          trigger_type: Database["public"]["Enums"]["survey_trigger"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          delay_hours?: number | null
+          description?: string | null
+          follow_up_question?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          question_text: string
+          survey_type: Database["public"]["Enums"]["survey_type"]
+          target_segment?: string | null
+          trigger_config?: Json | null
+          trigger_type?: Database["public"]["Enums"]["survey_trigger"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          delay_hours?: number | null
+          description?: string | null
+          follow_up_question?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          question_text?: string
+          survey_type?: Database["public"]["Enums"]["survey_type"]
+          target_segment?: string | null
+          trigger_config?: Json | null
+          trigger_type?: Database["public"]["Enums"]["survey_trigger"] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       scenario_simulations: {
         Row: {
           base_parameters: Json
@@ -13581,6 +13815,71 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      sentiment_analysis: {
+        Row: {
+          action_required: boolean | null
+          alert_sent: boolean | null
+          analyzed_by: string | null
+          company_id: string | null
+          confidence: number | null
+          content_analyzed: string
+          created_at: string | null
+          emotions: Json | null
+          gestor_id: string | null
+          id: string
+          key_phrases: string[] | null
+          sentiment: Database["public"]["Enums"]["sentiment_type"]
+          sentiment_score: number
+          source_id: string | null
+          source_type: string
+          topics: string[] | null
+        }
+        Insert: {
+          action_required?: boolean | null
+          alert_sent?: boolean | null
+          analyzed_by?: string | null
+          company_id?: string | null
+          confidence?: number | null
+          content_analyzed: string
+          created_at?: string | null
+          emotions?: Json | null
+          gestor_id?: string | null
+          id?: string
+          key_phrases?: string[] | null
+          sentiment: Database["public"]["Enums"]["sentiment_type"]
+          sentiment_score: number
+          source_id?: string | null
+          source_type: string
+          topics?: string[] | null
+        }
+        Update: {
+          action_required?: boolean | null
+          alert_sent?: boolean | null
+          analyzed_by?: string | null
+          company_id?: string | null
+          confidence?: number | null
+          content_analyzed?: string
+          created_at?: string | null
+          emotions?: Json | null
+          gestor_id?: string | null
+          id?: string
+          key_phrases?: string[] | null
+          sentiment?: Database["public"]["Enums"]["sentiment_type"]
+          sentiment_score?: number
+          source_id?: string | null
+          source_type?: string
+          topics?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sentiment_analysis_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sepa_instant_payments: {
         Row: {
@@ -14322,6 +14621,170 @@ export type Database = {
             columns: ["suggestion_id"]
             isOneToOne: false
             referencedRelation: "user_suggestions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      survey_campaigns: {
+        Row: {
+          avg_score: number | null
+          channel: string | null
+          completed_at: string | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          name: string
+          response_rate: number | null
+          scheduled_at: string | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["survey_status"] | null
+          survey_id: string
+          target_companies: string[] | null
+          target_segments: string[] | null
+          total_responses: number | null
+          total_sent: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          avg_score?: number | null
+          channel?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          name: string
+          response_rate?: number | null
+          scheduled_at?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["survey_status"] | null
+          survey_id: string
+          target_companies?: string[] | null
+          target_segments?: string[] | null
+          total_responses?: number | null
+          total_sent?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          avg_score?: number | null
+          channel?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          name?: string
+          response_rate?: number | null
+          scheduled_at?: string | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["survey_status"] | null
+          survey_id?: string
+          target_companies?: string[] | null
+          target_segments?: string[] | null
+          total_responses?: number | null
+          total_sent?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_campaigns_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "satisfaction_surveys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      survey_responses: {
+        Row: {
+          campaign_id: string | null
+          channel: string | null
+          company_id: string | null
+          contact_id: string | null
+          created_at: string | null
+          feedback_text: string | null
+          gestor_id: string | null
+          id: string
+          product_id: string | null
+          responded_at: string | null
+          respondent_email: string | null
+          respondent_name: string | null
+          score: number
+          sentiment: Database["public"]["Enums"]["sentiment_type"] | null
+          sentiment_score: number | null
+          survey_id: string
+          trigger_context: Json | null
+        }
+        Insert: {
+          campaign_id?: string | null
+          channel?: string | null
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string | null
+          feedback_text?: string | null
+          gestor_id?: string | null
+          id?: string
+          product_id?: string | null
+          responded_at?: string | null
+          respondent_email?: string | null
+          respondent_name?: string | null
+          score: number
+          sentiment?: Database["public"]["Enums"]["sentiment_type"] | null
+          sentiment_score?: number | null
+          survey_id: string
+          trigger_context?: Json | null
+        }
+        Update: {
+          campaign_id?: string | null
+          channel?: string | null
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string | null
+          feedback_text?: string | null
+          gestor_id?: string | null
+          id?: string
+          product_id?: string | null
+          responded_at?: string | null
+          respondent_email?: string | null
+          respondent_name?: string | null
+          score?: number
+          sentiment?: Database["public"]["Enums"]["sentiment_type"] | null
+          sentiment_score?: number | null
+          survey_id?: string
+          trigger_context?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_responses_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "survey_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_responses_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_responses_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "company_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_responses_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_responses_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "satisfaction_surveys"
             referencedColumns: ["id"]
           },
         ]
@@ -15970,6 +16433,10 @@ export type Database = {
         Args: { p_company_id: string }
         Returns: undefined
       }
+      calculate_nps: {
+        Args: { p_detractors: number; p_passives: number; p_promoters: number }
+        Returns: number
+      }
       can_view_alert: {
         Args: { _alert_id: string; _user_id: string }
         Returns: boolean
@@ -16240,6 +16707,16 @@ export type Database = {
         | "agriculture"
         | "professional"
         | "government"
+      sentiment_type: "positive" | "neutral" | "negative" | "mixed"
+      survey_status: "draft" | "active" | "paused" | "completed"
+      survey_trigger:
+        | "manual"
+        | "post_visit"
+        | "post_ticket"
+        | "milestone"
+        | "periodic"
+        | "post_onboarding"
+      survey_type: "nps" | "csat" | "ces"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -16414,6 +16891,17 @@ export const Constants = {
         "professional",
         "government",
       ],
+      sentiment_type: ["positive", "neutral", "negative", "mixed"],
+      survey_status: ["draft", "active", "paused", "completed"],
+      survey_trigger: [
+        "manual",
+        "post_visit",
+        "post_ticket",
+        "milestone",
+        "periodic",
+        "post_onboarding",
+      ],
+      survey_type: ["nps", "csat", "ces"],
     },
   },
 } as const
