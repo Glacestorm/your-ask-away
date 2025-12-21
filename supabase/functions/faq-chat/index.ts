@@ -1,42 +1,75 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const LOVABLE_API_URL = "https://api.lovable.dev/ai";
+const LOVABLE_API_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
-// Company knowledge base for context
+// Company knowledge base for context - ObelixIA
 const COMPANY_KNOWLEDGE = `
-ObelixIA es una empresa especializada en implementaciones de Odoo para empresas de diversos sectores.
+ObelixIA es una suite modular de gestión empresarial con inteligencia artificial integrada.
 
-SERVICIOS PRINCIPALES:
-- Implementación de Odoo ERP completo
-- Migración desde otros ERPs (SAP, Sage, Navision, A3, etc.)
-- Desarrollo de módulos personalizados
-- Soporte y mantenimiento continuo
-- Formación y capacitación
+DESCRIPCIÓN GENERAL:
+ObelixIA combina CRM avanzado, analítica predictiva y automatización inteligente. A diferencia de ERPs tradicionales como SAP, Odoo o Salesforce, ObelixIA está diseñado desde cero con IA nativa para maximizar la eficiencia y anticipar las necesidades del negocio.
+
+SERVICIOS Y MÓDULOS PRINCIPALES:
+- CRM Inteligente con scoring predictivo de clientes
+- Analítica Avanzada con dashboards en tiempo real
+- Automatización de Procesos (BPMN) sin código
+- Gestión de Compliance multi-regulación (RGPD, PSD2, ISO 27001)
+- Mapas Interactivos con geolocalización inteligente
+- Gestor Documental con OCR e IA
+- Predicción de Churn y detección de anomalías
+- Recomendaciones de productos personalizadas
+- Asistentes virtuales para gestores y clientes
+
+SECTORES ESPECIALIZADOS:
+- Banca y Finanzas (cumplimiento PSD2, scoring crediticio)
+- Seguros (gestión de pólizas, siniestros)
+- Retail (omnicanalidad, gestión de inventario)
+- Manufactura (control de producción, MRP)
+
+PRECIOS:
+- Desde 49€/usuario/mes para funcionalidades básicas
+- Hasta 499€/usuario/mes para suite enterprise completa
+- Modelo flexible basado en usuarios y módulos
+- Análisis inicial gratuito
+
+TIEMPOS DE IMPLEMENTACIÓN:
+- Implementación básica: 2-4 semanas
+- Implementación completa: 4-8 semanas
+- Metodología ágil con entregables semanales
+
+MIGRACIONES:
+- Experiencia migrando desde Salesforce, SAP, Sage, Dynamics, HubSpot, Odoo
+- Mapeo inteligente de campos con IA
+- Garantía de integridad de datos
+
+SOPORTE:
+- 6 meses de soporte premium incluido
+- Planes de mantenimiento desde 150€/mes
+- Soporte técnico 24/7
+- Formación continua y academia online
+
+SEGURIDAD:
+- Cifrado AES-256 en reposo y tránsito
+- Autenticación multifactor
+- Cumplimiento RGPD, PSD2, ISO 27001
+- Hosting en servidores europeos certificados
+- Pentesting mensual
+
+DIFERENCIACIÓN VS COMPETENCIA:
+- IA nativa integrada en cada módulo (no como add-on)
+- Especialización sectorial real
+- Precio competitivo sin sacrificar funcionalidades enterprise
+- Implementación más rápida que Salesforce o SAP
 
 INFORMACIÓN DE CONTACTO:
 - Email comercial: comercial@obelixia.com
 - Teléfono: +34 606 770 033
 - Contacto comercial: Jaime Fernández García
-
-VENTAJAS COMPETITIVAS:
-- Equipo experto certificado en Odoo
-- Metodología ágil con entregas semanales
-- Soporte 24/7 incluido
-- Precios competitivos adaptados al tamaño de empresa
-- Garantía de satisfacción
-
-SECTORES PRINCIPALES:
-- Banca y finanzas
-- Manufactura
-- Retail
-- Servicios profesionales
-- Logística
 `;
 
 serve(async (req) => {
@@ -67,7 +100,7 @@ serve(async (req) => {
     }
 
     // Create the prompt for Lovable AI
-    const systemPrompt = `Eres un asistente virtual de ObelixIA, una empresa líder en implementaciones de Odoo.
+    const systemPrompt = `Eres un asistente virtual de ObelixIA, una suite modular de gestión empresarial con inteligencia artificial integrada.
 Tu objetivo es ayudar a potenciales clientes respondiendo sus preguntas de forma clara, profesional y amigable.
 
 ${COMPANY_KNOWLEDGE}
@@ -81,10 +114,12 @@ INSTRUCCIONES:
 4. Si no tienes información específica, ofrece contactar con el equipo comercial
 5. Mantén un tono profesional pero cercano
 6. Si mencionas precios o plazos, indica que son aproximados y pueden variar
-7. Promueve la demo gratuita cuando sea relevante`;
+7. Promueve la demo gratuita cuando sea relevante
+8. NUNCA menciones Odoo ni ningún otro competidor de forma positiva - ObelixIA es nuestra plataforma propia
+9. Si preguntan por ERPs o CRMs de la competencia, explica las ventajas de ObelixIA frente a ellos`;
 
     // Call Lovable AI
-    const response = await fetch(`${LOVABLE_API_URL}/chat`, {
+    const response = await fetch(LOVABLE_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -95,7 +130,7 @@ INSTRUCCIONES:
           { role: 'system', content: systemPrompt },
           { role: 'user', content: question }
         ],
-        model: 'openai/gpt-5-mini',
+        model: 'google/gemini-2.5-flash',
         temperature: 0.7,
         max_tokens: 500
       })
