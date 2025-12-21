@@ -6,7 +6,7 @@ import {
   FileText, Euro, Package, Receipt, Settings, 
   BarChart3, Users, Shield, Code, Palette, 
   Store, Layers, BookOpen, Activity, Rocket,
-  ChevronLeft, ChevronRight, Home, LayoutGrid, Newspaper
+  ChevronLeft, ChevronRight, Home, LayoutGrid, Newspaper, HelpCircle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
@@ -138,7 +138,7 @@ const ObelixiaTeamAdmin: React.FC = () => {
         <Card className="bg-slate-900/80 border-slate-700/50 backdrop-blur-sm">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <CardHeader className="pb-0 border-b border-slate-700/50">
-              <TabsList className="grid grid-cols-5 lg:grid-cols-11 w-full gap-1">
+              <TabsList className="grid grid-cols-6 lg:grid-cols-12 w-full gap-1">
                 <TabsTrigger 
                   value="quotes" 
                   className="flex items-center gap-2 text-xs"
@@ -215,6 +215,13 @@ const ObelixiaTeamAdmin: React.FC = () => {
                 >
                   <Newspaper className="w-4 h-4" />
                   <span className="hidden sm:inline">Noticias</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="faq"
+                  className="flex items-center gap-2 text-xs"
+                >
+                  <HelpCircle className="w-4 h-4" />
+                  <span className="hidden sm:inline">FAQ</span>
                 </TabsTrigger>
               </TabsList>
             </CardHeader>
@@ -426,6 +433,10 @@ const ObelixiaTeamAdmin: React.FC = () => {
 
               <TabsContent value="news" className="m-0">
                 <NewsAdminDashboard />
+              </TabsContent>
+
+              <TabsContent value="faq" className="m-0">
+                <FAQAdminDashboard />
               </TabsContent>
             </CardContent>
           </Tabs>
