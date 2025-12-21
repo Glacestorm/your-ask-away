@@ -13220,6 +13220,7 @@ export type Database = {
           ai_capabilities: Json | null
           availability_status: string | null
           case_studies: Json | null
+          certifications: Json | null
           cnae_codes: string[] | null
           created_at: string
           demo_video_url: string | null
@@ -13236,6 +13237,7 @@ export type Database = {
           modules_recommended: string[] | null
           name: string
           order_position: number | null
+          pricing_tier: string | null
           regulations: Json | null
           short_description: string | null
           slug: string
@@ -13247,6 +13249,7 @@ export type Database = {
           ai_capabilities?: Json | null
           availability_status?: string | null
           case_studies?: Json | null
+          certifications?: Json | null
           cnae_codes?: string[] | null
           created_at?: string
           demo_video_url?: string | null
@@ -13263,6 +13266,7 @@ export type Database = {
           modules_recommended?: string[] | null
           name: string
           order_position?: number | null
+          pricing_tier?: string | null
           regulations?: Json | null
           short_description?: string | null
           slug: string
@@ -13274,6 +13278,7 @@ export type Database = {
           ai_capabilities?: Json | null
           availability_status?: string | null
           case_studies?: Json | null
+          certifications?: Json | null
           cnae_codes?: string[] | null
           created_at?: string
           demo_video_url?: string | null
@@ -13290,6 +13295,7 @@ export type Database = {
           modules_recommended?: string[] | null
           name?: string
           order_position?: number | null
+          pricing_tier?: string | null
           regulations?: Json | null
           short_description?: string | null
           slug?: string
