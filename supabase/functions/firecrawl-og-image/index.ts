@@ -51,7 +51,8 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         url: formattedUrl,
-        formats: ['html'],
+        // Use rawHtml so we keep <head> metadata (og:image is usually there)
+        formats: ['rawHtml'],
         onlyMainContent: false,
         waitFor: 2000,
       }),
@@ -70,17 +71,25 @@ Deno.serve(async (req) => {
     }
 
     const data = await response.json();
-    const html: string = data?.data?.html || data?.html || '';
+    const html: string =
+      data?.data?.rawHtml ||
+      data?.rawHtml ||
+      data?.data?.html ||
+      data?.html ||
+      '';
 
     // Extract og:image and og:site_name
     const ogMatch =
       html.match(/<meta[^>]*property=["']og:image:secure_url["'][^>]*content=["']([^"']+)["'][^>]*>/i) ||
+      html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image:secure_url["'][^>]*>/i) ||
       html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["'][^>]*>/i) ||
       html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["'][^>]*>/i);
 
     const twitterMatch =
       html.match(/<meta[^>]*name=["']twitter:image:src["'][^>]*content=["']([^"']+)["'][^>]*>/i) ||
-      html.match(/<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["'][^>]*>/i);
+      html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']twitter:image:src["'][^>]*>/i) ||
+      html.match(/<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["'][^>]*>/i) ||
+      html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*name=["']twitter:image["'][^>]*>/i);
 
     const rawUrl = (ogMatch?.[1] || twitterMatch?.[1] || '').trim().replace(/&amp;/g, '&');
 

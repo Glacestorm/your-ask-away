@@ -539,37 +539,74 @@ serve(async (req) => {
     }
     
     console.log(`Found ${allNews.length} relevant news articles`);
-    
+
     // Insert news articles
     let savedCount = 0;
     if (allNews.length > 0) {
+      // 1) Insert only new rows (do not overwrite existing fields like read_count)
       const { data, error } = await supabase
         .from('news_articles')
         .upsert(allNews, { onConflict: 'source_url', ignoreDuplicates: true })
         .select();
-      
+
       if (error) {
         console.error('Error inserting news:', error);
         errors.push(`Error inserting news: ${error.message}`);
       } else {
         savedCount = data?.length || 0;
         console.log(`Successfully inserted/updated ${savedCount} news articles`);
-        
+
         // Link insights to articles and insert them
         if (newInsights.length > 0 && data) {
           const insightsWithArticleIds = newInsights.map((insight, index) => ({
             ...insight,
-            news_article_id: data[index]?.id || null
+            news_article_id: data[index]?.id || null,
           }));
-          
+
           const { error: insightError } = await supabase
             .from('news_improvement_insights')
             .insert(insightsWithArticleIds);
-          
+
           if (insightError) {
             warnings.push(`Error saving insights: ${insightError.message}`);
           }
         }
+      }
+
+      // 2) Patch images for already-existing articles (so old rows get real OG images)
+      // Avoid inserting partial rows by only patching URLs that already exist.
+      try {
+        const urls = allNews.map((n) => n.source_url).filter(Boolean);
+        const { data: existing } = await supabase
+          .from('news_articles')
+          .select('source_url')
+          .in('source_url', urls);
+
+        const existingSet = new Set((existing || []).map((r: any) => r.source_url));
+
+        const imagePatches = allNews
+          .filter((n) => existingSet.has(n.source_url))
+          .map((n) => ({
+            source_url: n.source_url,
+            image_url: n.image_url,
+            image_credit: n.image_credit,
+          }))
+          // Only bother if we actually have a non-fallback URL
+          .filter((p) => !!p.image_url && !String(p.image_url).includes('images.unsplash.com'));
+
+        if (imagePatches.length > 0) {
+          const { error: patchError } = await supabase
+            .from('news_articles')
+            .upsert(imagePatches, { onConflict: 'source_url' });
+
+          if (patchError) {
+            warnings.push(`Error patching images: ${patchError.message}`);
+          } else {
+            console.log(`Patched images for ${imagePatches.length} existing articles`);
+          }
+        }
+      } catch (patchErr) {
+        console.warn('Image patch step failed:', patchErr);
       }
     }
     
