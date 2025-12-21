@@ -83,7 +83,7 @@ const HeroSection: React.FC = () => {
               <Link to="/store/modules">
                 <Button 
                   size="lg"
-                  className="h-14 px-8 text-base font-medium bg-white text-slate-900 hover:bg-slate-100 rounded-full shadow-xl shadow-white/10 transition-all duration-300"
+                  className="h-14 px-8 text-base font-medium bg-slate-800 text-white hover:bg-slate-700 rounded-full shadow-xl shadow-black/20 transition-all duration-300 border border-slate-600"
                 >
                   Explorar Módulos
                   <ArrowRight className="ml-2 w-5 h-5" />
@@ -95,7 +95,7 @@ const HeroSection: React.FC = () => {
                   size="lg"
                   variant="outline"
                   onClick={() => setIsDemoModalOpen(true)}
-                  className="relative h-14 px-8 text-base font-medium border-white/20 text-white hover:bg-white/10 rounded-full transition-all duration-300 pulse-wave"
+                  className="relative h-14 px-8 text-base font-medium bg-slate-700/80 border-slate-500 text-white hover:bg-slate-600 rounded-full transition-all duration-300 pulse-wave"
                 >
                   <Play className="mr-2 w-5 h-5" />
                   Ver Demo
