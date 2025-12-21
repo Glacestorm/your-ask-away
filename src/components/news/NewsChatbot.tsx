@@ -254,6 +254,6 @@ export const NewsChatbot: React.FC = () => {
       </AnimatePresence>
     </>
   );
-;
+};
 
 export default NewsChatbot;
