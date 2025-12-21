@@ -6747,6 +6747,92 @@ export type Database = {
         }
         Relationships: []
       }
+      faq_categories: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          order_index: number | null
+          slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          order_index?: number | null
+          slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          order_index?: number | null
+          slug?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      faqs: {
+        Row: {
+          answer: string
+          category_id: string | null
+          created_at: string | null
+          helpful_count: number | null
+          id: string
+          is_published: boolean | null
+          not_helpful_count: number | null
+          priority: number | null
+          question: string
+          updated_at: string | null
+          views_count: number | null
+        }
+        Insert: {
+          answer: string
+          category_id?: string | null
+          created_at?: string | null
+          helpful_count?: number | null
+          id?: string
+          is_published?: boolean | null
+          not_helpful_count?: number | null
+          priority?: number | null
+          question: string
+          updated_at?: string | null
+          views_count?: number | null
+        }
+        Update: {
+          answer?: string
+          category_id?: string | null
+          created_at?: string | null
+          helpful_count?: number | null
+          id?: string
+          is_published?: boolean | null
+          not_helpful_count?: number | null
+          priority?: number | null
+          question?: string
+          updated_at?: string | null
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "faqs_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "faq_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       financial_document_embeddings: {
         Row: {
           chunk_index: number
@@ -15424,6 +15510,62 @@ export type Database = {
             columns: ["visit_id"]
             isOneToOne: false
             referencedRelation: "visits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      visitor_questions: {
+        Row: {
+          confidence_score: number | null
+          converted_to_faq: boolean | null
+          created_at: string | null
+          id: string
+          ip_country: string | null
+          matched_faq_id: string | null
+          question: string
+          resolved: boolean | null
+          response: string | null
+          sentiment: string | null
+          session_id: string | null
+          source: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          confidence_score?: number | null
+          converted_to_faq?: boolean | null
+          created_at?: string | null
+          id?: string
+          ip_country?: string | null
+          matched_faq_id?: string | null
+          question: string
+          resolved?: boolean | null
+          response?: string | null
+          sentiment?: string | null
+          session_id?: string | null
+          source?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          confidence_score?: number | null
+          converted_to_faq?: boolean | null
+          created_at?: string | null
+          id?: string
+          ip_country?: string | null
+          matched_faq_id?: string | null
+          question?: string
+          resolved?: boolean | null
+          response?: string | null
+          sentiment?: string | null
+          session_id?: string | null
+          source?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visitor_questions_matched_faq_id_fkey"
+            columns: ["matched_faq_id"]
+            isOneToOne: false
+            referencedRelation: "faqs"
             referencedColumns: ["id"]
           },
         ]

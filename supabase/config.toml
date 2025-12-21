@@ -302,3 +302,6 @@ verify_jwt = false
 
 [functions.firecrawl-og-image]
 verify_jwt = false
+
+[functions.faq-chat]
+verify_jwt = false
