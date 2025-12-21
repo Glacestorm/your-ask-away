@@ -269,3 +269,6 @@ verify_jwt = false
 
 [functions.openai-chat]
 verify_jwt = false
+
+[functions.fetch-sector-news]
+verify_jwt = false
