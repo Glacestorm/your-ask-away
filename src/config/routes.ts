@@ -53,6 +53,8 @@ const ManufacturaLanding = lazy(() => import('@/pages/sectors/ManufacturaLanding
 
 // Marketing
 const ComparativasCRM = lazy(() => import('@/pages/comparativas/ComparativasCRM'));
+const ComparativasPage = lazy(() => import('@/pages/comparativas/index'));
+const CaseStudyDetail = lazy(() => import('@/pages/casos-de-exito/[slug]'));
 const Seguridad = lazy(() => import('@/pages/Seguridad'));
 const Precios = lazy(() => import('@/pages/Precios'));
 const DemoInteractiva = lazy(() => import('@/pages/DemoInteractiva'));
@@ -143,6 +145,8 @@ export const resourceRoutes: RouteConfig[] = [
   { path: '/blog', component: Blog, layout: 'public', priority: 'low', meta: { title: 'Blog' } },
   { path: '/cases', component: CaseStudies, layout: 'public', priority: 'low', meta: { title: 'Casos de Éxito' } },
   { path: '/casos-de-exito', component: CasosDeExito, layout: 'none', priority: 'medium', meta: { title: 'Casos de Éxito' } },
+  { path: '/casos-de-exito/:slug', component: CaseStudyDetail, layout: 'none', priority: 'medium', meta: { title: 'Caso de Éxito' } },
+  { path: '/comparativas/sectores', component: ComparativasPage, layout: 'none', priority: 'medium', meta: { title: 'Comparar Sectores' } },
   { path: '/trends', component: TrendsDashboard, layout: 'none', priority: 'medium', meta: { title: 'Tendencias del Sector' } },
 ];
 

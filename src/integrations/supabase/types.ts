@@ -14359,6 +14359,68 @@ export type Database = {
         }
         Relationships: []
       }
+      testimonials: {
+        Row: {
+          author_avatar_url: string | null
+          author_name: string
+          author_role: string | null
+          company_logo_url: string | null
+          company_name: string
+          created_at: string
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          is_featured: boolean | null
+          metrics: Json | null
+          quote: string
+          rating: number | null
+          sector_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          author_avatar_url?: string | null
+          author_name: string
+          author_role?: string | null
+          company_logo_url?: string | null
+          company_name: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          metrics?: Json | null
+          quote: string
+          rating?: number | null
+          sector_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          author_avatar_url?: string | null
+          author_name?: string
+          author_role?: string | null
+          company_logo_url?: string | null
+          company_name?: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          metrics?: Json | null
+          quote?: string
+          rating?: number | null
+          sector_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "testimonials_sector_id_fkey"
+            columns: ["sector_id"]
+            isOneToOne: false
+            referencedRelation: "sectors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       third_party_providers: {
         Row: {
           certifications: string[] | null
