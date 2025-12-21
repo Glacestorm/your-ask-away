@@ -107,6 +107,9 @@ const StoreLanding: React.FC = () => {
         </div>
       </section>
 
+      {/* Sectors Showcase - Industries we serve */}
+      <SectorsShowcase />
+
       {/* Marketing Section */}
       <MarketingTabs />
 
@@ -178,8 +181,6 @@ const StoreLanding: React.FC = () => {
       {/* Trust Badges */}
       <TrustBadges />
 
-      {/* Sectors Showcase */}
-      <SectorsShowcase />
 
       {/* Final CTA Section */}
       <section className="py-32 relative overflow-hidden">
