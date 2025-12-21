@@ -83,7 +83,8 @@ import BPMNDesigner from '@/components/bpmn/BPMNDesigner';
 import { ProcessMiningDashboard } from '@/components/bpmn/ProcessMiningDashboard';
 import { RoleCopilotPanel, NBADashboard, ContinuousControlsDashboard } from '@/components/ai-control';
 import { VerticalPacksManager } from '@/components/admin/verticals';
-import { Zap, ShoppingCart } from 'lucide-react';
+import { SectorsManager } from '@/components/admin/SectorsManager';
+import { Zap, ShoppingCart, Briefcase } from 'lucide-react';
 
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
@@ -212,6 +213,7 @@ const Admin = () => {
       case 'ai-nba': return 'Next Best Action (NBA)';
       case 'ai-controls': return 'Controls Continus';
       case 'vertical-packs': return 'Verticales CNAE (Fase 7)';
+      case 'sectors-manager': return 'Gestió de Sectors';
       default: return '';
     }
   };
@@ -874,6 +876,17 @@ const Admin = () => {
           );
         }
         return <VerticalPacksManager />;
+      case 'sectors-manager':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <SectorsManager />;
       case 'administration':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
           return (
@@ -1408,6 +1421,20 @@ const Admin = () => {
                     <div>
                       <h4 className="font-medium text-sm text-emerald-700 dark:text-emerald-400">Packs Verticales</h4>
                       <p className="text-xs text-muted-foreground">Retail, Construcción, Salud, Logística, Legal</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-teal-500/30 bg-gradient-to-br from-teal-500/5 to-teal-500/10"
+                  onClick={() => handleSectionChange('sectors-manager')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-teal-500/20 flex items-center justify-center">
+                      <Briefcase className="h-4 w-4 text-teal-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-teal-700 dark:text-teal-400">Gestió de Sectors</h4>
+                      <p className="text-xs text-muted-foreground">Administra sectors, CNAEs i funcionalitats</p>
                     </div>
                   </CardContent>
                 </Card>
