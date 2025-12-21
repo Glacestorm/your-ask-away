@@ -16,6 +16,7 @@ import {
   User,
   LogOut,
   LayoutDashboard,
+  Shield,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -40,7 +41,7 @@ const MainNavbar: React.FC = () => {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   
   const { itemCount, setIsCartOpen } = useCart();
-  const { user, signOut } = useAuth();
+  const { user, signOut, isSuperAdmin } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -200,6 +201,20 @@ const MainNavbar: React.FC = () => {
 
             {/* Right Section: Auth + Cart */}
             <div className="hidden lg:flex items-center gap-3">
+              {/* Admin Link - Solo visible para superadmin */}
+              {user && isSuperAdmin && (
+                <Link to="/obelixia-admin">
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="p-2 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg"
+                    title="Panel de Administración"
+                  >
+                    <Shield className="w-5 h-5 text-white" />
+                  </motion.div>
+                </Link>
+              )}
+
               {user ? (
                 // Usuario logueado
                 <DropdownMenu>
