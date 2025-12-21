@@ -1,7 +1,5 @@
 import { Suspense, lazy, startTransition, useEffect, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
@@ -13,12 +11,14 @@ import { CartProvider } from "@/contexts/CartContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { PageStreamingSkeleton, StreamingBoundary } from "@/components/performance/StreamingBoundary";
 import { MFAEnforcementDialog } from "@/components/security/MFAEnforcementDialog";
-import { DemoBanner } from "@/components/demo/DemoBanner";
-import { DemoTour } from "@/components/demo/DemoTour";
-import { FloatingLanguageSelector } from "@/components/FloatingLanguageSelector";
 import { AppRoutes } from "@/components/routing";
 
 // Lazy load non-critical components for better initial load
+const Toaster = lazy(() => import("@/components/ui/toaster").then(m => ({ default: m.Toaster })));
+const Sonner = lazy(() => import("@/components/ui/sonner").then(m => ({ default: m.Toaster })));
+const FloatingLanguageSelector = lazy(() => import("@/components/FloatingLanguageSelector").then(m => ({ default: m.FloatingLanguageSelector })));
+const DemoBanner = lazy(() => import("@/components/demo/DemoBanner").then(m => ({ default: m.DemoBanner })));
+const DemoTour = lazy(() => import("@/components/demo/DemoTour").then(m => ({ default: m.DemoTour })));
 const CookieConsent = lazy(() => import("@/components/cookies/CookieConsent"));
 const ObelixiaChatbot = lazy(() => import("@/components/chat/ObelixiaChatbot").then(m => ({ default: m.ObelixiaChatbot })));
 
@@ -52,13 +52,19 @@ const DeferredComponents = () => {
   const [showDeferred, setShowDeferred] = useState(false);
 
   useEffect(() => {
-    // Load non-critical components after a short delay
-    const timer = requestIdleCallback 
-      ? requestIdleCallback(() => setShowDeferred(true), { timeout: 2000 })
-      : setTimeout(() => setShowDeferred(true), 1000);
+    // Load non-critical components in background using requestIdleCallback with setTimeout fallback
+    const scheduleDeferred = () => {
+      startTransition(() => {
+        setShowDeferred(true);
+      });
+    };
+
+    const timer = typeof requestIdleCallback !== 'undefined'
+      ? requestIdleCallback(scheduleDeferred, { timeout: 2000 })
+      : setTimeout(scheduleDeferred, 1000);
     
     return () => {
-      if (requestIdleCallback && typeof timer === 'number') {
+      if (typeof requestIdleCallback !== 'undefined' && typeof timer === 'number') {
         cancelIdleCallback(timer);
       } else {
         clearTimeout(timer as number);
@@ -70,6 +76,11 @@ const DeferredComponents = () => {
 
   return (
     <Suspense fallback={null}>
+      <Toaster />
+      <Sonner />
+      <FloatingLanguageSelector />
+      <DemoBanner />
+      <DemoTour />
       <ObelixiaChatbot />
       <CookieConsent />
     </Suspense>
@@ -89,11 +100,6 @@ const App = () => (
                     <TooltipProvider>
                       {/* Critical UI Components - load immediately */}
                       <MFAEnforcementDialog />
-                      <Toaster />
-                      <Sonner />
-                      <FloatingLanguageSelector />
-                      <DemoBanner />
-                      <DemoTour />
                       
                       {/* Routes */}
                       <StreamingBoundary priority="high" fallback={<PageStreamingSkeleton />}>
