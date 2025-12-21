@@ -12,7 +12,9 @@ import {
   Play,
   FileText,
   Video,
-  Download
+  Download,
+  TrendingUp,
+  Award
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -27,6 +29,23 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar
+} from 'recharts';
 
 interface Course {
   id: string;
@@ -132,6 +151,28 @@ const courses: Course[] = [
   },
 ];
 
+const coursesByCategory = [
+  { category: 'Idiomas', cursos: 12, alumnos: 180 },
+  { category: 'Tecnología', cursos: 8, alumnos: 120 },
+  { category: 'Negocio', cursos: 6, alumnos: 85 },
+  { category: 'Arte', cursos: 5, alumnos: 60 },
+];
+
+const categoryDistribution = [
+  { name: 'Idiomas', value: 35, color: '#3b82f6' },
+  { name: 'Tecnología', value: 28, color: '#10b981' },
+  { name: 'Negocio', value: 22, color: '#f59e0b' },
+  { name: 'Arte', value: 15, color: '#8b5cf6' },
+];
+
+const courseQuality = [
+  { subject: 'Contenido', A: 92 },
+  { subject: 'Instructor', A: 95 },
+  { subject: 'Materiales', A: 88 },
+  { subject: 'Prácticas', A: 85 },
+  { subject: 'Soporte', A: 90 },
+];
+
 const materials = [
   { id: 1, name: 'Introducción al curso', type: 'video', duration: '15 min', course: 'Inglés B2' },
   { id: 2, name: 'Gramática Unidad 1', type: 'pdf', size: '2.4 MB', course: 'Inglés B2' },
@@ -176,6 +217,16 @@ const getMaterialIcon = (type: string) => {
   }
 };
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 }
+};
+
 export const EducationCoursesModule: React.FC = () => {
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -188,6 +239,13 @@ export const EducationCoursesModule: React.FC = () => {
       course.instructor.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesFilter && matchesSearch;
   });
+
+  const stats = [
+    { label: 'Total Cursos', value: courses.length, icon: BookOpen, color: 'text-emerald-400', bgColor: 'bg-emerald-500/20' },
+    { label: 'Activos', value: courses.filter(c => c.status === 'active').length, icon: Play, color: 'text-blue-400', bgColor: 'bg-blue-500/20' },
+    { label: 'Alumnos Inscritos', value: courses.reduce((s, c) => s + c.students, 0), icon: Users, color: 'text-purple-400', bgColor: 'bg-purple-500/20' },
+    { label: 'Valoración Media', value: '4.8', icon: Star, color: 'text-amber-400', bgColor: 'bg-amber-500/20' },
+  ];
 
   return (
     <div className="space-y-6">
@@ -206,11 +264,37 @@ export const EducationCoursesModule: React.FC = () => {
         </Button>
       </div>
 
+      {/* Stats */}
+      <motion.div 
+        className="grid grid-cols-2 md:grid-cols-4 gap-4"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {stats.map((stat) => (
+          <motion.div key={stat.label} variants={itemVariants}>
+            <Card className="bg-slate-800/50 border-slate-700 hover:border-slate-600 transition-colors">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className={`p-3 rounded-xl ${stat.bgColor}`}>
+                    <stat.icon className={`w-5 h-5 ${stat.color}`} />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-white">{stat.value}</p>
+                    <p className="text-sm text-slate-400">{stat.label}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </motion.div>
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="bg-slate-800/50 border border-slate-700">
           <TabsTrigger value="courses">Cursos</TabsTrigger>
+          <TabsTrigger value="analytics">Analíticas</TabsTrigger>
           <TabsTrigger value="materials">Materiales</TabsTrigger>
-          <TabsTrigger value="schedule">Horarios</TabsTrigger>
         </TabsList>
 
         <TabsContent value="courses" className="space-y-6">
@@ -243,15 +327,15 @@ export const EducationCoursesModule: React.FC = () => {
           </Card>
 
           {/* Courses Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCourses.map((course, index) => (
-              <motion.div
-                key={course.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                <Card className="bg-slate-800/50 border-slate-700 hover:border-slate-600 transition-colors h-full">
+          <motion.div 
+            className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            {filteredCourses.map((course) => (
+              <motion.div key={course.id} variants={itemVariants}>
+                <Card className="bg-slate-800/50 border-slate-700 hover:border-slate-600 transition-all hover:shadow-lg h-full">
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <Badge className={getCategoryColor(course.category)}>
@@ -307,7 +391,108 @@ export const EducationCoursesModule: React.FC = () => {
                 </Card>
               </motion.div>
             ))}
+          </motion.div>
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-6">
+          <div className="grid lg:grid-cols-2 gap-6">
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-blue-400" />
+                  Cursos por Categoría
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={coursesByCategory}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                    <XAxis dataKey="category" stroke="#94a3b8" fontSize={12} />
+                    <YAxis stroke="#94a3b8" fontSize={12} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#1e293b',
+                        border: '1px solid #334155',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Bar dataKey="cursos" fill="#3b82f6" name="Cursos" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="alumnos" fill="#10b981" name="Alumnos" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-emerald-400" />
+                  Distribución por Área
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart>
+                    <Pie
+                      data={categoryDistribution}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={80}
+                      paddingAngle={2}
+                      dataKey="value"
+                    >
+                      {categoryDistribution.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="grid grid-cols-2 gap-2 mt-4">
+                  {categoryDistribution.map((item) => (
+                    <div key={item.name} className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                      <span className="text-sm text-slate-400">{item.name}</span>
+                      <span className="text-sm text-white font-medium ml-auto">{item.value}%</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </div>
+
+          <Card className="bg-slate-800/50 border-slate-700">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Award className="w-5 h-5 text-amber-400" />
+                Calidad de Cursos
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <RadarChart data={courseQuality}>
+                  <PolarGrid stroke="#334155" />
+                  <PolarAngleAxis dataKey="subject" stroke="#94a3b8" fontSize={12} />
+                  <PolarRadiusAxis stroke="#94a3b8" domain={[0, 100]} />
+                  <Radar
+                    name="Valoración"
+                    dataKey="A"
+                    stroke="#10b981"
+                    fill="#10b981"
+                    fillOpacity={0.3}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#1e293b',
+                      border: '1px solid #334155',
+                      borderRadius: '8px'
+                    }}
+                  />
+                </RadarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="materials" className="space-y-6">
@@ -325,13 +510,16 @@ export const EducationCoursesModule: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {materials.map((material, index) => (
+              <motion.div 
+                className="space-y-3"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                {materials.map((material) => (
                   <motion.div
                     key={material.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
+                    variants={itemVariants}
                     className="flex items-center justify-between p-4 bg-slate-900/50 rounded-lg border border-slate-700 hover:border-slate-600 transition-colors"
                   >
                     <div className="flex items-center gap-4">
@@ -350,47 +538,7 @@ export const EducationCoursesModule: React.FC = () => {
                     </Button>
                   </motion.div>
                 ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="schedule" className="space-y-6">
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-purple-400" />
-                Horario Semanal
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-6 gap-2 text-center">
-                {['Hora', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'].map((day) => (
-                  <div key={day} className="p-2 bg-slate-700/50 rounded font-medium text-slate-300 text-sm">
-                    {day}
-                  </div>
-                ))}
-                {['09:00', '10:00', '11:00', '12:00', '17:00', '18:00', '19:00'].map((hour) => (
-                  <React.Fragment key={hour}>
-                    <div className="p-2 text-slate-400 text-sm">{hour}</div>
-                    {[1, 2, 3, 4, 5].map((day) => (
-                      <div 
-                        key={`${hour}-${day}`} 
-                        className={`p-2 rounded text-xs ${
-                          (hour === '18:00' && (day === 1 || day === 3)) ? 'bg-blue-500/20 text-blue-400' :
-                          (hour === '17:00' && (day === 2 || day === 4)) ? 'bg-emerald-500/20 text-emerald-400' :
-                          (hour === '10:00' && (day === 1 || day === 3)) ? 'bg-purple-500/20 text-purple-400' :
-                          'bg-slate-800/50 text-slate-600'
-                        }`}
-                      >
-                        {(hour === '18:00' && (day === 1 || day === 3)) && 'Inglés B2'}
-                        {(hour === '17:00' && (day === 2 || day === 4)) && 'Python'}
-                        {(hour === '10:00' && (day === 1 || day === 3)) && 'Diseño'}
-                      </div>
-                    ))}
-                  </React.Fragment>
-                ))}
-              </div>
+              </motion.div>
             </CardContent>
           </Card>
         </TabsContent>
