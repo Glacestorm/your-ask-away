@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useMicrosurveys } from '@/hooks/useMicrosurveys';
 import { X, Star, ThumbsUp, ThumbsDown, Meh } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { Json } from '@/integrations/supabase/types';
 
 interface MicrosurveyWidgetProps {
   surveyId: string;
@@ -45,7 +46,7 @@ export function MicrosurveyWidget({
       response_value: selectedValue,
       response_score: parseInt(selectedValue) || null,
       open_feedback: feedback || null,
-      trigger_context: triggerContext,
+      trigger_context: triggerContext as Json,
       response_time_seconds: responseTimeSeconds,
     });
 
