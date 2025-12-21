@@ -81,33 +81,63 @@ function extractImageFromRSS(itemXml: string): { url: string | null; credit: str
 }
 
 async function fetchOgImage(articleUrl: string): Promise<{ url: string | null; credit: string | null }> {
+  const resolveUrl = (raw: string) => {
+    const cleaned = raw.trim().replace(/&amp;/g, '&');
+    if (!cleaned) return null;
+
+    try {
+      // //cdn.com/image.jpg
+      if (cleaned.startsWith('//')) {
+        const base = new URL(articleUrl);
+        return `${base.protocol}${cleaned}`;
+      }
+      // /image.jpg
+      if (cleaned.startsWith('/')) {
+        return new URL(cleaned, articleUrl).toString();
+      }
+      return new URL(cleaned).toString();
+    } catch {
+      return null;
+    }
+  };
+
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-    
+    const timeoutId = setTimeout(() => controller.abort(), 7000);
+
     const response = await fetch(articleUrl, {
-      headers: { 'User-Agent': 'ObelixIA News Bot/2.0' },
-      signal: controller.signal
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
+      },
+      redirect: 'follow',
+      signal: controller.signal,
     });
+
     clearTimeout(timeoutId);
-    
+
     if (!response.ok) return { url: null, credit: null };
-    
+
     const html = await response.text();
-    
-    // og:image
-    const ogMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["'][^>]*>/i) ||
-                    html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["'][^>]*>/i);
-    
-    // twitter:image as fallback
-    const twitterMatch = html.match(/<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["'][^>]*>/i);
-    
-    const imageUrl = ogMatch?.[1] || twitterMatch?.[1] || null;
-    
+
+    // og:image (plus secure_url)
+    const ogMatch =
+      html.match(/<meta[^>]*property=["']og:image:secure_url["'][^>]*content=["']([^"']+)["'][^>]*>/i) ||
+      html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["'][^>]*>/i) ||
+      html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["'][^>]*>/i);
+
+    // twitter:image (and twitter:image:src)
+    const twitterMatch =
+      html.match(/<meta[^>]*name=["']twitter:image:src["'][^>]*content=["']([^"']+)["'][^>]*>/i) ||
+      html.match(/<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["'][^>]*>/i);
+
+    const imageUrl = resolveUrl(ogMatch?.[1] || twitterMatch?.[1] || '');
+
     // Try to get site name for credit
     const siteMatch = html.match(/<meta[^>]*property=["']og:site_name["'][^>]*content=["']([^"']+)["'][^>]*>/i);
     const credit = siteMatch?.[1]?.trim() || null;
-    
+
     return { url: imageUrl, credit };
   } catch {
     return { url: null, credit: null };
@@ -379,18 +409,22 @@ serve(async (req) => {
             if (aiData.relevanceScore >= minRelevanceScore) {
               sourcesStatus[source.name].relevant++;
               
-              // Determine image: prefer RSS image, then fetch og:image, then fallback
-              let finalImageUrl = item.imageUrl;
-              let finalImageCredit = item.imageCredit;
-              
+              // Determine image: prefer og:image, then RSS image, then fallback
+              let finalImageUrl: string | null = null;
+              let finalImageCredit: string | null = null;
+
+              // 1) Try to fetch og:image from article page (usually best “real photo”)
+              const ogData = await fetchOgImage(item.link);
+              finalImageUrl = ogData.url;
+              finalImageCredit = ogData.credit;
+
+              // 2) If no OG, use RSS-provided image (media:content/enclosure/etc.)
               if (!finalImageUrl) {
-                // Try to fetch og:image from article page
-                const ogData = await fetchOgImage(item.link);
-                finalImageUrl = ogData.url;
-                finalImageCredit = ogData.credit;
+                finalImageUrl = item.imageUrl;
+                finalImageCredit = item.imageCredit;
               }
-              
-              // Use category fallback if no image found
+
+              // 3) Use category fallback if still no image found
               if (!finalImageUrl) {
                 finalImageUrl = getImageForCategory(source.category);
                 finalImageCredit = 'Unsplash';

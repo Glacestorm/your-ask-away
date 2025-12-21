@@ -31,10 +31,9 @@ interface UseNewsArticlesOptions {
 const isLikelyLogoOrIcon = (url: string) => {
   const u = url.toLowerCase();
   return (
-    u.includes('logo') ||
     u.includes('favicon') ||
     u.includes('apple-touch-icon') ||
-    u.includes('icon') ||
+    u.includes('/icon') ||
     u.includes('sprite')
   );
 };
@@ -62,15 +61,32 @@ const normalizeForDedupe = (url: string) => {
 const dedupeImages = (items: NewsArticle[]): NewsArticle[] => {
   const seen = new Set<string>();
 
+  const shouldDedupe = (cleanedUrl: string) => {
+    try {
+      const u = new URL(cleanedUrl);
+      // Don’t dedupe our generic category fallbacks; otherwise most items end up blank.
+      if (u.hostname === 'images.unsplash.com') return false;
+      return true;
+    } catch {
+      return true;
+    }
+  };
+
   return items.map((a) => {
     const cleaned = sanitizeImageUrl(a.image_url);
-    const key = cleaned ? normalizeForDedupe(cleaned) : '';
+    if (!cleaned) return { ...a, image_url: '' };
 
-    if (key && seen.has(key)) {
+    if (!shouldDedupe(cleaned)) {
+      return { ...a, image_url: cleaned };
+    }
+
+    const key = normalizeForDedupe(cleaned);
+
+    if (seen.has(key)) {
       return { ...a, image_url: '' };
     }
 
-    if (key) seen.add(key);
+    seen.add(key);
     return { ...a, image_url: cleaned };
   });
 };
