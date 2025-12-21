@@ -215,6 +215,7 @@ const Admin = () => {
       case 'ai-controls': return 'Controls Continus';
       case 'vertical-packs': return 'Verticales CNAE (Fase 7)';
       case 'sectors-manager': return 'Gestió de Sectors';
+      case 'web-vitals': return 'Core Web Vitals';
       default: return '';
     }
   };
@@ -888,6 +889,17 @@ const Admin = () => {
           );
         }
         return <SectorsManager />;
+      case 'web-vitals':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <CoreWebVitalsDashboard />;
       case 'administration':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
           return (
