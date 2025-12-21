@@ -46,6 +46,7 @@ const TrendsDashboard = lazy(() => import('@/pages/resources/TrendsDashboard'));
 
 // Sectors
 const SectorLanding = lazy(() => import('@/pages/sectors/SectorLanding'));
+const SectorDetail = lazy(() => import('@/pages/sectors/SectorDetail'));
 const BancaLanding = lazy(() => import('@/pages/sectors/BancaLanding'));
 const SegurosLanding = lazy(() => import('@/pages/sectors/SegurosLanding'));
 const RetailLanding = lazy(() => import('@/pages/sectors/RetailLanding'));
@@ -100,8 +101,10 @@ export const publicRoutes: RouteConfig[] = [
   { path: '/store/checkout', component: StoreCheckout, layout: 'public', priority: 'high' },
   { path: '/store/success', component: CheckoutSuccess, layout: 'public', priority: 'high' },
   
-  // Sectors
+  // Sectors (con alias para ambas rutas)
   { path: '/sectores', component: SectorLanding, layout: 'public', priority: 'high', meta: { title: 'Sectores' } },
+  { path: '/sectores/:slug', component: SectorDetail, layout: 'none', priority: 'high', meta: { title: 'Sector' } },
+  { path: '/sectors/:slug', component: SectorDetail, layout: 'none', priority: 'high', meta: { title: 'Sector' } },
   { path: '/sectores/banca', component: BancaLanding, layout: 'public', priority: 'high', meta: { title: 'Banca' } },
   { path: '/sectores/seguros', component: SegurosLanding, layout: 'public', priority: 'high', meta: { title: 'Seguros' } },
   { path: '/sectores/retail', component: RetailLanding, layout: 'public', priority: 'high', meta: { title: 'Retail' } },
