@@ -33,7 +33,7 @@ const iconMap: Record<string, React.ElementType> = {
 
 const SectorDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { sectors, loading } = useSectors({ featured: true });
+  const { sectors, loading } = useSectors();
 
   const sector = sectors.find(s => s.slug === slug);
 
