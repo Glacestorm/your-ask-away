@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Building2, Search, Sparkles, Filter, 
-  Building, Briefcase, Rocket, X
+  Building, Briefcase, Rocket, X, ArrowRight, Trophy
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,10 @@ import { Badge } from '@/components/ui/badge';
 import { useSectors } from '@/hooks/useSectors';
 import SectorCard from './SectorCard';
 import { Skeleton } from '@/components/ui/skeleton';
+import { CaseStudiesCarousel } from './CaseStudiesCarousel';
+import { ClientLogosBar } from './ClientLogosBar';
+import { AggregatedMetrics } from './AggregatedMetrics';
+import { Link } from 'react-router-dom';
 
 const companySizeFilters = [
   { key: 'all', label: 'Todos', icon: Building2 },
@@ -48,6 +52,18 @@ export const SectorsShowcase: React.FC = () => {
   };
 
   const recommendedSector = getRecommendedSector();
+
+  // Get all client names from case studies for the logos bar
+  const allClients = sectors.flatMap(sector => 
+    sector.case_studies.map(cs => ({
+      name: cs.company,
+      logo_url: cs.logo_url,
+      gradientColor: sector.gradient_from
+    }))
+  );
+
+  // Get sectors with case studies for the carousel
+  const sectorsWithCaseStudies = sectors.filter(s => s.case_studies.length > 0);
 
   return (
     <section className="py-24 relative overflow-hidden">
@@ -253,6 +269,59 @@ export const SectorsShowcase: React.FC = () => {
             >
               Limpiar filtros
             </Button>
+          </motion.div>
+        )}
+
+        {/* Case Studies Section */}
+        {!loading && sectorsWithCaseStudies.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-32"
+          >
+            {/* Section header */}
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 rounded-full mb-6">
+                <Trophy className="w-4 h-4 text-emerald-400" />
+                <span className="text-sm font-medium text-emerald-400">Casos de Éxito</span>
+              </div>
+              <h3 className="text-3xl md:text-4xl font-display font-semibold text-white mb-4">
+                Resultados que hablan por sí solos
+              </h3>
+              <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+                Empresas de todos los sectores confían en Obelixia para transformar sus operaciones
+              </p>
+            </div>
+
+            {/* Client logos carousel */}
+            {allClients.length > 0 && (
+              <ClientLogosBar clients={allClients} />
+            )}
+
+            {/* Aggregated metrics */}
+            <div className="my-12">
+              <AggregatedMetrics />
+            </div>
+
+            {/* Featured case study carousel */}
+            <div className="max-w-3xl mx-auto">
+              <CaseStudiesCarousel sectors={sectorsWithCaseStudies} />
+            </div>
+
+            {/* CTA to case studies page */}
+            <div className="text-center mt-12">
+              <Link to="/casos-de-exito">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="rounded-full border-slate-700 text-white hover:bg-slate-800 gap-2"
+                >
+                  Ver todos los casos de éxito
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
+            </div>
           </motion.div>
         )}
 
