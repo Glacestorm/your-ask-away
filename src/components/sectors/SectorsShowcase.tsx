@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { CaseStudiesCarousel } from './CaseStudiesCarousel';
 import { ClientLogosBar } from './ClientLogosBar';
 import { AggregatedMetrics } from './AggregatedMetrics';
+import { AIRecommenderPanel } from './AIRecommenderPanel';
 import { Link } from 'react-router-dom';
 
 const companySizeFilters = [
@@ -27,7 +28,6 @@ export const SectorsShowcase: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
   const [showAIRecommender, setShowAIRecommender] = useState(false);
-  const [cnaeInput, setCnaeInput] = useState('');
 
   const filteredSectors = sectors.filter(sector => {
     const matchesSearch = 
@@ -41,17 +41,6 @@ export const SectorsShowcase: React.FC = () => {
     
     return matchesSearch && matchesFilter;
   });
-
-  const getRecommendedSector = () => {
-    if (!cnaeInput) return null;
-    return sectors.find(sector => 
-      sector.cnae_codes?.some(code => 
-        cnaeInput.startsWith(code) || code.startsWith(cnaeInput)
-      )
-    );
-  };
-
-  const recommendedSector = getRecommendedSector();
 
   // Get all client names from case studies for the logos bar
   const allClients = sectors.flatMap(sector => 
@@ -159,68 +148,15 @@ export const SectorsShowcase: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* AI Recommender Panel */}
+        {/* AI Recommender Panel - Advanced */}
         {showAIRecommender && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="max-w-2xl mx-auto mb-12"
+            className="max-w-3xl mx-auto mb-12"
           >
-            <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-2xl p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white">Recomendador por CNAE</h3>
-                  <p className="text-sm text-slate-400">Introduce tu código CNAE y te sugerimos el sector ideal</p>
-                </div>
-              </div>
-              
-              <div className="flex gap-3">
-                <Input
-                  placeholder="Ej: 4711, 86, 25..."
-                  value={cnaeInput}
-                  onChange={(e) => setCnaeInput(e.target.value)}
-                  className="flex-1 h-12 bg-slate-900/50 border-slate-700 text-white placeholder:text-slate-500"
-                />
-              </div>
-
-              {recommendedSector && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-4 p-4 bg-slate-900/50 rounded-xl border border-slate-700"
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
-                      Recomendación IA
-                    </Badge>
-                  </div>
-                  <h4 className="text-white font-semibold">{recommendedSector.name}</h4>
-                  <p className="text-sm text-slate-400 mt-1">{recommendedSector.short_description}</p>
-                  <div className="flex flex-wrap gap-1 mt-3">
-                    {recommendedSector.regulations.slice(0, 3).map((reg, i) => (
-                      <Badge 
-                        key={i} 
-                        variant="outline" 
-                        className="text-xs bg-slate-800/50 text-slate-400 border-slate-700"
-                      >
-                        {reg.code}
-                      </Badge>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-
-              {cnaeInput && !recommendedSector && (
-                <div className="mt-4 text-sm text-slate-400">
-                  No encontramos un sector específico para el CNAE "{cnaeInput}". 
-                  Prueba con los primeros 2 dígitos.
-                </div>
-              )}
-            </div>
+            <AIRecommenderPanel onClose={() => setShowAIRecommender(false)} />
           </motion.div>
         )}
 
