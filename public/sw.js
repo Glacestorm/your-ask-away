@@ -1,7 +1,7 @@
 // Enhanced Service Worker with Cache Strategies for Core Web Vitals optimization
 // Implements: Cache-First, Network-First, Stale-While-Revalidate strategies
 
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `dynamic-${CACHE_VERSION}`;
 const IMAGE_CACHE = `images-${CACHE_VERSION}`;
@@ -21,13 +21,43 @@ const CACHE_LIMITS = {
   [API_CACHE]: 30,
 };
 
+// External domains to exclude from Service Worker handling
+const EXCLUDED_DOMAINS = [
+  'plausible.io',
+  'cdn.gpteng.co',
+  'apis.google.com',
+  'www.google-analytics.com',
+  'analytics.google.com',
+  'googletagmanager.com',
+  'chrome-extension',
+];
+
+// Check if URL should be excluded from SW handling
+function shouldExclude(url) {
+  try {
+    const urlObj = new URL(url);
+    return EXCLUDED_DOMAINS.some(domain => urlObj.hostname.includes(domain) || url.includes(domain));
+  } catch {
+    return true;
+  }
+}
+
+// Validate that we have a valid Response object
+function isValidResponse(response) {
+  return response && response instanceof Response && response.ok;
+}
+
 // Trim cache to limit
 async function trimCache(cacheName, maxItems) {
-  const cache = await caches.open(cacheName);
-  const keys = await cache.keys();
-  if (keys.length > maxItems) {
-    await cache.delete(keys[0]);
-    await trimCache(cacheName, maxItems);
+  try {
+    const cache = await caches.open(cacheName);
+    const keys = await cache.keys();
+    if (keys.length > maxItems) {
+      await cache.delete(keys[0]);
+      await trimCache(cacheName, maxItems);
+    }
+  } catch (error) {
+    console.warn('[SW] trimCache error:', error);
   }
 }
 
@@ -115,14 +145,14 @@ function getCacheStrategy(request) {
 
 // Cache First strategy - best for static assets
 async function cacheFirst(request, cacheName) {
-  const cachedResponse = await caches.match(request);
-  if (cachedResponse) {
-    return cachedResponse;
-  }
-  
   try {
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    
     const networkResponse = await fetch(request);
-    if (networkResponse.ok) {
+    if (isValidResponse(networkResponse)) {
       const cache = await caches.open(cacheName);
       cache.put(request, networkResponse.clone());
       trimCache(cacheName, CACHE_LIMITS[cacheName] || 50);
@@ -130,6 +160,9 @@ async function cacheFirst(request, cacheName) {
     return networkResponse;
   } catch (error) {
     console.error('[SW] Cache-first fetch failed:', error);
+    // Return cached response if available, otherwise throw
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) return cachedResponse;
     throw error;
   }
 }
@@ -138,7 +171,7 @@ async function cacheFirst(request, cacheName) {
 async function networkFirst(request, cacheName) {
   try {
     const networkResponse = await fetch(request);
-    if (networkResponse.ok) {
+    if (isValidResponse(networkResponse)) {
       const cache = await caches.open(cacheName);
       cache.put(request, networkResponse.clone());
       trimCache(cacheName, CACHE_LIMITS[cacheName] || 50);
@@ -158,12 +191,11 @@ async function networkFirst(request, cacheName) {
 async function staleWhileRevalidate(request, cacheName) {
   const cachedResponse = await caches.match(request);
   
-  const networkPromise = fetch(request)
+  const fetchPromise = fetch(request)
     .then(async (networkResponse) => {
-      if (networkResponse.ok) {
+      if (isValidResponse(networkResponse)) {
         try {
           const cache = await caches.open(cacheName);
-          // Clone before any use to avoid "body already used" error
           const responseToCache = networkResponse.clone();
           await cache.put(request, responseToCache);
           trimCache(cacheName, CACHE_LIMITS[cacheName] || 50);
@@ -173,11 +205,22 @@ async function staleWhileRevalidate(request, cacheName) {
       }
       return networkResponse;
     })
-    .catch(() => {
+    .catch((error) => {
+      console.warn('[SW] SWR network fetch failed:', error);
       return null;
     });
   
-  return cachedResponse || networkPromise;
+  // Return cached response immediately, or wait for network
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+  
+  const networkResponse = await fetchPromise;
+  if (networkResponse) {
+    return networkResponse;
+  }
+  
+  throw new Error('No cached or network response available');
 }
 
 // Fetch event handler
@@ -189,42 +232,65 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // Skip chrome-extension and non-http(s) requests
+  // Skip non-http(s) requests
   if (!request.url.startsWith('http')) {
+    return;
+  }
+  
+  // Skip excluded external domains - let browser handle them directly
+  if (shouldExclude(request.url)) {
     return;
   }
   
   const strategy = getCacheStrategy(request);
   
-  let responsePromise;
-  
-  switch (strategy) {
-    case 'cache-first':
-      responsePromise = cacheFirst(request, IMAGE_CACHE);
-      break;
-    case 'network-first':
-      responsePromise = networkFirst(request, 
-        request.url.includes('supabase') || request.url.includes('/api') 
-          ? API_CACHE 
-          : DYNAMIC_CACHE
-      );
-      break;
-    case 'stale-while-revalidate':
-      responsePromise = staleWhileRevalidate(request, STATIC_CACHE);
-      break;
-    default:
-      responsePromise = fetch(request);
-  }
-  
   event.respondWith(
-    responsePromise.catch((error) => {
-      console.error('[SW] Fetch handler error:', error);
-      // Return offline fallback for navigation requests
-      if (request.destination === 'document') {
-        return caches.match('/');
+    (async () => {
+      try {
+        let response;
+        
+        switch (strategy) {
+          case 'cache-first':
+            response = await cacheFirst(request, IMAGE_CACHE);
+            break;
+          case 'network-first':
+            response = await networkFirst(request, 
+              request.url.includes('supabase') || request.url.includes('/api') 
+                ? API_CACHE 
+                : DYNAMIC_CACHE
+            );
+            break;
+          case 'stale-while-revalidate':
+            response = await staleWhileRevalidate(request, STATIC_CACHE);
+            break;
+          default:
+            response = await fetch(request);
+        }
+        
+        // Ensure we always return a valid Response
+        if (response && response instanceof Response) {
+          return response;
+        }
+        
+        // Fallback to network fetch
+        return fetch(request);
+      } catch (error) {
+        console.error('[SW] Fetch handler error:', error);
+        
+        // Return offline fallback for navigation requests
+        if (request.destination === 'document') {
+          const cachedIndex = await caches.match('/');
+          if (cachedIndex) return cachedIndex;
+        }
+        
+        // Return a proper error response instead of throwing
+        return new Response('Network error', {
+          status: 503,
+          statusText: 'Service Unavailable',
+          headers: { 'Content-Type': 'text/plain' }
+        });
       }
-      throw error;
-    })
+    })()
   );
 });
 
@@ -345,8 +411,8 @@ async function syncOfflineOperations() {
         console.log(`[SW] Found ${operations.length} pending operations`);
         
         // Notify main thread to perform sync
-        const clients = await self.clients.matchAll();
-        for (const client of clients) {
+        const allClients = await self.clients.matchAll();
+        for (const client of allClients) {
           client.postMessage({
             type: 'SYNC_REQUIRED',
             pendingCount: operations.length
@@ -386,7 +452,7 @@ async function cacheCriticalData(urls) {
   for (const url of urls) {
     try {
       const response = await fetch(url);
-      if (response.ok) {
+      if (isValidResponse(response)) {
         await cache.put(url, response);
         console.log('[SW] Cached critical URL:', url);
       }
