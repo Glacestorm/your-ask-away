@@ -135,7 +135,7 @@ const ObelixiaTeamAdmin: React.FC = () => {
         <Card className="bg-slate-900/80 border-slate-700/50 backdrop-blur-sm">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <CardHeader className="pb-0 border-b border-slate-700/50">
-              <TabsList className="grid grid-cols-5 lg:grid-cols-10 w-full gap-1">
+              <TabsList className="grid grid-cols-5 lg:grid-cols-11 w-full gap-1">
                 <TabsTrigger 
                   value="quotes" 
                   className="flex items-center gap-2 text-xs"
@@ -205,6 +205,13 @@ const ObelixiaTeamAdmin: React.FC = () => {
                 >
                   <Shield className="w-4 h-4" />
                   <span className="hidden sm:inline">Seguridad</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="news"
+                  className="flex items-center gap-2 text-xs"
+                >
+                  <Newspaper className="w-4 h-4" />
+                  <span className="hidden sm:inline">Noticias</span>
                 </TabsTrigger>
               </TabsList>
             </CardHeader>
@@ -412,6 +419,10 @@ const ObelixiaTeamAdmin: React.FC = () => {
 
               <TabsContent value="security" className="m-0">
                 <SecurityOnboardingGuide />
+              </TabsContent>
+
+              <TabsContent value="news" className="m-0">
+                <NewsAdminDashboard />
               </TabsContent>
             </CardContent>
           </Tabs>
