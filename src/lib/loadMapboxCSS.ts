@@ -4,6 +4,7 @@
  */
 
 // Mapbox GL version - update this to match your mapbox-gl package version
+// Note: This should be kept in sync with the mapbox-gl version in package.json
 const MAPBOX_GL_VERSION = 'v3.8.0';
 
 let isMapboxCSSLoaded = false;
