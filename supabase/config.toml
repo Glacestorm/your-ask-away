@@ -305,3 +305,6 @@ verify_jwt = false
 
 [functions.faq-chat]
 verify_jwt = false
+
+[functions.news-ai-search]
+verify_jwt = false
