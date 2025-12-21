@@ -19,30 +19,39 @@ export interface FeatureUsage {
 export interface TimeToValueMetric {
   id: string;
   company_id?: string;
-  metric_key: string;
-  milestone_name: string;
+  metric_type: string;
   target_days?: number;
   actual_days?: number;
   achieved_at?: string;
   started_at?: string;
-  value_realized?: number;
+  value_indicator?: string;
   is_achieved?: boolean;
-  benchmark_percentile?: number;
+  prediction_confidence?: number;
+  predicted_days?: number;
+  updated_at?: string;
+  created_at?: string;
 }
 
 export interface LowUsageAlert {
   id: string;
   company_id?: string;
   alert_type: string;
-  trigger_days: number;
+  days_since_last_use?: number;
   product_key?: string;
   feature_key?: string;
   last_usage_at?: string;
-  alert_sent_at?: string;
+  created_at?: string;
   resolved_at?: string;
   resolution_action?: string;
-  severity: string;
-  auto_intervention?: boolean;
+  severity?: string;
+  auto_action_taken?: string;
+  acknowledged_at?: string;
+  acknowledged_by?: string;
+  assigned_to?: string;
+  is_active?: boolean;
+  message?: string;
+  recommended_action?: string;
+  updated_at?: string;
 }
 
 export interface AdoptionScore {
@@ -223,27 +232,24 @@ export function useAdoptionTracking(companyId?: string) {
   const recordTimeToValue = useMutation({
     mutationFn: async ({
       companyId,
-      metricKey,
-      milestoneName,
+      metricType,
       targetDays,
-      valueRealized,
+      valueIndicator,
     }: {
       companyId: string;
-      metricKey: string;
-      milestoneName: string;
+      metricType: string;
       targetDays?: number;
-      valueRealized?: number;
+      valueIndicator?: string;
     }) => {
       const startDate = new Date();
       const { data, error } = await supabase
         .from('time_to_value_metrics')
         .insert({
           company_id: companyId,
-          metric_key: metricKey,
-          milestone_name: milestoneName,
+          metric_type: metricType,
           target_days: targetDays,
           started_at: startDate.toISOString(),
-          value_realized: valueRealized,
+          value_indicator: valueIndicator,
           is_achieved: false,
         })
         .select()
