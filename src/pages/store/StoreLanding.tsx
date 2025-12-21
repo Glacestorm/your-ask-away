@@ -18,6 +18,7 @@ import { MarketingTabs } from '@/components/marketing';
 import NewsTicker from '@/components/news/NewsTicker';
 import PremiumNewsCard from '@/components/news/PremiumNewsCard';
 import { useNewsArticles } from '@/hooks/useNewsArticles';
+import { FAQSection, FAQChatWidget } from '@/components/faq';
 
 const StoreLanding: React.FC = () => {
   const { t } = useLanguage();
@@ -237,6 +238,9 @@ const StoreLanding: React.FC = () => {
       {/* News Ticker (justo antes de Noticias) */}
       {tickerItems.length > 0 && <NewsTicker items={tickerItems} />}
 
+      {/* FAQ Section */}
+      <FAQSection />
+
       {/* News Section */}
       {articles.length > 0 && (
         <section id="news" className="py-24 relative">
@@ -317,6 +321,7 @@ const StoreLanding: React.FC = () => {
 
       <StoreFooter />
       <CartSidebar />
+      <FAQChatWidget />
     </div>
   );
 };

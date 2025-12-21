@@ -30,6 +30,7 @@ import { CMSDashboard } from '@/components/cms-admin';
 import SecurityOnboardingGuide from '@/components/obelixia-admin/SecurityOnboardingGuide';
 import { NewsAdminDashboard } from '@/components/obelixia-admin/news';
 import NewsNotificationSystem from '@/components/admin/NewsNotificationSystem';
+import { FAQAdminDashboard } from '@/components/obelixia-admin/faq';
 
 const ObelixiaTeamAdmin: React.FC = () => {
   const { isSuperAdmin, isAdmin } = useAuth();
