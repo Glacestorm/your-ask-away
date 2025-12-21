@@ -70,6 +70,7 @@ const PremiumNewsHero: React.FC<PremiumNewsHeroProps> = ({ article, onReadMore }
     ? (article.image_credit || article.source_name)
     : 'Ilustración (ObelixIA)';
 
+  return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
