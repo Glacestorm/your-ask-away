@@ -11,6 +11,7 @@ interface NewsArticle {
   slug: string;
   excerpt: string;
   image_url: string;
+  image_credit?: string | null;
   source_name: string;
   category: string;
   published_at: string;
@@ -59,6 +60,8 @@ const PremiumNewsHero: React.FC<PremiumNewsHeroProps> = ({ article, onReadMore }
     locale: es 
   });
 
+  const imageCredit = article.image_credit || article.source_name;
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -81,6 +84,14 @@ const PremiumNewsHero: React.FC<PremiumNewsHeroProps> = ({ article, onReadMore }
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-slate-950/20" />
         <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/40 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/30 via-transparent to-blue-950/30" />
+        
+        {/* Image Attribution - Legal compliance */}
+        <span 
+          className="absolute bottom-3 right-3 text-xs text-white/50 bg-black/40 px-3 py-1 rounded-full backdrop-blur-sm"
+          title={`Imagen: © ${imageCredit}`}
+        >
+          📷 {imageCredit}
+        </span>
       </div>
 
       {/* Animated Floating Elements */}

@@ -277,6 +277,7 @@ const StoreLanding: React.FC = () => {
                       slug: article.slug || article.id,
                       excerpt: article.ai_summary || article.content?.substring(0, 150) || '',
                       image_url: article.image_url || '',
+                      image_credit: article.image_credit || article.source_name || 'Fuente',
                       source_name: article.source_name || 'Fuente',
                       source_url: article.source_url || '',
                       category: article.category || 'Noticias',

@@ -9,6 +9,7 @@ export interface NewsArticle {
   excerpt: string;
   content: string;
   image_url: string;
+  image_credit: string | null;
   source_url: string;
   source_name: string;
   category: string;
