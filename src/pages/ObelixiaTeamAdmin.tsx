@@ -29,6 +29,7 @@ import APIDocumentation from '@/components/admin/APIDocumentation';
 import { CMSDashboard } from '@/components/cms-admin';
 import SecurityOnboardingGuide from '@/components/obelixia-admin/SecurityOnboardingGuide';
 import { NewsAdminDashboard } from '@/components/obelixia-admin/news';
+import NewsNotificationSystem from '@/components/admin/NewsNotificationSystem';
 
 const ObelixiaTeamAdmin: React.FC = () => {
   const { isSuperAdmin, isAdmin } = useAuth();
@@ -89,6 +90,7 @@ const ObelixiaTeamAdmin: React.FC = () => {
               >
                 <Home className="h-5 w-5" />
               </Button>
+              <NewsNotificationSystem />
             </div>
             
             <div>
