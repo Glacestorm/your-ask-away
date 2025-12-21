@@ -332,6 +332,16 @@ const Home = () => {
                 <Users className="h-4 w-4" />
                 {t('home.myProfile')}
               </Button>
+              {userRole === 'superadmin' && (
+                <Button
+                  variant="outline"
+                  onClick={() => navigate('/obelixia-admin')}
+                  className="gap-2 border-purple-500/50 hover:border-purple-500 hover:bg-purple-500/10"
+                >
+                  <Settings className="h-4 w-4 text-purple-500" />
+                  Obelixia Admin
+                </Button>
+              )}
             </div>
           </div>
         </div>
