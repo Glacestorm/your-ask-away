@@ -5,7 +5,7 @@ import { ArrowRight, Play, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ObelixiaLogo } from '@/components/ui/ObelixiaLogo';
 import DemoRequestModal from '@/components/store/DemoRequestModal';
-import brainLogo from '@/assets/brain-logo.png';
+import brainLogo from '@/assets/brain-logo-transparent.png';
 
 export const HeroExplosive: React.FC = () => {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
