@@ -2,11 +2,15 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Calculator, RefreshCw, Edit } from 'lucide-react';
+import { Plus, Calculator, RefreshCw, Edit, FileDown, FileSpreadsheet } from 'lucide-react';
 import { useFinancialPlan } from '@/hooks/useStrategicPlanning';
 import { useAccountingSync } from '@/hooks/useAccountingSync';
 import { FinancialDataEntry } from './FinancialDataEntry';
 import { InfoTooltip, FINANCIAL_TOOLTIPS } from '@/components/ui/info-tooltip';
+import { generateFinancialStatementsPDF, downloadPDF, printPDF } from './PDFGenerator';
+import { exportFinancialStatementsToExcel } from '@/lib/excelExport';
+import { toast } from 'sonner';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 export function FinancialModel() {
   const { plans, currentPlan, setCurrentPlan, accounts, ratios, createPlan, fetchPlanDetails, upsertAccount, isLoading } = useFinancialPlan();
@@ -101,6 +105,37 @@ export function FinancialModel() {
           {syncStatus.accounting_module_installed && (
             <Button variant="outline" onClick={handleSync} className="gap-2"><RefreshCw className="h-4 w-4" /> Sincronizar</Button>
           )}
+          
+          {/* Export Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <FileDown className="h-4 w-4" />
+                Exportar
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => {
+                const doc = generateFinancialStatementsPDF(currentPlan.plan_name, years, accounts, ratios);
+                downloadPDF(doc, `${currentPlan.plan_name}_Estados_Financieros.pdf`);
+                toast.success('PDF descargado');
+              }}>
+                <FileDown className="h-4 w-4 mr-2" /> Descargar PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {
+                const doc = generateFinancialStatementsPDF(currentPlan.plan_name, years, accounts, ratios);
+                printPDF(doc);
+              }}>
+                <FileDown className="h-4 w-4 mr-2" /> Imprimir PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {
+                exportFinancialStatementsToExcel(currentPlan.plan_name, accounts, ratios, years);
+                toast.success('Excel descargado');
+              }}>
+                <FileSpreadsheet className="h-4 w-4 mr-2" /> Exportar Excel
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 

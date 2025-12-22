@@ -1,12 +1,17 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Target, FileText } from 'lucide-react';
+import { Target, FileText, LayoutDashboard } from 'lucide-react';
 import { DafoBoard } from '@/components/strategic-planning/DafoBoard';
 import { BusinessPlanEvaluator } from '@/components/strategic-planning/BusinessPlanEvaluator';
+import { ExecutiveDashboard } from '@/components/strategic-planning/ExecutiveDashboard';
 import { StrategicAssistantChat } from '@/components/strategic-planning/StrategicAssistantChat';
 
 export default function StrategicPlanningPage() {
-  const [activeTab, setActiveTab] = useState('dafo');
+  const [activeTab, setActiveTab] = useState('dashboard');
+
+  const handleNavigate = (tab: string) => {
+    setActiveTab(tab);
+  };
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -26,7 +31,12 @@ export default function StrategicPlanningPage() {
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
+            <TabsTrigger value="dashboard" className="gap-2">
+              <LayoutDashboard className="h-4 w-4" />
+              <span className="hidden sm:inline">Dashboard</span>
+              <span className="sm:hidden">Panel</span>
+            </TabsTrigger>
             <TabsTrigger value="dafo" className="gap-2">
               <Target className="h-4 w-4" />
               <span className="hidden sm:inline">Análisis DAFO</span>
@@ -38,6 +48,10 @@ export default function StrategicPlanningPage() {
               <span className="sm:hidden">Plan</span>
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="dashboard">
+            <ExecutiveDashboard onNavigate={handleNavigate} />
+          </TabsContent>
 
           <TabsContent value="dafo">
             <DafoBoard />
