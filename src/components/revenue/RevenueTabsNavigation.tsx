@@ -64,67 +64,53 @@ export const RevenueTabsNavigation: React.FC<RevenueTabsNavigationProps> = ({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Decorative background grid */}
-      <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div 
-          className="absolute inset-0 opacity-[0.02]"
-          style={{
-            backgroundImage: `
-              linear-gradient(hsl(var(--primary)) 1px, transparent 1px),
-              linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)
-            `,
-            backgroundSize: '40px 40px'
-          }}
-        />
-      </div>
-
+    <div className="space-y-3">
       {(Object.keys(groupedTabs) as Array<keyof typeof groupedTabs>).map((phase, phaseIndex) => (
         <motion.div 
           key={phase}
-          className="space-y-3"
-          initial={{ opacity: 0, y: 20 }}
+          className="space-y-2"
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: phaseIndex * 0.1 }}
+          transition={{ delay: phaseIndex * 0.05 }}
         >
           {/* Phase Header */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <div 
-              className="h-px flex-1 opacity-30"
+              className="h-px flex-1 opacity-20"
               style={{ 
                 background: `linear-gradient(90deg, ${phaseLabels[phase].color}, transparent)` 
               }}
             />
             <span 
-              className="text-[10px] font-semibold uppercase tracking-[0.2em] px-3 py-1 rounded-full border"
+              className="text-[8px] font-semibold uppercase tracking-[0.15em] px-2 py-0.5 rounded-full border"
               style={{ 
                 color: phaseLabels[phase].color,
-                borderColor: `${phaseLabels[phase].color}30`,
-                background: `${phaseLabels[phase].color}08`
+                borderColor: `${phaseLabels[phase].color}25`,
+                background: `${phaseLabels[phase].color}05`
               }}
             >
               {phaseLabels[phase].label}
             </span>
             <div 
-              className="h-px flex-1 opacity-30"
+              className="h-px flex-1 opacity-20"
               style={{ 
                 background: `linear-gradient(90deg, transparent, ${phaseLabels[phase].color})` 
               }}
             />
           </div>
           
-          {/* Tab Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          {/* Tab Grid - More columns, compact */}
+          <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-13 gap-2">
             {groupedTabs[phase].map((tab, index) => (
               <motion.div
                 key={tab.id}
-                initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
                 transition={{ 
-                  delay: phaseIndex * 0.15 + index * 0.05,
+                  delay: phaseIndex * 0.08 + index * 0.02,
                   type: "spring",
-                  stiffness: 300,
-                  damping: 25
+                  stiffness: 400,
+                  damping: 30
                 }}
               >
                 <Premium3DTabCard
@@ -139,9 +125,6 @@ export const RevenueTabsNavigation: React.FC<RevenueTabsNavigationProps> = ({
           </div>
         </motion.div>
       ))}
-      
-      {/* Bottom reflection effect */}
-      <div className="h-8 bg-gradient-to-t from-background to-transparent pointer-events-none" />
     </div>
   );
 };

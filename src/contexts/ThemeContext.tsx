@@ -18,8 +18,8 @@ const getSystemTheme = (): 'day' | 'night' => {
 };
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeMode>('day');
-  const [systemTheme, setSystemTheme] = useState<'day' | 'night'>('day');
+  const [theme, setThemeState] = useState<ThemeMode>('night');
+  const [systemTheme, setSystemTheme] = useState<'day' | 'night'>('night');
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Initialize theme from localStorage after mount
