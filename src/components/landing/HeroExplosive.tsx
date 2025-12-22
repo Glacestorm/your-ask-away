@@ -3,11 +3,11 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Play, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ObelixiaLogo } from '@/components/ui/ObelixiaLogo';
 import DemoRequestModal from '@/components/store/DemoRequestModal';
 
 export const HeroExplosive: React.FC = () => {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
-
   return (
     <>
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -158,70 +158,14 @@ export const HeroExplosive: React.FC = () => {
               </Button>
             </motion.div>
 
-            {/* CRM Screenshot/Mockup */}
+            {/* ObelixIA Logo with Brain */}
             <motion.div
-              initial={{ opacity: 0, y: 60, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1, delay: 0.6, ease: 'easeOut' }}
-              className="relative mx-auto max-w-5xl"
+              className="flex justify-center mt-8"
             >
-              {/* Glow behind mockup */}
-              <div className="absolute inset-0 bg-gradient-to-t from-blue-600/20 to-violet-600/20 blur-3xl scale-110" />
-              
-              {/* Mockup container */}
-              <div className="relative bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-slate-700/50 rounded-2xl p-2 backdrop-blur-sm shadow-2xl">
-                {/* Browser bar */}
-                <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-700/50">
-                  <div className="flex gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-red-500/80" />
-                    <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-                    <div className="w-3 h-3 rounded-full bg-green-500/80" />
-                  </div>
-                  <div className="flex-1 flex justify-center">
-                    <div className="px-4 py-1 bg-slate-800 rounded-md text-sm text-slate-400">
-                      app.obelixia.com
-                    </div>
-                  </div>
-                </div>
-                
-                {/* CRM Interface Preview */}
-                <div className="relative aspect-video bg-gradient-to-br from-slate-900 to-[#0f172a] rounded-b-xl overflow-hidden">
-                  {/* Kanban Board Preview */}
-                  <div className="absolute inset-0 p-6">
-                    <div className="grid grid-cols-5 gap-4 h-full opacity-80">
-                      {['Lead Nuevo', 'Contactado', 'En Negociación', 'Propuesta', 'Cerrado'].map((col, i) => (
-                        <div key={col} className="flex flex-col gap-3">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-semibold text-slate-400">{col}</span>
-                            <span className="text-xs text-slate-500">{3 + i}</span>
-                          </div>
-                          {[...Array(3)].map((_, j) => (
-                            <motion.div
-                              key={j}
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ delay: 0.8 + i * 0.1 + j * 0.05 }}
-                              className="bg-slate-800/80 border border-slate-700/50 rounded-lg p-3"
-                            >
-                              <div className="w-full h-2 bg-slate-700 rounded mb-2" />
-                              <div className="w-2/3 h-2 bg-slate-700/50 rounded mb-3" />
-                              <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-violet-500" />
-                                <div className="flex-1">
-                                  <div className="w-16 h-1.5 bg-slate-700/50 rounded" />
-                                </div>
-                              </div>
-                            </motion.div>
-                          ))}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Overlay glow */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent" />
-                </div>
-              </div>
+              <ObelixiaLogo size="hero" variant="full" animated />
             </motion.div>
           </div>
         </div>
