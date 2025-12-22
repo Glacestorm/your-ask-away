@@ -71,9 +71,6 @@ const DeveloperPortal = lazy(() => import('@/pages/DeveloperPortal'));
 // Subscription
 const SubscriptionSuccess = lazy(() => import('@/pages/subscription/Success'));
 
-// Revenue Intelligence
-const RevenueIntelligence = lazy(() => import('@/pages/RevenueIntelligence'));
-
 // Tipos
 export type RouteLayout = 'public' | 'dashboard' | 'minimal' | 'none';
 export type RoutePriority = 'high' | 'medium' | 'low';
@@ -182,7 +179,6 @@ export const dashboardRoutes: RouteConfig[] = [
 export const adminRoutes: RouteConfig[] = [
   { path: '/admin', component: Admin, layout: 'none', priority: 'medium', delay: 50, meta: { title: 'Admin', requiresAuth: true, roles: ['admin', 'superadmin'] } },
   { path: '/obelixia-admin', component: ObelixiaTeamAdmin, layout: 'dashboard', priority: 'medium', delay: 50, meta: { title: 'Obelixia Admin', requiresAuth: true, roles: ['superadmin'] } },
-  { path: '/revenue-intelligence', component: RevenueIntelligence, layout: 'none', priority: 'high', meta: { title: 'Revenue Intelligence Hub', requiresAuth: true, roles: ['admin', 'superadmin'] } },
 ];
 
 // ============================================
