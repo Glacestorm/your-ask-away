@@ -347,3 +347,6 @@ verify_jwt = true
 
 [functions.strategic-ai]
 verify_jwt = true
+
+[functions.strategic-assistant]
+verify_jwt = true
