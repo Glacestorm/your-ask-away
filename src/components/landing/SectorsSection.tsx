@@ -1,37 +1,41 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { ShoppingCart, Lightbulb, Building2, CreditCard, GraduationCap, Briefcase, Factory, HeartPulse } from 'lucide-react';
 
 interface SectorCardProps {
   icon: React.ElementType;
   title: string;
   description: string;
+  href: string;
   delay?: number;
 }
 
-const SectorCard: React.FC<SectorCardProps> = ({ icon: Icon, title, description, delay = 0 }) => (
-  <motion.div
-    initial={{ opacity: 0, scale: 0.95 }}
-    whileInView={{ opacity: 1, scale: 1 }}
-    viewport={{ once: true }}
-    transition={{ delay, duration: 0.4 }}
-    whileHover={{ y: -5, scale: 1.02 }}
-    className="group relative bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-slate-700/30 rounded-2xl p-6 backdrop-blur-sm hover:border-blue-500/30 transition-all duration-300 cursor-pointer"
-  >
-    <div className="flex items-start gap-4">
-      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-violet-500/20 flex items-center justify-center flex-shrink-0 group-hover:from-blue-500/30 group-hover:to-violet-500/30 transition-colors">
-        <Icon className="w-6 h-6 text-blue-400" />
+const SectorCard: React.FC<SectorCardProps> = ({ icon: Icon, title, description, href, delay = 0 }) => (
+  <Link to={href}>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true }}
+      transition={{ delay, duration: 0.4 }}
+      whileHover={{ y: -5, scale: 1.02 }}
+      className="group relative bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-slate-700/30 rounded-2xl p-6 backdrop-blur-sm hover:border-blue-500/30 transition-all duration-300 cursor-pointer h-full"
+    >
+      <div className="flex items-start gap-4">
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-violet-500/20 flex items-center justify-center flex-shrink-0 group-hover:from-blue-500/30 group-hover:to-violet-500/30 transition-colors">
+          <Icon className="w-6 h-6 text-blue-400" />
+        </div>
+        <div>
+          <h3 className="text-lg font-bold text-white mb-1 group-hover:text-blue-300 transition-colors">
+            {title}
+          </h3>
+          <p className="text-sm text-slate-400 leading-relaxed">
+            {description}
+          </p>
+        </div>
       </div>
-      <div>
-        <h3 className="text-lg font-bold text-white mb-1 group-hover:text-blue-300 transition-colors">
-          {title}
-        </h3>
-        <p className="text-sm text-slate-400 leading-relaxed">
-          {description}
-        </p>
-      </div>
-    </div>
-  </motion.div>
+    </motion.div>
+  </Link>
 );
 
 const sectors = [
@@ -39,41 +43,49 @@ const sectors = [
     icon: ShoppingCart,
     title: 'E-COMMERCE',
     description: 'Envía cupones, acompaña frecuencia de compra y conecta tu cliente por múltiples canales.',
+    href: '/sectores/ecommerce',
   },
   {
     icon: Lightbulb,
     title: 'INFOPRODUCTORES',
     description: 'Automatiza CPLs, agendamientos y ventas vía WhatsApp e Instagram.',
+    href: '/sectores/infoproductores',
   },
   {
     icon: Building2,
     title: 'AGENCIAS Y NEGOCIOS LOCALES',
     description: 'Ten control de múltiples proyectos con funnels y automatizaciones independientes.',
+    href: '/sectores/agencias',
   },
   {
     icon: CreditCard,
     title: 'SUSCRIPCIONES',
     description: 'Monitorea renovaciones, upsells y relacionamiento con clientes recurrentes.',
+    href: '/sectores/suscripciones',
   },
   {
     icon: GraduationCap,
     title: 'EDUCACIÓN Y CURSOS ONLINE',
     description: 'Clases, leads y atendimiento en un solo lugar con mensajería y datos integrados.',
+    href: '/sectores/educacion',
   },
   {
     icon: Briefcase,
     title: 'BANCA Y FINANZAS',
     description: 'CRM bancario con compliance GDPR, PSD2 y gestión de patrimonios.',
+    href: '/sectores/banca',
   },
   {
     icon: Factory,
     title: 'MANUFACTURA',
     description: 'Cadena de suministro, producción y gestión de clientes B2B integrada.',
+    href: '/sectores/manufactura',
   },
   {
     icon: HeartPulse,
     title: 'SALUD Y CLÍNICAS',
     description: 'Gestión de pacientes, citas y seguimiento con protección de datos sanitarios.',
+    href: '/sectores/salud',
   },
 ];
 
@@ -111,7 +123,10 @@ export const SectorsSection: React.FC = () => {
           {sectors.map((sector, index) => (
             <SectorCard
               key={sector.title}
-              {...sector}
+              icon={sector.icon}
+              title={sector.title}
+              description={sector.description}
+              href={sector.href}
               delay={index * 0.05}
             />
           ))}

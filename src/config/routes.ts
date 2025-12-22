@@ -51,6 +51,12 @@ const BancaLanding = lazy(() => import('@/pages/sectors/BancaLanding'));
 const SegurosLanding = lazy(() => import('@/pages/sectors/SegurosLanding'));
 const RetailLanding = lazy(() => import('@/pages/sectors/RetailLanding'));
 const ManufacturaLanding = lazy(() => import('@/pages/sectors/ManufacturaLanding'));
+const EcommerceLanding = lazy(() => import('@/pages/sectors/EcommerceLanding'));
+const InfoproductoresLanding = lazy(() => import('@/pages/sectors/InfoproductoresLanding'));
+const AgenciasLanding = lazy(() => import('@/pages/sectors/AgenciasLanding'));
+const SuscripcionesLanding = lazy(() => import('@/pages/sectors/SuscripcionesLanding'));
+const EducacionLanding = lazy(() => import('@/pages/sectors/EducacionLanding'));
+const SaludLanding = lazy(() => import('@/pages/sectors/SaludLanding'));
 
 // Marketing
 const ComparativasCRM = lazy(() => import('@/pages/comparativas/ComparativasCRM'));
@@ -109,6 +115,12 @@ export const publicRoutes: RouteConfig[] = [
   { path: '/sectores/seguros', component: SegurosLanding, layout: 'public', priority: 'high', meta: { title: 'Seguros' } },
   { path: '/sectores/retail', component: RetailLanding, layout: 'public', priority: 'high', meta: { title: 'Retail' } },
   { path: '/sectores/manufactura', component: ManufacturaLanding, layout: 'public', priority: 'high', meta: { title: 'Manufactura' } },
+  { path: '/sectores/ecommerce', component: EcommerceLanding, layout: 'public', priority: 'high', meta: { title: 'E-Commerce' } },
+  { path: '/sectores/infoproductores', component: InfoproductoresLanding, layout: 'public', priority: 'high', meta: { title: 'Infoproductores' } },
+  { path: '/sectores/agencias', component: AgenciasLanding, layout: 'public', priority: 'high', meta: { title: 'Agencias' } },
+  { path: '/sectores/suscripciones', component: SuscripcionesLanding, layout: 'public', priority: 'high', meta: { title: 'Suscripciones' } },
+  { path: '/sectores/educacion', component: EducacionLanding, layout: 'public', priority: 'high', meta: { title: 'Educación' } },
+  { path: '/sectores/salud', component: SaludLanding, layout: 'public', priority: 'high', meta: { title: 'Salud' } },
   
   // Marketing
   { path: '/comparativas', component: ComparativasCRM, layout: 'public', priority: 'high', meta: { title: 'Comparativas CRM' } },
