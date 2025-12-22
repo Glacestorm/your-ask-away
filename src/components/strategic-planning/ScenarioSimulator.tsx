@@ -5,6 +5,7 @@ import { Slider } from '@/components/ui/slider';
 import { TrendingUp, TrendingDown, Minus, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { useFinancialPlan } from '@/hooks/useStrategicPlanning';
+import { ScenarioCharts } from './ScenarioCharts';
 
 const SCENARIO_TYPES = {
   optimistic: { label: 'Optimista', icon: TrendingUp, color: 'text-green-500', multiplier: 1.2 },
@@ -60,6 +61,8 @@ export function ScenarioSimulator() {
       </Card>
     );
   }
+
+  const years = Array.from({ length: currentPlan.projection_years }, (_, i) => currentPlan.start_year + i);
 
   return (
     <div className="space-y-6">
@@ -125,6 +128,9 @@ export function ScenarioSimulator() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Charts Section */}
+      <ScenarioCharts scenarios={scenarios} years={years} />
     </div>
   );
 }
