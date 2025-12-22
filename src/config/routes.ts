@@ -84,6 +84,13 @@ const SentimentPage = lazy(() => import('@/pages/crm/SentimentPage'));
 const SLADashboardPage = lazy(() => import('@/pages/crm/SLADashboardPage'));
 const AutomationPage = lazy(() => import('@/pages/crm/AutomationPage'));
 
+// Fase 3: Diferenciadores
+const CompliancePage = lazy(() => import('@/pages/compliance/CompliancePage'));
+const ERPPage = lazy(() => import('@/pages/erp/ERPPage'));
+const RevenuePage = lazy(() => import('@/pages/revenue/RevenuePage'));
+const GISPage = lazy(() => import('@/pages/gis/GISPage'));
+const DocsPage = lazy(() => import('@/pages/docs/DocsPage'));
+
 // Tipos
 export type RouteLayout = 'public' | 'dashboard' | 'minimal' | 'none';
 export type RoutePriority = 'high' | 'medium' | 'low';
@@ -196,6 +203,12 @@ export const dashboardRoutes: RouteConfig[] = [
   { path: '/crm/sentiment', component: SentimentPage, layout: 'none', priority: 'medium', meta: { title: 'Análisis de Sentimiento', requiresAuth: true } },
   { path: '/crm/sla', component: SLADashboardPage, layout: 'none', priority: 'medium', meta: { title: 'SLAs y Métricas', requiresAuth: true } },
   { path: '/crm/automation', component: AutomationPage, layout: 'none', priority: 'high', meta: { title: 'Automatización CRM', requiresAuth: true } },
+  // Fase 3: Diferenciadores
+  { path: '/compliance', component: CompliancePage, layout: 'none', priority: 'high', meta: { title: 'Compliance', requiresAuth: true } },
+  { path: '/erp', component: ERPPage, layout: 'none', priority: 'high', meta: { title: 'ERP', requiresAuth: true } },
+  { path: '/revenue', component: RevenuePage, layout: 'none', priority: 'high', meta: { title: 'Revenue Intelligence', requiresAuth: true } },
+  { path: '/gis', component: GISPage, layout: 'none', priority: 'high', meta: { title: 'GIS Territorial', requiresAuth: true } },
+  { path: '/docs-ai', component: DocsPage, layout: 'none', priority: 'medium', meta: { title: 'Documentación AI', requiresAuth: true } },
 ];
 
 // ============================================
