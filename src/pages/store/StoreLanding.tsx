@@ -48,11 +48,11 @@ const StoreLanding: React.FC = () => {
       {/* Features Grid */}
       <FeaturesGrid />
 
+      {/* Sectors - Dynamic sector cards */}
+      <SectorsSection />
+
       {/* CRM Comparison */}
       <CRMComparisonSection />
-
-      {/* Sectors */}
-      <SectorsSection />
 
       <div id="modules">
         <Suspense fallback={<SectionSkeleton />}>
