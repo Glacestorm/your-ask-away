@@ -5,7 +5,8 @@ import { ArrowRight, Play, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ObelixiaLogo } from '@/components/ui/ObelixiaLogo';
 import DemoRequestModal from '@/components/store/DemoRequestModal';
-import brainLogo from '@/assets/brain-logo-transparent.png';
+import brainLogo from '@/assets/brain-logo.png';
+import { TransparentImage } from '@/components/ui/TransparentImage';
 
 export const HeroExplosive: React.FC = () => {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
@@ -106,10 +107,10 @@ export const HeroExplosive: React.FC = () => {
                   </span>
                   <span className="absolute inset-[-20%] animate-[ping_2s_ease-out_infinite] rounded-full bg-violet-500/30" />
                   <span className="absolute inset-[-15%] animate-[ping_2.5s_ease-out_infinite_0.3s] rounded-full bg-blue-500/25" />
-                  <img 
+                  <TransparentImage
                     src={brainLogo}
-                    alt="ObelixIA Brain"
-                    className="relative w-full h-full object-contain drop-shadow-[0_0_15px_rgba(139,92,246,0.9)] mix-blend-screen rounded-lg"
+                    alt="Cerebro ObelixIA con sinapsis activas"
+                    className="relative w-full h-full object-contain drop-shadow-[0_0_15px_rgba(139,92,246,0.9)]"
                   />
                 </span>
                 {/* Underline glow */}
