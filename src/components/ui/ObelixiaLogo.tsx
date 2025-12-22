@@ -45,7 +45,7 @@ export function ObelixiaLogo({
         <div 
           className="absolute inset-[-50%] blur-2xl opacity-60"
           style={{
-            background: 'radial-gradient(ellipse at center, rgba(6,182,212,0.5) 0%, rgba(16,185,129,0.3) 40%, transparent 70%)',
+            background: 'radial-gradient(ellipse at center, rgba(139,92,246,0.5) 0%, rgba(59,130,246,0.3) 40%, transparent 70%)',
           }}
         />
         
@@ -63,7 +63,7 @@ export function ObelixiaLogo({
             alt="ObelixIA Brain"
             className="w-full h-full object-cover scale-125"
             style={{ 
-              filter: 'drop-shadow(0 0 15px rgba(6,182,212,0.6)) drop-shadow(0 0 30px rgba(16,185,129,0.4))',
+              filter: 'drop-shadow(0 0 15px rgba(139,92,246,0.6)) drop-shadow(0 0 30px rgba(59,130,246,0.4))',
             }}
           />
         </div>
@@ -145,7 +145,7 @@ export function ObelixiaLogo({
             )}
             style={{
               fontFamily: "'Crimson Pro', Georgia, serif",
-              background: 'linear-gradient(90deg, #0ea5e9 0%, #10b981 50%, #0ea5e9 100%)',
+              background: 'linear-gradient(90deg, #3b82f6 0%, #8b5cf6 50%, #a855f7 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -155,7 +155,7 @@ export function ObelixiaLogo({
             ObelixIA
           </span>
           
-          {/* Main Text with Dual Gradient (blue→green | green→blue) */}
+          {/* Main Text with Dual Gradient (blue→violet→purple) */}
           <span 
             className={cn(
               currentSize.text,
@@ -165,8 +165,8 @@ export function ObelixiaLogo({
               fontFamily: "'Crimson Pro', Georgia, serif",
               letterSpacing: "-0.02em",
               background: animated 
-                ? 'linear-gradient(90deg, #0ea5e9 0%, #06b6d4 20%, #10b981 50%, #06b6d4 80%, #0ea5e9 100%)'
-                : 'linear-gradient(90deg, #0ea5e9 0%, #10b981 50%, #0ea5e9 100%)',
+                ? 'linear-gradient(90deg, #3b82f6 0%, #6366f1 25%, #8b5cf6 50%, #a855f7 75%, #3b82f6 100%)'
+                : 'linear-gradient(90deg, #3b82f6 0%, #8b5cf6 50%, #a855f7 100%)',
               backgroundSize: animated ? '200% 100%' : '100% 100%',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
@@ -234,7 +234,7 @@ export function ObelixiaLogo({
         )}
         style={{
           fontFamily: "'Crimson Pro', Georgia, serif",
-          background: 'linear-gradient(90deg, #0ea5e9 0%, #10b981 50%, #0ea5e9 100%)',
+          background: 'linear-gradient(90deg, #3b82f6 0%, #8b5cf6 50%, #a855f7 100%)',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
@@ -253,8 +253,8 @@ export function ObelixiaLogo({
           fontFamily: "'Crimson Pro', Georgia, serif",
           letterSpacing: "-0.02em",
           background: animated 
-            ? 'linear-gradient(90deg, #0ea5e9 0%, #06b6d4 20%, #10b981 50%, #06b6d4 80%, #0ea5e9 100%)'
-            : 'linear-gradient(90deg, #0ea5e9 0%, #10b981 50%, #0ea5e9 100%)',
+            ? 'linear-gradient(90deg, #3b82f6 0%, #6366f1 25%, #8b5cf6 50%, #a855f7 75%, #3b82f6 100%)'
+            : 'linear-gradient(90deg, #3b82f6 0%, #8b5cf6 50%, #a855f7 100%)',
           backgroundSize: animated ? '200% 100%' : '100% 100%',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
