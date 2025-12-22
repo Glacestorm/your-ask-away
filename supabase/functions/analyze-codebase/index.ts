@@ -79,7 +79,7 @@ interface CompetitorComparison {
   marketShare: string;
   pros: string[];
   cons: string[];
-  comparisonVsCreand: string;
+  comparisonVsObelixia: string;
   usedByBanks: string[];
 }
 
@@ -267,59 +267,95 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    const systemPrompt = `Eres un analista senior de software, consultor de negocio, experto en ISO 27001, DORA, NIS2, y regulación bancaria internacional.
+    const systemPrompt = `Eres un analista senior de software, consultor de negocio, experto en ISO 27001, DORA, NIS2, y regulacion multi-sectorial.
 
-Tu tarea es realizar un análisis EXTREMADAMENTE EXHAUSTIVO Y MINUCIOSO de una aplicación CRM bancaria enterprise.
+Tu tarea es realizar un analisis EXTREMADAMENTE EXHAUSTIVO Y MINUCIOSO de ObelixIA CRM Universal, una plataforma multi-sector enterprise.
+
+SECTORES PRINCIPALES (8):
+- Banca y Finanzas
+- Seguros
+- Retail y eCommerce
+- Manufactura e Industria
+- Construccion e Ingenieria
+- Sanidad y Farmaceutica
+- Servicios Profesionales
+- Administracion Publica
+
+COBERTURA CNAE COMPLETA (26 sectores adicionales via mapeo CNAE):
+- Agricultura y Ganaderia
+- Pesca y Acuicultura
+- Mineria y Canteras
+- Energia y Utilities
+- Agua y Saneamiento
+- Transporte y Logistica
+- Hosteleria y Turismo
+- Telecomunicaciones
+- Actividades Inmobiliarias
+- Educacion
+- Y 16 sectores mas...
 
 DEBES INCLUIR:
-1. ANÁLISIS DE MÓDULOS con funcionalidades REALES implementadas (verifica cada componente)
-2. SEGURIDAD IMPLEMENTADA - Lista TODAS las medidas con máximo detalle técnico
-3. ISO 27001 COMPLETO - Los 114 controles del Anexo A con estado de implementación
-4. VALORACIÓN ECONÓMICA actualizada 2024-2025 con TCO a 1, 3 y 5 años
+1. ANALISIS DE MODULOS con funcionalidades REALES implementadas
+2. SEGURIDAD IMPLEMENTADA - Lista TODAS las medidas con detalle tecnico
+3. ISO 27001 COMPLETO - Los 114 controles del Anexo A con estado
+4. VALORACION ECONOMICA actualizada 2024-2025 con TCO multi-sector
 5. COMPARATIVA COMPETIDORES REALES con URLs, precios actualizados
-6. CUMPLIMIENTO NORMATIVO (DORA, NIS2, PSD2/PSD3, Basel III/IV, MiFID II, GDPR, eIDAS 2.0, APDA Andorra)
+6. CUMPLIMIENTO NORMATIVO (DORA, NIS2, PSD2/PSD3, Basel III/IV, MiFID II, GDPR, eIDAS 2.0, LOE, LOPD-GDD)
 7. BUSINESS CONTINUITY PLAN (BCP) con RTO/RPO
 8. GAP ANALYSIS con roadmap de mejoras
-9. INTEGRACIÓN TEMENOS con APIs y pasos
-10. ESTRATEGIA DE VENTAS priorizada
+9. ESTRATEGIA DE VENTAS multi-sector priorizada
+10. POTENCIAL DE MERCADO por cada uno de los 8 sectores principales
 
 IMPORTANTE: 
-- Sé PRECISO con porcentajes de completitud
+- Se PRECISO con porcentajes de completitud
 - Actualiza valores de mercado para 2024-2025
 - Los 114 controles ISO 27001 Annex A son OBLIGATORIOS
+- NO menciones "Creand" - la plataforma se llama ObelixIA
 
-RESPONDE SOLO CON JSON VÁLIDO.`;
+RESPONDE SOLO CON JSON VALIDO.`;
 
-    const userPrompt = `ANÁLISIS EXHAUSTIVO CRM Bancario Enterprise:
+    const userPrompt = `ANALISIS EXHAUSTIVO ObelixIA CRM Universal Multi-Sector:
 - ${totalComponents || componentsList?.length || 0} componentes React/TypeScript
 - ${totalHooks || hooksList?.length || 0} hooks personalizados
 - ${totalEdgeFunctions || edgeFunctions?.length || 0} Edge Functions serverless
-- ${totalPages || pagesList?.length || 0} páginas
+- ${totalPages || pagesList?.length || 0} paginas
 
 COMPONENTES: ${componentsList?.join(', ') || 'N/A'}
 HOOKS: ${hooksList?.join(', ') || 'N/A'}
 EDGE FUNCTIONS (${edgeFunctions?.length || 0}): ${edgeFunctions?.join(', ') || 'N/A'}
-PÁGINAS: ${pagesList?.join(', ') || 'N/A'}
+PAGINAS: ${pagesList?.join(', ') || 'N/A'}
 ESTRUCTURA: ${fileStructure || 'N/A'}
 SEGURIDAD: ${securityFeatures?.join('\n') || 'RLS, JWT, WebAuthn, DORA'}
 
-MÓDULOS A VERIFICAR:
-1. Dashboard Multi-Rol (KPIs, benchmarking, ML predictions)
-2. Contabilidad PGC Andorra/España (balance, P&L, cash flow, DuPont, Z-Score, RAG Chat)
-3. GIS Bancario (20.000 empresas, clustering, rutas OR-Tools)
-4. Gestión Visitas (fichas 12 secciones, validación, calendario, firmas, fotos)
+MODULOS MULTI-SECTOR A VERIFICAR:
+1. Dashboard Multi-Rol Universal (KPIs, benchmarking, ML predictions)
+2. Contabilidad PGC Andorra/Espana (balance, P&L, cash flow, DuPont, Z-Score, RAG Chat)
+3. GIS Empresarial (20.000 empresas, clustering, rutas OR-Tools)
+4. Gestion Visitas (fichas 12 secciones, validacion, calendario, firmas, fotos)
 5. Sistema Objetivos (cascada, tracking, planes IA)
-6. Autenticación AMA (WebAuthn, Step-Up, riesgo sesión)
+6. Autenticacion AMA (WebAuthn, Step-Up, riesgo sesion)
 7. DORA/NIS2 Compliance (incidentes, resiliencia, stress tests)
-8. Monitor Salud Sistema (IA auto-remediación)
-9. Gestión Empresas (Excel, geocoding, TPV)
+8. Monitor Salud Sistema (IA auto-remediacion)
+9. Gestion Empresas (Excel, geocoding, TPV)
 10. Notificaciones (email, push, escalado)
-11. Análisis IA (ML, action plans, codebase analyzer)
+11. Analisis IA (ML, action plans, codebase analyzer)
 12. eIDAS 2.0 (DIDs, VCs, EUDI Wallet)
 13. Pipeline CI/CD Seguridad (SAST/DAST)
 14. OWASP API Security Top 10
+15. Revenue Intelligence multi-sector
+16. Customer Success Management
 
-GENERA JSON COMPLETO con todas las secciones requeridas.`;
+SECTORES OBJETIVO:
+- Banca y Finanzas (sector original, compliance DORA/PSD2)
+- Seguros (IFRS17, Solvencia II)
+- Retail (omnicanalidad, eCommerce)
+- Manufactura (ERP integration, supply chain)
+- Construccion (gestion proyectos, BIM)
+- Sanidad (HIPAA-like, datos sensibles)
+- Servicios Profesionales (facturacion, proyectos)
+- Administracion Publica (transparencia, licitaciones)
+
+GENERA JSON COMPLETO con todas las secciones requeridas para valoracion multi-sector.`;
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 45000);

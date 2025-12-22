@@ -56,6 +56,38 @@ export async function getObelixiaLogoBase64(): Promise<string> {
   return loadLogoBase64();
 }
 
+// Text sanitization for PDF compatibility (removes problematic Unicode characters)
+export const sanitizeTextForPDF = (text: string): string => {
+  if (!text) return '';
+  return text
+    .replace(/[\u2018\u2019]/g, "'") // Smart quotes to regular
+    .replace(/[\u201C\u201D]/g, '"') // Smart double quotes
+    .replace(/\u2013/g, '-') // En dash
+    .replace(/\u2014/g, '--') // Em dash
+    .replace(/\u2026/g, '...') // Ellipsis
+    .replace(/\u00A0/g, ' ') // Non-breaking space
+    .replace(/[\u00E0\u00E1\u00E2\u00E3\u00E4\u00E5]/g, 'a')
+    .replace(/[\u00C0\u00C1\u00C2\u00C3\u00C4\u00C5]/g, 'A')
+    .replace(/[\u00E8\u00E9\u00EA\u00EB]/g, 'e')
+    .replace(/[\u00C8\u00C9\u00CA\u00CB]/g, 'E')
+    .replace(/[\u00EC\u00ED\u00EE\u00EF]/g, 'i')
+    .replace(/[\u00CC\u00CD\u00CE\u00CF]/g, 'I')
+    .replace(/[\u00F2\u00F3\u00F4\u00F5\u00F6]/g, 'o')
+    .replace(/[\u00D2\u00D3\u00D4\u00D5\u00D6]/g, 'O')
+    .replace(/[\u00F9\u00FA\u00FB\u00FC]/g, 'u')
+    .replace(/[\u00D9\u00DA\u00DB\u00DC]/g, 'U')
+    .replace(/\u00F1/g, 'n')
+    .replace(/\u00D1/g, 'N')
+    .replace(/\u00E7/g, 'c')
+    .replace(/\u00C7/g, 'C')
+    .replace(/\u20AC/g, 'EUR')
+    .replace(/\u2022/g, '-') // Bullet
+    .replace(/\u2192/g, '->') // Arrow
+    .replace(/\u2713/g, '[OK]') // Checkmark
+    .replace(/\u2717/g, '[X]') // X mark
+    .replace(/[^\x00-\x7F]/g, ''); // Remove any remaining non-ASCII
+};
+
 // Shared PDF utilities for enhanced PDF generation
 export class EnhancedPDFGenerator {
   private doc: jsPDF;
@@ -68,6 +100,7 @@ export class EnhancedPDFGenerator {
 
   constructor(orientation: 'p' | 'l' = 'p', format: string = 'a4') {
     this.doc = new jsPDF(orientation, 'mm', format);
+    this.doc.setFont('times', 'normal'); // Use times for better Unicode support
     this.pageWidth = this.doc.internal.pageSize.getWidth();
     this.pageHeight = this.doc.internal.pageSize.getHeight();
   }
@@ -116,17 +149,17 @@ export class EnhancedPDFGenerator {
     
     // Title
     this.doc.setFontSize(22);
-    this.doc.setFont('helvetica', 'bold');
+    this.doc.setFont('times', 'bold');
     this.doc.setTextColor(...this.brandColor);
-    this.doc.text(title, this.pageWidth / 2, y, { align: 'center' });
+    this.doc.text(sanitizeTextForPDF(title), this.pageWidth / 2, y, { align: 'center' });
     y += 10;
 
     // Subtitle
     if (subtitle) {
       this.doc.setFontSize(12);
-      this.doc.setFont('helvetica', 'normal');
+      this.doc.setFont('times', 'normal');
       this.doc.setTextColor(100, 100, 100);
-      this.doc.text(subtitle, this.pageWidth / 2, y, { align: 'center' });
+      this.doc.text(sanitizeTextForPDF(subtitle), this.pageWidth / 2, y, { align: 'center' });
       y += 8;
     }
 
@@ -149,7 +182,7 @@ export class EnhancedPDFGenerator {
     
     // ObelixIA text as fallback
     this.doc.setFontSize(20);
-    this.doc.setFont('helvetica', 'bold');
+    this.doc.setFont('times', 'bold');
     this.doc.setTextColor(59, 130, 246);
     this.doc.text('ObelixIA', this.margins.left, 22);
     
@@ -157,7 +190,7 @@ export class EnhancedPDFGenerator {
     
     // Title
     this.doc.setFontSize(22);
-    this.doc.setFont('helvetica', 'bold');
+    this.doc.setFont('times', 'bold');
     this.doc.setTextColor(...this.brandColor);
     this.doc.text(title, this.pageWidth / 2, y, { align: 'center' });
     y += 10;
