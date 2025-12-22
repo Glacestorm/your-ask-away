@@ -100,20 +100,42 @@ export const HeroExplosive: React.FC = () => {
                 </span>
                 {/* Brain - exact copy from ObelixiaLogo CinematicBrainIcon */}
                 <span 
-                  className="relative inline-flex items-center justify-center overflow-hidden"
+                  className="relative inline-flex items-center justify-center"
                   style={{ 
                     width: '1.1em', 
                     height: '0.88em',
-                    borderRadius: '50%',
                   }}
                 >
-                  {/* Outer Glow Layer - same as logo */}
+                  {/* Pulse wave effects */}
                   <span 
-                    className="absolute inset-[-50%] blur-2xl opacity-60"
-                    style={{
-                      background: 'radial-gradient(ellipse at center, rgba(139,92,246,0.5) 0%, rgba(59,130,246,0.3) 40%, transparent 70%)',
-                    }}
+                    className="absolute inset-0 rounded-full animate-[ping_2s_ease-out_infinite]"
+                    style={{ background: 'rgba(139,92,246,0.25)' }}
                   />
+                  <span 
+                    className="absolute inset-0 rounded-full animate-[ping_2.5s_ease-out_infinite_0.4s]"
+                    style={{ background: 'rgba(59,130,246,0.2)' }}
+                  />
+                  <span 
+                    className="absolute inset-0 rounded-full animate-[ping_3s_ease-out_infinite_0.8s]"
+                    style={{ background: 'rgba(139,92,246,0.15)' }}
+                  />
+
+                  {/* Brain container with overflow hidden */}
+                  <span 
+                    className="relative overflow-hidden"
+                    style={{ 
+                      width: '100%', 
+                      height: '100%',
+                      borderRadius: '50%',
+                    }}
+                  >
+                    {/* Outer Glow Layer - same as logo */}
+                    <span 
+                      className="absolute inset-[-50%] blur-2xl opacity-60"
+                      style={{
+                        background: 'radial-gradient(ellipse at center, rgba(139,92,246,0.5) 0%, rgba(59,130,246,0.3) 40%, transparent 70%)',
+                      }}
+                    />
                   
                   {/* Brain Image with circular clip and gradient mask - same as logo */}
                   <span 
@@ -191,6 +213,7 @@ export const HeroExplosive: React.FC = () => {
                       </g>
                     ))}
                   </svg>
+                  </span>
                 </span>
                 {/* Underline glow */}
                 <motion.span
