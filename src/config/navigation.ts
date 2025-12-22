@@ -34,6 +34,9 @@ import {
   Map,
   Settings,
   LogOut,
+  Heart,
+  GraduationCap,
+  CreditCard,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -84,10 +87,16 @@ export const headerNavigation: NavItem[] = [
     href: '/sectores',
     icon: Globe,
     children: [
-      { id: 'banca', label: 'Banca', href: '/sectores/banca', icon: Landmark },
-      { id: 'seguros', label: 'Seguros', href: '/sectores/seguros', icon: ShieldCheck },
-      { id: 'retail', label: 'Retail', href: '/sectores/retail', icon: ShoppingBag },
-      { id: 'manufactura', label: 'Manufactura', href: '/sectores/manufactura', icon: Factory },
+      { id: 'banca', label: 'Banca', href: '/sectores/banca', icon: Landmark, description: 'CRM bancario con cumplimiento normativo' },
+      { id: 'seguros', label: 'Seguros', href: '/sectores/seguros', icon: ShieldCheck, description: 'Gestión integral de pólizas' },
+      { id: 'retail', label: 'Retail', href: '/sectores/retail', icon: ShoppingBag, description: 'Omnicanalidad y experiencia cliente' },
+      { id: 'manufactura', label: 'Manufactura', href: '/sectores/manufactura', icon: Factory, description: 'Producción y cadena de suministro' },
+      { id: 'salud', label: 'Salud', href: '/sectores/salud', icon: Heart, description: 'Gestión de pacientes y citas' },
+      { id: 'educacion', label: 'Educación', href: '/sectores/educacion', icon: GraduationCap, description: 'Instituciones educativas' },
+      { id: 'ecommerce', label: 'Ecommerce', href: '/sectores/ecommerce', icon: Globe, description: 'Ventas online y marketplaces' },
+      { id: 'agencias', label: 'Agencias', href: '/sectores/agencias', icon: Briefcase, description: 'Gestión de clientes y proyectos' },
+      { id: 'suscripciones', label: 'Suscripciones', href: '/sectores/suscripciones', icon: CreditCard, description: 'Modelos de negocio recurrentes' },
+      { id: 'infoproductores', label: 'Infoproductores', href: '/sectores/infoproductores', icon: Users, description: 'Creadores de contenido' },
     ],
   },
   {
@@ -146,6 +155,12 @@ export const footerNavigation: NavGroup[] = [
       { id: 'seguros', label: 'Seguros', href: '/sectores/seguros', icon: ShieldCheck },
       { id: 'retail', label: 'Retail', href: '/sectores/retail', icon: ShoppingBag },
       { id: 'manufactura', label: 'Manufactura', href: '/sectores/manufactura', icon: Factory },
+      { id: 'salud', label: 'Salud', href: '/sectores/salud', icon: Heart },
+      { id: 'educacion', label: 'Educación', href: '/sectores/educacion', icon: GraduationCap },
+      { id: 'ecommerce', label: 'Ecommerce', href: '/sectores/ecommerce', icon: Globe },
+      { id: 'agencias', label: 'Agencias', href: '/sectores/agencias', icon: Briefcase },
+      { id: 'suscripciones', label: 'Suscripciones', href: '/sectores/suscripciones', icon: CreditCard },
+      { id: 'infoproductores', label: 'Infoproductores', href: '/sectores/infoproductores', icon: Users },
     ],
   },
   {
