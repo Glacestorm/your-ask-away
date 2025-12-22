@@ -94,25 +94,26 @@ export const HeroExplosive: React.FC = () => {
             >
               No somos solo un CRM.
               <br />
-              <span className="relative inline-flex items-center justify-center gap-4">
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-violet-400 to-purple-400">
+              <span className="relative inline-flex items-center justify-center gap-3 md:gap-4">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-violet-400 to-purple-400 text-6xl md:text-7xl lg:text-8xl xl:text-9xl">
                   Somos ObelixIA
                 </span>
-                {/* Brain with active synapses - same style as ObelixiaLogo */}
+                {/* Brain with active synapses and pulse waves */}
                 <span 
-                  className="relative inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 xl:w-28 xl:h-28 overflow-hidden"
-                  style={{ borderRadius: '50%' }}
+                  className="relative inline-flex items-center justify-center w-14 h-14 md:w-18 md:h-18 lg:w-22 lg:h-22 xl:w-26 xl:h-26"
+                  style={{ width: '0.85em', height: '0.85em' }}
                 >
+                  {/* Pulse wave effects */}
+                  <span className="absolute inset-[-30%] animate-[ping_1.5s_ease-out_infinite] rounded-full bg-violet-500/25" />
+                  <span className="absolute inset-[-25%] animate-[ping_1.8s_ease-out_infinite_0.3s] rounded-full bg-blue-500/20" />
+                  <span className="absolute inset-[-20%] animate-[ping_2s_ease-out_infinite_0.6s] rounded-full bg-violet-400/15" />
                   {/* Outer Glow Layer */}
                   <span 
-                    className="absolute inset-[-50%] blur-2xl opacity-60"
+                    className="absolute inset-[-50%] blur-2xl opacity-70 animate-pulse"
                     style={{
-                      background: 'radial-gradient(ellipse at center, rgba(139,92,246,0.5) 0%, rgba(59,130,246,0.3) 40%, transparent 70%)',
+                      background: 'radial-gradient(ellipse at center, rgba(139,92,246,0.6) 0%, rgba(59,130,246,0.4) 40%, transparent 70%)',
                     }}
                   />
-                  {/* Pulse effects */}
-                  <span className="absolute inset-[-20%] animate-[ping_2s_ease-out_infinite] rounded-full bg-violet-500/30" />
-                  <span className="absolute inset-[-15%] animate-[ping_2.5s_ease-out_infinite_0.3s] rounded-full bg-blue-500/25" />
                   {/* Brain Image with circular clip and gradient mask */}
                   <span 
                     className="relative w-full h-full overflow-hidden"
@@ -127,17 +128,47 @@ export const HeroExplosive: React.FC = () => {
                       alt="ObelixIA Brain"
                       className="w-full h-full object-cover scale-125"
                       style={{ 
-                        filter: 'drop-shadow(0 0 15px rgba(139,92,246,0.6)) drop-shadow(0 0 30px rgba(59,130,246,0.4))',
+                        filter: 'drop-shadow(0 0 15px rgba(139,92,246,0.7)) drop-shadow(0 0 30px rgba(59,130,246,0.5))',
                       }}
                     />
                   </span>
+                  {/* Synapsis sparkles overlay */}
+                  <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full pointer-events-none">
+                    <defs>
+                      <filter id="hero-sparkle-glow" x="-400%" y="-400%" width="900%" height="900%">
+                        <feGaussianBlur stdDeviation="2" result="blur"/>
+                        <feMerge>
+                          <feMergeNode in="blur"/>
+                          <feMergeNode in="blur"/>
+                          <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                      </filter>
+                    </defs>
+                    {[
+                      { cx: 30, cy: 30, delay: 0 },
+                      { cx: 50, cy: 25, delay: 0.3 },
+                      { cx: 70, cy: 35, delay: 0.6 },
+                      { cx: 40, cy: 50, delay: 0.2 },
+                      { cx: 60, cy: 55, delay: 0.5 },
+                      { cx: 35, cy: 70, delay: 0.8 },
+                      { cx: 55, cy: 65, delay: 0.4 },
+                      { cx: 65, cy: 45, delay: 0.7 },
+                    ].map((node, i) => (
+                      <g key={i} filter="url(#hero-sparkle-glow)">
+                        <circle cx={node.cx} cy={node.cy} r="1.5" fill="white">
+                          <animate attributeName="opacity" values="0.2;1;0.2" dur="1.5s" begin={`${node.delay}s`} repeatCount="indefinite" />
+                          <animate attributeName="r" values="1;2.5;1" dur="1.5s" begin={`${node.delay}s`} repeatCount="indefinite" />
+                        </circle>
+                      </g>
+                    ))}
+                  </svg>
                 </span>
                 {/* Underline glow */}
                 <motion.span
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: 1 }}
                   transition={{ duration: 0.8, delay: 0.5 }}
-                  className="absolute -bottom-2 left-0 right-[calc(4rem+1rem)] md:right-[calc(5rem+1rem)] lg:right-[calc(6rem+1rem)] xl:right-[calc(7rem+1rem)] h-1 bg-gradient-to-r from-blue-500 to-violet-500 rounded-full origin-left"
+                  className="absolute -bottom-2 left-0 right-[0.9em] h-1 bg-gradient-to-r from-blue-500 to-violet-500 rounded-full origin-left"
                 />
               </span>
             </motion.h1>
