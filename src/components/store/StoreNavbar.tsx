@@ -77,88 +77,88 @@ const StoreNavbar: React.FC = () => {
   const navItems: NavMenuItem[] = [
     {
       id: 'productos',
-      label: 'Productos',
+      label: t('nav.products'),
       megaMenu: {
         sections: [
           {
-            title: 'Catálogo',
+            title: t('nav.catalog'),
             items: [
-              { id: 'modules', label: 'Módulos', href: '/store/modules', icon: Package, description: 'Explora todos los módulos disponibles' },
-              { id: 'bundles', label: 'Packs', href: '/store#bundles', icon: Boxes, description: 'Soluciones completas a mejor precio' },
-              { id: 'pricing', label: 'Precios', href: '/precios', icon: DollarSign, description: 'Planes y tarifas transparentes' },
+              { id: 'modules', label: t('nav.modules'), href: '/store/modules', icon: Package, description: t('nav.modules.desc') },
+              { id: 'bundles', label: t('nav.bundles'), href: '/store#bundles', icon: Boxes, description: t('nav.bundles.desc') },
+              { id: 'pricing', label: t('nav.pricing'), href: '/precios', icon: DollarSign, description: t('nav.pricing.desc') },
             ],
           },
           {
-            title: 'Plataforma',
+            title: t('nav.platform'),
             items: [
-              { id: 'marketplace', label: 'Marketplace', href: '/marketplace', icon: Store, description: 'Extensiones y conectores', badge: 'Nuevo' },
-              { id: 'chat', label: 'Chat IA', href: '/chat', icon: MessageSquare, description: 'Asistente inteligente integrado', badge: 'IA' },
-              { id: 'cdp', label: 'CDP Analytics', href: '/cdp', icon: BarChart3, description: 'Análisis de datos en tiempo real' },
+              { id: 'marketplace', label: t('nav.marketplace'), href: '/marketplace', icon: Store, description: t('nav.marketplace.desc'), badge: t('badge.new') },
+              { id: 'chat', label: t('nav.chat'), href: '/chat', icon: MessageSquare, description: t('nav.chat.desc'), badge: t('badge.ai') },
+              { id: 'cdp', label: t('nav.cdp'), href: '/cdp', icon: BarChart3, description: t('nav.cdp.desc') },
             ],
           },
         ],
         featured: {
-          title: 'Configurador de Soluciones',
-          description: 'Diseña tu plataforma ideal con nuestro asistente interactivo',
+          title: t('nav.featured.configurator'),
+          description: t('nav.featured.configurator.desc'),
           href: '/demo',
         },
       },
     },
     {
       id: 'soluciones',
-      label: 'Soluciones',
+      label: t('nav.solutions'),
       megaMenu: {
         sections: [
           {
-            title: 'Finanzas',
+            title: t('nav.finances'),
             items: [
-              { id: 'banca', label: 'Banca', href: '/sectores/banca', icon: Landmark, description: 'CRM bancario con cumplimiento normativo' },
-              { id: 'seguros', label: 'Seguros', href: '/sectores/seguros', icon: ShieldCheck, description: 'Gestión integral de pólizas y siniestros' },
+              { id: 'banca', label: t('nav.banking'), href: '/sectores/banca', icon: Landmark, description: t('nav.banking.desc') },
+              { id: 'seguros', label: t('nav.insurance'), href: '/sectores/seguros', icon: ShieldCheck, description: t('nav.insurance.desc') },
             ],
           },
           {
-            title: 'Comercio',
+            title: t('nav.commerce'),
             items: [
-              { id: 'retail', label: 'Retail', href: '/sectores/retail', icon: ShoppingBag, description: 'Omnicanalidad y experiencia de cliente' },
-              { id: 'ecommerce', label: 'Ecommerce', href: '/sectores/ecommerce', icon: Globe, description: 'Ventas online y marketplaces' },
-              { id: 'suscripciones', label: 'Suscripciones', href: '/sectores/suscripciones', icon: CreditCard, description: 'Modelos de negocio recurrentes' },
+              { id: 'retail', label: t('nav.retail'), href: '/sectores/retail', icon: ShoppingBag, description: t('nav.retail.desc') },
+              { id: 'ecommerce', label: t('nav.ecommerce'), href: '/sectores/ecommerce', icon: Globe, description: t('nav.ecommerce.desc') },
+              { id: 'suscripciones', label: t('nav.subscriptions'), href: '/sectores/suscripciones', icon: CreditCard, description: t('nav.subscriptions.desc') },
             ],
           },
           {
-            title: 'Industria',
+            title: t('nav.industry'),
             items: [
-              { id: 'manufactura', label: 'Manufactura', href: '/sectores/manufactura', icon: Factory, description: 'Producción y cadena de suministro' },
-              { id: 'salud', label: 'Salud', href: '/sectores/salud', icon: Heart, description: 'Gestión de pacientes y citas médicas' },
-              { id: 'educacion', label: 'Educación', href: '/sectores/educacion', icon: GraduationCap, description: 'Instituciones educativas y formación' },
+              { id: 'manufactura', label: t('nav.manufacturing'), href: '/sectores/manufactura', icon: Factory, description: t('nav.manufacturing.desc') },
+              { id: 'salud', label: t('nav.health'), href: '/sectores/salud', icon: Heart, description: t('nav.health.desc') },
+              { id: 'educacion', label: t('nav.education'), href: '/sectores/educacion', icon: GraduationCap, description: t('nav.education.desc') },
             ],
           },
           {
-            title: 'Servicios',
+            title: t('nav.services'),
             items: [
-              { id: 'agencias', label: 'Agencias', href: '/sectores/agencias', icon: Briefcase, description: 'Gestión de clientes y proyectos' },
-              { id: 'infoproductores', label: 'Infoproductores', href: '/sectores/infoproductores', icon: Users, description: 'Creadores de contenido y cursos' },
+              { id: 'agencias', label: t('nav.agencies'), href: '/sectores/agencias', icon: Briefcase, description: t('nav.agencies.desc') },
+              { id: 'infoproductores', label: t('nav.infoproducers'), href: '/sectores/infoproductores', icon: Users, description: t('nav.infoproducers.desc') },
             ],
           },
         ],
         featured: {
-          title: 'Casos de Éxito',
-          description: 'Descubre cómo otras empresas han transformado su negocio',
+          title: t('nav.featured.cases'),
+          description: t('nav.featured.cases.desc'),
           href: '/cases',
         },
       },
     },
     {
       id: 'desarrolladores',
-      label: 'Desarrolladores',
+      label: t('nav.developers'),
       megaMenu: {
         sections: [
           {
-            title: 'Recursos',
+            title: t('nav.resources'),
             items: [
-              { id: 'docs', label: 'Documentación', href: '/docs', icon: BookOpen, description: 'Guías y tutoriales completos' },
-              { id: 'api', label: 'API Reference', href: '/api', icon: Code, description: 'Referencia técnica de la API' },
-              { id: 'developer-portal', label: 'Portal Dev', href: '/developers', icon: Rocket, description: 'Herramientas para desarrolladores' },
-              { id: 'blog', label: 'Noticias IA', href: '/blog', icon: BookOpen, description: 'Noticias curadas por inteligencia artificial', badge: 'IA' },
+              { id: 'docs', label: t('nav.documentation'), href: '/docs', icon: BookOpen, description: t('nav.documentation.desc') },
+              { id: 'api', label: t('nav.api'), href: '/api', icon: Code, description: t('nav.api.desc') },
+              { id: 'developer-portal', label: t('nav.devportal'), href: '/developers', icon: Rocket, description: t('nav.devportal.desc') },
+              { id: 'blog', label: t('nav.blog'), href: '/blog', icon: BookOpen, description: t('nav.blog.desc'), badge: t('badge.ai') },
             ],
           },
         ],
@@ -166,7 +166,7 @@ const StoreNavbar: React.FC = () => {
     },
     {
       id: 'empresa',
-      label: 'Empresa',
+      label: t('nav.company'),
       href: '/about',
     },
   ];
@@ -294,14 +294,14 @@ const StoreNavbar: React.FC = () => {
                     : 'text-slate-700 hover:text-slate-900'
                 }`}
               >
-                Iniciar Sesión
+                {t('nav.login')}
               </button>
 
               <button
                 onClick={openRegister}
                 className="px-5 py-2.5 text-sm font-medium bg-primary hover:bg-primary/90 text-white rounded-full transition-all duration-200 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30"
               >
-                Comenzar Gratis
+                {t('nav.register')}
               </button>
 
               <button
@@ -422,13 +422,13 @@ const StoreNavbar: React.FC = () => {
                     onClick={openLogin}
                     className="w-full py-3 text-center font-medium text-slate-700 border border-slate-200 rounded-full hover:bg-slate-50"
                   >
-                    Iniciar Sesión
+                    {t('nav.login')}
                   </button>
                   <button
                     onClick={openRegister}
                     className="w-full py-3 text-center font-medium bg-primary text-white rounded-full hover:bg-primary/90"
                   >
-                    Comenzar Gratis
+                    {t('nav.register')}
                   </button>
                 </div>
               </div>
