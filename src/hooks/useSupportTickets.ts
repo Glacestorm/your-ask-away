@@ -153,21 +153,23 @@ export function useSupportTickets(filters?: TicketFilters) {
         ? new Date(now.getTime() + slaPolicy.resolution_hours * 60 * 60 * 1000)
         : null;
 
+      const insertData = {
+        subject: ticket.subject || '',
+        category: ticket.category || 'other',
+        priority: ticket.priority,
+        description: ticket.description,
+        company_id: ticket.company_id,
+        contact_name: ticket.contact_name,
+        contact_email: ticket.contact_email,
+        created_by: user?.id,
+        sla_policy_id: slaPolicy?.id,
+        sla_response_due: slaResponseDue?.toISOString(),
+        sla_resolution_due: slaResolutionDue?.toISOString()
+      };
+
       const { data, error } = await supabase
         .from('support_tickets')
-        .insert({
-          subject: ticket.subject || '',
-          category: ticket.category || 'other',
-          priority: ticket.priority,
-          description: ticket.description,
-          company_id: ticket.company_id,
-          contact_name: ticket.contact_name,
-          contact_email: ticket.contact_email,
-          created_by: user?.id,
-          sla_policy_id: slaPolicy?.id,
-          sla_response_due: slaResponseDue?.toISOString(),
-          sla_resolution_due: slaResolutionDue?.toISOString()
-        })
+        .insert(insertData as any)
         .select()
         .single();
 

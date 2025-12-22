@@ -379,15 +379,16 @@ export function useWinbackCampaigns() {
   };
 
   // Find churned companies for targeting
-  const findChurnedCompanies = async () => {
-    const { data, error } = await supabase
-      .from('companies')
+  const findChurnedCompanies = async (): Promise<any[]> => {
+    const query = supabase
+      .from('companies' as any)
       .select('id, name, segment, facturacion_anual')
       .eq('segment', 'Lost')
       .limit(100);
 
+    const { data, error } = await query;
     if (error) throw error;
-    return data;
+    return (data as any[]) || [];
   };
 
   return {
