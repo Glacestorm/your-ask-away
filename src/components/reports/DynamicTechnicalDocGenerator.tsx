@@ -1309,8 +1309,8 @@ security/
           h.addParagraph(competitor.usedByBanks.join(', '));
         }
 
-        if (competitor.comparisonVsCreand) {
-          h.addHighlightBox('vs CRM Creand', competitor.comparisonVsCreand, 'info');
+        if (competitor.comparisonVsObelixia) {
+          h.addHighlightBox('vs ObelixIA CRM', competitor.comparisonVsObelixia, 'info');
         }
 
         h.currentY += 8;
@@ -1989,12 +1989,12 @@ security/
         'success');
 
       h.addTable(
-        ['Tipo Cliente', 'Coste Actual', 'Coste Creand', 'Ahorro', '% Ahorro', 'ROI 5 Años'],
+        ['Tipo Cliente', 'Coste Actual', 'Coste ObelixIA', 'Ahorro', '% Ahorro', 'ROI 5 Anos'],
         costSavings.map(c => [
           c.clientType,
-          `${c.currentCost.toLocaleString()}€`,
-          `${c.creandCost.toLocaleString()}€`,
-          `${c.savings.toLocaleString()}€`,
+          `${c.currentCost.toLocaleString()}EUR`,
+          `${c.obelixiaCost.toLocaleString()}EUR`,
+          `${c.savings.toLocaleString()}EUR`,
           `${c.savingsPercentage}%`,
           `${c.roi5Years}%`
         ]),
@@ -2008,13 +2008,13 @@ security/
         
         h.addHighlightBox(`💵 AHORRO: ${client.savings.toLocaleString()}€ (${client.savingsPercentage}%)`, client.details, 'success');
 
-        h.addTable(['Métrica', 'Valor'], [
-          ['Coste Actual (5 años)', `${client.currentCost.toLocaleString()}€`],
-          ['Coste CRM Creand (5 años)', `${client.creandCost.toLocaleString()}€`],
-          ['AHORRO TOTAL', `${client.savings.toLocaleString()}€`],
+        h.addTable(['Metrica', 'Valor'], [
+          ['Coste Actual (5 anos)', `${client.currentCost.toLocaleString()}EUR`],
+          ['Coste ObelixIA (5 anos)', `${client.obelixiaCost.toLocaleString()}EUR`],
+          ['AHORRO TOTAL', `${client.savings.toLocaleString()}EUR`],
           ['Porcentaje Ahorro', `${client.savingsPercentage}%`],
           ['Meses hasta Break-Even', `${client.breakEvenMonths} meses`],
-          ['ROI a 5 años', `${client.roi5Years}%`],
+          ['ROI a 5 anos', `${client.roi5Years}%`],
         ], [80, 90]);
 
         h.currentY += 5;
@@ -3966,62 +3966,62 @@ security/
     {
       clientType: 'Banco Retail Mediano (200 empleados)',
       currentCost: 1250000,
-      creandCost: 497000,
+      obelixiaCost: 497000,
       savings: 753000,
       savingsPercentage: 60,
       breakEvenMonths: 18,
       roi5Years: 520,
-      details: 'Comparado con Salesforce Financial Services Cloud. Incluye licencias, implementación 18 meses, mantenimiento 25% anual, consultoría externa y formación. CRM Creand reduce significativamente todos estos costes.'
+      details: 'Comparado con Salesforce Financial Services Cloud. Incluye licencias, implementacion 18 meses, mantenimiento 25% anual, consultoria externa y formacion. ObelixIA reduce significativamente todos estos costes.'
     },
     {
-      clientType: 'Cooperativa de Crédito (50 empleados)',
+      clientType: 'Cooperativa de Credito (50 empleados)',
       currentCost: 480000,
-      creandCost: 185000,
+      obelixiaCost: 185000,
       savings: 295000,
       savingsPercentage: 61,
       breakEvenMonths: 14,
       roi5Years: 490,
-      details: 'Comparado con solución genérica + módulos personalizados. CRM Creand incluye contabilidad PGC, funcionalidad específica cooperativas y soporte en español sin coste adicional.'
+      details: 'Comparado con solucion generica + modulos personalizados. ObelixIA incluye contabilidad PGC, funcionalidad especifica cooperativas y soporte en espanol sin coste adicional.'
     },
     {
       clientType: 'Banca Privada/Family Office (30 empleados)',
       currentCost: 650000,
-      creandCost: 220000,
+      obelixiaCost: 220000,
       savings: 430000,
       savingsPercentage: 66,
       breakEvenMonths: 12,
       roi5Years: 580,
-      details: 'Comparado con Microsoft Dynamics 365 Finance + personalizaciones. CRM Creand ofrece código propietario, máxima confidencialidad y personalización sin dependencia de terceros.'
+      details: 'Comparado con Microsoft Dynamics 365 Finance + personalizaciones. ObelixIA ofrece codigo propietario, maxima confidencialidad y personalizacion sin dependencia de terceros.'
     },
     {
       clientType: 'Fintech B2B (100 usuarios)',
       currentCost: 380000,
-      creandCost: 162000,
+      obelixiaCost: 162000,
       savings: 218000,
       savingsPercentage: 57,
       breakEvenMonths: 10,
       roi5Years: 420,
-      details: 'Comparado con solución SaaS escalable genérica. CRM Creand ofrece API-first, integración Open Banking, y escalabilidad sin límites de usuarios ni funcionalidades.'
+      details: 'Comparado con solucion SaaS escalable generica. ObelixIA ofrece API-first, integracion Open Banking, y escalabilidad sin limites de usuarios ni funcionalidades.'
     },
     {
       clientType: 'Caja Rural (80 empleados)',
       currentCost: 520000,
-      creandCost: 195000,
+      obelixiaCost: 195000,
       savings: 325000,
       savingsPercentage: 63,
       breakEvenMonths: 15,
       roi5Years: 510,
-      details: 'Comparado con software legacy + mantenimiento + actualizaciones regulatorias. CRM Creand incluye cumplimiento DORA/ISO 27001 de serie, eliminando costes de compliance externos.'
+      details: 'Comparado con software legacy + mantenimiento + actualizaciones regulatorias. ObelixIA incluye cumplimiento DORA/ISO 27001 de serie, eliminando costes de compliance externos.'
     },
     {
       clientType: 'Banco Digital / Neobank (150 usuarios)',
       currentCost: 720000,
-      creandCost: 285000,
+      obelixiaCost: 285000,
       savings: 435000,
       savingsPercentage: 60,
       breakEvenMonths: 16,
       roi5Years: 480,
-      details: 'Comparado con stack tecnológico fragmentado (CRM + contabilidad + compliance separados). CRM Creand unifica todo en una plataforma integrada con IA.'
+      details: 'Comparado con stack tecnologico fragmentado (CRM + contabilidad + compliance separados). ObelixIA unifica todo en una plataforma integrada con IA.'
     },
   ];
 
@@ -4169,7 +4169,7 @@ security/
           marketShare: "35% CRM bancario global",
           pros: ["AppExchange ecosistema", "Soporte global 24x7", "Einstein AI"],
           cons: ["Coste elevado/usuario", "Sin contabilidad PGC", "Sin GIS nativo", "Vendor lock-in"],
-          comparisonVsCreand: "FSC genérico global, Creand especializado Andorra/España con PGC nativo.",
+          comparisonVsObelixia: "FSC generico global, ObelixIA especializado Andorra/Espana con PGC nativo.",
           usedByBanks: ["BBVA", "Santander", "CaixaBank", "ING"]
         },
         {
@@ -4184,7 +4184,7 @@ security/
           marketShare: "15% ERP bancario Europa",
           pros: ["Integración Office 365", "Power BI nativo", "Azure AI"],
           cons: ["Complejidad alta", "Sin especialización bancaria", "Implementación larga"],
-          comparisonVsCreand: "Dynamics generalista, Creand especializado sector bancario.",
+          comparisonVsObelixia: "Dynamics generalista, ObelixIA especializado multi-sector.",
           usedByBanks: ["ING", "ABN AMRO", "Rabobank"]
         },
       ],
