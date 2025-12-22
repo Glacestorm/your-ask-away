@@ -23,6 +23,7 @@ const BundlesSection = lazy(() => import('@/components/store/BundlesSection'));
 const TrustBadges = lazy(() => import('@/components/store/TrustBadges'));
 const ROICalculator = lazy(() => import('@/components/store/ROICalculator'));
 const PricingExplanation = lazy(() => import('@/components/store/PricingExplanation'));
+const CompetitivePricing = lazy(() => import('@/components/pricing/CompetitivePricing'));
 const FAQSection = lazy(() => import('@/components/faq').then(m => ({ default: m.FAQSection })));
 const FAQChatWidget = lazy(() => import('@/components/faq').then(m => ({ default: m.FAQChatWidget })));
 const NewsSection = lazy(() => import('@/components/store/NewsSection'));
@@ -114,8 +115,11 @@ const StoreLanding: React.FC = () => {
         </div>
       </section>
 
-      {/* Pricing Section */}
+      {/* Competitive Pricing Section */}
       <div id="pricing">
+        <Suspense fallback={<SectionSkeleton />}>
+          <CompetitivePricing />
+        </Suspense>
         <Suspense fallback={<SectionSkeleton />}>
           <ROICalculator />
         </Suspense>
