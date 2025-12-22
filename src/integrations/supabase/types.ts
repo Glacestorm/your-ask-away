@@ -6105,6 +6105,83 @@ export type Database = {
           },
         ]
       }
+      customer_roi_tracking: {
+        Row: {
+          acquisition_cost: number | null
+          calculation_date: string
+          company_id: string | null
+          created_at: string | null
+          gross_margin: number | null
+          gross_margin_percentage: number | null
+          id: string
+          is_profitable: boolean | null
+          ltv: number | null
+          ltv_cac_ratio: number | null
+          metadata: Json | null
+          onboarding_cost: number | null
+          payback_months: number | null
+          profitability_date: string | null
+          projected_ltv: number | null
+          success_cost: number | null
+          support_cost: number | null
+          total_cost: number | null
+          total_revenue: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          acquisition_cost?: number | null
+          calculation_date?: string
+          company_id?: string | null
+          created_at?: string | null
+          gross_margin?: number | null
+          gross_margin_percentage?: number | null
+          id?: string
+          is_profitable?: boolean | null
+          ltv?: number | null
+          ltv_cac_ratio?: number | null
+          metadata?: Json | null
+          onboarding_cost?: number | null
+          payback_months?: number | null
+          profitability_date?: string | null
+          projected_ltv?: number | null
+          success_cost?: number | null
+          support_cost?: number | null
+          total_cost?: number | null
+          total_revenue?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          acquisition_cost?: number | null
+          calculation_date?: string
+          company_id?: string | null
+          created_at?: string | null
+          gross_margin?: number | null
+          gross_margin_percentage?: number | null
+          id?: string
+          is_profitable?: boolean | null
+          ltv?: number | null
+          ltv_cac_ratio?: number | null
+          metadata?: Json | null
+          onboarding_cost?: number | null
+          payback_months?: number | null
+          profitability_date?: string | null
+          projected_ltv?: number | null
+          success_cost?: number | null
+          support_cost?: number | null
+          total_cost?: number | null
+          total_revenue?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_roi_tracking_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_segments: {
         Row: {
           calculated_at: string
@@ -6957,6 +7034,92 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      expansion_opportunities: {
+        Row: {
+          ai_confidence: number | null
+          assigned_to: string | null
+          company_id: string | null
+          created_at: string | null
+          current_mrr: number | null
+          current_plan: string | null
+          id: string
+          lost_reason: string | null
+          mrr_uplift: number | null
+          next_action: string | null
+          next_action_date: string | null
+          opportunity_type: string
+          optimal_timing: string | null
+          potential_mrr: number | null
+          propensity_score: number | null
+          recommended_actions: Json | null
+          signals: Json | null
+          status: string | null
+          target_plan: string | null
+          timing_score: number | null
+          updated_at: string | null
+          won_date: string | null
+          won_mrr: number | null
+        }
+        Insert: {
+          ai_confidence?: number | null
+          assigned_to?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          current_mrr?: number | null
+          current_plan?: string | null
+          id?: string
+          lost_reason?: string | null
+          mrr_uplift?: number | null
+          next_action?: string | null
+          next_action_date?: string | null
+          opportunity_type: string
+          optimal_timing?: string | null
+          potential_mrr?: number | null
+          propensity_score?: number | null
+          recommended_actions?: Json | null
+          signals?: Json | null
+          status?: string | null
+          target_plan?: string | null
+          timing_score?: number | null
+          updated_at?: string | null
+          won_date?: string | null
+          won_mrr?: number | null
+        }
+        Update: {
+          ai_confidence?: number | null
+          assigned_to?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          current_mrr?: number | null
+          current_plan?: string | null
+          id?: string
+          lost_reason?: string | null
+          mrr_uplift?: number | null
+          next_action?: string | null
+          next_action_date?: string | null
+          opportunity_type?: string
+          optimal_timing?: string | null
+          potential_mrr?: number | null
+          propensity_score?: number | null
+          recommended_actions?: Json | null
+          signals?: Json | null
+          status?: string | null
+          target_plan?: string | null
+          timing_score?: number | null
+          updated_at?: string | null
+          won_date?: string | null
+          won_mrr?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expansion_opportunities_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       faq_categories: {
         Row: {
@@ -7853,6 +8016,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      industry_benchmarks: {
+        Row: {
+          created_at: string | null
+          effective_date: string
+          expires_date: string | null
+          id: string
+          industry: string
+          is_active: boolean | null
+          metric_name: string
+          metric_value: number
+          percentile_25: number | null
+          percentile_50: number | null
+          percentile_75: number | null
+          percentile_90: number | null
+          sample_size: number | null
+          segment: string | null
+          source: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          effective_date?: string
+          expires_date?: string | null
+          id?: string
+          industry: string
+          is_active?: boolean | null
+          metric_name: string
+          metric_value: number
+          percentile_25?: number | null
+          percentile_50?: number | null
+          percentile_75?: number | null
+          percentile_90?: number | null
+          sample_size?: number | null
+          segment?: string | null
+          source?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          effective_date?: string
+          expires_date?: string | null
+          id?: string
+          industry?: string
+          is_active?: boolean | null
+          metric_name?: string
+          metric_value?: number
+          percentile_25?: number | null
+          percentile_50?: number | null
+          percentile_75?: number | null
+          percentile_90?: number | null
+          sample_size?: number | null
+          segment?: string | null
+          source?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       industry_packs: {
         Row: {
@@ -9650,6 +9870,78 @@ export type Database = {
           props_config?: Json | null
           route_path?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      mrr_snapshots: {
+        Row: {
+          arpu: number | null
+          churned_customers: number | null
+          churned_mrr: number | null
+          contraction_customers: number | null
+          contraction_mrr: number | null
+          created_at: string | null
+          customer_count: number | null
+          expansion_customers: number | null
+          expansion_mrr: number | null
+          grr_percentage: number | null
+          id: string
+          net_mrr_change: number | null
+          new_customers: number | null
+          new_mrr: number | null
+          nrr_percentage: number | null
+          quick_ratio: number | null
+          reactivation_mrr: number | null
+          segment_breakdown: Json | null
+          snapshot_date: string
+          total_arr: number
+          total_mrr: number
+        }
+        Insert: {
+          arpu?: number | null
+          churned_customers?: number | null
+          churned_mrr?: number | null
+          contraction_customers?: number | null
+          contraction_mrr?: number | null
+          created_at?: string | null
+          customer_count?: number | null
+          expansion_customers?: number | null
+          expansion_mrr?: number | null
+          grr_percentage?: number | null
+          id?: string
+          net_mrr_change?: number | null
+          new_customers?: number | null
+          new_mrr?: number | null
+          nrr_percentage?: number | null
+          quick_ratio?: number | null
+          reactivation_mrr?: number | null
+          segment_breakdown?: Json | null
+          snapshot_date: string
+          total_arr?: number
+          total_mrr?: number
+        }
+        Update: {
+          arpu?: number | null
+          churned_customers?: number | null
+          churned_mrr?: number | null
+          contraction_customers?: number | null
+          contraction_mrr?: number | null
+          created_at?: string | null
+          customer_count?: number | null
+          expansion_customers?: number | null
+          expansion_mrr?: number | null
+          grr_percentage?: number | null
+          id?: string
+          net_mrr_change?: number | null
+          new_customers?: number | null
+          new_mrr?: number | null
+          nrr_percentage?: number | null
+          quick_ratio?: number | null
+          reactivation_mrr?: number | null
+          segment_breakdown?: Json | null
+          snapshot_date?: string
+          total_arr?: number
+          total_mrr?: number
         }
         Relationships: []
       }
@@ -13964,6 +14256,268 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      retention_simulations: {
+        Row: {
+          baseline_metrics: Json
+          confidence_level: number | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          impact_analysis: Json | null
+          is_active: boolean | null
+          parameters: Json
+          projected_metrics: Json
+          roi_projection: number | null
+          simulation_name: string
+          simulation_type: string
+          time_horizon_months: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          baseline_metrics?: Json
+          confidence_level?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          impact_analysis?: Json | null
+          is_active?: boolean | null
+          parameters?: Json
+          projected_metrics?: Json
+          roi_projection?: number | null
+          simulation_name: string
+          simulation_type: string
+          time_horizon_months?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          baseline_metrics?: Json
+          confidence_level?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          impact_analysis?: Json | null
+          is_active?: boolean | null
+          parameters?: Json
+          projected_metrics?: Json
+          roi_projection?: number | null
+          simulation_name?: string
+          simulation_type?: string
+          time_horizon_months?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      revenue_cohorts: {
+        Row: {
+          cohort_date: string
+          cohort_type: string
+          created_at: string | null
+          id: string
+          initial_customers: number
+          initial_mrr: number
+          month_1_customers: number | null
+          month_1_mrr: number | null
+          month_12_customers: number | null
+          month_12_mrr: number | null
+          month_24_customers: number | null
+          month_24_mrr: number | null
+          month_3_customers: number | null
+          month_3_mrr: number | null
+          month_6_customers: number | null
+          month_6_mrr: number | null
+          nrr_rates: Json | null
+          retention_rates: Json | null
+          segment: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          cohort_date: string
+          cohort_type: string
+          created_at?: string | null
+          id?: string
+          initial_customers: number
+          initial_mrr: number
+          month_1_customers?: number | null
+          month_1_mrr?: number | null
+          month_12_customers?: number | null
+          month_12_mrr?: number | null
+          month_24_customers?: number | null
+          month_24_mrr?: number | null
+          month_3_customers?: number | null
+          month_3_mrr?: number | null
+          month_6_customers?: number | null
+          month_6_mrr?: number | null
+          nrr_rates?: Json | null
+          retention_rates?: Json | null
+          segment?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          cohort_date?: string
+          cohort_type?: string
+          created_at?: string | null
+          id?: string
+          initial_customers?: number
+          initial_mrr?: number
+          month_1_customers?: number | null
+          month_1_mrr?: number | null
+          month_12_customers?: number | null
+          month_12_mrr?: number | null
+          month_24_customers?: number | null
+          month_24_mrr?: number | null
+          month_3_customers?: number | null
+          month_3_mrr?: number | null
+          month_6_customers?: number | null
+          month_6_mrr?: number | null
+          nrr_rates?: Json | null
+          retention_rates?: Json | null
+          segment?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      revenue_events: {
+        Row: {
+          arr_change: number | null
+          company_id: string | null
+          contract_length_months: number | null
+          created_at: string | null
+          discount_percentage: number | null
+          event_date: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          mrr_after: number | null
+          mrr_before: number | null
+          mrr_change: number
+          plan_from: string | null
+          plan_to: string | null
+          product_id: string | null
+          reason: string | null
+          recorded_by: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          arr_change?: number | null
+          company_id?: string | null
+          contract_length_months?: number | null
+          created_at?: string | null
+          discount_percentage?: number | null
+          event_date?: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          mrr_after?: number | null
+          mrr_before?: number | null
+          mrr_change: number
+          plan_from?: string | null
+          plan_to?: string | null
+          product_id?: string | null
+          reason?: string | null
+          recorded_by?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          arr_change?: number | null
+          company_id?: string | null
+          contract_length_months?: number | null
+          created_at?: string | null
+          discount_percentage?: number | null
+          event_date?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          mrr_after?: number | null
+          mrr_before?: number | null
+          mrr_change?: number
+          plan_from?: string | null
+          plan_to?: string | null
+          product_id?: string | null
+          reason?: string | null
+          recorded_by?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revenue_events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      revenue_risk_alerts: {
+        Row: {
+          alert_type: string
+          assigned_to: string | null
+          company_id: string | null
+          created_at: string | null
+          description: string | null
+          expected_impact: number | null
+          id: string
+          mrr_at_risk: number | null
+          probability: number | null
+          recommended_actions: Json | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          segment: string | null
+          severity: string
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          alert_type: string
+          assigned_to?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          expected_impact?: number | null
+          id?: string
+          mrr_at_risk?: number | null
+          probability?: number | null
+          recommended_actions?: Json | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          segment?: string | null
+          severity: string
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          alert_type?: string
+          assigned_to?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          expected_impact?: number | null
+          id?: string
+          mrr_at_risk?: number | null
+          probability?: number | null
+          recommended_actions?: Json | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          segment?: string | null
+          severity?: string
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revenue_risk_alerts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]
