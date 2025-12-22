@@ -82,6 +82,7 @@ const KanbanPage = lazy(() => import('@/pages/crm/KanbanPage'));
 const OmnichannelPage = lazy(() => import('@/pages/crm/OmnichannelPage'));
 const SentimentPage = lazy(() => import('@/pages/crm/SentimentPage'));
 const SLADashboardPage = lazy(() => import('@/pages/crm/SLADashboardPage'));
+const AutomationPage = lazy(() => import('@/pages/crm/AutomationPage'));
 
 // Tipos
 export type RouteLayout = 'public' | 'dashboard' | 'minimal' | 'none';
@@ -194,6 +195,7 @@ export const dashboardRoutes: RouteConfig[] = [
   { path: '/crm/omnichannel', component: OmnichannelPage, layout: 'none', priority: 'high', meta: { title: 'Inbox Omnicanal', requiresAuth: true } },
   { path: '/crm/sentiment', component: SentimentPage, layout: 'none', priority: 'medium', meta: { title: 'Análisis de Sentimiento', requiresAuth: true } },
   { path: '/crm/sla', component: SLADashboardPage, layout: 'none', priority: 'medium', meta: { title: 'SLAs y Métricas', requiresAuth: true } },
+  { path: '/crm/automation', component: AutomationPage, layout: 'none', priority: 'high', meta: { title: 'Automatización CRM', requiresAuth: true } },
 ];
 
 // ============================================
