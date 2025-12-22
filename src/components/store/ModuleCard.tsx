@@ -9,6 +9,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ModuleCardProps {
   module: {
@@ -33,14 +34,16 @@ const iconMap: Record<string, React.ElementType> = {
 
 const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, showFullDetails = false }) => {
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const IconComponent = iconMap[module.module_icon || 'Building2'] || Building2;
 
+  const defaultFeatures = [t('store.fullFunctionality'), t('store.supportIncluded'), t('store.updates')];
   const features = Array.isArray(module.features) 
     ? module.features 
     : (typeof module.features === 'object' && module.features?.list) 
       ? module.features.list 
-      : ['Funcionalidad completa', 'Soporte incluido', 'Actualizaciones'];
+      : defaultFeatures;
 
   const handleRequestQuote = () => {
     // Scroll to contact section or open quote request modal
@@ -49,8 +52,8 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, show
       contactSection.scrollIntoView({ behavior: 'smooth' });
     } else {
       toast({
-        title: 'Solicitar presupuesto',
-        description: `Contacte con nuestro equipo comercial para obtener un precio personalizado para ${module.module_name}`,
+        title: t('store.requestQuote'),
+        description: t('store.contactTeamForPrice').replace('{name}', module.module_name),
       });
     }
   };
@@ -101,7 +104,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, show
 
         {/* Description */}
         <p className="text-slate-400 text-sm mb-4 line-clamp-2">
-          {module.description || 'Módulo empresarial completo con todas las funcionalidades necesarias.'}
+          {module.description || t('store.completeEnterpriseModule')}
         </p>
 
         {/* Features */}
@@ -117,8 +120,8 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, show
         {/* Actions - Sin precios públicos */}
         <div className="flex items-center justify-between pt-4 border-t border-slate-700/50">
           <div>
-            <div className="text-lg font-semibold text-slate-300">Precio personalizado</div>
-            <div className="text-xs text-slate-500">Solicite presupuesto</div>
+            <div className="text-lg font-semibold text-slate-300">{t('store.customPrice')}</div>
+            <div className="text-xs text-slate-500">{t('store.requestQuote')}</div>
           </div>
           
           <div className="flex gap-2">
@@ -127,7 +130,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, show
                 size="sm"
                 className="bg-gradient-to-b from-slate-600 to-slate-700 text-white border border-slate-500 shadow-[0_4px_0_0_rgba(30,41,59,1),0_6px_10px_rgba(0,0,0,0.3)] hover:shadow-[0_2px_0_0_rgba(30,41,59,1),0_4px_6px_rgba(0,0,0,0.3)] hover:translate-y-[2px] active:shadow-none active:translate-y-[4px] transition-all duration-150"
               >
-                Detalles
+                {t('store.details')}
               </Button>
             </Link>
             <Button
@@ -138,7 +141,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, show
                 : 'bg-gradient-to-b from-emerald-500 to-emerald-600 text-white border border-emerald-400 shadow-[0_4px_0_0_rgba(4,120,87,1),0_6px_10px_rgba(0,0,0,0.3)] hover:shadow-[0_2px_0_0_rgba(4,120,87,1),0_4px_6px_rgba(0,0,0,0.3)] hover:translate-y-[2px] active:shadow-none active:translate-y-[4px] transition-all duration-150'
               }
             >
-              Solicitar Precio
+              {t('store.requestPrice')}
             </Button>
           </div>
         </div>

@@ -16,6 +16,7 @@ import StoreNavbar from '@/components/store/StoreNavbar';
 import StoreFooter from '@/components/store/StoreFooter';
 import ModuleCard from '@/components/store/ModuleCard';
 import CartSidebar from '@/components/store/CartSidebar';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Module {
   id: string;
@@ -31,6 +32,7 @@ interface Module {
 }
 
 const StoreModules: React.FC = () => {
+  const { t } = useLanguage();
   const [modules, setModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -76,13 +78,13 @@ const StoreModules: React.FC = () => {
             className="text-center mb-12"
           >
             <Badge className="mb-4 bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
-              CATÁLOGO COMPLETO
+              {t('store.fullCatalog')}
             </Badge>
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-              Todos los Módulos
+              {t('store.allModules')}
             </h1>
             <p className="text-xl text-slate-400 max-w-2xl mx-auto">
-              Explora nuestra colección completa de módulos empresariales
+              {t('store.exploreCollection')}
             </p>
           </motion.div>
 
@@ -96,7 +98,7 @@ const StoreModules: React.FC = () => {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <Input
-                placeholder="Buscar módulos..."
+                placeholder={t('store.searchModules')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500"
@@ -106,12 +108,12 @@ const StoreModules: React.FC = () => {
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
               <SelectTrigger className="w-full md:w-48 bg-slate-800/50 border-slate-700 text-white">
                 <Filter className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="Categoría" />
+                <SelectValue placeholder={t('store.category')} />
               </SelectTrigger>
               <SelectContent className="bg-slate-800 border-slate-700">
                 {categories.map(cat => (
                   <SelectItem key={cat} value={cat} className="text-white hover:bg-slate-700">
-                    {cat === 'all' ? 'Todas' : cat.charAt(0).toUpperCase() + cat.slice(1)}
+                    {cat === 'all' ? t('store.allCategories') : cat.charAt(0).toUpperCase() + cat.slice(1)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -140,7 +142,7 @@ const StoreModules: React.FC = () => {
           {/* Results count */}
           <div className="mb-6">
             <p className="text-slate-400">
-              {filteredModules.length} módulos encontrados
+              {filteredModules.length} {t('store.modulesFound')}
             </p>
           </div>
 
@@ -172,13 +174,13 @@ const StoreModules: React.FC = () => {
 
           {filteredModules.length === 0 && !loading && (
             <div className="text-center py-20">
-              <p className="text-slate-400 text-lg">No se encontraron módulos</p>
+              <p className="text-slate-400 text-lg">{t('store.noModulesFound')}</p>
               <Button 
                 variant="link" 
                 onClick={() => { setSearchTerm(''); setCategoryFilter('all'); }}
                 className="text-emerald-400"
               >
-                Limpiar filtros
+                {t('store.clearFilters')}
               </Button>
             </div>
           )}

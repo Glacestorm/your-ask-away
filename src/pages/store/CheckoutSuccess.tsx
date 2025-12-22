@@ -4,11 +4,13 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { CheckCircle, ArrowRight, Download, Mail, Phone, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import confetti from 'canvas-confetti';
 
 const CheckoutSuccess: React.FC = () => {
   const [searchParams] = useSearchParams();
   const { clearCart } = useCart();
+  const { t } = useLanguage();
   const sessionId = searchParams.get('session_id');
 
   useEffect(() => {
@@ -49,7 +51,7 @@ const CheckoutSuccess: React.FC = () => {
             transition={{ delay: 0.3 }}
             className="text-3xl font-bold text-white mb-2"
           >
-            ¡Compra Completada!
+            {t('checkout.purchaseCompleted')}
           </motion.h1>
 
           <motion.p
@@ -58,7 +60,7 @@ const CheckoutSuccess: React.FC = () => {
             transition={{ delay: 0.4 }}
             className="text-slate-400 mb-8"
           >
-            Gracias por confiar en ObelixIA. Tu pedido ha sido procesado correctamente.
+            {t('checkout.thankYou')}
           </motion.p>
 
           {/* Order Info */}
@@ -69,7 +71,7 @@ const CheckoutSuccess: React.FC = () => {
               transition={{ delay: 0.5 }}
               className="bg-slate-900/50 rounded-xl p-4 mb-8 text-left"
             >
-              <div className="text-sm text-slate-400 mb-1">Referencia del pedido:</div>
+              <div className="text-sm text-slate-400 mb-1">{t('checkout.orderReference')}:</div>
               <div className="text-emerald-400 font-mono text-sm break-all">{sessionId}</div>
             </motion.div>
           )}
@@ -83,20 +85,20 @@ const CheckoutSuccess: React.FC = () => {
           >
             <h3 className="text-lg font-semibold text-white flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-emerald-400" />
-              Próximos Pasos
+              {t('checkout.nextSteps')}
             </h3>
             <div className="space-y-3">
               <div className="flex items-start gap-3 text-sm text-slate-300">
                 <Mail className="w-5 h-5 text-emerald-400 mt-0.5" />
-                <span>Recibirás un email de confirmación con los detalles de tu pedido</span>
+                <span>{t('checkout.emailConfirmation')}</span>
               </div>
               <div className="flex items-start gap-3 text-sm text-slate-300">
                 <Download className="w-5 h-5 text-emerald-400 mt-0.5" />
-                <span>Tu factura estará disponible en tu área de cliente en 24h</span>
+                <span>{t('checkout.invoiceAvailable')}</span>
               </div>
               <div className="flex items-start gap-3 text-sm text-slate-300">
                 <Phone className="w-5 h-5 text-emerald-400 mt-0.5" />
-                <span>Nuestro equipo de onboarding contactará contigo para la implementación</span>
+                <span>{t('checkout.onboardingContact')}</span>
               </div>
             </div>
           </motion.div>
@@ -110,13 +112,13 @@ const CheckoutSuccess: React.FC = () => {
           >
             <Link to="/admin" className="block">
               <Button className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white py-6">
-                Acceder a mi Panel
+                {t('checkout.accessDashboard')}
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
             <Link to="/store" className="block">
               <Button variant="outline" className="w-full border-slate-600 text-slate-300 hover:bg-slate-800">
-                Volver a la Tienda
+                {t('checkout.backToStore')}
               </Button>
             </Link>
           </motion.div>
@@ -128,7 +130,7 @@ const CheckoutSuccess: React.FC = () => {
             transition={{ delay: 0.8 }}
             className="mt-8 text-sm text-slate-500"
           >
-            ¿Necesitas ayuda?{' '}
+            {t('checkout.needHelp')}{' '}
             <a href="mailto:soporte@obelixia.com" className="text-emerald-400 hover:underline">
               soporte@obelixia.com
             </a>
