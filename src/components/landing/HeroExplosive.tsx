@@ -94,46 +94,37 @@ export const HeroExplosive: React.FC = () => {
             >
               No somos solo un CRM.
               <br />
-              <span className="relative inline-flex items-center justify-center gap-3 md:gap-4">
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-violet-400 to-purple-400 text-6xl md:text-7xl lg:text-8xl xl:text-9xl">
+              <span className="relative inline-flex items-center justify-center gap-4 md:gap-6">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-violet-400 to-purple-400">
                   Somos ObelixIA
                 </span>
-                {/* Brain with active synapses and pulse waves */}
+                {/* Brain with active synapses and pulse waves - oval shape */}
                 <span 
-                  className="relative inline-flex items-center justify-center w-14 h-14 md:w-18 md:h-18 lg:w-22 lg:h-22 xl:w-26 xl:h-26"
-                  style={{ width: '0.85em', height: '0.85em' }}
+                  className="relative inline-flex items-center justify-center"
+                  style={{ width: '1.1em', height: '0.9em' }}
                 >
-                  {/* Pulse wave effects */}
-                  <span className="absolute inset-[-30%] animate-[ping_1.5s_ease-out_infinite] rounded-full bg-violet-500/25" />
-                  <span className="absolute inset-[-25%] animate-[ping_1.8s_ease-out_infinite_0.3s] rounded-full bg-blue-500/20" />
-                  <span className="absolute inset-[-20%] animate-[ping_2s_ease-out_infinite_0.6s] rounded-full bg-violet-400/15" />
+                  {/* Pulse wave effects - oval */}
+                  <span className="absolute inset-[-25%] animate-[ping_1.5s_ease-out_infinite] bg-violet-500/25" style={{ borderRadius: '50%' }} />
+                  <span className="absolute inset-[-20%] animate-[ping_1.8s_ease-out_infinite_0.3s] bg-blue-500/20" style={{ borderRadius: '50%' }} />
+                  <span className="absolute inset-[-15%] animate-[ping_2s_ease-out_infinite_0.6s] bg-violet-400/15" style={{ borderRadius: '50%' }} />
                   {/* Outer Glow Layer */}
                   <span 
-                    className="absolute inset-[-50%] blur-2xl opacity-70 animate-pulse"
+                    className="absolute inset-[-40%] blur-2xl opacity-70 animate-pulse"
                     style={{
                       background: 'radial-gradient(ellipse at center, rgba(139,92,246,0.6) 0%, rgba(59,130,246,0.4) 40%, transparent 70%)',
                     }}
                   />
-                  {/* Brain Image with circular clip and gradient mask */}
-                  <span 
-                    className="relative w-full h-full overflow-hidden"
-                    style={{
-                      borderRadius: '50%',
-                      maskImage: 'radial-gradient(ellipse 100% 100% at center, black 50%, transparent 80%)',
-                      WebkitMaskImage: 'radial-gradient(ellipse 100% 100% at center, black 50%, transparent 80%)',
+                  {/* Brain Image - oval, showing full brain */}
+                  <img 
+                    src={brainLogo}
+                    alt="ObelixIA Brain"
+                    className="relative w-full h-full object-contain"
+                    style={{ 
+                      filter: 'drop-shadow(0 0 15px rgba(139,92,246,0.7)) drop-shadow(0 0 30px rgba(59,130,246,0.5))',
                     }}
-                  >
-                    <img 
-                      src={brainLogo}
-                      alt="ObelixIA Brain"
-                      className="w-full h-full object-cover scale-125"
-                      style={{ 
-                        filter: 'drop-shadow(0 0 15px rgba(139,92,246,0.7)) drop-shadow(0 0 30px rgba(59,130,246,0.5))',
-                      }}
-                    />
-                  </span>
+                  />
                   {/* Synapsis sparkles overlay */}
-                  <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full pointer-events-none">
+                  <svg viewBox="0 0 100 80" className="absolute inset-0 w-full h-full pointer-events-none">
                     <defs>
                       <filter id="hero-sparkle-glow" x="-400%" y="-400%" width="900%" height="900%">
                         <feGaussianBlur stdDeviation="2" result="blur"/>
@@ -145,14 +136,14 @@ export const HeroExplosive: React.FC = () => {
                       </filter>
                     </defs>
                     {[
-                      { cx: 30, cy: 30, delay: 0 },
-                      { cx: 50, cy: 25, delay: 0.3 },
-                      { cx: 70, cy: 35, delay: 0.6 },
-                      { cx: 40, cy: 50, delay: 0.2 },
-                      { cx: 60, cy: 55, delay: 0.5 },
-                      { cx: 35, cy: 70, delay: 0.8 },
-                      { cx: 55, cy: 65, delay: 0.4 },
-                      { cx: 65, cy: 45, delay: 0.7 },
+                      { cx: 25, cy: 25, delay: 0 },
+                      { cx: 50, cy: 20, delay: 0.3 },
+                      { cx: 75, cy: 28, delay: 0.6 },
+                      { cx: 35, cy: 45, delay: 0.2 },
+                      { cx: 65, cy: 50, delay: 0.5 },
+                      { cx: 30, cy: 60, delay: 0.8 },
+                      { cx: 55, cy: 55, delay: 0.4 },
+                      { cx: 70, cy: 40, delay: 0.7 },
                     ].map((node, i) => (
                       <g key={i} filter="url(#hero-sparkle-glow)">
                         <circle cx={node.cx} cy={node.cy} r="1.5" fill="white">
@@ -168,7 +159,7 @@ export const HeroExplosive: React.FC = () => {
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: 1 }}
                   transition={{ duration: 0.8, delay: 0.5 }}
-                  className="absolute -bottom-2 left-0 right-[0.9em] h-1 bg-gradient-to-r from-blue-500 to-violet-500 rounded-full origin-left"
+                  className="absolute -bottom-2 left-0 right-[1.2em] h-1 bg-gradient-to-r from-blue-500 to-violet-500 rounded-full origin-left"
                 />
               </span>
             </motion.h1>
