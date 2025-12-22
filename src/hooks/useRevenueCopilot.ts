@@ -33,7 +33,7 @@ export const useRevenueCopilot = () => {
         .order('last_message_at', { ascending: false })
         .limit(10);
       if (error) throw error;
-      return data as CopilotSession[];
+      return (data as unknown) as CopilotSession[];
     }
   });
 

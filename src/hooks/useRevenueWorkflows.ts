@@ -53,7 +53,7 @@ export const useRevenueWorkflows = () => {
         .select('*')
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data as RevenueWorkflow[];
+      return (data as unknown) as RevenueWorkflow[];
     }
   });
 
@@ -66,13 +66,14 @@ export const useRevenueWorkflows = () => {
         .order('started_at', { ascending: false })
         .limit(50);
       if (error) throw error;
-      return data as WorkflowExecution[];
+      return (data as unknown) as WorkflowExecution[];
     }
   });
 
   const createWorkflow = useMutation({
     mutationFn: async (workflow: Omit<RevenueWorkflow, 'id' | 'created_at' | 'last_triggered_at' | 'execution_count'>) => {
-      const { data, error } = await supabase.from('revenue_workflows').insert(workflow).select().single();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await supabase.from('revenue_workflows').insert(workflow as any).select().single();
       if (error) throw error;
       return data;
     },
@@ -84,7 +85,8 @@ export const useRevenueWorkflows = () => {
 
   const updateWorkflow = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<RevenueWorkflow> & { id: string }) => {
-      const { error } = await supabase.from('revenue_workflows').update(updates).eq('id', id);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await supabase.from('revenue_workflows').update(updates as any).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
