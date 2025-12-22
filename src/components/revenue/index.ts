@@ -4,7 +4,10 @@ export { default as ChurnRevenueProtection } from './ChurnRevenueProtection';
 export { default as BenchmarkingDashboard } from './BenchmarkingDashboard';
 export { default as CohortAnalysisChart } from './CohortAnalysisChart';
 
-// New Phase 4 Components
+// Phase 4 - Revenue Intelligence Hub
+export { default as RevenueIntelligenceHub } from './RevenueIntelligenceHub';
+
+// Phase 4 Components
 export { default as MRRWaterfallChart } from './MRRWaterfallChart';
 export { default as RevenueForecastDashboard } from './RevenueForecastDashboard';
 export { default as LTVAnalysisPanel } from './LTVAnalysisPanel';
