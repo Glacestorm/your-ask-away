@@ -12,3 +12,9 @@ export { useRevenueScoring } from '@/hooks/useRevenueScoring';
 export { useSmartPrioritization } from '@/hooks/useSmartPrioritization';
 export { useRevenueAttribution } from '@/hooks/useRevenueAttribution';
 export { useMonteCarloSimulation } from '@/hooks/useMonteCarloSimulation';
+
+// Phase 5 hooks
+export { useRevenueScenarios } from '@/hooks/useRevenueScenarios';
+export { useRevenueCopilot } from '@/hooks/useRevenueCopilot';
+export { useRevenueAnomalyAlerts } from '@/hooks/useRevenueAnomalyAlerts';
+export { useRevenueWorkflows } from '@/hooks/useRevenueWorkflows';

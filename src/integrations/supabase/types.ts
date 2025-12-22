@@ -14567,6 +14567,63 @@ export type Database = {
         }
         Relationships: []
       }
+      revenue_anomaly_alerts: {
+        Row: {
+          affected_entities: Json | null
+          anomaly_type: string
+          assigned_to: string | null
+          confidence: number
+          created_at: string | null
+          description: string | null
+          detected_at: string | null
+          id: string
+          indicators: Json | null
+          recommended_actions: string[] | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          status: string | null
+          title: string
+        }
+        Insert: {
+          affected_entities?: Json | null
+          anomaly_type: string
+          assigned_to?: string | null
+          confidence: number
+          created_at?: string | null
+          description?: string | null
+          detected_at?: string | null
+          id?: string
+          indicators?: Json | null
+          recommended_actions?: string[] | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity: string
+          status?: string | null
+          title: string
+        }
+        Update: {
+          affected_entities?: Json | null
+          anomaly_type?: string
+          assigned_to?: string | null
+          confidence?: number
+          created_at?: string | null
+          description?: string | null
+          detected_at?: string | null
+          id?: string
+          indicators?: Json | null
+          recommended_actions?: string[] | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          status?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       revenue_attributions: {
         Row: {
           attributed_revenue: number
@@ -14711,6 +14768,45 @@ export type Database = {
           retention_rates?: Json | null
           segment?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      revenue_copilot_sessions: {
+        Row: {
+          actions_taken: Json | null
+          context: Json | null
+          id: string
+          insights_generated: Json | null
+          is_active: boolean | null
+          last_message_at: string | null
+          messages: Json
+          session_type: string | null
+          started_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          actions_taken?: Json | null
+          context?: Json | null
+          id?: string
+          insights_generated?: Json | null
+          is_active?: boolean | null
+          last_message_at?: string | null
+          messages?: Json
+          session_type?: string | null
+          started_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          actions_taken?: Json | null
+          context?: Json | null
+          id?: string
+          insights_generated?: Json | null
+          is_active?: boolean | null
+          last_message_at?: string | null
+          messages?: Json
+          session_type?: string | null
+          started_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -14922,6 +15018,71 @@ export type Database = {
           },
         ]
       }
+      revenue_scenarios: {
+        Row: {
+          assumptions: string[] | null
+          base_mrr: number
+          comparison_baseline_id: string | null
+          confidence_level: number | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          is_baseline: boolean | null
+          name: string
+          projections: Json
+          risks: string[] | null
+          scenario_type: string | null
+          time_horizon_months: number | null
+          updated_at: string | null
+          variables: Json
+        }
+        Insert: {
+          assumptions?: string[] | null
+          base_mrr?: number
+          comparison_baseline_id?: string | null
+          confidence_level?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_baseline?: boolean | null
+          name: string
+          projections?: Json
+          risks?: string[] | null
+          scenario_type?: string | null
+          time_horizon_months?: number | null
+          updated_at?: string | null
+          variables?: Json
+        }
+        Update: {
+          assumptions?: string[] | null
+          base_mrr?: number
+          comparison_baseline_id?: string | null
+          confidence_level?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_baseline?: boolean | null
+          name?: string
+          projections?: Json
+          risks?: string[] | null
+          scenario_type?: string | null
+          time_horizon_months?: number | null
+          updated_at?: string | null
+          variables?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revenue_scenarios_comparison_baseline_id_fkey"
+            columns: ["comparison_baseline_id"]
+            isOneToOne: false
+            referencedRelation: "revenue_scenarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       revenue_scores: {
         Row: {
           action_priority: number | null
@@ -15082,6 +15243,107 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      revenue_workflow_executions: {
+        Row: {
+          actions_executed: Json | null
+          completed_at: string | null
+          error_message: string | null
+          execution_status: string | null
+          id: string
+          result: Json | null
+          started_at: string | null
+          trigger_data: Json | null
+          triggered_by: string | null
+          workflow_id: string | null
+        }
+        Insert: {
+          actions_executed?: Json | null
+          completed_at?: string | null
+          error_message?: string | null
+          execution_status?: string | null
+          id?: string
+          result?: Json | null
+          started_at?: string | null
+          trigger_data?: Json | null
+          triggered_by?: string | null
+          workflow_id?: string | null
+        }
+        Update: {
+          actions_executed?: Json | null
+          completed_at?: string | null
+          error_message?: string | null
+          execution_status?: string | null
+          id?: string
+          result?: Json | null
+          started_at?: string | null
+          trigger_data?: Json | null
+          triggered_by?: string | null
+          workflow_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revenue_workflow_executions_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "revenue_workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      revenue_workflows: {
+        Row: {
+          actions: Json
+          conditions: Json
+          cooldown_minutes: number | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          execution_count: number | null
+          id: string
+          is_active: boolean | null
+          last_triggered_at: string | null
+          name: string
+          priority: number | null
+          trigger_config: Json
+          trigger_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          actions?: Json
+          conditions?: Json
+          cooldown_minutes?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          execution_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          name: string
+          priority?: number | null
+          trigger_config?: Json
+          trigger_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          actions?: Json
+          conditions?: Json
+          cooldown_minutes?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          execution_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_triggered_at?: string | null
+          name?: string
+          priority?: number | null
+          trigger_config?: Json
+          trigger_type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       risk_assessments: {
         Row: {
