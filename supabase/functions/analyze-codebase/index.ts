@@ -1032,7 +1032,7 @@ function getDefaultAnalysis(componentsList: string[], hooksList: string[], edgeF
         marketShare: "40% core banking mundial",
         pros: ["Muy robusto", "Ecosistema extenso", "Compliance global"],
         cons: ["Coste prohibitivo", "18-36 meses", "Complejidad extrema"],
-        comparisonVsCreand: "Temenos core banking, Creand CRM comercial complementario",
+        comparisonVsObelixia: "Temenos core banking, ObelixIA CRM comercial complementario",
         usedByBanks: ["ING", "Santander International", "ABN AMRO", "Nordea"]
       },
       {
@@ -1047,7 +1047,7 @@ function getDefaultAnalysis(componentsList: string[], hooksList: string[], edgeF
         marketShare: "35% CRM bancario global",
         pros: ["AppExchange", "Soporte global", "Einstein AI"],
         cons: ["Coste elevado", "Curva aprendizaje", "Sin contabilidad", "Sin GIS"],
-        comparisonVsCreand: "FSC genérico global, Creand especializado. Creand incluye contabilidad PGC y GIS. FSC 4-6x más caro.",
+        comparisonVsObelixia: "FSC generico global, ObelixIA especializado. ObelixIA incluye contabilidad PGC y GIS. FSC 4-6x mas caro.",
         usedByBanks: ["BBVA", "Santander", "CaixaBank", "Bankinter"]
       },
       {
@@ -1062,7 +1062,7 @@ function getDefaultAnalysis(componentsList: string[], hooksList: string[], edgeF
         marketShare: "30% ERP grandes bancos",
         pros: ["Funcionalidad completa", "IFRS 9", "Integración total"],
         cons: ["Extremadamente costoso", "2-4 años", "Equipo especializado"],
-        comparisonVsCreand: "SAP enterprise complejo, Creand ágil. 3-6 meses vs 2-4 años.",
+        comparisonVsObelixia: "SAP enterprise complejo, ObelixIA agil. 3-6 meses vs 2-4 anos.",
         usedByBanks: ["Deutsche Bank", "HSBC", "Commerzbank"]
       }
     ],
