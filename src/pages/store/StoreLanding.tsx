@@ -1,12 +1,20 @@
 import React, { lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Shield, Zap, Globe, Lock, ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import StoreNavbar from '@/components/store/StoreNavbar';
-import HeroSection from '@/components/store/HeroSection';
 import StoreFooter from '@/components/store/StoreFooter';
 import CartSidebar from '@/components/store/CartSidebar';
+
+// New explosive landing components
+import { 
+  HeroExplosive, 
+  StatsSection, 
+  CRMComparisonSection, 
+  FeaturesGrid,
+  SectorsSection 
+} from '@/components/landing';
 
 // Lazy load heavy components - only load when user scrolls to them
 const FeaturedModules = lazy(() => import('@/components/store/FeaturedModules'));
@@ -15,8 +23,6 @@ const BundlesSection = lazy(() => import('@/components/store/BundlesSection'));
 const TrustBadges = lazy(() => import('@/components/store/TrustBadges'));
 const ROICalculator = lazy(() => import('@/components/store/ROICalculator'));
 const PricingExplanation = lazy(() => import('@/components/store/PricingExplanation'));
-const MarketingTabs = lazy(() => import('@/components/marketing').then(m => ({ default: m.MarketingTabs })));
-const SectorsShowcase = lazy(() => import('@/components/sectors').then(m => ({ default: m.SectorsShowcase })));
 const FAQSection = lazy(() => import('@/components/faq').then(m => ({ default: m.FAQSection })));
 const FAQChatWidget = lazy(() => import('@/components/faq').then(m => ({ default: m.FAQChatWidget })));
 const NewsSection = lazy(() => import('@/components/store/NewsSection'));
@@ -24,91 +30,29 @@ const NewsSection = lazy(() => import('@/components/store/NewsSection'));
 // Minimal loading placeholder
 const SectionSkeleton = () => (
   <div className="py-16 flex items-center justify-center">
-    <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+    <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
   </div>
 );
 
 const StoreLanding: React.FC = () => {
-  const features = [
-    { 
-      icon: Shield, 
-      title: 'Seguridad Bancaria',
-      description: 'Cumplimiento normativo PSD2, GDPR y estándares internacionales de seguridad.'
-    },
-    { 
-      icon: Zap, 
-      title: 'IA Integrada',
-      description: 'Predicciones, automatización y análisis en tiempo real con machine learning.'
-    },
-    { 
-      icon: Globe, 
-      title: 'Multi-Sector',
-      description: 'Adaptable a banca, seguros, retail y manufactura con módulos especializados.'
-    },
-    { 
-      icon: Lock, 
-      title: 'Arquitectura Modular',
-      description: 'Implementa solo lo que necesitas, escala cuando lo requieras.'
-    },
-  ];
-
   return (
-    <div className="min-h-screen bg-slate-950">
+    <div className="min-h-screen bg-[#0a0f1a]">
       <StoreNavbar />
       
-      {/* Hero - loads immediately */}
-      <HeroSection />
+      {/* New Explosive Hero */}
+      <HeroExplosive />
 
-      {/* Features Section - Static, no DB calls */}
-      <section className="py-32 relative">
-        <div className="container mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="max-w-2xl mx-auto text-center mb-20"
-          >
-            <span className="text-sm font-medium text-primary uppercase tracking-wider mb-4 block">
-              Por qué elegirnos
-            </span>
-            <h2 className="text-4xl md:text-5xl font-display font-semibold text-white mb-6">
-              Tecnología que impulsa resultados
-            </h2>
-            <p className="text-lg text-slate-400">
-              Diseñado para empresas que buscan la excelencia operativa 
-              y la transformación digital real.
-            </p>
-          </motion.div>
+      {/* Stats Section */}
+      <StatsSection />
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="group relative bg-slate-900/50 border border-slate-800 rounded-2xl p-8 hover:border-slate-700 transition-all duration-300"
-              >
-                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary/20 transition-colors">
-                  <feature.icon className="w-7 h-7 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-3">{feature.title}</h3>
-                <p className="text-slate-400 leading-relaxed">{feature.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Features Grid */}
+      <FeaturesGrid />
 
-      {/* Lazy loaded sections */}
-      <Suspense fallback={<SectionSkeleton />}>
-        <SectorsShowcase />
-      </Suspense>
+      {/* CRM Comparison */}
+      <CRMComparisonSection />
 
-      <Suspense fallback={<SectionSkeleton />}>
-        <MarketingTabs />
-      </Suspense>
+      {/* Sectors */}
+      <SectorsSection />
 
       <div id="modules">
         <Suspense fallback={<SectionSkeleton />}>
