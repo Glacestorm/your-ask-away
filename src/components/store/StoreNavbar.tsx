@@ -39,6 +39,15 @@ const StoreNavbar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useLanguage();
+  
+  // Force solid background on internal store pages (not the main store landing)
+  const isInternalStorePage = location.pathname !== '/store' && location.pathname.startsWith('/store');
+  
+  // Determine if navbar should have solid background
+  const hasSolidBackground = isScrolled || isInternalStorePage;
+  
+  // Use dark theme (white text) for internal store pages, light theme (dark text) when scrolled on main store
+  const useDarkTheme = isInternalStorePage || !isScrolled;
 
   const cancelDesktopClose = () => {
     if (closeTimeoutRef.current) {
@@ -174,8 +183,10 @@ const StoreNavbar: React.FC = () => {
     <>
       <nav 
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled 
-            ? 'bg-white/95 backdrop-blur-lg shadow-sm border-b border-slate-100' 
+          hasSolidBackground
+            ? isInternalStorePage 
+              ? 'bg-slate-900/95 backdrop-blur-lg shadow-sm border-b border-slate-800'
+              : 'bg-white/95 backdrop-blur-lg shadow-sm border-b border-slate-100'
             : 'bg-transparent'
         }`}
       >
@@ -183,7 +194,7 @@ const StoreNavbar: React.FC = () => {
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <Link to="/store" className="flex-shrink-0 relative z-10">
-              <ObelixiaLogo size="md" variant="full" animated={false} dark={!isScrolled} />
+              <ObelixiaLogo size="md" variant="full" animated={false} dark={useDarkTheme} />
             </Link>
 
             {/* Desktop Navigation */}
@@ -205,9 +216,9 @@ const StoreNavbar: React.FC = () => {
                     <button
                       type="button"
                       className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                        isScrolled 
-                          ? 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
-                          : 'text-white/90 hover:text-white hover:bg-white/10'
+                        useDarkTheme 
+                          ? 'text-white/90 hover:text-white hover:bg-white/10'
+                          : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
                       }`}
                     >
                       {item.label}
@@ -217,9 +228,9 @@ const StoreNavbar: React.FC = () => {
                     <Link
                       to={item.href || '#'}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
-                        isScrolled 
-                          ? 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
-                          : 'text-white/90 hover:text-white hover:bg-white/10'
+                        useDarkTheme 
+                          ? 'text-white/90 hover:text-white hover:bg-white/10'
+                          : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
                       }`}
                     >
                       {item.label}
@@ -256,9 +267,9 @@ const StoreNavbar: React.FC = () => {
               <button
                 onClick={openLogin}
                 className={`px-4 py-2 text-sm font-medium transition-colors duration-200 ${
-                  isScrolled 
-                    ? 'text-slate-700 hover:text-slate-900'
-                    : 'text-white/90 hover:text-white'
+                  useDarkTheme 
+                    ? 'text-white/90 hover:text-white'
+                    : 'text-slate-700 hover:text-slate-900'
                 }`}
               >
                 Iniciar Sesión
@@ -274,9 +285,9 @@ const StoreNavbar: React.FC = () => {
               <button
                 onClick={() => setIsCartOpen(true)}
                 className={`relative p-2.5 rounded-full transition-colors duration-200 ${
-                  isScrolled
-                    ? 'text-slate-700 hover:bg-slate-100'
-                    : 'text-white/90 hover:bg-white/10'
+                  useDarkTheme
+                    ? 'text-white/90 hover:bg-white/10'
+                    : 'text-slate-700 hover:bg-slate-100'
                 }`}
               >
                 <ShoppingCart className="w-5 h-5" />
@@ -292,7 +303,7 @@ const StoreNavbar: React.FC = () => {
             <div className="flex lg:hidden items-center gap-2">
               <button
                 onClick={() => setIsCartOpen(true)}
-                className={`relative p-2 ${isScrolled ? 'text-slate-700' : 'text-white'}`}
+                className={`relative p-2 ${useDarkTheme ? 'text-white' : 'text-slate-700'}`}
               >
                 <ShoppingCart className="w-5 h-5" />
                 {itemCount > 0 && (
@@ -303,7 +314,7 @@ const StoreNavbar: React.FC = () => {
               </button>
 
               <button
-                className={`p-2 ${isScrolled ? 'text-slate-700' : 'text-white'}`}
+                className={`p-2 ${useDarkTheme ? 'text-white' : 'text-slate-700'}`}
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
               >
                 {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
