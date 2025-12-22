@@ -1478,7 +1478,7 @@ security/
     }
   };
 
-  // PART 3: BCP, Gap Analysis, Viabilidad, Clientes, Temenos, Costes, Conclusiones, Anexos (~35 páginas)
+  // PART 3: BCP, Gap Analysis, Roadmap 2025 (~35 páginas)
   const generatePart3 = async () => {
     if (!analysis) return;
     setGeneratingPart('part3');
@@ -1501,7 +1501,7 @@ security/
       doc.text('CRM BANCARIO CREAND', h.pageWidth / 2, 35, { align: 'center' });
       
       doc.setFontSize(14);
-      doc.text('PARTE 3: BCP, Gap Analysis y Estrategia', h.pageWidth / 2, 50, { align: 'center' });
+      doc.text('PARTE 3: BCP, Gap Analysis y Roadmap', h.pageWidth / 2, 50, { align: 'center' });
       
       doc.setFontSize(18);
       doc.text(`Versión ${analysis.version}`, h.pageWidth / 2, 75, { align: 'center' });
@@ -1510,7 +1510,7 @@ security/
       h.currentY = 105;
       
       h.addHighlightBox('PARTE 3 - CONTENIDO', 
-        'Plan de Continuidad de Negocio (BCP) con RTO 4h/RPO 1h, Gap Analysis con roadmap trimestral 2025, Viabilidad España y Europa, Listado de Clientes Potenciales, Integración Temenos T24/Transact, Desglose de Costes, Conclusiones Finales y Anexos técnicos.',
+        'Plan de Continuidad de Negocio (BCP) con RTO 4h/RPO 1h, Gap Analysis exhaustivo con madurez por dominio, Roadmap trimestral 2025 con objetivos, entregables y recursos requeridos.',
         'info');
 
       h.addPageNumber();
@@ -1528,27 +1528,22 @@ security/
 
       const indexItems = [
         { num: '11', title: 'PLAN DE CONTINUIDAD (BCP)', page: 3 },
-        { num: '11.1', title: 'Sistemas Críticos', page: 4 },
-        { num: '11.2', title: 'Escenarios de Desastre', page: 6 },
-        { num: '11.3', title: 'Estrategia de Backup', page: 8 },
-        { num: '12', title: 'GAP ANALYSIS Y ROADMAP', page: 10 },
-        { num: '12.1', title: 'Análisis por Dominio', page: 11 },
-        { num: '12.2', title: 'Gaps Críticos', page: 13 },
-        { num: '12.3', title: 'Roadmap 2025', page: 15 },
-        { num: '13', title: 'VIABILIDAD ESPAÑA Y EUROPA', page: 17 },
-        { num: '13.1', title: 'Mercado Español', page: 18 },
-        { num: '13.2', title: 'Mercado Europeo', page: 20 },
-        { num: '13.3', title: 'MERCADO SUDAMERICANO (LATAM)', page: 22 },
-        { num: '13.3.1', title: 'Análisis Detallado por País LATAM', page: 24 },
-        { num: '13.3.2', title: 'Costes de Entrada LATAM', page: 26 },
-        { num: '13.3.3', title: 'Ahorro Clientes LATAM', page: 27 },
-        { num: '13.4', title: 'Otros Mercados Internacionales', page: 29 },
-        { num: '14', title: 'CLIENTES POTENCIALES', page: 31 },
-        { num: '15', title: 'INTEGRACIÓN TEMENOS', page: 35 },
-        { num: '16', title: 'DESGLOSE DE COSTES', page: 38 },
-        { num: '17', title: 'CONCLUSIONES', page: 41 },
-        { num: 'A', title: 'ANEXO: FUNCIONALIDADES PENDIENTES', page: 43 },
-        { num: 'B', title: 'ANEXO: HALLAZGOS SEGURIDAD', page: 44 },
+        { num: '11.1', title: 'Resumen BCP y Métricas', page: 3 },
+        { num: '11.2', title: 'Sistemas Críticos', page: 4 },
+        { num: '11.3', title: 'Escenarios de Desastre', page: 6 },
+        { num: '11.4', title: 'Estrategia de Backup', page: 8 },
+        { num: '11.5', title: 'Equipo de Recuperación', page: 9 },
+        { num: '12', title: 'GAP ANALYSIS Y ROADMAP', page: 11 },
+        { num: '12.1', title: 'Madurez Global', page: 11 },
+        { num: '12.2', title: 'Análisis por Dominio', page: 12 },
+        { num: '12.3', title: 'Gaps Críticos Identificados', page: 14 },
+        { num: '12.4', title: 'Roadmap Trimestral 2025', page: 16 },
+        { num: '12.5', title: 'Recursos Requeridos', page: 20 },
+        { num: '13', title: 'CONCLUSIONES BCP Y GAP', page: 22 },
+        { num: '13.1', title: 'Fortalezas de Continuidad', page: 22 },
+        { num: '13.2', title: 'Próximos Pasos Recomendados', page: 24 },
+        { num: 'A', title: 'ANEXO: CHECKLIST BCP', page: 26 },
+        { num: 'B', title: 'ANEXO: MATRIZ DE RIESGOS', page: 28 },
       ];
 
       doc.setFontSize(9);
@@ -1696,372 +1691,90 @@ security/
         }
       }
 
-      // 13. VIABILIDAD
-      h.addNewPage();
-      setProgress(50);
-      
-      h.addMainTitle('13. VIABILIDAD ESPAÑA Y EUROPA');
-
-      const feasibility = analysis.feasibilityAnalysis;
-      if (feasibility?.spanishMarket) {
-        h.addTitle('13.1 Mercado Español', 2);
-        h.addHighlightBox('Viabilidad', feasibility.spanishMarket.viability, 'success');
-        h.addParagraph(`Tamaño de Mercado: ${feasibility.spanishMarket.marketSize}`);
-        
-        h.addSubtitle('Oportunidades');
-        feasibility.spanishMarket.opportunities.forEach(opp => h.addBullet(opp, 3, '+'));
-        
-        h.addSubtitle('Barreras');
-        feasibility.spanishMarket.barriers.forEach(bar => h.addBullet(bar, 3, '-'));
-
-        h.addHighlightBox('Recomendación España', feasibility.spanishMarket.recommendation, 'info');
-      }
-
-      if (feasibility?.europeanMarket) {
-        h.addNewPage();
-        h.addTitle('13.2 Mercado Europeo', 2);
-        h.addHighlightBox('Viabilidad', feasibility.europeanMarket.viability, 'success');
-        
-        h.addSubtitle('Países Objetivo');
-        h.addParagraph(feasibility.europeanMarket.targetCountries.join(', '));
-        
-        h.addSubtitle('Regulaciones a Cumplir');
-        feasibility.europeanMarket.regulations.forEach(reg => h.addBullet(reg, 3, '📋'));
-        
-        h.addSubtitle('Oportunidades');
-        feasibility.europeanMarket.opportunities.forEach(opp => h.addBullet(opp, 3, '+'));
-
-        h.addHighlightBox('Recomendación Europa', feasibility.europeanMarket.recommendation, 'info');
-      }
-
-      // 13.3 MERCADO SUDAMÉRICA
-      if (feasibility?.latamMarket) {
-        h.addNewPage();
-        h.addTitle('13.3 Mercado Sudamericano (LATAM)', 2);
-        h.addHighlightBox('Viabilidad', feasibility.latamMarket.viability, 'success');
-        h.addParagraph(`Tamaño de Mercado: ${feasibility.latamMarket.marketSize}`);
-        
-        h.addSubtitle('Países Objetivo Prioritarios');
-        h.addParagraph(feasibility.latamMarket.targetCountries.join(', '));
-        
-        h.addSubtitle('Marco Regulatorio');
-        feasibility.latamMarket.regulations.forEach(reg => h.addBullet(reg, 3, '📋'));
-        
-        h.addSubtitle('Oportunidades de Mercado');
-        feasibility.latamMarket.opportunities.forEach(opp => h.addBullet(opp, 3, '+'));
-
-        h.addHighlightBox('Recomendación LATAM', feasibility.latamMarket.recommendation, 'info');
-
-        // Tabla detallada por país LATAM
-        h.addNewPage();
-        h.addTitle('13.3.1 Análisis Detallado por País LATAM', 2);
-        
-        const latamCountryAnalysis = [
-          { country: 'México', population: '130M', banks: '52', opportunity: 'Alta', investment: '25.000€', timeline: '6 meses', notes: 'Banca móvil en expansión, regulación CNBV favorable' },
-          { country: 'Brasil', population: '215M', banks: '178', opportunity: 'Muy Alta', investment: '40.000€', timeline: '9 meses', notes: 'Mayor mercado LATAM, fintechs activas, BCB progresista' },
-          { country: 'Colombia', population: '52M', banks: '29', opportunity: 'Alta', investment: '18.000€', timeline: '4 meses', notes: 'Marco regulatorio moderno, Open Banking en desarrollo' },
-          { country: 'Chile', population: '19M', banks: '19', opportunity: 'Media-Alta', investment: '15.000€', timeline: '4 meses', notes: 'Mercado maduro, alta penetración digital' },
-          { country: 'Argentina', population: '46M', banks: '78', opportunity: 'Media', investment: '12.000€', timeline: '5 meses', notes: 'Volatilidad económica, oportunidad cooperativas' },
-          { country: 'Perú', population: '34M', banks: '17', opportunity: 'Media-Alta', investment: '14.000€', timeline: '4 meses', notes: 'Crecimiento fintech, regulación SBS favorable' },
-          { country: 'Uruguay', population: '3.5M', banks: '11', opportunity: 'Media', investment: '8.000€', timeline: '3 meses', notes: 'Hub fintech regional, regulación moderna' },
-          { country: 'Paraguay', population: '7M', banks: '17', opportunity: 'Media', investment: '8.000€', timeline: '3 meses', notes: 'Mercado en crecimiento, baja competencia' },
-        ];
-
-        h.addTable(
-          ['País', 'Población', 'Bancos', 'Oportunidad', 'Inversión', 'Timeline'],
-          latamCountryAnalysis.map(c => [c.country, c.population, c.banks, c.opportunity, c.investment, c.timeline]),
-          [30, 25, 22, 28, 30, 28]
-        );
-
-        h.addNewPage();
-        h.addTitle('13.3.2 Notas por País LATAM', 2);
-        latamCountryAnalysis.forEach(c => {
-          h.addBullet(`${c.country}: ${c.notes}`, 0, '🌎');
-        });
-
-        h.addTitle('13.3.3 Costes de Entrada LATAM', 2);
-        const latamEntryCosts = [
-          { concept: 'Localización idioma (español regional)', cost: '8.000€', notes: 'Adaptación terminología bancaria local' },
-          { concept: 'Compliance regulatorio por país', cost: '12.000€-25.000€/país', notes: 'Auditoría y certificación local' },
-          { concept: 'Adaptación contable local', cost: '15.000€/país', notes: 'PCGA locales vs PGC Andorra' },
-          { concept: 'Partner local / representante', cost: '3.000€-8.000€/mes', notes: 'Soporte comercial y técnico' },
-          { concept: 'Infraestructura cloud regional', cost: '500€-2.000€/mes', notes: 'AWS São Paulo / Azure Brasil' },
-          { concept: 'Marketing y eventos', cost: '15.000€-40.000€/año', notes: 'Ferias bancarias regionales' },
-        ];
-
-        h.addTable(
-          ['Concepto', 'Coste', 'Notas'],
-          latamEntryCosts.map(c => [c.concept, c.cost, c.notes]),
-          [60, 45, 65]
-        );
-
-        h.addHighlightBox('💰 INVERSIÓN TOTAL LATAM (3 países prioritarios)', 
-          'México + Colombia + Chile: 95.000€ - 150.000€ primer año | ROI esperado: 280% a 3 años | Time-to-market: 6-9 meses',
-          'warning');
-
-        // Ahorro para clientes LATAM
-        h.addNewPage();
-        h.addTitle('13.3.4 Ahorro para Clientes Bancarios LATAM', 2);
-        
-        const latamSavings = [
-          { type: 'Banco Comercial Mediano (México)', current: 850000, creand: 320000, savings: 530000, roi: 165, breakeven: 14 },
-          { type: 'Cooperativa Crédito (Colombia)', current: 380000, creand: 145000, savings: 235000, roi: 162, breakeven: 12 },
-          { type: 'Banco Digital (Brasil)', current: 620000, creand: 240000, savings: 380000, roi: 158, breakeven: 15 },
-          { type: 'Caja Rural (Chile)', current: 290000, creand: 115000, savings: 175000, roi: 152, breakeven: 11 },
-          { type: 'Fintech B2B (Argentina)', current: 280000, creand: 120000, savings: 160000, roi: 133, breakeven: 13 },
-          { type: 'Banca Privada (Uruguay)', current: 420000, creand: 160000, savings: 260000, roi: 163, breakeven: 10 },
-        ];
-
-        h.addTable(
-          ['Tipo Cliente LATAM', 'Coste Actual (5 años)', 'Coste Creand', 'Ahorro', 'ROI %', 'Breakeven'],
-          latamSavings.map(s => [
-            s.type,
-            `$${s.current.toLocaleString()} USD`,
-            `$${s.creand.toLocaleString()} USD`,
-            `$${s.savings.toLocaleString()} USD`,
-            `${s.roi}%`,
-            `${s.breakeven} meses`
-          ]),
-          [50, 35, 32, 35, 20, 28]
-        );
-
-        const totalLatamSavings = latamSavings.reduce((a, b) => a + b.savings, 0);
-        h.addHighlightBox('📊 AHORRO TOTAL POTENCIAL CLIENTES LATAM', 
-          `$${totalLatamSavings.toLocaleString()} USD en 5 años para 6 tipos de clientes típicos | Promedio ROI: ${Math.round(latamSavings.reduce((a, b) => a + b.roi, 0) / latamSavings.length)}%`,
-          'success');
-      }
-
-      // 13.4 OTROS MERCADOS INTERNACIONALES
-      if (feasibility?.otherMarkets && feasibility.otherMarkets.length > 0) {
-        h.addNewPage();
-        h.addTitle('13.4 Otros Mercados Internacionales', 2);
-        
-        feasibility.otherMarkets.forEach((market, idx) => {
-          h.checkPageBreak(40);
-          h.addSubtitle(`${market.region}`);
-          h.addHighlightBox('Viabilidad', market.viability, market.viability.includes('Alta') ? 'success' : 'info');
-          h.addParagraph(`Tamaño de Mercado: ${market.marketSize}`);
-          h.addParagraph(`Países: ${market.countries.join(', ')}`);
-          h.addSubtitle('Oportunidades');
-          market.opportunities.forEach(opp => h.addBullet(opp, 3, '+'));
-          h.currentY += 5;
-        });
-      }
-
-      if (feasibility?.implementationRisks) {
-        h.addNewPage();
-        h.addTitle('13.3 Riesgos de Implementación', 2);
-        h.addTable(
-          ['Riesgo', 'Probabilidad', 'Mitigación'],
-          feasibility.implementationRisks.map(r => [r.risk, r.probability, r.mitigation]),
-          [55, 30, 85]
-        );
-      }
-
-      // 14. CLIENTES POTENCIALES
-      h.addNewPage();
-      setProgress(65);
-      
-      h.addMainTitle('14. CLIENTES POTENCIALES');
-
-      analysis.potentialClients.forEach((client, index) => {
-        h.checkPageBreak(55);
-        h.addTitle(`14.${index + 1} ${client.sector}`, 2);
-        
-        h.addTable(['Característica', 'Detalle'], [
-          ['Tipo de Cliente', client.clientType],
-          ['Región Objetivo', client.region],
-          ['Valor Estimado', client.estimatedValue],
-          ['Tiempo Implementación', client.implementationTime],
-          ['Clientes Potenciales', String(client.potentialClients || 'N/A')],
-          ['Penetración Mercado', client.marketPenetration || 'N/A'],
-        ], [65, 105]);
-        
-        if (client.customizations.length > 0) {
-          h.addSubtitle('Personalizaciones Requeridas');
-          client.customizations.forEach(c => h.addBullet(c, 3, '⚙'));
-        }
-        h.currentY += 5;
-      });
-
-      // 15. TEMENOS
+      // 13. CONCLUSIONES BCP Y GAP ANALYSIS
       h.addNewPage();
       setProgress(75);
       
-      h.addMainTitle('15. INTEGRACIÓN TEMENOS T24/TRANSACT');
+      h.addMainTitle('13. CONCLUSIONES BCP Y GAP ANALYSIS');
 
-      const temenos = analysis.temenosIntegration;
-      if (temenos) {
-        h.addParagraph(temenos.overview || 'Integración bidireccional con Temenos T24/Transact para sincronización de clientes, cuentas y transacciones.');
-        
-        h.addTitle('15.1 Métodos de Integración', 2);
-        if (temenos.integrationMethods) {
-          h.addTable(
-            ['Método', 'Complejidad', 'Timeline', 'Coste'],
-            temenos.integrationMethods.map(m => [
-              m.method,
-              m.complexity,
-              m.timeline,
-              m.cost
-            ]),
-            [45, 35, 40, 50]
-          );
-        }
+      h.addHighlightBox('ESTADO DE MADUREZ',
+        `El CRM Bancario Creand alcanza un nivel de madurez operativa de ${analysis.gapAnalysis?.overallMaturity || 4.2}/5, con planes de continuidad de negocio que superan los requisitos DORA y capacidad de recuperación en menos de 4 horas.`,
+        'success');
 
-        h.addTitle('15.2 Conectores API', 2);
-        if (temenos.apiConnectors) {
-          h.addTable(
-            ['Conector', 'Propósito', 'Protocolo'],
-            temenos.apiConnectors.map(a => [a.name, a.purpose, a.protocol]),
-            [45, 85, 40]
-          );
-        }
+      h.addTitle('13.1 Fortalezas de Continuidad', 2);
+      const bcpStrengths = [
+        'RTO de 4 horas cumple con requisitos DORA para entidades financieras',
+        'RPO de 1 hora garantiza pérdida mínima de datos transaccionales',
+        'Backups automatizados cada hora con retención de 90 días',
+        'Replicación geográfica multi-región (EU + backup DR)',
+        'Equipo de recuperación definido con responsabilidades claras',
+        'Procedimientos de failover probados trimestralmente',
+        '7 escenarios de desastre documentados con planes de respuesta',
+      ];
+      bcpStrengths.forEach(s => h.addBullet(s, 0, '✓'));
 
-        h.addNewPage();
-        h.addTitle('15.3 Flujos de Datos', 2);
-        if (temenos.dataFlows) {
-          h.addTable(
-            ['Flujo', 'Dirección', 'Frecuencia'],
-            temenos.dataFlows.map(f => [f.flow, f.direction, f.frequency]),
-            [70, 50, 50]
-          );
-        }
+      h.addNewPage();
+      h.addTitle('13.2 Próximos Pasos Recomendados', 2);
+      const nextSteps = [
+        { step: 'Certificación ISO 22301', timeline: 'Q1 2025', priority: 'Alta' },
+        { step: 'Pruebas de DR trimestrales documentadas', timeline: 'Continuo', priority: 'Alta' },
+        { step: 'Automatización runbooks de recuperación', timeline: 'Q2 2025', priority: 'Media' },
+        { step: 'Integración con SOC 24/7', timeline: 'Q2 2025', priority: 'Media' },
+        { step: 'Simulacros de crisis con stakeholders', timeline: 'Semestral', priority: 'Alta' },
+      ];
+      
+      h.addTable(
+        ['Acción', 'Timeline', 'Prioridad'],
+        nextSteps.map(s => [s.step, s.timeline, s.priority]),
+        [90, 40, 40]
+      );
 
-        h.addTitle('15.4 Pasos de Implementación', 2);
-        if (temenos.implementationSteps) {
-          h.addTable(
-            ['Paso', 'Descripción', 'Duración'],
-            temenos.implementationSteps.map(s => [
-              String(s.step),
-              s.description,
-              s.duration
-            ]),
-            [20, 110, 40]
-          );
-        }
-
-        h.addHighlightBox('Coste Estimado Integración', temenos.estimatedCost || '40.000€ - 70.000€', 'warning');
-        
-        h.addSubtitle('Prerequisitos');
-        const prereqs = temenos.prerequisites || ['Acceso API Temenos', 'Documentación técnica', 'Entorno sandbox'];
-        prereqs.forEach(p => h.addBullet(p, 3, '📋'));
-      }
-
-      // 16. COSTES
+      // ANEXO A: CHECKLIST BCP
       h.addNewPage();
       setProgress(85);
       
-      h.addMainTitle('16. DESGLOSE COMPLETO DE COSTES');
-
-      const costs = analysis.projectCosts;
-      if (costs) {
-        h.addTitle('16.1 Costes de Desarrollo', 2);
-        if (costs.developmentCost) {
-          h.addTable(
-            ['Categoría', 'Horas', 'Tarifa', 'Total'],
-            costs.developmentCost.map(c => [
-              c.category,
-              `${c.hours.toLocaleString()} h`,
-              `${c.rate}€/h`,
-              `${c.total.toLocaleString()}€`
-            ]),
-            [60, 35, 35, 40]
-          );
-        }
-
-        h.addTitle('16.2 Costes de Infraestructura', 2);
-        if (costs.infrastructureCost) {
-          h.addTable(
-            ['Item', 'Mensual', 'Anual'],
-            costs.infrastructureCost.map(c => [
-              c.item,
-              `${c.monthly.toLocaleString()}€`,
-              `${c.annual.toLocaleString()}€`
-            ]),
-            [70, 50, 50]
-          );
-        }
-
-        h.addNewPage();
-        h.addTitle('16.3 Costes Operativos', 2);
-        if (costs.operationalCost) {
-          h.addTable(
-            ['Item', 'Mensual', 'Descripción'],
-            costs.operationalCost.map(c => [
-              c.item,
-              `${c.monthly.toLocaleString()}€`,
-              c.description
-            ]),
-            [50, 40, 80]
-          );
-        }
-
-        h.addHighlightBox('RESUMEN COSTES', 
-          `Año 1: ${costs.totalFirstYear?.toLocaleString() || '210.000'}€ | 5 Años: ${costs.totalFiveYears?.toLocaleString() || '497.000'}€`,
-          'info');
-      } else {
-        h.addTable(
-          ['Categoría', 'Año 1', 'Año 5 (Total)'],
-          [
-            ['Desarrollo/Personalización', '150.000€', '180.000€'],
-            ['Infraestructura Cloud', '12.000€', '72.000€'],
-            ['Licencias Software', '8.000€', '45.000€'],
-            ['Soporte y Mantenimiento', '25.000€', '140.000€'],
-            ['Formación', '15.000€', '25.000€'],
-            ['TOTAL', '210.000€', '462.000€'],
-          ],
-          [70, 50, 50]
-        );
-      }
-
-      // 17. CONCLUSIONES
-      h.addNewPage();
-      setProgress(92);
+      h.addMainTitle('ANEXO A: CHECKLIST BCP');
       
-      h.addMainTitle('17. CONCLUSIONES Y RECOMENDACIONES');
+      const bcpChecklist = [
+        { category: 'Infraestructura', items: ['Redundancia de servidores ✓', 'Load balancer configurado ✓', 'Failover automático ✓', 'Monitorización 24/7 ✓'] },
+        { category: 'Datos', items: ['Backups cada hora ✓', 'Replicación cross-region ✓', 'Encriptación en reposo ✓', 'Retención 90 días ✓'] },
+        { category: 'Seguridad', items: ['WAF activo ✓', 'DDoS protection ✓', 'Logs centralizados ✓', 'Alertas configuradas ✓'] },
+        { category: 'Procesos', items: ['Runbooks documentados ✓', 'Equipo DR asignado ✓', 'Comunicación de crisis ✓', 'Pruebas trimestrales ✓'] },
+      ];
 
-      h.addHighlightBox('CONCLUSIÓN PRINCIPAL',
-        `CRM Bancario Creand v${analysis.version} representa una oportunidad comercial significativa. Con un TCO 60-80% inferior a Salesforce FSC o SAP, cumplimiento ISO 27001 del ${analysis.iso27001Compliance?.overallScore || 92}%, y tiempo de implementación 4-6x más rápido que alternativas enterprise.`,
+      bcpChecklist.forEach(cat => {
+        h.checkPageBreak(30);
+        h.addSubtitle(cat.category);
+        cat.items.forEach(item => h.addBullet(item, 3, item.includes('✓') ? '✓' : '○'));
+        h.currentY += 3;
+      });
+
+      // ANEXO B: MATRIZ DE RIESGOS
+      h.addNewPage();
+      h.addMainTitle('ANEXO B: MATRIZ DE RIESGOS');
+      
+      const riskMatrix = [
+        { risk: 'Fallo datacenter primario', probability: 'Baja', impact: 'Alto', mitigation: 'Failover automático a DR', status: 'Mitigado' },
+        { risk: 'Ataque DDoS', probability: 'Media', impact: 'Medio', mitigation: 'CloudFlare + rate limiting', status: 'Mitigado' },
+        { risk: 'Ransomware', probability: 'Baja', impact: 'Alto', mitigation: 'Backups aislados + EDR', status: 'Mitigado' },
+        { risk: 'Pérdida de datos', probability: 'Muy Baja', impact: 'Crítico', mitigation: 'RPO 1h + replicación', status: 'Mitigado' },
+        { risk: 'Fallo de proveedor cloud', probability: 'Muy Baja', impact: 'Alto', mitigation: 'Multi-cloud ready', status: 'Planificado' },
+        { risk: 'Error humano', probability: 'Media', impact: 'Medio', mitigation: 'IaC + code review', status: 'Mitigado' },
+      ];
+
+      h.addTable(
+        ['Riesgo', 'Probabilidad', 'Impacto', 'Mitigación', 'Estado'],
+        riskMatrix.map(r => [r.risk, r.probability, r.impact, r.mitigation, r.status]),
+        [45, 25, 22, 50, 28]
+      );
+
+      h.addHighlightBox('NIVEL DE RIESGO RESIDUAL', 
+        'BAJO - Todos los riesgos críticos identificados tienen planes de mitigación implementados o planificados para Q2 2025.',
         'success');
 
-      h.addTitle('17.1 Fortalezas Principales', 2);
-      const strengths = [
-        'Único CRM bancario con contabilidad PGC Andorra/España nativa',
-        'ISO 27001 Annex A: 92% controles implementados out-of-box',
-        'DORA/NIS2 compliance con 7 stress tests automatizados',
-        'WebAuthn/FIDO2 + Step-Up + AMA PSD3 integrados nativamente',
-        '1/5 del TCO respecto a competidores enterprise',
-        'Implementación en 3-6 meses vs 18-36 meses',
-        'Propiedad total del código sin vendor lock-in',
-      ];
-      strengths.forEach(s => h.addBullet(s, 0, '✓'));
-
-      h.addTitle('17.2 Próximos Pasos Recomendados', 2);
-      const nextSteps = [
-        'Iniciar proceso certificación ISO 27001 (Q1 2025)',
-        'Desarrollar app móvil iOS/Android (Q2 2025)',
-        'Piloto con 1-2 cooperativas de crédito España',
-        'Establecer partnership con consultoría bancaria',
-        'Iniciar expansión Luxemburgo (banca privada)',
-      ];
-      nextSteps.forEach((s, i) => h.addBullet(`${i + 1}. ${s}`, 0, '→'));
-
-      // ANEXOS
+      // PÁGINA FINAL PARTE 3
       h.addNewPage();
-      h.addMainTitle('ANEXO A: FUNCIONALIDADES PENDIENTES');
-      analysis.pendingFeatures.forEach((feature, index) => {
-        h.addBullet(`${index + 1}. ${feature}`, 0, '○');
-      });
-
-      h.addNewPage();
-      h.addMainTitle('ANEXO B: HALLAZGOS DE SEGURIDAD');
-      analysis.securityFindings.forEach((finding, index) => {
-        h.addBullet(`${index + 1}. ${finding}`, 0, finding.includes('✅') ? '✓' : '*');
-      });
-
-      // PÁGINA FINAL
-      h.addNewPage();
-      setProgress(98);
+      setProgress(95);
       
       doc.setFillColor(50, 100, 170);
       doc.rect(0, 0, h.pageWidth, 70, 'F');
@@ -2074,20 +1787,19 @@ security/
       doc.setFont('helvetica', 'normal');
       doc.text(`Documentación Comercial Exhaustiva v${analysis.version}`, h.pageWidth / 2, 42, { align: 'center' });
       doc.setFontSize(10);
-      doc.text('Parte 3 de 3 - BCP, Gap Analysis, Estrategia', h.pageWidth / 2, 55, { align: 'center' });
+      doc.text('Parte 3 de 7 - BCP, Gap Analysis, Roadmap', h.pageWidth / 2, 55, { align: 'center' });
 
       h.currentY = 85;
       doc.setTextColor(0, 0, 0);
       
-      h.addSubtitle('Resumen Completo del Documento (3 Partes)');
+      h.addSubtitle('Resumen Parte 3');
       const summaryData = [
-        ['Versión:', analysis.version],
-        ['Módulos:', String(analysis.modules.length)],
-        ['Coste Desarrollo:', `${analysis.marketValuation.totalCost.toLocaleString()}€`],
-        ['Valor Mercado:', `${(analysis.marketValuation.marketValue || analysis.marketValuation.totalCost * 2.5).toLocaleString()}€`],
-        ['ISO 27001 Score:', `${analysis.iso27001Compliance?.overallScore || 92}%`],
-        ['Competidores Analizados:', String(analysis.competitorComparison.length)],
-        ['Clientes Potenciales:', String(analysis.potentialClients.length)],
+        ['RTO Objetivo:', '4 horas'],
+        ['RPO Objetivo:', '1 hora'],
+        ['Madurez Global:', `${analysis.gapAnalysis?.overallMaturity || 4.2}/5`],
+        ['Escenarios DR:', `${analysis.bcpPlan?.disasterScenarios?.length || 7} documentados`],
+        ['Gaps Críticos:', `${analysis.gapAnalysis?.criticalGaps?.length || 5} identificados`],
+        ['Roadmap 2025:', '4 trimestres planificados'],
       ];
       
       summaryData.forEach(([label, value]) => {
@@ -2095,22 +1807,22 @@ security/
         doc.setFontSize(9);
         doc.text(label, h.margin, h.currentY);
         doc.setFont('helvetica', 'normal');
-        doc.text(value, h.margin + 55, h.currentY);
+        doc.text(value, h.margin + 50, h.currentY);
         h.currentY += 6;
       });
 
       h.currentY += 10;
-      h.addHighlightBox('DOCUMENTACIÓN COMPLETA', 
-        'Las 4 partes del documento contienen más de 140 páginas de análisis exhaustivo: Parte 1 (Resumen, Módulos, Valoración), Parte 2 (TCO, ISO 27001, Normativas), Parte 3 (BCP, Gap Analysis, Mercados Globales), Parte 4 (Marketing y Ventas).',
+      h.addHighlightBox('DOCUMENTACIÓN COMPLETA (7 PARTES)', 
+        'Parte 1: Resumen Ejecutivo y Módulos | Parte 2: TCO, ISO 27001, Normativas | Parte 3: BCP, Gap Analysis, Roadmap | Parte 4: Mercados Globales | Parte 5: Marketing y Ventas | Parte 6: Propuesta Comercial | Parte 7: Revenue Intelligence',
         'success');
 
       setProgress(100);
       
-      const filename = `CRM_Creand_PARTE3_BCP_Mercados_v${analysis.version}_${new Date().toISOString().split('T')[0]}.pdf`;
+      const filename = `CRM_Creand_PARTE3_BCP_GapAnalysis_v${analysis.version}_${new Date().toISOString().split('T')[0]}.pdf`;
       doc.save(filename);
       
       toast.success('Parte 3 generada', {
-        description: `${h.pageNumber} páginas - BCP, Gap Analysis, Mercados Globales`,
+        description: `${h.pageNumber} páginas - BCP, Gap Analysis, Roadmap 2025`,
       });
 
     } catch (error) {
@@ -2131,7 +1843,7 @@ security/
       const doc = new jsPDF('p', 'mm', 'a4');
       const h = createPDFHelpers(doc, analysis);
 
-      // PORTADA PARTE 4
+      // PORTADA PARTE 5
       setProgress(5);
       doc.setFillColor(139, 69, 19);
       doc.rect(0, 0, h.pageWidth, 90, 'F');
@@ -2144,7 +1856,7 @@ security/
       doc.text('CRM BANCARIO CREAND', h.pageWidth / 2, 35, { align: 'center' });
       
       doc.setFontSize(14);
-      doc.text('PARTE 4: Plan de Marketing y Ventas', h.pageWidth / 2, 50, { align: 'center' });
+      doc.text('PARTE 5: Plan de Marketing y Ventas', h.pageWidth / 2, 50, { align: 'center' });
       
       doc.setFontSize(18);
       doc.text(`Versión ${analysis.version}`, h.pageWidth / 2, 75, { align: 'center' });
@@ -2158,14 +1870,14 @@ security/
 
       h.addPageNumber();
 
-      // ÍNDICE PARTE 4
+      // ÍNDICE PARTE 5
       h.addNewPage();
       setProgress(8);
       
       doc.setFontSize(18);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(139, 69, 19);
-      doc.text('ÍNDICE - PARTE 4', h.pageWidth / 2, h.currentY, { align: 'center' });
+      doc.text('ÍNDICE - PARTE 5', h.pageWidth / 2, h.currentY, { align: 'center' });
       h.currentY += 12;
       doc.setTextColor(0, 0, 0);
 
@@ -2561,16 +2273,16 @@ security/
 
       setProgress(100);
       
-      const filename = `CRM_Creand_PARTE4_Marketing_Ventas_v${analysis.version}_${new Date().toISOString().split('T')[0]}.pdf`;
+      const filename = `CRM_Creand_PARTE5_Marketing_Ventas_v${analysis.version}_${new Date().toISOString().split('T')[0]}.pdf`;
       doc.save(filename);
       
-      toast.success('Parte 4 generada', {
+      toast.success('Parte 5 generada', {
         description: `${h.pageNumber} páginas - Plan de Marketing y Ventas`,
       });
 
     } catch (error) {
-      console.error('Error generating Part 4:', error);
-      toast.error('Error al generar Parte 4');
+      console.error('Error generating Part 5:', error);
+      toast.error('Error al generar Parte 5');
     } finally {
       setGeneratingPart(null);
     }
@@ -2592,7 +2304,7 @@ security/
       const costs = analysis.projectCosts;
       const clientSavings = analysis.clientCostSavings || getDefaultCostSavings();
 
-      // PORTADA PARTE 5
+      // PORTADA PARTE 6
       setProgress(2);
       doc.setFillColor(155, 89, 182);
       doc.rect(0, 0, h.pageWidth, 90, 'F');
@@ -2605,7 +2317,7 @@ security/
       doc.text('OBELIXIA - CRM BANCARIO', h.pageWidth / 2, 35, { align: 'center' });
       
       doc.setFontSize(14);
-      doc.text('PARTE 5: Propuesta Comercial Ejecutiva', h.pageWidth / 2, 50, { align: 'center' });
+      doc.text('PARTE 6: Propuesta Comercial Ejecutiva', h.pageWidth / 2, 50, { align: 'center' });
       
       doc.setFontSize(18);
       doc.text(`Version ${analysis.version}`, h.pageWidth / 2, 75, { align: 'center' });
@@ -2628,14 +2340,14 @@ security/
 
       h.addPageNumber();
 
-      // ÍNDICE PARTE 5
+      // ÍNDICE PARTE 6
       h.addNewPage();
       setProgress(4);
       
       doc.setFontSize(18);
       doc.setFont('helvetica', 'bold');
       doc.setTextColor(155, 89, 182);
-      doc.text('INDICE - PARTE 5: PROPUESTA COMERCIAL', h.pageWidth / 2, h.currentY, { align: 'center' });
+      doc.text('INDICE - PARTE 6: PROPUESTA COMERCIAL', h.pageWidth / 2, h.currentY, { align: 'center' });
       h.currentY += 15;
       doc.setTextColor(0, 0, 0);
 
@@ -3472,10 +3184,10 @@ security/
 
       setProgress(100);
       
-      const filename = `ObelixIA_PARTE5_Propuesta_Comercial_v${analysis.version}_${new Date().toISOString().split('T')[0]}.pdf`;
+      const filename = `ObelixIA_PARTE6_Propuesta_Comercial_v${analysis.version}_${new Date().toISOString().split('T')[0]}.pdf`;
       doc.save(filename);
       
-      toast.success('Parte 5 generada exitosamente', {
+      toast.success('Parte 6 generada exitosamente', {
         description: `${h.pageNumber} paginas - Propuesta Comercial Ejecutiva`,
       });
 
@@ -5006,7 +4718,7 @@ security/
         {/* Hint when not analyzed */}
         {!isAnalysisComplete && !analyzing && (
           <p className="text-xs text-muted-foreground text-center">
-            Haz clic en "Analitzar Codi" para habilitar la generación de los 5 PDFs comerciales
+            Haz clic en "Analitzar Codi" para habilitar la generación de los 7 PDFs comerciales
           </p>
         )}
       </CardContent>
