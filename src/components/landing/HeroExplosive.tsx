@@ -5,7 +5,7 @@ import { ArrowRight, Play, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ObelixiaLogo } from '@/components/ui/ObelixiaLogo';
 import DemoRequestModal from '@/components/store/DemoRequestModal';
-import brainLogo from '@/assets/brain-logo.png';
+import brainLogo from '@/assets/brain-logo-cutout.png';
 
 export const HeroExplosive: React.FC = () => {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
@@ -101,58 +101,70 @@ export const HeroExplosive: React.FC = () => {
                 {/* Brain with active synapses and pulse waves - oval shape */}
                 <span 
                   className="relative inline-flex items-center justify-center"
-                  style={{ width: '1.1em', height: '0.9em' }}
+                  style={{ width: '1.15em', height: '0.85em' }}
                 >
                   {/* Pulse wave effects - oval */}
-                  <span className="absolute inset-[-25%] animate-[ping_1.5s_ease-out_infinite] bg-violet-500/25" style={{ borderRadius: '50%' }} />
-                  <span className="absolute inset-[-20%] animate-[ping_1.8s_ease-out_infinite_0.3s] bg-blue-500/20" style={{ borderRadius: '50%' }} />
-                  <span className="absolute inset-[-15%] animate-[ping_2s_ease-out_infinite_0.6s] bg-violet-400/15" style={{ borderRadius: '50%' }} />
+                  <span className="absolute inset-[-25%] animate-[ping_1.5s_ease-out_infinite] bg-violet-500/25" style={{ borderRadius: '9999px' }} />
+                  <span className="absolute inset-[-20%] animate-[ping_1.8s_ease-out_infinite_0.3s] bg-blue-500/20" style={{ borderRadius: '9999px' }} />
+                  <span className="absolute inset-[-15%] animate-[ping_2s_ease-out_infinite_0.6s] bg-violet-400/15" style={{ borderRadius: '9999px' }} />
+
                   {/* Outer Glow Layer */}
                   <span 
-                    className="absolute inset-[-40%] blur-2xl opacity-70 animate-pulse"
+                    className="absolute inset-[-45%] blur-2xl opacity-70 animate-pulse"
                     style={{
                       background: 'radial-gradient(ellipse at center, rgba(139,92,246,0.6) 0%, rgba(59,130,246,0.4) 40%, transparent 70%)',
                     }}
                   />
-                  {/* Brain Image - oval, showing full brain */}
-                  <img 
-                    src={brainLogo}
-                    alt="ObelixIA Brain"
-                    className="relative w-full h-full object-contain"
-                    style={{ 
-                      filter: 'drop-shadow(0 0 15px rgba(139,92,246,0.7)) drop-shadow(0 0 30px rgba(59,130,246,0.5))',
+
+                  {/* Brain Image (full) with logo-style soft mask (no square background) */}
+                  <span
+                    className="relative w-full h-full overflow-hidden"
+                    style={{
+                      borderRadius: '9999px',
+                      maskImage: 'radial-gradient(ellipse 120% 100% at center, black 62%, transparent 92%)',
+                      WebkitMaskImage: 'radial-gradient(ellipse 120% 100% at center, black 62%, transparent 92%)',
                     }}
-                  />
-                  {/* Synapsis sparkles overlay */}
-                  <svg viewBox="0 0 100 80" className="absolute inset-0 w-full h-full pointer-events-none">
-                    <defs>
-                      <filter id="hero-sparkle-glow" x="-400%" y="-400%" width="900%" height="900%">
-                        <feGaussianBlur stdDeviation="2" result="blur"/>
-                        <feMerge>
-                          <feMergeNode in="blur"/>
-                          <feMergeNode in="blur"/>
-                          <feMergeNode in="SourceGraphic"/>
-                        </feMerge>
-                      </filter>
-                    </defs>
-                    {[
-                      { cx: 25, cy: 25, delay: 0 },
-                      { cx: 50, cy: 20, delay: 0.3 },
-                      { cx: 75, cy: 28, delay: 0.6 },
-                      { cx: 35, cy: 45, delay: 0.2 },
-                      { cx: 65, cy: 50, delay: 0.5 },
-                      { cx: 30, cy: 60, delay: 0.8 },
-                      { cx: 55, cy: 55, delay: 0.4 },
-                      { cx: 70, cy: 40, delay: 0.7 },
-                    ].map((node, i) => (
-                      <g key={i} filter="url(#hero-sparkle-glow)">
-                        <circle cx={node.cx} cy={node.cy} r="1.5" fill="white">
-                          <animate attributeName="opacity" values="0.2;1;0.2" dur="1.5s" begin={`${node.delay}s`} repeatCount="indefinite" />
-                          <animate attributeName="r" values="1;2.5;1" dur="1.5s" begin={`${node.delay}s`} repeatCount="indefinite" />
-                        </circle>
-                      </g>
-                    ))}
-                  </svg>
+                  >
+                    <img 
+                      src={brainLogo}
+                      alt="Cerebro ObelixIA con sinapsis"
+                      className="w-full h-full object-contain"
+                      style={{
+                        filter: 'drop-shadow(0 0 15px rgba(139,92,246,0.7)) drop-shadow(0 0 30px rgba(59,130,246,0.5))',
+                      }}
+                    />
+
+                    {/* Synapsis sparkles overlay */}
+                    <svg viewBox="0 0 100 80" className="absolute inset-0 w-full h-full pointer-events-none">
+                      <defs>
+                        <filter id="hero-sparkle-glow" x="-400%" y="-400%" width="900%" height="900%">
+                          <feGaussianBlur stdDeviation="2" result="blur" />
+                          <feMerge>
+                            <feMergeNode in="blur" />
+                            <feMergeNode in="blur" />
+                            <feMergeNode in="SourceGraphic" />
+                          </feMerge>
+                        </filter>
+                      </defs>
+                      {[
+                        { cx: 25, cy: 25, delay: 0 },
+                        { cx: 50, cy: 20, delay: 0.3 },
+                        { cx: 75, cy: 28, delay: 0.6 },
+                        { cx: 35, cy: 45, delay: 0.2 },
+                        { cx: 65, cy: 50, delay: 0.5 },
+                        { cx: 30, cy: 60, delay: 0.8 },
+                        { cx: 55, cy: 55, delay: 0.4 },
+                        { cx: 70, cy: 40, delay: 0.7 },
+                      ].map((node, i) => (
+                        <g key={i} filter="url(#hero-sparkle-glow)">
+                          <circle cx={node.cx} cy={node.cy} r="1.5" fill="white">
+                            <animate attributeName="opacity" values="0.2;1;0.2" dur="1.5s" begin={`${node.delay}s`} repeatCount="indefinite" />
+                            <animate attributeName="r" values="1;2.5;1" dur="1.5s" begin={`${node.delay}s`} repeatCount="indefinite" />
+                          </circle>
+                        </g>
+                      ))}
+                    </svg>
+                  </span>
                 </span>
                 {/* Underline glow */}
                 <motion.span
