@@ -36,19 +36,6 @@ const RevenueIntelligenceHub: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Revenue Intelligence Hub</h1>
-          <p className="text-muted-foreground">
-            Centro unificado de inteligencia de ingresos con ML predictivo
-          </p>
-        </div>
-        <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 text-primary">
-          <Brain className="h-5 w-5" />
-          <span className="text-sm font-medium">AI-Powered Analytics</span>
-        </div>
-      </div>
-
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-4 lg:grid-cols-13 h-auto gap-1">
           {/* Phase 1-2 Tabs */}
