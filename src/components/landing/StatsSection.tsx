@@ -61,9 +61,9 @@ export const StatsSection: React.FC = () => {
             Métricas en tiempo real
           </span>
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Quem já usa ObelixIA{' '}
+            Quien ya usa ObelixIA{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-violet-400">
-              não volta atrás
+              no vuelve atrás
             </span>
           </h2>
         </motion.div>
