@@ -49,7 +49,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, show
       contactSection.scrollIntoView({ behavior: 'smooth' });
     } else {
       toast({
-        title: 'Solicitar cotización',
+        title: 'Solicitar presupuesto',
         description: `Contacte con nuestro equipo comercial para obtener un precio personalizado para ${module.module_name}`,
       });
     }
@@ -118,7 +118,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, show
         <div className="flex items-center justify-between pt-4 border-t border-slate-700/50">
           <div>
             <div className="text-lg font-semibold text-slate-300">Precio personalizado</div>
-            <div className="text-xs text-slate-500">Solicite cotización</div>
+            <div className="text-xs text-slate-500">Solicite presupuesto</div>
           </div>
           
           <div className="flex gap-2">

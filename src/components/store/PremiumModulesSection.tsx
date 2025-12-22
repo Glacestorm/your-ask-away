@@ -151,7 +151,7 @@ const PremiumModulesSection: React.FC = () => {
                 if (contact) contact.scrollIntoView({ behavior: 'smooth' });
               }}
             >
-              Solicitar Cotización Enterprise
+              Solicitar Presupuesto Enterprise
             </Button>
             <p className="text-sm text-slate-400 mt-4">Contacte con nuestro equipo para precio personalizado</p>
           </div>

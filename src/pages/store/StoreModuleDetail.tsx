@@ -72,7 +72,7 @@ const StoreModuleDetail: React.FC = () => {
   const handleRequestQuote = () => {
     // Scroll to contact section or show toast
     toast({
-      title: 'Solicitar cotización',
+      title: 'Solicitar presupuesto',
       description: `Contacte con nuestro equipo comercial para obtener un precio personalizado para ${module?.module_name}`,
     });
     // Navigate to store with contact section
@@ -313,7 +313,7 @@ const StoreModuleDetail: React.FC = () => {
               <CardContent className="p-6 space-y-6">
                 <div className="text-center">
                   <div className="text-2xl font-semibold text-slate-300 mb-1">Precio personalizado</div>
-                  <div className="text-slate-400">Solicite cotización</div>
+                  <div className="text-slate-400">Solicite presupuesto</div>
                 </div>
 
                 <Separator className="bg-slate-700" />
@@ -347,7 +347,7 @@ const StoreModuleDetail: React.FC = () => {
                   onClick={handleRequestQuote}
                 >
                   <MessageSquare className="w-5 h-5 mr-2" />
-                  Solicitar Cotización
+                  Solicitar Presupuesto
                 </Button>
 
                 <div className="text-center text-xs text-slate-500">
@@ -649,7 +649,7 @@ const StoreModuleDetail: React.FC = () => {
                       onClick={handleRequestQuote}
                       className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700"
                     >
-                      Solicitar Cotización Premium
+                      Solicitar Presupuesto Premium
                     </Button>
                   </div>
                 </CardContent>
