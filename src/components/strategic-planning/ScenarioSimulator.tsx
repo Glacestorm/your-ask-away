@@ -2,10 +2,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
-import { TrendingUp, TrendingDown, Minus, Sparkles } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Sparkles, FileDown, FileSpreadsheet } from 'lucide-react';
 import { useState } from 'react';
 import { useFinancialPlan } from '@/hooks/useStrategicPlanning';
 import { ScenarioCharts } from './ScenarioCharts';
+import { generateViabilityPDF, downloadPDF, printPDF } from './PDFGenerator';
+import { exportScenariosToExcel } from '@/lib/excelExport';
+import { toast } from 'sonner';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const SCENARIO_TYPES = {
   optimistic: { label: 'Optimista', icon: TrendingUp, color: 'text-green-500', multiplier: 1.2 },
@@ -74,6 +78,39 @@ export function ScenarioSimulator() {
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setCurrentPlan(null)}>Cambiar Plan</Button>
           <Button onClick={handleCreateScenarios} className="gap-2"><Sparkles className="h-4 w-4" /> Generar Escenarios</Button>
+          
+          {/* Export Dropdown */}
+          {scenarios.length > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="gap-2">
+                  <FileDown className="h-4 w-4" />
+                  Exportar
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => {
+                  const doc = generateViabilityPDF(currentPlan.plan_name, scenarios);
+                  downloadPDF(doc, `${currentPlan.plan_name}_Viabilidad.pdf`);
+                  toast.success('PDF descargado');
+                }}>
+                  <FileDown className="h-4 w-4 mr-2" /> Descargar PDF
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => {
+                  const doc = generateViabilityPDF(currentPlan.plan_name, scenarios);
+                  printPDF(doc);
+                }}>
+                  <FileDown className="h-4 w-4 mr-2" /> Imprimir PDF
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => {
+                  exportScenariosToExcel(currentPlan.plan_name, scenarios, years);
+                  toast.success('Excel descargado');
+                }}>
+                  <FileSpreadsheet className="h-4 w-4 mr-2" /> Exportar Excel
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
 

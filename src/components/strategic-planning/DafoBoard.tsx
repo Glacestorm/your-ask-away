@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Sparkles, Trash2, AlertTriangle, TrendingUp, ThumbsDown, ThumbsUp, Loader2, Check, X, FileDown } from 'lucide-react';
+import { Plus, Sparkles, Trash2, AlertTriangle, TrendingUp, ThumbsDown, ThumbsUp, Loader2, Check, X, FileDown, FileSpreadsheet } from 'lucide-react';
 import { useDafoAnalysis } from '@/hooks/useStrategicPlanning';
 import { useStrategicAI } from '@/hooks/useStrategicAI';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -12,6 +12,9 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { InfoTooltip, DAFO_TOOLTIPS } from '@/components/ui/info-tooltip';
 import { toast } from 'sonner';
+import { generateDafoPDF, downloadPDF, printPDF } from './PDFGenerator';
+import { exportDafoToExcel } from '@/lib/excelExport';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const CATEGORY_CONFIG = {
   strengths: { label: 'Fortalezas', icon: ThumbsUp, color: 'bg-green-500/10 border-green-500/30 text-green-700', tooltipKey: 'strengths' as const },
@@ -206,6 +209,37 @@ export function DafoBoard() {
             {isAILoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
             Generar con IA
           </Button>
+          
+          {/* Export Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <FileDown className="h-4 w-4" />
+                Exportar
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => {
+                const doc = generateDafoPDF(currentAnalysis.project_name, currentAnalysis.description || '', items);
+                downloadPDF(doc, `${currentAnalysis.project_name}_DAFO.pdf`);
+                toast.success('PDF descargado');
+              }}>
+                <FileDown className="h-4 w-4 mr-2" /> Descargar PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {
+                const doc = generateDafoPDF(currentAnalysis.project_name, currentAnalysis.description || '', items);
+                printPDF(doc);
+              }}>
+                <FileDown className="h-4 w-4 mr-2" /> Imprimir PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {
+                exportDafoToExcel(currentAnalysis.project_name, items);
+                toast.success('Excel descargado');
+              }}>
+                <FileSpreadsheet className="h-4 w-4 mr-2" /> Exportar Excel
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
