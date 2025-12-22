@@ -1774,6 +1774,162 @@ export type Database = {
           },
         ]
       }
+      business_dafo_analysis: {
+        Row: {
+          ai_generated: boolean | null
+          analysis_date: string | null
+          company_id: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          project_name: string
+          sector_key: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ai_generated?: boolean | null
+          analysis_date?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          project_name: string
+          sector_key?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ai_generated?: boolean | null
+          analysis_date?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          project_name?: string
+          sector_key?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_dafo_analysis_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_plan_evaluations: {
+        Row: {
+          ai_recommendations: Json | null
+          company_id: string | null
+          created_at: string | null
+          evaluation_date: string | null
+          evaluator_id: string | null
+          id: string
+          project_description: string | null
+          project_name: string
+          status: string | null
+          total_score: number | null
+          updated_at: string | null
+          viability_level: string | null
+        }
+        Insert: {
+          ai_recommendations?: Json | null
+          company_id?: string | null
+          created_at?: string | null
+          evaluation_date?: string | null
+          evaluator_id?: string | null
+          id?: string
+          project_description?: string | null
+          project_name: string
+          status?: string | null
+          total_score?: number | null
+          updated_at?: string | null
+          viability_level?: string | null
+        }
+        Update: {
+          ai_recommendations?: Json | null
+          company_id?: string | null
+          created_at?: string | null
+          evaluation_date?: string | null
+          evaluator_id?: string | null
+          id?: string
+          project_description?: string | null
+          project_name?: string
+          status?: string | null
+          total_score?: number | null
+          updated_at?: string | null
+          viability_level?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_plan_evaluations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_plan_sections: {
+        Row: {
+          ai_recommendations: Json | null
+          created_at: string | null
+          evaluation_id: string
+          id: string
+          notes: string | null
+          questions: Json | null
+          section_max_score: number | null
+          section_name: string
+          section_number: number
+          section_score: number | null
+          section_weight: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          ai_recommendations?: Json | null
+          created_at?: string | null
+          evaluation_id: string
+          id?: string
+          notes?: string | null
+          questions?: Json | null
+          section_max_score?: number | null
+          section_name: string
+          section_number: number
+          section_score?: number | null
+          section_weight?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          ai_recommendations?: Json | null
+          created_at?: string | null
+          evaluation_id?: string
+          id?: string
+          notes?: string | null
+          questions?: Json | null
+          section_max_score?: number | null
+          section_name?: string
+          section_number?: number
+          section_score?: number | null
+          section_weight?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_plan_sections_evaluation_id_fkey"
+            columns: ["evaluation_id"]
+            isOneToOne: false
+            referencedRelation: "business_plan_evaluations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_telemetry: {
         Row: {
           channel: string | null
@@ -6262,6 +6418,56 @@ export type Database = {
           },
         ]
       }
+      dafo_items: {
+        Row: {
+          action_plan: string | null
+          ai_suggestions: Json | null
+          category: string
+          concept: string | null
+          created_at: string | null
+          dafo_id: string
+          description: string
+          id: string
+          importance: number | null
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          action_plan?: string | null
+          ai_suggestions?: Json | null
+          category: string
+          concept?: string | null
+          created_at?: string | null
+          dafo_id: string
+          description: string
+          id?: string
+          importance?: number | null
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          action_plan?: string | null
+          ai_suggestions?: Json | null
+          category?: string
+          concept?: string | null
+          created_at?: string | null
+          dafo_id?: string
+          description?: string
+          id?: string
+          importance?: number | null
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dafo_items_dafo_id_fkey"
+            columns: ["dafo_id"]
+            isOneToOne: false
+            referencedRelation: "business_dafo_analysis"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       data_processing_consents: {
         Row: {
           consent_type: string
@@ -7537,6 +7743,162 @@ export type Database = {
           },
         ]
       }
+      financial_plan_accounts: {
+        Row: {
+          account_code: string
+          account_name: string
+          account_type: string
+          amount: number | null
+          created_at: string | null
+          formula: string | null
+          id: string
+          notes: string | null
+          parent_code: string | null
+          plan_id: string
+          sort_order: number | null
+          source: string | null
+          updated_at: string | null
+          year: number
+        }
+        Insert: {
+          account_code: string
+          account_name: string
+          account_type: string
+          amount?: number | null
+          created_at?: string | null
+          formula?: string | null
+          id?: string
+          notes?: string | null
+          parent_code?: string | null
+          plan_id: string
+          sort_order?: number | null
+          source?: string | null
+          updated_at?: string | null
+          year: number
+        }
+        Update: {
+          account_code?: string
+          account_name?: string
+          account_type?: string
+          amount?: number | null
+          created_at?: string | null
+          formula?: string | null
+          id?: string
+          notes?: string | null
+          parent_code?: string | null
+          plan_id?: string
+          sort_order?: number | null
+          source?: string | null
+          updated_at?: string | null
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_plan_accounts_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "financial_viability_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_plan_ratios: {
+        Row: {
+          benchmark_value: number | null
+          category: string | null
+          created_at: string | null
+          id: string
+          plan_id: string
+          ratio_key: string
+          ratio_name: string
+          ratio_value: number | null
+          status: string | null
+          year: number
+        }
+        Insert: {
+          benchmark_value?: number | null
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          plan_id: string
+          ratio_key: string
+          ratio_name: string
+          ratio_value?: number | null
+          status?: string | null
+          year: number
+        }
+        Update: {
+          benchmark_value?: number | null
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          plan_id?: string
+          ratio_key?: string
+          ratio_name?: string
+          ratio_value?: number | null
+          status?: string | null
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_plan_ratios_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "financial_viability_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_plan_variables: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          id: string
+          percentage: number | null
+          plan_id: string
+          unit: string | null
+          updated_at: string | null
+          value: number | null
+          variable_key: string
+          variable_name: string
+          year: number | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          percentage?: number | null
+          plan_id: string
+          unit?: string | null
+          updated_at?: string | null
+          value?: number | null
+          variable_key: string
+          variable_name: string
+          year?: number | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          percentage?: number | null
+          plan_id?: string
+          unit?: string | null
+          updated_at?: string | null
+          value?: number | null
+          variable_key?: string
+          variable_name?: string
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_plan_variables_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "financial_viability_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       financial_rag_conversations: {
         Row: {
           company_id: string | null
@@ -7607,6 +7969,71 @@ export type Database = {
           },
         ]
       }
+      financial_scenarios: {
+        Row: {
+          breakeven_year: number | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          irr: number | null
+          is_base_scenario: boolean | null
+          npv: number | null
+          payback_period: number | null
+          plan_id: string
+          projections: Json | null
+          scenario_name: string
+          scenario_type: string | null
+          summary_metrics: Json | null
+          updated_at: string | null
+          variables: Json | null
+        }
+        Insert: {
+          breakeven_year?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          irr?: number | null
+          is_base_scenario?: boolean | null
+          npv?: number | null
+          payback_period?: number | null
+          plan_id: string
+          projections?: Json | null
+          scenario_name: string
+          scenario_type?: string | null
+          summary_metrics?: Json | null
+          updated_at?: string | null
+          variables?: Json | null
+        }
+        Update: {
+          breakeven_year?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          irr?: number | null
+          is_base_scenario?: boolean | null
+          npv?: number | null
+          payback_period?: number | null
+          plan_id?: string
+          projections?: Json | null
+          scenario_name?: string
+          scenario_type?: string | null
+          summary_metrics?: Json | null
+          updated_at?: string | null
+          variables?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_scenarios_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "financial_viability_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       financial_statements_archive: {
         Row: {
           archived_at: string
@@ -7663,6 +8090,65 @@ export type Database = {
           },
           {
             foreignKeyName: "financial_statements_archive_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_viability_plans: {
+        Row: {
+          base_currency: string | null
+          company_id: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          last_sync_at: string | null
+          plan_name: string
+          projection_years: number | null
+          start_year: number
+          status: string | null
+          sync_source: string | null
+          synced_with_accounting: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          base_currency?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          last_sync_at?: string | null
+          plan_name: string
+          projection_years?: number | null
+          start_year: number
+          status?: string | null
+          sync_source?: string | null
+          synced_with_accounting?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          base_currency?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          last_sync_at?: string | null
+          plan_name?: string
+          projection_years?: number | null
+          start_year?: number
+          status?: string | null
+          sync_source?: string | null
+          synced_with_accounting?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_viability_plans_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
@@ -17175,6 +17661,48 @@ export type Database = {
           promo_code?: string
           valid_from?: string | null
           valid_until?: string | null
+        }
+        Relationships: []
+      }
+      strategic_ai_analyses: {
+        Row: {
+          analysis_type: string
+          confidence_score: number | null
+          created_at: string | null
+          created_by: string | null
+          entity_id: string
+          entity_type: string
+          id: string
+          input_data: Json | null
+          model_used: string | null
+          output_data: Json | null
+          user_feedback: string | null
+        }
+        Insert: {
+          analysis_type: string
+          confidence_score?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          input_data?: Json | null
+          model_used?: string | null
+          output_data?: Json | null
+          user_feedback?: string | null
+        }
+        Update: {
+          analysis_type?: string
+          confidence_score?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          input_data?: Json | null
+          model_used?: string | null
+          output_data?: Json | null
+          user_feedback?: string | null
         }
         Relationships: []
       }
