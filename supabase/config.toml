@@ -344,3 +344,6 @@ verify_jwt = true
 
 [functions.predict-expansion]
 verify_jwt = true
+
+[functions.strategic-ai]
+verify_jwt = true

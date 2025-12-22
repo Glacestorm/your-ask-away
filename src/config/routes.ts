@@ -91,6 +91,9 @@ const RevenuePage = lazy(() => import('@/pages/revenue/RevenuePage'));
 const GISPage = lazy(() => import('@/pages/gis/GISPage'));
 const DocsPage = lazy(() => import('@/pages/docs/DocsPage'));
 
+// Strategic Planning
+const StrategicPlanningPage = lazy(() => import('@/pages/strategic-planning/index'));
+
 // Tipos
 export type RouteLayout = 'public' | 'dashboard' | 'minimal' | 'none';
 export type RoutePriority = 'high' | 'medium' | 'low';
@@ -209,6 +212,8 @@ export const dashboardRoutes: RouteConfig[] = [
   { path: '/revenue', component: RevenuePage, layout: 'none', priority: 'high', meta: { title: 'Revenue Intelligence', requiresAuth: true } },
   { path: '/gis', component: GISPage, layout: 'none', priority: 'high', meta: { title: 'GIS Territorial', requiresAuth: true } },
   { path: '/docs-ai', component: DocsPage, layout: 'none', priority: 'medium', meta: { title: 'Documentación AI', requiresAuth: true } },
+  // Strategic Planning
+  { path: '/strategic-planning', component: StrategicPlanningPage, layout: 'none', priority: 'high', meta: { title: 'Planificación Estratégica', requiresAuth: true } },
 ];
 
 // ============================================
