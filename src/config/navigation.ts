@@ -75,9 +75,11 @@ export const headerNavigation: NavItem[] = [
     href: '/store',
     icon: Package,
     children: [
-      { id: 'modules', label: 'Módulos', href: '/store/modules', icon: Package },
-      { id: 'bundles', label: 'Packs', href: '/store#bundles', icon: Boxes },
-      { id: 'pricing', label: 'Precios', href: '/precios', icon: DollarSign },
+      { id: 'modules', label: 'Módulos', href: '/store/modules', icon: Package, description: 'Explora todos los módulos' },
+      { id: 'bundles', label: 'Packs', href: '/store#bundles', icon: Boxes, description: 'Soluciones completas' },
+      { id: 'pricing', label: 'Precios', href: '/precios', icon: DollarSign, description: 'Planes y tarifas' },
+      { id: 'demo', label: 'Demo', href: '/demo', icon: Rocket, description: 'Prueba interactiva' },
+      { id: 'deployment', label: 'Despliegue', href: '/store/deployment', icon: Globe, description: 'Opciones de instalación' },
     ],
   },
   {
