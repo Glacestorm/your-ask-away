@@ -5,6 +5,7 @@ import { ArrowRight, Play, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ObelixiaLogo } from '@/components/ui/ObelixiaLogo';
 import DemoRequestModal from '@/components/store/DemoRequestModal';
+import brainLogo from '@/assets/brain-logo.png';
 
 export const HeroExplosive: React.FC = () => {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
@@ -106,7 +107,7 @@ export const HeroExplosive: React.FC = () => {
                   <span className="absolute inset-[-20%] animate-[ping_2s_ease-out_infinite] rounded-full bg-violet-500/30" />
                   <span className="absolute inset-[-15%] animate-[ping_2.5s_ease-out_infinite_0.3s] rounded-full bg-blue-500/25" />
                   <img 
-                    src="/lovable-uploads/e1eeb994-a574-4a24-adb3-4f0d35b5d23b.png" 
+                    src={brainLogo}
                     alt="ObelixIA Brain"
                     className="relative w-full h-full object-contain drop-shadow-[0_0_12px_rgba(139,92,246,0.8)]"
                   />
