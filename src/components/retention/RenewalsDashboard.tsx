@@ -9,35 +9,33 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { 
   Calendar, 
   DollarSign, 
-  TrendingUp, 
-  TrendingDown,
+  TrendingUp,
   AlertTriangle,
-  CheckCircle2,
   Clock,
   Search,
   Filter,
   RefreshCw,
   Phone,
   Mail,
-  FileText,
   Target,
   Users,
   ArrowUpRight,
   BarChart3
 } from "lucide-react";
 import { useRenewalManagement, RenewalOpportunity } from "@/hooks/useRenewalManagement";
-import { format, differenceInDays, addDays } from "date-fns";
+import { format, differenceInDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 export function RenewalsDashboard() {
-  const { renewals, dashboardData, isLoading, refetch, updateRenewal, addActivity, completeRenewal, predictRenewal } = useRenewalManagement();
+  const { renewals, dashboardData, isLoading, refetch, updateRenewal, addActivity, predictRenewal } = useRenewalManagement();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [selectedRenewal, setSelectedRenewal] = useState<RenewalOpportunity | null>(null);
 
   const filteredRenewals = renewals?.filter(renewal => {
-    const matchesSearch = renewal.company_name?.toLowerCase().includes(searchTerm.toLowerCase());
+    const companyName = renewal.company?.name || '';
+    const matchesSearch = companyName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === "all" || renewal.status === filterStatus;
     return matchesSearch && matchesStatus;
   }) || [];
@@ -61,9 +59,10 @@ export function RenewalsDashboard() {
       const prediction = await predictRenewal(renewal.company_id);
       if (prediction) {
         toast.success(`Prediction updated: ${prediction.predicted_outcome} (${prediction.confidence}% confidence)`);
-        await updateRenewal(renewal.id, { 
+        await updateRenewal({ 
+          id: renewal.id,
           predicted_outcome: prediction.predicted_outcome,
-          probability: prediction.probability
+          renewal_probability: prediction.probability
         });
       }
     } catch (error) {
@@ -71,7 +70,7 @@ export function RenewalsDashboard() {
     }
   };
 
-  const handleLogActivity = async (renewal: RenewalOpportunity, type: string) => {
+  const handleLogActivity = async (renewal: RenewalOpportunity, type: 'call' | 'email' | 'meeting' | 'demo' | 'proposal' | 'contract_sent' | 'negotiation') => {
     try {
       await addActivity({
         renewal_id: renewal.id,
@@ -103,7 +102,7 @@ export function RenewalsDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Upcoming (30 days)</p>
-                <p className="text-3xl font-bold">{dashboardData.upcomingRenewals30Days}</p>
+                <p className="text-3xl font-bold">{dashboardData.upcoming30?.length || 0}</p>
               </div>
               <div className="p-3 bg-blue-100 rounded-full">
                 <Calendar className="h-6 w-6 text-blue-600" />
@@ -117,7 +116,7 @@ export function RenewalsDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">At Risk</p>
-                <p className="text-3xl font-bold text-red-500">{dashboardData.atRiskRenewals}</p>
+                <p className="text-3xl font-bold text-red-500">{dashboardData.atRisk?.length || 0}</p>
               </div>
               <div className="p-3 bg-red-100 rounded-full">
                 <AlertTriangle className="h-6 w-6 text-red-600" />
@@ -145,7 +144,7 @@ export function RenewalsDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Renewal Rate</p>
-                <p className="text-3xl font-bold text-green-500">{dashboardData.renewalRate}%</p>
+                <p className="text-3xl font-bold text-green-500">{dashboardData.renewalRate?.toFixed(1) || 0}%</p>
               </div>
               <div className="p-3 bg-green-100 rounded-full">
                 <TrendingUp className="h-6 w-6 text-green-600" />
@@ -176,9 +175,9 @@ export function RenewalsDashboard() {
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="upcoming">Upcoming</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
-                <SelectItem value="at_risk">At Risk</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="in_negotiation">In Negotiation</SelectItem>
+                <SelectItem value="renewed">Renewed</SelectItem>
+                <SelectItem value="churned">Churned</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" onClick={() => refetch()}>
@@ -214,13 +213,17 @@ export function RenewalsDashboard() {
             <div className="space-y-3">
               {filteredRenewals.map((renewal) => {
                 const daysToRenewal = differenceInDays(new Date(renewal.renewal_date), new Date());
+                const companyName = renewal.company?.name || 'Unknown Company';
+                const probability = renewal.renewal_probability || 0;
+                const mrr = renewal.current_mrr || 0;
+                const assigneeName = renewal.assignee?.full_name || 'Unassigned';
                 
                 return (
                   <Card 
                     key={renewal.id} 
                     className={cn(
                       "hover:shadow-md transition-all cursor-pointer",
-                      renewal.status === 'at_risk' && "border-l-4 border-l-red-500"
+                      (renewal.predicted_outcome === 'churn' || renewal.predicted_outcome === 'downgrade') && "border-l-4 border-l-red-500"
                     )}
                     onClick={() => setSelectedRenewal(renewal)}
                   >
@@ -228,8 +231,8 @@ export function RenewalsDashboard() {
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-3">
-                            <h3 className="font-semibold text-lg">{renewal.company_name}</h3>
-                            <Badge variant={renewal.status === 'at_risk' ? 'destructive' : 'secondary'}>
+                            <h3 className="font-semibold text-lg">{companyName}</h3>
+                            <Badge variant={renewal.predicted_outcome === 'churn' ? 'destructive' : 'secondary'}>
                               {renewal.status}
                             </Badge>
                             {renewal.predicted_outcome && (
@@ -242,12 +245,12 @@ export function RenewalsDashboard() {
                             <div className="flex items-center gap-1">
                               <DollarSign className="h-4 w-4" />
                               <span className="font-medium text-foreground">
-                                {formatCurrency(renewal.mrr)}/mo
+                                {formatCurrency(mrr)}/mo
                               </span>
                             </div>
                             <div className="flex items-center gap-1">
                               <Users className="h-4 w-4" />
-                              <span>{renewal.assigned_to_name || 'Unassigned'}</span>
+                              <span>{assigneeName}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               <Clock className="h-4 w-4" />
@@ -265,11 +268,11 @@ export function RenewalsDashboard() {
                             <p className="text-xs text-muted-foreground mb-1">Probability</p>
                             <div className="flex items-center gap-2">
                               <Progress 
-                                value={renewal.probability} 
+                                value={probability} 
                                 className="w-20 h-2"
                               />
-                              <span className={cn("font-bold", getProbabilityColor(renewal.probability))}>
-                                {renewal.probability}%
+                              <span className={cn("font-bold", getProbabilityColor(probability))}>
+                                {probability}%
                               </span>
                             </div>
                           </div>
@@ -340,8 +343,10 @@ export function RenewalsDashboard() {
                   {filteredRenewals
                     .sort((a, b) => new Date(a.renewal_date).getTime() - new Date(b.renewal_date).getTime())
                     .slice(0, 10)
-                    .map((renewal, idx) => {
+                    .map((renewal) => {
                       const daysToRenewal = differenceInDays(new Date(renewal.renewal_date), new Date());
+                      const companyName = renewal.company?.name || 'Unknown Company';
+                      const mrr = renewal.current_mrr || 0;
                       
                       return (
                         <div key={renewal.id} className="relative pl-10 pb-6">
@@ -354,13 +359,13 @@ export function RenewalsDashboard() {
                           <div className="bg-card p-4 rounded-lg border">
                             <div className="flex items-center justify-between">
                               <div>
-                                <p className="font-semibold">{renewal.company_name}</p>
+                                <p className="font-semibold">{companyName}</p>
                                 <p className="text-sm text-muted-foreground">
                                   {format(new Date(renewal.renewal_date), 'MMMM d, yyyy')} 
-                                  {' '}• {formatCurrency(renewal.mrr)}/mo
+                                  {' '}• {formatCurrency(mrr)}/mo
                                 </p>
                               </div>
-                              <Badge variant={renewal.status === 'at_risk' ? 'destructive' : 'outline'}>
+                              <Badge variant={(renewal.predicted_outcome === 'churn' || renewal.predicted_outcome === 'downgrade') ? 'destructive' : 'outline'}>
                                 {daysToRenewal} days
                               </Badge>
                             </div>
@@ -416,31 +421,25 @@ export function RenewalsDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-500" />
-                      Likely to Renew
-                    </span>
-                    <span className="font-semibold">
-                      {filteredRenewals.filter(r => r.probability >= 70).length}
+                  <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                    <span className="text-green-700">Likely to Renew</span>
+                    <span className="font-semibold text-green-600">
+                      {renewals?.filter(r => (r.renewal_probability || 0) >= 70).length || 0}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2">
-                      <AlertTriangle className="h-4 w-4 text-yellow-500" />
-                      Needs Attention
-                    </span>
-                    <span className="font-semibold">
-                      {filteredRenewals.filter(r => r.probability >= 40 && r.probability < 70).length}
+                  <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                    <span className="text-yellow-700">Uncertain</span>
+                    <span className="font-semibold text-yellow-600">
+                      {renewals?.filter(r => {
+                        const prob = r.renewal_probability || 0;
+                        return prob >= 40 && prob < 70;
+                      }).length || 0}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-2">
-                      <TrendingDown className="h-4 w-4 text-red-500" />
-                      High Churn Risk
-                    </span>
-                    <span className="font-semibold text-red-500">
-                      {filteredRenewals.filter(r => r.probability < 40).length}
+                  <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                    <span className="text-red-700">At Risk</span>
+                    <span className="font-semibold text-red-600">
+                      {renewals?.filter(r => (r.renewal_probability || 0) < 40).length || 0}
                     </span>
                   </div>
                 </div>

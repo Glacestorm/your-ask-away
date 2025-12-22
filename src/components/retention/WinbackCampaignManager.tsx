@@ -14,25 +14,17 @@ import {
   Users,
   Mail,
   Gift,
-  TrendingUp,
   DollarSign,
   Target,
   Zap,
-  BarChart3,
   Play,
   Pause,
-  CheckCircle2,
-  Clock,
-  XCircle,
   RefreshCw,
-  ChevronRight,
   Send,
-  MessageSquare,
   ArrowUpRight,
   Percent
 } from "lucide-react";
 import { useWinbackCampaigns, WinbackCampaign } from "@/hooks/useWinbackCampaigns";
-import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -40,12 +32,8 @@ export function WinbackCampaignManager() {
   const { 
     campaigns, 
     isLoading, 
-    refetch, 
     createCampaign, 
     updateCampaign,
-    findChurnedCompanies,
-    getCampaignStats,
-    getABTestResults,
     isCreating 
   } = useWinbackCampaigns();
   
@@ -54,9 +42,8 @@ export function WinbackCampaignManager() {
   const [newCampaign, setNewCampaign] = useState({
     name: '',
     description: '',
-    offer_type: 'discount',
+    offer_type: 'discount' as 'discount' | 'free_trial' | 'feature_unlock' | 'custom',
     offer_value: '',
-    offer_description: '',
     target_segment: 'all_churned',
     email_subject: '',
     email_body: ''
@@ -73,13 +60,10 @@ export function WinbackCampaignManager() {
         name: newCampaign.name,
         description: newCampaign.description,
         offer_type: newCampaign.offer_type,
-        offer_value: parseFloat(newCampaign.offer_value),
-        offer_description: newCampaign.offer_description,
-        target_segment: newCampaign.target_segment,
-        email_subject: newCampaign.email_subject,
-        email_body: newCampaign.email_body,
+        offer_details: { value: parseFloat(newCampaign.offer_value), description: newCampaign.email_subject },
+        target_segment: { type: newCampaign.target_segment },
         status: 'draft',
-        ab_test_enabled: false
+        is_ab_test: false
       });
       
       toast.success("Campaign created successfully");
@@ -89,7 +73,6 @@ export function WinbackCampaignManager() {
         description: '',
         offer_type: 'discount',
         offer_value: '',
-        offer_description: '',
         target_segment: 'all_churned',
         email_subject: '',
         email_body: ''
@@ -102,7 +85,7 @@ export function WinbackCampaignManager() {
   const handleToggleCampaignStatus = async (campaign: WinbackCampaign) => {
     const newStatus = campaign.status === 'active' ? 'paused' : 'active';
     try {
-      await updateCampaign(campaign.id, { status: newStatus });
+      await updateCampaign({ id: campaign.id, status: newStatus });
       toast.success(`Campaign ${newStatus === 'active' ? 'activated' : 'paused'}`);
     } catch (error) {
       toast.error("Failed to update campaign status");
@@ -112,8 +95,8 @@ export function WinbackCampaignManager() {
   const getOfferIcon = (offerType: string) => {
     switch (offerType) {
       case 'discount': return <Percent className="h-4 w-4" />;
-      case 'free_months': return <Gift className="h-4 w-4" />;
-      case 'upgrade': return <ArrowUpRight className="h-4 w-4" />;
+      case 'free_trial': return <Gift className="h-4 w-4" />;
+      case 'feature_unlock': return <ArrowUpRight className="h-4 w-4" />;
       case 'custom': return <Zap className="h-4 w-4" />;
       default: return <Gift className="h-4 w-4" />;
     }
@@ -139,7 +122,6 @@ export function WinbackCampaignManager() {
   };
 
   // Calculate totals from campaigns
-  const totalRecovered = campaigns?.reduce((sum, c) => sum + (c.recovered_mrr || 0), 0) || 0;
   const totalParticipants = campaigns?.reduce((sum, c) => sum + (c.participants_count || 0), 0) || 0;
   const totalConverted = campaigns?.reduce((sum, c) => sum + (c.conversions_count || 0), 0) || 0;
   const avgConversionRate = totalParticipants > 0 ? (totalConverted / totalParticipants) * 100 : 0;
@@ -196,8 +178,8 @@ export function WinbackCampaignManager() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">MRR Recovered</p>
-                <p className="text-3xl font-bold text-green-600">{formatCurrency(totalRecovered)}</p>
+                <p className="text-sm text-muted-foreground">Total Conversions</p>
+                <p className="text-3xl font-bold text-green-600">{totalConverted}</p>
               </div>
               <div className="p-3 bg-green-100 rounded-full">
                 <DollarSign className="h-6 w-6 text-green-600" />
@@ -270,15 +252,15 @@ export function WinbackCampaignManager() {
                     <Label htmlFor="offer_type">Offer Type</Label>
                     <Select 
                       value={newCampaign.offer_type}
-                      onValueChange={(value) => setNewCampaign({ ...newCampaign, offer_type: value })}
+                      onValueChange={(value) => setNewCampaign({ ...newCampaign, offer_type: value as 'discount' | 'free_trial' | 'feature_unlock' | 'custom' })}
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="discount">Discount (%)</SelectItem>
-                        <SelectItem value="free_months">Free Months</SelectItem>
-                        <SelectItem value="upgrade">Free Upgrade</SelectItem>
+                        <SelectItem value="free_trial">Free Trial</SelectItem>
+                        <SelectItem value="feature_unlock">Feature Unlock</SelectItem>
                         <SelectItem value="custom">Custom Offer</SelectItem>
                       </SelectContent>
                     </Select>
@@ -293,16 +275,6 @@ export function WinbackCampaignManager() {
                       placeholder={newCampaign.offer_type === 'discount' ? '20' : '2'}
                     />
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="offer_description">Offer Description</Label>
-                  <Input
-                    id="offer_description"
-                    value={newCampaign.offer_description}
-                    onChange={(e) => setNewCampaign({ ...newCampaign, offer_description: e.target.value })}
-                    placeholder="Get 20% off for 3 months when you return!"
-                  />
                 </div>
 
                 <div className="space-y-2">
@@ -385,7 +357,7 @@ export function WinbackCampaignManager() {
                               <div>
                                 <h3 className="font-semibold">{campaign.name}</h3>
                                 <p className="text-sm text-muted-foreground">
-                                  {campaign.offer_description || `${campaign.offer_type}: ${campaign.offer_value}`}
+                                  {campaign.description || `${campaign.offer_type}: ${(campaign.offer_details as any)?.value || ''}`}
                                 </p>
                               </div>
                             </div>
@@ -399,12 +371,6 @@ export function WinbackCampaignManager() {
                             <div className="text-center">
                               <p className="text-xs text-muted-foreground">Conversions</p>
                               <p className="font-semibold text-green-600">{campaign.conversions_count || 0}</p>
-                            </div>
-                            <div className="text-center">
-                              <p className="text-xs text-muted-foreground">Recovered</p>
-                              <p className="font-semibold text-green-600">
-                                {formatCurrency(campaign.recovered_mrr || 0)}
-                              </p>
                             </div>
                             <Badge className={getStatusColor(campaign.status)}>
                               {campaign.status}
@@ -428,16 +394,21 @@ export function WinbackCampaignManager() {
 
                         {/* Progress bar for active campaigns */}
                         {campaign.status === 'active' && campaign.participants_count > 0 && (
-                          <div className="mt-4 pt-4 border-t">
-                            <div className="flex items-center justify-between text-sm mb-2">
+                          <div className="mt-4">
+                            <div className="flex items-center justify-between text-sm mb-1">
                               <span className="text-muted-foreground">Conversion Progress</span>
                               <span className="font-medium">
-                                {((campaign.conversions_count || 0) / campaign.participants_count * 100).toFixed(1)}%
+                                {campaign.participants_count > 0 
+                                  ? ((campaign.conversions_count || 0) / campaign.participants_count * 100).toFixed(1)
+                                  : 0}%
                               </span>
                             </div>
                             <Progress 
-                              value={(campaign.conversions_count || 0) / campaign.participants_count * 100} 
-                              className="h-2"
+                              value={campaign.participants_count > 0 
+                                ? ((campaign.conversions_count || 0) / campaign.participants_count * 100)
+                                : 0
+                              } 
+                              className="h-2" 
                             />
                           </div>
                         )}
@@ -448,69 +419,67 @@ export function WinbackCampaignManager() {
               )}
             </TabsContent>
 
-            <TabsContent value="active">
-              <div className="space-y-4">
-                {campaigns?.filter(c => c.status === 'active').length === 0 ? (
-                  <div className="text-center py-12">
-                    <Play className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold">No active campaigns</h3>
-                    <p className="text-muted-foreground">Activate a campaign to start recovering customers.</p>
-                  </div>
-                ) : (
-                  campaigns?.filter(c => c.status === 'active').map((campaign) => (
-                    <Card key={campaign.id} className="border-l-4 border-l-green-500">
+            <TabsContent value="active" className="space-y-4">
+              {campaigns?.filter(c => c.status === 'active').length === 0 ? (
+                <div className="text-center py-12">
+                  <Play className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold">No active campaigns</h3>
+                  <p className="text-muted-foreground">Activate a campaign to start recovering churned customers.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {campaigns?.filter(c => c.status === 'active').map((campaign) => (
+                    <Card key={campaign.id} className="hover:shadow-md transition-shadow">
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
-                          <div>
-                            <h3 className="font-semibold">{campaign.name}</h3>
-                            <p className="text-sm text-muted-foreground">
-                              Running since {campaign.start_date ? format(new Date(campaign.start_date), 'MMM d, yyyy') : 'N/A'}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-4">
-                            <div className="text-right">
-                              <p className="text-sm text-muted-foreground">Live Performance</p>
-                              <p className="text-lg font-bold text-green-600">
-                                {formatCurrency(campaign.recovered_mrr || 0)} recovered
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-green-100 rounded-lg">
+                              {getOfferIcon(campaign.offer_type)}
+                            </div>
+                            <div>
+                              <h3 className="font-semibold">{campaign.name}</h3>
+                              <p className="text-sm text-muted-foreground">
+                                {campaign.participants_count || 0} participants • {campaign.conversions_count || 0} conversions
                               </p>
                             </div>
-                            <Button variant="outline" size="sm">
-                              <BarChart3 className="h-4 w-4 mr-2" />
-                              View Details
-                            </Button>
                           </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleToggleCampaignStatus(campaign)}
+                          >
+                            <Pause className="h-4 w-4 mr-2" />
+                            Pause
+                          </Button>
                         </div>
                       </CardContent>
                     </Card>
-                  ))
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
             </TabsContent>
 
-            <TabsContent value="analytics">
+            <TabsContent value="analytics" className="space-y-4">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Campaign Performance</CardTitle>
+                    <CardTitle>Campaign Performance</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       {campaigns?.slice(0, 5).map((campaign) => (
-                        <div key={campaign.id} className="flex items-center gap-4">
-                          <div className="flex-1">
-                            <p className="font-medium text-sm">{campaign.name}</p>
-                            <Progress 
-                              value={campaign.participants_count ? 
-                                (campaign.conversions_count || 0) / campaign.participants_count * 100 : 0
-                              } 
-                              className="h-2 mt-1"
-                            />
+                        <div key={campaign.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                          <span className="font-medium truncate flex-1">{campaign.name}</span>
+                          <div className="flex items-center gap-4">
+                            <div className="text-right">
+                              <p className="text-xs text-muted-foreground">Conversion</p>
+                              <p className="font-semibold">
+                                {campaign.participants_count > 0 
+                                  ? ((campaign.conversions_count || 0) / campaign.participants_count * 100).toFixed(1)
+                                  : 0}%
+                              </p>
+                            </div>
                           </div>
-                          <span className="text-sm font-semibold">
-                            {campaign.participants_count ? 
-                              ((campaign.conversions_count || 0) / campaign.participants_count * 100).toFixed(0) : 0
-                            }%
-                          </span>
                         </div>
                       ))}
                     </div>
@@ -519,44 +488,35 @@ export function WinbackCampaignManager() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Recovery by Offer Type</CardTitle>
+                    <CardTitle>Offer Type Performance</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                         <div className="flex items-center gap-2">
-                          <Percent className="h-4 w-4 text-blue-500" />
+                          <Percent className="h-4 w-4" />
                           <span>Discount Offers</span>
                         </div>
                         <span className="font-semibold">
-                          {formatCurrency(
-                            campaigns?.filter(c => c.offer_type === 'discount')
-                              .reduce((sum, c) => sum + (c.recovered_mrr || 0), 0) || 0
-                          )}
+                          {campaigns?.filter(c => c.offer_type === 'discount').reduce((sum, c) => sum + (c.conversions_count || 0), 0) || 0} conversions
                         </span>
                       </div>
                       <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                         <div className="flex items-center gap-2">
-                          <Gift className="h-4 w-4 text-purple-500" />
-                          <span>Free Months</span>
+                          <Gift className="h-4 w-4" />
+                          <span>Free Trial Offers</span>
                         </div>
                         <span className="font-semibold">
-                          {formatCurrency(
-                            campaigns?.filter(c => c.offer_type === 'free_months')
-                              .reduce((sum, c) => sum + (c.recovered_mrr || 0), 0) || 0
-                          )}
+                          {campaigns?.filter(c => c.offer_type === 'free_trial').reduce((sum, c) => sum + (c.conversions_count || 0), 0) || 0} conversions
                         </span>
                       </div>
                       <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                         <div className="flex items-center gap-2">
-                          <ArrowUpRight className="h-4 w-4 text-green-500" />
-                          <span>Upgrades</span>
+                          <ArrowUpRight className="h-4 w-4" />
+                          <span>Feature Unlock Offers</span>
                         </div>
                         <span className="font-semibold">
-                          {formatCurrency(
-                            campaigns?.filter(c => c.offer_type === 'upgrade')
-                              .reduce((sum, c) => sum + (c.recovered_mrr || 0), 0) || 0
-                          )}
+                          {campaigns?.filter(c => c.offer_type === 'feature_unlock').reduce((sum, c) => sum + (c.conversions_count || 0), 0) || 0} conversions
                         </span>
                       </div>
                     </div>

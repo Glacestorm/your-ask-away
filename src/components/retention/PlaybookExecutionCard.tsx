@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { 
   Play, 
@@ -55,11 +54,6 @@ export function PlaybookExecutionCard({ execution, onComplete }: PlaybookExecuti
     try {
       const stepsData = await fetchPlaybookSteps(execution.playbook_id);
       setSteps(stepsData || []);
-      
-      // Parse step executions from execution data
-      if (execution.step_executions) {
-        setStepExecutions(execution.step_executions as unknown as PlaybookStepExecution[]);
-      }
     } catch (error) {
       console.error('Error loading steps:', error);
     } finally {
@@ -86,7 +80,10 @@ export function PlaybookExecutionCard({ execution, onComplete }: PlaybookExecuti
 
   const handleCompleteStep = async (stepId: string) => {
     try {
-      await completeStep(execution.id, stepId, stepNotes[stepId]);
+      await completeStep({ 
+        stepExecutionId: stepId, 
+        notes: stepNotes[stepId] 
+      });
       toast.success("Step completed");
       loadSteps();
       
@@ -100,7 +97,10 @@ export function PlaybookExecutionCard({ execution, onComplete }: PlaybookExecuti
 
   const handleSkipStep = async (stepId: string) => {
     try {
-      await skipStep(execution.id, stepId, stepNotes[stepId] || 'Skipped');
+      await skipStep({ 
+        stepExecutionId: stepId, 
+        reason: stepNotes[stepId] || 'Skipped' 
+      });
       toast.success("Step skipped");
       loadSteps();
     } catch (error) {
@@ -110,7 +110,10 @@ export function PlaybookExecutionCard({ execution, onComplete }: PlaybookExecuti
 
   const handleTogglePause = async () => {
     try {
-      await toggleExecution(execution.id);
+      await toggleExecution({ 
+        executionId: execution.id, 
+        action: execution.status === 'paused' ? 'resume' : 'pause' 
+      });
       toast.success(execution.status === 'paused' ? 'Playbook resumed' : 'Playbook paused');
     } catch (error) {
       toast.error("Failed to toggle playbook");
@@ -154,16 +157,14 @@ export function PlaybookExecutionCard({ execution, onComplete }: PlaybookExecuti
     }
   };
 
-  // Calculate SLA status
-  const slaHoursRemaining = execution.expected_completion 
-    ? differenceInHours(new Date(execution.expected_completion), new Date())
-    : null;
+  // Get playbook name from the execution
+  const playbookName = execution.playbook?.name || 'Playbook';
+  const companyName = execution.company?.name || 'Unknown Company';
 
   return (
     <Card className={cn(
       "transition-all",
-      execution.status === 'paused' && "opacity-75",
-      execution.sla_status === 'breached' && "border-l-4 border-l-red-500"
+      execution.status === 'paused' && "opacity-75"
     )}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
@@ -179,21 +180,9 @@ export function PlaybookExecutionCard({ execution, onComplete }: PlaybookExecuti
                <CheckCircle2 className="h-5 w-5 text-blue-600" />}
             </div>
             <div>
-              <CardTitle className="text-base">{execution.playbook_name}</CardTitle>
+              <CardTitle className="text-base">{playbookName}</CardTitle>
               <CardDescription className="flex items-center gap-2">
-                {execution.company_name}
-                {execution.sla_status === 'at_risk' && (
-                  <Badge variant="outline" className="text-yellow-600 border-yellow-600">
-                    <AlertTriangle className="h-3 w-3 mr-1" />
-                    SLA at risk
-                  </Badge>
-                )}
-                {execution.sla_status === 'breached' && (
-                  <Badge variant="destructive">
-                    <AlertTriangle className="h-3 w-3 mr-1" />
-                    SLA breached
-                  </Badge>
-                )}
+                {companyName}
               </CardDescription>
             </div>
           </div>
@@ -226,23 +215,6 @@ export function PlaybookExecutionCard({ execution, onComplete }: PlaybookExecuti
           </div>
           <Progress value={progress} className="h-2" />
         </div>
-
-        {/* SLA Timer */}
-        {slaHoursRemaining !== null && execution.status === 'active' && (
-          <div className={cn(
-            "mt-3 p-2 rounded-lg flex items-center justify-between text-sm",
-            slaHoursRemaining <= 0 ? 'bg-red-50 text-red-700' :
-            slaHoursRemaining <= 24 ? 'bg-yellow-50 text-yellow-700' : 'bg-green-50 text-green-700'
-          )}>
-            <span className="flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              SLA Deadline
-            </span>
-            <span className="font-medium">
-              {slaHoursRemaining <= 0 ? 'Overdue' : `${slaHoursRemaining}h remaining`}
-            </span>
-          </div>
-        )}
       </CardHeader>
 
       <CardContent>
@@ -279,22 +251,22 @@ export function PlaybookExecutionCard({ execution, onComplete }: PlaybookExecuti
                             "font-medium",
                             status === 'skipped' && "line-through text-muted-foreground"
                           )}>
-                            {step.step_name}
+                            {step.title}
                           </span>
                           <Badge variant="outline" className="text-xs">
-                            {getActionTypeIcon(step.action_type)}
-                            <span className="ml-1">{step.action_type}</span>
+                            {getActionTypeIcon(step.step_type)}
+                            <span className="ml-1">{step.step_type}</span>
                           </Badge>
                         </div>
-                        {step.delay_hours > 0 && status === 'pending' && (
+                        {step.wait_days > 0 && status === 'pending' && (
                           <p className="text-xs text-muted-foreground">
-                            Wait {step.delay_hours}h after previous step
+                            Wait {step.wait_days} days after previous step
                           </p>
                         )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {step.is_required && (
+                      {step.required && (
                         <Badge variant="outline" className="text-xs">Required</Badge>
                       )}
                       {isExpanded ? (
@@ -313,12 +285,12 @@ export function PlaybookExecutionCard({ execution, onComplete }: PlaybookExecuti
                         </p>
                       )}
 
-                      {step.action_template && (
+                      {step.action_config && Object.keys(step.action_config).length > 0 && (
                         <div className="bg-muted/50 p-3 rounded-lg text-sm mb-3">
-                          <p className="font-medium mb-1">Template:</p>
-                          <p className="text-muted-foreground whitespace-pre-wrap">
-                            {step.action_template}
-                          </p>
+                          <p className="font-medium mb-1">Configuration:</p>
+                          <pre className="text-muted-foreground whitespace-pre-wrap text-xs">
+                            {JSON.stringify(step.action_config, null, 2)}
+                          </pre>
                         </div>
                       )}
 
@@ -338,7 +310,7 @@ export function PlaybookExecutionCard({ execution, onComplete }: PlaybookExecuti
                               <CheckCircle2 className="h-4 w-4 mr-2" />
                               Complete Step
                             </Button>
-                            {!step.is_required && (
+                            {!step.required && (
                               <Button 
                                 variant="outline"
                                 onClick={() => handleSkipStep(step.id)}
