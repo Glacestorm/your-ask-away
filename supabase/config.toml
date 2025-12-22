@@ -1,5 +1,8 @@
 project_id = "avaugfnqvvqcilhiudlf"
 
+[functions.web-market-research]
+verify_jwt = true
+
 [functions.audit-web-performance]
 verify_jwt = true
 

@@ -47,7 +47,7 @@ interface CompetitorComparison {
   marketShare?: string;
   pros: string[];
   cons: string[];
-  comparisonVsCreand?: string;
+  comparisonVsObelixia?: string;
   usedByBanks?: string[];
 }
 
@@ -104,7 +104,7 @@ interface FeasibilityAnalysis {
 interface ClientCostSavings {
   clientType: string;
   currentCost: number;
-  creandCost: number;
+  obelixiaCost: number;
   savings: number;
   savingsPercentage: number;
   breakEvenMonths: number;
@@ -439,11 +439,12 @@ export const DynamicTechnicalDocGenerator = () => {
   const [analysis, setAnalysis] = useState<CodebaseAnalysis | null>(null);
   const [analyzeSteps, setAnalyzeSteps] = useState<GenerationStep[]>([
     { id: 'connect', name: 'Conectando Gemini 2.5', completed: false },
-    { id: 'scan', name: 'Escaneando código', completed: false },
-    { id: 'modules', name: 'Analizando módulos', completed: false },
-    { id: 'security', name: 'Evaluando seguridad', completed: false },
-    { id: 'compliance', name: 'ISO 27001/DORA', completed: false },
-    { id: 'valuation', name: 'Valoración económica', completed: false },
+    { id: 'scan', name: 'Escaneando 220+ componentes', completed: false },
+    { id: 'functions', name: 'Analizando 72+ Edge Functions', completed: false },
+    { id: 'sectors', name: 'Evaluando 8 sectores + 26 CNAE', completed: false },
+    { id: 'market', name: 'Investigando mercado web', completed: false },
+    { id: 'security', name: 'Verificando 114 controles ISO', completed: false },
+    { id: 'valuation', name: 'Valoracion multi-sector', completed: false },
   ]);
 
   const updateAnalyzeStep = (stepId: string) => {
@@ -545,7 +546,38 @@ security/
     }
   };
 
-  // Helper functions for PDF generation
+  // Helper functions for PDF generation with text sanitization
+  const sanitizeText = (text: string): string => {
+    if (!text) return '';
+    return text
+      .replace(/[\u2018\u2019]/g, "'")
+      .replace(/[\u201C\u201D]/g, '"')
+      .replace(/\u2013/g, '-')
+      .replace(/\u2014/g, '--')
+      .replace(/\u2026/g, '...')
+      .replace(/\u00A0/g, ' ')
+      .replace(/[\u00E0\u00E1\u00E2\u00E3\u00E4\u00E5]/g, 'a')
+      .replace(/[\u00C0\u00C1\u00C2\u00C3\u00C4\u00C5]/g, 'A')
+      .replace(/[\u00E8\u00E9\u00EA\u00EB]/g, 'e')
+      .replace(/[\u00C8\u00C9\u00CA\u00CB]/g, 'E')
+      .replace(/[\u00EC\u00ED\u00EE\u00EF]/g, 'i')
+      .replace(/[\u00CC\u00CD\u00CE\u00CF]/g, 'I')
+      .replace(/[\u00F2\u00F3\u00F4\u00F5\u00F6]/g, 'o')
+      .replace(/[\u00D2\u00D3\u00D4\u00D5\u00D6]/g, 'O')
+      .replace(/[\u00F9\u00FA\u00FB\u00FC]/g, 'u')
+      .replace(/[\u00D9\u00DA\u00DB\u00DC]/g, 'U')
+      .replace(/\u00F1/g, 'n')
+      .replace(/\u00D1/g, 'N')
+      .replace(/\u00E7/g, 'c')
+      .replace(/\u00C7/g, 'C')
+      .replace(/\u20AC/g, 'EUR')
+      .replace(/\u2022/g, '-')
+      .replace(/\u2192/g, '->')
+      .replace(/\u2713/g, '[OK]')
+      .replace(/\u2717/g, '[X]')
+      .replace(/[^\x00-\x7F]/g, '');
+  };
+
   const createPDFHelpers = (doc: jsPDF, codebaseAnalysis: CodebaseAnalysis) => {
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
@@ -553,6 +585,9 @@ security/
     const contentWidth = pageWidth - (margin * 2);
     let currentY = margin;
     let pageNumber = 1;
+
+    // Set default font to times for better Unicode support
+    doc.setFont('times', 'normal');
 
     const addNewPage = () => {
       doc.addPage();
@@ -564,9 +599,9 @@ security/
     const addPageNumber = () => {
       doc.setFontSize(8);
       doc.setTextColor(120, 120, 120);
-      doc.text(`Página ${pageNumber}`, pageWidth - margin, pageHeight - 8, { align: 'right' });
+      doc.text(`Pagina ${pageNumber}`, pageWidth - margin, pageHeight - 8, { align: 'right' });
       doc.setFontSize(7);
-      doc.text(`CRM Bancario Creand - v${codebaseAnalysis.version} - ${new Date().toLocaleDateString('es-ES')}`, margin, pageHeight - 8);
+      doc.text(sanitizeText(`ObelixIA CRM Universal - v${codebaseAnalysis.version} - ${new Date().toLocaleDateString('es-ES')}`), margin, pageHeight - 8);
       doc.setTextColor(0, 0, 0);
     };
 
@@ -581,16 +616,16 @@ security/
     const addMainTitle = (text: string) => {
       checkPageBreak(20);
       doc.setFontSize(16);
-      doc.setFont('helvetica', 'bold');
+      doc.setFont('times', 'bold');
       doc.setTextColor(15, 50, 120);
-      doc.text(text, margin, currentY);
+      doc.text(sanitizeText(text), margin, currentY);
       currentY += 3;
       doc.setDrawColor(15, 50, 120);
       doc.setLineWidth(0.8);
       doc.line(margin, currentY, pageWidth - margin, currentY);
       currentY += 10;
       doc.setTextColor(0, 0, 0);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont('times', 'normal');
     };
 
     const addTitle = (text: string, level: number = 1) => {
@@ -598,29 +633,29 @@ security/
       const sizes = [15, 12, 11, 10];
       const colors: [number, number, number][] = [[15, 50, 120], [30, 80, 150], [50, 100, 170], [70, 120, 180]];
       doc.setFontSize(sizes[level - 1] || 10);
-      doc.setFont('helvetica', 'bold');
+      doc.setFont('times', 'bold');
       doc.setTextColor(colors[level - 1][0], colors[level - 1][1], colors[level - 1][2]);
-      doc.text(text, margin, currentY);
+      doc.text(sanitizeText(text), margin, currentY);
       currentY += level === 1 ? 10 : 7;
       doc.setTextColor(0, 0, 0);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont('times', 'normal');
     };
 
     const addSubtitle = (text: string) => {
       checkPageBreak(12);
       doc.setFontSize(10);
-      doc.setFont('helvetica', 'bold');
+      doc.setFont('times', 'bold');
       doc.setTextColor(40, 60, 90);
-      doc.text(text, margin, currentY);
+      doc.text(sanitizeText(text), margin, currentY);
       currentY += 6;
       doc.setTextColor(0, 0, 0);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont('times', 'normal');
     };
 
     const addParagraph = (text: string, indent: number = 0) => {
       doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      const lines = doc.splitTextToSize(text, contentWidth - indent);
+      doc.setFont('times', 'normal');
+      const lines = doc.splitTextToSize(sanitizeText(text), contentWidth - indent);
       lines.forEach((line: string) => {
         checkPageBreak(5);
         doc.text(line, margin + indent, currentY);
@@ -629,11 +664,11 @@ security/
       currentY += 2;
     };
 
-    const addBullet = (text: string, indent: number = 0, icon: string = '•') => {
+    const addBullet = (text: string, indent: number = 0, icon: string = '-') => {
       checkPageBreak(5);
       doc.setFontSize(9);
       doc.text(icon, margin + indent, currentY);
-      const lines = doc.splitTextToSize(text, contentWidth - indent - 6);
+      const lines = doc.splitTextToSize(sanitizeText(text), contentWidth - indent - 6);
       lines.forEach((line: string, i: number) => {
         doc.text(line, margin + indent + 4, currentY + (i * 4.5));
       });
@@ -651,14 +686,14 @@ security/
       const c = colors[type];
       doc.setFillColor(c.bg[0], c.bg[1], c.bg[2]);
       doc.setDrawColor(c.border[0], c.border[1], c.border[2]);
-      const lines = doc.splitTextToSize(text, contentWidth - 12);
+      const lines = doc.splitTextToSize(sanitizeText(text), contentWidth - 12);
       const boxHeight = (lines.length * 4.5) + 14;
       doc.roundedRect(margin, currentY - 2, contentWidth, boxHeight, 2, 2, 'FD');
       doc.setFontSize(9);
-      doc.setFont('helvetica', 'bold');
+      doc.setFont('times', 'bold');
       doc.setTextColor(c.title[0], c.title[1], c.title[2]);
-      doc.text(title, margin + 5, currentY + 4);
-      doc.setFont('helvetica', 'normal');
+      doc.text(sanitizeText(title), margin + 5, currentY + 4);
+      doc.setFont('times', 'normal');
       doc.setTextColor(50, 50, 50);
       doc.setFontSize(8);
       lines.forEach((line: string, i: number) => {
@@ -676,21 +711,21 @@ security/
       doc.setFillColor(15, 50, 120);
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(7);
-      doc.setFont('helvetica', 'bold');
+      doc.setFont('times', 'bold');
       let xPos = margin;
       doc.rect(margin, currentY - 4, contentWidth, 7, 'F');
       headers.forEach((header, i) => {
-        const headerLines = doc.splitTextToSize(header, widths[i] - 3);
+        const headerLines = doc.splitTextToSize(sanitizeText(header), widths[i] - 3);
         doc.text(headerLines[0] || '', xPos + 1.5, currentY);
         xPos += widths[i];
       });
       currentY += 5;
 
       doc.setTextColor(0, 0, 0);
-      doc.setFont('helvetica', 'normal');
+      doc.setFont('times', 'normal');
       doc.setFontSize(7);
       rows.forEach((row, rowIndex) => {
-        const cellLines = row.map((cell, i) => doc.splitTextToSize(cell || '', widths[i] - 3));
+        const cellLines = row.map((cell, i) => doc.splitTextToSize(sanitizeText(cell || ''), widths[i] - 3));
         const maxLines = Math.max(...cellLines.map(lines => lines.length), 1);
         const rowHeight = Math.max(5, maxLines * 3.5);
         
@@ -702,7 +737,7 @@ security/
         
         xPos = margin;
         row.forEach((cell, i) => {
-          const lines = doc.splitTextToSize(cell || '', widths[i] - 3);
+          const lines = doc.splitTextToSize(sanitizeText(cell || ''), widths[i] - 3);
           lines.slice(0, 3).forEach((line: string, lineIdx: number) => {
             doc.text(line, xPos + 1.5, currentY + (lineIdx * 3.5));
           });
@@ -754,14 +789,14 @@ security/
       
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(28);
-      doc.setFont('helvetica', 'bold');
-      doc.text('CRM BANCARIO CREAND', h.pageWidth / 2, 35, { align: 'center' });
+      doc.setFont('times', 'bold');
+      doc.text('OBELIXIA CRM UNIVERSAL', h.pageWidth / 2, 35, { align: 'center' });
       
       doc.setFontSize(14);
-      doc.text('PARTE 1: Resumen Ejecutivo y Módulos', h.pageWidth / 2, 50, { align: 'center' });
+      doc.text('PARTE 1: Resumen Ejecutivo y Modulos', h.pageWidth / 2, 50, { align: 'center' });
       
       doc.setFontSize(18);
-      doc.text(`Versión ${analysis.version}`, h.pageWidth / 2, 75, { align: 'center' });
+      doc.text(sanitizeText(`Version ${analysis.version}`), h.pageWidth / 2, 75, { align: 'center' });
       
       doc.setTextColor(0, 0, 0);
       h.currentY = 105;
