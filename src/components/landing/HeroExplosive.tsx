@@ -93,22 +93,22 @@ export const HeroExplosive: React.FC = () => {
             >
               No somos solo un CRM.
               <br />
-              <span className="relative inline-flex items-center justify-end w-full gap-3">
+              <span className="relative inline-flex items-center justify-center gap-4">
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-violet-400 to-purple-400">
                   Somos ObelixIA
                 </span>
                 {/* Brain with active synapses */}
-                <span className="relative inline-flex items-center justify-center w-[0.9em] h-[0.9em]">
+                <span className="relative inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 xl:w-28 xl:h-28">
                   {/* Synapses glow effect */}
                   <span className="absolute inset-0 animate-pulse">
-                    <span className="absolute inset-0 rounded-full bg-gradient-to-r from-violet-500/40 to-blue-500/40 blur-md" />
+                    <span className="absolute inset-0 rounded-full bg-gradient-to-r from-violet-500/50 to-blue-500/50 blur-lg" />
                   </span>
-                  <span className="absolute inset-[-15%] animate-[ping_2s_ease-out_infinite] rounded-full bg-violet-500/20" />
-                  <span className="absolute inset-[-10%] animate-[ping_2.5s_ease-out_infinite_0.3s] rounded-full bg-blue-500/15" />
+                  <span className="absolute inset-[-20%] animate-[ping_2s_ease-out_infinite] rounded-full bg-violet-500/30" />
+                  <span className="absolute inset-[-15%] animate-[ping_2.5s_ease-out_infinite_0.3s] rounded-full bg-blue-500/25" />
                   <img 
                     src="/lovable-uploads/e1eeb994-a574-4a24-adb3-4f0d35b5d23b.png" 
                     alt="ObelixIA Brain"
-                    className="relative w-full h-full object-contain drop-shadow-[0_0_8px_rgba(139,92,246,0.6)]"
+                    className="relative w-full h-full object-contain drop-shadow-[0_0_12px_rgba(139,92,246,0.8)]"
                   />
                 </span>
                 {/* Underline glow */}
@@ -116,7 +116,7 @@ export const HeroExplosive: React.FC = () => {
                   initial={{ scaleX: 0 }}
                   animate={{ scaleX: 1 }}
                   transition={{ duration: 0.8, delay: 0.5 }}
-                  className="absolute -bottom-2 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-violet-500 rounded-full origin-left"
+                  className="absolute -bottom-2 left-0 right-[calc(4rem+1rem)] md:right-[calc(5rem+1rem)] lg:right-[calc(6rem+1rem)] xl:right-[calc(7rem+1rem)] h-1 bg-gradient-to-r from-blue-500 to-violet-500 rounded-full origin-left"
                 />
               </span>
             </motion.h1>
