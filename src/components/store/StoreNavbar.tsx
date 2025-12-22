@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShoppingCart, Menu, X, ChevronDown, ArrowRight,
   Package, Boxes, DollarSign, Landmark, ShieldCheck, ShoppingBag, Factory,
-  Store, Code, BarChart3, MessageSquare, BookOpen, Rocket
+  Store, Code, BarChart3, MessageSquare, BookOpen, Rocket,
+  Heart, Users, GraduationCap, Globe, CreditCard, Briefcase
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/contexts/CartContext';
@@ -109,12 +110,33 @@ const StoreNavbar: React.FC = () => {
       megaMenu: {
         sections: [
           {
-            title: 'Por Sector',
+            title: 'Finanzas',
             items: [
               { id: 'banca', label: 'Banca', href: '/sectores/banca', icon: Landmark, description: 'CRM bancario con cumplimiento normativo' },
               { id: 'seguros', label: 'Seguros', href: '/sectores/seguros', icon: ShieldCheck, description: 'Gestión integral de pólizas y siniestros' },
+            ],
+          },
+          {
+            title: 'Comercio',
+            items: [
               { id: 'retail', label: 'Retail', href: '/sectores/retail', icon: ShoppingBag, description: 'Omnicanalidad y experiencia de cliente' },
+              { id: 'ecommerce', label: 'Ecommerce', href: '/sectores/ecommerce', icon: Globe, description: 'Ventas online y marketplaces' },
+              { id: 'suscripciones', label: 'Suscripciones', href: '/sectores/suscripciones', icon: CreditCard, description: 'Modelos de negocio recurrentes' },
+            ],
+          },
+          {
+            title: 'Industria',
+            items: [
               { id: 'manufactura', label: 'Manufactura', href: '/sectores/manufactura', icon: Factory, description: 'Producción y cadena de suministro' },
+              { id: 'salud', label: 'Salud', href: '/sectores/salud', icon: Heart, description: 'Gestión de pacientes y citas médicas' },
+              { id: 'educacion', label: 'Educación', href: '/sectores/educacion', icon: GraduationCap, description: 'Instituciones educativas y formación' },
+            ],
+          },
+          {
+            title: 'Servicios',
+            items: [
+              { id: 'agencias', label: 'Agencias', href: '/sectores/agencias', icon: Briefcase, description: 'Gestión de clientes y proyectos' },
+              { id: 'infoproductores', label: 'Infoproductores', href: '/sectores/infoproductores', icon: Users, description: 'Creadores de contenido y cursos' },
             ],
           },
         ],
