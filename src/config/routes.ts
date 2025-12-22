@@ -77,6 +77,12 @@ const DeveloperPortal = lazy(() => import('@/pages/DeveloperPortal'));
 // Subscription
 const SubscriptionSuccess = lazy(() => import('@/pages/subscription/Success'));
 
+// CRM
+const KanbanPage = lazy(() => import('@/pages/crm/KanbanPage'));
+const OmnichannelPage = lazy(() => import('@/pages/crm/OmnichannelPage'));
+const SentimentPage = lazy(() => import('@/pages/crm/SentimentPage'));
+const SLADashboardPage = lazy(() => import('@/pages/crm/SLADashboardPage'));
+
 // Tipos
 export type RouteLayout = 'public' | 'dashboard' | 'minimal' | 'none';
 export type RoutePriority = 'high' | 'medium' | 'low';
@@ -183,6 +189,11 @@ export const dashboardRoutes: RouteConfig[] = [
   { path: '/dashboard', component: Dashboard, layout: 'none', priority: 'medium', delay: 50, meta: { title: 'Dashboard', requiresAuth: true } },
   { path: '/profile', component: Profile, layout: 'none', priority: 'low', delay: 100, meta: { title: 'Perfil', requiresAuth: true } },
   { path: '/map-3d', component: Map3D, layout: 'dashboard', priority: 'medium', meta: { title: 'Mapa 3D', requiresAuth: true } },
+  // CRM
+  { path: '/crm/kanban', component: KanbanPage, layout: 'none', priority: 'high', meta: { title: 'CRM Kanban', requiresAuth: true } },
+  { path: '/crm/omnichannel', component: OmnichannelPage, layout: 'none', priority: 'high', meta: { title: 'Inbox Omnicanal', requiresAuth: true } },
+  { path: '/crm/sentiment', component: SentimentPage, layout: 'none', priority: 'medium', meta: { title: 'Análisis de Sentimiento', requiresAuth: true } },
+  { path: '/crm/sla', component: SLADashboardPage, layout: 'none', priority: 'medium', meta: { title: 'SLAs y Métricas', requiresAuth: true } },
 ];
 
 // ============================================
