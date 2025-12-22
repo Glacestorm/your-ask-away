@@ -284,15 +284,6 @@ export const HeroExplosive: React.FC = () => {
               </div>
             </motion.div>
 
-            {/* ObelixIA Logo with Brain */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1, delay: 0.6, ease: 'easeOut' }}
-              className="flex justify-center mt-8"
-            >
-              <ObelixiaLogo size="hero" variant="full" animated />
-            </motion.div>
           </div>
         </div>
 
