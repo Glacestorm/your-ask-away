@@ -93,9 +93,23 @@ export const HeroExplosive: React.FC = () => {
             >
               No somos solo un CRM.
               <br />
-              <span className="relative">
+              <span className="relative inline-flex items-center justify-end w-full gap-3">
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-violet-400 to-purple-400">
                   Somos ObelixIA
+                </span>
+                {/* Brain with active synapses */}
+                <span className="relative inline-flex items-center justify-center w-[0.9em] h-[0.9em]">
+                  {/* Synapses glow effect */}
+                  <span className="absolute inset-0 animate-pulse">
+                    <span className="absolute inset-0 rounded-full bg-gradient-to-r from-violet-500/40 to-blue-500/40 blur-md" />
+                  </span>
+                  <span className="absolute inset-[-15%] animate-[ping_2s_ease-out_infinite] rounded-full bg-violet-500/20" />
+                  <span className="absolute inset-[-10%] animate-[ping_2.5s_ease-out_infinite_0.3s] rounded-full bg-blue-500/15" />
+                  <img 
+                    src="/lovable-uploads/e1eeb994-a574-4a24-adb3-4f0d35b5d23b.png" 
+                    alt="ObelixIA Brain"
+                    className="relative w-full h-full object-contain drop-shadow-[0_0_8px_rgba(139,92,246,0.6)]"
+                  />
                 </span>
                 {/* Underline glow */}
                 <motion.span
