@@ -63,23 +63,30 @@ export function useCMSTranslation(namespace: string = 'common') {
     return text;
   }, [translations]);
 
-  const translateAsync = useCallback(async (text: string, targetLocale: string): Promise<string> => {
-    try {
-      const { data, error } = await supabase.functions.invoke('cms-translate-content', {
-        body: {
-          text,
-          sourceLocale: language,
-          targetLocale
-        }
-      });
+  const translateAsync = useCallback(
+    async (
+      text: string,
+      targetLocale: string,
+      sourceLocaleOverride?: string
+    ): Promise<string> => {
+      try {
+        const { data, error } = await supabase.functions.invoke('cms-translate-content', {
+          body: {
+            text,
+            sourceLocale: sourceLocaleOverride ?? language,
+            targetLocale,
+          },
+        });
 
-      if (error) throw error;
-      return data.translatedText;
-    } catch (err) {
-      console.error('Translation error:', err);
-      return text;
-    }
-  }, [language]);
+        if (error) throw error;
+        return data.translatedText;
+      } catch (err) {
+        console.error('Translation error:', err);
+        return text;
+      }
+    },
+    [language]
+  );
 
   const clearCache = useCallback((locale?: string) => {
     if (locale) {

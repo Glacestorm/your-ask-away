@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,19 +16,25 @@ import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useCMSTranslation } from '@/hooks/cms/useCMSTranslation';
 const iconMap: Record<string, React.ElementType> = {
   Building2, MapPin, Calculator, Target, FileText, Bell, Shield, Brain,
   BarChart3, Users, Globe, Lock, Zap, Database, Crown, Star, Check, Package
 };
 
-const getCategoryLabel = (category: string) => {
+const getCategoryLabel = (category: string, t: (key: string) => string) => {
   switch (category) {
-    case 'core': return 'Core';
-    case 'horizontal': return 'Horizontal';
-    case 'vertical': return 'Vertical';
-    case 'security': return 'Seguridad';
-    default: return category;
+    case 'core':
+      return t('store.category.core');
+    case 'horizontal':
+      return t('store.category.horizontal');
+    case 'vertical':
+      return t('store.category.vertical');
+    case 'security':
+      return t('store.category.security');
+    default:
+      return category;
   }
 };
 
@@ -53,6 +59,21 @@ const StoreModuleDetail: React.FC = () => {
   const { moduleKey } = useParams<{ moduleKey: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t, language } = useLanguage();
+  const { translateAsync } = useCMSTranslation();
+
+  const locale = useMemo(() => {
+    switch (language) {
+      case 'en':
+        return 'en-US';
+      case 'fr':
+        return 'fr-FR';
+      case 'ca':
+        return 'ca-ES';
+      default:
+        return 'es-ES';
+    }
+  }, [language]);
 
   const { data: module, isLoading, error } = useQuery({
     queryKey: ['store-module', moduleKey],
@@ -68,21 +89,54 @@ const StoreModuleDetail: React.FC = () => {
     },
     enabled: !!moduleKey,
   });
-  
+
+  const [translatedName, setTranslatedName] = useState<string | null>(null);
+  const [translatedDescription, setTranslatedDescription] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!module) return;
+
+    if (language === 'es') {
+      setTranslatedName(null);
+      setTranslatedDescription(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    (async () => {
+      const name = await translateAsync(module.module_name, language, 'es');
+      const desc = module.description
+        ? await translateAsync(module.description, language, 'es')
+        : null;
+
+      if (!cancelled) {
+        setTranslatedName(name);
+        setTranslatedDescription(desc);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [language, module, translateAsync]);
+
+  const displayName = translatedName ?? module?.module_name ?? '';
+  const displayDescription =
+    translatedDescription ?? module?.description ?? t('store.moduleDetail.descriptionFallback');
+
   const handleRequestQuote = () => {
-    // Scroll to contact section or show toast
     toast({
-      title: 'Solicitar presupuesto',
-      description: `Contacte con nuestro equipo comercial para obtener un precio personalizado para ${module?.module_name}`,
+      title: t('store.moduleDetail.requestBudget'),
+      description: t('store.moduleDetail.requestBudgetDesc').replace('{module}', displayName),
     });
-    // Navigate to store with contact section
     navigate('/store#contact');
   };
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-        <div className="animate-pulse text-white">Cargando módulo...</div>
+        <div className="animate-pulse text-white">{t('common.loading')}</div>
       </div>
     );
   }
@@ -91,11 +145,11 @@ const StoreModuleDetail: React.FC = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col items-center justify-center gap-4">
         <Package className="w-16 h-16 text-slate-500" />
-        <h1 className="text-2xl font-bold text-white">Módulo no encontrado</h1>
-        <p className="text-slate-400">El módulo que buscas no existe o ha sido eliminado.</p>
+        <h1 className="text-2xl font-bold text-white">{t('store.moduleDetail.notFoundTitle')}</h1>
+        <p className="text-slate-400">{t('store.moduleDetail.notFoundDesc')}</p>
         <Button onClick={() => navigate('/store/modules')} variant="outline">
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Volver a módulos
+          {t('store.moduleDetail.backToModules')}
         </Button>
       </div>
     );
@@ -105,7 +159,7 @@ const StoreModuleDetail: React.FC = () => {
   const isPremium = module.category === 'vertical';
   
   const price = module.base_price || 0;
-  const formattedPrice = new Intl.NumberFormat('es-ES', {
+  const formattedPrice = new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: 'EUR',
     maximumFractionDigits: 0,
@@ -194,29 +248,29 @@ const StoreModuleDetail: React.FC = () => {
       <div className="border-b border-slate-700/50 bg-slate-900/50 backdrop-blur sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => {
-                if (window.history.length > 1) {
-                  navigate(-1);
-                } else {
-                  navigate('/store/modules');
-                }
-              }}
-              className="text-slate-400 hover:text-white"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Volver
-            </Button>
-            <Separator orientation="vertical" className="h-6" />
-            <div className="flex items-center gap-2 text-sm text-slate-400">
-              <Link to="/store" className="hover:text-white">Tienda</Link>
-              <span>/</span>
-              <Link to="/store/modules" className="hover:text-white">Módulos</Link>
-              <span>/</span>
-              <span className="text-white">{module.module_name}</span>
-            </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => {
+                  if (window.history.length > 1) {
+                    navigate(-1);
+                  } else {
+                    navigate('/store/modules');
+                  }
+                }}
+                className="text-slate-400 hover:text-white"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                {t('store.moduleDetail.back')}
+              </Button>
+              <Separator orientation="vertical" className="h-6" />
+              <div className="flex items-center gap-2 text-sm text-slate-400">
+                <Link to="/store" className="hover:text-white">{t('store.moduleDetail.store')}</Link>
+                <span>/</span>
+                <Link to="/store/modules" className="hover:text-white">{t('store.moduleDetail.modules')}</Link>
+                <span>/</span>
+                <span className="text-white">{displayName}</span>
+              </div>
           </div>
         </div>
       </div>
@@ -243,7 +297,7 @@ const StoreModuleDetail: React.FC = () => {
               
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-3xl font-bold text-white">{module.module_name}</h1>
+                  <h1 className="text-3xl font-bold text-white">{displayName}</h1>
                   {module.is_core && (
                     <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
                       <Star className="w-3 h-3 mr-1" />
@@ -268,7 +322,7 @@ const StoreModuleDetail: React.FC = () => {
                     module.category === 'horizontal' ? 'bg-blue-500/10 text-blue-400 border-blue-500/30' :
                     'bg-purple-500/10 text-purple-400 border-purple-500/30'
                   }>
-                    {getCategoryLabel(module.category)}
+                    {getCategoryLabel(module.category, t)}
                   </Badge>
                   {module.sector && (
                     <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/30">
@@ -279,7 +333,7 @@ const StoreModuleDetail: React.FC = () => {
                 </div>
 
                 <p className="text-slate-300 text-lg leading-relaxed">
-                  {module.description || 'Módulo empresarial completo con todas las funcionalidades necesarias para optimizar tu negocio.'}
+                  {displayDescription}
                 </p>
               </div>
             </div>
@@ -289,7 +343,7 @@ const StoreModuleDetail: React.FC = () => {
               <CardHeader>
                 <CardTitle className="text-white flex items-center gap-2">
                   <Zap className="w-5 h-5 text-yellow-400" />
-                  Características destacadas
+                  {t('store.moduleDetail.highlights')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -312,8 +366,8 @@ const StoreModuleDetail: React.FC = () => {
             }`}>
               <CardContent className="p-6 space-y-6">
                 <div className="text-center">
-                  <div className="text-2xl font-semibold text-slate-300 mb-1">Precio personalizado</div>
-                  <div className="text-slate-400">Solicite presupuesto</div>
+                  <div className="text-2xl font-semibold text-slate-300 mb-1">{t('store.moduleDetail.customPrice')}</div>
+                  <div className="text-slate-400">{t('store.moduleDetail.requestBudgetShort')}</div>
                 </div>
 
                 <Separator className="bg-slate-700" />
@@ -321,19 +375,19 @@ const StoreModuleDetail: React.FC = () => {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm text-slate-300">
                     <Check className="w-4 h-4 text-emerald-400" />
-                    <span>Actualizaciones incluidas</span>
+                    <span>{t('store.moduleDetail.benefit.updates')}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-slate-300">
                     <Check className="w-4 h-4 text-emerald-400" />
-                    <span>Soporte técnico por email</span>
+                    <span>{t('store.moduleDetail.benefit.support')}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-slate-300">
                     <Check className="w-4 h-4 text-emerald-400" />
-                    <span>Documentación completa</span>
+                    <span>{t('store.moduleDetail.benefit.docs')}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-slate-300">
                     <Check className="w-4 h-4 text-emerald-400" />
-                    <span>Instalación SaaS u On-Premise</span>
+                    <span>{t('store.moduleDetail.benefit.deployment')}</span>
                   </div>
                 </div>
 
@@ -347,11 +401,11 @@ const StoreModuleDetail: React.FC = () => {
                   onClick={handleRequestQuote}
                 >
                   <MessageSquare className="w-5 h-5 mr-2" />
-                  Solicitar Presupuesto
+                  {t('store.moduleDetail.requestBudget')}
                 </Button>
 
                 <div className="text-center text-xs text-slate-500">
-                  Contacte con nuestro equipo comercial
+                  {t('store.moduleDetail.contactSales')}
                 </div>
               </CardContent>
             </Card>
@@ -361,10 +415,10 @@ const StoreModuleDetail: React.FC = () => {
         {/* Tabs Section */}
         <Tabs defaultValue="features" className="mb-12">
           <TabsList className="bg-slate-800/50 border border-slate-700/50">
-            <TabsTrigger value="features">Funcionalidades</TabsTrigger>
-            <TabsTrigger value="technical">Técnico</TabsTrigger>
-            <TabsTrigger value="security">Seguridad</TabsTrigger>
-            {isPremium && <TabsTrigger value="premium">Premium</TabsTrigger>}
+            <TabsTrigger value="features">{t('store.moduleDetail.tabs.features')}</TabsTrigger>
+            <TabsTrigger value="technical">{t('store.moduleDetail.tabs.technical')}</TabsTrigger>
+            <TabsTrigger value="security">{t('store.moduleDetail.tabs.security')}</TabsTrigger>
+            {isPremium && <TabsTrigger value="premium">{t('store.moduleDetail.tabs.premium')}</TabsTrigger>}
           </TabsList>
 
           <TabsContent value="features" className="mt-6">
@@ -373,7 +427,7 @@ const StoreModuleDetail: React.FC = () => {
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <Layers className="w-5 h-5 text-blue-400" />
-                    Funcionalidades incluidas
+                    {t('store.moduleDetail.includedFeatures')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -415,7 +469,7 @@ const StoreModuleDetail: React.FC = () => {
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <Target className="w-5 h-5 text-purple-400" />
-                    Casos de uso
+                    {t('store.moduleDetail.useCases')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -440,7 +494,7 @@ const StoreModuleDetail: React.FC = () => {
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <Database className="w-5 h-5 text-cyan-400" />
-                    Compatibilidad
+                    {t('store.moduleDetail.compatibility')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -459,7 +513,7 @@ const StoreModuleDetail: React.FC = () => {
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <FileCode2 className="w-5 h-5 text-orange-400" />
-                    Requisitos
+                    {t('store.moduleDetail.requirements')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -478,7 +532,7 @@ const StoreModuleDetail: React.FC = () => {
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <Headphones className="w-5 h-5 text-green-400" />
-                    Soporte
+                    {t('store.moduleDetail.support')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -500,7 +554,7 @@ const StoreModuleDetail: React.FC = () => {
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <Layers className="w-5 h-5 text-indigo-400" />
-                    Dependencias
+                    {t('store.moduleDetail.dependencies')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -512,7 +566,7 @@ const StoreModuleDetail: React.FC = () => {
                     ))}
                   </div>
                   <p className="text-sm text-slate-500 mt-3">
-                    Estos módulos deben estar instalados para que {module.module_name} funcione correctamente.
+                    {t('store.moduleDetail.dependenciesNote').replace('{module}', displayName)}
                   </p>
                 </CardContent>
               </Card>
@@ -526,10 +580,10 @@ const StoreModuleDetail: React.FC = () => {
                     <Calendar className="w-6 h-6 text-slate-400" />
                   </div>
                   <div>
-                    <div className="text-sm text-slate-400">Última actualización</div>
+                    <div className="text-sm text-slate-400">{t('store.moduleDetail.lastUpdated')}</div>
                     <div className="text-white font-medium">
                       {module.updated_at 
-                        ? new Date(module.updated_at).toLocaleDateString('es-ES', { 
+                        ? new Date(module.updated_at).toLocaleDateString(locale, { 
                             year: 'numeric', 
                             month: 'long', 
                             day: 'numeric' 
@@ -547,8 +601,8 @@ const StoreModuleDetail: React.FC = () => {
                       <Package className="w-6 h-6 text-slate-400" />
                     </div>
                     <div>
-                      <div className="text-sm text-slate-400">Versión mínima core</div>
-                      <div className="text-white font-medium">{module.min_core_version}</div>
+                        <div className="text-sm text-slate-400">{t('store.moduleDetail.minCoreVersion')}</div>
+                        <div className="text-white font-medium">{module.min_core_version}</div>
                     </div>
                   </CardContent>
                 </Card>
@@ -562,7 +616,7 @@ const StoreModuleDetail: React.FC = () => {
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <Shield className="w-5 h-5 text-red-400" />
-                    Medidas de seguridad
+                    {t('store.moduleDetail.securityMeasures')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -581,7 +635,7 @@ const StoreModuleDetail: React.FC = () => {
                 <CardHeader>
                   <CardTitle className="text-white flex items-center gap-2">
                     <Award className="w-5 h-5 text-yellow-400" />
-                    Certificaciones
+                    {t('store.moduleDetail.certifications')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -622,7 +676,7 @@ const StoreModuleDetail: React.FC = () => {
                 <CardHeader>
                   <CardTitle className="text-amber-400 flex items-center gap-2">
                     <Crown className="w-5 h-5" />
-                    Beneficios Premium exclusivos
+                    {t('store.moduleDetail.premiumBenefits')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -643,13 +697,13 @@ const StoreModuleDetail: React.FC = () => {
 
                   <div className="text-center">
                     <p className="text-amber-300/80 mb-4">
-                      Los módulos Premium incluyen soporte prioritario y características exclusivas
+                      {t('store.moduleDetail.premiumNote')}
                     </p>
                     <Button
                       onClick={handleRequestQuote}
                       className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700"
                     >
-                      Solicitar Presupuesto Premium
+                      {t('store.moduleDetail.requestPremiumBudget')}
                     </Button>
                   </div>
                 </CardContent>
@@ -667,14 +721,14 @@ const StoreModuleDetail: React.FC = () => {
                   <FileText className="w-6 h-6 text-blue-400" />
                 </div>
                 <div>
-                  <h4 className="text-white font-medium">Documentación completa</h4>
-                  <p className="text-sm text-slate-400">Guías de instalación, configuración y uso</p>
+                  <h4 className="text-white font-medium">{t('store.moduleDetail.docsTitle')}</h4>
+                  <p className="text-sm text-slate-400">{t('store.moduleDetail.docsDesc')}</p>
                 </div>
               </div>
               <Button variant="outline" asChild className="border-slate-600">
                 <a href={module.documentation_url} target="_blank" rel="noopener noreferrer">
                   <Globe className="w-4 h-4 mr-2" />
-                  Ver documentación
+                  {t('store.moduleDetail.viewDocs')}
                 </a>
               </Button>
             </CardContent>
