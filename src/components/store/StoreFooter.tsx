@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Mail, Phone, MapPin, Linkedin, Twitter, Github } from 'lucide-react';
 import { ObelixiaLogo } from '@/components/ui/ObelixiaLogo';
 import { footerNavigation } from '@/config/navigation';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const StoreFooter: React.FC = () => {
   const currentYear = new Date().getFullYear();
+  const { t } = useLanguage();
 
   // Get footer groups from centralized navigation
   const productGroup = footerNavigation.find(g => g.id === 'productos');
@@ -14,9 +16,9 @@ const StoreFooter: React.FC = () => {
   const companyGroup = footerNavigation.find(g => g.id === 'empresa');
   const legalGroup = footerNavigation.find(g => g.id === 'legal');
 
-  const FooterLinkGroup = ({ title, items }: { title: string; items: { id: string; label: string; href: string }[] }) => (
+  const FooterLinkGroup = ({ title, titleKey, items }: { title: string; titleKey?: string; items: { id: string; label: string; href: string }[] }) => (
     <div>
-      <h4 className="font-medium text-slate-200 mb-4">{title}</h4>
+      <h4 className="font-medium text-slate-200 mb-4">{titleKey ? t(titleKey) : title}</h4>
       <ul className="space-y-3">
         {items.map((item) => (
           <li key={item.id}>
@@ -24,7 +26,7 @@ const StoreFooter: React.FC = () => {
               to={item.href} 
               className="text-slate-400 hover:text-white transition-colors duration-200 text-sm"
             >
-              {item.label}
+              {t(`footer.${item.id}`) !== `footer.${item.id}` ? t(`footer.${item.id}`) : item.label}
             </Link>
           </li>
         ))}
@@ -43,8 +45,7 @@ const StoreFooter: React.FC = () => {
               <ObelixiaLogo size="md" variant="full" animated={false} dark />
             </Link>
             <p className="text-slate-400 text-sm leading-relaxed mb-8 max-w-sm">
-              Plataforma modular de gestión empresarial con IA integrada. 
-              Transformamos empresas con tecnología inteligente.
+              {t('footer.description')}
             </p>
             
             {/* Contact Info */}
@@ -71,10 +72,10 @@ const StoreFooter: React.FC = () => {
           </div>
 
           {/* Link Columns */}
-          {productGroup && <FooterLinkGroup title={productGroup.title} items={productGroup.items} />}
-          {solutionsGroup && <FooterLinkGroup title={solutionsGroup.title} items={solutionsGroup.items} />}
-          {developersGroup && <FooterLinkGroup title={developersGroup.title} items={developersGroup.items} />}
-          {companyGroup && <FooterLinkGroup title={companyGroup.title} items={companyGroup.items} />}
+          {productGroup && <FooterLinkGroup title={productGroup.title} titleKey={productGroup.titleKey} items={productGroup.items} />}
+          {solutionsGroup && <FooterLinkGroup title={solutionsGroup.title} titleKey={solutionsGroup.titleKey} items={solutionsGroup.items} />}
+          {developersGroup && <FooterLinkGroup title={developersGroup.title} titleKey={developersGroup.titleKey} items={developersGroup.items} />}
+          {companyGroup && <FooterLinkGroup title={companyGroup.title} titleKey={companyGroup.titleKey} items={companyGroup.items} />}
         </div>
       </div>
 
@@ -85,7 +86,7 @@ const StoreFooter: React.FC = () => {
             {/* Copyright & Legal */}
             <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
               <p className="text-sm text-slate-500">
-                © {currentYear} ObelixIA. Todos los derechos reservados.
+                {t('footer.copyright').replace('{year}', String(currentYear))}
               </p>
               {legalGroup && (
                 <div className="flex items-center gap-6">
