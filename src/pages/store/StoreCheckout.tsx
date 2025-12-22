@@ -14,12 +14,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import StoreNavbar from '@/components/store/StoreNavbar';
 import CartSidebar from '@/components/store/CartSidebar';
 import { useCart } from '@/contexts/CartContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 const StoreCheckout: React.FC = () => {
   const navigate = useNavigate();
   const { items, subtotal, discount, tax, total, clearCart, promoCode } = useCart();
+  const { t, language } = useLanguage();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   
@@ -35,7 +37,7 @@ const StoreCheckout: React.FC = () => {
   });
 
   const formatPrice = (price: number) => 
-    new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(price);
+    new Intl.NumberFormat(language === 'en' ? 'en-US' : language === 'fr' ? 'fr-FR' : 'es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(price);
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -44,16 +46,16 @@ const StoreCheckout: React.FC = () => {
   const validateForm = () => {
     if (!formData.companyName || !formData.taxId || !formData.email) {
       toast({
-        title: 'Campos requeridos',
-        description: 'Por favor, completa todos los campos obligatorios',
+        title: t('checkout.requiredFields'),
+        description: t('checkout.completeRequiredFields'),
         variant: 'destructive',
       });
       return false;
     }
     if (!formData.acceptTerms || !formData.acceptPrivacy) {
       toast({
-        title: 'Términos requeridos',
-        description: 'Debes aceptar los términos y condiciones',
+        title: t('checkout.termsRequired'),
+        description: t('checkout.acceptTerms'),
         variant: 'destructive',
       });
       return false;
@@ -65,8 +67,8 @@ const StoreCheckout: React.FC = () => {
     if (!validateForm()) return;
     if (items.length === 0) {
       toast({
-        title: 'Carrito vacío',
-        description: 'Añade productos antes de continuar',
+        title: t('checkout.emptyCart'),
+        description: t('checkout.addProductsFirst'),
         variant: 'destructive',
       });
       return;
@@ -108,8 +110,8 @@ const StoreCheckout: React.FC = () => {
     } catch (error: any) {
       console.error('Checkout error:', error);
       toast({
-        title: 'Error en el pago',
-        description: error.message || 'No se pudo procesar el pago',
+        title: t('checkout.paymentError'),
+        description: error.message || t('checkout.paymentFailed'),
         variant: 'destructive',
       });
     } finally {
@@ -122,11 +124,11 @@ const StoreCheckout: React.FC = () => {
       <div className="min-h-screen bg-slate-950">
         <StoreNavbar />
         <div className="container mx-auto px-4 pt-32 text-center">
-          <h1 className="text-3xl font-bold text-white mb-4">Tu carrito está vacío</h1>
-          <p className="text-slate-400 mb-8">Añade módulos antes de continuar con la compra</p>
+          <h1 className="text-3xl font-bold text-white mb-4">{t('checkout.cartEmpty')}</h1>
+          <p className="text-slate-400 mb-8">{t('checkout.addModulesFirst')}</p>
           <Link to="/store/modules">
             <Button className="bg-emerald-500 hover:bg-emerald-600">
-              Explorar Módulos
+              {t('store.exploreModules')}
             </Button>
           </Link>
         </div>
@@ -141,7 +143,7 @@ const StoreCheckout: React.FC = () => {
       <div className="container mx-auto px-4 pt-24 pb-16">
         <Link to="/store" className="inline-flex items-center text-slate-400 hover:text-white mb-8">
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Volver a la tienda
+          {t('checkout.backToStore')}
         </Link>
 
         <div className="grid lg:grid-cols-3 gap-8">
@@ -154,7 +156,7 @@ const StoreCheckout: React.FC = () => {
             >
               <h1 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
                 <CreditCard className="w-6 h-6 text-emerald-400" />
-                Finalizar Compra
+                {t('checkout.finalizePurchase')}
               </h1>
 
               <div className="space-y-6">
@@ -162,20 +164,20 @@ const StoreCheckout: React.FC = () => {
                 <div>
                   <h3 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
                     <Building2 className="w-5 h-5 text-emerald-400" />
-                    Datos de la Empresa
+                    {t('checkout.companyData')}
                   </h3>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-slate-300">Nombre de la Empresa *</Label>
+                      <Label className="text-slate-300">{t('checkout.companyName')} *</Label>
                       <Input
                         value={formData.companyName}
                         onChange={(e) => handleInputChange('companyName', e.target.value)}
                         className="bg-slate-700 border-slate-600 mt-1"
-                        placeholder="Empresa S.L."
+                        placeholder={t('checkout.companyPlaceholder')}
                       />
                     </div>
                     <div>
-                      <Label className="text-slate-300">CIF/NIF *</Label>
+                      <Label className="text-slate-300">{t('checkout.taxId')} *</Label>
                       <Input
                         value={formData.taxId}
                         onChange={(e) => handleInputChange('taxId', e.target.value)}
@@ -190,21 +192,21 @@ const StoreCheckout: React.FC = () => {
                 <div>
                   <h3 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
                     <Mail className="w-5 h-5 text-emerald-400" />
-                    Contacto
+                    {t('checkout.contact')}
                   </h3>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-slate-300">Email *</Label>
+                      <Label className="text-slate-300">{t('checkout.email')} *</Label>
                       <Input
                         type="email"
                         value={formData.email}
                         onChange={(e) => handleInputChange('email', e.target.value)}
                         className="bg-slate-700 border-slate-600 mt-1"
-                        placeholder="contacto@empresa.com"
+                        placeholder="contact@company.com"
                       />
                     </div>
                     <div>
-                      <Label className="text-slate-300">Teléfono</Label>
+                      <Label className="text-slate-300">{t('checkout.phone')}</Label>
                       <Input
                         value={formData.phone}
                         onChange={(e) => handleInputChange('phone', e.target.value)}
@@ -219,31 +221,31 @@ const StoreCheckout: React.FC = () => {
                 <div>
                   <h3 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
                     <MapPin className="w-5 h-5 text-emerald-400" />
-                    Facturación
+                    {t('checkout.billing')}
                   </h3>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <Label className="text-slate-300">País</Label>
+                      <Label className="text-slate-300">{t('checkout.country')}</Label>
                       <Select value={formData.country} onValueChange={(v) => handleInputChange('country', v)}>
                         <SelectTrigger className="bg-slate-700 border-slate-600 mt-1">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="ES">España</SelectItem>
-                          <SelectItem value="AD">Andorra</SelectItem>
-                          <SelectItem value="FR">Francia</SelectItem>
-                          <SelectItem value="PT">Portugal</SelectItem>
-                          <SelectItem value="DE">Alemania</SelectItem>
+                          <SelectItem value="ES">{t('checkout.spain')}</SelectItem>
+                          <SelectItem value="AD">{t('checkout.andorra')}</SelectItem>
+                          <SelectItem value="FR">{t('checkout.france')}</SelectItem>
+                          <SelectItem value="PT">{t('checkout.portugal')}</SelectItem>
+                          <SelectItem value="DE">{t('checkout.germany')}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-                      <Label className="text-slate-300">Dirección de Facturación</Label>
+                      <Label className="text-slate-300">{t('checkout.billingAddress')}</Label>
                       <Input
                         value={formData.billingAddress}
                         onChange={(e) => handleInputChange('billingAddress', e.target.value)}
                         className="bg-slate-700 border-slate-600 mt-1"
-                        placeholder="Calle, número, ciudad, CP"
+                        placeholder={t('checkout.addressPlaceholder')}
                       />
                     </div>
                   </div>
@@ -258,7 +260,7 @@ const StoreCheckout: React.FC = () => {
                       onCheckedChange={(v) => handleInputChange('acceptTerms', v as boolean)}
                     />
                     <Label htmlFor="terms" className="text-sm text-slate-300 cursor-pointer">
-                      Acepto los <Link to="/terms" className="text-emerald-400 hover:underline">Términos y Condiciones</Link> *
+                      {t('checkout.acceptThe')} <Link to="/terms" className="text-emerald-400 hover:underline">{t('checkout.termsAndConditions')}</Link> *
                     </Label>
                   </div>
                   <div className="flex items-start gap-3">
@@ -268,7 +270,7 @@ const StoreCheckout: React.FC = () => {
                       onCheckedChange={(v) => handleInputChange('acceptPrivacy', v as boolean)}
                     />
                     <Label htmlFor="privacy" className="text-sm text-slate-300 cursor-pointer">
-                      Acepto la <Link to="/privacy" className="text-emerald-400 hover:underline">Política de Privacidad</Link> *
+                      {t('checkout.acceptThe')} <Link to="/privacy" className="text-emerald-400 hover:underline">{t('checkout.privacyPolicy')}</Link> *
                     </Label>
                   </div>
                 </div>
@@ -284,7 +286,7 @@ const StoreCheckout: React.FC = () => {
               transition={{ delay: 0.1 }}
               className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 sticky top-24"
             >
-              <h2 className="text-lg font-semibold text-white mb-4">Resumen del Pedido</h2>
+              <h2 className="text-lg font-semibold text-white mb-4">{t('checkout.orderSummary')}</h2>
 
               <div className="space-y-3 mb-6">
                 {items.map((item) => (
@@ -300,21 +302,21 @@ const StoreCheckout: React.FC = () => {
 
               <div className="space-y-2 pt-4 border-t border-slate-700">
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-400">Subtotal</span>
+                  <span className="text-slate-400">{t('checkout.subtotal')}</span>
                   <span className="text-white">{formatPrice(subtotal)}</span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between text-sm text-emerald-400">
-                    <span>Descuento</span>
+                    <span>{t('checkout.discount')}</span>
                     <span>-{formatPrice(discount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-400">IVA (21%)</span>
+                  <span className="text-slate-400">{t('checkout.vat')}</span>
                   <span className="text-white">{formatPrice(tax)}</span>
                 </div>
                 <div className="flex justify-between text-xl font-bold pt-2 border-t border-slate-700">
-                  <span className="text-white">Total</span>
+                  <span className="text-white">{t('checkout.total')}</span>
                   <span className="text-emerald-400">{formatPrice(total)}</span>
                 </div>
               </div>
@@ -325,18 +327,18 @@ const StoreCheckout: React.FC = () => {
                 className="w-full mt-6 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white py-6"
               >
                 {loading ? (
-                  'Procesando...'
+                  t('checkout.processing')
                 ) : (
                   <>
                     <Lock className="w-4 h-4 mr-2" />
-                    Pagar {formatPrice(total)}
+                    {t('checkout.pay')} {formatPrice(total)}
                   </>
                 )}
               </Button>
 
               <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500">
                 <Shield className="w-4 h-4" />
-                Pago seguro con Stripe
+                {t('checkout.securePayment')}
               </div>
             </motion.div>
           </div>
