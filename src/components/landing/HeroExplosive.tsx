@@ -102,14 +102,14 @@ export const HeroExplosive: React.FC = () => {
                 <span className="relative inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 xl:w-28 xl:h-28">
                   {/* Synapses glow effect */}
                   <span className="absolute inset-0 animate-pulse">
-                    <span className="absolute inset-0 rounded-full bg-gradient-to-r from-violet-500/50 to-blue-500/50 blur-lg" />
+                    <span className="absolute inset-0 rounded-full bg-gradient-to-r from-violet-500/50 to-blue-500/50 blur-xl" />
                   </span>
                   <span className="absolute inset-[-20%] animate-[ping_2s_ease-out_infinite] rounded-full bg-violet-500/30" />
                   <span className="absolute inset-[-15%] animate-[ping_2.5s_ease-out_infinite_0.3s] rounded-full bg-blue-500/25" />
                   <img 
                     src={brainLogo}
                     alt="ObelixIA Brain"
-                    className="relative w-full h-full object-contain drop-shadow-[0_0_12px_rgba(139,92,246,0.8)]"
+                    className="relative w-full h-full object-contain drop-shadow-[0_0_15px_rgba(139,92,246,0.9)] mix-blend-screen rounded-lg"
                   />
                 </span>
                 {/* Underline glow */}
