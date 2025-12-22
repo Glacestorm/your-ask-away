@@ -116,21 +116,21 @@ export const HeroExplosive: React.FC = () => {
                     }}
                   />
 
-                  {/* Brain Image (full) with logo-style soft mask (no square background) */}
+                  {/* Brain Image (full) with logo-style soft mask - fades into dark background */}
                   <span
                     className="relative w-full h-full overflow-hidden"
                     style={{
-                      borderRadius: '9999px',
-                      maskImage: 'radial-gradient(ellipse 120% 100% at center, black 62%, transparent 92%)',
-                      WebkitMaskImage: 'radial-gradient(ellipse 120% 100% at center, black 62%, transparent 92%)',
+                      borderRadius: '50%',
+                      maskImage: 'radial-gradient(ellipse 100% 100% at center, black 50%, transparent 80%)',
+                      WebkitMaskImage: 'radial-gradient(ellipse 100% 100% at center, black 50%, transparent 80%)',
                     }}
                   >
                     <img 
                       src={brainLogo}
                       alt="Cerebro ObelixIA con sinapsis"
-                      className="w-full h-full object-contain"
+                      className="w-full h-full object-cover scale-125"
                       style={{
-                        filter: 'drop-shadow(0 0 15px rgba(139,92,246,0.7)) drop-shadow(0 0 30px rgba(59,130,246,0.5))',
+                        filter: 'drop-shadow(0 0 15px rgba(139,92,246,0.6)) drop-shadow(0 0 30px rgba(59,130,246,0.4))',
                       }}
                     />
 
