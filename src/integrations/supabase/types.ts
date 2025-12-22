@@ -9099,6 +9099,86 @@ export type Database = {
           },
         ]
       }
+      ltv_predictions: {
+        Row: {
+          cac: number | null
+          churn_probability: number | null
+          company_id: string | null
+          confidence_score: number | null
+          created_at: string
+          engagement_score: number | null
+          expansion_probability: number | null
+          expected_lifetime_months: number | null
+          feature_usage_score: number | null
+          health_score: number | null
+          id: string
+          input_features: Json | null
+          ltv_cac_ratio: number | null
+          ltv_confidence_high: number | null
+          ltv_confidence_low: number | null
+          model_version: string | null
+          payback_months: number | null
+          predicted_ltv: number
+          prediction_date: string
+          segment: string | null
+          updated_at: string
+        }
+        Insert: {
+          cac?: number | null
+          churn_probability?: number | null
+          company_id?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          engagement_score?: number | null
+          expansion_probability?: number | null
+          expected_lifetime_months?: number | null
+          feature_usage_score?: number | null
+          health_score?: number | null
+          id?: string
+          input_features?: Json | null
+          ltv_cac_ratio?: number | null
+          ltv_confidence_high?: number | null
+          ltv_confidence_low?: number | null
+          model_version?: string | null
+          payback_months?: number | null
+          predicted_ltv: number
+          prediction_date?: string
+          segment?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cac?: number | null
+          churn_probability?: number | null
+          company_id?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          engagement_score?: number | null
+          expansion_probability?: number | null
+          expected_lifetime_months?: number | null
+          feature_usage_score?: number | null
+          health_score?: number | null
+          id?: string
+          input_features?: Json | null
+          ltv_cac_ratio?: number | null
+          ltv_confidence_high?: number | null
+          ltv_confidence_low?: number | null
+          model_version?: string | null
+          payback_months?: number | null
+          predicted_ltv?: number
+          prediction_date?: string
+          segment?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ltv_predictions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       map_color_mode: {
         Row: {
           created_at: string | null
@@ -9870,6 +9950,99 @@ export type Database = {
           props_config?: Json | null
           route_path?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      monte_carlo_simulations: {
+        Row: {
+          base_arr: number | null
+          base_mrr: number | null
+          best_case: number | null
+          confidence_interval_95_high: number | null
+          confidence_interval_95_low: number | null
+          created_at: string
+          created_by: string | null
+          distribution_data: Json | null
+          id: string
+          input_parameters: Json
+          key_risk_factors: Json | null
+          mean_outcome: number | null
+          num_iterations: number
+          percentile_10: number | null
+          percentile_25: number | null
+          percentile_50: number | null
+          percentile_75: number | null
+          percentile_90: number | null
+          probability_of_target: number | null
+          results_summary: Json
+          sensitivity_analysis: Json | null
+          simulation_date: string
+          simulation_name: string
+          simulation_type: string
+          std_deviation: number | null
+          target_value: number | null
+          time_horizon_months: number
+          worst_case: number | null
+        }
+        Insert: {
+          base_arr?: number | null
+          base_mrr?: number | null
+          best_case?: number | null
+          confidence_interval_95_high?: number | null
+          confidence_interval_95_low?: number | null
+          created_at?: string
+          created_by?: string | null
+          distribution_data?: Json | null
+          id?: string
+          input_parameters?: Json
+          key_risk_factors?: Json | null
+          mean_outcome?: number | null
+          num_iterations?: number
+          percentile_10?: number | null
+          percentile_25?: number | null
+          percentile_50?: number | null
+          percentile_75?: number | null
+          percentile_90?: number | null
+          probability_of_target?: number | null
+          results_summary?: Json
+          sensitivity_analysis?: Json | null
+          simulation_date?: string
+          simulation_name: string
+          simulation_type: string
+          std_deviation?: number | null
+          target_value?: number | null
+          time_horizon_months?: number
+          worst_case?: number | null
+        }
+        Update: {
+          base_arr?: number | null
+          base_mrr?: number | null
+          best_case?: number | null
+          confidence_interval_95_high?: number | null
+          confidence_interval_95_low?: number | null
+          created_at?: string
+          created_by?: string | null
+          distribution_data?: Json | null
+          id?: string
+          input_parameters?: Json
+          key_risk_factors?: Json | null
+          mean_outcome?: number | null
+          num_iterations?: number
+          percentile_10?: number | null
+          percentile_25?: number | null
+          percentile_50?: number | null
+          percentile_75?: number | null
+          percentile_90?: number | null
+          probability_of_target?: number | null
+          results_summary?: Json
+          sensitivity_analysis?: Json | null
+          simulation_date?: string
+          simulation_name?: string
+          simulation_type?: string
+          std_deviation?: number | null
+          target_value?: number | null
+          time_horizon_months?: number
+          worst_case?: number | null
         }
         Relationships: []
       }
@@ -12782,6 +12955,89 @@ export type Database = {
           },
         ]
       }
+      plg_signals: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          company_id: string | null
+          context: Json | null
+          converted_to_opportunity: boolean | null
+          created_at: string
+          detected_at: string
+          expansion_opportunity_value: number | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          metric_change_percentage: number | null
+          metric_name: string | null
+          metric_previous_value: number | null
+          metric_value: number | null
+          opportunity_id: string | null
+          recommended_action: string | null
+          signal_date: string
+          signal_strength: number
+          signal_type: string
+          threshold_exceeded: number | null
+          updated_at: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          company_id?: string | null
+          context?: Json | null
+          converted_to_opportunity?: boolean | null
+          created_at?: string
+          detected_at?: string
+          expansion_opportunity_value?: number | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          metric_change_percentage?: number | null
+          metric_name?: string | null
+          metric_previous_value?: number | null
+          metric_value?: number | null
+          opportunity_id?: string | null
+          recommended_action?: string | null
+          signal_date?: string
+          signal_strength: number
+          signal_type: string
+          threshold_exceeded?: number | null
+          updated_at?: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          company_id?: string | null
+          context?: Json | null
+          converted_to_opportunity?: boolean | null
+          created_at?: string
+          detected_at?: string
+          expansion_opportunity_value?: number | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          metric_change_percentage?: number | null
+          metric_name?: string | null
+          metric_previous_value?: number | null
+          metric_value?: number | null
+          opportunity_id?: string | null
+          recommended_action?: string | null
+          signal_date?: string
+          signal_strength?: number
+          signal_type?: string
+          threshold_exceeded?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plg_signals_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plugin_permissions: {
         Row: {
           application_id: string | null
@@ -14311,6 +14567,84 @@ export type Database = {
         }
         Relationships: []
       }
+      revenue_attributions: {
+        Row: {
+          attributed_revenue: number
+          attribution_date: string
+          attribution_model: string
+          attribution_weight: number | null
+          campaign: string | null
+          channel: string
+          company_id: string | null
+          content: string | null
+          created_at: string
+          customer_journey: Json | null
+          days_to_conversion: number | null
+          id: string
+          medium: string | null
+          revenue_event_id: string | null
+          revenue_type: string | null
+          source: string | null
+          total_touchpoints: number | null
+          touchpoint_order: number | null
+        }
+        Insert: {
+          attributed_revenue: number
+          attribution_date?: string
+          attribution_model: string
+          attribution_weight?: number | null
+          campaign?: string | null
+          channel: string
+          company_id?: string | null
+          content?: string | null
+          created_at?: string
+          customer_journey?: Json | null
+          days_to_conversion?: number | null
+          id?: string
+          medium?: string | null
+          revenue_event_id?: string | null
+          revenue_type?: string | null
+          source?: string | null
+          total_touchpoints?: number | null
+          touchpoint_order?: number | null
+        }
+        Update: {
+          attributed_revenue?: number
+          attribution_date?: string
+          attribution_model?: string
+          attribution_weight?: number | null
+          campaign?: string | null
+          channel?: string
+          company_id?: string | null
+          content?: string | null
+          created_at?: string
+          customer_journey?: Json | null
+          days_to_conversion?: number | null
+          id?: string
+          medium?: string | null
+          revenue_event_id?: string | null
+          revenue_type?: string | null
+          source?: string | null
+          total_touchpoints?: number | null
+          touchpoint_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revenue_attributions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "revenue_attributions_revenue_event_id_fkey"
+            columns: ["revenue_event_id"]
+            isOneToOne: false
+            referencedRelation: "revenue_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       revenue_cohorts: {
         Row: {
           cohort_date: string
@@ -14451,6 +14785,72 @@ export type Database = {
           },
         ]
       }
+      revenue_forecasts: {
+        Row: {
+          ai_insights: string | null
+          churn_rate_predicted: number | null
+          confidence_interval_high: number | null
+          confidence_interval_low: number | null
+          confidence_level: number | null
+          created_at: string
+          expansion_rate_predicted: number | null
+          forecast_date: string
+          forecast_horizon_months: number
+          growth_rate_predicted: number | null
+          id: string
+          key_drivers: Json | null
+          model_accuracy: number | null
+          model_version: string | null
+          predicted_arr: number
+          predicted_mrr: number
+          risk_factors: Json | null
+          scenario: string
+          updated_at: string
+        }
+        Insert: {
+          ai_insights?: string | null
+          churn_rate_predicted?: number | null
+          confidence_interval_high?: number | null
+          confidence_interval_low?: number | null
+          confidence_level?: number | null
+          created_at?: string
+          expansion_rate_predicted?: number | null
+          forecast_date: string
+          forecast_horizon_months?: number
+          growth_rate_predicted?: number | null
+          id?: string
+          key_drivers?: Json | null
+          model_accuracy?: number | null
+          model_version?: string | null
+          predicted_arr: number
+          predicted_mrr: number
+          risk_factors?: Json | null
+          scenario: string
+          updated_at?: string
+        }
+        Update: {
+          ai_insights?: string | null
+          churn_rate_predicted?: number | null
+          confidence_interval_high?: number | null
+          confidence_interval_low?: number | null
+          confidence_level?: number | null
+          created_at?: string
+          expansion_rate_predicted?: number | null
+          forecast_date?: string
+          forecast_horizon_months?: number
+          growth_rate_predicted?: number | null
+          id?: string
+          key_drivers?: Json | null
+          model_accuracy?: number | null
+          model_version?: string | null
+          predicted_arr?: number
+          predicted_mrr?: number
+          risk_factors?: Json | null
+          scenario?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       revenue_risk_alerts: {
         Row: {
           alert_type: string
@@ -14515,6 +14915,86 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "revenue_risk_alerts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      revenue_scores: {
+        Row: {
+          action_priority: number | null
+          ai_recommendation: string | null
+          company_id: string | null
+          created_at: string
+          engagement_score: number | null
+          expansion_score: number | null
+          growth_potential_score: number | null
+          health_score: number | null
+          id: string
+          next_best_action: string | null
+          overall_score: number
+          prioritization_quadrant: string | null
+          recommended_action: string | null
+          retention_score: number | null
+          risk_score: number | null
+          satisfaction_score: number | null
+          score_date: string
+          score_factors: Json | null
+          score_trend: string | null
+          trend_velocity: number | null
+          updated_at: string
+        }
+        Insert: {
+          action_priority?: number | null
+          ai_recommendation?: string | null
+          company_id?: string | null
+          created_at?: string
+          engagement_score?: number | null
+          expansion_score?: number | null
+          growth_potential_score?: number | null
+          health_score?: number | null
+          id?: string
+          next_best_action?: string | null
+          overall_score: number
+          prioritization_quadrant?: string | null
+          recommended_action?: string | null
+          retention_score?: number | null
+          risk_score?: number | null
+          satisfaction_score?: number | null
+          score_date?: string
+          score_factors?: Json | null
+          score_trend?: string | null
+          trend_velocity?: number | null
+          updated_at?: string
+        }
+        Update: {
+          action_priority?: number | null
+          ai_recommendation?: string | null
+          company_id?: string | null
+          created_at?: string
+          engagement_score?: number | null
+          expansion_score?: number | null
+          growth_potential_score?: number | null
+          health_score?: number | null
+          id?: string
+          next_best_action?: string | null
+          overall_score?: number
+          prioritization_quadrant?: string | null
+          recommended_action?: string | null
+          retention_score?: number | null
+          risk_score?: number | null
+          satisfaction_score?: number | null
+          score_date?: string
+          score_factors?: Json | null
+          score_trend?: string | null
+          trend_velocity?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revenue_scores_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
