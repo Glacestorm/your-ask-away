@@ -6,7 +6,7 @@ import {
   FileText, Euro, Package, Receipt, Settings, 
   BarChart3, Users, Shield, Code, Palette, 
   Store, Layers, BookOpen, Activity, Rocket,
-  ChevronLeft, ChevronRight, Home, LayoutGrid, Newspaper, HelpCircle
+  ChevronLeft, ChevronRight, Home, LayoutGrid, Newspaper, HelpCircle, TrendingUp
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
@@ -222,6 +222,14 @@ const ObelixiaTeamAdmin: React.FC = () => {
                 >
                   <HelpCircle className="w-4 h-4" />
                   <span className="hidden sm:inline">FAQ</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="revenue"
+                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-slate-700 data-[state=active]:text-white"
+                  onClick={() => navigate('/revenue-intelligence')}
+                >
+                  <TrendingUp className="w-4 h-4" />
+                  <span className="hidden sm:inline">Revenue</span>
                 </TabsTrigger>
               </TabsList>
             </CardHeader>

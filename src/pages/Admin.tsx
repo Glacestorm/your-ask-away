@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigationHistory } from '@/hooks/useNavigationHistory';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Activity, History, Shield, Rocket, Bot, BarChart3, Users, Palette, FileCode2, Eye, MessageSquare, Bell, MessagesSquare, Database, Trophy, Store, ClipboardCheck, Building2, Layers } from 'lucide-react';
+import { ArrowLeft, Activity, History, Shield, Rocket, Bot, BarChart3, Users, Palette, FileCode2, Eye, MessageSquare, Bell, MessagesSquare, Database, Trophy, Store, ClipboardCheck, Building2, Layers, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import VisitSheets from '@/pages/VisitSheets';
 import { GlobalNavHeader } from '@/components/GlobalNavHeader';
@@ -216,6 +216,7 @@ const Admin = () => {
       case 'vertical-packs': return 'Verticales CNAE (Fase 7)';
       case 'sectors-manager': return 'Gestió de Sectors';
       case 'web-vitals': return 'Core Web Vitals';
+      case 'revenue-intelligence': return 'Revenue Intelligence Hub';
       default: return '';
     }
   };
@@ -1014,6 +1015,20 @@ const Admin = () => {
                     <div>
                       <h4 className="font-medium text-sm">{t('admin.card.spm')}</h4>
                       <p className="text-xs text-muted-foreground">{t('admin.card.spm.desc')}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-emerald-500/10"
+                  onClick={() => navigate('/revenue-intelligence')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                      <TrendingUp className="h-4 w-4 text-emerald-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-emerald-700 dark:text-emerald-400">Revenue Intelligence</h4>
+                      <p className="text-xs text-muted-foreground">Hub de analítica de ingresos con IA</p>
                     </div>
                   </CardContent>
                 </Card>
