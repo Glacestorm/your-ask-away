@@ -106,18 +106,18 @@ export const HeroExplosive: React.FC = () => {
                     height: '0.88em',
                   }}
                 >
-                  {/* Pulse wave effects */}
+                  {/* Pulse wave effects - more visible */}
                   <span 
-                    className="absolute inset-0 rounded-full animate-[ping_2s_ease-out_infinite]"
-                    style={{ background: 'rgba(139,92,246,0.25)' }}
+                    className="absolute inset-[-10%] rounded-full animate-[ping_2s_ease-out_infinite]"
+                    style={{ background: 'rgba(139,92,246,0.4)', boxShadow: '0 0 20px rgba(139,92,246,0.5)' }}
                   />
                   <span 
-                    className="absolute inset-0 rounded-full animate-[ping_2.5s_ease-out_infinite_0.4s]"
-                    style={{ background: 'rgba(59,130,246,0.2)' }}
+                    className="absolute inset-[-5%] rounded-full animate-[ping_2.5s_ease-out_infinite_0.4s]"
+                    style={{ background: 'rgba(59,130,246,0.35)', boxShadow: '0 0 15px rgba(59,130,246,0.4)' }}
                   />
                   <span 
                     className="absolute inset-0 rounded-full animate-[ping_3s_ease-out_infinite_0.8s]"
-                    style={{ background: 'rgba(139,92,246,0.15)' }}
+                    style={{ background: 'rgba(139,92,246,0.3)', boxShadow: '0 0 10px rgba(139,92,246,0.35)' }}
                   />
 
                   {/* Brain container with overflow hidden */}
