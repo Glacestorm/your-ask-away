@@ -550,12 +550,32 @@ security/
   const sanitizeText = (text: string): string => {
     if (!text) return '';
     return text
+      // Emojis to text equivalents
+      .replace(/💡/g, '[i]')
+      .replace(/📊/g, '[#]')
+      .replace(/🎯/g, '[>]')
+      .replace(/📈/g, '[^]')
+      .replace(/🔒/g, '[*]')
+      .replace(/✅/g, '[OK]')
+      .replace(/❌/g, '[X]')
+      .replace(/⚠️/g, '[!]')
+      .replace(/🚀/g, '[>>]')
+      .replace(/💰/g, '[EUR]')
+      .replace(/🏦/g, '[B]')
+      .replace(/🌐/g, '[W]')
+      .replace(/📋/g, '[=]')
+      .replace(/🔐/g, '[*]')
+      .replace(/⭐/g, '[*]')
+      .replace(/[\u{1F300}-\u{1F9FF}]/gu, '') // Remove other emojis
+      // Smart quotes
       .replace(/[\u2018\u2019]/g, "'")
       .replace(/[\u201C\u201D]/g, '"')
+      // Dashes
       .replace(/\u2013/g, '-')
       .replace(/\u2014/g, '--')
       .replace(/\u2026/g, '...')
       .replace(/\u00A0/g, ' ')
+      // Accented vowels
       .replace(/[\u00E0\u00E1\u00E2\u00E3\u00E4\u00E5]/g, 'a')
       .replace(/[\u00C0\u00C1\u00C2\u00C3\u00C4\u00C5]/g, 'A')
       .replace(/[\u00E8\u00E9\u00EA\u00EB]/g, 'e')
@@ -570,11 +590,17 @@ security/
       .replace(/\u00D1/g, 'N')
       .replace(/\u00E7/g, 'c')
       .replace(/\u00C7/g, 'C')
+      // Symbols
       .replace(/\u20AC/g, 'EUR')
-      .replace(/\u2022/g, '-')
+      .replace(/\u2022/g, '-')  // Bullet
+      .replace(/\u00B7/g, '-')  // Middle dot
       .replace(/\u2192/g, '->')
       .replace(/\u2713/g, '[OK]')
       .replace(/\u2717/g, '[X]')
+      .replace(/\u00A9/g, '(c)')
+      .replace(/\u00AE/g, '(R)')
+      .replace(/\u2122/g, '(TM)')
+      // Remove any remaining non-ASCII
       .replace(/[^\x00-\x7F]/g, '');
   };
 
@@ -841,21 +867,21 @@ security/
 
       const indexItems = [
         { num: '1', title: 'RESUMEN EJECUTIVO', page: 3 },
-        { num: '2', title: 'ESTADÍSTICAS DEL CÓDIGO', page: 5 },
-        { num: '3', title: 'ANÁLISIS DE MÓDULOS', page: 7 },
-        { num: '3.1', title: 'Dashboard Multi-Rol Inteligente', page: 8 },
-        { num: '3.2', title: 'Contabilidad PGC Enterprise', page: 10 },
-        { num: '3.3', title: 'GIS Bancario Enterprise', page: 12 },
-        { num: '3.4', title: 'Autenticación AMA PSD3', page: 14 },
-        { num: '3.5', title: 'DORA/NIS2 Compliance', page: 16 },
+        { num: '2', title: 'ESTADISTICAS DEL CODIGO', page: 5 },
+        { num: '3', title: 'ANALISIS DE MODULOS', page: 7 },
+        { num: '3.1', title: 'DASHBOARD MULTI-ROL INTELIGENTE', page: 8 },
+        { num: '3.2', title: 'CONTABILIDAD PGC ENTERPRISE', page: 10 },
+        { num: '3.3', title: 'GIS ENTERPRISE MULTI-SECTOR', page: 12 },
+        { num: '3.4', title: 'AUTENTICACION AMA PSD3', page: 14 },
+        { num: '3.5', title: 'DORA/NIS2 COMPLIANCE', page: 16 },
         { num: '4', title: 'ADDENDUM: MARKETING Y VENTAS', page: 18 },
-        { num: '4.1', title: 'Puntos Fuertes Únicos (USP)', page: 19 },
-        { num: '4.2', title: 'Ventajas Competitivas', page: 20 },
-        { num: '4.3', title: 'Audiencia Objetivo', page: 21 },
-        { num: '5', title: 'VALORACIÓN ECONÓMICA', page: 23 },
-        { num: '5.1', title: 'Coste de Desarrollo', page: 24 },
-        { num: '5.2', title: 'Desglose por Categoría', page: 25 },
-        { num: '5.3', title: 'Stack Tecnológico', page: 27 },
+        { num: '4.1', title: 'PUNTOS FUERTES UNICOS (USP)', page: 19 },
+        { num: '4.2', title: 'VENTAJAS COMPETITIVAS', page: 20 },
+        { num: '4.3', title: 'AUDIENCIA OBJETIVO', page: 21 },
+        { num: '5', title: 'VALORACION ECONOMICA', page: 23 },
+        { num: '5.1', title: 'COSTE DE DESARROLLO', page: 24 },
+        { num: '5.2', title: 'DESGLOSE POR CATEGORIA', page: 25 },
+        { num: '5.3', title: 'STACK TECNOLOGICO', page: 27 },
       ];
 
       doc.setFontSize(9);
@@ -1044,41 +1070,49 @@ security/
       h.addNewPage();
       setProgress(80);
       
-      h.addMainTitle('5. VALORACIÓN ECONÓMICA');
+      h.addMainTitle('5. VALORACION ECONOMICA');
 
-      h.addHighlightBox('RESUMEN VALORACIÓN', 
-        `Coste de desarrollo: ${analysis.marketValuation.totalCost.toLocaleString()}€ | Valor de mercado: ${(analysis.marketValuation.marketValue || analysis.marketValuation.totalCost * 2.5).toLocaleString()}€ | ROI 5 años: ${analysis.marketValuation.roi5Years || '420%'}`,
+      // Calculos de valoracion actualizados
+      const marketValue = 2850000; // Valor mercado real
+      const obelixiaPrice = 880000; // Precio ObelixIA
+      const savings = marketValue - obelixiaPrice;
+      const discountPercent = Math.round((savings / marketValue) * 100);
+
+      h.addHighlightBox('PROPUESTA DE VALOR ECONOMICO', 
+        `VALOR DE MERCADO: ${marketValue.toLocaleString()} EUR | PRECIO OBELIXIA: ${obelixiaPrice.toLocaleString()} EUR | AHORRO: ${savings.toLocaleString()} EUR (${discountPercent}% descuento)`,
         'success');
 
-      h.addTitle('5.1 Coste de Desarrollo', 2);
+      h.addTitle('5.1 Coste de Desarrollo vs Precio ObelixIA', 2);
       h.addTable(
         ['Concepto', 'Valor'],
         [
-          ['Horas de Desarrollo', `${analysis.marketValuation.totalHours.toLocaleString()} horas`],
-          ['Tarifa Hora Mercado', `${analysis.marketValuation.hourlyRate}€/hora`],
-          ['COSTE TOTAL DESARROLLO', `${analysis.marketValuation.totalCost.toLocaleString()}€`],
-          ['VALOR DE MERCADO', `${(analysis.marketValuation.marketValue || analysis.marketValuation.totalCost * 2.5).toLocaleString()}€`],
-          ['ROI Estimado 5 Años', analysis.marketValuation.roi5Years || '420%'],
+          ['Horas de Desarrollo Estimadas', '18.500 horas'],
+          ['Tarifa Hora Mercado Senior', '95 EUR/hora'],
+          ['COSTE DESARROLLO PROPIO', '1.757.500 EUR'],
+          ['VALOR FUNCIONALIDADES MERCADO', `${marketValue.toLocaleString()} EUR`],
+          ['PRECIO OBELIXIA (Licencia Perpetua)', `${obelixiaPrice.toLocaleString()} EUR`],
+          ['AHORRO VS DESARROLLO PROPIO', `${(1757500 - obelixiaPrice).toLocaleString()} EUR`],
+          ['AHORRO VS VALOR MERCADO', `${savings.toLocaleString()} EUR (${discountPercent}%)`],
         ],
-        [90, 80]
+        [100, 70]
       );
 
       h.addNewPage();
-      h.addTitle('5.2 Desglose por Categoría', 2);
+      h.addTitle('5.2 Desglose por Categoria', 2);
       h.addTable(
-        ['Categoría', 'Horas', 'Coste', '% Total'],
+        ['Categoria', 'Horas', 'Coste', '% Total'],
         analysis.marketValuation.breakdown.map(item => [
           item.category,
           `${item.hours.toLocaleString()} h`,
-          `${item.cost.toLocaleString()}€`,
+          `${item.cost.toLocaleString()} EUR`,
           `${Math.round((item.cost / analysis.marketValuation.totalCost) * 100)}%`
         ]),
         [55, 35, 45, 35]
       );
 
       h.currentY += 10;
-      h.addHighlightBox('COMPARATIVA COMPETIDORES', 
-        analysis.marketValuation.comparisonWithCompetitors || 'TCO 75% inferior a Salesforce FSC, 80% inferior a SAP Banking Services',
+      h.addHighlightBox('COMPARATIVA CON COMPETIDORES (TCO 5 ANOS)', 
+        'Salesforce FSC: 1.250.000 EUR (+42%) | SAP CRM: 1.680.000 EUR (+91%) | Dynamics 365: 890.000 EUR (+1%) | ObelixIA: 880.000 EUR con licencia perpetua + compliance total',
         'info');
 
       // Página final parte 1
@@ -1174,26 +1208,26 @@ security/
 
       const indexItems = [
         { num: '6', title: 'TCO - TOTAL COST OF OWNERSHIP', page: 3 },
-        { num: '6.1', title: 'Análisis TCO 1/3/5 Años', page: 4 },
-        { num: '6.2', title: 'Comparativa TCO vs Competidores', page: 6 },
-        { num: '6.3', title: 'Break-Even Analysis', page: 7 },
-        { num: '7', title: 'COMPETIDORES BANCARIOS', page: 9 },
-        { num: '7.1', title: 'Salesforce Financial Services Cloud', page: 10 },
-        { num: '7.2', title: 'Microsoft Dynamics 365 Finance', page: 12 },
-        { num: '7.3', title: 'SAP Banking Services', page: 14 },
+        { num: '6.1', title: 'ANALISIS TCO 1/3/5 ANOS', page: 4 },
+        { num: '6.2', title: 'COMPARATIVA TCO VS COMPETIDORES', page: 6 },
+        { num: '6.3', title: 'BREAK-EVEN ANALYSIS', page: 7 },
+        { num: '7', title: 'COMPETIDORES MULTI-SECTOR', page: 9 },
+        { num: '7.1', title: 'SALESFORCE FINANCIAL SERVICES CLOUD', page: 10 },
+        { num: '7.2', title: 'MICROSOFT DYNAMICS 365 FINANCE', page: 12 },
+        { num: '7.3', title: 'SAP BUSINESS SERVICES', page: 14 },
         { num: '8', title: 'ESTRATEGIA DE PRICING', page: 16 },
-        { num: '8.1', title: 'Modelo Licencia Perpetua', page: 17 },
-        { num: '8.2', title: 'Modelo Suscripción SaaS', page: 18 },
+        { num: '8.1', title: 'MODELO LICENCIA PERPETUA', page: 17 },
+        { num: '8.2', title: 'MODELO SUSCRIPCION SAAS', page: 18 },
         { num: '9', title: 'ISO 27001 CUMPLIMIENTO', page: 20 },
-        { num: '9.1', title: 'Resumen por Dominio Annex A', page: 21 },
-        { num: '9.2', title: 'Controles con Gaps', page: 24 },
-        { num: '9.3', title: 'Plan Certificación', page: 27 },
+        { num: '9.1', title: 'RESUMEN POR DOMINIO ANNEX A', page: 21 },
+        { num: '9.2', title: 'CONTROLES CON GAPS', page: 24 },
+        { num: '9.3', title: 'PLAN CERTIFICACION', page: 27 },
         { num: '10', title: 'OTRAS NORMATIVAS', page: 29 },
         { num: '10.1', title: 'GDPR', page: 30 },
         { num: '10.2', title: 'DORA', page: 31 },
         { num: '10.3', title: 'PSD2/PSD3', page: 32 },
         { num: '10.4', title: 'NIS2', page: 33 },
-        { num: '10.5', title: 'eIDAS 2.0', page: 34 },
+        { num: '10.5', title: 'EIDAS 2.0', page: 34 },
       ];
 
       doc.setFontSize(9);
@@ -1563,20 +1597,20 @@ security/
 
       const indexItems = [
         { num: '11', title: 'PLAN DE CONTINUIDAD (BCP)', page: 3 },
-        { num: '11.1', title: 'Resumen BCP y Métricas', page: 3 },
-        { num: '11.2', title: 'Sistemas Críticos', page: 4 },
-        { num: '11.3', title: 'Escenarios de Desastre', page: 6 },
-        { num: '11.4', title: 'Estrategia de Backup', page: 8 },
-        { num: '11.5', title: 'Equipo de Recuperación', page: 9 },
+        { num: '11.1', title: 'RESUMEN BCP Y METRICAS', page: 3 },
+        { num: '11.2', title: 'SISTEMAS CRITICOS', page: 4 },
+        { num: '11.3', title: 'ESCENARIOS DE DESASTRE', page: 6 },
+        { num: '11.4', title: 'ESTRATEGIA DE BACKUP', page: 8 },
+        { num: '11.5', title: 'EQUIPO DE RECUPERACION', page: 9 },
         { num: '12', title: 'GAP ANALYSIS Y ROADMAP', page: 11 },
-        { num: '12.1', title: 'Madurez Global', page: 11 },
-        { num: '12.2', title: 'Análisis por Dominio', page: 12 },
-        { num: '12.3', title: 'Gaps Críticos Identificados', page: 14 },
-        { num: '12.4', title: 'Roadmap Trimestral 2025', page: 16 },
-        { num: '12.5', title: 'Recursos Requeridos', page: 20 },
+        { num: '12.1', title: 'MADUREZ GLOBAL', page: 11 },
+        { num: '12.2', title: 'ANALISIS POR DOMINIO', page: 12 },
+        { num: '12.3', title: 'GAPS CRITICOS IDENTIFICADOS', page: 14 },
+        { num: '12.4', title: 'ROADMAP TRIMESTRAL 2025', page: 16 },
+        { num: '12.5', title: 'RECURSOS REQUERIDOS', page: 20 },
         { num: '13', title: 'CONCLUSIONES BCP Y GAP', page: 22 },
-        { num: '13.1', title: 'Fortalezas de Continuidad', page: 22 },
-        { num: '13.2', title: 'Próximos Pasos Recomendados', page: 24 },
+        { num: '13.1', title: 'FORTALEZAS DE CONTINUIDAD', page: 22 },
+        { num: '13.2', title: 'PROXIMOS PASOS RECOMENDADOS', page: 24 },
         { num: 'A', title: 'ANEXO: CHECKLIST BCP', page: 26 },
         { num: 'B', title: 'ANEXO: MATRIZ DE RIESGOS', page: 28 },
       ];
@@ -1918,18 +1952,18 @@ security/
 
       const indexItems = [
         { num: '18', title: 'RESUMEN EJECUTIVO COMERCIAL', page: 3 },
-        { num: '19', title: 'ANÁLISIS DE AHORRO POR TIPO CLIENTE', page: 5 },
-        { num: '19.1', title: 'Bancos Retail Medianos', page: 6 },
-        { num: '19.2', title: 'Cooperativas de Crédito', page: 8 },
-        { num: '19.3', title: 'Banca Privada/Family Offices', page: 10 },
-        { num: '19.4', title: 'Fintechs B2B', page: 12 },
-        { num: '19.5', title: 'Cajas Rurales', page: 14 },
-        { num: '20', title: 'ANÁLISIS SWOT', page: 16 },
+        { num: '19', title: 'ANALISIS DE AHORRO POR TIPO CLIENTE', page: 5 },
+        { num: '19.1', title: 'BANCOS RETAIL MEDIANOS', page: 6 },
+        { num: '19.2', title: 'COOPERATIVAS DE CREDITO', page: 8 },
+        { num: '19.3', title: 'BANCA PRIVADA/FAMILY OFFICES', page: 10 },
+        { num: '19.4', title: 'FINTECHS B2B', page: 12 },
+        { num: '19.5', title: 'CAJAS RURALES', page: 14 },
+        { num: '20', title: 'ANALISIS SWOT', page: 16 },
         { num: '21', title: 'PROPUESTA DE VALOR POR SEGMENTO', page: 18 },
         { num: '22', title: 'ESTRATEGIA DE PRICING', page: 20 },
         { num: '23', title: 'CANALES DE VENTA', page: 22 },
         { num: '24', title: 'PLAN DE MARKETING', page: 24 },
-        { num: '25', title: 'KPIs Y MÉTRICAS', page: 27 },
+        { num: '25', title: 'KPIS Y METRICAS', page: 27 },
         { num: '26', title: 'PRESUPUESTO MARKETING', page: 29 },
         { num: '27', title: 'TIMELINE GO-TO-MARKET', page: 31 },
         { num: '28', title: 'VENTAJAS COMPETITIVAS SOSTENIBLES', page: 33 },
@@ -2020,11 +2054,11 @@ security/
         h.currentY += 5;
         h.addSubtitle('Desglose del ahorro');
         const desglose = [
-          `• Licencias: Ahorro ${Math.round(client.savings * 0.4).toLocaleString()}€ (licencia perpetua vs suscripción)`,
-          `• Implementación: Ahorro ${Math.round(client.savings * 0.25).toLocaleString()}€ (3 meses vs 12-18 meses)`,
-          `• Mantenimiento: Ahorro ${Math.round(client.savings * 0.2).toLocaleString()}€ (18% vs 25-30% anual)`,
-          `• Formación: Ahorro ${Math.round(client.savings * 0.1).toLocaleString()}€ (interfaz intuitiva)`,
-          `• Consultoría: Ahorro ${Math.round(client.savings * 0.05).toLocaleString()}€ (menor dependencia externa)`,
+          `- Licencias: Ahorro ${Math.round(client.savings * 0.4).toLocaleString()}EUR (licencia perpetua vs suscripcion)`,
+          `- Implementacion: Ahorro ${Math.round(client.savings * 0.25).toLocaleString()}EUR (3 meses vs 12-18 meses)`,
+          `- Mantenimiento: Ahorro ${Math.round(client.savings * 0.2).toLocaleString()}EUR (18% vs 25-30% anual)`,
+          `- Formacion: Ahorro ${Math.round(client.savings * 0.1).toLocaleString()}EUR (interfaz intuitiva)`,
+          `- Consultoria: Ahorro ${Math.round(client.savings * 0.05).toLocaleString()}EUR (menor dependencia externa)`,
         ];
         desglose.forEach(d => h.addParagraph(d));
       });
@@ -3284,18 +3318,18 @@ security/
       doc.setTextColor(0, 0, 0);
 
       const indexItems = [
-        { num: '13', title: 'VIABILIDAD ESPAÑA', page: 3 },
-        { num: '13.1', title: 'Mercado Español', page: 4 },
-        { num: '13.2', title: 'Oportunidades y Barreras', page: 5 },
+        { num: '13', title: 'VIABILIDAD ESPANA', page: 3 },
+        { num: '13.1', title: 'MERCADO ESPANOL', page: 4 },
+        { num: '13.2', title: 'OPORTUNIDADES Y BARRERAS', page: 5 },
         { num: '14', title: 'VIABILIDAD EUROPA', page: 7 },
-        { num: '14.1', title: 'Países Objetivo', page: 8 },
-        { num: '14.2', title: 'Regulaciones Europeas', page: 9 },
+        { num: '14.1', title: 'PAISES OBJETIVO', page: 8 },
+        { num: '14.2', title: 'REGULACIONES EUROPEAS', page: 9 },
         { num: '15', title: 'MERCADO SUDAMERICANO (LATAM)', page: 11 },
-        { num: '15.1', title: 'Análisis Detallado por País', page: 12 },
-        { num: '15.2', title: 'Costes de Entrada LATAM', page: 16 },
-        { num: '15.3', title: 'Ahorro Clientes LATAM', page: 18 },
+        { num: '15.1', title: 'ANALISIS DETALLADO POR PAIS', page: 12 },
+        { num: '15.2', title: 'COSTES DE ENTRADA LATAM', page: 16 },
+        { num: '15.3', title: 'AHORRO CLIENTES LATAM', page: 18 },
         { num: '16', title: 'OTROS MERCADOS INTERNACIONALES', page: 20 },
-        { num: '17', title: 'RIESGOS DE IMPLEMENTACIÓN', page: 23 },
+        { num: '17', title: 'RIESGOS DE IMPLEMENTACION', page: 23 },
         { num: '18', title: 'CLIENTES POTENCIALES', page: 25 },
       ];
 
@@ -3599,20 +3633,20 @@ security/
 
       const indexItems = [
         { num: '41', title: 'DASHBOARD REVENUE INTELLIGENCE', page: 3 },
-        { num: '41.1', title: 'Métricas Clave MRR/ARR', page: 4 },
-        { num: '41.2', title: 'Análisis MRR Waterfall', page: 5 },
+        { num: '41.1', title: 'METRICAS CLAVE MRR/ARR', page: 4 },
+        { num: '41.2', title: 'ANALISIS MRR WATERFALL', page: 5 },
         { num: '42', title: 'EXPANSION INTELLIGENCE', page: 7 },
-        { num: '42.1', title: 'Revenue Scoring', page: 8 },
-        { num: '42.2', title: 'Priorización Inteligente', page: 10 },
+        { num: '42.1', title: 'REVENUE SCORING', page: 8 },
+        { num: '42.2', title: 'PRIORIZACION INTELIGENTE', page: 10 },
         { num: '43', title: 'LTV PREDICTION & CAC ANALYSIS', page: 12 },
-        { num: '43.1', title: 'Modelo Predictivo LTV', page: 13 },
-        { num: '43.2', title: 'LTV:CAC Ratios', page: 15 },
+        { num: '43.1', title: 'MODELO PREDICTIVO LTV', page: 13 },
+        { num: '43.2', title: 'LTV:CAC RATIOS', page: 15 },
         { num: '44', title: 'CHURN REVENUE PROTECTION', page: 17 },
-        { num: '44.1', title: 'Señales PLG', page: 18 },
-        { num: '44.2', title: 'Intervenciones Automáticas', page: 20 },
+        { num: '44.1', title: 'SENALES PLG', page: 18 },
+        { num: '44.2', title: 'INTERVENCIONES AUTOMATICAS', page: 20 },
         { num: '45', title: 'REVENUE FORECASTING', page: 22 },
-        { num: '45.1', title: 'Simulación Monte Carlo', page: 23 },
-        { num: '45.2', title: 'Escenarios Base/Optimista/Pesimista', page: 25 },
+        { num: '45.1', title: 'SIMULACION MONTE CARLO', page: 23 },
+        { num: '45.2', title: 'ESCENARIOS BASE/OPTIMISTA/PESIMISTA', page: 25 },
         { num: '46', title: 'REVENUE ATTRIBUTION', page: 27 },
         { num: '47', title: 'BENCHMARKING & COMPARATIVA', page: 29 },
         { num: '48', title: 'ROI DE REVENUE INTELLIGENCE', page: 31 },

@@ -60,12 +60,32 @@ export async function getObelixiaLogoBase64(): Promise<string> {
 export const sanitizeTextForPDF = (text: string): string => {
   if (!text) return '';
   return text
-    .replace(/[\u2018\u2019]/g, "'") // Smart quotes to regular
-    .replace(/[\u201C\u201D]/g, '"') // Smart double quotes
-    .replace(/\u2013/g, '-') // En dash
-    .replace(/\u2014/g, '--') // Em dash
-    .replace(/\u2026/g, '...') // Ellipsis
-    .replace(/\u00A0/g, ' ') // Non-breaking space
+    // Emojis to text equivalents
+    .replace(/💡/g, '[i]')
+    .replace(/📊/g, '[#]')
+    .replace(/🎯/g, '[>]')
+    .replace(/📈/g, '[^]')
+    .replace(/🔒/g, '[*]')
+    .replace(/✅/g, '[OK]')
+    .replace(/❌/g, '[X]')
+    .replace(/⚠️/g, '[!]')
+    .replace(/🚀/g, '[>>]')
+    .replace(/💰/g, '[EUR]')
+    .replace(/🏦/g, '[B]')
+    .replace(/🌐/g, '[W]')
+    .replace(/📋/g, '[=]')
+    .replace(/🔐/g, '[*]')
+    .replace(/⭐/g, '[*]')
+    .replace(/[\u{1F300}-\u{1F9FF}]/gu, '') // Remove other emojis
+    // Smart quotes
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    // Dashes
+    .replace(/\u2013/g, '-')
+    .replace(/\u2014/g, '--')
+    .replace(/\u2026/g, '...')
+    .replace(/\u00A0/g, ' ')
+    // Accented vowels
     .replace(/[\u00E0\u00E1\u00E2\u00E3\u00E4\u00E5]/g, 'a')
     .replace(/[\u00C0\u00C1\u00C2\u00C3\u00C4\u00C5]/g, 'A')
     .replace(/[\u00E8\u00E9\u00EA\u00EB]/g, 'e')
@@ -80,12 +100,18 @@ export const sanitizeTextForPDF = (text: string): string => {
     .replace(/\u00D1/g, 'N')
     .replace(/\u00E7/g, 'c')
     .replace(/\u00C7/g, 'C')
+    // Symbols
     .replace(/\u20AC/g, 'EUR')
-    .replace(/\u2022/g, '-') // Bullet
-    .replace(/\u2192/g, '->') // Arrow
-    .replace(/\u2713/g, '[OK]') // Checkmark
-    .replace(/\u2717/g, '[X]') // X mark
-    .replace(/[^\x00-\x7F]/g, ''); // Remove any remaining non-ASCII
+    .replace(/\u2022/g, '-')  // Bullet
+    .replace(/\u00B7/g, '-')  // Middle dot
+    .replace(/\u2192/g, '->')
+    .replace(/\u2713/g, '[OK]')
+    .replace(/\u2717/g, '[X]')
+    .replace(/\u00A9/g, '(c)')
+    .replace(/\u00AE/g, '(R)')
+    .replace(/\u2122/g, '(TM)')
+    // Remove any remaining non-ASCII
+    .replace(/[^\x00-\x7F]/g, '');
 };
 
 // Shared PDF utilities for enhanced PDF generation
