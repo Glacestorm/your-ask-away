@@ -142,20 +142,28 @@ export const HeroExplosive: React.FC = () => {
                   size="lg"
                   className="h-14 px-8 text-base font-semibold bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 text-white rounded-full shadow-2xl shadow-blue-500/30 transition-all duration-300 hover:shadow-blue-500/50 hover:scale-105"
                 >
-                  CONSULTAR PLANOS
+                  CONSULTAR PLANES
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
               
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={() => setIsDemoModalOpen(true)}
-                className="h-14 px-8 text-base font-semibold bg-white/5 border-2 border-white/20 text-white hover:bg-white/10 hover:border-white/30 rounded-full transition-all duration-300 backdrop-blur-sm"
-              >
-                <Play className="mr-2 w-5 h-5" />
-                AGENDAR DEMO
-              </Button>
+              {/* AGENDAR DEMO with pulse wave effect */}
+              <div className="relative">
+                {/* Pulse waves */}
+                <span className="absolute inset-0 rounded-full animate-[ping_2s_ease-out_infinite] bg-violet-500/20" />
+                <span className="absolute inset-0 rounded-full animate-[ping_2s_ease-out_infinite_0.5s] bg-violet-500/15" />
+                <span className="absolute inset-0 rounded-full animate-[ping_2s_ease-out_infinite_1s] bg-violet-500/10" />
+                
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={() => setIsDemoModalOpen(true)}
+                  className="relative h-14 px-8 text-base font-semibold bg-white/5 border-2 border-white/20 text-white hover:bg-white/10 hover:border-white/30 rounded-full transition-all duration-300 backdrop-blur-sm z-10"
+                >
+                  <Play className="mr-2 w-5 h-5" />
+                  AGENDAR DEMO
+                </Button>
+              </div>
             </motion.div>
 
             {/* ObelixIA Logo with Brain */}
