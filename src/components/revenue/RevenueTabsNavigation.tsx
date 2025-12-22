@@ -64,66 +64,52 @@ export const RevenueTabsNavigation: React.FC<RevenueTabsNavigationProps> = ({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="flex flex-wrap items-center gap-1.5">
       {(Object.keys(groupedTabs) as Array<keyof typeof groupedTabs>).map((phase, phaseIndex) => (
-        <motion.div 
-          key={phase}
-          className="space-y-2"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: phaseIndex * 0.05 }}
-        >
-          {/* Phase Header */}
-          <div className="flex items-center gap-2">
+        <React.Fragment key={phase}>
+          {/* Phase separator */}
+          {phaseIndex > 0 && (
             <div 
-              className="h-px flex-1 opacity-20"
-              style={{ 
-                background: `linear-gradient(90deg, ${phaseLabels[phase].color}, transparent)` 
-              }}
+              className="h-6 w-px mx-1 opacity-30"
+              style={{ backgroundColor: phaseLabels[phase].color }}
             />
-            <span 
-              className="text-[8px] font-semibold uppercase tracking-[0.15em] px-2 py-0.5 rounded-full border"
-              style={{ 
-                color: phaseLabels[phase].color,
-                borderColor: `${phaseLabels[phase].color}25`,
-                background: `${phaseLabels[phase].color}05`
+          )}
+          
+          {/* Phase label badge */}
+          <span 
+            className="text-[7px] font-semibold uppercase tracking-[0.1em] px-1.5 py-0.5 rounded border mr-0.5"
+            style={{ 
+              color: phaseLabels[phase].color,
+              borderColor: `${phaseLabels[phase].color}25`,
+              background: `${phaseLabels[phase].color}08`
+            }}
+          >
+            {phaseLabels[phase].label}
+          </span>
+          
+          {/* Tab items */}
+          {groupedTabs[phase].map((tab, index) => (
+            <motion.div
+              key={tab.id}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ 
+                delay: phaseIndex * 0.03 + index * 0.01,
+                type: "spring",
+                stiffness: 500,
+                damping: 30
               }}
             >
-              {phaseLabels[phase].label}
-            </span>
-            <div 
-              className="h-px flex-1 opacity-20"
-              style={{ 
-                background: `linear-gradient(90deg, transparent, ${phaseLabels[phase].color})` 
-              }}
-            />
-          </div>
-          
-          {/* Tab Grid - More columns, compact */}
-          <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-13 gap-2">
-            {groupedTabs[phase].map((tab, index) => (
-              <motion.div
-                key={tab.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ 
-                  delay: phaseIndex * 0.08 + index * 0.02,
-                  type: "spring",
-                  stiffness: 400,
-                  damping: 30
-                }}
-              >
-                <Premium3DTabCard
-                  icon={tab.icon}
-                  label={tab.label}
-                  isActive={activeTab === tab.id}
-                  onClick={() => onTabChange(tab.id)}
-                  accentColor={phaseLabels[phase].color}
-                />
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+              <Premium3DTabCard
+                icon={tab.icon}
+                label={tab.label}
+                isActive={activeTab === tab.id}
+                onClick={() => onTabChange(tab.id)}
+                accentColor={phaseLabels[phase].color}
+              />
+            </motion.div>
+          ))}
+        </React.Fragment>
       ))}
     </div>
   );
