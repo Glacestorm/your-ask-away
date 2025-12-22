@@ -81,16 +81,19 @@ export function DafoBoard() {
       );
 
       if (suggestions && suggestions.length > 0) {
-        const mappedSuggestions: AISuggestion[] = suggestions.map(s => ({
-          category: s.category,
-          description: s.description || s.concept || '',
-          importance: s.importance || 5,
-          action_plan: s.action_plan,
-          concept: s.concept
-        }));
+        // Flatten the nested items structure from DAFOSuggestion
+        const mappedSuggestions: AISuggestion[] = suggestions.flatMap(s => 
+          s.items.map(item => ({
+            category: s.category,
+            description: item.description || item.concept || '',
+            importance: item.importance || 5,
+            action_plan: item.action_plan,
+            concept: item.concept
+          }))
+        );
         setAiSuggestions(mappedSuggestions);
         setShowSuggestions(true);
-        toast.success(`Se generaron ${suggestions.length} sugerencias`);
+        toast.success(`Se generaron ${mappedSuggestions.length} sugerencias`);
       } else {
         toast.info('No se generaron sugerencias adicionales');
       }
