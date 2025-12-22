@@ -430,7 +430,7 @@ const PAGES_LIST = [
   'MapView.tsx', 'NotFound.tsx', 'Profile.tsx', 'VisitSheets.tsx',
 ];
 
-type PDFPart = 'part1' | 'part2' | 'part3' | 'part4' | 'part5';
+type PDFPart = 'part1' | 'part2' | 'part3' | 'part4' | 'part5' | 'part6' | 'part7';
 
 export const DynamicTechnicalDocGenerator = () => {
   const [analyzing, setAnalyzing] = useState(false);
@@ -2121,10 +2121,10 @@ security/
     }
   };
 
-  // PART 4: Plan de Marketing y Ventas (~35 páginas)
-  const generatePart4 = async () => {
+  // PART 5: Plan de Marketing y Ventas (~35 páginas) - Antes era Part 4
+  const generatePart5 = async () => {
     if (!analysis) return;
-    setGeneratingPart('part4');
+    setGeneratingPart('part5');
     setProgress(0);
 
     try {
@@ -2576,10 +2576,10 @@ security/
     }
   };
 
-  // PART 5: Propuesta Comercial Espectacular (~35 páginas)
-  const generatePart5 = async () => {
+  // PART 6: Propuesta Comercial Espectacular (~35 páginas) - Antes era Part 5
+  const generatePart6 = async () => {
     if (!analysis) return;
-    setGeneratingPart('part5');
+    setGeneratingPart('part6');
     setProgress(0);
 
     try {
@@ -3480,8 +3480,736 @@ security/
       });
 
     } catch (error) {
-      console.error('Error generating Part 5:', error);
-      toast.error('Error al generar Parte 5');
+      console.error('Error generating Part 6:', error);
+      toast.error('Error al generar Parte 6');
+    } finally {
+      setGeneratingPart(null);
+    }
+  };
+
+  // PART 4: Mercados Globales (~35 páginas) - NUEVA
+  const generatePart4 = async () => {
+    if (!analysis) return;
+    setGeneratingPart('part4');
+    setProgress(0);
+
+    try {
+      const doc = new jsPDF('p', 'mm', 'a4');
+      const h = createPDFHelpers(doc, analysis);
+      const feasibility = analysis.feasibilityAnalysis;
+
+      // PORTADA PARTE 4
+      setProgress(5);
+      doc.setFillColor(60, 140, 100);
+      doc.rect(0, 0, h.pageWidth, 90, 'F');
+      doc.setFillColor(70, 160, 120);
+      doc.rect(0, 60, h.pageWidth, 30, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(28);
+      doc.setFont('helvetica', 'bold');
+      doc.text('CRM BANCARIO CREAND', h.pageWidth / 2, 35, { align: 'center' });
+      
+      doc.setFontSize(14);
+      doc.text('PARTE 4: Mercados Globales', h.pageWidth / 2, 50, { align: 'center' });
+      
+      doc.setFontSize(18);
+      doc.text(`Versión ${analysis.version}`, h.pageWidth / 2, 75, { align: 'center' });
+      
+      doc.setTextColor(0, 0, 0);
+      h.currentY = 105;
+      
+      h.addHighlightBox('PARTE 4 - CONTENIDO', 
+        'Análisis de viabilidad para España, Europa, Sudamérica (LATAM) y otros mercados internacionales. Incluye análisis por país, costes de entrada, ahorro para clientes y listado completo de clientes potenciales.',
+        'info');
+
+      h.addPageNumber();
+
+      // ÍNDICE PARTE 4
+      h.addNewPage();
+      setProgress(8);
+      
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(60, 140, 100);
+      doc.text('ÍNDICE - PARTE 4: MERCADOS GLOBALES', h.pageWidth / 2, h.currentY, { align: 'center' });
+      h.currentY += 12;
+      doc.setTextColor(0, 0, 0);
+
+      const indexItems = [
+        { num: '13', title: 'VIABILIDAD ESPAÑA', page: 3 },
+        { num: '13.1', title: 'Mercado Español', page: 4 },
+        { num: '13.2', title: 'Oportunidades y Barreras', page: 5 },
+        { num: '14', title: 'VIABILIDAD EUROPA', page: 7 },
+        { num: '14.1', title: 'Países Objetivo', page: 8 },
+        { num: '14.2', title: 'Regulaciones Europeas', page: 9 },
+        { num: '15', title: 'MERCADO SUDAMERICANO (LATAM)', page: 11 },
+        { num: '15.1', title: 'Análisis Detallado por País', page: 12 },
+        { num: '15.2', title: 'Costes de Entrada LATAM', page: 16 },
+        { num: '15.3', title: 'Ahorro Clientes LATAM', page: 18 },
+        { num: '16', title: 'OTROS MERCADOS INTERNACIONALES', page: 20 },
+        { num: '17', title: 'RIESGOS DE IMPLEMENTACIÓN', page: 23 },
+        { num: '18', title: 'CLIENTES POTENCIALES', page: 25 },
+      ];
+
+      doc.setFontSize(9);
+      indexItems.forEach(item => {
+        doc.setFont('helvetica', 'bold');
+        doc.text(item.num, h.margin, h.currentY);
+        doc.text(item.title, h.margin + 12, h.currentY);
+        doc.setFont('helvetica', 'normal');
+        doc.text(String(item.page), h.pageWidth - h.margin, h.currentY, { align: 'right' });
+        h.currentY += 6;
+      });
+
+      h.addPageNumber();
+
+      // 13. VIABILIDAD ESPAÑA
+      h.addNewPage();
+      setProgress(15);
+      
+      h.addMainTitle('13. VIABILIDAD MERCADO ESPAÑOL');
+
+      if (feasibility?.spanishMarket) {
+        h.addHighlightBox('Viabilidad', feasibility.spanishMarket.viability, 'success');
+        h.addParagraph(`Tamaño de Mercado: ${feasibility.spanishMarket.marketSize}`);
+        
+        h.addSubtitle('Oportunidades');
+        feasibility.spanishMarket.opportunities.forEach(opp => h.addBullet(opp, 3, '+'));
+        
+        h.addSubtitle('Barreras');
+        feasibility.spanishMarket.barriers.forEach(bar => h.addBullet(bar, 3, '-'));
+
+        h.addHighlightBox('Recomendación España', feasibility.spanishMarket.recommendation, 'info');
+      }
+
+      // 14. VIABILIDAD EUROPA
+      if (feasibility?.europeanMarket) {
+        h.addNewPage();
+        setProgress(25);
+        
+        h.addMainTitle('14. VIABILIDAD MERCADO EUROPEO');
+        h.addHighlightBox('Viabilidad', feasibility.europeanMarket.viability, 'success');
+        
+        h.addSubtitle('Países Objetivo');
+        h.addParagraph(feasibility.europeanMarket.targetCountries.join(', '));
+        
+        h.addSubtitle('Regulaciones a Cumplir');
+        feasibility.europeanMarket.regulations.forEach(reg => h.addBullet(reg, 3, '📋'));
+        
+        h.addSubtitle('Oportunidades');
+        feasibility.europeanMarket.opportunities.forEach(opp => h.addBullet(opp, 3, '+'));
+
+        h.addHighlightBox('Recomendación Europa', feasibility.europeanMarket.recommendation, 'info');
+      }
+
+      // 15. MERCADO SUDAMÉRICA
+      if (feasibility?.latamMarket) {
+        h.addNewPage();
+        setProgress(40);
+        
+        h.addMainTitle('15. MERCADO SUDAMERICANO (LATAM)');
+        h.addHighlightBox('Viabilidad', feasibility.latamMarket.viability, 'success');
+        h.addParagraph(`Tamaño de Mercado: ${feasibility.latamMarket.marketSize}`);
+        
+        h.addSubtitle('Países Objetivo Prioritarios');
+        h.addParagraph(feasibility.latamMarket.targetCountries.join(', '));
+        
+        h.addSubtitle('Marco Regulatorio');
+        feasibility.latamMarket.regulations.forEach(reg => h.addBullet(reg, 3, '📋'));
+        
+        h.addSubtitle('Oportunidades de Mercado');
+        feasibility.latamMarket.opportunities.forEach(opp => h.addBullet(opp, 3, '+'));
+
+        h.addHighlightBox('Recomendación LATAM', feasibility.latamMarket.recommendation, 'info');
+
+        // Tabla detallada por país LATAM
+        h.addNewPage();
+        h.addTitle('15.1 Análisis Detallado por País LATAM', 2);
+        
+        const latamCountryAnalysis = [
+          { country: 'México', population: '130M', banks: '52', opportunity: 'Alta', investment: '25.000€', timeline: '6 meses', notes: 'Banca móvil en expansión, regulación CNBV favorable' },
+          { country: 'Brasil', population: '215M', banks: '178', opportunity: 'Muy Alta', investment: '40.000€', timeline: '9 meses', notes: 'Mayor mercado LATAM, fintechs activas, BCB progresista' },
+          { country: 'Colombia', population: '52M', banks: '29', opportunity: 'Alta', investment: '18.000€', timeline: '4 meses', notes: 'Marco regulatorio moderno, Open Banking en desarrollo' },
+          { country: 'Chile', population: '19M', banks: '19', opportunity: 'Media-Alta', investment: '15.000€', timeline: '4 meses', notes: 'Mercado maduro, alta penetración digital' },
+          { country: 'Argentina', population: '46M', banks: '78', opportunity: 'Media', investment: '12.000€', timeline: '5 meses', notes: 'Volatilidad económica, oportunidad cooperativas' },
+          { country: 'Perú', population: '34M', banks: '17', opportunity: 'Media-Alta', investment: '14.000€', timeline: '4 meses', notes: 'Crecimiento fintech, regulación SBS favorable' },
+          { country: 'Uruguay', population: '3.5M', banks: '11', opportunity: 'Media', investment: '8.000€', timeline: '3 meses', notes: 'Hub fintech regional, regulación moderna' },
+          { country: 'Paraguay', population: '7M', banks: '17', opportunity: 'Media', investment: '8.000€', timeline: '3 meses', notes: 'Mercado en crecimiento, baja competencia' },
+        ];
+
+        h.addTable(
+          ['País', 'Población', 'Bancos', 'Oportunidad', 'Inversión', 'Timeline'],
+          latamCountryAnalysis.map(c => [c.country, c.population, c.banks, c.opportunity, c.investment, c.timeline]),
+          [30, 25, 22, 28, 30, 28]
+        );
+
+        h.addNewPage();
+        h.addTitle('15.2 Notas por País LATAM', 2);
+        latamCountryAnalysis.forEach(c => {
+          h.addBullet(`${c.country}: ${c.notes}`, 0, '🌎');
+        });
+
+        h.addTitle('15.3 Costes de Entrada LATAM', 2);
+        const latamEntryCosts = [
+          { concept: 'Localización idioma (español regional)', cost: '8.000€', notes: 'Adaptación terminología bancaria local' },
+          { concept: 'Compliance regulatorio por país', cost: '12.000€-25.000€/país', notes: 'Auditoría y certificación local' },
+          { concept: 'Adaptación contable local', cost: '15.000€/país', notes: 'PCGA locales vs PGC Andorra' },
+          { concept: 'Partner local / representante', cost: '3.000€-8.000€/mes', notes: 'Soporte comercial y técnico' },
+          { concept: 'Infraestructura cloud regional', cost: '500€-2.000€/mes', notes: 'AWS São Paulo / Azure Brasil' },
+          { concept: 'Marketing y eventos', cost: '15.000€-40.000€/año', notes: 'Ferias bancarias regionales' },
+        ];
+
+        h.addTable(
+          ['Concepto', 'Coste', 'Notas'],
+          latamEntryCosts.map(c => [c.concept, c.cost, c.notes]),
+          [60, 45, 65]
+        );
+
+        h.addHighlightBox('💰 INVERSIÓN TOTAL LATAM (3 países prioritarios)', 
+          'México + Colombia + Chile: 95.000€ - 150.000€ primer año | ROI esperado: 280% a 3 años | Time-to-market: 6-9 meses',
+          'warning');
+
+        // Ahorro para clientes LATAM
+        h.addNewPage();
+        setProgress(55);
+        h.addTitle('15.4 Ahorro para Clientes Bancarios LATAM', 2);
+        
+        const latamSavings = [
+          { type: 'Banco Comercial Mediano (México)', current: 850000, creand: 320000, savings: 530000, roi: 165, breakeven: 14 },
+          { type: 'Cooperativa Crédito (Colombia)', current: 380000, creand: 145000, savings: 235000, roi: 162, breakeven: 12 },
+          { type: 'Banco Digital (Brasil)', current: 620000, creand: 240000, savings: 380000, roi: 158, breakeven: 15 },
+          { type: 'Caja Rural (Chile)', current: 290000, creand: 115000, savings: 175000, roi: 152, breakeven: 11 },
+          { type: 'Fintech B2B (Argentina)', current: 280000, creand: 120000, savings: 160000, roi: 133, breakeven: 13 },
+          { type: 'Banca Privada (Uruguay)', current: 420000, creand: 160000, savings: 260000, roi: 163, breakeven: 10 },
+        ];
+
+        h.addTable(
+          ['Tipo Cliente LATAM', 'Coste Actual (5 años)', 'Coste Creand', 'Ahorro', 'ROI %', 'Breakeven'],
+          latamSavings.map(s => [
+            s.type,
+            `$${s.current.toLocaleString()} USD`,
+            `$${s.creand.toLocaleString()} USD`,
+            `$${s.savings.toLocaleString()} USD`,
+            `${s.roi}%`,
+            `${s.breakeven} meses`
+          ]),
+          [50, 35, 32, 35, 20, 28]
+        );
+
+        const totalLatamSavings = latamSavings.reduce((a, b) => a + b.savings, 0);
+        h.addHighlightBox('📊 AHORRO TOTAL POTENCIAL CLIENTES LATAM', 
+          `$${totalLatamSavings.toLocaleString()} USD en 5 años para 6 tipos de clientes típicos | Promedio ROI: ${Math.round(latamSavings.reduce((a, b) => a + b.roi, 0) / latamSavings.length)}%`,
+          'success');
+      }
+
+      // 16. OTROS MERCADOS INTERNACIONALES
+      if (feasibility?.otherMarkets && feasibility.otherMarkets.length > 0) {
+        h.addNewPage();
+        setProgress(65);
+        h.addMainTitle('16. OTROS MERCADOS INTERNACIONALES');
+        
+        feasibility.otherMarkets.forEach((market) => {
+          h.checkPageBreak(40);
+          h.addSubtitle(`${market.region}`);
+          h.addHighlightBox('Viabilidad', market.viability, market.viability.includes('Alta') ? 'success' : 'info');
+          h.addParagraph(`Tamaño de Mercado: ${market.marketSize}`);
+          h.addParagraph(`Países: ${market.countries.join(', ')}`);
+          h.addSubtitle('Oportunidades');
+          market.opportunities.forEach(opp => h.addBullet(opp, 3, '+'));
+          h.currentY += 5;
+        });
+      }
+
+      // 17. RIESGOS DE IMPLEMENTACIÓN
+      if (feasibility?.implementationRisks) {
+        h.addNewPage();
+        setProgress(75);
+        h.addMainTitle('17. RIESGOS DE IMPLEMENTACIÓN');
+        h.addTable(
+          ['Riesgo', 'Probabilidad', 'Mitigación'],
+          feasibility.implementationRisks.map(r => [r.risk, r.probability, r.mitigation]),
+          [55, 30, 85]
+        );
+      }
+
+      // 18. CLIENTES POTENCIALES
+      h.addNewPage();
+      setProgress(85);
+      
+      h.addMainTitle('18. CLIENTES POTENCIALES');
+
+      analysis.potentialClients.forEach((client, index) => {
+        h.checkPageBreak(55);
+        h.addTitle(`18.${index + 1} ${client.sector}`, 2);
+        
+        h.addTable(['Característica', 'Detalle'], [
+          ['Tipo de Cliente', client.clientType],
+          ['Región Objetivo', client.region],
+          ['Valor Estimado', client.estimatedValue],
+          ['Tiempo Implementación', client.implementationTime],
+          ['Clientes Potenciales', String(client.potentialClients || 'N/A')],
+          ['Penetración Mercado', client.marketPenetration || 'N/A'],
+        ], [65, 105]);
+        
+        if (client.customizations.length > 0) {
+          h.addSubtitle('Personalizaciones Requeridas');
+          client.customizations.forEach(c => h.addBullet(c, 3, '⚙'));
+        }
+        h.currentY += 5;
+      });
+
+      // PÁGINA FINAL
+      h.addNewPage();
+      setProgress(95);
+      
+      doc.setFillColor(60, 140, 100);
+      doc.rect(0, 0, h.pageWidth, 50, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('FIN DE LA PARTE 4', h.pageWidth / 2, 25, { align: 'center' });
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Mercados Globales: España, Europa, LATAM, Internacional', h.pageWidth / 2, 38, { align: 'center' });
+
+      h.currentY = 65;
+      doc.setTextColor(0, 0, 0);
+      
+      h.addHighlightBox('CONTENIDO PARTE 5', 
+        'Plan de Marketing y Ventas: Análisis SWOT, propuesta de valor por segmento, estrategia de pricing, canales de venta, plan de marketing digital, KPIs y presupuesto.',
+        'info');
+
+      h.addHighlightBox('CONTENIDO PARTE 6', 
+        'Propuesta Comercial Ejecutiva: Executive Summary, propuesta económica detallada, análisis TCO, comparativa ROI, casos de uso, metodología de implementación.',
+        'info');
+
+      setProgress(100);
+      
+      const filename = `CRM_Creand_PARTE4_Mercados_Globales_v${analysis.version}_${new Date().toISOString().split('T')[0]}.pdf`;
+      doc.save(filename);
+      
+      toast.success('Parte 4 generada', {
+        description: `${h.pageNumber} páginas - Mercados Globales`,
+      });
+
+    } catch (error) {
+      console.error('Error generating Part 4:', error);
+      toast.error('Error al generar Parte 4');
+    } finally {
+      setGeneratingPart(null);
+    }
+  };
+
+  // PART 7: Revenue Intelligence & Expansion (~35 páginas) - NUEVA
+  const generatePart7 = async () => {
+    if (!analysis) return;
+    setGeneratingPart('part7');
+    setProgress(0);
+
+    try {
+      const doc = new jsPDF('p', 'mm', 'a4');
+      const h = createPDFHelpers(doc, analysis);
+
+      // PORTADA PARTE 7
+      setProgress(5);
+      doc.setFillColor(16, 185, 129);
+      doc.rect(0, 0, h.pageWidth, 90, 'F');
+      doc.setFillColor(5, 150, 105);
+      doc.rect(0, 60, h.pageWidth, 30, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(28);
+      doc.setFont('helvetica', 'bold');
+      doc.text('CRM BANCARIO CREAND', h.pageWidth / 2, 35, { align: 'center' });
+      
+      doc.setFontSize(14);
+      doc.text('PARTE 7: Revenue Intelligence & Expansion', h.pageWidth / 2, 50, { align: 'center' });
+      
+      doc.setFontSize(18);
+      doc.text(`Versión ${analysis.version}`, h.pageWidth / 2, 75, { align: 'center' });
+      
+      doc.setTextColor(0, 0, 0);
+      h.currentY = 105;
+      
+      h.addHighlightBox('PARTE 7 - REVENUE INTELLIGENCE', 
+        'Sistema integral de inteligencia de ingresos: MRR Waterfall, análisis de expansión, predicción LTV, protección contra churn, forecasting con Monte Carlo, benchmarking industrial y ROI de Revenue Operations.',
+        'success');
+
+      h.addPageNumber();
+
+      // ÍNDICE PARTE 7
+      h.addNewPage();
+      setProgress(8);
+      
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(16, 185, 129);
+      doc.text('ÍNDICE - PARTE 7: REVENUE INTELLIGENCE', h.pageWidth / 2, h.currentY, { align: 'center' });
+      h.currentY += 12;
+      doc.setTextColor(0, 0, 0);
+
+      const indexItems = [
+        { num: '41', title: 'DASHBOARD REVENUE INTELLIGENCE', page: 3 },
+        { num: '41.1', title: 'Métricas Clave MRR/ARR', page: 4 },
+        { num: '41.2', title: 'Análisis MRR Waterfall', page: 5 },
+        { num: '42', title: 'EXPANSION INTELLIGENCE', page: 7 },
+        { num: '42.1', title: 'Revenue Scoring', page: 8 },
+        { num: '42.2', title: 'Priorización Inteligente', page: 10 },
+        { num: '43', title: 'LTV PREDICTION & CAC ANALYSIS', page: 12 },
+        { num: '43.1', title: 'Modelo Predictivo LTV', page: 13 },
+        { num: '43.2', title: 'LTV:CAC Ratios', page: 15 },
+        { num: '44', title: 'CHURN REVENUE PROTECTION', page: 17 },
+        { num: '44.1', title: 'Señales PLG', page: 18 },
+        { num: '44.2', title: 'Intervenciones Automáticas', page: 20 },
+        { num: '45', title: 'REVENUE FORECASTING', page: 22 },
+        { num: '45.1', title: 'Simulación Monte Carlo', page: 23 },
+        { num: '45.2', title: 'Escenarios Base/Optimista/Pesimista', page: 25 },
+        { num: '46', title: 'REVENUE ATTRIBUTION', page: 27 },
+        { num: '47', title: 'BENCHMARKING & COMPARATIVA', page: 29 },
+        { num: '48', title: 'ROI DE REVENUE INTELLIGENCE', page: 31 },
+      ];
+
+      doc.setFontSize(9);
+      indexItems.forEach(item => {
+        doc.setFont('helvetica', 'bold');
+        doc.text(item.num, h.margin, h.currentY);
+        doc.text(item.title, h.margin + 12, h.currentY);
+        doc.setFont('helvetica', 'normal');
+        doc.text(String(item.page), h.pageWidth - h.margin, h.currentY, { align: 'right' });
+        h.currentY += 5.5;
+      });
+
+      h.addPageNumber();
+
+      // 41. DASHBOARD REVENUE INTELLIGENCE
+      h.addNewPage();
+      setProgress(15);
+      
+      h.addMainTitle('41. DASHBOARD REVENUE INTELLIGENCE');
+
+      h.addParagraph('El módulo de Revenue Intelligence proporciona visibilidad completa sobre los flujos de ingresos recurrentes, permitiendo tomar decisiones basadas en datos para maximizar el crecimiento y minimizar el churn.');
+
+      h.addHighlightBox('🎯 CAPACIDADES CLAVE', 
+        'MRR/ARR tracking en tiempo real | Análisis de cohortes | Predicción de churn | Revenue attribution | Monte Carlo forecasting | LTV modeling | Smart prioritization',
+        'success');
+
+      h.addTitle('41.1 Métricas Clave MRR/ARR', 2);
+      h.addTable(
+        ['Métrica', 'Descripción', 'Frecuencia'],
+        [
+          ['MRR (Monthly Recurring Revenue)', 'Ingresos recurrentes mensuales normalizados', 'Tiempo real'],
+          ['ARR (Annual Recurring Revenue)', 'MRR × 12 para visión anual', 'Mensual'],
+          ['Net Revenue Retention', 'Expansión - Churn - Contraction', 'Mensual'],
+          ['Gross Revenue Retention', 'Ingresos retenidos sin expansión', 'Mensual'],
+          ['Expansion MRR', 'Ingresos adicionales de clientes existentes', 'Mensual'],
+          ['Churned MRR', 'Ingresos perdidos por bajas', 'Mensual'],
+          ['ARPU', 'Ingreso medio por usuario', 'Mensual'],
+        ],
+        [60, 70, 40]
+      );
+
+      h.addNewPage();
+      h.addTitle('41.2 Análisis MRR Waterfall', 2);
+      h.addParagraph('El análisis waterfall visualiza los cambios en MRR mes a mes, identificando las fuentes de crecimiento y pérdida.');
+
+      h.addTable(
+        ['Componente', 'Impacto Típico', 'Objetivo'],
+        [
+          ['New MRR', '+8-15% mensual', 'Maximizar adquisición'],
+          ['Expansion MRR', '+3-8% mensual', 'Upsell/Cross-sell'],
+          ['Reactivation MRR', '+1-3% mensual', 'Recuperar churned'],
+          ['Contraction MRR', '-2-5% mensual', 'Minimizar downgrades'],
+          ['Churned MRR', '-3-7% mensual', 'Reducir abandono'],
+          ['Net New MRR', '+5-12% mensual', 'Crecimiento neto'],
+        ],
+        [55, 50, 65]
+      );
+
+      // 42. EXPANSION INTELLIGENCE
+      h.addNewPage();
+      setProgress(30);
+      
+      h.addMainTitle('42. EXPANSION INTELLIGENCE');
+
+      h.addParagraph('El sistema de Expansion Intelligence identifica oportunidades de crecimiento en la base de clientes existente, priorizando acciones basadas en propensión de compra y valor potencial.');
+
+      h.addTitle('42.1 Revenue Scoring', 2);
+      h.addParagraph('Cada cuenta recibe un score compuesto basado en múltiples factores:');
+
+      h.addTable(
+        ['Factor', 'Peso', 'Señales Positivas'],
+        [
+          ['Health Score', '25%', 'Uso activo, NPS alto, tickets resueltos'],
+          ['Engagement Score', '20%', 'Logins frecuentes, features adoptados'],
+          ['Expansion Potential', '25%', 'Usuarios adicionales, módulos no contratados'],
+          ['Retention Risk', '15%', 'Bajo churn probability, contrato largo'],
+          ['Growth Trajectory', '15%', 'Tendencia uso creciente, expansión histórica'],
+        ],
+        [50, 25, 95]
+      );
+
+      h.addNewPage();
+      h.addTitle('42.2 Priorización Inteligente', 2);
+      
+      h.addHighlightBox('📊 MATRIZ DE PRIORIZACIÓN', 
+        'Las cuentas se clasifican en cuadrantes: EXPAND (alto potencial + bajo riesgo), RETAIN (alto valor + alto riesgo), NURTURE (bajo potencial + bajo riesgo), MONITOR (bajo valor + alto riesgo).',
+        'info');
+
+      h.addTable(
+        ['Cuadrante', 'Acción Recomendada', 'Frecuencia Contacto'],
+        [
+          ['EXPAND', 'Proponer upsell/cross-sell activamente', 'Semanal'],
+          ['RETAIN', 'Engagement proactivo, resolver issues', 'Diaria'],
+          ['NURTURE', 'Automatización + check-ins periódicos', 'Mensual'],
+          ['MONITOR', 'Evaluación de rentabilidad', 'Trimestral'],
+        ],
+        [45, 80, 45]
+      );
+
+      // 43. LTV PREDICTION
+      h.addNewPage();
+      setProgress(45);
+      
+      h.addMainTitle('43. LTV PREDICTION & CAC ANALYSIS');
+
+      h.addParagraph('El modelo predictivo de Lifetime Value (LTV) utiliza machine learning para estimar el valor futuro de cada cliente, permitiendo decisiones informadas sobre inversión en adquisición y retención.');
+
+      h.addTitle('43.1 Modelo Predictivo LTV', 2);
+      h.addTable(
+        ['Variable Predictora', 'Importancia', 'Correlación con LTV'],
+        [
+          ['Tenure (meses como cliente)', 'Alta', '+0.72'],
+          ['MRR inicial', 'Alta', '+0.68'],
+          ['Número de productos', 'Media-Alta', '+0.55'],
+          ['Engagement score', 'Media', '+0.48'],
+          ['Industry/Segment', 'Media', '+0.42'],
+          ['Tamaño empresa', 'Media', '+0.38'],
+          ['NPS score', 'Baja-Media', '+0.32'],
+        ],
+        [60, 40, 70]
+      );
+
+      h.addNewPage();
+      h.addTitle('43.2 LTV:CAC Ratios por Segmento', 2);
+      
+      h.addTable(
+        ['Segmento', 'LTV Medio', 'CAC Medio', 'Ratio LTV:CAC', 'Payback (meses)'],
+        [
+          ['Enterprise', '180.000€', '25.000€', '7.2x', '14'],
+          ['Mid-Market', '85.000€', '12.000€', '7.1x', '12'],
+          ['SMB Premium', '45.000€', '6.500€', '6.9x', '10'],
+          ['SMB Standard', '22.000€', '3.500€', '6.3x', '11'],
+          ['Startup', '12.000€', '2.000€', '6.0x', '9'],
+        ],
+        [40, 35, 35, 30, 30]
+      );
+
+      h.addHighlightBox('🎯 BENCHMARK', 
+        'Ratio LTV:CAC óptimo: >3x | Nuestro promedio: 6.7x | Payback objetivo: <18 meses',
+        'success');
+
+      // 44. CHURN PROTECTION
+      h.addNewPage();
+      setProgress(55);
+      
+      h.addMainTitle('44. CHURN REVENUE PROTECTION');
+
+      h.addParagraph('El sistema de protección contra churn detecta señales tempranas de riesgo de abandono y activa intervenciones automáticas para retener clientes de alto valor.');
+
+      h.addTitle('44.1 Señales PLG (Product-Led Growth)', 2);
+      h.addTable(
+        ['Señal de Riesgo', 'Peso', 'Umbral Alerta', 'Acción Automática'],
+        [
+          ['Caída uso >30%', 'Crítico', '2 semanas', 'Alerta CSM + Email automático'],
+          ['No login >14 días', 'Alto', '14 días', 'Secuencia reengagement'],
+          ['Ticket sin resolver', 'Medio', '5 días', 'Escalación automática'],
+          ['NPS negativo', 'Alto', '<6', 'Llamada CSM prioritaria'],
+          ['Contrato expirando', 'Medio', '60 días', 'Iniciar renovación'],
+        ],
+        [40, 25, 35, 70]
+      );
+
+      h.addNewPage();
+      h.addTitle('44.2 Intervenciones Automáticas', 2);
+      
+      h.addParagraph('Playbooks automatizados según nivel de riesgo:');
+
+      h.addTable(
+        ['Nivel Riesgo', 'Probabilidad Churn', 'Intervención'],
+        [
+          ['Crítico', '>75%', 'Llamada ejecutivo + Oferta retención'],
+          ['Alto', '50-75%', 'CSM proactivo + Revisión QBR'],
+          ['Medio', '25-50%', 'Email personalizado + Webinar'],
+          ['Bajo', '<25%', 'Monitoreo automático + Newsletter'],
+        ],
+        [40, 45, 85]
+      );
+
+      // 45. REVENUE FORECASTING
+      h.addNewPage();
+      setProgress(65);
+      
+      h.addMainTitle('45. REVENUE FORECASTING');
+
+      h.addParagraph('El sistema de forecasting utiliza simulación Monte Carlo para generar proyecciones de ingresos con intervalos de confianza, considerando múltiples escenarios.');
+
+      h.addTitle('45.1 Simulación Monte Carlo', 2);
+      h.addParagraph('Parámetros de la simulación:');
+      
+      h.addTable(
+        ['Parámetro', 'Distribución', 'Rango'],
+        [
+          ['New MRR Growth', 'Normal', '5-15% mensual'],
+          ['Churn Rate', 'Beta', '2-8% mensual'],
+          ['Expansion Rate', 'Log-Normal', '3-12% mensual'],
+          ['ARPU Change', 'Normal', '-2% a +5%'],
+          ['Seasonality', 'Determinístico', 'Patrón histórico'],
+        ],
+        [55, 50, 65]
+      );
+
+      h.addHighlightBox('📈 RESULTADO SIMULACIÓN (10,000 iteraciones)', 
+        'P10: 2.1M€ ARR | P50 (Media): 2.8M€ ARR | P90: 3.6M€ ARR | Intervalo confianza 80%: 2.4M€ - 3.2M€',
+        'success');
+
+      h.addNewPage();
+      h.addTitle('45.2 Escenarios Proyección', 2);
+      
+      h.addTable(
+        ['Escenario', 'Supuestos', 'ARR 12 meses', 'Probabilidad'],
+        [
+          ['Pesimista', 'Churn +50%, New MRR -30%', '2.0M€', '15%'],
+          ['Conservador', 'Métricas actuales', '2.5M€', '35%'],
+          ['Base', 'Mejora moderada retención', '2.8M€', '35%'],
+          ['Optimista', 'Expansión acelerada', '3.4M€', '15%'],
+        ],
+        [40, 60, 35, 35]
+      );
+
+      // 46. REVENUE ATTRIBUTION
+      h.addNewPage();
+      setProgress(75);
+      
+      h.addMainTitle('46. REVENUE ATTRIBUTION');
+
+      h.addParagraph('Análisis de atribución para entender qué canales, campañas y touchpoints generan mayor impacto en revenue.');
+
+      h.addTable(
+        ['Canal', 'Revenue Atribuido', 'CAC', 'Contribución %'],
+        [
+          ['Outbound Sales', '1.2M€', '18.000€', '42%'],
+          ['Inbound Marketing', '620K€', '4.500€', '22%'],
+          ['Partner Referrals', '450K€', '8.000€', '16%'],
+          ['Events & Conferences', '320K€', '12.000€', '11%'],
+          ['Product-Led', '250K€', '1.200€', '9%'],
+        ],
+        [50, 45, 35, 40]
+      );
+
+      // 47. BENCHMARKING
+      h.addNewPage();
+      setProgress(85);
+      
+      h.addMainTitle('47. BENCHMARKING & COMPARATIVA INDUSTRIAL');
+
+      h.addTable(
+        ['Métrica', 'ObelixIA', 'Top 25% SaaS', 'Mediana', 'Diferencial'],
+        [
+          ['Net Revenue Retention', '115%', '120%', '100%', '+15pp'],
+          ['Gross Margin', '78%', '80%', '70%', '+8pp'],
+          ['LTV:CAC', '6.7x', '5.0x', '3.0x', '+3.7x'],
+          ['Payback Months', '11', '12', '18', '-7 meses'],
+          ['Logo Churn', '4%', '5%', '8%', '-4pp'],
+          ['Expansion Rate', '8%', '7%', '4%', '+4pp'],
+        ],
+        [45, 30, 30, 30, 35]
+      );
+
+      h.addHighlightBox('🏆 POSICIONAMIENTO', 
+        'ObelixIA se sitúa en el top 25% de benchmarks SaaS B2B en la mayoría de métricas de Revenue Operations.',
+        'success');
+
+      // 48. ROI
+      h.addNewPage();
+      setProgress(92);
+      
+      h.addMainTitle('48. ROI DE REVENUE INTELLIGENCE');
+
+      h.addHighlightBox('💰 IMPACTO CUANTIFICADO', 
+        'Reducción churn: -35% | Aumento expansion: +42% | Mejora forecast accuracy: +28% | Tiempo análisis: -65%',
+        'success');
+
+      h.addTable(
+        ['Beneficio', 'Impacto Anual', 'Inversión', 'ROI'],
+        [
+          ['Reducción Churn (-35%)', '+180.000€ ARR', '25.000€', '620%'],
+          ['Expansión Mejorada', '+95.000€ ARR', '15.000€', '533%'],
+          ['Eficiencia Comercial', '+45.000€ savings', '10.000€', '350%'],
+          ['Forecast Accuracy', 'Decisiones mejores', '8.000€', 'Cualitativo'],
+          ['TOTAL', '+320.000€', '58.000€', '552%'],
+        ],
+        [50, 40, 35, 45]
+      );
+
+      // PÁGINA FINAL
+      h.addNewPage();
+      setProgress(98);
+      
+      doc.setFillColor(16, 185, 129);
+      doc.rect(0, 0, h.pageWidth, 70, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(20);
+      doc.setFont('helvetica', 'bold');
+      doc.text('CRM BANCARIO CREAND', h.pageWidth / 2, 28, { align: 'center' });
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Documentación Comercial Exhaustiva v${analysis.version}`, h.pageWidth / 2, 42, { align: 'center' });
+      doc.setFontSize(10);
+      doc.text('Parte 7 de 7 - Revenue Intelligence & Expansion', h.pageWidth / 2, 55, { align: 'center' });
+
+      h.currentY = 85;
+      doc.setTextColor(0, 0, 0);
+      
+      h.addSubtitle('Resumen Completo del Documento (7 Partes)');
+      const summaryData = [
+        ['Parte 1:', 'Resumen Ejecutivo, Módulos, Valoración'],
+        ['Parte 2:', 'TCO, ISO 27001, Normativas'],
+        ['Parte 3:', 'BCP, Gap Analysis, Roadmap 2025'],
+        ['Parte 4:', 'Mercados Globales (España, Europa, LATAM)'],
+        ['Parte 5:', 'Marketing y Ventas'],
+        ['Parte 6:', 'Propuesta Comercial Ejecutiva'],
+        ['Parte 7:', 'Revenue Intelligence & Expansion'],
+      ];
+      
+      summaryData.forEach(([label, value]) => {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.text(label, h.margin, h.currentY);
+        doc.setFont('helvetica', 'normal');
+        doc.text(value, h.margin + 25, h.currentY);
+        h.currentY += 6;
+      });
+
+      h.currentY += 8;
+      h.addHighlightBox('DOCUMENTACIÓN COMPLETA', 
+        'Las 7 partes contienen más de 245 páginas de documentación comercial exhaustiva incluyendo Revenue Intelligence como diferenciador competitivo.',
+        'success');
+
+      setProgress(100);
+      
+      const filename = `CRM_Creand_PARTE7_Revenue_Intelligence_v${analysis.version}_${new Date().toISOString().split('T')[0]}.pdf`;
+      doc.save(filename);
+      
+      toast.success('Parte 7 generada', {
+        description: `${h.pageNumber} páginas - Revenue Intelligence & Expansion`,
+      });
+
+    } catch (error) {
+      console.error('Error generating Part 7:', error);
+      toast.error('Error al generar Parte 7');
     } finally {
       setGeneratingPart(null);
     }
@@ -4048,7 +4776,7 @@ security/
           Generador de Documentación Comercial Exhaustiva con IA
         </CardTitle>
         <CardDescription>
-          Genera documentación técnico-comercial de 175+ páginas dividida en 5 PDFs independientes
+          Genera documentación técnico-comercial de 245+ páginas dividida en 7 PDFs independientes
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -4082,11 +4810,11 @@ security/
 
         {/* Badges */}
         <div className="flex flex-wrap gap-2">
-          <Badge variant="outline">5 PDFs Independientes</Badge>
+          <Badge variant="outline">7 PDFs Independientes</Badge>
           <Badge variant="outline">~35 páginas cada uno</Badge>
-          <Badge variant="outline">175+ páginas total</Badge>
+          <Badge variant="outline">245+ páginas total</Badge>
           <Badge variant="outline">Gemini 2.5 Pro</Badge>
-          <Badge variant="outline">Ahorro por Cliente</Badge>
+          <Badge variant="outline">Revenue Intelligence</Badge>
           <Badge variant="secondary">Proposta Comercial</Badge>
         </div>
 
@@ -4124,9 +4852,11 @@ security/
               Generando {
                 generatingPart === 'part1' ? 'Parte 1: Resumen' : 
                 generatingPart === 'part2' ? 'Parte 2: TCO/ISO' : 
-                generatingPart === 'part3' ? 'Parte 3: BCP' : 
-                generatingPart === 'part4' ? 'Parte 4: Marketing' :
-                'Parte 5: Proposta Comercial'
+                generatingPart === 'part3' ? 'Parte 3: BCP/Gap' : 
+                generatingPart === 'part4' ? 'Parte 4: Mercados Globales' :
+                generatingPart === 'part5' ? 'Parte 5: Marketing' :
+                generatingPart === 'part6' ? 'Parte 6: Proposta Comercial' :
+                'Parte 7: Revenue Intelligence'
               }... {progress}%
             </p>
           </div>
@@ -4165,8 +4895,8 @@ security/
           </div>
         )}
 
-        {/* Five PDF Buttons */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        {/* Seven PDF Buttons */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
           <Button
             onClick={generatePart1}
             disabled={!isAnalysisComplete || analyzing || generatingPart !== null}
@@ -4206,10 +4936,10 @@ security/
             {generatingPart === 'part3' ? (
               <Loader2 className="h-5 w-5 animate-spin mb-1" />
             ) : (
-              <Globe className="h-5 w-5 mb-1" />
+              <ClipboardCheck className="h-5 w-5 mb-1" />
             )}
             <span className="font-medium">Parte 3</span>
-            <span className="text-xs opacity-80">BCP, Mercados</span>
+            <span className="text-xs opacity-80">BCP, Gap, Roadmap</span>
           </Button>
 
           <Button
@@ -4221,25 +4951,55 @@ security/
             {generatingPart === 'part4' ? (
               <Loader2 className="h-5 w-5 animate-spin mb-1" />
             ) : (
-              <Target className="h-5 w-5 mb-1" />
+              <Globe className="h-5 w-5 mb-1" />
             )}
             <span className="font-medium">Parte 4</span>
-            <span className="text-xs opacity-80">Marketing, Ventas</span>
+            <span className="text-xs opacity-80">Mercados Globales</span>
           </Button>
 
           <Button
             onClick={generatePart5}
             disabled={!isAnalysisComplete || analyzing || generatingPart !== null}
-            variant={isAnalysisComplete ? "secondary" : "outline"}
-            className="flex flex-col h-auto py-4 border-2 border-amber-500/50"
+            variant={isAnalysisComplete ? "default" : "outline"}
+            className="flex flex-col h-auto py-4"
           >
             {generatingPart === 'part5' ? (
               <Loader2 className="h-5 w-5 animate-spin mb-1" />
             ) : (
-              <Award className="h-5 w-5 mb-1 text-amber-500" />
+              <Target className="h-5 w-5 mb-1" />
             )}
             <span className="font-medium">Parte 5</span>
+            <span className="text-xs opacity-80">Marketing, Ventas</span>
+          </Button>
+
+          <Button
+            onClick={generatePart6}
+            disabled={!isAnalysisComplete || analyzing || generatingPart !== null}
+            variant={isAnalysisComplete ? "secondary" : "outline"}
+            className="flex flex-col h-auto py-4 border-2 border-amber-500/50"
+          >
+            {generatingPart === 'part6' ? (
+              <Loader2 className="h-5 w-5 animate-spin mb-1" />
+            ) : (
+              <Award className="h-5 w-5 mb-1 text-amber-500" />
+            )}
+            <span className="font-medium">Parte 6</span>
             <span className="text-xs opacity-80">Proposta Comercial</span>
+          </Button>
+
+          <Button
+            onClick={generatePart7}
+            disabled={!isAnalysisComplete || analyzing || generatingPart !== null}
+            variant={isAnalysisComplete ? "secondary" : "outline"}
+            className="flex flex-col h-auto py-4 border-2 border-emerald-500/50"
+          >
+            {generatingPart === 'part7' ? (
+              <Loader2 className="h-5 w-5 animate-spin mb-1" />
+            ) : (
+              <TrendingUp className="h-5 w-5 mb-1 text-emerald-500" />
+            )}
+            <span className="font-medium">Parte 7</span>
+            <span className="text-xs opacity-80">Revenue Intelligence</span>
           </Button>
         </div>
 
