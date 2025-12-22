@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { ObelixiaLogo } from '@/components/ui/ObelixiaLogo';
 import DemoRequestModal from '@/components/store/DemoRequestModal';
 import brainLogo from '@/assets/brain-logo.png';
-import { TransparentImage } from '@/components/ui/TransparentImage';
 
 export const HeroExplosive: React.FC = () => {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
@@ -99,19 +98,39 @@ export const HeroExplosive: React.FC = () => {
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-violet-400 to-purple-400">
                   Somos ObelixIA
                 </span>
-                {/* Brain with active synapses */}
-                <span className="relative inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 xl:w-28 xl:h-28">
-                  {/* Synapses glow effect */}
-                  <span className="absolute inset-0 animate-pulse">
-                    <span className="absolute inset-0 rounded-full bg-gradient-to-r from-violet-500/50 to-blue-500/50 blur-xl" />
-                  </span>
+                {/* Brain with active synapses - same style as ObelixiaLogo */}
+                <span 
+                  className="relative inline-flex items-center justify-center w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 xl:w-28 xl:h-28 overflow-hidden"
+                  style={{ borderRadius: '50%' }}
+                >
+                  {/* Outer Glow Layer */}
+                  <span 
+                    className="absolute inset-[-50%] blur-2xl opacity-60"
+                    style={{
+                      background: 'radial-gradient(ellipse at center, rgba(139,92,246,0.5) 0%, rgba(59,130,246,0.3) 40%, transparent 70%)',
+                    }}
+                  />
+                  {/* Pulse effects */}
                   <span className="absolute inset-[-20%] animate-[ping_2s_ease-out_infinite] rounded-full bg-violet-500/30" />
                   <span className="absolute inset-[-15%] animate-[ping_2.5s_ease-out_infinite_0.3s] rounded-full bg-blue-500/25" />
-                  <TransparentImage
-                    src={brainLogo}
-                    alt="Cerebro ObelixIA con sinapsis activas"
-                    className="relative w-full h-full object-contain drop-shadow-[0_0_15px_rgba(139,92,246,0.9)]"
-                  />
+                  {/* Brain Image with circular clip and gradient mask */}
+                  <span 
+                    className="relative w-full h-full overflow-hidden"
+                    style={{
+                      borderRadius: '50%',
+                      maskImage: 'radial-gradient(ellipse 100% 100% at center, black 50%, transparent 80%)',
+                      WebkitMaskImage: 'radial-gradient(ellipse 100% 100% at center, black 50%, transparent 80%)',
+                    }}
+                  >
+                    <img 
+                      src={brainLogo}
+                      alt="ObelixIA Brain"
+                      className="w-full h-full object-cover scale-125"
+                      style={{ 
+                        filter: 'drop-shadow(0 0 15px rgba(139,92,246,0.6)) drop-shadow(0 0 30px rgba(59,130,246,0.4))',
+                      }}
+                    />
+                  </span>
                 </span>
                 {/* Underline glow */}
                 <motion.span
