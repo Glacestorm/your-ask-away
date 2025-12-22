@@ -12303,6 +12303,193 @@ export type Database = {
           },
         ]
       }
+      playbook_executions: {
+        Row: {
+          ai_recommendations: Json | null
+          company_id: string | null
+          completed_at: string | null
+          created_at: string | null
+          current_step: number | null
+          id: string
+          outcome: string | null
+          outcome_notes: string | null
+          playbook_id: string | null
+          started_at: string | null
+          status: string | null
+          trigger_reason: string | null
+          triggered_by: string | null
+          updated_at: string | null
+          variables: Json | null
+        }
+        Insert: {
+          ai_recommendations?: Json | null
+          company_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          current_step?: number | null
+          id?: string
+          outcome?: string | null
+          outcome_notes?: string | null
+          playbook_id?: string | null
+          started_at?: string | null
+          status?: string | null
+          trigger_reason?: string | null
+          triggered_by?: string | null
+          updated_at?: string | null
+          variables?: Json | null
+        }
+        Update: {
+          ai_recommendations?: Json | null
+          company_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          current_step?: number | null
+          id?: string
+          outcome?: string | null
+          outcome_notes?: string | null
+          playbook_id?: string | null
+          started_at?: string | null
+          status?: string | null
+          trigger_reason?: string | null
+          triggered_by?: string | null
+          updated_at?: string | null
+          variables?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "playbook_executions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playbook_executions_playbook_id_fkey"
+            columns: ["playbook_id"]
+            isOneToOne: false
+            referencedRelation: "retention_playbooks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playbook_executions_triggered_by_fkey"
+            columns: ["triggered_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      playbook_step_executions: {
+        Row: {
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string | null
+          execution_id: string | null
+          id: string
+          notes: string | null
+          result_data: Json | null
+          started_at: string | null
+          status: string | null
+          step_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string | null
+          execution_id?: string | null
+          id?: string
+          notes?: string | null
+          result_data?: Json | null
+          started_at?: string | null
+          status?: string | null
+          step_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string | null
+          execution_id?: string | null
+          id?: string
+          notes?: string | null
+          result_data?: Json | null
+          started_at?: string | null
+          status?: string | null
+          step_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "playbook_step_executions_completed_by_fkey"
+            columns: ["completed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playbook_step_executions_execution_id_fkey"
+            columns: ["execution_id"]
+            isOneToOne: false
+            referencedRelation: "playbook_executions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "playbook_step_executions_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "playbook_steps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      playbook_steps: {
+        Row: {
+          action_config: Json | null
+          condition_logic: Json | null
+          created_at: string | null
+          description: string | null
+          id: string
+          playbook_id: string | null
+          required: boolean | null
+          step_number: number
+          step_type: string
+          title: string
+          wait_days: number | null
+        }
+        Insert: {
+          action_config?: Json | null
+          condition_logic?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          playbook_id?: string | null
+          required?: boolean | null
+          step_number: number
+          step_type: string
+          title: string
+          wait_days?: number | null
+        }
+        Update: {
+          action_config?: Json | null
+          condition_logic?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          playbook_id?: string | null
+          required?: boolean | null
+          step_number?: number
+          step_type?: string
+          title?: string
+          wait_days?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "playbook_steps_playbook_id_fkey"
+            columns: ["playbook_id"]
+            isOneToOne: false
+            referencedRelation: "retention_playbooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plugin_permissions: {
         Row: {
           application_id: string | null
@@ -13503,6 +13690,147 @@ export type Database = {
         }
         Relationships: []
       }
+      renewal_nurturing_activities: {
+        Row: {
+          activity_type: string
+          completed_date: string | null
+          created_at: string | null
+          id: string
+          next_step: string | null
+          notes: string | null
+          outcome: string | null
+          performed_by: string | null
+          renewal_id: string | null
+          scheduled_date: string | null
+          status: string | null
+        }
+        Insert: {
+          activity_type: string
+          completed_date?: string | null
+          created_at?: string | null
+          id?: string
+          next_step?: string | null
+          notes?: string | null
+          outcome?: string | null
+          performed_by?: string | null
+          renewal_id?: string | null
+          scheduled_date?: string | null
+          status?: string | null
+        }
+        Update: {
+          activity_type?: string
+          completed_date?: string | null
+          created_at?: string | null
+          id?: string
+          next_step?: string | null
+          notes?: string | null
+          outcome?: string | null
+          performed_by?: string | null
+          renewal_id?: string | null
+          scheduled_date?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "renewal_nurturing_activities_performed_by_fkey"
+            columns: ["performed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renewal_nurturing_activities_renewal_id_fkey"
+            columns: ["renewal_id"]
+            isOneToOne: false
+            referencedRelation: "renewal_opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      renewal_opportunities: {
+        Row: {
+          ai_insights: Json | null
+          assigned_to: string | null
+          company_id: string | null
+          contract_id: string | null
+          created_at: string | null
+          current_mrr: number | null
+          expansion_opportunities: Json | null
+          id: string
+          last_contact_date: string | null
+          next_action: string | null
+          next_action_date: string | null
+          nurturing_stage: string | null
+          outcome_mrr: number | null
+          outcome_notes: string | null
+          predicted_outcome: string | null
+          renewal_date: string
+          renewal_probability: number | null
+          risk_factors: Json | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ai_insights?: Json | null
+          assigned_to?: string | null
+          company_id?: string | null
+          contract_id?: string | null
+          created_at?: string | null
+          current_mrr?: number | null
+          expansion_opportunities?: Json | null
+          id?: string
+          last_contact_date?: string | null
+          next_action?: string | null
+          next_action_date?: string | null
+          nurturing_stage?: string | null
+          outcome_mrr?: number | null
+          outcome_notes?: string | null
+          predicted_outcome?: string | null
+          renewal_date: string
+          renewal_probability?: number | null
+          risk_factors?: Json | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ai_insights?: Json | null
+          assigned_to?: string | null
+          company_id?: string | null
+          contract_id?: string | null
+          created_at?: string | null
+          current_mrr?: number | null
+          expansion_opportunities?: Json | null
+          id?: string
+          last_contact_date?: string | null
+          next_action?: string | null
+          next_action_date?: string | null
+          nurturing_stage?: string | null
+          outcome_mrr?: number | null
+          outcome_notes?: string | null
+          predicted_outcome?: string | null
+          renewal_date?: string
+          renewal_probability?: number | null
+          risk_factors?: Json | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "renewal_opportunities_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "renewal_opportunities_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       resilience_tests: {
         Row: {
           conducted_by: string | null
@@ -13583,6 +13911,62 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      retention_playbooks: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          estimated_duration_days: number | null
+          id: string
+          is_active: boolean | null
+          name: string
+          priority: number | null
+          success_criteria: Json | null
+          target_segment: string | null
+          trigger_conditions: Json | null
+          trigger_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          estimated_duration_days?: number | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          priority?: number | null
+          success_criteria?: Json | null
+          target_segment?: string | null
+          trigger_conditions?: Json | null
+          trigger_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          estimated_duration_days?: number | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          priority?: number | null
+          success_criteria?: Json | null
+          target_segment?: string | null
+          trigger_conditions?: Json | null
+          trigger_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "retention_playbooks_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       revenue_signals: {
         Row: {
@@ -14987,6 +15371,54 @@ export type Database = {
           },
         ]
       }
+      sla_policies: {
+        Row: {
+          business_hours_only: boolean | null
+          created_at: string | null
+          description: string | null
+          escalation_enabled: boolean | null
+          escalation_hours: number | null
+          first_response_hours: number
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          name: string
+          priority: string
+          resolution_hours: number
+          updated_at: string | null
+        }
+        Insert: {
+          business_hours_only?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          escalation_enabled?: boolean | null
+          escalation_hours?: number | null
+          first_response_hours: number
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name: string
+          priority: string
+          resolution_hours: number
+          updated_at?: string | null
+        }
+        Update: {
+          business_hours_only?: boolean | null
+          created_at?: string | null
+          description?: string | null
+          escalation_enabled?: boolean | null
+          escalation_hours?: number | null
+          first_response_hours?: number
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name?: string
+          priority?: string
+          resolution_hours?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       sms_delivery_logs: {
         Row: {
           id: string
@@ -15746,6 +16178,115 @@ export type Database = {
           },
         ]
       }
+      support_tickets: {
+        Row: {
+          assigned_to: string | null
+          category: string
+          closed_at: string | null
+          company_id: string | null
+          contact_email: string | null
+          contact_name: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          first_response_at: string | null
+          health_impact: number | null
+          id: string
+          metadata: Json | null
+          priority: string | null
+          resolved_at: string | null
+          satisfaction_feedback: string | null
+          satisfaction_rating: number | null
+          sla_policy_id: string | null
+          sla_resolution_due: string | null
+          sla_response_due: string | null
+          source: string | null
+          status: string | null
+          subject: string
+          tags: string[] | null
+          ticket_number: string
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          category: string
+          closed_at?: string | null
+          company_id?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          first_response_at?: string | null
+          health_impact?: number | null
+          id?: string
+          metadata?: Json | null
+          priority?: string | null
+          resolved_at?: string | null
+          satisfaction_feedback?: string | null
+          satisfaction_rating?: number | null
+          sla_policy_id?: string | null
+          sla_resolution_due?: string | null
+          sla_response_due?: string | null
+          source?: string | null
+          status?: string | null
+          subject: string
+          tags?: string[] | null
+          ticket_number: string
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          category?: string
+          closed_at?: string | null
+          company_id?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          first_response_at?: string | null
+          health_impact?: number | null
+          id?: string
+          metadata?: Json | null
+          priority?: string | null
+          resolved_at?: string | null
+          satisfaction_feedback?: string | null
+          satisfaction_rating?: number | null
+          sla_policy_id?: string | null
+          sla_resolution_due?: string | null
+          sla_response_due?: string | null
+          source?: string | null
+          status?: string | null
+          subject?: string
+          tags?: string[] | null
+          ticket_number?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_tickets_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_tickets_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_tickets_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       survey_campaigns: {
         Row: {
           avg_score: number | null
@@ -16230,6 +16771,107 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      ticket_escalation_rules: {
+        Row: {
+          auto_assign: boolean | null
+          created_at: string | null
+          escalate_to_role: string | null
+          escalate_to_user: string | null
+          escalation_level: number | null
+          id: string
+          is_active: boolean | null
+          name: string
+          notification_channels: string[] | null
+          trigger_condition: string
+          trigger_config: Json | null
+        }
+        Insert: {
+          auto_assign?: boolean | null
+          created_at?: string | null
+          escalate_to_role?: string | null
+          escalate_to_user?: string | null
+          escalation_level?: number | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          notification_channels?: string[] | null
+          trigger_condition: string
+          trigger_config?: Json | null
+        }
+        Update: {
+          auto_assign?: boolean | null
+          created_at?: string | null
+          escalate_to_role?: string | null
+          escalate_to_user?: string | null
+          escalation_level?: number | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          notification_channels?: string[] | null
+          trigger_condition?: string
+          trigger_config?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_escalation_rules_escalate_to_user_fkey"
+            columns: ["escalate_to_user"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ticket_responses: {
+        Row: {
+          ai_suggested: boolean | null
+          attachments: Json | null
+          author_id: string | null
+          author_type: string | null
+          content: string
+          created_at: string | null
+          id: string
+          is_internal: boolean | null
+          ticket_id: string | null
+        }
+        Insert: {
+          ai_suggested?: boolean | null
+          attachments?: Json | null
+          author_id?: string | null
+          author_type?: string | null
+          content: string
+          created_at?: string | null
+          id?: string
+          is_internal?: boolean | null
+          ticket_id?: string | null
+        }
+        Update: {
+          ai_suggested?: boolean | null
+          attachments?: Json | null
+          author_id?: string | null
+          author_type?: string | null
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_internal?: boolean | null
+          ticket_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_responses_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_responses_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       time_to_value_metrics: {
         Row: {
@@ -17812,6 +18454,207 @@ export type Database = {
             columns: ["webhook_id"]
             isOneToOne: false
             referencedRelation: "notification_webhooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      winback_campaign_participants: {
+        Row: {
+          ab_variant: string | null
+          campaign_id: string | null
+          company_id: string | null
+          contact_email: string | null
+          contact_name: string | null
+          conversion_value: number | null
+          converted_at: string | null
+          created_at: string | null
+          enrolled_at: string | null
+          first_contact_at: string | null
+          id: string
+          last_contact_at: string | null
+          response_data: Json | null
+          status: string | null
+          touchpoints: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          ab_variant?: string | null
+          campaign_id?: string | null
+          company_id?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          conversion_value?: number | null
+          converted_at?: string | null
+          created_at?: string | null
+          enrolled_at?: string | null
+          first_contact_at?: string | null
+          id?: string
+          last_contact_at?: string | null
+          response_data?: Json | null
+          status?: string | null
+          touchpoints?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          ab_variant?: string | null
+          campaign_id?: string | null
+          company_id?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          conversion_value?: number | null
+          converted_at?: string | null
+          created_at?: string | null
+          enrolled_at?: string | null
+          first_contact_at?: string | null
+          id?: string
+          last_contact_at?: string | null
+          response_data?: Json | null
+          status?: string | null
+          touchpoints?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "winback_campaign_participants_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "winback_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "winback_campaign_participants_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      winback_campaigns: {
+        Row: {
+          ab_variants: Json | null
+          budget: number | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          is_ab_test: boolean | null
+          name: string
+          offer_details: Json | null
+          offer_type: string | null
+          start_date: string | null
+          status: string | null
+          target_segment: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          ab_variants?: Json | null
+          budget?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_ab_test?: boolean | null
+          name: string
+          offer_details?: Json | null
+          offer_type?: string | null
+          start_date?: string | null
+          status?: string | null
+          target_segment?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          ab_variants?: Json | null
+          budget?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_ab_test?: boolean | null
+          name?: string
+          offer_details?: Json | null
+          offer_type?: string | null
+          start_date?: string | null
+          status?: string | null
+          target_segment?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "winback_campaigns_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      winback_conversions: {
+        Row: {
+          campaign_id: string | null
+          company_id: string | null
+          conversion_date: string | null
+          created_at: string | null
+          id: string
+          lifetime_value_recovered: number | null
+          notes: string | null
+          offer_applied: Json | null
+          participant_id: string | null
+          previous_mrr: number | null
+          recovered_mrr: number | null
+          retention_months: number | null
+        }
+        Insert: {
+          campaign_id?: string | null
+          company_id?: string | null
+          conversion_date?: string | null
+          created_at?: string | null
+          id?: string
+          lifetime_value_recovered?: number | null
+          notes?: string | null
+          offer_applied?: Json | null
+          participant_id?: string | null
+          previous_mrr?: number | null
+          recovered_mrr?: number | null
+          retention_months?: number | null
+        }
+        Update: {
+          campaign_id?: string | null
+          company_id?: string | null
+          conversion_date?: string | null
+          created_at?: string | null
+          id?: string
+          lifetime_value_recovered?: number | null
+          notes?: string | null
+          offer_applied?: Json | null
+          participant_id?: string | null
+          previous_mrr?: number | null
+          recovered_mrr?: number | null
+          retention_months?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "winback_conversions_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "winback_campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "winback_conversions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "winback_conversions_participant_id_fkey"
+            columns: ["participant_id"]
+            isOneToOne: false
+            referencedRelation: "winback_campaign_participants"
             referencedColumns: ["id"]
           },
         ]
