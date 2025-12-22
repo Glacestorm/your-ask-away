@@ -1,13 +1,17 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Calculator, RefreshCw } from 'lucide-react';
+import { Plus, Calculator, RefreshCw, Edit } from 'lucide-react';
 import { useFinancialPlan } from '@/hooks/useStrategicPlanning';
 import { useAccountingSync } from '@/hooks/useAccountingSync';
+import { FinancialDataEntry } from './FinancialDataEntry';
+import { InfoTooltip, FINANCIAL_TOOLTIPS } from '@/components/ui/info-tooltip';
 
 export function FinancialModel() {
-  const { plans, currentPlan, setCurrentPlan, accounts, ratios, createPlan, fetchPlanDetails, isLoading } = useFinancialPlan();
+  const { plans, currentPlan, setCurrentPlan, accounts, ratios, createPlan, fetchPlanDetails, upsertAccount, isLoading } = useFinancialPlan();
   const { syncStatus, syncToFinancialPlan } = useAccountingSync();
+  const [isEditingDetails, setIsEditingDetails] = useState(false);
 
   const handleCreate = async () => {
     const plan = await createPlan({ plan_name: 'Nuevo Plan Financiero', start_year: new Date().getFullYear() });
@@ -24,6 +28,28 @@ export function FinancialModel() {
     if (!currentPlan) return;
     await syncToFinancialPlan(currentPlan.id, currentPlan.start_year);
   };
+
+  const handleBack = () => {
+    setIsEditingDetails(false);
+  };
+
+  const handleBackToList = () => {
+    setCurrentPlan(null);
+    setIsEditingDetails(false);
+  };
+
+  // Show detailed entry when editing
+  if (currentPlan && isEditingDetails) {
+    return (
+      <FinancialDataEntry
+        plan={currentPlan}
+        accounts={accounts}
+        ratios={ratios}
+        onSaveAccount={upsertAccount}
+        onBack={handleBack}
+      />
+    );
+  }
 
   if (!currentPlan) {
     return (
@@ -68,7 +94,10 @@ export function FinancialModel() {
           <p className="text-sm text-muted-foreground">Proyección {currentPlan.start_year} - {currentPlan.start_year + currentPlan.projection_years - 1}</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setCurrentPlan(null)}>Cambiar</Button>
+          <Button variant="outline" onClick={handleBackToList}>Cambiar</Button>
+          <Button variant="outline" onClick={() => setIsEditingDetails(true)} className="gap-2">
+            <Edit className="h-4 w-4" /> Editar Datos
+          </Button>
           {syncStatus.accounting_module_installed && (
             <Button variant="outline" onClick={handleSync} className="gap-2"><RefreshCw className="h-4 w-4" /> Sincronizar</Button>
           )}
@@ -82,6 +111,9 @@ export function FinancialModel() {
             <div className="text-sm text-muted-foreground">
               {accounts.filter(a => a.account_type.startsWith('balance')).length} cuentas configuradas
             </div>
+            <Button variant="link" className="p-0 h-auto mt-2" onClick={() => setIsEditingDetails(true)}>
+              Ver detalle →
+            </Button>
           </CardContent>
         </Card>
 
@@ -91,6 +123,9 @@ export function FinancialModel() {
             <div className="text-sm text-muted-foreground">
               {accounts.filter(a => ['income', 'expense'].includes(a.account_type)).length} partidas
             </div>
+            <Button variant="link" className="p-0 h-auto mt-2" onClick={() => setIsEditingDetails(true)}>
+              Ver detalle →
+            </Button>
           </CardContent>
         </Card>
 
@@ -98,17 +133,30 @@ export function FinancialModel() {
           <CardHeader><CardTitle className="text-lg">Ratios Financieros</CardTitle></CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-3">
-              {ratios.slice(0, 6).map(ratio => (
-                <div key={ratio.id} className="p-3 border rounded-lg">
-                  <div className="text-sm font-medium">{ratio.ratio_name}</div>
-                  <div className="flex items-center justify-between mt-1">
-                    <span className="text-lg font-bold">{ratio.ratio_value?.toFixed(2) || 'N/A'}</span>
-                    <Badge variant={ratio.status === 'excellent' || ratio.status === 'good' ? 'default' : 'destructive'}>
-                      {ratio.status || 'Sin calcular'}
-                    </Badge>
+              {ratios.slice(0, 6).map(ratio => {
+                const tooltipKey = ratio.ratio_key === 'current_ratio' ? 'currentRatio' 
+                  : ratio.ratio_key === 'debt_ratio' ? 'debtRatio'
+                  : ratio.ratio_key === 'roa' ? 'roa'
+                  : ratio.ratio_key === 'roe' ? 'roe'
+                  : null;
+                
+                return (
+                  <div key={ratio.id} className="p-3 border rounded-lg">
+                    <div className="flex items-center gap-1">
+                      <span className="text-sm font-medium">{ratio.ratio_name}</span>
+                      {tooltipKey && FINANCIAL_TOOLTIPS[tooltipKey] && (
+                        <InfoTooltip {...FINANCIAL_TOOLTIPS[tooltipKey]} />
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-lg font-bold">{ratio.ratio_value?.toFixed(2) || 'N/A'}</span>
+                      <Badge variant={ratio.status === 'excellent' || ratio.status === 'good' ? 'default' : 'destructive'}>
+                        {ratio.status || 'Sin calcular'}
+                      </Badge>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>
