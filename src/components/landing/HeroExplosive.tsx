@@ -85,145 +85,206 @@ export const HeroExplosive: React.FC = () => {
               </span>
             </motion.div>
 
-            {/* Main Headline */}
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold text-white leading-[1.05] tracking-tight mb-6"
-            >
-              No somos solo un CRM.
-              <br />
-              <span className="relative inline-flex items-center justify-center gap-4 md:gap-6">
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-violet-400 to-purple-400">
-                  Somos ObelixIA
-                </span>
-                {/* Brain - exact copy from ObelixiaLogo CinematicBrainIcon */}
-                <span 
-                  className="relative inline-flex items-center justify-center"
-                  style={{ 
-                    width: '1.1em', 
-                    height: '0.88em',
-                  }}
+            {/* Main Headline Container */}
+            <div className="flex flex-col items-center gap-3 md:gap-5 mb-6">
+              {/* First Line - Typing Effect from Left */}
+              <motion.div
+                initial={{ opacity: 0, x: -60 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+                className="overflow-hidden"
+              >
+                <motion.h1 
+                  className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold text-white leading-[1.05] tracking-tight"
                 >
-                  {/* Pulse wave effects - more visible */}
-                  <span 
-                    className="absolute inset-[-10%] rounded-full animate-[ping_2s_ease-out_infinite]"
-                    style={{ background: 'rgba(139,92,246,0.4)', boxShadow: '0 0 20px rgba(139,92,246,0.5)' }}
-                  />
-                  <span 
-                    className="absolute inset-[-5%] rounded-full animate-[ping_2.5s_ease-out_infinite_0.4s]"
-                    style={{ background: 'rgba(59,130,246,0.35)', boxShadow: '0 0 15px rgba(59,130,246,0.4)' }}
-                  />
-                  <span 
-                    className="absolute inset-0 rounded-full animate-[ping_3s_ease-out_infinite_0.8s]"
-                    style={{ background: 'rgba(139,92,246,0.3)', boxShadow: '0 0 10px rgba(139,92,246,0.35)' }}
-                  />
-
-                  {/* Brain container with overflow hidden */}
-                  <span 
-                    className="relative overflow-hidden"
-                    style={{ 
-                      width: '100%', 
-                      height: '100%',
-                      borderRadius: '50%',
+                  {/* Typing effect for first line */}
+                  <motion.span
+                    initial="hidden"
+                    animate="visible"
+                    variants={{
+                      hidden: { opacity: 1 },
+                      visible: {
+                        opacity: 1,
+                        transition: {
+                          staggerChildren: 0.04,
+                          delayChildren: 0.2,
+                        },
+                      },
                     }}
+                    className="inline-flex"
                   >
-                    {/* Outer Glow Layer - same as logo */}
-                    <span 
-                      className="absolute inset-[-50%] blur-2xl opacity-60"
-                      style={{
-                        background: 'radial-gradient(ellipse at center, rgba(139,92,246,0.5) 0%, rgba(59,130,246,0.3) 40%, transparent 70%)',
-                      }}
-                    />
-                  
-                  {/* Brain Image with circular clip and gradient mask - same as logo */}
-                  <span 
-                    className="relative w-full h-full overflow-hidden"
-                    style={{
-                      borderRadius: '50%',
-                      maskImage: 'radial-gradient(ellipse 100% 100% at center, black 50%, transparent 80%)',
-                      WebkitMaskImage: 'radial-gradient(ellipse 100% 100% at center, black 50%, transparent 80%)',
-                    }}
-                  >
-                    <img 
-                      src={brainLogo}
-                      alt="ObelixIA Brain"
-                      className="w-full h-full object-cover scale-125"
-                      style={{ 
-                        filter: 'drop-shadow(0 0 15px rgba(139,92,246,0.6)) drop-shadow(0 0 30px rgba(59,130,246,0.4))',
-                      }}
-                    />
-                  </span>
-                  
-                  {/* Animated sparkle overlay - same as logo */}
-                  <svg 
-                    viewBox="0 0 100 80" 
-                    className="absolute inset-0 w-full h-full pointer-events-none"
-                  >
-                    <defs>
-                      <filter id="hero-sparkle-glow" x="-400%" y="-400%" width="900%" height="900%">
-                        <feGaussianBlur stdDeviation="2" result="blur"/>
-                        <feMerge>
-                          <feMergeNode in="blur"/>
-                          <feMergeNode in="blur"/>
-                          <feMergeNode in="blur"/>
-                          <feMergeNode in="SourceGraphic"/>
-                        </feMerge>
-                      </filter>
-                    </defs>
-                    
-                    {/* Neural sparkles on brain surface - same positions as logo */}
-                    {[
-                      { cx: 30, cy: 25, delay: 0, duration: 1.5 },
-                      { cx: 45, cy: 18, delay: 0.3, duration: 1.2 },
-                      { cx: 60, cy: 22, delay: 0.6, duration: 1.4 },
-                      { cx: 70, cy: 30, delay: 0.9, duration: 1.3 },
-                      { cx: 55, cy: 35, delay: 0.2, duration: 1.5 },
-                      { cx: 35, cy: 40, delay: 0.5, duration: 1.1 },
-                      { cx: 50, cy: 45, delay: 0.8, duration: 1.4 },
-                      { cx: 65, cy: 42, delay: 0.1, duration: 1.2 },
-                      { cx: 25, cy: 35, delay: 0.4, duration: 1.6 },
-                      { cx: 75, cy: 38, delay: 0.7, duration: 1.3 },
-                      { cx: 40, cy: 30, delay: 1.0, duration: 1.5 },
-                      { cx: 58, cy: 28, delay: 0.3, duration: 1.2 },
-                    ].map((node, i) => (
-                      <g key={`sparkle-${i}`} filter="url(#hero-sparkle-glow)">
-                        <circle
-                          cx={node.cx}
-                          cy={node.cy}
-                          r="1"
-                          fill="white"
-                        >
-                          <animate
-                            attributeName="opacity"
-                            values="0.2;0.2;1;1;0.2;0.2"
-                            dur={`${node.duration}s`}
-                            begin={`${node.delay}s`}
-                            repeatCount="indefinite"
-                          />
-                          <animate
-                            attributeName="r"
-                            values="0.8;0.8;2;1.5;1;0.8"
-                            dur={`${node.duration}s`}
-                            begin={`${node.delay}s`}
-                            repeatCount="indefinite"
-                          />
-                        </circle>
-                      </g>
+                    {"No somos solo un CRM".split("").map((char, index) => (
+                      <motion.span
+                        key={index}
+                        variants={{
+                          hidden: { opacity: 0, y: 20 },
+                          visible: { opacity: 1, y: 0 },
+                        }}
+                        transition={{ duration: 0.3, ease: "easeOut" }}
+                        style={{ display: char === " " ? "inline" : "inline-block" }}
+                      >
+                        {char === " " ? "\u00A0" : char}
+                      </motion.span>
                     ))}
-                  </svg>
+                  </motion.span>
+                </motion.h1>
+              </motion.div>
+
+              {/* Second Line - Slide from Right with ObelixIA + Brain */}
+              <motion.div
+                initial={{ opacity: 0, x: 60 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <h1 className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold leading-[1.05] tracking-tight">
+                  <span className="relative inline-flex items-center justify-center gap-4 md:gap-6">
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-violet-400 to-purple-400">
+                      Somos ObelixIA
+                    </span>
+                    {/* Brain - exact copy from ObelixiaLogo CinematicBrainIcon */}
+                    <span 
+                      className="relative inline-flex items-center justify-center"
+                      style={{ 
+                        width: '1.1em', 
+                        height: '0.88em',
+                      }}
+                    >
+                      {/* Pulse wave effects - more visible */}
+                      <span 
+                        className="absolute inset-[-10%] rounded-full animate-[ping_2s_ease-out_infinite]"
+                        style={{ background: 'rgba(139,92,246,0.4)', boxShadow: '0 0 20px rgba(139,92,246,0.5)' }}
+                      />
+                      <span 
+                        className="absolute inset-[-5%] rounded-full animate-[ping_2.5s_ease-out_infinite_0.4s]"
+                        style={{ background: 'rgba(59,130,246,0.35)', boxShadow: '0 0 15px rgba(59,130,246,0.4)' }}
+                      />
+                      <span 
+                        className="absolute inset-0 rounded-full animate-[ping_3s_ease-out_infinite_0.8s]"
+                        style={{ background: 'rgba(139,92,246,0.3)', boxShadow: '0 0 10px rgba(139,92,246,0.35)' }}
+                      />
+
+                      {/* Brain container with overflow hidden */}
+                      <span 
+                        className="relative overflow-hidden"
+                        style={{ 
+                          width: '100%', 
+                          height: '100%',
+                          borderRadius: '50%',
+                        }}
+                      >
+                        {/* Outer Glow Layer - same as logo */}
+                        <span 
+                          className="absolute inset-[-50%] blur-2xl opacity-60"
+                          style={{
+                            background: 'radial-gradient(ellipse at center, rgba(139,92,246,0.5) 0%, rgba(59,130,246,0.3) 40%, transparent 70%)',
+                          }}
+                        />
+                      
+                      {/* Brain Image with circular clip and gradient mask - same as logo */}
+                      <span 
+                        className="relative w-full h-full overflow-hidden"
+                        style={{
+                          borderRadius: '50%',
+                          maskImage: 'radial-gradient(ellipse 100% 100% at center, black 50%, transparent 80%)',
+                          WebkitMaskImage: 'radial-gradient(ellipse 100% 100% at center, black 50%, transparent 80%)',
+                        }}
+                      >
+                        <img 
+                          src={brainLogo}
+                          alt="ObelixIA Brain"
+                          className="w-full h-full object-cover scale-125"
+                          style={{ 
+                            filter: 'drop-shadow(0 0 15px rgba(139,92,246,0.6)) drop-shadow(0 0 30px rgba(59,130,246,0.4))',
+                          }}
+                        />
+                      </span>
+                      
+                      {/* Animated sparkle overlay - same as logo */}
+                      <svg 
+                        viewBox="0 0 100 80" 
+                        className="absolute inset-0 w-full h-full pointer-events-none"
+                      >
+                        <defs>
+                          <filter id="hero-sparkle-glow" x="-400%" y="-400%" width="900%" height="900%">
+                            <feGaussianBlur stdDeviation="2" result="blur"/>
+                            <feMerge>
+                              <feMergeNode in="blur"/>
+                              <feMergeNode in="blur"/>
+                              <feMergeNode in="blur"/>
+                              <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                          </filter>
+                        </defs>
+                        
+                        {/* Neural sparkles on brain surface - same positions as logo */}
+                        {[
+                          { cx: 30, cy: 25, delay: 0, duration: 1.5 },
+                          { cx: 45, cy: 18, delay: 0.3, duration: 1.2 },
+                          { cx: 60, cy: 22, delay: 0.6, duration: 1.4 },
+                          { cx: 70, cy: 30, delay: 0.9, duration: 1.3 },
+                          { cx: 55, cy: 35, delay: 0.2, duration: 1.5 },
+                          { cx: 35, cy: 40, delay: 0.5, duration: 1.1 },
+                          { cx: 50, cy: 45, delay: 0.8, duration: 1.4 },
+                          { cx: 65, cy: 42, delay: 0.1, duration: 1.2 },
+                          { cx: 25, cy: 35, delay: 0.4, duration: 1.6 },
+                          { cx: 75, cy: 38, delay: 0.7, duration: 1.3 },
+                          { cx: 40, cy: 30, delay: 1.0, duration: 1.5 },
+                          { cx: 58, cy: 28, delay: 0.3, duration: 1.2 },
+                        ].map((node, i) => (
+                          <g key={`sparkle-${i}`} filter="url(#hero-sparkle-glow)">
+                            <circle
+                              cx={node.cx}
+                              cy={node.cy}
+                              r="1"
+                              fill="white"
+                            >
+                              <animate
+                                attributeName="opacity"
+                                values="0.2;0.2;1;1;0.2;0.2"
+                                dur={`${node.duration}s`}
+                                begin={`${node.delay}s`}
+                                repeatCount="indefinite"
+                              />
+                              <animate
+                                attributeName="r"
+                                values="0.8;0.8;2;1.5;1;0.8"
+                                dur={`${node.duration}s`}
+                                begin={`${node.delay}s`}
+                                repeatCount="indefinite"
+                              />
+                            </circle>
+                          </g>
+                        ))}
+                      </svg>
+                      </span>
+                    </span>
+                    
+                    {/* Enhanced Underline with Glow - appears after entrance animation */}
+                    <motion.span
+                      initial={{ scaleX: 0, opacity: 0 }}
+                      animate={{ scaleX: 1, opacity: 1 }}
+                      transition={{ duration: 0.6, delay: 1.4, ease: [0.22, 1, 0.36, 1] }}
+                      className="absolute -bottom-3 left-0 right-[1.2em] h-1.5 bg-gradient-to-r from-blue-500 via-violet-400 to-violet-500 rounded-full origin-left"
+                      style={{ boxShadow: '0 0 20px rgba(139,92,246,0.6), 0 0 40px rgba(59,130,246,0.3)' }}
+                    />
+                    
+                    {/* Shimmer effect that travels across the underline */}
+                    <motion.span
+                      initial={{ x: '-100%', opacity: 0 }}
+                      animate={{ x: '200%', opacity: [0, 1, 1, 0] }}
+                      transition={{ 
+                        duration: 1.5, 
+                        delay: 2, 
+                        repeat: Infinity, 
+                        repeatDelay: 4,
+                        ease: "easeInOut"
+                      }}
+                      className="absolute -bottom-3 left-0 w-1/3 h-1.5 bg-gradient-to-r from-transparent via-white/70 to-transparent rounded-full pointer-events-none"
+                    />
                   </span>
-                </span>
-                {/* Underline glow */}
-                <motion.span
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
-                  transition={{ duration: 0.8, delay: 0.5 }}
-                  className="absolute -bottom-2 left-0 right-[1.2em] h-1 bg-gradient-to-r from-blue-500 to-violet-500 rounded-full origin-left"
-                />
-              </span>
-            </motion.h1>
+                </h1>
+              </motion.div>
+            </div>
 
             {/* Tagline */}
             <motion.p
