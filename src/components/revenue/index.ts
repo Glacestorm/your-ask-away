@@ -3,6 +3,11 @@ export { default as ExpansionOpportunitiesPanel } from './ExpansionOpportunities
 export { default as ChurnRevenueProtection } from './ChurnRevenueProtection';
 export { default as BenchmarkingDashboard } from './BenchmarkingDashboard';
 export { default as CohortAnalysisChart } from './CohortAnalysisChart';
+export { RevenueCommandCenter } from './RevenueCommandCenter';
+export { RevenueCopilotChat } from './RevenueCopilotChat';
+export { RevenueScenarioPlanner } from './RevenueScenarioPlanner';
+export { RevenueAnomalyMonitor } from './RevenueAnomalyMonitor';
+export { RevenueWorkflowManager } from './RevenueWorkflowManager';
 
 // Re-export hooks for convenience
 export { useRevenueForecast } from '@/hooks/useRevenueForecast';
