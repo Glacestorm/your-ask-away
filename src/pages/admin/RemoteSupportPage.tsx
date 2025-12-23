@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Headphones, Play, Clock, Activity, Shield, Pause, CheckCircle, XCircle, Eye, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Headphones, Play, Clock, Activity, Shield, Pause, CheckCircle, XCircle, Eye, BarChart3, FileDown } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { SessionActionsTimeline } from '@/components/admin/service-quotes/SessionActionsTimeline';
 import { SessionDetailView } from '@/components/admin/remote-support/SessionDetailView';
@@ -14,6 +14,8 @@ import { SessionSummaryCard } from '@/components/admin/remote-support/SessionSum
 import { ActionQuickLog } from '@/components/admin/remote-support/ActionQuickLog';
 import { SupportAIAssistant } from '@/components/admin/remote-support/SupportAIAssistant';
 import { SupportAnalyticsDashboard } from '@/components/admin/remote-support/SupportAnalyticsDashboard';
+import { DualApprovalWorkflow } from '@/components/admin/remote-support/DualApprovalWorkflow';
+import { SessionExportButton } from '@/components/admin/remote-support/SessionExportButton';
 import { useSessionActionLogger } from '@/hooks/admin/useSessionActionLogger';
 import { useRemoteSupportSessions } from '@/hooks/admin/useRemoteSupportSessions';
 import { toast } from '@/hooks/use-toast';
@@ -401,7 +403,7 @@ export default function RemoteSupportPage() {
                   <div className="lg:col-span-2">
                     <SessionActionsTimeline sessionId={activeSession.id} />
                   </div>
-                  <div className="lg:col-span-1">
+                  <div className="lg:col-span-1 space-y-4">
                     <SessionSummaryCard
                       totalActions={summary.totalActions}
                       totalDuration={summary.totalDurationFormatted}
@@ -410,6 +412,7 @@ export default function RemoteSupportPage() {
                       completedActions={summary.totalActions - summary.pendingApprovals}
                       actionsByType={summary.actionsByType}
                     />
+                    <DualApprovalWorkflow sessionId={activeSession.id} />
                   </div>
                   <div className="lg:col-span-1">
                     <SupportAIAssistant 
@@ -484,6 +487,12 @@ export default function RemoteSupportPage() {
                                   Reanudar
                                 </Button>
                               )}
+                              <SessionExportButton 
+                                sessionId={session.id} 
+                                sessionCode={session.session_code}
+                                variant="ghost"
+                                size="sm"
+                              />
                               <Button
                                 variant="ghost"
                                 size="sm"
