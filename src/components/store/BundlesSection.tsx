@@ -43,7 +43,8 @@ const BundlesSection: React.FC = () => {
     fetchBundles();
   }, []);
 
-  const defaultBundles: Bundle[] = [
+  // Always use translated bundles for consistent i18n
+  const getTranslatedBundles = (): Bundle[] => [
     {
       id: 'b1',
       bundle_key: 'starter',
@@ -82,7 +83,39 @@ const BundlesSection: React.FC = () => {
     },
   ];
 
-  const displayBundles = bundles.length > 0 ? bundles : defaultBundles;
+  // Use DB bundles with translated labels, or fallback to default translated bundles
+  const displayBundles = bundles.length > 0 
+    ? bundles.map(bundle => {
+        const key = bundle.bundle_key;
+        const translationMap: Record<string, { name: string; desc: string; badge: string }> = {
+          'starter': { 
+            name: t('landing.bundles.starterName'), 
+            desc: t('landing.bundles.starterDesc'),
+            badge: t('landing.bundles.badgePopular')
+          },
+          'banking_complete': { 
+            name: t('landing.bundles.bankingName'), 
+            desc: t('landing.bundles.bankingDesc'),
+            badge: t('landing.bundles.badgeRecommended')
+          },
+          'enterprise': { 
+            name: t('landing.bundles.enterpriseName'), 
+            desc: t('landing.bundles.enterpriseDesc'),
+            badge: t('landing.bundles.badgeBestValue')
+          },
+        };
+        const translations = translationMap[key];
+        if (translations) {
+          return {
+            ...bundle,
+            bundle_name: translations.name,
+            description: translations.desc,
+            badge: translations.badge,
+          };
+        }
+        return bundle;
+      })
+    : getTranslatedBundles();
 
   const handleAddBundle = (bundle: Bundle) => {
     addItem({
