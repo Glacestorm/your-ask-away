@@ -1176,6 +1176,18 @@ export default {
   'store.trustBadges.items.psd': 'Open Banking',
   'store.trustBadges.items.uptime': 'Uptime SLA',
 
+  // FAQ Section
+  'faq.badge': 'Centre d\'Ajuda',
+  'faq.title': 'Preguntes Freqüents',
+  'faq.subtitle': 'Resol els teus dubtes sobre ObelixIA i les nostres implementacions',
+  'faq.searchPlaceholder': 'Cercar a les preguntes freqüents...',
+  'faq.categories.all': 'Totes',
+  'faq.noResults': 'No s\'han trobat preguntes que coincideixin amb la teva cerca.',
+  'faq.feedback.helpful.title': 'Gràcies pel teu feedback!',
+  'faq.feedback.helpful.desc': 'Ens alegra que t\'hagi estat útil',
+  'faq.feedback.notHelpful.title': 'Gràcies per la teva opinió',
+  'faq.feedback.notHelpful.desc': 'Treballarem en millorar aquesta resposta',
+
   // Store Features
   'store.features.badge': 'CARACTERÍSTIQUES',
   'store.features.title': 'Tot el que la teva Empresa Necessita',

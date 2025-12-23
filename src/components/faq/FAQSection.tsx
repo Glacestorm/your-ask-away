@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { HelpCircle, Euro, Rocket, ArrowRightLeft, Blocks, Headphones, Shield } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 import FAQSearchBar from './FAQSearchBar';
 import FAQAccordionItem from './FAQAccordionItem';
 
@@ -37,6 +38,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 const FAQSection: React.FC = () => {
+  const { t } = useLanguage();
   const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [categories, setCategories] = useState<FAQCategory[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -124,10 +126,10 @@ const FAQSection: React.FC = () => {
       );
 
       toast({
-        title: helpful ? '¡Gracias por tu feedback!' : 'Gracias por tu opinión',
+        title: helpful ? t('faq.feedback.helpful.title') : t('faq.feedback.notHelpful.title'),
         description: helpful
-          ? 'Nos alegra que te haya sido útil'
-          : 'Trabajaremos en mejorar esta respuesta',
+          ? t('faq.feedback.helpful.desc')
+          : t('faq.feedback.notHelpful.desc'),
       });
     } catch (error) {
       console.error('Error submitting feedback:', error);
@@ -183,14 +185,14 @@ const FAQSection: React.FC = () => {
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-6">
               <HelpCircle className="w-4 h-4 text-primary" />
               <span className="text-sm font-medium text-primary">
-                Centro de Ayuda
+                {t('faq.badge')}
               </span>
             </div>
             <h2 className="text-3xl md:text-4xl font-display font-semibold text-white mb-4">
-              Preguntas Frecuentes
+              {t('faq.title')}
             </h2>
             <p className="text-lg text-slate-400">
-              Resuelve tus dudas sobre ObelixIA y nuestras implementaciones
+              {t('faq.subtitle')}
             </p>
           </motion.div>
 
@@ -202,7 +204,11 @@ const FAQSection: React.FC = () => {
             transition={{ delay: 0.1 }}
             className="max-w-2xl mx-auto mb-10"
           >
-            <FAQSearchBar value={searchQuery} onChange={setSearchQuery} />
+            <FAQSearchBar 
+              value={searchQuery} 
+              onChange={setSearchQuery}
+              placeholder={t('faq.searchPlaceholder')}
+            />
           </motion.div>
 
           {/* Category Pills */}
@@ -221,7 +227,7 @@ const FAQSection: React.FC = () => {
                   : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
               }`}
             >
-              Todas
+              {t('faq.categories.all')}
             </button>
             {categories.map(category => {
               const IconComponent = iconMap[category.icon] || HelpCircle;
@@ -252,7 +258,7 @@ const FAQSection: React.FC = () => {
               >
                 <HelpCircle className="w-12 h-12 text-slate-600 mx-auto mb-4" />
                 <p className="text-slate-400">
-                  No se encontraron preguntas que coincidan con tu búsqueda.
+                  {t('faq.noResults')}
                 </p>
               </motion.div>
             ) : (
