@@ -61,13 +61,33 @@ const MainNavbar: React.FC = () => {
     navigate('/store');
   };
 
+  const getKnownBadgeLabel = (badge?: string) => {
+    if (!badge) return undefined;
+    if (badge === 'Nuevo') return t('badge.new');
+    if (badge === 'IA') return t('badge.ai');
+    return badge;
+  };
+
+  const getLabel = (item: NavItem) => {
+    if (item.labelKey) return t(item.labelKey);
+    return item.label;
+  };
+
+  const getDescription = (item: NavItem) => {
+    if (item.descriptionKey) {
+      const translated = t(item.descriptionKey);
+      return translated !== item.descriptionKey ? translated : item.description;
+    }
+    return item.description;
+  };
+
   const renderNavItem = (item: NavItem) => {
     const isActive = isRouteActive(location.pathname, item.href);
     const hasChildren = item.children && item.children.length > 0;
 
     if (hasChildren) {
       return (
-        <DropdownMenu 
+        <DropdownMenu
           key={item.id}
           open={openDropdown === item.id}
           onOpenChange={(open) => setOpenDropdown(open ? item.id : null)}
@@ -79,46 +99,51 @@ const MainNavbar: React.FC = () => {
               className={`
                 flex items-center gap-1.5 px-4 py-2 rounded-xl font-medium text-sm
                 transition-all duration-200
-                ${isActive
-                  ? 'bg-gradient-to-b from-emerald-400 to-emerald-600 text-white shadow-lg'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
+                ${
+                  isActive
+                    ? 'bg-gradient-to-b from-emerald-400 to-emerald-600 text-white shadow-lg'
+                    : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
                 }
               `}
             >
               {item.icon && <item.icon className="w-4 h-4" />}
-              <span>{item.labelKey ? t(item.labelKey) : item.label}</span>
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${openDropdown === item.id ? 'rotate-180' : ''}`} />
+              <span>{getLabel(item)}</span>
+              <ChevronDown
+                className={`w-3.5 h-3.5 transition-transform ${openDropdown === item.id ? 'rotate-180' : ''}`}
+              />
             </motion.button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent 
-            className="w-56 bg-slate-900 border-slate-700 p-2"
-            sideOffset={8}
-          >
-            {item.children!.map((child) => (
-              <DropdownMenuItem key={child.id} asChild>
-                <Link
-                  to={child.href}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer"
-                >
-                  {child.icon && <child.icon className="w-4 h-4 text-emerald-400" />}
-                  <div className="flex-1">
-                    <span className="font-medium">{child.label}</span>
-                    {child.description && (
-                      <p className="text-xs text-slate-500 mt-0.5">{child.description}</p>
+          <DropdownMenuContent className="w-56 bg-slate-900 border-slate-700 p-2" sideOffset={8}>
+            {item.children!.map((child) => {
+              const desc = getDescription(child);
+              const badgeLabel = getKnownBadgeLabel(child.badge);
+
+              return (
+                <DropdownMenuItem key={child.id} asChild>
+                  <Link
+                    to={child.href}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer"
+                  >
+                    {child.icon && <child.icon className="w-4 h-4 text-emerald-400" />}
+                    <div className="flex-1">
+                      <span className="font-medium">{getLabel(child)}</span>
+                      {desc && <p className="text-xs text-slate-500 mt-0.5">{desc}</p>}
+                    </div>
+                    {badgeLabel && (
+                      <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-400 text-xs">
+                        {badgeLabel}
+                      </Badge>
                     )}
-                  </div>
-                  {child.badge && (
-                    <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-400 text-xs">
-                      {child.badge}
-                    </Badge>
-                  )}
-                </Link>
-              </DropdownMenuItem>
-            ))}
+                  </Link>
+                </DropdownMenuItem>
+              );
+            })}
           </DropdownMenuContent>
         </DropdownMenu>
       );
     }
+
+    const badgeLabel = getKnownBadgeLabel(item.badge);
 
     return (
       <Link key={item.id} to={item.href}>
@@ -128,17 +153,18 @@ const MainNavbar: React.FC = () => {
           className={`
             flex items-center gap-1.5 px-4 py-2 rounded-xl font-medium text-sm
             transition-all duration-200
-            ${isActive
-              ? 'bg-gradient-to-b from-emerald-400 to-emerald-600 text-white shadow-lg'
-              : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
+            ${
+              isActive
+                ? 'bg-gradient-to-b from-emerald-400 to-emerald-600 text-white shadow-lg'
+                : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
             }
           `}
         >
           {item.icon && <item.icon className="w-4 h-4" />}
-          <span>{item.labelKey ? t(item.labelKey) : item.label}</span>
-          {item.badge && (
+          <span>{getLabel(item)}</span>
+          {badgeLabel && (
             <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-400 text-xs ml-1">
-              {item.badge}
+              {badgeLabel}
             </Badge>
           )}
         </motion.div>
