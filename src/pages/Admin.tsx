@@ -85,6 +85,7 @@ import { RoleCopilotPanel, NBADashboard, ContinuousControlsDashboard } from '@/c
 import { VerticalPacksManager } from '@/components/admin/verticals';
 import { SectorsManager } from '@/components/admin/SectorsManager';
 import { CoreWebVitalsDashboard } from '@/components/admin/CoreWebVitalsDashboard';
+import { TranslationManagerPanel } from '@/components/admin/TranslationManagerPanel';
 import { Zap, ShoppingCart, Briefcase } from 'lucide-react';
 
 const Admin = () => {
@@ -208,6 +209,7 @@ const Admin = () => {
       case 'cnae-bundles': return 'Packs Sectorials CNAE';
       case 'cnae-admin': return 'Administració Pricing CNAE';
       case 'analyzer': return 'Analitzador de Codi';
+      case 'translations': return 'Gestió de Traduccions';
       case 'bpmn-designer': return 'Dissenyador de Processos BPMN';
       case 'process-mining': return 'Process Mining Dashboard';
       case 'ai-copilot': return 'Copilot Intel·ligent per Rol';
@@ -615,6 +617,17 @@ const Admin = () => {
           );
         }
         return <ApplicationStateAnalyzer />;
+      case 'translations':
+        if (!isSuperAdmin) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return <TranslationManagerPanel />;
       case 'codebase-index':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
           return (
@@ -1513,6 +1526,22 @@ const Admin = () => {
                     <div>
                       <h4 className="font-medium text-sm text-blue-700 dark:text-blue-400">{t('admin.card.analyzer')}</h4>
                       <p className="text-xs text-muted-foreground">{t('admin.card.analyzer.desc')}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                )}
+                {isSuperAdmin && (
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-purple-500/10"
+                  onClick={() => handleSectionChange('translations')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                      <Layers className="h-4 w-4 text-purple-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-purple-700 dark:text-purple-400">{t('admin.card.translations')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.translations.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
