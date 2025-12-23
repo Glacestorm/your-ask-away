@@ -7,8 +7,11 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ArrowLeft, Headphones, Play, Clock, Activity, Shield, Pause, CheckCircle, XCircle, Eye } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { SessionActionsTimeline } from '@/components/admin/service-quotes/SessionActionsTimeline';
+import { SessionDetailView } from '@/components/admin/remote-support/SessionDetailView';
+import { SessionSummaryCard } from '@/components/admin/remote-support/SessionSummaryCard';
+import { ActionQuickLog } from '@/components/admin/remote-support/ActionQuickLog';
 import { useSessionActionLogger } from '@/hooks/admin/useSessionActionLogger';
 import { useRemoteSupportSessions } from '@/hooks/admin/useRemoteSupportSessions';
 import { toast } from '@/hooks/use-toast';
@@ -17,6 +20,9 @@ import { es } from 'date-fns/locale';
 
 export default function RemoteSupportPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const viewSessionId = searchParams.get('session');
+  
   const [activeTab, setActiveTab] = useState<string>('new-session');
   const [sessionCode, setSessionCode] = useState('');
   const [clientName, setClientName] = useState('');
@@ -36,6 +42,7 @@ export default function RemoteSupportPage() {
   const { 
     logSessionStart, 
     logSessionEnd, 
+    logAction,
     getSessionSummary,
     isLogging 
   } = useSessionActionLogger(activeSession?.id || null);
@@ -139,6 +146,17 @@ export default function RemoteSupportPage() {
       setActiveTab('active-session');
     }
   }, [activeSession]);
+
+  // If viewing a specific session, show the detail view
+  if (viewSessionId) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-6">
+          <SessionDetailView />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -335,7 +353,26 @@ export default function RemoteSupportPage() {
                   </CardContent>
                 </Card>
 
-                <SessionActionsTimeline sessionId={activeSession.id} />
+                {/* Quick Action Log */}
+                <ActionQuickLog 
+                  onLogAction={logAction} 
+                  isLogging={isLogging} 
+                />
+
+                {/* Session Summary */}
+                <div className="grid gap-6 md:grid-cols-3">
+                  <div className="md:col-span-2">
+                    <SessionActionsTimeline sessionId={activeSession.id} />
+                  </div>
+                  <SessionSummaryCard
+                    totalActions={summary.totalActions}
+                    totalDuration={summary.totalDurationFormatted}
+                    highRiskActions={summary.highRiskActions}
+                    pendingApprovals={summary.pendingApprovals}
+                    completedActions={summary.totalActions - summary.pendingApprovals}
+                    actionsByType={summary.actionsByType}
+                  />
+                </div>
               </>
             )}
           </TabsContent>
