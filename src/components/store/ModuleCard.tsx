@@ -50,12 +50,14 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, show
   const [translatedFeatures, setTranslatedFeatures] = useState<string[] | null>(null);
   const [translatedDescription, setTranslatedDescription] = useState<string | null>(null);
   const [translatedName, setTranslatedName] = useState<string | null>(null);
+  const [translatedCategory, setTranslatedCategory] = useState<string | null>(null);
 
   useEffect(() => {
     if (language === 'es') {
       setTranslatedFeatures(null);
       setTranslatedDescription(null);
       setTranslatedName(null);
+      setTranslatedCategory(null);
       return;
     }
 
@@ -65,18 +67,20 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, show
 
     (async () => {
       try {
-        const [featuresArr, desc, name] = await Promise.all([
+        const [featuresArr, desc, name, category] = await Promise.all([
           featuresToTranslate.length > 0
             ? Promise.all(featuresToTranslate.map((f) => translateAsync(f, language, 'es')))
             : Promise.resolve([]),
           module.description ? translateAsync(module.description, language, 'es') : Promise.resolve(null),
           translateAsync(module.module_name, language, 'es'),
+          translateAsync(module.category, language, 'es'),
         ]);
 
         if (!cancelled) {
           setTranslatedFeatures(featuresArr.length > 0 ? featuresArr : null);
           setTranslatedDescription(desc);
           setTranslatedName(name);
+          setTranslatedCategory(category);
         }
       } catch (e) {
         // Never break UI if translation is unavailable
@@ -84,6 +88,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, show
           setTranslatedFeatures(null);
           setTranslatedDescription(null);
           setTranslatedName(null);
+          setTranslatedCategory(null);
         }
       }
     })();
@@ -91,11 +96,12 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, show
     return () => {
       cancelled = true;
     };
-  }, [language, module.module_name, module.description, showFullDetails, translateAsync, rawFeatures.join(',')]);
+  }, [language, module.module_name, module.description, module.category, showFullDetails, translateAsync, rawFeatures.join(',')]);
 
   const features = translatedFeatures ?? (rawFeatures.length > 0 ? rawFeatures : defaultFeatures);
   const displayName = translatedName ?? module.module_name;
   const displayDescription = translatedDescription ?? module.description;
+  const displayCategory = translatedCategory ?? module.category;
 
   const handleRequestQuote = () => {
     // Scroll to contact section or open quote request modal
@@ -124,7 +130,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, show
         <div className="absolute top-0 right-0">
           <div className="bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs font-bold px-4 py-1 rounded-bl-xl flex items-center gap-1">
             <Crown className="w-3 h-3" />
-            PREMIUM
+            {t('store.badge.premium')}
           </div>
         </div>
       )}
@@ -133,7 +139,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, show
       {module.is_core && (
         <div className="absolute top-3 right-3">
           <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-xs">
-            CORE
+            {t('store.badge.core')}
           </Badge>
         </div>
       )}
@@ -150,7 +156,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, show
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="text-lg font-semibold text-white truncate">{displayName}</h3>
-            <p className="text-sm text-slate-400 capitalize">{module.category}</p>
+            <p className="text-sm text-slate-400 capitalize">{displayCategory}</p>
           </div>
         </div>
 
