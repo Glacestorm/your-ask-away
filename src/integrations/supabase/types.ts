@@ -17646,6 +17646,63 @@ export type Database = {
           },
         ]
       }
+      session_actions: {
+        Row: {
+          action_type: string
+          after_state: Json | null
+          approved_at: string | null
+          approved_by: string | null
+          before_state: Json | null
+          component_affected: string | null
+          created_at: string
+          description: string
+          duration_ms: number | null
+          id: string
+          metadata: Json | null
+          performed_by: string | null
+          requires_approval: boolean | null
+          risk_level: string
+          session_id: string
+          updated_at: string
+        }
+        Insert: {
+          action_type: string
+          after_state?: Json | null
+          approved_at?: string | null
+          approved_by?: string | null
+          before_state?: Json | null
+          component_affected?: string | null
+          created_at?: string
+          description: string
+          duration_ms?: number | null
+          id?: string
+          metadata?: Json | null
+          performed_by?: string | null
+          requires_approval?: boolean | null
+          risk_level?: string
+          session_id: string
+          updated_at?: string
+        }
+        Update: {
+          action_type?: string
+          after_state?: Json | null
+          approved_at?: string | null
+          approved_by?: string | null
+          before_state?: Json | null
+          component_affected?: string | null
+          created_at?: string
+          description?: string
+          duration_ms?: number | null
+          id?: string
+          metadata?: Json | null
+          performed_by?: string | null
+          requires_approval?: boolean | null
+          risk_level?: string
+          session_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       session_risk_assessments: {
         Row: {
           created_at: string | null

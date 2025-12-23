@@ -222,7 +222,7 @@ export function SessionActionsTimeline({ sessionId, showSummary = true }: Sessio
                                 )}
                               </div>
                               <p className="text-sm text-muted-foreground">
-                                {action.action_description}
+                                {action.description}
                               </p>
                               {action.component_affected && (
                                 <p className="text-xs text-muted-foreground mt-1">
