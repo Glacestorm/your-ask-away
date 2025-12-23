@@ -61,7 +61,11 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
   const t = (key: string): string => {
     const currentTranslations = getTranslations(language);
-    return currentTranslations[key] || key;
+    const value = currentTranslations[key];
+    if (value === undefined) {
+      console.warn(`[i18n] Missing translation for key: "${key}" in language: "${language}"`);
+    }
+    return value ?? key;
   };
 
   return (
