@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, ExternalLink, Sparkles, TrendingUp, Eye, ChevronDown, Shield } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -35,12 +35,12 @@ interface PremiumNewsCardProps {
   onReadMore?: (article: NewsArticle) => void;
 }
 
-const PremiumNewsCard: React.FC<PremiumNewsCardProps> = ({ 
+const PremiumNewsCard = ({ 
   article, 
   index, 
   variant = 'default',
   onReadMore 
-}) => {
+}: PremiumNewsCardProps) => {
   const [showConnection, setShowConnection] = useState(false);
 
   const hasOriginalImage = Boolean(article.image_url);
