@@ -20,6 +20,7 @@ interface LanguageContextType {
   t: (key: string, params?: Record<string, string | number>) => string;
   isRTL: boolean;
   loadingDynamic: boolean;
+  refreshTranslations: () => void;
 }
 
 const normalizeKeys = (obj: Record<string, string>): Record<string, string> => {
@@ -43,6 +44,8 @@ const RTL_LANGUAGES: Language[] = ['ar', 'he', 'fa', 'ur'];
 
 // Cache for dynamic translations from DB
 const dynamicTranslationsCache: Record<string, Record<string, string>> = {};
+const cacheTimestamps: Record<string, number> = {};
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 const getStaticTranslations = (lang: Language): Record<string, string> => {
   // For base languages, use static files
@@ -56,6 +59,13 @@ const getStaticTranslations = (lang: Language): Record<string, string> => {
   }
   // Fallback to Spanish (most complete)
   return staticTranslations.es!;
+};
+
+// Helper to check if cache is still valid
+const isCacheValid = (lang: string): boolean => {
+  const timestamp = cacheTimestamps[lang];
+  if (!timestamp) return false;
+  return Date.now() - timestamp < CACHE_TTL;
 };
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -97,8 +107,8 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
 
-      // Check cache first
-      if (dynamicTranslationsCache[language]) {
+      // Check cache with TTL
+      if (dynamicTranslationsCache[language] && isCacheValid(language)) {
         setDynamicTranslations(dynamicTranslationsCache[language]);
         return;
       }
@@ -112,6 +122,10 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
         if (error) {
           console.error('Error loading dynamic translations:', error);
+          // Fall back to cached version if available
+          if (dynamicTranslationsCache[language]) {
+            setDynamicTranslations(dynamicTranslationsCache[language]);
+          }
           return;
         }
 
@@ -122,10 +136,16 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
           }
         }
 
+        // Update cache with timestamp
         dynamicTranslationsCache[language] = translationMap;
+        cacheTimestamps[language] = Date.now();
         setDynamicTranslations(translationMap);
       } catch (err) {
         console.error('Failed to load dynamic translations:', err);
+        // Fall back to cached version if available
+        if (dynamicTranslationsCache[language]) {
+          setDynamicTranslations(dynamicTranslationsCache[language]);
+        }
       } finally {
         setLoadingDynamic(false);
       }
@@ -142,6 +162,18 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
       console.error('Error saving language to localStorage:', e);
     }
   }, []);
+
+  // Function to refresh translations (invalidate cache and reload)
+  const refreshTranslations = useCallback(() => {
+    if (language && !staticTranslations[language]) {
+      // Invalidate cache for current language
+      delete cacheTimestamps[language];
+      delete dynamicTranslationsCache[language];
+      // Trigger reload
+      setDynamicTranslations({});
+      setLanguageState(prev => prev); // Force re-render to trigger useEffect
+    }
+  }, [language]);
 
   const t = useCallback((key: string, params?: Record<string, string | number>): string => {
     // Priority: dynamic translations > static translations > fallback to key
@@ -173,7 +205,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const isRTL = RTL_LANGUAGES.includes(language);
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t, isRTL, loadingDynamic }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t, isRTL, loadingDynamic, refreshTranslations }}>
       {children}
     </LanguageContext.Provider>
   );
