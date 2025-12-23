@@ -17380,6 +17380,272 @@ export type Database = {
         }
         Relationships: []
       }
+      service_quote_history: {
+        Row: {
+          change_reason: string | null
+          changed_by: string | null
+          created_at: string
+          id: string
+          metadata: Json | null
+          new_status: string
+          previous_status: string | null
+          quote_id: string
+        }
+        Insert: {
+          change_reason?: string | null
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          new_status: string
+          previous_status?: string | null
+          quote_id: string
+        }
+        Update: {
+          change_reason?: string | null
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          new_status?: string
+          previous_status?: string | null
+          quote_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_quote_history_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "service_quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_quote_items: {
+        Row: {
+          created_at: string
+          description: string
+          discount_percentage: number | null
+          id: string
+          item_order: number
+          item_type: string
+          notes: string | null
+          quantity: number
+          quote_id: string
+          total_price: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          discount_percentage?: number | null
+          id?: string
+          item_order?: number
+          item_type: string
+          notes?: string | null
+          quantity?: number
+          quote_id: string
+          total_price: number
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          discount_percentage?: number | null
+          id?: string
+          item_order?: number
+          item_type?: string
+          notes?: string | null
+          quantity?: number
+          quote_id?: string
+          total_price?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_quote_items_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "service_quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_quotes: {
+        Row: {
+          client_accepted_terms: boolean | null
+          client_decision_at: string | null
+          client_notes: string | null
+          client_signature_data: string | null
+          client_signature_ip: unknown
+          client_signature_user_agent: string | null
+          created_at: string
+          created_by: string
+          currency: string
+          discount_percentage: number | null
+          estimated_actions: Json | null
+          estimated_duration_minutes: number
+          fixed_price: number | null
+          hourly_rate: number | null
+          id: string
+          installation_id: string
+          payment_terms: string | null
+          quote_number: string
+          sent_at: string | null
+          service_description: string | null
+          service_title: string
+          service_type: string
+          status: string
+          subtotal: number
+          tax_amount: number
+          tax_rate: number | null
+          terms_and_conditions: string | null
+          total_price: number
+          updated_at: string
+          updated_by: string | null
+          valid_until: string
+          viewed_at: string | null
+        }
+        Insert: {
+          client_accepted_terms?: boolean | null
+          client_decision_at?: string | null
+          client_notes?: string | null
+          client_signature_data?: string | null
+          client_signature_ip?: unknown
+          client_signature_user_agent?: string | null
+          created_at?: string
+          created_by: string
+          currency?: string
+          discount_percentage?: number | null
+          estimated_actions?: Json | null
+          estimated_duration_minutes: number
+          fixed_price?: number | null
+          hourly_rate?: number | null
+          id?: string
+          installation_id: string
+          payment_terms?: string | null
+          quote_number: string
+          sent_at?: string | null
+          service_description?: string | null
+          service_title: string
+          service_type: string
+          status?: string
+          subtotal: number
+          tax_amount: number
+          tax_rate?: number | null
+          terms_and_conditions?: string | null
+          total_price: number
+          updated_at?: string
+          updated_by?: string | null
+          valid_until: string
+          viewed_at?: string | null
+        }
+        Update: {
+          client_accepted_terms?: boolean | null
+          client_decision_at?: string | null
+          client_notes?: string | null
+          client_signature_data?: string | null
+          client_signature_ip?: unknown
+          client_signature_user_agent?: string | null
+          created_at?: string
+          created_by?: string
+          currency?: string
+          discount_percentage?: number | null
+          estimated_actions?: Json | null
+          estimated_duration_minutes?: number
+          fixed_price?: number | null
+          hourly_rate?: number | null
+          id?: string
+          installation_id?: string
+          payment_terms?: string | null
+          quote_number?: string
+          sent_at?: string | null
+          service_description?: string | null
+          service_title?: string
+          service_type?: string
+          status?: string
+          subtotal?: number
+          tax_amount?: number
+          tax_rate?: number | null
+          terms_and_conditions?: string | null
+          total_price?: number
+          updated_at?: string
+          updated_by?: string | null
+          valid_until?: string
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_quotes_installation_id_fkey"
+            columns: ["installation_id"]
+            isOneToOne: false
+            referencedRelation: "client_installations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_action_logs: {
+        Row: {
+          action_description: string
+          action_type: string
+          after_state: Json | null
+          approved_at: string | null
+          approved_by: string | null
+          before_state: Json | null
+          component_affected: string | null
+          created_at: string
+          duration_ms: number | null
+          id: string
+          metadata: Json | null
+          requires_approval: boolean | null
+          risk_level: string
+          screenshot_url: string | null
+          session_id: string
+        }
+        Insert: {
+          action_description: string
+          action_type: string
+          after_state?: Json | null
+          approved_at?: string | null
+          approved_by?: string | null
+          before_state?: Json | null
+          component_affected?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          id?: string
+          metadata?: Json | null
+          requires_approval?: boolean | null
+          risk_level?: string
+          screenshot_url?: string | null
+          session_id: string
+        }
+        Update: {
+          action_description?: string
+          action_type?: string
+          after_state?: Json | null
+          approved_at?: string | null
+          approved_by?: string | null
+          before_state?: Json | null
+          component_affected?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          id?: string
+          metadata?: Json | null
+          requires_approval?: boolean | null
+          risk_level?: string
+          screenshot_url?: string | null
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_action_logs_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "remote_access_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       session_risk_assessments: {
         Row: {
           created_at: string | null
@@ -20830,6 +21096,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_service_quote: {
+        Args: {
+          p_client_notes?: string
+          p_quote_id: string
+          p_signature_data: string
+        }
+        Returns: Json
+      }
       anonymize_financial_data_for_training: {
         Args: {
           p_data_type: string
@@ -20857,6 +21131,14 @@ export type Database = {
       calculate_nps: {
         Args: { p_detractors: number; p_passives: number; p_promoters: number }
         Returns: number
+      }
+      calculate_quote_totals: {
+        Args: { p_quote_id: string }
+        Returns: {
+          subtotal: number
+          tax_amount: number
+          total: number
+        }[]
       }
       can_send_survey: {
         Args: {
