@@ -1934,4 +1934,16 @@ export default {
   'news.saved.added': 'Artículo guardado',
   'news.saved.removed': 'Artículo eliminado de guardados',
   'news.saved.error': 'Error al guardar artículo',
+  
+  // Translations Dashboard
+  'translations.dashboard.title': 'Gestión de Traducciones',
+  'translations.dashboard.subtitle': 'Gestiona {count} idiomas con traducciones IA',
+  'translations.stats.complete': 'Completos',
+  'translations.stats.inProgress': 'En Progreso',
+  'translations.stats.pending': 'Pendientes',
+  'translations.stats.avgProgress': 'Progreso Medio',
+  'translations.tabs.overview': 'Resumen',
+  'translations.tabs.verification': 'Verificación',
+  'translations.tabs.batch': 'Traducción Masiva',
+  'translations.tabs.settings': 'Configuración',
 };
