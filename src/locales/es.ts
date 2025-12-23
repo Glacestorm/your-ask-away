@@ -143,6 +143,29 @@ export default {
   'admin.section.documentation': 'Documentación y Análisis',
   'admin.section.omnichannel': 'Comunicación Omnicanal',
   'admin.section.tools': 'Herramientas e Historial',
+  'admin.section.processMining': 'Process Mining & BPMN',
+  'admin.section.aiSells': 'IA que Vende (Fase 6)',
+  'admin.section.verticals': 'Verticales CNAE (Fase 7)',
+  
+  // Admin Cards - Process Mining
+  'admin.card.bpmnDesigner': 'Diseñador BPMN',
+  'admin.card.bpmnDesigner.desc': 'Crea y edita procesos de negocio',
+  'admin.card.processMining': 'Process Mining',
+  'admin.card.processMining.desc': 'Analiza y optimiza procesos',
+  
+  // Admin Cards - IA que Vende
+  'admin.card.aiCopilot': 'Copilot Inteligente',
+  'admin.card.aiCopilot.desc': 'Asistente IA por rol con sugerencias',
+  'admin.card.aiNba': 'Next Best Action',
+  'admin.card.aiNba.desc': 'Acciones priorizadas con IA',
+  'admin.card.aiControls': 'Controles Continuos',
+  'admin.card.aiControls.desc': 'Monitorización y alertas automáticas',
+  
+  // Admin Cards - Verticales
+  'admin.card.verticalPacks': 'Packs Verticales',
+  'admin.card.verticalPacks.desc': 'Retail, Construcción, Salud, Logística, Legal',
+  'admin.card.sectorsManager': 'Gestión de Sectores',
+  'admin.card.sectorsManager.desc': 'Administra sectores, CNAEs y funcionalidades',
   
   // Admin Cards - Commercial
   'admin.card.roleSelector': 'Selector de Visión',
