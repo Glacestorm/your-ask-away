@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSupportedLanguages } from '@/hooks/useSupportedLanguages';
+import { useLanguageInstaller } from '@/hooks/admin/useLanguageInstaller';
 import { Languages, BarChart3, CheckSquare, Settings } from 'lucide-react';
 import { LanguageProgressGrid } from './LanguageProgressGrid';
 import { TranslationVerificationPanel } from './TranslationVerificationPanel';
@@ -10,6 +11,7 @@ import { TranslationSettingsPanel } from './TranslationSettingsPanel';
 
 export const TranslationsDashboard: React.FC = () => {
   const { languages, loading, refresh } = useSupportedLanguages();
+  const { installLanguage, installingLocale } = useLanguageInstaller({ onComplete: refresh });
   const [activeTab, setActiveTab] = useState('overview');
 
   const stats = React.useMemo(() => {
@@ -125,6 +127,8 @@ export const TranslationsDashboard: React.FC = () => {
             languages={languages} 
             loading={loading} 
             onRefresh={refresh}
+            onInstallLanguage={installLanguage}
+            installingLocale={installingLocale}
           />
         </TabsContent>
 

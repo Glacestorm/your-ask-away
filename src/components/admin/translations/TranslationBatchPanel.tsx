@@ -77,7 +77,7 @@ export const TranslationBatchPanel: React.FC<TranslationBatchPanelProps> = ({
 
         const { error } = await supabase
           .from('cms_translations')
-          .upsert(items, { onConflict: 'locale,translation_key' });
+          .upsert(items, { onConflict: 'translation_key,namespace,locale' });
 
         if (error) throw error;
       }
