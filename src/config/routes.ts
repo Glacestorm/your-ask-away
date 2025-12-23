@@ -40,6 +40,7 @@ const Careers = lazy(() => import('@/pages/company/Careers'));
 const Documentation = lazy(() => import('@/pages/resources/Documentation'));
 const APIReference = lazy(() => import('@/pages/resources/APIReference'));
 const Blog = lazy(() => import('@/pages/resources/Blog'));
+const NewsDetail = lazy(() => import('@/pages/news/NewsDetail'));
 const CaseStudies = lazy(() => import('@/pages/resources/CaseStudies'));
 const CasosDeExito = lazy(() => import('@/pages/casos-de-exito/index'));
 const TrendsDashboard = lazy(() => import('@/pages/resources/TrendsDashboard'));
@@ -175,7 +176,8 @@ export const companyRoutes: RouteConfig[] = [
 export const resourceRoutes: RouteConfig[] = [
   { path: '/docs', component: Documentation, layout: 'public', priority: 'low', meta: { title: 'Documentación' } },
   { path: '/api', component: APIReference, layout: 'public', priority: 'low', meta: { title: 'API Reference' } },
-  { path: '/blog', component: Blog, layout: 'public', priority: 'low', meta: { title: 'Blog' } },
+  { path: '/blog', component: Blog, layout: 'none', priority: 'low', meta: { title: 'Blog' } },
+  { path: '/news/:id', component: NewsDetail, layout: 'none', priority: 'high', meta: { title: 'News' } },
   { path: '/cases', component: CaseStudies, layout: 'public', priority: 'low', meta: { title: 'Casos de Éxito' } },
   { path: '/casos-de-exito', component: CasosDeExito, layout: 'none', priority: 'medium', meta: { title: 'Casos de Éxito' } },
   { path: '/casos-de-exito/:slug', component: CaseStudyDetail, layout: 'none', priority: 'medium', meta: { title: 'Caso de Éxito' } },

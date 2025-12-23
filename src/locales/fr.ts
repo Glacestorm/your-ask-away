@@ -1762,8 +1762,27 @@ export default {
   'news.audio.rateLimit': 'Limite de requêtes atteinte. Réessayez dans quelques minutes.',
   // News Filters
   'news.filters.all': 'Tous',
-  'news.filters.searchPlaceholder': 'Rechercher des actualités...',
+  'news.filters.searchPlaceholder': 'Rechercher actualités, entreprises, réglementations...',
   'news.filters.clearAll': 'Tout effacer',
   'news.filters.activeFilters': 'Filtres actifs',
   'news.filters.articles': 'articles',
+  'news.filters.categories': 'Catégories',
+  'news.filters.saved': 'Enregistrés',
+  'news.filters.recency.label': 'Période',
+  'news.filters.recency.all': 'Tout',
+  'news.filters.sort.label': 'Trier',
+  'news.filters.sort.relevance': 'Pertinence',
+  'news.filters.sort.date': 'Date',
+  // News Detail
+  'news.detail.notFound': 'Article non trouvé',
+  'news.detail.linkCopied': 'Lien copié!',
+  'news.detail.copyLink': 'Copier le lien',
+  'news.detail.reads': 'lectures',
+  'news.detail.source': 'Source',
+  'news.detail.readOriginal': 'Lire l\'original',
+  // News Saved
+  'news.saved.loginRequired': 'Connectez-vous pour enregistrer des articles',
+  'news.saved.added': 'Article enregistré',
+  'news.saved.removed': 'Article supprimé des enregistrements',
+  'news.saved.error': 'Erreur lors de l\'enregistrement',
 };

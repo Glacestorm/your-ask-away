@@ -1765,8 +1765,27 @@ export default {
   'news.audio.rateLimit': 'Límit de sol·licituds assolit. Intenta-ho en uns minuts.',
   // News Filters
   'news.filters.all': 'Tots',
-  'news.filters.searchPlaceholder': 'Cercar notícies...',
+  'news.filters.searchPlaceholder': 'Cercar notícies, empreses, normatives...',
   'news.filters.clearAll': 'Netejar tot',
   'news.filters.activeFilters': 'Filtres actius',
   'news.filters.articles': 'articles',
+  'news.filters.categories': 'Categories',
+  'news.filters.saved': 'Guardades',
+  'news.filters.recency.label': 'Temps',
+  'news.filters.recency.all': 'Tot',
+  'news.filters.sort.label': 'Ordenar',
+  'news.filters.sort.relevance': 'Rellevància',
+  'news.filters.sort.date': 'Data',
+  // News Detail
+  'news.detail.notFound': 'Article no trobat',
+  'news.detail.linkCopied': 'Enllaç copiat!',
+  'news.detail.copyLink': 'Copiar enllaç',
+  'news.detail.reads': 'lectures',
+  'news.detail.source': 'Font',
+  'news.detail.readOriginal': 'Llegir original',
+  // News Saved
+  'news.saved.loginRequired': 'Inicia sessió per guardar articles',
+  'news.saved.added': 'Article guardat',
+  'news.saved.removed': 'Article eliminat de guardats',
+  'news.saved.error': 'Error en guardar article',
 };

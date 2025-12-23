@@ -159,7 +159,7 @@ const NewsSearch: React.FC = () => {
       // If no local results, search with AI
       if (formattedLocalResults.length === 0) {
         const { data: aiData, error: aiError } = await supabase.functions.invoke('news-ai-search', {
-          body: { query }
+          body: { query, language }
         });
 
         if (aiError) throw aiError;

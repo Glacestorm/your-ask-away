@@ -1765,8 +1765,27 @@ export default {
   'news.audio.rateLimit': 'Rate limit reached. Try again in a few minutes.',
   // News Filters
   'news.filters.all': 'All',
-  'news.filters.searchPlaceholder': 'Search news...',
+  'news.filters.searchPlaceholder': 'Search news, companies, regulations...',
   'news.filters.clearAll': 'Clear all',
   'news.filters.activeFilters': 'Active filters',
   'news.filters.articles': 'articles',
+  'news.filters.categories': 'Categories',
+  'news.filters.saved': 'Saved',
+  'news.filters.recency.label': 'Time',
+  'news.filters.recency.all': 'All',
+  'news.filters.sort.label': 'Sort',
+  'news.filters.sort.relevance': 'Relevance',
+  'news.filters.sort.date': 'Date',
+  // News Detail
+  'news.detail.notFound': 'Article not found',
+  'news.detail.linkCopied': 'Link copied!',
+  'news.detail.copyLink': 'Copy link',
+  'news.detail.reads': 'reads',
+  'news.detail.source': 'Source',
+  'news.detail.readOriginal': 'Read original',
+  // News Saved
+  'news.saved.loginRequired': 'Login to save articles',
+  'news.saved.added': 'Article saved',
+  'news.saved.removed': 'Article removed from saved',
+  'news.saved.error': 'Error saving article',
 };
