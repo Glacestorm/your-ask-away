@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useCMSTranslation } from '@/hooks/cms/useCMSTranslation';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { NewsArticle } from '@/hooks/useNewsArticles';
@@ -10,37 +10,23 @@ interface TranslatedNews {
 
 export function useTranslatedNews(originalArticles: NewsArticle[]): TranslatedNews {
   const { language } = useLanguage();
-  const { translateAsync } = useCMSTranslation();
+  const { translateBatchAsync } = useCMSTranslation();
   const [translatedArticles, setTranslatedArticles] = useState<NewsArticle[]>(originalArticles);
   const [isTranslating, setIsTranslating] = useState(false);
   
-  // Cache translations to avoid re-translating
-  const translationCacheRef = useRef<Record<string, string>>({});
   const lastLanguageRef = useRef<string>(language);
-
-  const translateText = useCallback(async (text: string, targetLocale: string): Promise<string> => {
-    if (!text || targetLocale === 'es') return text;
-    
-    const cacheKey = `${targetLocale}|${text.substring(0, 100)}`;
-    if (translationCacheRef.current[cacheKey]) {
-      return translationCacheRef.current[cacheKey];
-    }
-
-    try {
-      const translated = await translateAsync(text, targetLocale, 'es');
-      translationCacheRef.current[cacheKey] = translated;
-      return translated;
-    } catch (error) {
-      console.error('Translation error:', error);
-      return text;
-    }
-  }, [translateAsync]);
+  const lastArticlesRef = useRef<string>('');
 
   useEffect(() => {
-    // Reset cache when language changes
-    if (lastLanguageRef.current !== language) {
-      lastLanguageRef.current = language;
+    const articlesKey = originalArticles.map(a => a.id).join(',');
+    
+    // Skip if nothing changed
+    if (lastLanguageRef.current === language && lastArticlesRef.current === articlesKey) {
+      return;
     }
+    
+    lastLanguageRef.current = language;
+    lastArticlesRef.current = articlesKey;
 
     // If Spanish, use originals directly
     if (language === 'es') {
@@ -60,20 +46,39 @@ export function useTranslatedNews(originalArticles: NewsArticle[]): TranslatedNe
       setIsTranslating(true);
 
       try {
-        // Translate articles in batches for better UX
-        const translatedList = await Promise.all(
-          originalArticles.map(async (article) => ({
-            ...article,
-            title: await translateText(article.title, language),
-            ai_summary: article.ai_summary ? await translateText(article.ai_summary, language) : article.ai_summary,
-            category: article.category ? await translateText(article.category, language) : article.category,
-            // Keep original tags for filtering but could translate display
-          }))
-        );
-        setTranslatedArticles(translatedList);
+        // Collect all texts to translate in batches
+        const textsToTranslate: string[] = [];
+        const textIndexes: { articleIndex: number; field: 'title' | 'ai_summary' | 'category' }[] = [];
+        
+        originalArticles.forEach((article, articleIndex) => {
+          if (article.title) {
+            textsToTranslate.push(article.title);
+            textIndexes.push({ articleIndex, field: 'title' });
+          }
+          if (article.ai_summary) {
+            textsToTranslate.push(article.ai_summary);
+            textIndexes.push({ articleIndex, field: 'ai_summary' });
+          }
+          if (article.category) {
+            textsToTranslate.push(article.category);
+            textIndexes.push({ articleIndex, field: 'category' });
+          }
+        });
+        
+        // Batch translate all texts at once
+        const translatedTexts = await translateBatchAsync(textsToTranslate, language, 'es');
+        
+        // Reconstruct articles with translations
+        const newArticles = originalArticles.map(article => ({ ...article }));
+        
+        translatedTexts.forEach((translated, i) => {
+          const { articleIndex, field } = textIndexes[i];
+          (newArticles[articleIndex] as any)[field] = translated;
+        });
+        
+        setTranslatedArticles(newArticles);
       } catch (error) {
         console.error('Error translating news:', error);
-        // Fallback to originals
         setTranslatedArticles(originalArticles);
       } finally {
         setIsTranslating(false);
@@ -81,7 +86,7 @@ export function useTranslatedNews(originalArticles: NewsArticle[]): TranslatedNe
     };
 
     translateAll();
-  }, [language, originalArticles, translateText]);
+  }, [language, originalArticles, translateBatchAsync]);
 
   return {
     articles: translatedArticles,
