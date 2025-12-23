@@ -1,11 +1,14 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { 
+  handleOptionsRequest, 
+  createSecureResponse,
+  checkRateLimit,
+  validatePayloadSize,
+  validateAuthentication
+} from '../_shared/owasp-security.ts';
+import { getClientIP, generateRequestId } from '../_shared/edge-function-template.ts';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -23,22 +26,94 @@ interface RevenueContext {
 }
 
 serve(async (req) => {
+  const requestId = generateRequestId();
+  const clientIp = getClientIP(req);
+  const startTime = Date.now();
+
+  console.log(`[revenue-copilot-chat] Request ${requestId} from ${clientIp}`);
+
+  // === CORS ===
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return handleOptionsRequest();
   }
 
   try {
-    const { message, sessionId, context } = await req.json() as {
-      message: string;
-      sessionId?: string;
-      context?: RevenueContext;
-    };
+    // === Rate Limiting ===
+    const rateCheck = checkRateLimit({
+      maxRequests: 60,
+      windowMs: 60000,
+      identifier: `revenue-copilot-chat:${clientIp}`,
+    });
+
+    if (!rateCheck.allowed) {
+      console.warn(`[revenue-copilot-chat] Rate limit exceeded: ${clientIp}`);
+      return createSecureResponse({ 
+        success: false,
+        error: 'rate_limit_exceeded', 
+        message: 'Demasiadas solicitudes. Intenta más tarde.',
+        retryAfter: Math.ceil(rateCheck.resetIn / 1000)
+      }, 429);
+    }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
     
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // === Authentication ===
+    const authResult = await validateAuthentication(
+      req.headers.get('Authorization'),
+      supabase
+    );
+
+    if (!authResult.valid) {
+      console.warn(`[revenue-copilot-chat] Auth failed: ${authResult.error}`);
+      return createSecureResponse(
+        { success: false, error: 'unauthorized', message: authResult.error || 'No autorizado' },
+        401
+      );
+    }
+
+    // === Parse & Validate Body ===
+    let body: { message: string; sessionId?: string; context?: RevenueContext };
+    try {
+      body = await req.json();
+    } catch {
+      return createSecureResponse({ 
+        success: false, 
+        error: 'invalid_json', 
+        message: 'El cuerpo no es JSON válido' 
+      }, 400);
+    }
+
+    const payloadCheck = validatePayloadSize(body);
+    if (!payloadCheck.valid) {
+      return createSecureResponse({ 
+        success: false, 
+        error: 'payload_too_large', 
+        message: payloadCheck.error 
+      }, 413);
+    }
+
+    const { message, sessionId, context } = body;
+
+    if (!message || typeof message !== 'string' || message.trim().length === 0) {
+      return createSecureResponse({ 
+        success: false, 
+        error: 'validation_error', 
+        message: 'El mensaje es requerido' 
+      }, 400);
+    }
+
+    // Validate message length
+    if (message.length > 4000) {
+      return createSecureResponse({ 
+        success: false, 
+        error: 'validation_error', 
+        message: 'El mensaje es demasiado largo (máx 4000 caracteres)' 
+      }, 400);
+    }
 
     // Get or create session
     let session;
@@ -74,7 +149,7 @@ serve(async (req) => {
     const systemPrompt = buildSystemPrompt(context || session.context);
 
     // Call Lovable AI
-    const aiResponse = await fetch('https://api.lovable.dev/v1/chat/completions', {
+    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${lovableApiKey}`,
@@ -92,6 +167,21 @@ serve(async (req) => {
     });
 
     if (!aiResponse.ok) {
+      if (aiResponse.status === 429) {
+        console.warn(`[revenue-copilot-chat] AI rate limit exceeded`);
+        return createSecureResponse({ 
+          success: false,
+          error: 'rate_limit_exceeded', 
+          message: 'Demasiadas solicitudes a IA. Intenta más tarde.' 
+        }, 429);
+      }
+      if (aiResponse.status === 402) {
+        return createSecureResponse({ 
+          success: false,
+          error: 'payment_required', 
+          message: 'Créditos de IA insuficientes.' 
+        }, 402);
+      }
       const errorText = await aiResponse.text();
       throw new Error(`AI API error: ${errorText}`);
     }
@@ -113,31 +203,34 @@ serve(async (req) => {
       .eq('id', session.id);
 
     if (updateError) {
-      console.error('Error updating session:', updateError);
+      console.error('[revenue-copilot-chat] Error updating session:', updateError);
     }
 
     // Extract any insights or actions from the response
     const insights = extractInsights(assistantMessage);
 
-    return new Response(JSON.stringify({
+    const duration = Date.now() - startTime;
+    console.log(`[revenue-copilot-chat] Success in ${duration}ms`);
+
+    return createSecureResponse({
       success: true,
       sessionId: session.id,
       message: assistantMessage,
-      insights
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      insights,
+      requestId,
+      timestamp: new Date().toISOString()
     });
 
-  } catch (error: unknown) {
-    console.error('Error in revenue-copilot-chat:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(JSON.stringify({
+  } catch (error) {
+    const duration = Date.now() - startTime;
+    console.error(`[revenue-copilot-chat] Error after ${duration}ms:`, error);
+    
+    return createSecureResponse({
       success: false,
-      error: errorMessage
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+      error: 'internal_error',
+      message: error instanceof Error ? error.message : 'Error desconocido',
+      requestId
+    }, 500);
   }
 });
 
