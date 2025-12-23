@@ -12,11 +12,19 @@ interface LanguageContextType {
   t: (key: string) => string;
 }
 
+const normalizeKeys = (obj: Record<string, string>): Record<string, string> => {
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    out[k.trim()] = v;
+  }
+  return out;
+};
+
 const translations: Record<Language, Record<string, string>> = {
-  ca: caTranslations,
-  es: esTranslations,
-  fr: frTranslations,
-  en: enTranslations,
+  ca: normalizeKeys(caTranslations),
+  es: normalizeKeys(esTranslations),
+  fr: normalizeKeys(frTranslations),
+  en: normalizeKeys(enTranslations),
 };
 
 const getTranslations = (lang: Language): Record<string, string> => {
