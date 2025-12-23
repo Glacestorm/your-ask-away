@@ -643,7 +643,7 @@ export function OfficeDirectorDashboard() {
           <Card className="shadow-lg border-0">
             <CardHeader>
               <CardTitle>{t('director.detailsTitle')}</CardTitle>
-              <CardDescription>Informació detallada dels gestors</CardDescription>
+              <CardDescription>{t('director.managersDetailedDesc')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
