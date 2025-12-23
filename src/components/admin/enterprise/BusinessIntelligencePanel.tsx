@@ -249,13 +249,13 @@ export function BusinessIntelligencePanel({
                       {insights.map((insight) => (
                         <div key={insight.id} className="p-3 rounded-lg border bg-card">
                           <div className="flex items-start justify-between mb-2">
-                            <Badge variant="outline" className="text-xs">{insight.category}</Badge>
-                            {getPriorityBadge(insight.priority)}
+                            <Badge variant="outline" className="text-xs">{insight.type}</Badge>
+                            {getPriorityBadge(insight.severity)}
                           </div>
                           <p className="text-sm font-medium mb-1">{insight.title}</p>
                           <p className="text-xs text-muted-foreground">{insight.description}</p>
-                          {insight.action && (
-                            <p className="text-xs text-primary mt-2">💡 {insight.action}</p>
+                          {insight.suggestedActions && insight.suggestedActions.length > 0 && (
+                            <p className="text-xs text-primary mt-2">💡 {insight.suggestedActions[0]}</p>
                           )}
                         </div>
                       ))}
@@ -283,18 +283,18 @@ export function BusinessIntelligencePanel({
                           </Badge>
                         </div>
                         <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                          <div className="p-2 rounded bg-green-500/10">
-                            <p className="text-muted-foreground">Optimista</p>
-                            <p className="font-semibold text-green-600">{prediction.optimistic}</p>
-                          </div>
-                          <div className="p-2 rounded bg-blue-500/10">
-                            <p className="text-muted-foreground">Base</p>
-                            <p className="font-semibold text-blue-600">{prediction.baseline}</p>
-                          </div>
-                          <div className="p-2 rounded bg-orange-500/10">
-                            <p className="text-muted-foreground">Pesimista</p>
-                            <p className="font-semibold text-orange-600">{prediction.pessimistic}</p>
-                          </div>
+                          {prediction.scenarios?.slice(0, 3).map((scenario, idx) => (
+                            <div key={scenario.name} className={cn(
+                              "p-2 rounded",
+                              idx === 0 ? "bg-green-500/10" : idx === 1 ? "bg-blue-500/10" : "bg-orange-500/10"
+                            )}>
+                              <p className="text-muted-foreground">{scenario.name}</p>
+                              <p className={cn(
+                                "font-semibold",
+                                idx === 0 ? "text-green-600" : idx === 1 ? "text-blue-600" : "text-orange-600"
+                              )}>{scenario.value}</p>
+                            </div>
+                          ))}
                         </div>
                         <p className="text-xs text-muted-foreground mt-2">
                           Horizonte: {prediction.horizon}
