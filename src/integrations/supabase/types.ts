@@ -20819,6 +20819,10 @@ export type Database = {
         }
         Returns: string
       }
+      update_translation_progress_for_locale: {
+        Args: { p_locale: string }
+        Returns: undefined
+      }
       validate_accounting_sync: {
         Args: { p_company_id: string }
         Returns: Json
