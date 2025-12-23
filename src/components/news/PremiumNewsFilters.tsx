@@ -1,8 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Search, X, LayoutGrid, List, Filter, SlidersHorizontal } from 'lucide-react';
+import { Search, X, LayoutGrid, List, Filter, SlidersHorizontal, Clock, TrendingUp, Bookmark } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { useLanguage } from '@/contexts/LanguageContext';
+
+export type RecencyFilter = 'all' | '24h' | '7d' | '30d';
+export type SortOption = 'relevance' | 'date';
 
 interface PremiumNewsFiltersProps {
   categories: string[];
@@ -13,6 +17,12 @@ interface PremiumNewsFiltersProps {
   viewMode: 'grid' | 'list';
   onViewModeChange: (mode: 'grid' | 'list') => void;
   totalArticles?: number;
+  recency?: RecencyFilter;
+  onRecencyChange?: (recency: RecencyFilter) => void;
+  sortBy?: SortOption;
+  onSortChange?: (sort: SortOption) => void;
+  showSaved?: boolean;
+  onShowSavedChange?: (show: boolean) => void;
 }
 
 const PremiumNewsFilters: React.FC<PremiumNewsFiltersProps> = ({
@@ -24,52 +34,43 @@ const PremiumNewsFilters: React.FC<PremiumNewsFiltersProps> = ({
   viewMode,
   onViewModeChange,
   totalArticles = 0,
+  recency = 'all',
+  onRecencyChange,
+  sortBy = 'relevance',
+  onSortChange,
+  showSaved = false,
+  onShowSavedChange,
 }) => {
+  const { t } = useLanguage();
+
   const getCategoryData = (category: string) => {
     const data: Record<string, { icon: string; gradient: string; glow: string }> = {
-      'Todos': { 
-        icon: '🌐', 
-        gradient: 'from-slate-500 to-slate-600',
-        glow: 'shadow-slate-500/30'
-      },
-      'Fiscal': { 
-        icon: '📊', 
-        gradient: 'from-amber-500 to-orange-600',
-        glow: 'shadow-amber-500/30'
-      },
-      'Compliance': { 
-        icon: '⚖️', 
-        gradient: 'from-blue-500 to-indigo-600',
-        glow: 'shadow-blue-500/30'
-      },
-      'Finanzas': { 
-        icon: '💰', 
-        gradient: 'from-emerald-500 to-teal-600',
-        glow: 'shadow-emerald-500/30'
-      },
-      'Empresarial': { 
-        icon: '🏢', 
-        gradient: 'from-purple-500 to-violet-600',
-        glow: 'shadow-purple-500/30'
-      },
-      'Tecnología': { 
-        icon: '💻', 
-        gradient: 'from-cyan-500 to-blue-600',
-        glow: 'shadow-cyan-500/30'
-      },
-      'Seguridad': { 
-        icon: '🔒', 
-        gradient: 'from-rose-500 to-red-600',
-        glow: 'shadow-rose-500/30'
-      },
-      'General': { 
-        icon: '📰', 
-        gradient: 'from-slate-500 to-slate-600',
-        glow: 'shadow-slate-500/30'
-      },
+      'Todos': { icon: '🌐', gradient: 'from-slate-500 to-slate-600', glow: 'shadow-slate-500/30' },
+      'All': { icon: '🌐', gradient: 'from-slate-500 to-slate-600', glow: 'shadow-slate-500/30' },
+      'Tots': { icon: '🌐', gradient: 'from-slate-500 to-slate-600', glow: 'shadow-slate-500/30' },
+      'Tous': { icon: '🌐', gradient: 'from-slate-500 to-slate-600', glow: 'shadow-slate-500/30' },
+      'Fiscal': { icon: '📊', gradient: 'from-amber-500 to-orange-600', glow: 'shadow-amber-500/30' },
+      'Compliance': { icon: '⚖️', gradient: 'from-blue-500 to-indigo-600', glow: 'shadow-blue-500/30' },
+      'Finanzas': { icon: '💰', gradient: 'from-emerald-500 to-teal-600', glow: 'shadow-emerald-500/30' },
+      'Empresarial': { icon: '🏢', gradient: 'from-purple-500 to-violet-600', glow: 'shadow-purple-500/30' },
+      'Tecnología': { icon: '💻', gradient: 'from-cyan-500 to-blue-600', glow: 'shadow-cyan-500/30' },
+      'Seguridad': { icon: '🔒', gradient: 'from-rose-500 to-red-600', glow: 'shadow-rose-500/30' },
+      'General': { icon: '📰', gradient: 'from-slate-500 to-slate-600', glow: 'shadow-slate-500/30' },
     };
     return data[category] || data['General'];
   };
+
+  const recencyOptions: { value: RecencyFilter; label: string }[] = [
+    { value: 'all', label: t('news.filters.recency.all') || 'All' },
+    { value: '24h', label: '24h' },
+    { value: '7d', label: '7d' },
+    { value: '30d', label: '30d' },
+  ];
+
+  const sortOptions: { value: SortOption; label: string; icon: React.ReactNode }[] = [
+    { value: 'relevance', label: t('news.filters.sort.relevance') || 'Relevance', icon: <TrendingUp className="w-3 h-3" /> },
+    { value: 'date', label: t('news.filters.sort.date') || 'Date', icon: <Clock className="w-3 h-3" /> },
+  ];
 
   return (
     <div className="space-y-6">
@@ -87,7 +88,7 @@ const PremiumNewsFilters: React.FC<PremiumNewsFiltersProps> = ({
             <Input
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Buscar noticias, empresas, normativas..."
+              placeholder={t('news.filters.searchPlaceholder')}
               className="pl-12 pr-12 py-6 bg-slate-900/80 border-slate-700 focus:border-emerald-500/50 text-white placeholder-slate-500 rounded-2xl text-base"
             />
             {searchQuery && (
@@ -128,14 +129,76 @@ const PremiumNewsFilters: React.FC<PremiumNewsFiltersProps> = ({
             </button>
           </div>
 
-          <Button 
-            variant="outline" 
-            className="border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl px-4 py-6"
-          >
-            <SlidersHorizontal className="w-4 h-4 mr-2" />
-            Filtros
-          </Button>
+          {onShowSavedChange && (
+            <Button 
+              variant={showSaved ? "default" : "outline"}
+              onClick={() => onShowSavedChange(!showSaved)}
+              className={`rounded-xl px-4 py-6 ${
+                showSaved 
+                  ? 'bg-emerald-500 text-white hover:bg-emerald-600' 
+                  : 'border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <Bookmark className="w-4 h-4 mr-2" />
+              {t('news.filters.saved')}
+            </Button>
+          )}
         </div>
+      </motion.div>
+
+      {/* Recency & Sort Filters */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="flex flex-wrap items-center gap-4"
+      >
+        {/* Recency Filter */}
+        {onRecencyChange && (
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 text-slate-500" />
+            <span className="text-sm text-slate-500">{t('news.filters.recency.label') || 'Time'}:</span>
+            <div className="flex items-center bg-slate-900/80 border border-slate-700 rounded-lg p-1">
+              {recencyOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => onRecencyChange(option.value)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                    recency === option.value
+                      ? 'bg-emerald-500 text-white'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Sort Filter */}
+        {onSortChange && (
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal className="w-4 h-4 text-slate-500" />
+            <span className="text-sm text-slate-500">{t('news.filters.sort.label') || 'Sort'}:</span>
+            <div className="flex items-center bg-slate-900/80 border border-slate-700 rounded-lg p-1">
+              {sortOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => onSortChange(option.value)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                    sortBy === option.value
+                      ? 'bg-emerald-500 text-white'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  }`}
+                >
+                  {option.icon}
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </motion.div>
 
       {/* Category Pills - Premium */}
@@ -147,10 +210,10 @@ const PremiumNewsFilters: React.FC<PremiumNewsFiltersProps> = ({
       >
         <div className="flex items-center gap-2 text-sm text-slate-500">
           <Filter className="w-4 h-4" />
-          <span>Categorías</span>
+          <span>{t('news.filters.categories') || 'Categories'}</span>
           {totalArticles > 0 && (
             <span className="px-2 py-0.5 bg-slate-800 rounded-full text-xs text-slate-400">
-              {totalArticles} artículos
+              {totalArticles} {t('news.filters.articles')}
             </span>
           )}
         </div>
@@ -178,7 +241,6 @@ const PremiumNewsFilters: React.FC<PremiumNewsFiltersProps> = ({
                   }
                 `}
               >
-                {/* Animated background for selected */}
                 {isSelected && (
                   <motion.div
                     layoutId="categoryBg"
@@ -196,14 +258,14 @@ const PremiumNewsFilters: React.FC<PremiumNewsFiltersProps> = ({
       </motion.div>
 
       {/* Active Filters Display */}
-      {(searchQuery || selectedCategory !== 'Todos') && (
+      {(searchQuery || selectedCategory !== 'Todos' || recency !== 'all' || showSaved) && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
           className="flex items-center gap-3 pt-2"
         >
-          <span className="text-xs text-slate-500">Filtros activos:</span>
+          <span className="text-xs text-slate-500">{t('news.filters.activeFilters')}:</span>
           <div className="flex flex-wrap gap-2">
             {searchQuery && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 text-emerald-400 text-xs rounded-full border border-emerald-500/30">
@@ -222,15 +284,35 @@ const PremiumNewsFilters: React.FC<PremiumNewsFiltersProps> = ({
                 </button>
               </span>
             )}
+            {recency !== 'all' && onRecencyChange && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-500/10 text-purple-400 text-xs rounded-full border border-purple-500/30">
+                <Clock className="w-3 h-3" />
+                {recency}
+                <button onClick={() => onRecencyChange('all')} className="ml-1 hover:text-white">
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+            {showSaved && onShowSavedChange && (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 text-amber-400 text-xs rounded-full border border-amber-500/30">
+                <Bookmark className="w-3 h-3" />
+                {t('news.filters.saved')}
+                <button onClick={() => onShowSavedChange(false)} className="ml-1 hover:text-white">
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            )}
           </div>
           <button
             onClick={() => {
               onSearchChange('');
               onCategoryChange('Todos');
+              onRecencyChange?.('all');
+              onShowSavedChange?.(false);
             }}
             className="text-xs text-slate-500 hover:text-slate-300 underline ml-auto"
           >
-            Limpiar todo
+            {t('news.filters.clearAll')}
           </button>
         </motion.div>
       )}

@@ -16244,6 +16244,27 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_news: {
+        Row: {
+          article_id: string
+          id: string
+          saved_at: string
+          user_id: string
+        }
+        Insert: {
+          article_id: string
+          id?: string
+          saved_at?: string
+          user_id: string
+        }
+        Update: {
+          article_id?: string
+          id?: string
+          saved_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       scenario_simulations: {
         Row: {
           base_parameters: Json
