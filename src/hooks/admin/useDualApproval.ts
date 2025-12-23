@@ -1,10 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
+// === TYPES ===
 export type ApprovalRequestType = 'high_risk_action' | 'session_end' | 'data_export' | 'config_change';
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected' | 'expired';
 
+// === INTERFACES ===
 export interface ApprovalRequest {
   id: string;
   session_id: string;
@@ -30,37 +32,53 @@ export interface CreateApprovalParams {
   expiresInMinutes?: number;
 }
 
+export interface DualApprovalError {
+  code: string;
+  message: string;
+  details?: string;
+}
+
+// === HOOK ===
 export function useDualApproval(sessionId: string | null) {
   const [pendingRequests, setPendingRequests] = useState<ApprovalRequest[]>([]);
   const [allRequests, setAllRequests] = useState<ApprovalRequest[]>([]);
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<DualApprovalError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // Refs para auto-refresh (aunque realtime lo cubre, mantenemos para consistencia con KB)
+  const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch pending requests for this session
   const fetchRequests = useCallback(async () => {
     if (!sessionId) return;
     
     setLoading(true);
+    setError(null);
     try {
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('support_approval_requests')
         .select('*')
         .eq('session_id', sessionId)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (fetchError) throw fetchError;
 
       const requests = (data || []) as ApprovalRequest[];
       setAllRequests(requests);
       setPendingRequests(requests.filter(r => r.status === 'pending'));
+      setLastRefresh(new Date());
     } catch (err) {
       console.error('Error fetching approval requests:', err);
+      const message = err instanceof Error ? err.message : 'Error al cargar solicitudes';
+      setError({ code: 'FETCH_ERROR', message });
     } finally {
       setLoading(false);
     }
   }, [sessionId]);
 
-  // Subscribe to real-time updates
+  // Subscribe to real-time updates (esto sustituye auto-refresh para este hook)
   useEffect(() => {
     if (!sessionId) return;
 
@@ -78,6 +96,7 @@ export function useDualApproval(sessionId: string | null) {
         },
         (payload) => {
           console.log('Approval request change:', payload);
+          setLastRefresh(new Date());
           
           if (payload.eventType === 'INSERT') {
             const newRequest = payload.new as ApprovalRequest;
@@ -119,9 +138,31 @@ export function useDualApproval(sessionId: string | null) {
     };
   }, [sessionId, fetchRequests]);
 
+  // === AUTO-REFRESH (opcional, realtime ya cubre esto) ===
+  const startAutoRefresh = useCallback((intervalMs = 30000) => {
+    stopAutoRefresh();
+    // Nota: Realtime ya maneja actualizaciones, pero mantenemos esto por consistencia con KB
+    autoRefreshInterval.current = setInterval(() => {
+      fetchRequests();
+    }, intervalMs);
+  }, [fetchRequests]);
+
+  const stopAutoRefresh = useCallback(() => {
+    if (autoRefreshInterval.current) {
+      clearInterval(autoRefreshInterval.current);
+      autoRefreshInterval.current = null;
+    }
+  }, []);
+
+  // === CLEANUP ===
+  useEffect(() => {
+    return () => stopAutoRefresh();
+  }, [stopAutoRefresh]);
+
   // Create a new approval request
   const requestApproval = async (params: CreateApprovalParams): Promise<ApprovalRequest | null> => {
     setIsSubmitting(true);
+    setError(null);
     try {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error('Usuario no autenticado');
@@ -129,7 +170,7 @@ export function useDualApproval(sessionId: string | null) {
       const expiresAt = new Date();
       expiresAt.setMinutes(expiresAt.getMinutes() + (params.expiresInMinutes || 15));
 
-      const { data, error } = await supabase
+      const { data, error: insertError } = await supabase
         .from('support_approval_requests')
         .insert({
           session_id: params.sessionId,
@@ -142,7 +183,7 @@ export function useDualApproval(sessionId: string | null) {
         .select()
         .single();
 
-      if (error) throw error;
+      if (insertError) throw insertError;
 
       toast({
         title: "Solicitud enviada",
@@ -152,9 +193,11 @@ export function useDualApproval(sessionId: string | null) {
       return data as ApprovalRequest;
     } catch (err) {
       console.error('Error creating approval request:', err);
+      const message = err instanceof Error ? err.message : 'No se pudo crear la solicitud de aprobación';
+      setError({ code: 'CREATE_ERROR', message });
       toast({
         title: "Error",
-        description: "No se pudo crear la solicitud de aprobación",
+        description: message,
         variant: "destructive"
       });
       return null;
@@ -166,11 +209,12 @@ export function useDualApproval(sessionId: string | null) {
   // Approve a request
   const approveRequest = async (requestId: string): Promise<boolean> => {
     setIsSubmitting(true);
+    setError(null);
     try {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error('Usuario no autenticado');
 
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from('support_approval_requests')
         .update({
           status: 'approved',
@@ -181,14 +225,16 @@ export function useDualApproval(sessionId: string | null) {
         .eq('id', requestId)
         .eq('status', 'pending');
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
       return true;
     } catch (err) {
       console.error('Error approving request:', err);
+      const message = err instanceof Error ? err.message : 'No se pudo aprobar la solicitud';
+      setError({ code: 'APPROVE_ERROR', message });
       toast({
         title: "Error",
-        description: "No se pudo aprobar la solicitud",
+        description: message,
         variant: "destructive"
       });
       return false;
@@ -200,11 +246,12 @@ export function useDualApproval(sessionId: string | null) {
   // Reject a request
   const rejectRequest = async (requestId: string, reason?: string): Promise<boolean> => {
     setIsSubmitting(true);
+    setError(null);
     try {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error('Usuario no autenticado');
 
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from('support_approval_requests')
         .update({
           status: 'rejected',
@@ -216,14 +263,16 @@ export function useDualApproval(sessionId: string | null) {
         .eq('id', requestId)
         .eq('status', 'pending');
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
       return true;
     } catch (err) {
       console.error('Error rejecting request:', err);
+      const message = err instanceof Error ? err.message : 'No se pudo rechazar la solicitud';
+      setError({ code: 'REJECT_ERROR', message });
       toast({
         title: "Error",
-        description: "No se pudo rechazar la solicitud",
+        description: message,
         variant: "destructive"
       });
       return false;
@@ -245,13 +294,13 @@ export function useDualApproval(sessionId: string | null) {
     const startTime = Date.now();
     
     while (Date.now() - startTime < timeoutMs) {
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('support_approval_requests')
         .select('status')
         .eq('id', requestId)
         .single();
 
-      if (error) throw error;
+      if (fetchError) throw fetchError;
       
       if (data.status !== 'pending') {
         return data.status as ApprovalStatus;
@@ -269,12 +318,16 @@ export function useDualApproval(sessionId: string | null) {
     allRequests,
     loading,
     isSubmitting,
+    error,
+    lastRefresh,
     requestApproval,
     approveRequest,
     rejectRequest,
     requiresApproval,
     waitForApproval,
-    refetch: fetchRequests
+    refetch: fetchRequests,
+    startAutoRefresh,
+    stopAutoRefresh
   };
 }
 

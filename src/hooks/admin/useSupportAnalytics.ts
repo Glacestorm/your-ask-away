@@ -1,7 +1,14 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfDay, subDays, format, startOfWeek, startOfMonth, eachDayOfInterval, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
+
+// === INTERFACES ===
+export interface SupportAnalyticsError {
+  code: string;
+  message: string;
+  details?: string;
+}
 
 export interface DailySessionStats {
   date: string;
@@ -59,16 +66,17 @@ export interface SupportAnalytics {
   hourlyDistribution: { hour: number; sessions: number }[];
 }
 
+// === HOOK ===
 export function useSupportAnalytics(daysRange: number = 30) {
   const [analytics, setAnalytics] = useState<SupportAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<SupportAnalyticsError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
-  useEffect(() => {
-    fetchAnalytics();
-  }, [daysRange]);
+  // Refs para auto-refresh
+  const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
 
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -170,15 +178,52 @@ export function useSupportAnalytics(daysRange: number = 30) {
         hourlyDistribution
       });
 
+      setLastRefresh(new Date());
+
     } catch (err) {
       console.error('Error fetching analytics:', err);
-      setError(err instanceof Error ? err : new Error('Error fetching analytics'));
+      const message = err instanceof Error ? err.message : 'Error fetching analytics';
+      setError({ code: 'FETCH_ERROR', message });
     } finally {
       setLoading(false);
     }
-  };
+  }, [daysRange]);
 
-  return { analytics, loading, error, refetch: fetchAnalytics };
+  // === AUTO-REFRESH ===
+  const startAutoRefresh = useCallback((intervalMs = 120000) => {
+    stopAutoRefresh();
+    fetchAnalytics();
+    autoRefreshInterval.current = setInterval(() => {
+      fetchAnalytics();
+    }, intervalMs);
+  }, [fetchAnalytics]);
+
+  const stopAutoRefresh = useCallback(() => {
+    if (autoRefreshInterval.current) {
+      clearInterval(autoRefreshInterval.current);
+      autoRefreshInterval.current = null;
+    }
+  }, []);
+
+  // === CLEANUP ===
+  useEffect(() => {
+    return () => stopAutoRefresh();
+  }, [stopAutoRefresh]);
+
+  // === INITIAL FETCH ===
+  useEffect(() => {
+    fetchAnalytics();
+  }, [fetchAnalytics]);
+
+  return { 
+    analytics, 
+    loading, 
+    error, 
+    lastRefresh,
+    refetch: fetchAnalytics,
+    startAutoRefresh,
+    stopAutoRefresh
+  };
 }
 
 function calculateDailyStats(sessions: any[], startDate: Date, endDate: Date): DailySessionStats[] {

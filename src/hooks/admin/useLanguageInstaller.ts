@@ -1,7 +1,20 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import esTranslations from '@/locales/es';
 import { toast } from 'sonner';
+
+// === INTERFACES ===
+export interface LanguageInstallerContext {
+  locale: string;
+  sourceLocale?: string;
+  namespace?: string;
+}
+
+export interface LanguageInstallerError {
+  code: string;
+  message: string;
+  details?: string;
+}
 
 interface UseLanguageInstallerOptions {
   onComplete?: () => void | Promise<void>;
@@ -14,17 +27,22 @@ const SKIP_LOCALES = ['es', 'en'];
 export function useLanguageInstaller(options: UseLanguageInstallerOptions = {}) {
   const [installingLocale, setInstallingLocale] = useState<string | null>(null);
   const [translationProgress, setTranslationProgress] = useState<{ current: number; total: number } | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [error, setError] = useState<LanguageInstallerError | null>(null);
+
+  // Refs para auto-refresh de estado
+  const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
 
   const ensureSpanishSeeded = useCallback(async () => {
     const expected = Object.keys(esTranslations).length;
 
-    const { count, error } = await supabase
+    const { count, error: countError } = await supabase
       .from('cms_translations')
       .select('*', { count: 'exact', head: true })
       .eq('locale', 'es')
       .eq('namespace', UI_NAMESPACE);
 
-    if (error) throw error;
+    if (countError) throw countError;
 
     // If already seeded (or mostly seeded), skip.
     if ((count ?? 0) >= Math.floor(expected * 0.8)) return;
@@ -56,13 +74,13 @@ export function useLanguageInstaller(options: UseLanguageInstallerOptions = {}) 
     const pageSize = 1000;
     
     while (true) {
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('cms_translations')
         .select('translation_key, value')
         .eq('locale', 'es')
         .range(from, from + pageSize - 1);
       
-      if (error) throw error;
+      if (fetchError) throw fetchError;
       if (!data || data.length === 0) break;
       
       allKeys.push(...data);
@@ -86,13 +104,13 @@ export function useLanguageInstaller(options: UseLanguageInstallerOptions = {}) 
     const pageSize = 1000;
     
     while (true) {
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('cms_translations')
         .select('translation_key')
         .eq('locale', locale)
         .range(from, from + pageSize - 1);
       
-      if (error) throw error;
+      if (fetchError) throw fetchError;
       if (!data || data.length === 0) break;
       
       data.forEach((r: any) => existingKeys.add(r.translation_key));
@@ -123,7 +141,7 @@ export function useLanguageInstaller(options: UseLanguageInstallerOptions = {}) 
       }));
 
       try {
-        const { error } = await supabase.functions.invoke('cms-batch-translate', {
+        const { error: invokeError } = await supabase.functions.invoke('cms-batch-translate', {
           body: {
             items,
             sourceLocale: 'es',
@@ -132,8 +150,8 @@ export function useLanguageInstaller(options: UseLanguageInstallerOptions = {}) 
           },
         });
 
-        if (error) {
-          console.error(`Batch translation error:`, error);
+        if (invokeError) {
+          console.error(`Batch translation error:`, invokeError);
           // Continue with next batch instead of failing completely
         } else {
           translated += batch.length;
@@ -172,6 +190,7 @@ export function useLanguageInstaller(options: UseLanguageInstallerOptions = {}) 
       .eq('locale', locale);
       
     setTranslationProgress(null);
+    setLastRefresh(new Date());
   }, [getSpanishKeysFromDB]);
 
   const installLanguage = useCallback(
@@ -179,15 +198,19 @@ export function useLanguageInstaller(options: UseLanguageInstallerOptions = {}) 
       if (installingLocale) return;
 
       setInstallingLocale(locale);
+      setError(null);
       toast.message(`Instalando idioma: ${locale}...`);
 
       try {
         await ensureSpanishSeeded();
         await translateLocaleFromSpanish(locale);
         toast.success(`Idioma instalado: ${locale}`);
+        setLastRefresh(new Date());
         await options.onComplete?.();
       } catch (err) {
         console.error('Language install error:', err);
+        const message = err instanceof Error ? err.message : 'Error desconocido';
+        setError({ code: 'INSTALL_ERROR', message });
         toast.error('No se pudo instalar el idioma. Reintenta en unos segundos.');
       } finally {
         setInstallingLocale(null);
@@ -196,9 +219,35 @@ export function useLanguageInstaller(options: UseLanguageInstallerOptions = {}) 
     [ensureSpanishSeeded, translateLocaleFromSpanish, installingLocale, options]
   );
 
+  // === AUTO-REFRESH (para monitorear estado) ===
+  const startAutoRefresh = useCallback((intervalMs = 30000) => {
+    stopAutoRefresh();
+    autoRefreshInterval.current = setInterval(() => {
+      setLastRefresh(new Date());
+    }, intervalMs);
+  }, []);
+
+  const stopAutoRefresh = useCallback(() => {
+    if (autoRefreshInterval.current) {
+      clearInterval(autoRefreshInterval.current);
+      autoRefreshInterval.current = null;
+    }
+  }, []);
+
+  // === CLEANUP ===
+  useEffect(() => {
+    return () => stopAutoRefresh();
+  }, [stopAutoRefresh]);
+
   return {
     installLanguage,
     installingLocale,
     translationProgress,
+    lastRefresh,
+    error,
+    startAutoRefresh,
+    stopAutoRefresh,
   };
 }
+
+export default useLanguageInstaller;

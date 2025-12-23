@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useLanguageProgress } from '@/hooks/admin/useLanguageProgress';
+import { formatDistanceToNow } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { 
   Globe, 
   RefreshCw, 
@@ -14,17 +17,17 @@ import {
   AlertCircle,
   ChevronDown,
   ChevronUp,
-  Loader2
+  Loader2,
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
-import { SupportedLanguage } from '@/hooks/useSupportedLanguages';
+import { cn } from '@/lib/utils';
 
 interface LanguageProgressGridProps {
-  languages: SupportedLanguage[];
-  loading: boolean;
-  onRefresh: () => void;
   onInstallLanguage?: (locale: string) => void;
   installingLocale?: string | null;
   translationProgress?: { current: number; total: number } | null;
+  className?: string;
 }
 
 const getTierConfig = (tier: number) => {
@@ -44,16 +47,30 @@ const getStatusIcon = (progress: number) => {
 };
 
 export const LanguageProgressGrid: React.FC<LanguageProgressGridProps> = ({
-  languages,
-  loading,
-  onRefresh,
   onInstallLanguage,
   installingLocale,
   translationProgress,
+  className,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedTiers, setExpandedTiers] = useState<number[]>([1, 2, 3, 4]);
   const [sortBy, setSortBy] = useState<'name' | 'progress'>('progress');
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const {
+    languages,
+    isLoading,
+    lastRefresh,
+    fetchLanguages,
+    startAutoRefresh,
+    stopAutoRefresh
+  } = useLanguageProgress();
+
+  // Auto-refresh on mount
+  useEffect(() => {
+    startAutoRefresh(45000);
+    return () => stopAutoRefresh();
+  }, [startAutoRefresh, stopAutoRefresh]);
 
   const filteredLanguages = languages.filter(lang => 
     lang.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -66,7 +83,7 @@ export const LanguageProgressGrid: React.FC<LanguageProgressGridProps> = ({
     if (!acc[tier]) acc[tier] = [];
     acc[tier].push(lang);
     return acc;
-  }, {} as Record<number, SupportedLanguage[]>);
+  }, {} as Record<number, typeof languages>);
 
   // Sort languages within each tier
   Object.keys(groupedByTier).forEach(tier => {
@@ -84,9 +101,9 @@ export const LanguageProgressGrid: React.FC<LanguageProgressGridProps> = ({
     );
   };
 
-  if (loading) {
+  if (isLoading && languages.length === 0) {
     return (
-      <Card>
+      <Card className={className}>
         <CardContent className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </CardContent>
@@ -95,13 +112,24 @@ export const LanguageProgressGrid: React.FC<LanguageProgressGridProps> = ({
   }
 
   return (
-    <Card>
+    <Card className={cn(
+      "transition-all duration-300 overflow-hidden",
+      isExpanded ? "fixed inset-4 z-50 shadow-2xl" : "",
+      className
+    )}>
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <CardTitle className="flex items-center gap-2">
-            <Globe className="h-5 w-5" />
-            Language Progress
-          </CardTitle>
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Globe className="h-5 w-5" />
+              Language Progress
+            </CardTitle>
+            {lastRefresh && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Actualizado {formatDistanceToNow(lastRefresh, { locale: es, addSuffix: true })}
+              </p>
+            )}
+          </div>
           <div className="flex items-center gap-2">
             <div className="relative flex-1 sm:w-64">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -112,21 +140,33 @@ export const LanguageProgressGrid: React.FC<LanguageProgressGridProps> = ({
                 className="pl-9"
               />
             </div>
-            <Button variant="outline" size="icon" onClick={onRefresh}>
-              <RefreshCw className="h-4 w-4" />
+            <Button 
+              variant="outline" 
+              size="icon" 
+              onClick={() => fetchLanguages()}
+              disabled={isLoading}
+            >
+              <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => setIsExpanded(!isExpanded)}
+            >
+              {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
             </Button>
           </div>
         </div>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[600px] pr-4">
+        <ScrollArea className={cn(isExpanded ? "h-[calc(100vh-200px)]" : "h-[600px]", "pr-4")}>
           <div className="space-y-4">
             {Object.entries(groupedByTier)
               .sort(([a], [b]) => Number(a) - Number(b))
               .map(([tier, langs]) => {
                 const tierNum = Number(tier);
                 const config = getTierConfig(tierNum);
-                const isExpanded = expandedTiers.includes(tierNum);
+                const isTierExpanded = expandedTiers.includes(tierNum);
                 const tierProgress = Math.round(
                   langs.reduce((acc, l) => acc + (l.translation_progress || 0), 0) / langs.length
                 );
@@ -150,7 +190,7 @@ export const LanguageProgressGrid: React.FC<LanguageProgressGridProps> = ({
                           <span className="text-xs text-muted-foreground">{tierProgress}%</span>
                         </div>
                       </div>
-                      {isExpanded ? (
+                      {isTierExpanded ? (
                         <ChevronUp className="h-4 w-4 text-muted-foreground" />
                       ) : (
                         <ChevronDown className="h-4 w-4 text-muted-foreground" />
@@ -158,7 +198,7 @@ export const LanguageProgressGrid: React.FC<LanguageProgressGridProps> = ({
                     </button>
 
                     {/* Languages Grid */}
-                    {isExpanded && (
+                    {isTierExpanded && (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-4">
                         {langs.map(lang => {
                           const isBase = ['es', 'en'].includes(lang.locale);
@@ -237,3 +277,5 @@ export const LanguageProgressGrid: React.FC<LanguageProgressGridProps> = ({
     </Card>
   );
 };
+
+export default LanguageProgressGrid;

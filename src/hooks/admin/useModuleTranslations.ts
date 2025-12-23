@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// === INTERFACES ===
 export interface ModuleTranslation {
   id: string;
   module_id: string;
@@ -24,7 +25,7 @@ export interface ModuleTranslationWithModule extends ModuleTranslation {
   };
 }
 
-interface TranslationProgress {
+export interface TranslationProgress {
   locale: string;
   total_keys: number;
   translated_keys: number;
@@ -32,13 +33,26 @@ interface TranslationProgress {
   progress_percentage: number;
 }
 
+export interface ModuleTranslationsError {
+  code: string;
+  message: string;
+  details?: string;
+}
+
+// === HOOK ===
 export function useModuleTranslations(moduleId?: string, locale?: string) {
   const [translations, setTranslations] = useState<ModuleTranslationWithModule[]>([]);
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState<TranslationProgress[]>([]);
+  const [error, setError] = useState<ModuleTranslationsError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // Refs para auto-refresh
+  const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
 
   const fetchTranslations = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
       let query = supabase
         .from('module_translations')
@@ -55,12 +69,15 @@ export function useModuleTranslations(moduleId?: string, locale?: string) {
         query = query.eq('locale', locale);
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
+      const { data, error: fetchError } = await query;
+      if (fetchError) throw fetchError;
       setTranslations(data as unknown as ModuleTranslationWithModule[]);
-    } catch (error) {
-      console.error('Error fetching module translations:', error);
-      toast.error('Error al cargar las traducciones del módulo');
+      setLastRefresh(new Date());
+    } catch (err) {
+      console.error('Error fetching module translations:', err);
+      const message = err instanceof Error ? err.message : 'Error al cargar las traducciones del módulo';
+      setError({ code: 'FETCH_ERROR', message });
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -111,10 +128,33 @@ export function useModuleTranslations(moduleId?: string, locale?: string) {
       }));
 
       setProgress(progressData);
-    } catch (error) {
-      console.error('Error fetching translation progress:', error);
+    } catch (err) {
+      console.error('Error fetching translation progress:', err);
     }
   }, [moduleId]);
+
+  // === AUTO-REFRESH ===
+  const startAutoRefresh = useCallback((intervalMs = 60000) => {
+    stopAutoRefresh();
+    fetchTranslations();
+    fetchProgress();
+    autoRefreshInterval.current = setInterval(() => {
+      fetchTranslations();
+      fetchProgress();
+    }, intervalMs);
+  }, [fetchTranslations, fetchProgress]);
+
+  const stopAutoRefresh = useCallback(() => {
+    if (autoRefreshInterval.current) {
+      clearInterval(autoRefreshInterval.current);
+      autoRefreshInterval.current = null;
+    }
+  }, []);
+
+  // === CLEANUP ===
+  useEffect(() => {
+    return () => stopAutoRefresh();
+  }, [stopAutoRefresh]);
 
   useEffect(() => {
     fetchTranslations();
@@ -123,40 +163,40 @@ export function useModuleTranslations(moduleId?: string, locale?: string) {
 
   const addTranslation = async (data: Omit<ModuleTranslation, 'id' | 'created_at' | 'updated_at'>) => {
     try {
-      const { error } = await supabase
+      const { error: insertError } = await supabase
         .from('module_translations')
         .insert(data);
 
-      if (error) throw error;
+      if (insertError) throw insertError;
       toast.success('Traducción añadida');
       await fetchTranslations();
-    } catch (error) {
-      console.error('Error adding translation:', error);
+    } catch (err) {
+      console.error('Error adding translation:', err);
       toast.error('Error al añadir la traducción');
-      throw error;
+      throw err;
     }
   };
 
   const updateTranslation = async (id: string, data: Partial<ModuleTranslation>) => {
     try {
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from('module_translations')
         .update(data)
         .eq('id', id);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
       toast.success('Traducción actualizada');
       await fetchTranslations();
-    } catch (error) {
-      console.error('Error updating translation:', error);
+    } catch (err) {
+      console.error('Error updating translation:', err);
       toast.error('Error al actualizar la traducción');
-      throw error;
+      throw err;
     }
   };
 
   const verifyTranslation = async (id: string, userId: string) => {
     try {
-      const { error } = await supabase
+      const { error: verifyError } = await supabase
         .from('module_translations')
         .update({
           is_verified: true,
@@ -165,43 +205,43 @@ export function useModuleTranslations(moduleId?: string, locale?: string) {
         })
         .eq('id', id);
 
-      if (error) throw error;
+      if (verifyError) throw verifyError;
       toast.success('Traducción verificada');
       await fetchTranslations();
       await fetchProgress();
-    } catch (error) {
-      console.error('Error verifying translation:', error);
+    } catch (err) {
+      console.error('Error verifying translation:', err);
       toast.error('Error al verificar la traducción');
-      throw error;
+      throw err;
     }
   };
 
-  const bulkAddTranslations = async (translations: Omit<ModuleTranslation, 'id' | 'created_at' | 'updated_at'>[]) => {
+  const bulkAddTranslations = async (translationsData: Omit<ModuleTranslation, 'id' | 'created_at' | 'updated_at'>[]) => {
     try {
-      const { error } = await supabase
+      const { error: upsertError } = await supabase
         .from('module_translations')
-        .upsert(translations, {
+        .upsert(translationsData, {
           onConflict: 'module_id,locale,namespace,translation_key'
         });
 
-      if (error) throw error;
-      toast.success(`${translations.length} traducciones añadidas`);
+      if (upsertError) throw upsertError;
+      toast.success(`${translationsData.length} traducciones añadidas`);
       await fetchTranslations();
       await fetchProgress();
-    } catch (error) {
-      console.error('Error bulk adding translations:', error);
+    } catch (err) {
+      console.error('Error bulk adding translations:', err);
       toast.error('Error al añadir traducciones en lote');
-      throw error;
+      throw err;
     }
   };
 
-  const translateModuleToLocale = async (moduleId: string, targetLocale: string) => {
+  const translateModuleToLocale = async (modId: string, targetLocale: string) => {
     try {
       // Get Spanish translations as source
       const { data: sourceTranslations, error: sourceError } = await supabase
         .from('module_translations')
         .select('*')
-        .eq('module_id', moduleId)
+        .eq('module_id', modId)
         .eq('locale', 'es');
 
       if (sourceError) throw sourceError;
@@ -215,7 +255,7 @@ export function useModuleTranslations(moduleId?: string, locale?: string) {
       const { data: existingTranslations, error: existingError } = await supabase
         .from('module_translations')
         .select('translation_key')
-        .eq('module_id', moduleId)
+        .eq('module_id', modId)
         .eq('locale', targetLocale);
 
       if (existingError) throw existingError;
@@ -245,7 +285,7 @@ export function useModuleTranslations(moduleId?: string, locale?: string) {
           if (translateError) throw translateError;
 
           translatedItems.push({
-            module_id: moduleId,
+            module_id: modId,
             locale: targetLocale,
             namespace: source.namespace,
             translation_key: source.translation_key,
@@ -259,7 +299,7 @@ export function useModuleTranslations(moduleId?: string, locale?: string) {
           console.error(`Error translating key ${source.translation_key}:`, err);
           // Use original value as fallback
           translatedItems.push({
-            module_id: moduleId,
+            module_id: modId,
             locale: targetLocale,
             namespace: source.namespace,
             translation_key: source.translation_key,
@@ -274,10 +314,11 @@ export function useModuleTranslations(moduleId?: string, locale?: string) {
 
       await bulkAddTranslations(translatedItems);
       toast.success(`Módulo traducido a ${targetLocale}: ${translatedItems.length} claves`);
-    } catch (error) {
-      console.error('Error translating module:', error);
+      setLastRefresh(new Date());
+    } catch (err) {
+      console.error('Error translating module:', err);
       toast.error('Error al traducir el módulo');
-      throw error;
+      throw err;
     }
   };
 
@@ -285,18 +326,23 @@ export function useModuleTranslations(moduleId?: string, locale?: string) {
     translations,
     loading,
     progress,
+    error,
+    lastRefresh,
     fetchTranslations,
     addTranslation,
     updateTranslation,
     verifyTranslation,
     bulkAddTranslations,
-    translateModuleToLocale
+    translateModuleToLocale,
+    startAutoRefresh,
+    stopAutoRefresh
   };
 }
 
 export function useModuleTranslationsByKey(moduleKey: string, locale: string) {
   const [translations, setTranslations] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
   useEffect(() => {
     const fetchTranslations = async () => {
@@ -312,13 +358,13 @@ export function useModuleTranslationsByKey(moduleKey: string, locale: string) {
         if (moduleError) throw moduleError;
 
         // Then get translations
-        const { data, error } = await supabase
+        const { data, error: fetchError } = await supabase
           .from('module_translations')
           .select('translation_key, translation_value')
           .eq('module_id', moduleData.id)
           .eq('locale', locale);
 
-        if (error) throw error;
+        if (fetchError) throw fetchError;
 
         const translationsMap: Record<string, string> = {};
         data?.forEach(t => {
@@ -326,8 +372,9 @@ export function useModuleTranslationsByKey(moduleKey: string, locale: string) {
         });
 
         setTranslations(translationsMap);
-      } catch (error) {
-        console.error('Error fetching module translations:', error);
+        setLastRefresh(new Date());
+      } catch (err) {
+        console.error('Error fetching module translations:', err);
       } finally {
         setLoading(false);
       }
@@ -342,5 +389,5 @@ export function useModuleTranslationsByKey(moduleKey: string, locale: string) {
     return translations[key] || fallback || key;
   }, [translations]);
 
-  return { translations, loading, t };
+  return { translations, loading, t, lastRefresh };
 }
