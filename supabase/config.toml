@@ -359,3 +359,15 @@ verify_jwt = true
 
 [functions.elevenlabs-conversation-token]
 verify_jwt = false
+
+[functions.compliance-monitor]
+verify_jwt = true
+
+[functions.command-center]
+verify_jwt = true
+
+[functions.workflow-engine]
+verify_jwt = true
+
+[functions.business-intelligence]
+verify_jwt = true
