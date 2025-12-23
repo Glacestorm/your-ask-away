@@ -344,7 +344,7 @@ const StoreModuleDetail: React.FC = () => {
                   {module.sector && (
                     <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/30">
                       <Building2 className="w-3 h-3 mr-1" />
-                      {getSectorLabel(module.sector)}
+                      {getSectorLabel(module.sector, language)}
                     </Badge>
                   )}
                 </div>
