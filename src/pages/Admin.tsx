@@ -1366,7 +1366,7 @@ const Admin = () => {
             {/* SECCIÓ: Process Mining & BPMN */}
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-sky-600 dark:text-sky-400 flex items-center gap-2">
-                <Layers className="h-5 w-5" /> Process Mining & BPMN
+                <Layers className="h-5 w-5" /> {t('admin.section.processMining')}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 <Card 
@@ -1378,8 +1378,8 @@ const Admin = () => {
                       <Layers className="h-4 w-4 text-sky-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-sky-700 dark:text-sky-400">Dissenyador BPMN</h4>
-                      <p className="text-xs text-muted-foreground">Crea i edita processos de negoci</p>
+                      <h4 className="font-medium text-sm text-sky-700 dark:text-sky-400">{t('admin.card.bpmnDesigner')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.bpmnDesigner.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1392,8 +1392,8 @@ const Admin = () => {
                       <BarChart3 className="h-4 w-4 text-cyan-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-cyan-700 dark:text-cyan-400">Process Mining</h4>
-                      <p className="text-xs text-muted-foreground">Analitza i optimitza processos</p>
+                      <h4 className="font-medium text-sm text-cyan-700 dark:text-cyan-400">{t('admin.card.processMining')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.processMining.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1403,7 +1403,7 @@ const Admin = () => {
             {/* SECCIÓ: IA que Vende - FASE 6 */}
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-gradient bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-500 bg-clip-text text-transparent flex items-center gap-2">
-                <Zap className="h-5 w-5 text-fuchsia-500" /> IA que Vende (Fase 6)
+                <Zap className="h-5 w-5 text-fuchsia-500" /> {t('admin.section.aiSells')}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 <Card 
@@ -1415,8 +1415,8 @@ const Admin = () => {
                       <Bot className="h-4 w-4 text-violet-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-violet-700 dark:text-violet-400">Copilot Intel·ligent</h4>
-                      <p className="text-xs text-muted-foreground">Assistent IA per rol amb suggeriments</p>
+                      <h4 className="font-medium text-sm text-violet-700 dark:text-violet-400">{t('admin.card.aiCopilot')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.aiCopilot.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1429,8 +1429,8 @@ const Admin = () => {
                       <Zap className="h-4 w-4 text-fuchsia-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-fuchsia-700 dark:text-fuchsia-400">Next Best Action</h4>
-                      <p className="text-xs text-muted-foreground">Accions prioritzades amb IA</p>
+                      <h4 className="font-medium text-sm text-fuchsia-700 dark:text-fuchsia-400">{t('admin.card.aiNba')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.aiNba.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1443,8 +1443,8 @@ const Admin = () => {
                       <Shield className="h-4 w-4 text-pink-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-pink-700 dark:text-pink-400">Controls Continus</h4>
-                      <p className="text-xs text-muted-foreground">Monitorització i alertes automàtiques</p>
+                      <h4 className="font-medium text-sm text-pink-700 dark:text-pink-400">{t('admin.card.aiControls')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.aiControls.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1454,7 +1454,7 @@ const Admin = () => {
             {/* SECCIÓ: Verticales CNAE - FASE 7 */}
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-gradient bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 bg-clip-text text-transparent flex items-center gap-2">
-                <ShoppingCart className="h-5 w-5 text-emerald-500" /> Verticales CNAE (Fase 7)
+                <ShoppingCart className="h-5 w-5 text-emerald-500" /> {t('admin.section.verticals')}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 <Card 
@@ -1466,8 +1466,8 @@ const Admin = () => {
                       <ShoppingCart className="h-4 w-4 text-emerald-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-emerald-700 dark:text-emerald-400">Packs Verticales</h4>
-                      <p className="text-xs text-muted-foreground">Retail, Construcción, Salud, Logística, Legal</p>
+                      <h4 className="font-medium text-sm text-emerald-700 dark:text-emerald-400">{t('admin.card.verticalPacks')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.verticalPacks.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1480,8 +1480,8 @@ const Admin = () => {
                       <Briefcase className="h-4 w-4 text-teal-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-teal-700 dark:text-teal-400">Gestió de Sectors</h4>
-                      <p className="text-xs text-muted-foreground">Administra sectors, CNAEs i funcionalitats</p>
+                      <h4 className="font-medium text-sm text-teal-700 dark:text-teal-400">{t('admin.card.sectorsManager')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.sectorsManager.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>
