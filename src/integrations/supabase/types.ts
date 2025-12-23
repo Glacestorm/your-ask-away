@@ -17777,6 +17777,56 @@ export type Database = {
           },
         ]
       }
+      session_export_logs: {
+        Row: {
+          export_format: string
+          exported_at: string
+          exported_by: string | null
+          file_size_bytes: number | null
+          id: string
+          includes_actions: boolean | null
+          includes_screenshots: boolean | null
+          metadata: Json | null
+          session_id: string
+          verification_code: string
+          verification_hash: string
+        }
+        Insert: {
+          export_format?: string
+          exported_at?: string
+          exported_by?: string | null
+          file_size_bytes?: number | null
+          id?: string
+          includes_actions?: boolean | null
+          includes_screenshots?: boolean | null
+          metadata?: Json | null
+          session_id: string
+          verification_code: string
+          verification_hash: string
+        }
+        Update: {
+          export_format?: string
+          exported_at?: string
+          exported_by?: string | null
+          file_size_bytes?: number | null
+          id?: string
+          includes_actions?: boolean | null
+          includes_screenshots?: boolean | null
+          metadata?: Json | null
+          session_id?: string
+          verification_code?: string
+          verification_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_export_logs_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "remote_support_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       session_risk_assessments: {
         Row: {
           created_at: string | null
@@ -18695,6 +18745,72 @@ export type Database = {
             columns: ["suggestion_id"]
             isOneToOne: false
             referencedRelation: "user_suggestions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_approval_requests: {
+        Row: {
+          action_id: string | null
+          approved_at: string | null
+          approved_by: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          metadata: Json | null
+          rejection_reason: string | null
+          request_type: string
+          requested_at: string
+          requested_by: string | null
+          session_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          action_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          metadata?: Json | null
+          rejection_reason?: string | null
+          request_type: string
+          requested_at?: string
+          requested_by?: string | null
+          session_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          action_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          metadata?: Json | null
+          rejection_reason?: string | null
+          request_type?: string
+          requested_at?: string
+          requested_by?: string | null
+          session_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_approval_requests_action_id_fkey"
+            columns: ["action_id"]
+            isOneToOne: false
+            referencedRelation: "session_actions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_approval_requests_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "remote_support_sessions"
             referencedColumns: ["id"]
           },
         ]
@@ -21329,6 +21445,7 @@ export type Database = {
         Returns: string
       }
       expire_open_banking_consents: { Args: never; Returns: undefined }
+      expire_pending_approval_requests: { Args: never; Returns: undefined }
       find_applicable_bundles: {
         Args: { p_cnae_codes: string[] }
         Returns: {
