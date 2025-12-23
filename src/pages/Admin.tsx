@@ -1,92 +1,99 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Suspense } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigationHistory } from '@/hooks/useNavigationHistory';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Activity, History, Shield, Rocket, Bot, BarChart3, Users, Palette, FileCode2, Eye, MessageSquare, Bell, MessagesSquare, Database, Trophy, Store, ClipboardCheck, Building2, Layers } from 'lucide-react';
+import { ArrowLeft, Activity, History, Shield, Rocket, Bot, BarChart3, Users, Palette, FileCode2, Eye, MessageSquare, Bell, MessagesSquare, Database, Trophy, Store, ClipboardCheck, Building2, Layers, Zap, ShoppingCart, Briefcase, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import VisitSheets from '@/pages/VisitSheets';
 import { GlobalNavHeader } from '@/components/GlobalNavHeader';
-import { CompaniesManager } from '@/components/admin/CompaniesManager';
-import { ProductsManager } from '@/components/admin/ProductsManager';
-import { UsersManager } from '@/components/admin/UsersManager';
-import { StatusColorsManager } from '@/components/admin/StatusColorsManager';
-import { ConceptsManager } from '@/components/admin/ConceptsManager';
-import { AuditLogsViewer } from '@/components/admin/AuditLogsViewer';
-import { EmailTemplatesManager } from '@/components/admin/EmailTemplatesManager';
-import { MapConfigDashboard } from '@/components/admin/MapConfigDashboard';
-import { VisitsMetrics } from '@/components/admin/VisitsMetrics';
-import { ProductsMetrics } from '@/components/admin/ProductsMetrics';
-import { GestoresMetrics } from '@/components/admin/GestoresMetrics';
-import { VinculacionMetrics } from '@/components/admin/VinculacionMetrics';
-import { SystemHealthMonitor } from '@/components/admin/SystemHealthMonitor';
-import { TPVManager } from '@/components/admin/TPVManager';
-import { TPVGoalsManager } from '@/components/admin/TPVGoalsManager';
-import { CommercialDirectorDashboard } from '@/components/admin/CommercialDirectorDashboard';
-import { OfficeDirectorDashboard } from '@/components/admin/OfficeDirectorDashboard';
-import { CommercialManagerDashboard } from '@/components/admin/CommercialManagerDashboard';
-import { CommercialManagerAudit } from '@/components/admin/CommercialManagerAudit';
-import { ImportHistoryViewer } from '@/components/admin/ImportHistoryViewer';
-import { GestorDashboard } from '@/components/admin/GestorDashboard';
-import { AuditorDashboard } from '@/components/admin/AuditorDashboard';
-import { AlertsManager } from '@/components/dashboard/AlertsManager';
-import { NotificationPreferences } from '@/components/dashboard/NotificationPreferences';
-import { SharedVisitsCalendar } from '@/components/admin/SharedVisitsCalendar';
-import { BulkGoalsAssignment } from '@/components/admin/BulkGoalsAssignment';
-import GoalsProgressTracker from '@/components/admin/GoalsProgressTracker';
-import { DirectorAlertsPanel } from '@/components/admin/DirectorAlertsPanel';
-import GoalsKPIDashboard from '@/components/admin/GoalsKPIDashboard';
-import { KPIReportHistory } from '@/components/admin/KPIReportHistory';
-import { AlertHistoryViewer } from '@/components/admin/AlertHistoryViewer';
-import { VisitSheetsGestorComparison } from '@/components/admin/VisitSheetsGestorComparison';
-import VisitSheetValidationPanel from '@/components/admin/VisitSheetValidationPanel';
-import ContractedProductsReport from '@/components/admin/ContractedProductsReport';
-import MapView from './MapView';
-import AccountingManager from '@/components/admin/accounting/AccountingManager';
-import { UnifiedMetricsDashboard } from '@/components/dashboard/UnifiedMetricsDashboard';
-import { DynamicTechnicalDocGenerator } from '@/components/reports/DynamicTechnicalDocGenerator';
-import { CompetitorGapAnalysisGenerator } from '@/components/reports/CompetitorGapAnalysisGenerator';
-import { AppDetailedStatusGenerator } from '@/components/reports/AppDetailedStatusGenerator';
-import { GeocodingRecalculator } from '@/components/admin/GeocodingRecalculator';
-import { CascadeGoalsManager } from '@/components/admin/CascadeGoalsManager';
-import { CodebaseIndexGenerator } from '@/components/reports/CodebaseIndexGenerator';
-import { ApplicationStateAnalyzer } from '@/components/admin/ApplicationStateAnalyzer';
-import { DORAComplianceDashboard } from '@/components/admin/DORAComplianceDashboard';
-import { AdaptiveAuthDashboard } from '@/components/admin/AdaptiveAuthDashboard';
-import { ISO27001Dashboard } from '@/components/admin/ISO27001Dashboard';
-import { PipelineBoard } from '@/components/pipeline/PipelineBoard';
-import { InternalAssistantChat } from '@/components/admin/InternalAssistantChat';
-import { AIIntegrationConfig } from '@/components/admin/AIIntegrationConfig';
-import { NotificationCenterManager } from '@/components/admin/NotificationCenterManager';
-import { RFMDashboard } from '@/components/admin/RFMDashboard';
-import { CustomerSegmentationPanel } from '@/components/admin/CustomerSegmentationPanel';
-import WhiteLabelConfig from '@/components/admin/WhiteLabelConfig';
-import APIDocumentation from '@/components/admin/APIDocumentation';
-import { Customer360Panel } from '@/components/admin/Customer360Panel';
-import { CDPFullDashboard } from '@/components/admin/CDPFullDashboard';
-import { MLExplainabilityPanel } from '@/components/admin/MLExplainabilityPanel';
-import { AdvancedMLDashboard } from '@/components/admin/AdvancedMLDashboard';
-import { SMSManager } from '@/components/admin/SMSManager';
-import { RealtimeChatPanel } from '@/components/chat/RealtimeChatPanel';
-import { CoreBankingManager } from '@/components/admin/CoreBankingManager';
-import { PredictiveAnalyticsDashboard } from '@/components/admin/PredictiveAnalyticsDashboard';
-import { SPMDashboard } from '@/components/admin/spm/SPMDashboard';
-import { AppStoreManager } from '@/components/admin/appstore/AppStoreManager';
-import { AuditReportingDashboard } from '@/components/admin/auditor-reporting';
-import { CNAEPricingCalculator } from '@/components/cnae/CNAEPricingCalculator';
-import { HoldingDashboard } from '@/components/cnae/HoldingDashboard';
-import { CNAEPricingAdmin } from '@/components/cnae/CNAEPricingAdmin';
-import { CNAEDashboard } from '@/components/cnae/CNAEDashboard';
-import BPMNDesigner from '@/components/bpmn/BPMNDesigner';
-import { ProcessMiningDashboard } from '@/components/bpmn/ProcessMiningDashboard';
-import { RoleCopilotPanel, NBADashboard, ContinuousControlsDashboard } from '@/components/ai-control';
-import { VerticalPacksManager } from '@/components/admin/verticals';
-import { SectorsManager } from '@/components/admin/SectorsManager';
-import { CoreWebVitalsDashboard } from '@/components/admin/CoreWebVitalsDashboard';
-import { TranslationsDashboard } from '@/components/admin/translations';
-import { Zap, ShoppingCart, Briefcase } from 'lucide-react';
+
+// Lazy loaded components for better performance
+import {
+  AdminSectionSkeleton,
+  LazyAdminSection,
+  CommercialDirectorDashboard,
+  OfficeDirectorDashboard,
+  CommercialManagerDashboard,
+  CommercialManagerAudit,
+  GestorDashboard,
+  AuditorDashboard,
+  VisitsMetrics,
+  ProductsMetrics,
+  GestoresMetrics,
+  VinculacionMetrics,
+  CompaniesManager,
+  ProductsManager,
+  UsersManager,
+  TPVManager,
+  TPVGoalsManager,
+  StatusColorsManager,
+  ConceptsManager,
+  EmailTemplatesManager,
+  MapConfigDashboard,
+  SystemHealthMonitor,
+  AuditLogsViewer,
+  ImportHistoryViewer,
+  AlertsManager,
+  NotificationPreferences,
+  DirectorAlertsPanel,
+  AlertHistoryViewer,
+  NotificationCenterManager,
+  BulkGoalsAssignment,
+  GoalsProgressTracker,
+  GoalsKPIDashboard,
+  KPIReportHistory,
+  CascadeGoalsManager,
+  SharedVisitsCalendar,
+  VisitSheetsGestorComparison,
+  VisitSheetValidationPanel,
+  ContractedProductsReport,
+  MapView,
+  GeocodingRecalculator,
+  AccountingManager,
+  UnifiedMetricsDashboard,
+  DynamicTechnicalDocGenerator,
+  CompetitorGapAnalysisGenerator,
+  AppDetailedStatusGenerator,
+  CodebaseIndexGenerator,
+  ApplicationStateAnalyzer,
+  DORAComplianceDashboard,
+  AdaptiveAuthDashboard,
+  ISO27001Dashboard,
+  PipelineBoard,
+  Customer360Panel,
+  InternalAssistantChat,
+  AIIntegrationConfig,
+  RFMDashboard,
+  CustomerSegmentationPanel,
+  CDPFullDashboard,
+  MLExplainabilityPanel,
+  AdvancedMLDashboard,
+  PredictiveAnalyticsDashboard,
+  RoleCopilotPanel,
+  NBADashboard,
+  ContinuousControlsDashboard,
+  SMSManager,
+  RealtimeChatPanel,
+  CoreBankingManager,
+  SPMDashboard,
+  AppStoreManager,
+  AuditReportingDashboard,
+  CNAEPricingCalculator,
+  HoldingDashboard,
+  CNAEPricingAdmin,
+  CNAEDashboard,
+  BPMNDesigner,
+  ProcessMiningDashboard,
+  VerticalPacksManager,
+  SectorsManager,
+  CoreWebVitalsDashboard,
+  TranslationsDashboard,
+  WhiteLabelConfig,
+  APIDocumentation,
+  VisitSheets,
+} from '@/components/admin/AdminSectionLoader';
 
 const Admin = () => {
   const { user, isAdmin, isSuperAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager, isAuditor, loading: authLoading } = useAuth();
@@ -1712,7 +1719,9 @@ const Admin = () => {
       <main className={`flex-1 ${activeSection === 'map' ? 'flex flex-col overflow-hidden' : 'overflow-auto'}`}>
         {activeSection === 'map' ? (
           <div className="flex-1 flex flex-col h-full">
-            {renderContent()}
+            <Suspense fallback={<AdminSectionSkeleton />}>
+              {renderContent()}
+            </Suspense>
           </div>
         ) : (
           <div className="p-6 space-y-6 w-full">
@@ -1725,7 +1734,9 @@ const Admin = () => {
                 onGoForward={handleGoForward}
               />
             )}
-            {renderContent()}
+            <Suspense fallback={<AdminSectionSkeleton />}>
+              {renderContent()}
+            </Suspense>
           </div>
         )}
       </main>

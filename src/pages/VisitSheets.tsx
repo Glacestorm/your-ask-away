@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,6 +40,7 @@ interface VisitSheet {
 }
 
 export default function VisitSheets() {
+  const navigate = useNavigate();
   const { user, isAdmin, isCommercialDirector, isOfficeDirector, isCommercialManager } = useAuth();
   const [sheets, setSheets] = useState<VisitSheet[]>([]);
   const [filteredSheets, setFilteredSheets] = useState<VisitSheet[]>([]);
@@ -316,7 +318,7 @@ export default function VisitSheets() {
           {(isCommercialDirector || isOfficeDirector || isCommercialManager) && (
             <Button
               variant="outline"
-              onClick={() => window.location.href = '/admin?section=gestor-comparison'}
+              onClick={() => navigate('/admin?section=gestor-comparison')}
               className="flex items-center gap-2 bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 border-emerald-500/30 hover:bg-emerald-500/20 hover:border-emerald-500/50 transition-all"
             >
               <Users className="h-4 w-4 text-emerald-600" />

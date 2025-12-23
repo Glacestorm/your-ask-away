@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
   Check, 
@@ -148,6 +148,7 @@ const competitors = [
 ];
 
 const Precios: React.FC = () => {
+  const navigate = useNavigate();
   const { trackPageView, trackCTAClick } = useMarketingAnalytics();
   const { user } = useAuth();
   const { subscribed, tier, loading, createCheckout, openCustomerPortal } = useSubscription();
@@ -160,13 +161,13 @@ const Precios: React.FC = () => {
     trackCTAClick(`pricing_${layerKey}`, 'pricing_page');
     
     if (!user) {
-      window.location.href = '/auth?redirect=/precios';
+      navigate('/auth?redirect=/precios');
       return;
     }
 
     if (layerKey === 'industry') {
       // Enterprise tier - contact sales
-      window.location.href = '/contact?plan=industry';
+      navigate('/contact?plan=industry');
       return;
     }
 

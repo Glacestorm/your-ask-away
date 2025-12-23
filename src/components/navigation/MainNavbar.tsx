@@ -1,9 +1,10 @@
 /**
  * MainNavbar - Navbar principal unificado
  * Usa la configuración de navigation.ts para todos los menús
+ * Incluye prefetching inteligente en hover
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -33,6 +34,7 @@ import { ObelixiaLogo } from '@/components/ui/ObelixiaLogo';
 import StoreAuthModal from '@/components/store/StoreAuthModal';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { mainNavigation, isRouteActive, type NavItem } from '@/config/navigation';
+import { setupHoverPrefetch, prefetchUrl } from '@/lib/speculationRules';
 
 const MainNavbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -45,6 +47,19 @@ const MainNavbar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useLanguage();
+
+  // Setup hover prefetching for navigation links
+  useEffect(() => {
+    const cleanup = setupHoverPrefetch('a[href^="/"]', 50);
+    return cleanup;
+  }, []);
+
+  // Prefetch handler for dropdown items
+  const handleLinkHover = useCallback((href: string) => {
+    if (href && href !== '#') {
+      prefetchUrl(href);
+    }
+  }, []);
 
   const openLogin = () => {
     setAuthModalMode('login');
@@ -146,7 +161,11 @@ const MainNavbar: React.FC = () => {
     const badgeLabel = getKnownBadgeLabel(item.badge);
 
     return (
-      <Link key={item.id} to={item.href}>
+      <Link 
+        key={item.id} 
+        to={item.href}
+        onMouseEnter={() => handleLinkHover(item.href)}
+      >
         <motion.div
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
