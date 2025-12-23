@@ -1,4 +1,10 @@
-import { useState } from 'react';
+/**
+ * Hook for generating and exporting remote support session data to PDF
+ * 
+ * KB Pattern: typed errors
+ */
+
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
@@ -6,6 +12,7 @@ import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
+// === TYPES ===
 export interface SessionExportData {
   session: {
     id: string;
@@ -42,11 +49,21 @@ export interface ExportOptions {
   includeSummary: boolean;
 }
 
+// KB Pattern: Typed error interface
+export interface ExportError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export function useSessionExport() {
   const [isExporting, setIsExporting] = useState(false);
+  
+  // KB Pattern: Typed error state
+  const [error, setError] = useState<ExportError | null>(null);
 
   // Generate a verification hash
-  const generateVerificationHash = (data: string): string => {
+  const generateVerificationHash = useCallback((data: string): string => {
     let hash = 0;
     for (let i = 0; i < data.length; i++) {
       const char = data.charCodeAt(i);
@@ -54,10 +71,10 @@ export function useSessionExport() {
       hash = hash & hash;
     }
     return Math.abs(hash).toString(16).toUpperCase().padStart(8, '0');
-  };
+  }, []);
 
   // Generate a unique verification code
-  const generateVerificationCode = (): string => {
+  const generateVerificationCode = useCallback((): string => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let code = '';
     for (let i = 0; i < 12; i++) {
@@ -65,10 +82,10 @@ export function useSessionExport() {
       code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return code;
-  };
+  }, []);
 
   // Fetch session data for export
-  const fetchSessionData = async (sessionId: string): Promise<SessionExportData | null> => {
+  const fetchSessionData = useCallback(async (sessionId: string): Promise<SessionExportData | null> => {
     try {
       const [sessionResult, actionsResult] = await Promise.all([
         supabase
@@ -105,13 +122,15 @@ export function useSessionExport() {
         technician
       };
     } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error desconocido';
       console.error('Error fetching session data:', err);
+      setError({ code: 'FETCH_DATA_ERROR', message, details: { sessionId } });
       return null;
     }
-  };
+  }, []);
 
   // Format duration
-  const formatDuration = (ms?: number): string => {
+  const formatDuration = useCallback((ms?: number): string => {
     if (!ms) return '--';
     const seconds = Math.floor(ms / 1000);
     const minutes = Math.floor(seconds / 60);
@@ -119,10 +138,10 @@ export function useSessionExport() {
     if (hours > 0) return `${hours}h ${minutes % 60}m`;
     if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
     return `${seconds}s`;
-  };
+  }, []);
 
   // Get risk level label
-  const getRiskLabel = (level: string): string => {
+  const getRiskLabel = useCallback((level: string): string => {
     const labels: Record<string, string> = {
       low: 'Bajo',
       medium: 'Medio',
@@ -130,10 +149,10 @@ export function useSessionExport() {
       critical: 'Crítico'
     };
     return labels[level] || level;
-  };
+  }, []);
 
   // Get action type label
-  const getActionLabel = (type: string): string => {
+  const getActionLabel = useCallback((type: string): string => {
     const labels: Record<string, string> = {
       config_change: 'Cambio de Configuración',
       data_access: 'Acceso a Datos',
@@ -149,14 +168,15 @@ export function useSessionExport() {
       other: 'Otro'
     };
     return labels[type] || type;
-  };
+  }, []);
 
   // Export session to PDF
-  const exportToPDF = async (
+  const exportToPDF = useCallback(async (
     sessionId: string, 
     options: ExportOptions = { includeActions: true, includeTimestamps: true, includeSummary: true }
   ): Promise<boolean> => {
     setIsExporting(true);
+    setError(null);
     
     try {
       const data = await fetchSessionData(sessionId);
@@ -316,7 +336,9 @@ export function useSessionExport() {
 
       return true;
     } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error desconocido';
       console.error('Error exporting session:', err);
+      setError({ code: 'EXPORT_ERROR', message, details: { sessionId } });
       toast({
         title: "Error de exportación",
         description: "No se pudo generar el PDF",
@@ -326,11 +348,21 @@ export function useSessionExport() {
     } finally {
       setIsExporting(false);
     }
-  };
+  }, [fetchSessionData, generateVerificationCode, generateVerificationHash, formatDuration, getActionLabel, getRiskLabel]);
+
+  // KB Pattern: Clear error
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
 
   return {
-    exportToPDF,
+    // State
     isExporting,
+    error,
+    // Actions
+    exportToPDF,
+    clearError,
+    // Utilities
     generateVerificationCode,
     generateVerificationHash
   };

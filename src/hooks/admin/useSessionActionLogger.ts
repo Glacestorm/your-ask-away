@@ -1,6 +1,8 @@
 /**
  * Hook for logging granular session actions during remote support sessions
  * Provides real-time action tracking for compliance and auditing
+ * 
+ * KB Pattern: lastRefresh, typed errors (realtime replaces auto-refresh)
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
@@ -8,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 
+// === TYPES ===
 export type ActionType =
   | 'config_change'
   | 'module_update'
@@ -58,14 +61,28 @@ export interface LogActionParams {
   metadata?: Record<string, unknown>;
 }
 
+// KB Pattern: Typed error interface
+export interface ActionLoggerError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export function useSessionActionLogger(sessionId: string | null) {
   const [actions, setActions] = useState<SessionAction[]>([]);
   const [loading, setLoading] = useState(false);
   const [isLogging, setIsLogging] = useState(false);
+  
+  // KB Pattern: lastRefresh state
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  
+  // KB Pattern: Typed error state
+  const [error, setError] = useState<ActionLoggerError | null>(null);
+  
   const actionStartTime = useRef<number | null>(null);
   const { user } = useAuth();
 
-  // Subscribe to realtime updates
+  // Subscribe to realtime updates (KB: realtime replaces auto-refresh)
   useEffect(() => {
     if (!sessionId) return;
 
@@ -86,6 +103,7 @@ export function useSessionActionLogger(sessionId: string | null) {
             if (prev.some(a => a.id === newAction.id)) return prev;
             return [...prev, newAction];
           });
+          setLastRefresh(new Date());
         }
       )
       .subscribe();
@@ -104,10 +122,13 @@ export function useSessionActionLogger(sessionId: string | null) {
   const logAction = useCallback(async (params: LogActionParams): Promise<SessionAction | null> => {
     if (!sessionId) {
       console.error('No session ID provided for action logging');
+      setError({ code: 'NO_SESSION', message: 'No hay sesión activa' });
       return null;
     }
 
     setIsLogging(true);
+    setError(null);
+    
     const duration = actionStartTime.current ? Date.now() - actionStartTime.current : undefined;
     actionStartTime.current = null;
 
@@ -126,13 +147,13 @@ export function useSessionActionLogger(sessionId: string | null) {
         performed_by: user?.id || null,
       };
 
-      const { data, error } = await supabase
+      const { data, error: insertError } = await supabase
         .from('session_actions')
         .insert([insertData] as any)
         .select()
         .single();
 
-      if (error) throw error;
+      if (insertError) throw insertError;
 
       const newAction = data as SessionAction;
       
@@ -142,8 +163,10 @@ export function useSessionActionLogger(sessionId: string | null) {
       }
 
       return newAction;
-    } catch (error) {
-      console.error('Error logging action:', error);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      console.error('Error logging action:', err);
+      setError({ code: 'LOG_ACTION_ERROR', message, details: { sessionId, actionType: params.actionType } });
       toast.error('Error al registrar acción');
       return null;
     } finally {
@@ -156,17 +179,23 @@ export function useSessionActionLogger(sessionId: string | null) {
     if (!sessionId) return;
 
     setLoading(true);
+    setError(null);
+    
     try {
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('session_actions')
         .select('*')
         .eq('session_id', sessionId)
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
+      if (fetchError) throw fetchError;
+      
       setActions(data as SessionAction[]);
-    } catch (error) {
-      console.error('Error fetching actions:', error);
+      setLastRefresh(new Date());
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      console.error('Error fetching actions:', err);
+      setError({ code: 'FETCH_ACTIONS_ERROR', message, details: { sessionId } });
       toast.error('Error al cargar acciones');
     } finally {
       setLoading(false);
@@ -274,14 +303,24 @@ export function useSessionActionLogger(sessionId: string | null) {
     });
   }, [logAction]);
 
+  // KB Pattern: Clear error
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return {
+    // State
     actions,
     loading,
     isLogging,
+    error,
+    lastRefresh,
+    // Actions
     logAction,
     startAction,
     fetchActions,
     getSessionSummary,
+    clearError,
     // Convenience methods
     logConfigChange,
     logDataAccess,
