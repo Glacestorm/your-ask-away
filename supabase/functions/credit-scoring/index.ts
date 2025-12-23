@@ -1,26 +1,104 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { 
+  handleOptionsRequest, 
+  createSecureResponse,
+  checkRateLimit,
+  validatePayloadSize,
+  validateAuthentication
+} from '../_shared/owasp-security.ts';
+import { getClientIP, generateRequestId } from '../_shared/edge-function-template.ts';
 
 serve(async (req) => {
+  const requestId = generateRequestId();
+  const clientIp = getClientIP(req);
+  const startTime = Date.now();
+
+  console.log(`[credit-scoring] Request ${requestId} from ${clientIp}`);
+
+  // === CORS ===
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return handleOptionsRequest();
   }
 
   try {
-    const { companyId } = await req.json();
-    
-    if (!companyId) {
-      throw new Error("companyId is required");
+    // === Rate Limiting (strict for sensitive financial operation) ===
+    const rateCheck = checkRateLimit({
+      maxRequests: 20,
+      windowMs: 60000,
+      identifier: `credit-scoring:${clientIp}`,
+    });
+
+    if (!rateCheck.allowed) {
+      console.warn(`[credit-scoring] Rate limit exceeded: ${clientIp}`);
+      return createSecureResponse({ 
+        success: false,
+        error: 'rate_limit_exceeded', 
+        message: 'Demasiadas solicitudes. Intenta más tarde.',
+        retryAfter: Math.ceil(rateCheck.resetIn / 1000)
+      }, 429);
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // === Authentication (required for financial operations) ===
+    const authResult = await validateAuthentication(
+      req.headers.get('Authorization'),
+      supabase
+    );
+
+    if (!authResult.valid) {
+      console.warn(`[credit-scoring] Auth failed: ${authResult.error}`);
+      return createSecureResponse(
+        { success: false, error: 'unauthorized', message: authResult.error || 'No autorizado' },
+        401
+      );
+    }
+
+    // === Parse & Validate Body ===
+    let body: { companyId: string };
+    try {
+      body = await req.json();
+    } catch {
+      return createSecureResponse({ 
+        success: false, 
+        error: 'invalid_json', 
+        message: 'El cuerpo no es JSON válido' 
+      }, 400);
+    }
+
+    const payloadCheck = validatePayloadSize(body);
+    if (!payloadCheck.valid) {
+      return createSecureResponse({ 
+        success: false, 
+        error: 'payload_too_large', 
+        message: payloadCheck.error 
+      }, 413);
+    }
+
+    const { companyId } = body;
+    
+    if (!companyId || typeof companyId !== 'string') {
+      return createSecureResponse({ 
+        success: false, 
+        error: 'validation_error', 
+        message: 'companyId es requerido' 
+      }, 400);
+    }
+
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(companyId)) {
+      return createSecureResponse({ 
+        success: false, 
+        error: 'validation_error', 
+        message: 'companyId debe ser un UUID válido' 
+      }, 400);
+    }
+
+    console.log(`[credit-scoring] Calculating score for company ${companyId}`);
 
     // Fetch company data
     const { data: company, error: companyError } = await supabase
@@ -29,7 +107,14 @@ serve(async (req) => {
       .eq("id", companyId)
       .single();
 
-    if (companyError) throw companyError;
+    if (companyError) {
+      console.error(`[credit-scoring] Company not found: ${companyError.message}`);
+      return createSecureResponse({ 
+        success: false, 
+        error: 'not_found', 
+        message: 'Empresa no encontrada' 
+      }, 404);
+    }
 
     // Fetch financial data
     const { data: financials } = await supabase
@@ -131,9 +216,19 @@ Retorna JSON amb:
 
     if (!response.ok) {
       if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limits exceeded" }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" }
-        });
+        console.warn(`[credit-scoring] AI rate limit exceeded`);
+        return createSecureResponse({ 
+          success: false,
+          error: 'rate_limit_exceeded', 
+          message: 'Demasiadas solicitudes a IA. Intenta más tarde.' 
+        }, 429);
+      }
+      if (response.status === 402) {
+        return createSecureResponse({ 
+          success: false,
+          error: 'payment_required', 
+          message: 'Créditos de IA insuficientes.' 
+        }, 402);
       }
       throw new Error(`AI gateway error: ${response.status}`);
     }
@@ -144,29 +239,44 @@ Retorna JSON amb:
     // Clean JSON
     content = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     
-    const result = JSON.parse(content);
+    let result;
+    try {
+      result = JSON.parse(content);
+    } catch (parseError) {
+      console.error(`[credit-scoring] Failed to parse AI response:`, content.substring(0, 200));
+      throw new Error("Invalid AI response format");
+    }
 
     // Log for audit
     await supabase.from("audit_logs").insert({
       action: "credit_scoring",
       table_name: "companies",
       record_id: companyId,
+      user_id: authResult.userId,
       new_data: { score: result.score, rating: result.rating },
       category: "ai_analysis",
       severity: "info"
     });
 
-    return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    const duration = Date.now() - startTime;
+    console.log(`[credit-scoring] Success for ${companyId} - Score: ${result.score} in ${duration}ms`);
+
+    return createSecureResponse({
+      success: true,
+      ...result,
+      requestId,
+      timestamp: new Date().toISOString()
     });
 
   } catch (error) {
-    console.error("credit-scoring error:", error);
-    return new Response(JSON.stringify({ 
-      error: error instanceof Error ? error.message : "Unknown error" 
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    const duration = Date.now() - startTime;
+    console.error(`[credit-scoring] Error after ${duration}ms:`, error);
+    
+    return createSecureResponse({
+      success: false,
+      error: 'internal_error',
+      message: error instanceof Error ? error.message : "Error desconocido",
+      requestId
+    }, 500);
   }
 });

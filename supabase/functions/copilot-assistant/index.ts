@@ -1,10 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { 
+  handleOptionsRequest, 
+  createSecureResponse,
+  checkRateLimit,
+  validatePayloadSize,
+  validateAuthentication
+} from '../_shared/owasp-security.ts';
+import { getClientIP, generateRequestId } from '../_shared/edge-function-template.ts';
 
 interface CopilotRequest {
   action: 'generate_suggestions' | 'execute_action' | 'quick_action';
@@ -17,23 +20,88 @@ interface CopilotRequest {
 }
 
 serve(async (req) => {
+  const requestId = generateRequestId();
+  const clientIp = getClientIP(req);
+  const startTime = Date.now();
+
+  console.log(`[copilot-assistant] Request ${requestId} from ${clientIp}`);
+
+  // === CORS ===
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return handleOptionsRequest();
   }
 
   try {
+    // === Rate Limiting ===
+    const rateCheck = checkRateLimit({
+      maxRequests: 100,
+      windowMs: 60000,
+      identifier: `copilot-assistant:${clientIp}`,
+    });
+
+    if (!rateCheck.allowed) {
+      console.warn(`[copilot-assistant] Rate limit exceeded: ${clientIp}`);
+      return createSecureResponse({ 
+        success: false,
+        error: 'rate_limit_exceeded', 
+        message: 'Demasiadas solicitudes. Intenta más tarde.',
+        retryAfter: Math.ceil(rateCheck.resetIn / 1000)
+      }, 429);
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { action, userId, role, context, suggestion, actionId, quickActionId } = await req.json() as CopilotRequest;
+    // === Authentication ===
+    const authResult = await validateAuthentication(
+      req.headers.get('Authorization'),
+      supabase
+    );
 
-    if (!userId) {
-      return new Response(JSON.stringify({ error: "userId is required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (!authResult.valid) {
+      console.warn(`[copilot-assistant] Auth failed: ${authResult.error}`);
+      return createSecureResponse(
+        { success: false, error: 'unauthorized', message: authResult.error || 'No autorizado' },
+        401
+      );
     }
+
+    // === Parse & Validate Body ===
+    let body: CopilotRequest;
+    try {
+      body = await req.json();
+    } catch {
+      return createSecureResponse({ 
+        success: false, 
+        error: 'invalid_json', 
+        message: 'El cuerpo no es JSON válido' 
+      }, 400);
+    }
+
+    const payloadCheck = validatePayloadSize(body);
+    if (!payloadCheck.valid) {
+      return createSecureResponse({ 
+        success: false, 
+        error: 'payload_too_large', 
+        message: payloadCheck.error 
+      }, 413);
+    }
+
+    const { action, userId, role, context, suggestion, actionId, quickActionId } = body;
+
+    // Use authenticated user ID if not provided
+    const effectiveUserId = userId || authResult.userId;
+
+    if (!effectiveUserId) {
+      return createSecureResponse({ 
+        success: false, 
+        error: 'validation_error', 
+        message: 'userId es requerido' 
+      }, 400);
+    }
+
+    console.log(`[copilot-assistant] Action: ${action} for user ${effectiveUserId}`);
 
     // Get copilot config for role
     const { data: copilotConfig } = await supabase
@@ -43,38 +111,42 @@ serve(async (req) => {
       .eq('is_active', true)
       .single();
 
+    let result: unknown;
+
     if (action === 'generate_suggestions') {
-      const suggestions = await generateSuggestions(supabase, userId, role || 'gestor', copilotConfig, context);
-      return new Response(JSON.stringify({ suggestions }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      result = { suggestions: await generateSuggestions(supabase, effectiveUserId, role || 'gestor', copilotConfig, context) };
+    } else if (action === 'execute_action') {
+      result = await executeAction(supabase, effectiveUserId, suggestion, actionId);
+    } else if (action === 'quick_action') {
+      result = await handleQuickAction(supabase, effectiveUserId, role || 'gestor', quickActionId || '');
+    } else {
+      return createSecureResponse({ 
+        success: false, 
+        error: 'invalid_action', 
+        message: 'Acción no válida' 
+      }, 400);
     }
 
-    if (action === 'execute_action') {
-      const result = await executeAction(supabase, userId, suggestion, actionId);
-      return new Response(JSON.stringify(result), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const duration = Date.now() - startTime;
+    console.log(`[copilot-assistant] Success: ${action} in ${duration}ms`);
 
-    if (action === 'quick_action') {
-      const result = await handleQuickAction(supabase, userId, role || 'gestor', quickActionId || '');
-      return new Response(JSON.stringify(result), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    return new Response(JSON.stringify({ error: "Invalid action" }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    return createSecureResponse({
+      success: true,
+      ...result as Record<string, unknown>,
+      requestId,
+      timestamp: new Date().toISOString()
     });
 
   } catch (error) {
-    console.error("Copilot assistant error:", error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    const duration = Date.now() - startTime;
+    console.error(`[copilot-assistant] Error after ${duration}ms:`, error);
+    
+    return createSecureResponse({
+      success: false,
+      error: 'internal_error',
+      message: error instanceof Error ? error.message : 'Error desconocido',
+      requestId
+    }, 500);
   }
 });
 
@@ -82,11 +154,10 @@ async function generateSuggestions(
   supabase: any,
   userId: string,
   role: string,
-  copilotConfig: any,
+  copilotConfig: unknown,
   context?: Record<string, unknown>
 ) {
-  const suggestions: any[] = [];
-
+  const suggestions: unknown[] = [];
   // Get user profile
   const { data: profile } = await supabase
     .from('profiles')
@@ -96,13 +167,6 @@ async function generateSuggestions(
 
   if (role === 'gestor') {
     // Get gestor-specific data
-    const { data: pendingVisits } = await supabase
-      .from('visits')
-      .select('*, company:companies(name, facturacion_anual)')
-      .eq('gestor_id', userId)
-      .eq('result', 'pending')
-      .limit(10);
-
     const { data: hotOpportunities } = await supabase
       .from('opportunities')
       .select('*, company:companies(name)')
@@ -119,18 +183,19 @@ async function generateSuggestions(
 
     // Generate suggestions based on data
     if (hotOpportunities?.length) {
-      hotOpportunities.forEach((opp: any, index: number) => {
+      hotOpportunities.forEach((opp: Record<string, unknown>) => {
+        const company = opp.company as Record<string, unknown> | null;
         suggestions.push({
           id: `hot-opp-${opp.id}`,
           type: 'action',
           title: `Cerrar oportunidad: ${opp.title}`,
-          description: `${opp.company?.name} tiene ${opp.probability}% de probabilidad. Valor estimado: €${opp.estimated_value?.toLocaleString()}`,
+          description: `${company?.name} tiene ${opp.probability}% de probabilidad. Valor estimado: €${(opp.estimated_value as number)?.toLocaleString()}`,
           priority: 'high',
           actionType: 'SEND_PROPOSAL',
           entityType: 'opportunity',
           entityId: opp.id,
           estimatedValue: opp.estimated_value,
-          confidence: opp.probability / 100,
+          confidence: (opp.probability as number) / 100,
           reasoning: 'Oportunidad con alta probabilidad de cierre. Recomendación: contactar hoy.',
           actions: [
             { id: 'call', label: 'Llamar ahora', type: 'primary', actionCode: 'CALL_HOT_LEAD' },
@@ -142,13 +207,14 @@ async function generateSuggestions(
     }
 
     if (churnRiskCustomers?.length) {
-      churnRiskCustomers.forEach((customer: any) => {
-        if (customer.company?.gestor_id === userId) {
+      churnRiskCustomers.forEach((customer: Record<string, unknown>) => {
+        const company = customer.company as Record<string, unknown> | null;
+        if (company?.gestor_id === userId) {
           suggestions.push({
             id: `churn-${customer.company_id}`,
             type: 'alert',
-            title: `Riesgo de churn: ${customer.company?.name}`,
-            description: `Probabilidad de churn: ${(customer.churn_probability * 100).toFixed(0)}%. Última visita: ${customer.last_visit_date || 'Sin visitas recientes'}`,
+            title: `Riesgo de churn: ${company?.name}`,
+            description: `Probabilidad de churn: ${((customer.churn_probability as number) * 100).toFixed(0)}%. Última visita: ${customer.last_visit_date || 'Sin visitas recientes'}`,
             priority: 'critical',
             actionType: 'RETENTION_CALL',
             entityType: 'company',
@@ -175,12 +241,12 @@ async function generateSuggestions(
       .limit(5);
 
     if (companiesWithFewProducts?.length) {
-      companiesWithFewProducts.slice(0, 2).forEach((company: any) => {
+      companiesWithFewProducts.slice(0, 2).forEach((company: Record<string, unknown>) => {
         suggestions.push({
           id: `crosssell-${company.id}`,
           type: 'recommendation',
           title: `Cross-sell: ${company.name}`,
-          description: `Cliente con facturación €${company.facturacion_anual?.toLocaleString()}. Potencial para productos adicionales.`,
+          description: `Cliente con facturación €${(company.facturacion_anual as number)?.toLocaleString()}. Potencial para productos adicionales.`,
           priority: 'medium',
           actionType: 'CROSS_SELL_PRODUCT',
           entityType: 'company',
@@ -201,17 +267,18 @@ async function generateSuggestions(
     const { data: gestoresUndeperforming } = await supabase
       .from('sales_quotas')
       .select('*, gestor:profiles(full_name)')
-      .lt('current_value', supabase.raw('target_value * 0.5'))
+      .lt('current_value', 0.5)
       .eq('period_type', 'monthly')
       .limit(5);
 
     if (gestoresUndeperforming?.length) {
-      gestoresUndeperforming.forEach((quota: any) => {
+      gestoresUndeperforming.forEach((quota: Record<string, unknown>) => {
+        const gestor = quota.gestor as Record<string, unknown> | null;
         suggestions.push({
           id: `coaching-${quota.gestor_id}`,
           type: 'insight',
-          title: `Coaching necesario: ${quota.gestor?.full_name}`,
-          description: `Progreso: ${((quota.current_value / quota.target_value) * 100).toFixed(0)}% del objetivo. Necesita apoyo.`,
+          title: `Coaching necesario: ${gestor?.full_name}`,
+          description: `Progreso: ${(((quota.current_value as number) / (quota.target_value as number)) * 100).toFixed(0)}% del objetivo. Necesita apoyo.`,
           priority: 'high',
           actionType: 'DELEGATE_TASK',
           entityType: 'profile',
@@ -236,13 +303,13 @@ async function generateSuggestions(
       .limit(5);
 
     if (revenueSignals?.length) {
-      revenueSignals.forEach((signal: any) => {
+      revenueSignals.forEach((signal: Record<string, unknown>) => {
         suggestions.push({
           id: `signal-${signal.id}`,
           type: signal.signal_type === 'risk' ? 'alert' : 'insight',
           title: signal.title,
           description: signal.description,
-          priority: signal.priority >= 8 ? 'high' : 'medium',
+          priority: (signal.priority as number) >= 8 ? 'high' : 'medium',
           entityType: signal.entity_type,
           entityId: signal.entity_id,
           estimatedValue: signal.estimated_impact,
@@ -266,12 +333,13 @@ async function generateSuggestions(
       .limit(5);
 
     if (openAlerts?.length) {
-      openAlerts.forEach((alert: any) => {
+      openAlerts.forEach((alert: Record<string, unknown>) => {
+        const control = alert.control as Record<string, unknown> | null;
         suggestions.push({
           id: `alert-${alert.id}`,
           type: 'alert',
           title: alert.title,
-          description: alert.description || `Control: ${alert.control?.control_name}`,
+          description: alert.description || `Control: ${control?.control_name}`,
           priority: 'critical',
           actionType: 'REVIEW_TRANSACTION',
           entityType: 'control_alert',
@@ -290,40 +358,49 @@ async function generateSuggestions(
 
   // Sort by priority and confidence
   const priorityOrder = { critical: 0, high: 1, medium: 2, low: 3 };
-  suggestions.sort((a, b) => {
-    const priorityDiff = priorityOrder[a.priority as keyof typeof priorityOrder] - priorityOrder[b.priority as keyof typeof priorityOrder];
+  suggestions.sort((a: unknown, b: unknown) => {
+    const aObj = a as { priority: string; confidence: number };
+    const bObj = b as { priority: string; confidence: number };
+    const priorityDiff = (priorityOrder[aObj.priority as keyof typeof priorityOrder] ?? 4) - 
+                        (priorityOrder[bObj.priority as keyof typeof priorityOrder] ?? 4);
     if (priorityDiff !== 0) return priorityDiff;
-    return b.confidence - a.confidence;
+    return bObj.confidence - aObj.confidence;
   });
 
   return suggestions.slice(0, 10);
 }
 
-async function executeAction(supabase: any, userId: string, suggestion: any, actionId?: string) {
-  // Based on action type, execute the appropriate action
-  const actionCode = suggestion?.actions?.find((a: any) => a.id === actionId)?.actionCode;
+async function executeAction(
+  supabase: any, 
+  userId: string, 
+  suggestion: unknown, 
+  actionId?: string
+) {
+  const suggestionObj = suggestion as { actions?: Array<{ id: string; actionCode?: string }>; entityType?: string; entityId?: string };
+  const actionCode = suggestionObj?.actions?.find((a) => a.id === actionId)?.actionCode;
 
   if (!actionCode) {
     return { success: false, message: 'No action code found' };
   }
 
-  // Log the execution
-  console.log(`Executing action ${actionCode} for user ${userId} on entity ${suggestion.entityType}/${suggestion.entityId}`);
-
-  // Here we would integrate with actual business logic
-  // For now, we return success and let the frontend handle specific actions
+  console.log(`Executing action ${actionCode} for user ${userId} on entity ${suggestionObj.entityType}/${suggestionObj.entityId}`);
 
   return {
     success: true,
     actionCode,
-    entityType: suggestion.entityType,
-    entityId: suggestion.entityId,
+    entityType: suggestionObj.entityType,
+    entityId: suggestionObj.entityId,
     message: `Acción ${actionCode} iniciada correctamente`,
   };
 }
 
-async function handleQuickAction(supabase: any, userId: string, role: string, quickActionId: string) {
-  const quickActionHandlers: Record<string, () => Promise<any>> = {
+async function handleQuickAction(
+  supabase: any, 
+  userId: string, 
+  role: string, 
+  quickActionId: string
+) {
+  const quickActionHandlers: Record<string, () => Promise<unknown>> = {
     'next_visit': async () => {
       const { data } = await supabase
         .from('visits')
@@ -393,7 +470,7 @@ async function handleQuickAction(supabase: any, userId: string, role: string, qu
       const { data } = await supabase
         .from('sales_quotas')
         .select('*, gestor:profiles(full_name)')
-        .lt('current_value', supabase.raw('target_value * 0.5'))
+        .lt('current_value', 0.5)
         .eq('period_type', 'monthly');
       
       return {
@@ -424,7 +501,10 @@ async function handleQuickAction(supabase: any, userId: string, role: string, qu
         .order('severity', { ascending: false })
         .limit(10);
       
-      const securityAlerts = data?.filter((a: any) => a.control?.control_category === 'security');
+      const securityAlerts = data?.filter((a: Record<string, unknown>) => {
+        const control = a.control as Record<string, unknown> | null;
+        return control?.control_category === 'security';
+      });
       
       return {
         type: 'list',
