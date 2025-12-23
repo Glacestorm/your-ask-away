@@ -1352,14 +1352,12 @@ export default {
   'landing.hero.cta1': 'CONSULTAR PLANS',
   'landing.hero.cta2': 'AGENDAR DEMO',
 
-  // Landing Stats
+  // Landing Stats Section
   'landing.stats.badge': 'Mètriques en temps real',
   'landing.stats.title': 'Qui ja usa ObelixIA',
   'landing.stats.titleHighlight': 'no torna enrere',
   'landing.stats.companies': 'Empreses actives',
   'landing.stats.companiesDesc': 'confien en ObelixIA',
-  'landing.stats.users': 'Usuaris diaris',
-  'landing.stats.usersDesc': 'gestionant el seu negoci',
   'landing.stats.dailyUsers': 'Usuaris diaris',
   'landing.stats.dailyUsersDesc': 'gestionant el seu negoci',
   'landing.stats.messages': 'Missatges/dia',

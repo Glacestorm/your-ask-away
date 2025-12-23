@@ -1352,14 +1352,12 @@ export default {
   'landing.hero.cta1': 'VIEW PLANS',
   'landing.hero.cta2': 'SCHEDULE DEMO',
 
-  // Landing Stats
+  // Landing Stats Section
   'landing.stats.badge': 'Real-time metrics',
   'landing.stats.title': 'Those who already use ObelixIA',
   'landing.stats.titleHighlight': 'never go back',
   'landing.stats.companies': 'Active companies',
   'landing.stats.companiesDesc': 'trust ObelixIA',
-  'landing.stats.users': 'Daily users',
-  'landing.stats.usersDesc': 'managing their business',
   'landing.stats.dailyUsers': 'Daily users',
   'landing.stats.dailyUsersDesc': 'managing their business',
   'landing.stats.messages': 'Messages/day',
