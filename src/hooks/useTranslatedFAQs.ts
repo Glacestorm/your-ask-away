@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useCMSTranslation } from '@/hooks/cms/useCMSTranslation';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -31,38 +31,24 @@ export function useTranslatedFAQs(
   originalCategories: FAQCategory[]
 ): TranslatedFAQs {
   const { language } = useLanguage();
-  const { translateAsync } = useCMSTranslation();
+  const { translateBatchAsync } = useCMSTranslation();
   const [translatedFaqs, setTranslatedFaqs] = useState<FAQ[]>(originalFaqs);
   const [translatedCategories, setTranslatedCategories] = useState<FAQCategory[]>(originalCategories);
   const [isTranslating, setIsTranslating] = useState(false);
   
-  // Track what we've already translated to avoid re-translating
-  const translationCacheRef = useRef<Record<string, string>>({});
   const lastLanguageRef = useRef<string>(language);
-
-  const translateText = useCallback(async (text: string, targetLocale: string): Promise<string> => {
-    if (!text || targetLocale === 'es') return text;
-    
-    const cacheKey = `${targetLocale}|${text}`;
-    if (translationCacheRef.current[cacheKey]) {
-      return translationCacheRef.current[cacheKey];
-    }
-
-    try {
-      const translated = await translateAsync(text, targetLocale, 'es');
-      translationCacheRef.current[cacheKey] = translated;
-      return translated;
-    } catch (error) {
-      console.error('Translation error:', error);
-      return text;
-    }
-  }, [translateAsync]);
+  const lastDataRef = useRef<string>('');
 
   useEffect(() => {
-    // Reset cache when language changes
-    if (lastLanguageRef.current !== language) {
-      lastLanguageRef.current = language;
+    const dataKey = `${originalFaqs.map(f => f.id).join(',')}|${originalCategories.map(c => c.id).join(',')}`;
+    
+    // Skip if nothing changed
+    if (lastLanguageRef.current === language && lastDataRef.current === dataKey) {
+      return;
     }
+    
+    lastLanguageRef.current = language;
+    lastDataRef.current = dataKey;
 
     // If Spanish, use originals directly
     if (language === 'es') {
@@ -72,7 +58,7 @@ export function useTranslatedFAQs(
       return;
     }
 
-    // If no FAQs, nothing to translate
+    // If no data, nothing to translate
     if (originalFaqs.length === 0 && originalCategories.length === 0) {
       setTranslatedFaqs([]);
       setTranslatedCategories([]);
@@ -84,27 +70,50 @@ export function useTranslatedFAQs(
       setIsTranslating(true);
 
       try {
-        // Translate categories first (usually fewer)
-        const translatedCats = await Promise.all(
-          originalCategories.map(async (cat) => ({
-            ...cat,
-            name: await translateText(cat.name, language),
-          }))
-        );
-        setTranslatedCategories(translatedCats);
-
-        // Translate FAQs
-        const translatedFaqsList = await Promise.all(
-          originalFaqs.map(async (faq) => ({
-            ...faq,
-            question: await translateText(faq.question, language),
-            answer: await translateText(faq.answer, language),
-          }))
-        );
-        setTranslatedFaqs(translatedFaqsList);
+        // Collect all texts to translate
+        const textsToTranslate: string[] = [];
+        const textIndexes: { type: 'faq' | 'category'; index: number; field: string }[] = [];
+        
+        // Collect category names
+        originalCategories.forEach((cat, index) => {
+          if (cat.name) {
+            textsToTranslate.push(cat.name);
+            textIndexes.push({ type: 'category', index, field: 'name' });
+          }
+        });
+        
+        // Collect FAQ questions and answers
+        originalFaqs.forEach((faq, index) => {
+          if (faq.question) {
+            textsToTranslate.push(faq.question);
+            textIndexes.push({ type: 'faq', index, field: 'question' });
+          }
+          if (faq.answer) {
+            textsToTranslate.push(faq.answer);
+            textIndexes.push({ type: 'faq', index, field: 'answer' });
+          }
+        });
+        
+        // Batch translate all texts at once
+        const translatedTexts = await translateBatchAsync(textsToTranslate, language, 'es');
+        
+        // Reconstruct data with translations
+        const newCategories = originalCategories.map(cat => ({ ...cat }));
+        const newFaqs = originalFaqs.map(faq => ({ ...faq }));
+        
+        translatedTexts.forEach((translated, i) => {
+          const { type, index, field } = textIndexes[i];
+          if (type === 'category') {
+            (newCategories[index] as any)[field] = translated;
+          } else {
+            (newFaqs[index] as any)[field] = translated;
+          }
+        });
+        
+        setTranslatedCategories(newCategories);
+        setTranslatedFaqs(newFaqs);
       } catch (error) {
         console.error('Error translating FAQs:', error);
-        // Fallback to originals
         setTranslatedFaqs(originalFaqs);
         setTranslatedCategories(originalCategories);
       } finally {
@@ -113,7 +122,7 @@ export function useTranslatedFAQs(
     };
 
     translateAll();
-  }, [language, originalFaqs, originalCategories, translateText]);
+  }, [language, originalFaqs, originalCategories, translateBatchAsync]);
 
   return {
     faqs: translatedFaqs,

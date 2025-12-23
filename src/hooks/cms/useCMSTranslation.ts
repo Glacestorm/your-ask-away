@@ -129,6 +129,73 @@ export function useCMSTranslation(namespace: string = 'common') {
     [language]
   );
 
+  // Batch translation for multiple texts at once - more efficient
+  const translateBatchAsync = useCallback(
+    async (
+      texts: string[],
+      targetLocale: string,
+      sourceLocaleOverride?: string
+    ): Promise<string[]> => {
+      const sourceLocale = sourceLocaleOverride ?? language;
+      
+      // Filter out texts that are already cached
+      const uncachedTexts: string[] = [];
+      const results: string[] = [];
+      const indexMap: number[] = [];
+      
+      texts.forEach((text, index) => {
+        const cacheKey = `${sourceLocale}|${targetLocale}|${text}`;
+        if (translateCache[cacheKey]) {
+          results[index] = translateCache[cacheKey];
+        } else {
+          uncachedTexts.push(text);
+          indexMap.push(index);
+        }
+      });
+      
+      // If all cached, return immediately
+      if (uncachedTexts.length === 0) {
+        return results;
+      }
+      
+      await acquireTranslationSlot();
+      try {
+        const { data, error } = await supabase.functions.invoke('cms-batch-translate', {
+          body: {
+            texts: uncachedTexts,
+            sourceLocale,
+            targetLocale,
+          },
+        });
+
+        if (error) throw error;
+        
+        const translations = (data?.translations as string[]) ?? uncachedTexts;
+        
+        // Map results back and cache them
+        translations.forEach((translated, i) => {
+          const originalIndex = indexMap[i];
+          const originalText = uncachedTexts[i];
+          const cacheKey = `${sourceLocale}|${targetLocale}|${originalText}`;
+          translateCache[cacheKey] = translated;
+          results[originalIndex] = translated;
+        });
+        
+        return results;
+      } catch (err) {
+        console.error('Batch translation error:', err);
+        // Fallback: return original texts for uncached
+        indexMap.forEach((originalIndex, i) => {
+          results[originalIndex] = uncachedTexts[i];
+        });
+        return results;
+      } finally {
+        releaseTranslationSlot();
+      }
+    },
+    [language]
+  );
+
   const clearCache = useCallback((locale?: string) => {
     if (locale) {
       Object.keys(cache).forEach(key => {
@@ -145,7 +212,8 @@ export function useCMSTranslation(namespace: string = 'common') {
     t, 
     translations, 
     loading, 
-    translateAsync, 
+    translateAsync,
+    translateBatchAsync,
     clearCache,
     currentLocale: language 
   };
