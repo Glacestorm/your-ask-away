@@ -235,6 +235,8 @@ export default {
   'admin.card.internalAssistant.desc': 'Chat interno inteligente',
   'admin.card.analyzer': 'Analizar Código',
   'admin.card.analyzer.desc': 'Rendimiento y métricas',
+  'admin.card.translations': 'Traducciones',
+  'admin.card.translations.desc': 'Gestión de idiomas',
 
   // Admin Role Selector
   'admin.roleSelector.title': 'Selector de Visión',
