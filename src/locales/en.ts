@@ -1525,6 +1525,19 @@ export default {
   'landing.premium.allModules': 'All modules included with perpetual license',
   'landing.premium.requestQuote': 'Request Enterprise Quote',
   'landing.premium.contactTeam': 'Contact our team for custom pricing',
+  // Premium Module Features
+  'landing.premium.features.mlPredictive': 'Predictive ML',
+  'landing.premium.features.creditScoring': 'Credit Scoring',
+  'landing.premium.features.fraudDetection': 'Fraud Detection',
+  'landing.premium.features.ifrs9Compliant': 'IFRS 9 Compliant',
+  'landing.premium.features.doraNis2': 'DORA/NIS2',
+  'landing.premium.features.psd2Psd3': 'PSD2/PSD3',
+  'landing.premium.features.basel': 'Basel III/IV',
+  'landing.premium.features.mifid': 'MiFID II',
+  'landing.premium.features.fapiApis': 'FAPI APIs',
+  'landing.premium.features.consentManagement': 'Consent Management',
+  'landing.premium.features.tppIntegration': 'TPP Integration',
+  'landing.premium.features.scaCompliant': 'SCA Compliant',
 
   // Landing Bundles
   'landing.bundles.badge': 'SPECIAL PACKS',

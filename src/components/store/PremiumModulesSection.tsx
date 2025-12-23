@@ -19,7 +19,12 @@ const PremiumModulesSection: React.FC = () => {
       base_price: null,
       category: 'enterprise',
       is_core: false,
-      features: ['ML Predictivo', 'Scoring Crediticio', 'Detección Fraude', 'IFRS 9 Compliant'],
+      features: [
+        t('landing.premium.features.mlPredictive'),
+        t('landing.premium.features.creditScoring'),
+        t('landing.premium.features.fraudDetection'),
+        t('landing.premium.features.ifrs9Compliant'),
+      ],
     },
     {
       id: 'p2',
@@ -30,7 +35,12 @@ const PremiumModulesSection: React.FC = () => {
       base_price: null,
       category: 'enterprise',
       is_core: false,
-      features: ['DORA/NIS2', 'PSD2/PSD3', 'Basel III/IV', 'MiFID II'],
+      features: [
+        t('landing.premium.features.doraNis2'),
+        t('landing.premium.features.psd2Psd3'),
+        t('landing.premium.features.basel'),
+        t('landing.premium.features.mifid'),
+      ],
     },
     {
       id: 'p3',
@@ -41,7 +51,12 @@ const PremiumModulesSection: React.FC = () => {
       base_price: null,
       category: 'enterprise',
       is_core: false,
-      features: ['APIs FAPI', 'Gestión Consentimientos', 'TPP Integration', 'SCA Compliant'],
+      features: [
+        t('landing.premium.features.fapiApis'),
+        t('landing.premium.features.consentManagement'),
+        t('landing.premium.features.tppIntegration'),
+        t('landing.premium.features.scaCompliant'),
+      ],
     },
   ];
 

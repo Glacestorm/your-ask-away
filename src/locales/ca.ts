@@ -1525,6 +1525,19 @@ export default {
   'landing.premium.allModules': 'Tots els mòduls inclosos amb llicència perpètua',
   'landing.premium.requestQuote': 'Sol·licitar Pressupost Enterprise',
   'landing.premium.contactTeam': 'Contacta amb el nostre equip per a preu personalitzat',
+  // Premium Module Features
+  'landing.premium.features.mlPredictive': 'ML Predictiu',
+  'landing.premium.features.creditScoring': 'Scoring Creditici',
+  'landing.premium.features.fraudDetection': 'Detecció Frau',
+  'landing.premium.features.ifrs9Compliant': 'IFRS 9 Compliant',
+  'landing.premium.features.doraNis2': 'DORA/NIS2',
+  'landing.premium.features.psd2Psd3': 'PSD2/PSD3',
+  'landing.premium.features.basel': 'Basel III/IV',
+  'landing.premium.features.mifid': 'MiFID II',
+  'landing.premium.features.fapiApis': 'APIs FAPI',
+  'landing.premium.features.consentManagement': 'Gestió Consentiments',
+  'landing.premium.features.tppIntegration': 'TPP Integration',
+  'landing.premium.features.scaCompliant': 'SCA Compliant',
 
   // Landing Bundles
   'landing.bundles.badge': 'PACKS ESPECIALS',
