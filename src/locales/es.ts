@@ -1,3 +1,4 @@
+// Spanish translations - ObelixIA
 export default {
   // Themes
   'theme.day': 'Día',

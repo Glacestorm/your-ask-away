@@ -1,3 +1,4 @@
+// English translations - ObelixIA
 export default {
   // Themes
   'theme.day': 'Day',
