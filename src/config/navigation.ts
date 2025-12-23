@@ -172,8 +172,8 @@ export const footerNavigation: NavGroup[] = [
     items: [
       { id: 'docs', label: 'Documentación', href: '/docs', icon: BookOpen },
       { id: 'api', label: 'API Reference', href: '/api', icon: Code },
-      { id: 'developers', label: 'Portal Dev', href: '/developers', icon: Rocket },
-      { id: 'partners', label: 'Portal Partners', href: '/partner-portal', icon: Handshake },
+      { id: 'developers', label: 'Portal Dev', labelKey: 'footer.devPortal', href: '/developers', icon: Rocket },
+      { id: 'partners', label: 'Portal Partners', labelKey: 'footer.partnerPortal', href: '/partner-portal', icon: Handshake },
     ],
   },
   {
@@ -233,10 +233,11 @@ export const adminNavigation: NavItem[] = [
 // ============================================
 
 export const quickActions: NavItem[] = [
-  { id: 'demo', label: 'Solicitar Demo', href: '/demo', icon: Rocket },
-  { id: 'contact', label: 'Contacto', href: '/contact', icon: Users },
-  { id: 'chat', label: 'Chat IA', href: '/chat', icon: MessageSquare },
+  { id: 'demo', label: 'Solicitar Demo', labelKey: 'quickActions.demo', href: '/demo', icon: Rocket },
+  { id: 'contact', label: 'Contacto', labelKey: 'quickActions.contact', href: '/contact', icon: Users },
+  { id: 'chat', label: 'Chat IA', labelKey: 'quickActions.chat', href: '/chat', icon: MessageSquare },
 ];
+
 
 // ============================================
 // HELPERS
