@@ -38,9 +38,24 @@ const getCategoryLabel = (category: string, t: (key: string) => string) => {
   }
 };
 
-const getSectorLabel = (sector: string | null) => {
+const getSectorLabel = (sector: string | null, language: string) => {
   if (!sector) return null;
-  const sectorLabels: Record<string, string> = {
+
+  // DB uses enum-like keys; show a localized human label
+  const labelsEn: Record<string, string> = {
+    banking: 'Banking',
+    insurance: 'Insurance',
+    retail: 'Retail',
+    healthcare: 'Healthcare',
+    manufacturing: 'Manufacturing',
+    hospitality: 'Hospitality',
+    construction: 'Construction',
+    transport: 'Transport',
+    professional_services: 'Professional Services',
+    agriculture: 'Agriculture',
+  };
+
+  const labelsEs: Record<string, string> = {
     banking: 'Banca',
     insurance: 'Seguros',
     retail: 'Retail',
@@ -50,9 +65,11 @@ const getSectorLabel = (sector: string | null) => {
     construction: 'Construcción',
     transport: 'Transporte',
     professional_services: 'Servicios Profesionales',
-    agriculture: 'Agricultura'
+    agriculture: 'Agricultura',
   };
-  return sectorLabels[sector] || sector;
+
+  const map = language === 'es' ? labelsEs : labelsEn;
+  return map[sector] || sector;
 };
 
 const StoreModuleDetail: React.FC = () => {

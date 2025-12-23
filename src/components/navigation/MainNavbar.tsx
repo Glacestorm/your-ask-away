@@ -86,7 +86,7 @@ const MainNavbar: React.FC = () => {
               `}
             >
               {item.icon && <item.icon className="w-4 h-4" />}
-              <span>{item.label}</span>
+              <span>{item.labelKey ? t(item.labelKey) : item.label}</span>
               <ChevronDown className={`w-3.5 h-3.5 transition-transform ${openDropdown === item.id ? 'rotate-180' : ''}`} />
             </motion.button>
           </DropdownMenuTrigger>
@@ -135,7 +135,7 @@ const MainNavbar: React.FC = () => {
           `}
         >
           {item.icon && <item.icon className="w-4 h-4" />}
-          <span>{item.label}</span>
+          <span>{item.labelKey ? t(item.labelKey) : item.label}</span>
           {item.badge && (
             <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-400 text-xs ml-1">
               {item.badge}
@@ -168,7 +168,7 @@ const MainNavbar: React.FC = () => {
           `}
         >
           {item.icon && <item.icon className="w-4 h-4" />}
-          <span>{item.label}</span>
+          <span>{item.labelKey ? t(item.labelKey) : item.label}</span>
           {item.badge && (
             <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-400 text-xs">
               {item.badge}
@@ -208,7 +208,7 @@ const MainNavbar: React.FC = () => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className="p-2 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg"
-                    title="Panel de Administración"
+                    title={t('admin.title')}
                   >
                     <Shield className="w-5 h-5 text-white" />
                   </motion.div>
@@ -230,19 +230,19 @@ const MainNavbar: React.FC = () => {
                     <DropdownMenuItem asChild>
                       <Link to="/dashboard" className="flex items-center gap-2 cursor-pointer">
                         <LayoutDashboard className="w-4 h-4" />
-                        Dashboard
+                        {t('menu.dashboard')}
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
                         <User className="w-4 h-4" />
-                        Perfil
+                        {t('menu.profile')}
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="bg-slate-700" />
                     <DropdownMenuItem onClick={handleSignOut} className="flex items-center gap-2 text-red-400 cursor-pointer">
                       <LogOut className="w-4 h-4" />
-                      Cerrar sesión
+                      {t('menu.logout')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -328,7 +328,7 @@ const MainNavbar: React.FC = () => {
                   
                   {/* Auth buttons mobile */}
                   <div className="pt-4 mt-4 border-t border-slate-700 space-y-2">
-                    {user ? (
+                      {user ? (
                       <>
                         <Link
                           to="/dashboard"
@@ -336,7 +336,7 @@ const MainNavbar: React.FC = () => {
                           className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-slate-300 hover:bg-slate-800/50"
                         >
                           <LayoutDashboard className="w-4 h-4" />
-                          Dashboard
+                          {t('menu.dashboard')}
                         </Link>
                         <button
                           onClick={() => {
@@ -346,7 +346,7 @@ const MainNavbar: React.FC = () => {
                           className="flex items-center gap-3 py-2.5 px-4 rounded-xl text-red-400 hover:bg-slate-800/50 w-full"
                         >
                           <LogOut className="w-4 h-4" />
-                          Cerrar sesión
+                          {t('menu.logout')}
                         </button>
                       </>
                     ) : (
