@@ -18,7 +18,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 interface SessionActionsTimelineProps {
-  sessionId: string;
+  sessionId?: string | null;
   showSummary?: boolean;
 }
 

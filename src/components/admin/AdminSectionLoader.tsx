@@ -146,6 +146,11 @@ export const APIDocumentation = lazy(() => import('@/components/admin/APIDocumen
 // Visit Sheets page (not lazy - used directly)
 export { default as VisitSheets } from '@/pages/VisitSheets';
 
+// Service Quotes & Remote Support
+export const ServiceQuoteBuilder = lazy(() => import('@/components/admin/service-quotes').then(m => ({ default: m.ServiceQuoteBuilder })));
+export const ServiceQuotesList = lazy(() => import('@/components/admin/service-quotes').then(m => ({ default: m.ServiceQuotesList })));
+export const SessionActionsTimeline = lazy(() => import('@/components/admin/service-quotes').then(m => ({ default: m.SessionActionsTimeline })));
+
 // Wrapper component for lazy loaded sections
 interface LazyAdminSectionProps {
   children: React.ReactNode;
