@@ -1,25 +1,28 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Check, 
-  X, 
-  Star, 
-  Zap, 
-  Crown, 
-  Building2,
+import { useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
+import {
   ArrowRight,
-  Sparkles,
-  TrendingUp,
+  Building2,
+  Check,
+  Clock,
+  Crown,
   Shield,
+  Sparkles,
+  Star,
+  TrendingUp,
   Users,
-  Clock
+  X,
+  Zap,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 type BillingCycle = 'monthly' | 'annual' | 'perpetual';
+
+type BadgeVariant = 'popular' | 'value' | 'enterprise';
 
 interface PricingTier {
   id: string;
@@ -31,7 +34,7 @@ interface PricingTier {
   perpetualPrice: number;
   badge?: {
     text: string;
-    variant: 'popular' | 'value' | 'enterprise';
+    variant: BadgeVariant;
   };
   features: {
     name: string;
@@ -42,109 +45,114 @@ interface PricingTier {
   highlighted?: boolean;
 }
 
-const PRICING_TIERS: PricingTier[] = [
+const buildPricingTiers = (t: (key: string) => string): PricingTier[] => [
   {
     id: 'starter',
-    name: 'Starter',
-    description: 'Ideal para autónomos y pequeñas empresas',
+    name: t('landing.pricing.tier.starter.name'),
+    description: t('landing.pricing.tier.starter.desc'),
     icon: <Zap className="w-6 h-6" />,
     monthlyPrice: 29,
     annualPrice: 290,
     perpetualPrice: 990,
     features: [
-      { name: 'Hasta 3 usuarios', included: true },
-      { name: '1 empresa', included: true },
-      { name: 'CRM básico', included: true },
-      { name: 'Dashboard analítico', included: true },
-      { name: 'Soporte por email', included: true },
-      { name: 'Exportación básica', included: true },
-      { name: 'Automatizaciones', included: false },
-      { name: 'API Access', included: false },
-      { name: 'Multi-sector', included: false },
-      { name: 'Compliance avanzado', included: false },
+      { name: t('landing.pricing.features.users3'), included: true },
+      { name: t('landing.pricing.features.company1'), included: true },
+      { name: t('landing.pricing.features.crmBasic'), included: true },
+      { name: t('landing.pricing.features.dashboardAnalytics'), included: true },
+      { name: t('landing.pricing.features.emailSupport'), included: true },
+      { name: t('landing.pricing.features.exportBasic'), included: true },
+      { name: t('landing.pricing.features.automations'), included: false },
+      { name: t('landing.pricing.features.apiAccess'), included: false },
+      { name: t('landing.pricing.features.multiSector'), included: false },
+      { name: t('landing.pricing.features.complianceAdvanced'), included: false },
     ],
-    cta: 'Comenzar Gratis',
+    cta: t('landing.pricing.tier.starter.cta'),
   },
   {
     id: 'essential',
-    name: 'Essential',
-    description: 'Para equipos en crecimiento',
+    name: t('landing.pricing.tier.essential.name'),
+    description: t('landing.pricing.tier.essential.desc'),
     icon: <Star className="w-6 h-6" />,
     monthlyPrice: 79,
     annualPrice: 790,
     perpetualPrice: 2490,
-    badge: { text: 'Mejor Precio', variant: 'value' },
+    badge: { text: t('landing.pricing.badge.value'), variant: 'value' },
     features: [
-      { name: 'Hasta 10 usuarios', included: true },
-      { name: '3 empresas', included: true },
-      { name: 'CRM completo', included: true, highlight: true },
-      { name: 'Dashboard avanzado', included: true },
-      { name: 'Soporte prioritario', included: true },
-      { name: 'Exportación avanzada', included: true },
-      { name: 'Automatizaciones básicas', included: true, highlight: true },
-      { name: 'API Access', included: true },
-      { name: 'Multi-sector (3)', included: false },
-      { name: 'Compliance avanzado', included: false },
+      { name: t('landing.pricing.features.users10'), included: true },
+      { name: t('landing.pricing.features.companies3'), included: true },
+      { name: t('landing.pricing.features.crmFull'), included: true, highlight: true },
+      { name: t('landing.pricing.features.dashboardAdvanced'), included: true },
+      { name: t('landing.pricing.features.supportPriority'), included: true },
+      { name: t('landing.pricing.features.exportAdvanced'), included: true },
+      { name: t('landing.pricing.features.automationsBasic'), included: true, highlight: true },
+      { name: t('landing.pricing.features.apiAccess'), included: true },
+      { name: t('landing.pricing.features.multiSector3'), included: false },
+      { name: t('landing.pricing.features.complianceAdvanced'), included: false },
     ],
-    cta: 'Elegir Essential',
+    cta: t('landing.pricing.tier.essential.cta'),
   },
   {
     id: 'pro',
-    name: 'Pro',
-    description: 'Para empresas que escalan',
+    name: t('landing.pricing.tier.pro.name'),
+    description: t('landing.pricing.tier.pro.desc'),
     icon: <Crown className="w-6 h-6" />,
     monthlyPrice: 149,
     annualPrice: 1490,
     perpetualPrice: 4990,
-    badge: { text: 'Más Vendido', variant: 'popular' },
+    badge: { text: t('landing.pricing.badge.popular'), variant: 'popular' },
     highlighted: true,
     features: [
-      { name: 'Hasta 50 usuarios', included: true, highlight: true },
-      { name: '10 empresas', included: true },
-      { name: 'CRM + ERP completo', included: true, highlight: true },
-      { name: 'Business Intelligence', included: true },
-      { name: 'Soporte 24/7', included: true, highlight: true },
-      { name: 'Exportación ilimitada', included: true },
-      { name: 'Automatizaciones avanzadas', included: true, highlight: true },
-      { name: 'API ilimitada', included: true },
-      { name: 'Multi-sector (8)', included: true, highlight: true },
-      { name: 'Compliance básico', included: true },
+      { name: t('landing.pricing.features.users50'), included: true, highlight: true },
+      { name: t('landing.pricing.features.companies10'), included: true },
+      { name: t('landing.pricing.features.crmErpFull'), included: true, highlight: true },
+      { name: t('landing.pricing.features.businessIntelligence'), included: true },
+      { name: t('landing.pricing.features.support247'), included: true, highlight: true },
+      { name: t('landing.pricing.features.exportUnlimited'), included: true },
+      { name: t('landing.pricing.features.automationsAdvanced'), included: true, highlight: true },
+      { name: t('landing.pricing.features.apiUnlimited'), included: true },
+      { name: t('landing.pricing.features.multiSector8'), included: true, highlight: true },
+      { name: t('landing.pricing.features.complianceBasic'), included: true },
     ],
-    cta: 'Elegir Pro',
+    cta: t('landing.pricing.tier.pro.cta'),
   },
   {
     id: 'enterprise',
-    name: 'Enterprise',
-    description: 'Solución corporativa a medida',
+    name: t('landing.pricing.tier.enterprise.name'),
+    description: t('landing.pricing.tier.enterprise.desc'),
     icon: <Building2 className="w-6 h-6" />,
     monthlyPrice: 499,
     annualPrice: 4990,
     perpetualPrice: 14990,
-    badge: { text: 'Todo Incluido', variant: 'enterprise' },
+    badge: { text: t('landing.pricing.badge.enterprise'), variant: 'enterprise' },
     features: [
-      { name: 'Usuarios ilimitados', included: true, highlight: true },
-      { name: 'Empresas ilimitadas', included: true, highlight: true },
-      { name: 'Suite completa', included: true, highlight: true },
-      { name: 'BI + Revenue Intelligence', included: true, highlight: true },
-      { name: 'Account Manager dedicado', included: true, highlight: true },
-      { name: 'Integraciones custom', included: true },
-      { name: 'BPMN + Workflows', included: true, highlight: true },
-      { name: 'API + Webhooks', included: true },
-      { name: 'Todos los sectores + CNAE', included: true, highlight: true },
-      { name: 'Compliance total (GDPR, PCI-DSS)', included: true, highlight: true },
+      { name: t('landing.pricing.features.usersUnlimited'), included: true, highlight: true },
+      { name: t('landing.pricing.features.companiesUnlimited'), included: true, highlight: true },
+      { name: t('landing.pricing.features.suiteComplete'), included: true, highlight: true },
+      { name: t('landing.pricing.features.biRevenue'), included: true, highlight: true },
+      { name: t('landing.pricing.features.accountManager'), included: true, highlight: true },
+      { name: t('landing.pricing.features.integrationsCustom'), included: true },
+      { name: t('landing.pricing.features.bpmnWorkflows'), included: true, highlight: true },
+      { name: t('landing.pricing.features.apiWebhooks'), included: true },
+      { name: t('landing.pricing.features.allSectorsCnae'), included: true, highlight: true },
+      { name: t('landing.pricing.features.complianceTotal'), included: true, highlight: true },
     ],
-    cta: 'Contactar Ventas',
+    cta: t('landing.pricing.tier.enterprise.cta'),
   },
 ];
 
-const BillingToggle: React.FC<{
+const BillingToggle = ({
+  value,
+  onChange,
+}: {
   value: BillingCycle;
   onChange: (value: BillingCycle) => void;
-}> = ({ value, onChange }) => {
+}) => {
+  const { t } = useLanguage();
+
   const options: { value: BillingCycle; label: string; discount?: string }[] = [
-    { value: 'monthly', label: 'Mensual' },
-    { value: 'annual', label: 'Anual', discount: '-17%' },
-    { value: 'perpetual', label: 'Perpetua', discount: '-30%' },
+    { value: 'monthly', label: t('landing.pricing.billing.monthly') },
+    { value: 'annual', label: t('landing.pricing.billing.annual'), discount: '-17%' },
+    { value: 'perpetual', label: t('landing.pricing.billing.perpetual'), discount: '-30%' },
   ];
 
   return (
@@ -154,10 +162,10 @@ const BillingToggle: React.FC<{
           key={option.value}
           onClick={() => onChange(option.value)}
           className={cn(
-            "relative px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300",
+            'relative px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300',
             value === option.value
-              ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
-              : "text-slate-400 hover:text-white"
+              ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
+              : 'text-slate-400 hover:text-white'
           )}
         >
           <span className="flex items-center gap-2">
@@ -174,11 +182,17 @@ const BillingToggle: React.FC<{
   );
 };
 
-const PricingCard: React.FC<{
+const PricingCard = ({
+  tier,
+  billingCycle,
+  onSelect,
+}: {
   tier: PricingTier;
   billingCycle: BillingCycle;
   onSelect: (tierId: string) => void;
-}> = ({ tier, billingCycle, onSelect }) => {
+}) => {
+  const { t } = useLanguage();
+
   const getPrice = () => {
     switch (billingCycle) {
       case 'monthly':
@@ -204,18 +218,18 @@ const PricingCard: React.FC<{
   const getPriceLabel = () => {
     switch (billingCycle) {
       case 'monthly':
-        return '/mes';
+        return t('landing.pricing.priceLabel.month');
       case 'annual':
-        return '/año';
+        return t('landing.pricing.priceLabel.year');
       case 'perpetual':
-        return ' única';
+        return t('landing.pricing.priceLabel.oneTime');
     }
   };
 
   const originalPrice = getOriginalPrice();
   const currentPrice = getPrice();
 
-  const getBadgeStyles = (variant: string) => {
+  const getBadgeStyles = (variant: BadgeVariant) => {
     switch (variant) {
       case 'popular':
         return 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 shadow-lg shadow-orange-500/25';
@@ -236,16 +250,16 @@ const PricingCard: React.FC<{
       whileHover={{ y: -8, scale: 1.02 }}
       transition={{ duration: 0.3 }}
       className={cn(
-        "relative flex flex-col rounded-3xl p-8 transition-all duration-300",
+        'relative flex flex-col rounded-3xl p-8 transition-all duration-300',
         tier.highlighted
-          ? "bg-gradient-to-b from-primary/20 via-slate-800/80 to-slate-900/80 border-2 border-primary/50 shadow-2xl shadow-primary/20"
-          : "bg-slate-800/50 border border-slate-700/50 hover:border-slate-600/50"
+          ? 'bg-gradient-to-b from-primary/20 via-slate-800/80 to-slate-900/80 border-2 border-primary/50 shadow-2xl shadow-primary/20'
+          : 'bg-slate-800/50 border border-slate-700/50 hover:border-slate-600/50'
       )}
     >
       {/* Badge */}
       {tier.badge && (
         <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-          <Badge className={cn("px-4 py-1.5 text-sm font-semibold", getBadgeStyles(tier.badge.variant))}>
+          <Badge className={cn('px-4 py-1.5 text-sm font-semibold', getBadgeStyles(tier.badge.variant))}>
             <Sparkles className="w-3.5 h-3.5 mr-1.5" />
             {tier.badge.text}
           </Badge>
@@ -254,12 +268,12 @@ const PricingCard: React.FC<{
 
       {/* Header */}
       <div className="text-center mb-8">
-        <div className={cn(
-          "inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4",
-          tier.highlighted
-            ? "bg-primary/20 text-primary"
-            : "bg-slate-700/50 text-slate-300"
-        )}>
+        <div
+          className={cn(
+            'inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4',
+            tier.highlighted ? 'bg-primary/20 text-primary' : 'bg-slate-700/50 text-slate-300'
+          )}
+        >
           {tier.icon}
         </div>
         <h3 className="text-2xl font-bold text-white mb-2">{tier.name}</h3>
@@ -270,9 +284,7 @@ const PricingCard: React.FC<{
       <div className="text-center mb-8">
         <div className="flex items-center justify-center gap-3 mb-2">
           {originalPrice && billingCycle !== 'monthly' && (
-            <span className="text-xl text-slate-500 line-through">
-              €{originalPrice.toLocaleString()}
-            </span>
+            <span className="text-xl text-slate-500 line-through">€{originalPrice.toLocaleString()}</span>
           )}
           <div className="flex items-baseline">
             <span className="text-5xl font-bold text-white">€{currentPrice.toLocaleString()}</span>
@@ -281,7 +293,7 @@ const PricingCard: React.FC<{
         </div>
         {billingCycle !== 'monthly' && originalPrice && (
           <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/30">
-            Ahorras €{(originalPrice - currentPrice).toLocaleString()}
+            {t('landing.pricing.youSave')} €{(originalPrice - currentPrice).toLocaleString()}
           </Badge>
         )}
       </div>
@@ -289,24 +301,16 @@ const PricingCard: React.FC<{
       {/* Features */}
       <ul className="space-y-3 mb-8 flex-1">
         {tier.features.map((feature, index) => (
-          <li 
+          <li
             key={index}
-            className={cn(
-              "flex items-center gap-3 text-sm",
-              feature.included ? "text-slate-300" : "text-slate-500"
-            )}
+            className={cn('flex items-center gap-3 text-sm', feature.included ? 'text-slate-300' : 'text-slate-500')}
           >
             {feature.included ? (
-              <Check className={cn(
-                "w-5 h-5 shrink-0",
-                feature.highlight ? "text-primary" : "text-green-500"
-              )} />
+              <Check className={cn('w-5 h-5 shrink-0', feature.highlight ? 'text-primary' : 'text-green-500')} />
             ) : (
               <X className="w-5 h-5 text-slate-600 shrink-0" />
             )}
-            <span className={feature.highlight ? "font-medium text-white" : ""}>
-              {feature.name}
-            </span>
+            <span className={feature.highlight ? 'font-medium text-white' : ''}>{feature.name}</span>
           </li>
         ))}
       </ul>
@@ -315,10 +319,10 @@ const PricingCard: React.FC<{
       <Button
         onClick={() => onSelect(tier.id)}
         className={cn(
-          "w-full h-12 rounded-xl font-semibold transition-all duration-300",
+          'w-full h-12 rounded-xl font-semibold transition-all duration-300',
           tier.highlighted
-            ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/25"
-            : "bg-slate-700 hover:bg-slate-600 text-white"
+            ? 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/25'
+            : 'bg-slate-700 hover:bg-slate-600 text-white'
         )}
       >
         {tier.cta}
@@ -328,22 +332,26 @@ const PricingCard: React.FC<{
   );
 };
 
-const CompetitivePricing: React.FC = () => {
+const CompetitivePricing = () => {
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('annual');
   const { createCheckout } = useSubscription();
+  const { t, language } = useLanguage();
+
+  const tiers = useMemo(() => buildPricingTiers(t), [language, t]);
 
   const handleSelectTier = (tierId: string) => {
     if (tierId === 'enterprise') {
       window.location.href = 'mailto:comercial@obelixia.com?subject=Enterprise%20Quote';
-    } else {
-      // Map tier to subscription tier
-      const tierMap: Record<string, 'core' | 'automation' | 'industry'> = {
-        starter: 'core',
-        essential: 'core',
-        pro: 'automation',
-      };
-      createCheckout(tierMap[tierId] || 'core');
+      return;
     }
+
+    // Map tier to subscription tier
+    const tierMap: Record<string, 'core' | 'automation' | 'industry'> = {
+      starter: 'core',
+      essential: 'core',
+      pro: 'automation',
+    };
+    createCheckout(tierMap[tierId] || 'core');
   };
 
   return (
@@ -362,14 +370,12 @@ const CompetitivePricing: React.FC = () => {
         >
           <Badge className="mb-6 bg-primary/10 text-primary border-primary/20">
             <TrendingUp className="w-3.5 h-3.5 mr-1.5" />
-            Planes y Precios
+            {t('landing.pricing.badge')}
           </Badge>
           <h2 className="text-4xl md:text-5xl font-display font-bold text-white mb-6">
-            Elige el plan perfecto para tu negocio
+            {t('landing.pricing.title')}
           </h2>
-          <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-10">
-            Precios transparentes sin sorpresas. Todos los planes incluyen actualizaciones gratuitas y soporte técnico.
-          </p>
+          <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-10">{t('landing.pricing.subtitle')}</p>
 
           {/* Billing Toggle */}
           <BillingToggle value={billingCycle} onChange={setBillingCycle} />
@@ -377,13 +383,8 @@ const CompetitivePricing: React.FC = () => {
 
         {/* Pricing Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 mb-16">
-          {PRICING_TIERS.map((tier) => (
-            <PricingCard
-              key={tier.id}
-              tier={tier}
-              billingCycle={billingCycle}
-              onSelect={handleSelectTier}
-            />
+          {tiers.map((tier) => (
+            <PricingCard key={tier.id} tier={tier} billingCycle={billingCycle} onSelect={handleSelectTier} />
           ))}
         </div>
 
@@ -396,15 +397,15 @@ const CompetitivePricing: React.FC = () => {
         >
           <div className="flex items-center gap-2">
             <Shield className="w-5 h-5 text-green-500" />
-            Garantía de devolución 30 días
+            {t('landing.pricing.trust.refund')}
           </div>
           <div className="flex items-center gap-2">
             <Clock className="w-5 h-5 text-blue-500" />
-            Activación inmediata
+            {t('landing.pricing.trust.instant')}
           </div>
           <div className="flex items-center gap-2">
             <Users className="w-5 h-5 text-purple-500" />
-            +500 empresas confían en nosotros
+            {t('landing.pricing.trust.companies')}
           </div>
         </motion.div>
 
@@ -415,11 +416,9 @@ const CompetitivePricing: React.FC = () => {
           viewport={{ once: true }}
           className="mt-16 text-center"
         >
-          <p className="text-slate-400 mb-4">
-            ¿Tienes preguntas sobre los planes?
-          </p>
+          <p className="text-slate-400 mb-4">{t('landing.pricing.faq.prompt')}</p>
           <Button variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-800">
-            Ver preguntas frecuentes
+            {t('landing.pricing.faq.cta')}
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </motion.div>
