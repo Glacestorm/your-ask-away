@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { HelpCircle, Euro, Rocket, ArrowRightLeft, Blocks, Headphones, Shield } from 'lucide-react';
+import { HelpCircle, Euro, Rocket, ArrowRightLeft, Blocks, Headphones, Shield, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTranslatedFAQs } from '@/hooks/useTranslatedFAQs';
 import FAQSearchBar from './FAQSearchBar';
 import FAQAccordionItem from './FAQAccordionItem';
 
@@ -39,13 +40,19 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 
 const FAQSection: React.FC = () => {
   const { t } = useLanguage();
-  const [faqs, setFaqs] = useState<FAQ[]>([]);
-  const [categories, setCategories] = useState<FAQCategory[]>([]);
+  const [originalFaqs, setOriginalFaqs] = useState<FAQ[]>([]);
+  const [originalCategories, setOriginalCategories] = useState<FAQCategory[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [openFaqId, setOpenFaqId] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+
+  // Use translated FAQs hook
+  const { faqs, categories, isTranslating } = useTranslatedFAQs(
+    originalFaqs as any,
+    originalCategories as any
+  );
 
   useEffect(() => {
     fetchData();
@@ -61,8 +68,8 @@ const FAQSection: React.FC = () => {
       if (faqsRes.error) throw faqsRes.error;
       if (categoriesRes.error) throw categoriesRes.error;
 
-      setFaqs(faqsRes.data || []);
-      setCategories(categoriesRes.data || []);
+      setOriginalFaqs(faqsRes.data || []);
+      setOriginalCategories(categoriesRes.data || []);
     } catch (error) {
       console.error('Error fetching FAQs:', error);
     } finally {
@@ -71,7 +78,7 @@ const FAQSection: React.FC = () => {
   };
 
   const filteredFaqs = useMemo(() => {
-    let result = faqs;
+    let result = faqs as FAQ[];
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -121,7 +128,7 @@ const FAQSection: React.FC = () => {
       await supabase.from('faqs').update(updateData).eq('id', faqId);
 
       // Update local state
-      setFaqs(prev =>
+      setOriginalFaqs(prev =>
         prev.map(f => (f.id === faqId ? { ...f, ...updateData } : f))
       );
 
@@ -194,6 +201,12 @@ const FAQSection: React.FC = () => {
             <p className="text-lg text-slate-400">
               {t('faq.subtitle')}
             </p>
+            {isTranslating && (
+              <div className="flex items-center gap-2 mt-4 text-sm text-primary">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>{t('faq.translating')}</span>
+              </div>
+            )}
           </motion.div>
 
           {/* Search */}

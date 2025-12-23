@@ -1187,6 +1187,7 @@ export default {
   'faq.feedback.helpful.desc': 'Nos alegra que te haya sido útil',
   'faq.feedback.notHelpful.title': 'Gracias por tu opinión',
   'faq.feedback.notHelpful.desc': 'Trabajaremos en mejorar esta respuesta',
+  'faq.translating': 'Traduciendo preguntas...',
 
   // Store Features
   'store.features.badge': 'CARACTERÍSTICAS',
