@@ -94,7 +94,7 @@ export function CommercialDirectorDashboard() {
           </TabsTrigger>
           <TabsTrigger value="analytics" className="rounded-lg px-6 py-2.5 text-sm font-medium transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
             <BarChart3 className="mr-2 h-4 w-4" />
-            Anàlisi
+            {t('director.analysisTab')}
           </TabsTrigger>
           <TabsTrigger value="explorer" className="rounded-lg px-6 py-2.5 text-sm font-medium transition-all data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
             <Zap className="mr-2 h-4 w-4" />
@@ -328,8 +328,8 @@ export function CommercialDirectorDashboard() {
                     <TrendingUp className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg">Evolució Mensual</CardTitle>
-                    <CardDescription>Visites totals i exitoses</CardDescription>
+                    <CardTitle className="text-lg">{t('director.monthlyEvolution')}</CardTitle>
+                    <CardDescription>{t('director.monthlyDesc')}</CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -357,8 +357,8 @@ export function CommercialDirectorDashboard() {
                           borderRadius: '8px'
                         }} 
                       />
-                      <Area type="monotone" dataKey="visits" stroke="hsl(var(--chart-1))" fillOpacity={1} fill="url(#colorVisits)" strokeWidth={2} name="Total" />
-                      <Area type="monotone" dataKey="successful" stroke="hsl(var(--chart-2))" fillOpacity={1} fill="url(#colorSuccess)" strokeWidth={2} name="Exitoses" />
+                      <Area type="monotone" dataKey="visits" stroke="hsl(var(--chart-1))" fillOpacity={1} fill="url(#colorVisits)" strokeWidth={2} name={t('director.total')} />
+                      <Area type="monotone" dataKey="successful" stroke="hsl(var(--chart-2))" fillOpacity={1} fill="url(#colorSuccess)" strokeWidth={2} name={t('director.successful')} />
                     </AreaChart>
                   </ResponsiveContainer>
                 ) : (
@@ -377,8 +377,8 @@ export function CommercialDirectorDashboard() {
                     <CheckCircle2 className="h-5 w-5 text-chart-2" />
                   </div>
                   <div>
-                    <CardTitle className="text-lg">Distribució de Resultats</CardTitle>
-                    <CardDescription>Resultats de les visites</CardDescription>
+                    <CardTitle className="text-lg">{t('director.resultsDistribution')}</CardTitle>
+                    <CardDescription>{t('director.resultsDesc')}</CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -457,10 +457,10 @@ export function CommercialDirectorDashboard() {
                       <div className="flex-1 min-w-0">
                         <p className="font-medium truncate">{gestor.name}</p>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <span>{gestor.visits} visites</span>
+                          <span>{gestor.visits} {t('director.visits')}</span>
                           <span>•</span>
                           <span className={gestor.successRate >= 70 ? "text-green-600" : gestor.successRate >= 40 ? "text-amber-600" : "text-red-600"}>
-                            {gestor.successRate}% èxit
+                            {gestor.successRate}% {t('director.success')}
                           </span>
                         </div>
                       </div>
