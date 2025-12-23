@@ -1,4 +1,4 @@
-import React from 'react';
+import type { FC } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, Shield, TrendingUp, ArrowRight, Zap, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,7 @@ interface NewsProductConnectionProps {
   className?: string;
 }
 
-const NewsProductConnection: React.FC<NewsProductConnectionProps> = ({
+const NewsProductConnection: FC<NewsProductConnectionProps> = ({
   productConnection,
   productRelevanceReason,
   importanceLevel = 'medium',
