@@ -78,7 +78,7 @@ export function WorkflowEnginePanel({
       return;
     }
     setIsGenerating(true);
-    const result = await generateWorkflow(aiPrompt, context);
+    const result = await generateWorkflow(aiPrompt, context as unknown as Record<string, unknown>);
     if (result) {
       toast.success('Workflow generado con IA');
       setAiPrompt('');
@@ -194,7 +194,7 @@ export function WorkflowEnginePanel({
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <Zap className="h-3 w-3" />
-                            <span>{workflow.triggers?.length || 0} triggers</span>
+                            <span>{workflow.trigger ? 1 : 0} trigger</span>
                             <span>•</span>
                             <span>{workflow.steps?.length || 0} pasos</span>
                           </div>
@@ -277,18 +277,18 @@ export function WorkflowEnginePanel({
                 ) : (
                   <div className="space-y-2">
                     {rules.map((rule) => (
-                      <div key={rule.id} className="p-3 rounded-lg border bg-card">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm font-medium">{rule.name}</p>
-                            <p className="text-xs text-muted-foreground">{rule.trigger}</p>
+                        <div key={rule.id} className="p-3 rounded-lg border bg-card">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-medium">{rule.name}</p>
+                              <p className="text-xs text-muted-foreground">{rule.condition}</p>
+                            </div>
+                            <Badge variant={rule.enabled ? 'default' : 'secondary'}>
+                              {rule.enabled ? 'Activa' : 'Inactiva'}
+                            </Badge>
                           </div>
-                          <Badge variant={rule.active ? 'default' : 'secondary'}>
-                            {rule.active ? 'Activa' : 'Inactiva'}
-                          </Badge>
                         </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 )}
               </ScrollArea>

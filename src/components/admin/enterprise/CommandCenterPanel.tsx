@@ -96,7 +96,7 @@ export function CommandCenterPanel({
     }
   };
 
-  const activeAlerts = alerts.filter(a => a.status === 'active');
+  const activeAlerts = alerts.filter(a => !a.acknowledged);
 
   return (
     <Card className={cn(
@@ -114,7 +114,7 @@ export function CommandCenterPanel({
               <CardTitle className="text-base flex items-center gap-2">
                 Command Center
                 {systemHealth && (
-                  <div className={cn("h-2 w-2 rounded-full animate-pulse", getHealthBg(systemHealth.status))} />
+                  <div className={cn("h-2 w-2 rounded-full animate-pulse", getHealthBg(systemHealth.overall >= 80 ? 'healthy' : systemHealth.overall >= 50 ? 'degraded' : 'critical'))} />
                 )}
               </CardTitle>
               <p className="text-xs text-muted-foreground">
@@ -184,14 +184,14 @@ export function CommandCenterPanel({
                       <div className="flex items-center justify-between mb-3">
                         <span className="text-sm font-medium">Salud del Sistema</span>
                         <Badge className={cn(
-                          systemHealth.status === 'healthy' ? 'bg-green-500' :
-                          systemHealth.status === 'degraded' ? 'bg-yellow-500' : 'bg-destructive'
+                          systemHealth.overall >= 80 ? 'bg-green-500' :
+                          systemHealth.overall >= 50 ? 'bg-yellow-500' : 'bg-destructive'
                         )}>
-                          {systemHealth.status === 'healthy' ? 'Saludable' :
-                           systemHealth.status === 'degraded' ? 'Degradado' : 'Crítico'}
+                          {systemHealth.overall >= 80 ? 'Saludable' :
+                           systemHealth.overall >= 50 ? 'Degradado' : 'Crítico'}
                         </Badge>
                       </div>
-                      <Progress value={systemHealth.score} className="h-2 mb-4" />
+                      <Progress value={systemHealth.overall} className="h-2 mb-4" />
                       
                       {/* Components Health */}
                       <div className="grid grid-cols-2 gap-2">
@@ -233,9 +233,9 @@ export function CommandCenterPanel({
                         <span className="text-sm font-medium">{metric.name}</span>
                         <span className="text-lg font-bold">{metric.value}{metric.unit}</span>
                       </div>
-                      {metric.threshold && (
+                      {metric.status && (
                         <Progress 
-                          value={(metric.value / metric.threshold) * 100} 
+                          value={metric.status === 'healthy' ? 100 : metric.status === 'warning' ? 60 : 30} 
                           className="h-1.5"
                         />
                       )}
@@ -257,7 +257,7 @@ export function CommandCenterPanel({
                     {alerts.map((alert) => (
                       <div key={alert.id} className={cn(
                         "p-3 rounded-lg border bg-card transition-colors",
-                        alert.status === 'active' && alert.severity === 'critical' && "border-destructive/50 animate-pulse"
+                        !alert.acknowledged && alert.severity === 'critical' && "border-destructive/50 animate-pulse"
                       )}>
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex items-center gap-2">
@@ -269,8 +269,8 @@ export function CommandCenterPanel({
                           </div>
                           {getSeverityBadge(alert.severity)}
                         </div>
-                        <p className="text-xs text-muted-foreground mb-2">{alert.message}</p>
-                        {alert.status === 'active' && (
+                        <p className="text-xs text-muted-foreground mb-2">{alert.description}</p>
+                        {!alert.acknowledged && (
                           <div className="flex gap-2">
                             <Button
                               size="sm"
@@ -312,7 +312,7 @@ export function CommandCenterPanel({
                       <div key={activity.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50">
                         <div className="h-2 w-2 rounded-full bg-primary mt-2" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm">{activity.description}</p>
+                          <p className="text-sm">{activity.action} - {activity.target}</p>
                           <p className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(activity.timestamp), { locale: es, addSuffix: true })}
                           </p>
