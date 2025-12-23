@@ -1276,4 +1276,13 @@ export default {
   'store.moduleDetail.benefit.support': 'Email technical support',
   'store.moduleDetail.benefit.docs': 'Full documentation',
   'store.moduleDetail.benefit.deployment': 'SaaS or on-premise installation',
+  'store.moduleDetail.cert.iso27001': 'Security management',
+  'store.moduleDetail.cert.gdpr': 'Data protection',
+  'store.moduleDetail.cert.dora': 'Operational resilience',
+  'store.moduleDetail.cert.nis2': 'Cybersecurity',
+  'store.moduleDetail.defaultFeatures.dataManagement': 'Complete data management',
+  'store.moduleDetail.defaultFeatures.dashboard': 'Interactive dashboard',
+  'store.moduleDetail.defaultFeatures.reports': 'Reports and analytics',
+  'store.moduleDetail.defaultFeatures.export': 'Data export',
+  'store.moduleDetail.defaultFeatures.api': 'Integration API',
 };
