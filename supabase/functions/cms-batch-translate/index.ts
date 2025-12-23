@@ -190,18 +190,51 @@ Return format (JSON only, no markdown):
     const data = await response.json();
     let rawContent = data?.choices?.[0]?.message?.content ?? "";
 
-    // Clean markdown code blocks if present
-    rawContent = rawContent.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+    // Clean markdown code blocks and extra whitespace if present
+    rawContent = rawContent
+      .replace(/```json\n?/g, "")
+      .replace(/```\n?/g, "")
+      .replace(/^\s+/, "")  // Leading whitespace
+      .replace(/\s+$/, "") // Trailing whitespace
+      .trim();
+
+    // Try to extract JSON array if there's extra text around it
+    const jsonMatch = rawContent.match(/\[[\s\S]*\]/);
+    if (jsonMatch) {
+      rawContent = jsonMatch[0];
+    }
 
     let translations: Array<{ index: number; translation: string }> = [];
     try {
       translations = JSON.parse(rawContent);
+      
+      // Validate that we got an array
+      if (!Array.isArray(translations)) {
+        console.error("AI response is not an array:", typeof translations);
+        throw new Error("Expected array response");
+      }
     } catch (parseError) {
-      console.error("Failed to parse AI response:", rawContent);
-      return new Response(
-        JSON.stringify({ error: "Failed to parse translation response" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      console.error("Failed to parse AI response:", rawContent.substring(0, 500));
+      console.error("Parse error:", parseError);
+      
+      // Fallback: try to extract translations manually from the response
+      // Sometimes AI returns slightly malformed JSON that can be fixed
+      try {
+        // Remove any BOM characters and normalize
+        const cleanedContent = rawContent
+          .replace(/^\uFEFF/, "")
+          .replace(/[\u0000-\u001F]+/g, " ")
+          .replace(/,\s*]/g, "]") // Remove trailing commas
+          .replace(/,\s*}/g, "}");
+        
+        translations = JSON.parse(cleanedContent);
+      } catch (fallbackError) {
+        console.error("Fallback parse also failed");
+        return new Response(
+          JSON.stringify({ error: "Failed to parse translation response" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     // Map translations back to original items
