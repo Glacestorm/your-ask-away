@@ -3771,11 +3771,14 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
+          is_machine_translated: boolean | null
           is_reviewed: boolean | null
           locale: string
           namespace: string
+          priority: number | null
           reviewed_at: string | null
           reviewed_by: string | null
+          source_locale: string | null
           translation_key: string
           updated_at: string | null
           value: string
@@ -3783,11 +3786,14 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: string
+          is_machine_translated?: boolean | null
           is_reviewed?: boolean | null
           locale: string
           namespace?: string
+          priority?: number | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          source_locale?: string | null
           translation_key: string
           updated_at?: string | null
           value: string
@@ -3795,11 +3801,14 @@ export type Database = {
         Update: {
           created_at?: string | null
           id?: string
+          is_machine_translated?: boolean | null
           is_reviewed?: boolean | null
           locale?: string
           namespace?: string
+          priority?: number | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          source_locale?: string | null
           translation_key?: string
           updated_at?: string | null
           value?: string
@@ -18131,6 +18140,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      supported_languages: {
+        Row: {
+          created_at: string | null
+          flag_emoji: string | null
+          id: string
+          is_active: boolean | null
+          is_rtl: boolean | null
+          locale: string
+          name: string
+          native_name: string
+          tier: number | null
+          translation_progress: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          flag_emoji?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_rtl?: boolean | null
+          locale: string
+          name: string
+          native_name: string
+          tier?: number | null
+          translation_progress?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          flag_emoji?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_rtl?: boolean | null
+          locale?: string
+          name?: string
+          native_name?: string
+          tier?: number | null
+          translation_progress?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       survey_campaigns: {
         Row: {

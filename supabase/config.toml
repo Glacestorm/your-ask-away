@@ -350,3 +350,6 @@ verify_jwt = true
 
 [functions.strategic-assistant]
 verify_jwt = true
+
+[functions.cms-batch-translate]
+verify_jwt = true
