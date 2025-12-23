@@ -68,6 +68,34 @@ export function useSupportedLanguages(): UseSupportedLanguagesReturn {
 
   useEffect(() => {
     loadLanguages();
+
+    // Subscribe to realtime updates for translation progress
+    const channel = supabase
+      .channel('supported-languages-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'supported_languages'
+        },
+        (payload) => {
+          const updated = payload.new as SupportedLanguage;
+          setLanguages(prev => {
+            const newLangs = prev.map(lang => 
+              lang.id === updated.id ? updated : lang
+            );
+            languagesCache = newLangs;
+            cacheTimestamp = Date.now();
+            return newLangs;
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [loadLanguages]);
 
   const refresh = useCallback(async () => {
