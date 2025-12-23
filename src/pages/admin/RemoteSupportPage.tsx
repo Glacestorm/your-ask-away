@@ -6,13 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Headphones, Play, Clock, Activity, Shield, Pause, CheckCircle, XCircle, Eye } from 'lucide-react';
+import { ArrowLeft, Headphones, Play, Clock, Activity, Shield, Pause, CheckCircle, XCircle, Eye, BarChart3 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { SessionActionsTimeline } from '@/components/admin/service-quotes/SessionActionsTimeline';
 import { SessionDetailView } from '@/components/admin/remote-support/SessionDetailView';
 import { SessionSummaryCard } from '@/components/admin/remote-support/SessionSummaryCard';
 import { ActionQuickLog } from '@/components/admin/remote-support/ActionQuickLog';
 import { SupportAIAssistant } from '@/components/admin/remote-support/SupportAIAssistant';
+import { SupportAnalyticsDashboard } from '@/components/admin/remote-support/SupportAnalyticsDashboard';
 import { useSessionActionLogger } from '@/hooks/admin/useSessionActionLogger';
 import { useRemoteSupportSessions } from '@/hooks/admin/useRemoteSupportSessions';
 import { toast } from '@/hooks/use-toast';
@@ -223,7 +224,7 @@ export default function RemoteSupportPage() {
 
       <div className="container mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-lg grid-cols-3">
+          <TabsList className="grid w-full max-w-2xl grid-cols-4">
             <TabsTrigger value="new-session" disabled={activeSession?.status === 'active'}>
               <Play className="h-4 w-4 mr-2" />
               Nueva Sesión
@@ -235,6 +236,10 @@ export default function RemoteSupportPage() {
             <TabsTrigger value="history">
               <Clock className="h-4 w-4 mr-2" />
               Historial
+            </TabsTrigger>
+            <TabsTrigger value="analytics">
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Analytics
             </TabsTrigger>
           </TabsList>
 
@@ -495,6 +500,10 @@ export default function RemoteSupportPage() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="analytics" className="space-y-6">
+            <SupportAnalyticsDashboard />
           </TabsContent>
         </Tabs>
       </div>
