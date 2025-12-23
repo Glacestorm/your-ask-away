@@ -85,7 +85,7 @@ const StoreLanding: React.FC = () => {
           >
             <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl border border-slate-700/50 p-12 text-center">
               <span className="text-sm font-medium text-primary uppercase tracking-wider mb-4 block">
-                {t('landing.contact.label')}
+                {t('landing.contact.badge')}
               </span>
               <h2 className="text-3xl md:text-4xl font-display font-semibold text-white mb-4">
                 {t('landing.contact.title')}
