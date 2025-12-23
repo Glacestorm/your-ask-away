@@ -1,0 +1,240 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+interface ComplianceRequest {
+  action: 'get_status' | 'run_scan' | 'predict_risks' | 'resolve_violation';
+  context?: Record<string, unknown>;
+  params?: Record<string, unknown>;
+}
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY is not configured');
+    }
+
+    const { action, context, params } = await req.json() as ComplianceRequest;
+    console.log(`[compliance-monitor] Processing action: ${action}`);
+
+    let systemPrompt = '';
+    let userPrompt = '';
+
+    switch (action) {
+      case 'get_status':
+        systemPrompt = `Eres un sistema experto en compliance y cumplimiento normativo para empresas.
+        
+CONTEXTO DEL ROL:
+- Monitorizas el cumplimiento de regulaciones empresariales
+- Analizas riesgos de incumplimiento en tiempo real
+- Proporcionas métricas de compliance actualizadas
+
+FORMATO DE RESPUESTA (JSON estricto):
+{
+  "metrics": {
+    "overallScore": 0-100,
+    "trend": "improving" | "stable" | "declining",
+    "totalRules": number,
+    "compliantRules": number,
+    "violations": number,
+    "criticalViolations": number,
+    "lastFullScan": "ISO timestamp",
+    "predictedRisks": []
+  },
+  "rules": [
+    {
+      "id": "uuid",
+      "code": "string",
+      "name": "string",
+      "category": "string",
+      "severity": "low" | "medium" | "high" | "critical",
+      "status": "compliant" | "non_compliant" | "warning" | "pending",
+      "lastCheck": "ISO timestamp",
+      "nextCheck": "ISO timestamp",
+      "automatedFix": boolean
+    }
+  ],
+  "violations": [],
+  "predictedRisks": []
+}`;
+        userPrompt = context 
+          ? `Analiza el estado de compliance para el sector: ${JSON.stringify(context)}`
+          : 'Proporciona un estado general de compliance empresarial';
+        break;
+
+      case 'run_scan':
+        systemPrompt = `Eres un escáner de compliance empresarial con capacidades de IA.
+
+CAPACIDADES:
+- Escaneo profundo de políticas y procedimientos
+- Detección de violaciones en tiempo real
+- Análisis de brechas de cumplimiento
+- Recomendaciones automáticas de remediación
+
+FORMATO DE RESPUESTA (JSON estricto):
+{
+  "metrics": {
+    "overallScore": 0-100,
+    "scanDuration": "string",
+    "rulesChecked": number,
+    "violationsFound": number,
+    "autoRemediations": number
+  },
+  "violations": [
+    {
+      "id": "uuid",
+      "ruleId": "string",
+      "ruleName": "string",
+      "description": "string",
+      "detectedAt": "ISO timestamp",
+      "severity": "low" | "medium" | "high" | "critical",
+      "status": "open",
+      "suggestedAction": "string",
+      "autoResolvable": boolean
+    }
+  ]
+}`;
+        userPrompt = `Ejecuta un escaneo ${context?.scanDepth || 'standard'} de compliance para: ${JSON.stringify(context)}`;
+        break;
+
+      case 'predict_risks':
+        systemPrompt = `Eres un sistema predictivo de riesgos de compliance con machine learning.
+
+CAPACIDADES:
+- Predicción de riesgos futuros basada en patrones históricos
+- Análisis de tendencias regulatorias
+- Identificación de áreas de riesgo emergente
+
+FORMATO DE RESPUESTA (JSON estricto):
+{
+  "predictions": [
+    {
+      "id": "uuid",
+      "ruleCode": "string",
+      "ruleName": "string",
+      "probability": 0-100,
+      "expectedDate": "ISO date",
+      "impact": "low" | "medium" | "high" | "critical",
+      "preventiveAction": "string"
+    }
+  ],
+  "riskScore": 0-100,
+  "timeHorizon": "30 días",
+  "confidence": 0-100
+}`;
+        userPrompt = `Predice riesgos de compliance para: ${JSON.stringify(context)}`;
+        break;
+
+      case 'resolve_violation':
+        systemPrompt = `Eres un sistema de remediación de violaciones de compliance.
+
+CAPACIDADES:
+- Análisis de causa raíz
+- Generación de planes de remediación
+- Documentación de resoluciones
+- Verificación de correcciones
+
+FORMATO DE RESPUESTA (JSON estricto):
+{
+  "resolved": boolean,
+  "remediationSteps": ["string"],
+  "documentation": "string",
+  "verificationRequired": boolean,
+  "followUpDate": "ISO date"
+}`;
+        userPrompt = `Resuelve la violación: ${JSON.stringify(params)}`;
+        break;
+
+      default:
+        throw new Error(`Acción no soportada: ${action}`);
+    }
+
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 4000,
+      }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ 
+          success: false,
+          error: 'Rate limit exceeded', 
+          message: 'Demasiadas solicitudes. Intenta más tarde.' 
+        }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ 
+          success: false,
+          error: 'Payment required', 
+          message: 'Créditos de IA insuficientes.' 
+        }), {
+          status: 402,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      throw new Error(`AI API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content;
+
+    if (!content) throw new Error('No content in AI response');
+
+    let result;
+    try {
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        result = JSON.parse(jsonMatch[0]);
+      } else {
+        throw new Error('No JSON found');
+      }
+    } catch (parseError) {
+      console.error('[compliance-monitor] JSON parse error:', parseError);
+      result = { rawContent: content, parseError: true };
+    }
+
+    console.log(`[compliance-monitor] Success: ${action}`);
+
+    return new Response(JSON.stringify({
+      success: true,
+      action,
+      data: result,
+      timestamp: new Date().toISOString()
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
+  } catch (error) {
+    console.error('[compliance-monitor] Error:', error);
+    return new Response(JSON.stringify({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+});
