@@ -119,26 +119,39 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
       setLoadingDynamic(true);
       try {
-        const { data, error } = await (supabase as any)
-          .from('cms_translations')
-          .select('translation_key, value')
-          .eq('locale', language);
-
-        if (error) {
-          console.error('Error loading dynamic translations:', error);
-          // Fall back to cached version if available
-          if (dynamicTranslationsCache[language]) {
-            setDynamicTranslations(dynamicTranslationsCache[language]);
-          }
-          return;
-        }
-
+        // Fetch ALL translations without limits - paginate to get beyond 1000 row default
         const translationMap: Record<string, string> = {};
-        for (const item of data || []) {
-          if (item.value) {
-            translationMap[item.translation_key] = item.value;
+        const PAGE_SIZE = 1000;
+        let offset = 0;
+        let hasMore = true;
+
+        while (hasMore) {
+          const { data, error } = await (supabase as any)
+            .from('cms_translations')
+            .select('translation_key, value')
+            .eq('locale', language)
+            .range(offset, offset + PAGE_SIZE - 1);
+
+          if (error) {
+            console.error('Error loading dynamic translations:', error);
+            // Fall back to cached version if available
+            if (dynamicTranslationsCache[language]) {
+              setDynamicTranslations(dynamicTranslationsCache[language]);
+            }
+            return;
           }
+
+          for (const item of data || []) {
+            if (item.value) {
+              translationMap[item.translation_key] = item.value;
+            }
+          }
+
+          hasMore = (data?.length || 0) === PAGE_SIZE;
+          offset += PAGE_SIZE;
         }
+
+        console.log(`[i18n] Loaded ${Object.keys(translationMap).length} translations for ${language}`);
 
         // Update cache with timestamp
         dynamicTranslationsCache[language] = translationMap;
@@ -169,14 +182,54 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
   // Function to refresh translations (invalidate cache and reload)
   const refreshTranslations = useCallback(() => {
-    if (language && !staticTranslations[language]) {
-      // Invalidate cache for current language
-      delete cacheTimestamps[language];
-      delete dynamicTranslationsCache[language];
-      // Trigger reload
-      setDynamicTranslations({});
-      setLanguageState(prev => prev); // Force re-render to trigger useEffect
-    }
+    // Invalidate cache for current language
+    delete cacheTimestamps[language];
+    delete dynamicTranslationsCache[language];
+    // Reset dynamic translations to trigger reload
+    setDynamicTranslations({});
+    // Force re-trigger useEffect by incrementing a counter or resetting state
+    setLanguageState((prev) => {
+      // Just set to same value - React state update will trigger useEffect on language dep
+      return prev;
+    });
+    // Manually trigger reload after a tick
+    setTimeout(async () => {
+      if (!staticTranslations[language]) {
+        setLoadingDynamic(true);
+        try {
+          const translationMap: Record<string, string> = {};
+          const PAGE_SIZE = 1000;
+          let offset = 0;
+          let hasMore = true;
+
+          while (hasMore) {
+            const { data, error } = await (supabase as any)
+              .from('cms_translations')
+              .select('translation_key, value')
+              .eq('locale', language)
+              .range(offset, offset + PAGE_SIZE - 1);
+
+            if (error) break;
+
+            for (const item of data || []) {
+              if (item.value) {
+                translationMap[item.translation_key] = item.value;
+              }
+            }
+
+            hasMore = (data?.length || 0) === PAGE_SIZE;
+            offset += PAGE_SIZE;
+          }
+
+          console.log(`[i18n] Refreshed ${Object.keys(translationMap).length} translations for ${language}`);
+          dynamicTranslationsCache[language] = translationMap;
+          cacheTimestamps[language] = Date.now();
+          setDynamicTranslations(translationMap);
+        } finally {
+          setLoadingDynamic(false);
+        }
+      }
+    }, 100);
   }, [language]);
 
   const t = useCallback((key: string, params?: Record<string, string | number>): string => {
