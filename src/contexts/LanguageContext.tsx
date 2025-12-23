@@ -47,7 +47,7 @@ const RTL_LANGUAGES: Language[] = ['ar', 'he', 'fa', 'ur'];
 // Cache for dynamic translations from DB
 const dynamicTranslationsCache: Record<string, Record<string, string>> = {};
 const cacheTimestamps: Record<string, number> = {};
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL = 1 * 60 * 1000; // 1 minute for faster updates
 
 const getStaticTranslations = (lang: Language): Record<string, string> => {
   // For base languages, use static files
