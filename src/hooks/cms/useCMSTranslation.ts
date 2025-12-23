@@ -160,9 +160,15 @@ export function useCMSTranslation(namespace: string = 'common') {
       
       await acquireTranslationSlot();
       try {
+        // Convert texts array to items array expected by the edge function
+        const items = uncachedTexts.map((text, idx) => ({
+          key: `batch_${idx}`,
+          text,
+        }));
+
         const { data, error } = await supabase.functions.invoke('cms-batch-translate', {
           body: {
-            texts: uncachedTexts,
+            items,
             sourceLocale,
             targetLocale,
           },
@@ -170,7 +176,9 @@ export function useCMSTranslation(namespace: string = 'common') {
 
         if (error) throw error;
         
-        const translations = (data?.translations as string[]) ?? uncachedTexts;
+        // Extract translations from results array
+        const translationResults = (data?.results as Array<{ translation: string }>) ?? [];
+        const translations = translationResults.map(r => r.translation);
         
         // Map results back and cache them
         translations.forEach((translated, i) => {
