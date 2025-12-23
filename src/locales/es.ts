@@ -1765,8 +1765,27 @@ export default {
   'news.audio.rateLimit': 'Límite de solicitudes alcanzado. Intenta en unos minutos.',
   // News Filters
   'news.filters.all': 'Todos',
-  'news.filters.searchPlaceholder': 'Buscar noticias...',
+  'news.filters.searchPlaceholder': 'Buscar noticias, empresas, normativas...',
   'news.filters.clearAll': 'Limpiar todo',
   'news.filters.activeFilters': 'Filtros activos',
   'news.filters.articles': 'artículos',
+  'news.filters.categories': 'Categorías',
+  'news.filters.saved': 'Guardadas',
+  'news.filters.recency.label': 'Tiempo',
+  'news.filters.recency.all': 'Todo',
+  'news.filters.sort.label': 'Ordenar',
+  'news.filters.sort.relevance': 'Relevancia',
+  'news.filters.sort.date': 'Fecha',
+  // News Detail
+  'news.detail.notFound': 'Artículo no encontrado',
+  'news.detail.linkCopied': '¡Enlace copiado!',
+  'news.detail.copyLink': 'Copiar enlace',
+  'news.detail.reads': 'lecturas',
+  'news.detail.source': 'Fuente',
+  'news.detail.readOriginal': 'Leer original',
+  // News Saved
+  'news.saved.loginRequired': 'Inicia sesión para guardar artículos',
+  'news.saved.added': 'Artículo guardado',
+  'news.saved.removed': 'Artículo eliminado de guardados',
+  'news.saved.error': 'Error al guardar artículo',
 };

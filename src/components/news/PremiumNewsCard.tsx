@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, ExternalLink, Sparkles, TrendingUp, Eye, ChevronDown, Shield } from 'lucide-react';
+import { Clock, ExternalLink, Sparkles, TrendingUp, Eye, ChevronDown, Shield, Bookmark, BookmarkCheck } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { es, enUS, fr, ca } from 'date-fns/locale';
+import { Link } from 'react-router-dom';
 import { getNewsImageFallback } from '@/lib/news/placeholders';
 import NewsProductConnection from './NewsProductConnection';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useSavedNews } from '@/hooks/useSavedNews';
 
 interface NewsArticle {
   id: string;
@@ -42,6 +45,13 @@ const PremiumNewsCard = ({
   onReadMore 
 }: PremiumNewsCardProps) => {
   const [showConnection, setShowConnection] = useState(false);
+  const { t, language } = useLanguage();
+  const { isSaved, toggleSave, isLoading: isSaveLoading } = useSavedNews(article.id);
+
+  const getDateLocale = () => {
+    const locales: Record<string, typeof es> = { es, en: enUS, fr, ca };
+    return locales[language] || es;
+  };
 
   const hasOriginalImage = Boolean(article.image_url);
   const imageUrl = hasOriginalImage
@@ -55,7 +65,7 @@ const PremiumNewsCard = ({
 
   const timeAgo = formatDistanceToNow(new Date(article.published_at), { 
     addSuffix: true, 
-    locale: es 
+    locale: getDateLocale() 
   });
 
   const isNew = new Date().getTime() - new Date(article.fetched_at).getTime() < 3600000;
@@ -89,41 +99,41 @@ const PremiumNewsCard = ({
 
   if (variant === 'compact') {
     return (
-      <motion.article
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: index * 0.05 }}
-        className="group flex gap-4 p-4 bg-slate-900/30 hover:bg-slate-800/50 rounded-xl border border-slate-800/50 hover:border-emerald-500/30 transition-all cursor-pointer"
-        onClick={() => onReadMore?.(article)}
-      >
-        <div className="relative w-20 h-20 flex-shrink-0 overflow-hidden rounded-lg">
-          <img
-            src={imageUrl}
-            alt={article.title}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent" />
-          {/* Image credit overlay */}
-          <span className="absolute bottom-1 right-1 text-[8px] text-white/50 bg-black/30 px-1 rounded" title={`Imagen: ${imageCredit}`}>
-            © {imageCredit.substring(0, 10)}
-          </span>
-        </div>
-        <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-semibold text-white group-hover:text-emerald-400 transition-colors line-clamp-2">
-            {article.title}
-          </h4>
-          <div className="flex items-center gap-2 mt-2 text-xs text-slate-500">
-            <Clock className="w-3 h-3" />
-            <span>{timeAgo}</span>
-            {hasProductConnection && (
-              <>
-                <span>•</span>
-                <Shield className="w-3 h-3 text-emerald-400" />
-              </>
-            )}
+      <Link to={`/news/${article.id}`}>
+        <motion.article
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: index * 0.05 }}
+          className="group flex gap-4 p-4 bg-slate-900/30 hover:bg-slate-800/50 rounded-xl border border-slate-800/50 hover:border-emerald-500/30 transition-all cursor-pointer"
+        >
+          <div className="relative w-20 h-20 flex-shrink-0 overflow-hidden rounded-lg">
+            <img
+              src={imageUrl}
+              alt={article.title}
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent" />
+            <span className="absolute bottom-1 right-1 text-[8px] text-white/50 bg-black/30 px-1 rounded" title={`Imagen: ${imageCredit}`}>
+              © {imageCredit.substring(0, 10)}
+            </span>
           </div>
-        </div>
-      </motion.article>
+          <div className="flex-1 min-w-0">
+            <h4 className="text-sm font-semibold text-white group-hover:text-emerald-400 transition-colors line-clamp-2">
+              {article.title}
+            </h4>
+            <div className="flex items-center gap-2 mt-2 text-xs text-slate-500">
+              <Clock className="w-3 h-3" />
+              <span>{timeAgo}</span>
+              {hasProductConnection && (
+                <>
+                  <span>•</span>
+                  <Shield className="w-3 h-3 text-emerald-400" />
+                </>
+              )}
+            </div>
+          </div>
+        </motion.article>
+      </Link>
     );
   }
 
@@ -247,12 +257,11 @@ const PremiumNewsCard = ({
 
       {/* Content */}
       <div className="p-6">
-        <h3 
-          onClick={() => onReadMore?.(article)}
-          className="text-xl font-bold text-white mb-3 line-clamp-2 group-hover:text-emerald-400 transition-colors cursor-pointer"
-        >
-          {article.title}
-        </h3>
+        <Link to={`/news/${article.id}`}>
+          <h3 className="text-xl font-bold text-white mb-3 line-clamp-2 group-hover:text-emerald-400 transition-colors cursor-pointer">
+            {article.title}
+          </h3>
+        </Link>
         
         <p className="text-slate-400 text-sm mb-4 line-clamp-3 leading-relaxed">
           {article.ai_summary || article.excerpt}

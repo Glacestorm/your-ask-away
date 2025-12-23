@@ -80,7 +80,11 @@ const NewsDetail: React.FC = () => {
 
   const incrementReadCount = async () => {
     try {
-      await supabase.rpc('increment_read_count', { article_id: id });
+      // Use direct update instead of RPC to avoid type regeneration issues
+      await supabase
+        .from('news_articles')
+        .update({ read_count: (article?.read_count || 0) + 1 })
+        .eq('id', id);
     } catch (err) {
       // Silent fail for read count
       console.log('Read count increment failed (non-critical)');
