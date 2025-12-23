@@ -109,6 +109,7 @@ const StoreModuleDetail: React.FC = () => {
 
   const [translatedName, setTranslatedName] = useState<string | null>(null);
   const [translatedDescription, setTranslatedDescription] = useState<string | null>(null);
+  const [translatedFeatures, setTranslatedFeatures] = useState<string[] | null>(null);
   const [translatedExtendedInfo, setTranslatedExtendedInfo] = useState<{
     compatibility: string[];
     highlights: string[];
@@ -119,12 +120,14 @@ const StoreModuleDetail: React.FC = () => {
     premiumFeatures?: string[];
   } | null>(null);
 
+
   useEffect(() => {
     if (!module) return;
 
     if (language === 'es') {
       setTranslatedName(null);
       setTranslatedDescription(null);
+      setTranslatedFeatures(null);
       setTranslatedExtendedInfo(null);
       return;
     }
@@ -137,9 +140,21 @@ const StoreModuleDetail: React.FC = () => {
         ? await translateAsync(module.description, language, 'es')
         : null;
 
+      // Translate features array from DB
+      const rawFeatures: string[] = Array.isArray(module.features)
+        ? (module.features as string[])
+        : (typeof module.features === 'object' && module.features !== null && 'list' in module.features)
+          ? ((module.features as { list: string[] }).list)
+          : [];
+
+      const translatedFeaturesArr = rawFeatures.length > 0
+        ? await Promise.all(rawFeatures.map(f => translateAsync(f, language, 'es')))
+        : [];
+
       if (!cancelled) {
         setTranslatedName(name);
         setTranslatedDescription(desc);
+        setTranslatedFeatures(translatedFeaturesArr.length > 0 ? translatedFeaturesArr : null);
       }
     })();
 
@@ -306,11 +321,12 @@ const StoreModuleDetail: React.FC = () => {
     maximumFractionDigits: 0,
   }).format(price);
 
-  const features: string[] = Array.isArray(module.features) 
+  const rawFeatures: string[] = Array.isArray(module.features)
     ? (module.features as string[])
-    : (typeof module.features === 'object' && module.features !== null && 'list' in module.features) 
+    : (typeof module.features === 'object' && module.features !== null && 'list' in module.features)
       ? (module.features as { list: string[] }).list
       : [];
+  const features = translatedFeatures ?? rawFeatures;
 
   // Extended module information - use translated version if available
   const extendedInfo = translatedExtendedInfo ?? {
