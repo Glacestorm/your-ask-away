@@ -79,6 +79,9 @@ const languageNames: Record<string, string> = {
   ha: "Hausa",
   yo: "Yoruba",
   ig: "Igbo",
+  // Spanish regional languages
+  eu: "Basque (Euskara)",
+  gl: "Galician",
 };
 
 interface TranslationItem {

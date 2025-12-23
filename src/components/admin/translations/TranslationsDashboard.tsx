@@ -11,7 +11,7 @@ import { TranslationSettingsPanel } from './TranslationSettingsPanel';
 
 export const TranslationsDashboard: React.FC = () => {
   const { languages, loading, refresh } = useSupportedLanguages();
-  const { installLanguage, installingLocale } = useLanguageInstaller({ onComplete: refresh });
+  const { installLanguage, installingLocale, translationProgress } = useLanguageInstaller({ onComplete: refresh });
   const [activeTab, setActiveTab] = useState('overview');
 
   const stats = React.useMemo(() => {
@@ -129,6 +129,7 @@ export const TranslationsDashboard: React.FC = () => {
             onRefresh={refresh}
             onInstallLanguage={installLanguage}
             installingLocale={installingLocale}
+            translationProgress={translationProgress}
           />
         </TabsContent>
 
