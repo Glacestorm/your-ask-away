@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 
 export type NotificationPermission = 'default' | 'granted' | 'denied';
@@ -15,8 +15,25 @@ interface NotificationOptions {
 }
 
 export const useNotifications = () => {
-  const [permission, setPermission] = useState<NotificationPermission>('default');
-  const [supported, setSupported] = useState(false);
+  // Safe initialization with fallback values
+  const [permission, setPermission] = useState<NotificationPermission>(() => {
+    try {
+      if (typeof window !== 'undefined' && 'Notification' in window) {
+        return Notification.permission as NotificationPermission;
+      }
+    } catch {
+      // Ignore errors during SSR or when Notification API is unavailable
+    }
+    return 'default';
+  });
+  
+  const [supported, setSupported] = useState(() => {
+    try {
+      return typeof window !== 'undefined' && 'Notification' in window;
+    } catch {
+      return false;
+    }
+  });
 
   useEffect(() => {
     // Check if notifications are supported
