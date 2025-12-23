@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import StoreNavbar from '@/components/store/StoreNavbar';
 import StoreFooter from '@/components/store/StoreFooter';
 import CartSidebar from '@/components/store/CartSidebar';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // New explosive landing components
 import { 
@@ -36,6 +37,8 @@ const SectionSkeleton = () => (
 );
 
 const StoreLanding: React.FC = () => {
+  const { t } = useLanguage();
+
   return (
     <div className="min-h-screen bg-[#0a0f1a]">
       <StoreNavbar />
@@ -82,13 +85,13 @@ const StoreLanding: React.FC = () => {
           >
             <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl border border-slate-700/50 p-12 text-center">
               <span className="text-sm font-medium text-primary uppercase tracking-wider mb-4 block">
-                Contacto Comercial
+                {t('landing.contact.label')}
               </span>
               <h2 className="text-3xl md:text-4xl font-display font-semibold text-white mb-4">
-                ¿Necesitas una solución personalizada?
+                {t('landing.contact.title')}
               </h2>
               <p className="text-lg text-slate-400 mb-8">
-                Nuestro equipo comercial te ayudará a encontrar la configuración perfecta para tu empresa.
+                {t('landing.contact.subtitle')}
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
@@ -108,7 +111,7 @@ const StoreLanding: React.FC = () => {
               </div>
               
               <p className="text-sm text-slate-500">
-                Jaime Fernández García — Representante Comercial
+                {t('landing.contact.representative')}
               </p>
             </div>
           </motion.div>
@@ -148,10 +151,10 @@ const StoreLanding: React.FC = () => {
           >
             <Sparkles className="w-12 h-12 mx-auto mb-6 text-primary" />
             <h2 className="text-4xl md:text-5xl font-display font-semibold text-white mb-6">
-              Comienza tu transformación hoy
+              {t('landing.finalCta.title')}
             </h2>
             <p className="text-xl text-slate-400 mb-10 max-w-2xl mx-auto">
-              Únete a más de 500 empresas que ya están optimizando sus operaciones con ObelixIA.
+              {t('landing.finalCta.subtitle')}
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
@@ -160,7 +163,7 @@ const StoreLanding: React.FC = () => {
                 onClick={() => document.getElementById('modules')?.scrollIntoView({ behavior: 'smooth' })}
                 className="h-14 px-8 text-base font-medium bg-white text-slate-900 hover:bg-slate-100 rounded-full shadow-xl"
               >
-                Explorar Módulos
+                {t('landing.finalCta.exploreModules')}
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
               <Link to="/auth">
@@ -169,7 +172,7 @@ const StoreLanding: React.FC = () => {
                   variant="outline"
                   className="h-14 px-8 text-base font-medium border-white/20 text-white hover:bg-white/10 rounded-full"
                 >
-                  Crear Cuenta Gratis
+                  {t('landing.finalCta.createAccount')}
                 </Button>
               </Link>
             </div>
@@ -177,15 +180,15 @@ const StoreLanding: React.FC = () => {
             <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-sm text-slate-400">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-primary" />
-                Sin tarjeta de crédito
+                {t('landing.finalCta.noCard')}
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-primary" />
-                Configuración en minutos
+                {t('landing.finalCta.setupMinutes')}
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-primary" />
-                Soporte 24/7
+                {t('landing.finalCta.support247')}
               </div>
             </div>
           </motion.div>

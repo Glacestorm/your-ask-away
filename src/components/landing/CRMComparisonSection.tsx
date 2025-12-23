@@ -1,24 +1,27 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { X, Check, Zap, Brain, BarChart3, MessageSquare, Shield, Workflow } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ComparisonItem {
-  feature: string;
+  featureKey: string;
   othersCRM: boolean;
   obelixia: boolean;
   icon: React.ElementType;
 }
 
 const comparisons: ComparisonItem[] = [
-  { feature: 'IA integrada en flujos', othersCRM: false, obelixia: true, icon: Brain },
-  { feature: 'BI interno con LTV/CAC', othersCRM: false, obelixia: true, icon: BarChart3 },
-  { feature: 'Multiatendimiento omnicanal', othersCRM: false, obelixia: true, icon: MessageSquare },
-  { feature: 'Automatizaciones inteligentes', othersCRM: false, obelixia: true, icon: Workflow },
-  { feature: 'Compliance GDPR/PCI-DSS', othersCRM: false, obelixia: true, icon: Shield },
-  { feature: 'Multi-sector (8 industrias)', othersCRM: false, obelixia: true, icon: Zap },
+  { featureKey: 'landing.comparison.features.ai', othersCRM: false, obelixia: true, icon: Brain },
+  { featureKey: 'landing.comparison.features.bi', othersCRM: false, obelixia: true, icon: BarChart3 },
+  { featureKey: 'landing.comparison.features.omnichannel', othersCRM: false, obelixia: true, icon: MessageSquare },
+  { featureKey: 'landing.comparison.features.automations', othersCRM: false, obelixia: true, icon: Workflow },
+  { featureKey: 'landing.comparison.features.compliance', othersCRM: false, obelixia: true, icon: Shield },
+  { featureKey: 'landing.comparison.features.multiSector', othersCRM: false, obelixia: true, icon: Zap },
 ];
 
 export const CRMComparisonSection: React.FC = () => {
+  const { t } = useLanguage();
+
   return (
     <section className="py-24 relative overflow-hidden">
       {/* Background */}
@@ -36,17 +39,16 @@ export const CRMComparisonSection: React.FC = () => {
           className="text-center mb-16"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm text-slate-400 mb-6">
-            Comparativa real
+            {t('landing.comparison.badge')}
           </span>
           <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
-            Mientras otros CRMs...{' '}
+            {t('landing.comparison.title')}{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-400">
-              tienen que torcer para que todo funcione
+              {t('landing.comparison.titleHighlight')}
             </span>
           </h2>
           <p className="text-xl text-slate-400 max-w-3xl mx-auto">
-            IA, automaciones, datos, atendimiento y jornadas integradas — 
-            todo funcionando junto, a tu ritmo.
+            {t('landing.comparison.subtitle')}
           </p>
         </motion.div>
 
@@ -62,13 +64,13 @@ export const CRMComparisonSection: React.FC = () => {
             <div className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 border border-red-500/20 rounded-3xl p-8 backdrop-blur-sm">
               <div className="flex items-center gap-3 mb-8">
                 <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
-                <h3 className="text-2xl font-bold text-white">Otros CRMs</h3>
+                <h3 className="text-2xl font-bold text-white">{t('landing.comparison.otherCrms')}</h3>
               </div>
               
               <div className="space-y-4">
                 {comparisons.map((item, index) => (
                   <motion.div
-                    key={item.feature}
+                    key={item.featureKey}
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
@@ -78,13 +80,13 @@ export const CRMComparisonSection: React.FC = () => {
                     <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
                       <X className="w-5 h-5 text-red-400" />
                     </div>
-                    <span className="text-slate-400 line-through">{item.feature}</span>
+                    <span className="text-slate-400 line-through">{t(item.featureKey)}</span>
                   </motion.div>
                 ))}
               </div>
 
               <p className="mt-8 text-sm text-slate-500 text-center">
-                Necesitas múltiples herramientas, integraciones, y torcer para que todo funcione.
+                {t('landing.comparison.otherCrmsNote')}
               </p>
             </div>
           </motion.div>
@@ -105,14 +107,14 @@ export const CRMComparisonSection: React.FC = () => {
                   <div className="w-3 h-3 rounded-full bg-emerald-400 animate-pulse" />
                   <h3 className="text-2xl font-bold text-white">ObelixIA</h3>
                   <span className="px-3 py-1 rounded-full bg-gradient-to-r from-blue-500 to-violet-500 text-white text-xs font-semibold">
-                    TODO EN UNO
+                    {t('landing.comparison.allInOne')}
                   </span>
                 </div>
                 
                 <div className="space-y-4">
                   {comparisons.map((item, index) => (
                     <motion.div
-                      key={item.feature}
+                      key={item.featureKey}
                       initial={{ opacity: 0, x: 20 }}
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
@@ -124,14 +126,14 @@ export const CRMComparisonSection: React.FC = () => {
                       </div>
                       <div className="flex items-center gap-2 flex-1">
                         <item.icon className="w-4 h-4 text-blue-400" />
-                        <span className="text-white font-medium">{item.feature}</span>
+                        <span className="text-white font-medium">{t(item.featureKey)}</span>
                       </div>
                     </motion.div>
                   ))}
                 </div>
 
                 <p className="mt-8 text-sm text-blue-300/80 text-center font-medium">
-                  El límite es tu creatividad. Conecta cualquier cosa, automatiza todo.
+                  {t('landing.comparison.obelixiaNote')}
                 </p>
               </div>
             </div>

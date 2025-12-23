@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Star, Users, Zap } from 'lucide-react';
+import { ArrowRight, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
+import { useLanguage } from '@/contexts/LanguageContext';
 import ModuleCard from './ModuleCard';
 
 interface Module {
@@ -22,6 +23,7 @@ interface Module {
 const FeaturedModules: React.FC = () => {
   const [modules, setModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useLanguage();
 
   useEffect(() => {
     const fetchModules = async () => {
@@ -45,9 +47,9 @@ const FeaturedModules: React.FC = () => {
       id: '1',
       module_key: 'core',
       module_name: 'Core CRM',
-      description: 'Gestión completa de clientes, empresas y contactos con seguimiento avanzado',
+      description: t('landing.modules.coreDesc'),
       module_icon: 'Building2',
-      base_price: null, // Precio oculto
+      base_price: null,
       category: 'core',
       is_core: true,
       features: ['Gestión de empresas', 'Contactos', 'Pipeline', 'Informes'],
@@ -55,8 +57,8 @@ const FeaturedModules: React.FC = () => {
     {
       id: '2',
       module_key: 'visits',
-      module_name: 'Gestión de Visitas',
-      description: 'Planificación y seguimiento de visitas comerciales con geolocalización',
+      module_name: t('landing.modules.visitsName'),
+      description: t('landing.modules.visitsDesc'),
       module_icon: 'MapPin',
       base_price: null,
       category: 'horizontal',
@@ -66,8 +68,8 @@ const FeaturedModules: React.FC = () => {
     {
       id: '3',
       module_key: 'accounting',
-      module_name: 'Contabilidad',
-      description: 'Estados financieros, ratios y análisis contable completo',
+      module_name: t('landing.modules.accountingName'),
+      description: t('landing.modules.accountingDesc'),
       module_icon: 'Calculator',
       base_price: null,
       category: 'horizontal',
@@ -77,8 +79,8 @@ const FeaturedModules: React.FC = () => {
     {
       id: '4',
       module_key: 'goals',
-      module_name: 'Objetivos',
-      description: 'Definición y seguimiento de KPIs con dashboards en tiempo real',
+      module_name: t('landing.modules.goalsName'),
+      description: t('landing.modules.goalsDesc'),
       module_icon: 'Target',
       base_price: null,
       category: 'horizontal',
@@ -88,8 +90,8 @@ const FeaturedModules: React.FC = () => {
     {
       id: '5',
       module_key: 'documentation',
-      module_name: 'Documentación',
-      description: 'Gestión documental con versionado y firma electrónica',
+      module_name: t('landing.modules.docsName'),
+      description: t('landing.modules.docsDesc'),
       module_icon: 'FileText',
       base_price: null,
       category: 'horizontal',
@@ -99,8 +101,8 @@ const FeaturedModules: React.FC = () => {
     {
       id: '6',
       module_key: 'notifications',
-      module_name: 'Notificaciones',
-      description: 'Sistema de alertas inteligentes multicanal',
+      module_name: t('landing.modules.notificationsName'),
+      description: t('landing.modules.notificationsDesc'),
       module_icon: 'Bell',
       base_price: null,
       category: 'horizontal',
@@ -120,13 +122,13 @@ const FeaturedModules: React.FC = () => {
         >
           <Badge className="mb-4 bg-blue-500/20 text-blue-300 border-blue-500/30">
             <Zap className="w-3 h-3 mr-1" />
-            MÓDULOS DESTACADOS
+            {t('landing.modules.badge')}
           </Badge>
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Soluciones para Cada Necesidad
+            {t('landing.modules.title')}
           </h2>
           <p className="text-xl text-slate-400 max-w-2xl mx-auto">
-            Elige los módulos que necesitas y construye tu plataforma a medida
+            {t('landing.modules.subtitle')}
           </p>
         </motion.div>
 
@@ -156,7 +158,7 @@ const FeaturedModules: React.FC = () => {
               variant="outline"
               className="border-slate-600 text-slate-300 hover:bg-slate-800/50"
             >
-              Ver Todos los Módulos
+              {t('landing.modules.viewAll')}
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           </Link>
