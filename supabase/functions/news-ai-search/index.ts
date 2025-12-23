@@ -5,13 +5,20 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const languageNames: Record<string, string> = {
+  'es': 'Spanish',
+  'en': 'English',
+  'fr': 'French',
+  'ca': 'Catalan',
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { query } = await req.json();
+    const { query, language = 'es' } = await req.json();
 
     if (!query || typeof query !== 'string') {
       throw new Error('Query is required');
@@ -22,40 +29,45 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    console.log('Searching news for:', query);
+    console.log('Searching news for:', query, 'in language:', language);
 
-    const systemPrompt = `Eres un asistente especializado en buscar y resumir noticias económicas, financieras y de normativas oficiales.
+    const targetLanguage = languageNames[language] || 'Spanish';
+    
+    const systemPrompt = `You are a specialized assistant for searching and summarizing economic, financial, and regulatory news.
 
-REGLAS ESTRICTAS:
-1. Solo proporciona información de fuentes oficiales y contrastadas:
-   - BOE (Boletín Oficial del Estado)
-   - CNMV (Comisión Nacional del Mercado de Valores)
-   - Banco de España
-   - BCE (Banco Central Europeo)
-   - Ministerios del Gobierno de España
-   - AEAT (Agencia Tributaria)
-   - INE (Instituto Nacional de Estadística)
-   - Medios económicos reconocidos: Expansión, Cinco Días, El Economista, La Información
+STRICT RULES:
+1. Only provide information from official and verified sources:
+   - BOE (Official State Gazette)
+   - CNMV (National Securities Market Commission)
+   - Bank of Spain
+   - ECB (European Central Bank)
+   - Spanish Government Ministries
+   - AEAT (Tax Agency)
+   - INE (National Statistics Institute)
+   - Recognized economic media: Expansión, Cinco Días, El Economista, La Información
    
-2. NUNCA expreses opiniones personales
-3. Mantén neutralidad absoluta
-4. Respeta las normativas de divulgación
-5. Cita siempre la fuente original
+2. NEVER express personal opinions
+3. Maintain absolute neutrality
+4. Respect disclosure regulations
+5. Always cite the original source with a URL when available
 
-Responde SIEMPRE en formato JSON con la siguiente estructura:
+IMPORTANT: You MUST respond in ${targetLanguage} language.
+
+Respond ALWAYS in JSON format with the following structure:
 {
   "results": [
     {
       "id": "unique-id",
-      "title": "Título de la noticia",
-      "excerpt": "Resumen neutral de 2-3 líneas",
-      "source": "Nombre de la fuente oficial",
-      "url": "URL de la fuente (si está disponible)"
+      "title": "News title in ${targetLanguage}",
+      "excerpt": "Neutral 2-3 line summary in ${targetLanguage}",
+      "source": "Name of official source",
+      "url": "Source URL (if available)",
+      "citations": ["List of source references used"]
     }
   ]
 }
 
-Si no encuentras información relevante o contrastada, devuelve:
+If you don't find relevant or verified information, return:
 {
   "results": []
 }`;
@@ -70,7 +82,7 @@ Si no encuentras información relevante o contrastada, devuelve:
         model: 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Busca información reciente sobre: ${query}. Proporciona hasta 5 resultados de fuentes oficiales.` }
+          { role: 'user', content: `Search for recent information about: ${query}. Provide up to 5 results from official sources. Remember to respond in ${targetLanguage}.` }
         ],
       }),
     });
@@ -89,7 +101,6 @@ Si no encuentras información relevante o contrastada, devuelve:
     // Parse JSON from response
     let results = [];
     try {
-      // Try to extract JSON from the response
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
@@ -100,7 +111,7 @@ Si no encuentras información relevante o contrastada, devuelve:
       results = [];
     }
 
-    return new Response(JSON.stringify({ results }), {
+    return new Response(JSON.stringify({ results, language }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error: unknown) {
