@@ -1,9 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { 
+  SECURITY_HEADERS, 
+  handleOptionsRequest, 
+  createSecureResponse,
+  checkRateLimit,
+  validatePayloadSize
+} from '../_shared/owasp-security.ts';
+import { secureAICall, getClientIP, generateRequestId } from '../_shared/edge-function-template.ts';
 
 interface SupportCopilotRequest {
   action: 'get_suggestions' | 'analyze_action' | 'generate_summary' | 'predict_issues';
@@ -29,18 +32,59 @@ interface SupportCopilotRequest {
 }
 
 serve(async (req) => {
+  const requestId = generateRequestId();
+  const clientIp = getClientIP(req);
+  const startTime = Date.now();
+
+  console.log(`[support-copilot] Request ${requestId} from ${clientIp}`);
+
+  // === CORS ===
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return handleOptionsRequest();
   }
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+    // === Rate Limiting ===
+    const rateCheck = checkRateLimit({
+      maxRequests: 60,
+      windowMs: 60000,
+      identifier: `support-copilot:${clientIp}`,
+    });
+
+    if (!rateCheck.allowed) {
+      console.warn(`[support-copilot] Rate limit exceeded: ${clientIp}`);
+      return createSecureResponse({ 
+        success: false,
+        error: 'rate_limit_exceeded', 
+        message: 'Demasiadas solicitudes. Intenta más tarde.',
+        retryAfter: Math.ceil(rateCheck.resetIn / 1000)
+      }, 429);
     }
 
-    const { action, sessionContext, actionContext } = await req.json() as SupportCopilotRequest;
+    // === Parse & Validate Body ===
+    let body: SupportCopilotRequest;
+    try {
+      body = await req.json();
+    } catch {
+      return createSecureResponse({ 
+        success: false, 
+        error: 'invalid_json', 
+        message: 'El cuerpo no es JSON válido' 
+      }, 400);
+    }
 
+    const payloadCheck = validatePayloadSize(body);
+    if (!payloadCheck.valid) {
+      return createSecureResponse({ 
+        success: false, 
+        error: 'payload_too_large', 
+        message: payloadCheck.error 
+      }, 413);
+    }
+
+    const { action, sessionContext, actionContext } = body;
+
+    // === Build Prompts ===
     let systemPrompt = '';
     let userPrompt = '';
 
@@ -165,92 +209,61 @@ ${sessionContext.recentActions?.map(a => a.action_type).join(' -> ') || 'Sin pat
         break;
 
       default:
-        throw new Error(`Acción no soportada: ${action}`);
+        return createSecureResponse({ 
+          success: false, 
+          error: 'invalid_action', 
+          message: `Acción no soportada: ${action}` 
+        }, 400);
     }
 
-    console.log(`[support-copilot] Processing action: ${action}`);
-
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.7,
-        max_tokens: 2000,
-      }),
+    // === AI Call ===
+    const aiResult = await secureAICall({
+      systemPrompt,
+      userPrompt,
+      maxTokens: 2000,
     });
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ 
-          error: 'Rate limit exceeded', 
-          message: 'Demasiadas solicitudes. Por favor, espera un momento.' 
-        }), {
-          status: 429,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+    if (!aiResult.success) {
+      console.error(`[support-copilot] AI error: ${aiResult.error}`);
+      
+      if (aiResult.error?.includes('Rate limit')) {
+        return createSecureResponse({ 
+          success: false,
+          error: 'rate_limit_exceeded', 
+          message: 'Demasiadas solicitudes a IA. Intenta más tarde.' 
+        }, 429);
       }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ 
-          error: 'Payment required', 
-          message: 'Créditos insuficientes para IA.' 
-        }), {
-          status: 402,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+      if (aiResult.error?.includes('Payment required')) {
+        return createSecureResponse({ 
+          success: false,
+          error: 'payment_required', 
+          message: 'Créditos de IA insuficientes.' 
+        }, 402);
       }
-      const errorText = await response.text();
-      console.error(`[support-copilot] API error: ${response.status}`, errorText);
-      throw new Error(`AI API error: ${response.status}`);
+      
+      throw new Error(aiResult.error);
     }
 
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content;
+    const duration = Date.now() - startTime;
+    console.log(`[support-copilot] Success: ${action} in ${duration}ms`);
 
-    if (!content) {
-      throw new Error('No content in AI response');
-    }
-
-    // Parse JSON from response
-    let result;
-    try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        result = JSON.parse(jsonMatch[0]);
-      } else {
-        throw new Error('No JSON found in response');
-      }
-    } catch (parseError) {
-      console.error('[support-copilot] JSON parse error:', parseError);
-      result = { rawContent: content, parseError: true };
-    }
-
-    console.log(`[support-copilot] Successfully processed: ${action}`);
-
-    return new Response(JSON.stringify({
+    return createSecureResponse({
       success: true,
       action,
-      data: result,
+      data: aiResult.parsed || { rawContent: aiResult.content },
+      requestId,
       timestamp: new Date().toISOString()
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
-    console.error('[support-copilot] Error:', error);
-    return new Response(JSON.stringify({
+    const duration = Date.now() - startTime;
+    console.error(`[support-copilot] Error after ${duration}ms:`, error);
+    
+    return createSecureResponse({
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+      error: 'internal_error',
+      message: error instanceof Error ? error.message : 'Error interno',
+      requestId
+    }, 500);
   }
 });
