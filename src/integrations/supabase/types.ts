@@ -15003,6 +15003,69 @@ export type Database = {
           },
         ]
       }
+      remote_support_sessions: {
+        Row: {
+          actions_count: number | null
+          client_email: string | null
+          client_name: string | null
+          created_at: string
+          duration_ms: number | null
+          ended_at: string | null
+          high_risk_actions_count: number | null
+          id: string
+          installation_id: string | null
+          metadata: Json | null
+          performed_by: string | null
+          resolution: string | null
+          resolution_notes: string | null
+          session_code: string
+          started_at: string
+          status: string
+          support_type: string | null
+          updated_at: string
+        }
+        Insert: {
+          actions_count?: number | null
+          client_email?: string | null
+          client_name?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          ended_at?: string | null
+          high_risk_actions_count?: number | null
+          id?: string
+          installation_id?: string | null
+          metadata?: Json | null
+          performed_by?: string | null
+          resolution?: string | null
+          resolution_notes?: string | null
+          session_code: string
+          started_at?: string
+          status?: string
+          support_type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          actions_count?: number | null
+          client_email?: string | null
+          client_name?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          ended_at?: string | null
+          high_risk_actions_count?: number | null
+          id?: string
+          installation_id?: string | null
+          metadata?: Json | null
+          performed_by?: string | null
+          resolution?: string | null
+          resolution_notes?: string | null
+          session_code?: string
+          started_at?: string
+          status?: string
+          support_type?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       renewal_nurturing_activities: {
         Row: {
           activity_type: string
@@ -17660,6 +17723,7 @@ export type Database = {
           id: string
           metadata: Json | null
           performed_by: string | null
+          remote_session_id: string | null
           requires_approval: boolean | null
           risk_level: string
           session_id: string
@@ -17678,6 +17742,7 @@ export type Database = {
           id?: string
           metadata?: Json | null
           performed_by?: string | null
+          remote_session_id?: string | null
           requires_approval?: boolean | null
           risk_level?: string
           session_id: string
@@ -17696,12 +17761,21 @@ export type Database = {
           id?: string
           metadata?: Json | null
           performed_by?: string | null
+          remote_session_id?: string | null
           requires_approval?: boolean | null
           risk_level?: string
           session_id?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "session_actions_remote_session_id_fkey"
+            columns: ["remote_session_id"]
+            isOneToOne: false
+            referencedRelation: "remote_support_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       session_risk_assessments: {
         Row: {
