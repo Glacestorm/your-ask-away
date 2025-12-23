@@ -1,6 +1,7 @@
 import React, { Suspense, lazy, useEffect, useState, memo } from 'react';
 import { MapSkeleton } from './MapSkeleton';
 import type { MapContainerProps } from './MapContainerTypes';
+import { loadMapboxCSS } from '@/lib/loadMapboxCSS';
 
 // Lazy load the heavy MapContainer component with preload hint
 const MapContainerLazy = lazy(() => 
@@ -9,12 +10,18 @@ const MapContainerLazy = lazy(() =>
   }))
 );
 
-// Preload the MapContainer module when component mounts
+// Preload the MapContainer module and CSS when component mounts
 let preloadStarted = false;
 const preloadMapContainer = () => {
   if (!preloadStarted) {
     preloadStarted = true;
-    import('./MapContainer');
+    // Load both the module and CSS in parallel
+    Promise.all([
+      import('./MapContainer'),
+      loadMapboxCSS()
+    ]).catch(err => {
+      console.error('Failed to preload map resources:', err);
+    });
   }
 };
 

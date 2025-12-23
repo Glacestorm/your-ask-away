@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import viteCompression from "vite-plugin-compression";
+import { visualizer } from "rollup-plugin-visualizer";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -25,6 +26,14 @@ export default defineConfig(({ mode }) => ({
       jsxImportSource: undefined,
     }), 
     mode === "development" && componentTagger(),
+    // Bundle analyzer - generates stats.html in production build
+    mode === "production" && visualizer({
+      filename: './dist/stats.html',
+      open: false,
+      gzipSize: true,
+      brotliSize: true,
+      template: 'treemap', // treemap, sunburst, network
+    }),
     // Brotli Compression Level 11 - Maximum compression for static assets
     mode === "production" && viteCompression({
       algorithm: 'brotliCompress',
