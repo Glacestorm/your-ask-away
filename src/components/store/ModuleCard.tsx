@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { 
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useCMSTranslation } from '@/hooks/cms/useCMSTranslation';
 
 interface ModuleCardProps {
   module: {
@@ -34,16 +35,54 @@ const iconMap: Record<string, React.ElementType> = {
 
 const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, showFullDetails = false }) => {
   const { toast } = useToast();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const { translateAsync } = useCMSTranslation('store');
 
   const IconComponent = iconMap[module.module_icon || 'Building2'] || Building2;
 
   const defaultFeatures = [t('store.fullFunctionality'), t('store.supportIncluded'), t('store.updates')];
-  const features = Array.isArray(module.features) 
+  const rawFeatures: string[] = Array.isArray(module.features) 
     ? module.features 
     : (typeof module.features === 'object' && module.features?.list) 
       ? module.features.list 
-      : defaultFeatures;
+      : [];
+
+  const [translatedFeatures, setTranslatedFeatures] = useState<string[] | null>(null);
+  const [translatedDescription, setTranslatedDescription] = useState<string | null>(null);
+  const [translatedName, setTranslatedName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (language === 'es') {
+      setTranslatedFeatures(null);
+      setTranslatedDescription(null);
+      setTranslatedName(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    (async () => {
+      const [featuresArr, desc, name] = await Promise.all([
+        rawFeatures.length > 0 
+          ? Promise.all(rawFeatures.map(f => translateAsync(f, language, 'es')))
+          : Promise.resolve([]),
+        module.description ? translateAsync(module.description, language, 'es') : Promise.resolve(null),
+        translateAsync(module.module_name, language, 'es'),
+      ]);
+
+      if (!cancelled) {
+        setTranslatedFeatures(featuresArr.length > 0 ? featuresArr : null);
+        setTranslatedDescription(desc);
+        setTranslatedName(name);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [language, module.module_name, module.description, rawFeatures.join(',')]);
+
+  const features = translatedFeatures ?? (rawFeatures.length > 0 ? rawFeatures : defaultFeatures);
+  const displayName = translatedName ?? module.module_name;
+  const displayDescription = translatedDescription ?? module.description;
 
   const handleRequestQuote = () => {
     // Scroll to contact section or open quote request modal
@@ -53,7 +92,7 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, show
     } else {
       toast({
         title: t('store.requestQuote'),
-        description: t('store.contactTeamForPrice').replace('{name}', module.module_name),
+        description: t('store.contactTeamForPrice').replace('{name}', displayName),
       });
     }
   };
@@ -97,14 +136,14 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, show
             <IconComponent className="w-7 h-7 text-white" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-semibold text-white truncate">{module.module_name}</h3>
+            <h3 className="text-lg font-semibold text-white truncate">{displayName}</h3>
             <p className="text-sm text-slate-400 capitalize">{module.category}</p>
           </div>
         </div>
 
         {/* Description */}
         <p className="text-slate-400 text-sm mb-4 line-clamp-2">
-          {module.description || t('store.completeEnterpriseModule')}
+          {displayDescription || t('store.completeEnterpriseModule')}
         </p>
 
         {/* Features */}
