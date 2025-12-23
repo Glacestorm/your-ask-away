@@ -1316,4 +1316,26 @@ export default {
   'store.moduleDetail.defaultFeatures.reports': 'Rapports et analyses',
   'store.moduleDetail.defaultFeatures.export': 'Exportation de données',
   'store.moduleDetail.defaultFeatures.api': 'API d\'intégration',
+
+  // Store Modules Page
+  'store.fullCatalog': 'Catalogue Complet',
+  'store.allModules': 'Tous les Modules',
+  'store.exploreCollection': 'Explorez notre collection complète de modules pour votre entreprise',
+  'store.searchModules': 'Rechercher des modules...',
+  'store.allCategories': 'Toutes les Catégories',
+  'store.modulesFound': 'modules trouvés',
+  'store.noModulesFound': 'Aucun module trouvé avec les critères sélectionnés',
+  'store.clearFilters': 'Effacer les filtres',
+  'store.category': 'Catégorie',
+
+  // Store ModuleCard
+  'store.details': 'Détails',
+  'store.requestPrice': 'Demander le Prix',
+  'store.customPrice': 'Prix Personnalisé',
+  'store.requestQuote': 'Demander un Devis',
+  'store.fullFunctionality': 'Fonctionnalité complète',
+  'store.supportIncluded': 'Support inclus',
+  'store.updates': 'Mises à jour automatiques',
+  'store.completeEnterpriseModule': 'Module d\'entreprise complet pour votre activité.',
+  'store.contactTeamForPrice': 'Contactez notre équipe pour le prix de {name}',
 };

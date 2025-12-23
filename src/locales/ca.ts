@@ -1319,4 +1319,26 @@ export default {
   'store.moduleDetail.defaultFeatures.reports': 'Informes i analítiques',
   'store.moduleDetail.defaultFeatures.export': 'Exportació de dades',
   'store.moduleDetail.defaultFeatures.api': 'API d\'integració',
+
+  // Store Modules Page
+  'store.fullCatalog': 'Catàleg Complet',
+  'store.allModules': 'Tots els Mòduls',
+  'store.exploreCollection': 'Explora la nostra col·lecció completa de mòduls per al teu negoci',
+  'store.searchModules': 'Cercar mòduls...',
+  'store.allCategories': 'Totes les Categories',
+  'store.modulesFound': 'mòduls trobats',
+  'store.noModulesFound': 'No s\'han trobat mòduls amb els criteris seleccionats',
+  'store.clearFilters': 'Netejar filtres',
+  'store.category': 'Categoria',
+
+  // Store ModuleCard
+  'store.details': 'Detalls',
+  'store.requestPrice': 'Sol·licitar Preu',
+  'store.customPrice': 'Preu Personalitzat',
+  'store.requestQuote': 'Sol·licitar Pressupost',
+  'store.fullFunctionality': 'Funcionalitat completa',
+  'store.supportIncluded': 'Suport inclòs',
+  'store.updates': 'Actualitzacions automàtiques',
+  'store.completeEnterpriseModule': 'Mòdul empresarial complet per al teu negoci.',
+  'store.contactTeamForPrice': 'Contacta amb el nostre equip per al preu de {name}',
 };

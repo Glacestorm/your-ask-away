@@ -1319,4 +1319,26 @@ export default {
   'store.moduleDetail.defaultFeatures.reports': 'Reports and analytics',
   'store.moduleDetail.defaultFeatures.export': 'Data export',
   'store.moduleDetail.defaultFeatures.api': 'Integration API',
+
+  // Store Modules Page
+  'store.fullCatalog': 'Full Catalog',
+  'store.allModules': 'All Modules',
+  'store.exploreCollection': 'Explore our complete collection of modules for your business',
+  'store.searchModules': 'Search modules...',
+  'store.allCategories': 'All Categories',
+  'store.modulesFound': 'modules found',
+  'store.noModulesFound': 'No modules found matching your criteria',
+  'store.clearFilters': 'Clear filters',
+  'store.category': 'Category',
+
+  // Store ModuleCard
+  'store.details': 'Details',
+  'store.requestPrice': 'Request Price',
+  'store.customPrice': 'Custom Pricing',
+  'store.requestQuote': 'Request Quote',
+  'store.fullFunctionality': 'Full functionality',
+  'store.supportIncluded': 'Support included',
+  'store.updates': 'Automatic updates',
+  'store.completeEnterpriseModule': 'Complete enterprise module for your business.',
+  'store.contactTeamForPrice': 'Contact our team for pricing on {name}',
 };
