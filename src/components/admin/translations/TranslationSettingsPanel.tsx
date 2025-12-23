@@ -1,131 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { useTranslationSettings } from '@/hooks/admin/useTranslationSettings';
+import { formatDistanceToNow } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { 
   Settings, 
-  Globe, 
-  Save, 
   Loader2,
   Trash2,
-  RefreshCw
+  RefreshCw,
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
-import { SupportedLanguage } from '@/hooks/useSupportedLanguages';
+import { cn } from '@/lib/utils';
 
 interface TranslationSettingsPanelProps {
-  languages: SupportedLanguage[];
-  onRefresh: () => void;
+  className?: string;
 }
 
 export const TranslationSettingsPanel: React.FC<TranslationSettingsPanelProps> = ({
-  languages,
-  onRefresh
+  className
 }) => {
-  const { toast } = useToast();
-  const [saving, setSaving] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState<string | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
 
-  const handleToggleActive = async (lang: SupportedLanguage) => {
-    setSaving(lang.locale);
-    try {
-      const { error } = await supabase
-        .from('supported_languages')
-        .update({ is_active: !lang.is_active })
-        .eq('id', lang.id);
+  const {
+    languages,
+    isLoading,
+    lastRefresh,
+    savingLocale,
+    deletingLocale,
+    fetchLanguages,
+    toggleLanguageActive,
+    deleteTranslations,
+    resetProgress,
+    startAutoRefresh,
+    stopAutoRefresh
+  } = useTranslationSettings();
 
-      if (error) throw error;
-
-      toast({
-        title: 'Actualizado',
-        description: `${lang.name} ${!lang.is_active ? 'activado' : 'desactivado'}`
-      });
-      onRefresh();
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Error al actualizar idioma',
-        variant: 'destructive'
-      });
-    } finally {
-      setSaving(null);
-    }
-  };
-
-  const handleDeleteTranslations = async (locale: string) => {
-    if (!confirm(`¿Eliminar todas las traducciones de ${locale}?`)) return;
-    
-    setDeleting(locale);
-    try {
-      const { error } = await supabase
-        .from('cms_translations')
-        .delete()
-        .eq('locale', locale);
-
-      if (error) throw error;
-
-      // Reset progress
-      await supabase
-        .from('supported_languages')
-        .update({ translation_progress: 0 })
-        .eq('locale', locale);
-
-      toast({
-        title: 'Eliminado',
-        description: `Traducciones de ${locale} eliminadas`
-      });
-      onRefresh();
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Error al eliminar traducciones',
-        variant: 'destructive'
-      });
-    } finally {
-      setDeleting(null);
-    }
-  };
-
-  const handleResetProgress = async (locale: string) => {
-    try {
-      // Recalculate progress
-      const { count: esCount } = await supabase
-        .from('cms_translations')
-        .select('*', { count: 'exact', head: true })
-        .eq('locale', 'es');
-
-      const { count: localeCount } = await supabase
-        .from('cms_translations')
-        .select('*', { count: 'exact', head: true })
-        .eq('locale', locale);
-
-      const progress = esCount && localeCount 
-        ? Math.round((localeCount / esCount) * 100) 
-        : 0;
-
-      await supabase
-        .from('supported_languages')
-        .update({ translation_progress: progress })
-        .eq('locale', locale);
-
-      toast({
-        title: 'Recalculado',
-        description: `Progreso actualizado: ${progress}%`
-      });
-      onRefresh();
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Error al recalcular progreso',
-        variant: 'destructive'
-      });
-    }
-  };
+  // Auto-refresh on mount
+  useEffect(() => {
+    startAutoRefresh(60000);
+    return () => stopAutoRefresh();
+  }, [startAutoRefresh, stopAutoRefresh]);
 
   const getTierConfig = (tier: number) => {
     const configs: Record<number, { label: string; color: string }> = {
@@ -142,21 +61,58 @@ export const TranslationSettingsPanel: React.FC<TranslationSettingsPanelProps> =
     if (!acc[tier]) acc[tier] = [];
     acc[tier].push(lang);
     return acc;
-  }, {} as Record<number, SupportedLanguage[]>);
+  }, {} as Record<number, typeof languages>);
+
+  const handleDeleteWithConfirm = async (locale: string) => {
+    if (!confirm(`¿Eliminar todas las traducciones de ${locale}?`)) return;
+    await deleteTranslations(locale);
+  };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Settings className="h-5 w-5" />
-          Configuración de Idiomas
-        </CardTitle>
-        <CardDescription>
-          Gestiona idiomas activos y traducciones
-        </CardDescription>
+    <Card className={cn(
+      "transition-all duration-300 overflow-hidden",
+      isExpanded ? "fixed inset-4 z-50 shadow-2xl" : "",
+      className
+    )}>
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="h-5 w-5" />
+              Configuración de Idiomas
+            </CardTitle>
+            <CardDescription className="flex items-center gap-2 mt-1">
+              Gestiona idiomas activos y traducciones
+              {lastRefresh && (
+                <Badge variant="outline" className="text-xs">
+                  Actualizado {formatDistanceToNow(lastRefresh, { locale: es, addSuffix: true })}
+                </Badge>
+              )}
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => fetchLanguages()}
+              disabled={isLoading}
+              className="h-8 w-8"
+            >
+              <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="h-8 w-8"
+            >
+              {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+            </Button>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[600px] pr-4">
+        <ScrollArea className={cn(isExpanded ? "h-[calc(100vh-180px)]" : "h-[600px]", "pr-4")}>
           <div className="space-y-6">
             {Object.entries(groupedByTier)
               .sort(([a], [b]) => Number(a) - Number(b))
@@ -212,7 +168,7 @@ export const TranslationSettingsPanel: React.FC<TranslationSettingsPanelProps> =
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    onClick={() => handleResetProgress(lang.locale)}
+                                    onClick={() => resetProgress(lang.locale)}
                                     title="Recalcular progreso"
                                   >
                                     <RefreshCw className="h-4 w-4" />
@@ -220,12 +176,12 @@ export const TranslationSettingsPanel: React.FC<TranslationSettingsPanelProps> =
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    onClick={() => handleDeleteTranslations(lang.locale)}
-                                    disabled={deleting === lang.locale}
+                                    onClick={() => handleDeleteWithConfirm(lang.locale)}
+                                    disabled={deletingLocale === lang.locale}
                                     className="text-destructive hover:text-destructive"
                                     title="Eliminar traducciones"
                                   >
-                                    {deleting === lang.locale ? (
+                                    {deletingLocale === lang.locale ? (
                                       <Loader2 className="h-4 w-4 animate-spin" />
                                     ) : (
                                       <Trash2 className="h-4 w-4" />
@@ -235,8 +191,8 @@ export const TranslationSettingsPanel: React.FC<TranslationSettingsPanelProps> =
                               )}
                               <Switch
                                 checked={lang.is_active}
-                                onCheckedChange={() => handleToggleActive(lang)}
-                                disabled={saving === lang.locale || isBase}
+                                onCheckedChange={() => toggleLanguageActive(lang)}
+                                disabled={savingLocale === lang.locale || isBase}
                               />
                             </div>
                           </div>
@@ -252,3 +208,5 @@ export const TranslationSettingsPanel: React.FC<TranslationSettingsPanelProps> =
     </Card>
   );
 };
+
+export default TranslationSettingsPanel;

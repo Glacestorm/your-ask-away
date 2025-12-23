@@ -99,6 +99,7 @@ const FinancialViabilityPage = lazy(() => import('@/pages/financial-viability/in
 // Admin - Service Quotes & Remote Support
 const ServiceQuotesPage = lazy(() => import('@/pages/admin/ServiceQuotesPage'));
 const RemoteSupportPage = lazy(() => import('@/pages/admin/RemoteSupportPage'));
+const EnterpriseDashboardPage = lazy(() => import('@/pages/admin/EnterpriseDashboardPage'));
 
 // Tipos
 export type RouteLayout = 'public' | 'dashboard' | 'minimal' | 'none';
@@ -231,6 +232,7 @@ export const adminRoutes: RouteConfig[] = [
   { path: '/admin', component: Admin, layout: 'none', priority: 'medium', delay: 50, meta: { title: 'Admin', requiresAuth: true, roles: ['admin', 'superadmin'] } },
   { path: '/admin/service-quotes', component: ServiceQuotesPage, layout: 'none', priority: 'medium', meta: { title: 'Presupuestos de Servicio', requiresAuth: true, roles: ['admin', 'superadmin'] } },
   { path: '/admin/remote-support', component: RemoteSupportPage, layout: 'none', priority: 'medium', meta: { title: 'Soporte Remoto', requiresAuth: true, roles: ['admin', 'superadmin'] } },
+  { path: '/admin/enterprise-dashboard', component: EnterpriseDashboardPage, layout: 'none', priority: 'high', meta: { title: 'Enterprise Dashboard', requiresAuth: true, roles: ['admin', 'superadmin'] } },
   { path: '/obelixia-admin', component: ObelixiaTeamAdmin, layout: 'dashboard', priority: 'medium', delay: 50, meta: { title: 'Obelixia Admin', requiresAuth: true, roles: ['superadmin'] } },
 ];
 
