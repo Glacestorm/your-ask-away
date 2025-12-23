@@ -3,9 +3,10 @@
  * Provides real-time action tracking for compliance and auditing
  */
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
 
 export type ActionType =
   | 'config_change'
@@ -31,18 +32,19 @@ export interface SessionAction {
   id: string;
   session_id: string;
   action_type: ActionType;
-  action_description: string;
+  description: string;
   component_affected?: string;
   before_state?: Record<string, unknown>;
   after_state?: Record<string, unknown>;
   duration_ms?: number;
-  screenshot_url?: string;
   risk_level: RiskLevel;
   requires_approval: boolean;
   approved_by?: string;
   approved_at?: string;
   metadata?: Record<string, unknown>;
+  performed_by?: string;
   created_at: string;
+  updated_at: string;
 }
 
 export interface LogActionParams {
@@ -53,7 +55,6 @@ export interface LogActionParams {
   afterState?: Record<string, unknown>;
   riskLevel?: RiskLevel;
   requiresApproval?: boolean;
-  screenshotUrl?: string;
   metadata?: Record<string, unknown>;
 }
 
@@ -62,6 +63,37 @@ export function useSessionActionLogger(sessionId: string | null) {
   const [loading, setLoading] = useState(false);
   const [isLogging, setIsLogging] = useState(false);
   const actionStartTime = useRef<number | null>(null);
+  const { user } = useAuth();
+
+  // Subscribe to realtime updates
+  useEffect(() => {
+    if (!sessionId) return;
+
+    const channel = supabase
+      .channel(`session-actions-${sessionId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'session_actions',
+          filter: `session_id=eq.${sessionId}`
+        },
+        (payload) => {
+          const newAction = payload.new as SessionAction;
+          setActions(prev => {
+            // Avoid duplicates
+            if (prev.some(a => a.id === newAction.id)) return prev;
+            return [...prev, newAction];
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [sessionId]);
 
   // Start timing an action
   const startAction = useCallback(() => {
@@ -80,31 +112,30 @@ export function useSessionActionLogger(sessionId: string | null) {
     actionStartTime.current = null;
 
     try {
-      const insertData = {
+      const insertData: Record<string, unknown> = {
         session_id: sessionId,
         action_type: params.actionType,
-        action_description: params.description,
-        component_affected: params.componentAffected,
-        before_state: params.beforeState as Record<string, unknown> | undefined,
-        after_state: params.afterState as Record<string, unknown> | undefined,
-        duration_ms: duration,
-        screenshot_url: params.screenshotUrl,
+        description: params.description,
+        component_affected: params.componentAffected || null,
+        before_state: params.beforeState || null,
+        after_state: params.afterState || null,
+        duration_ms: duration || null,
         risk_level: params.riskLevel || 'low',
         requires_approval: params.requiresApproval || false,
         metadata: params.metadata || {},
+        performed_by: user?.id || null,
       };
 
       const { data, error } = await supabase
-        .from('session_action_logs')
-        .insert(insertData as any)
+        .from('session_actions')
+        .insert([insertData] as any)
         .select()
         .single();
 
       if (error) throw error;
 
-      const newAction = data as unknown as SessionAction;
-      setActions(prev => [...prev, newAction]);
-
+      const newAction = data as SessionAction;
+      
       // Show toast for high-risk actions
       if (params.riskLevel === 'high' || params.riskLevel === 'critical') {
         toast.warning(`Acción de alto riesgo registrada: ${params.description}`);
@@ -118,7 +149,7 @@ export function useSessionActionLogger(sessionId: string | null) {
     } finally {
       setIsLogging(false);
     }
-  }, [sessionId]);
+  }, [sessionId, user?.id]);
 
   // Fetch all actions for the current session
   const fetchActions = useCallback(async () => {
@@ -127,7 +158,7 @@ export function useSessionActionLogger(sessionId: string | null) {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('session_action_logs')
+        .from('session_actions')
         .select('*')
         .eq('session_id', sessionId)
         .order('created_at', { ascending: true });
