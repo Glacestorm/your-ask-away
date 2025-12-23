@@ -8,10 +8,12 @@ interface UseLanguageInstallerOptions {
 }
 
 const UI_NAMESPACE = 'ui';
-const BASE_LOCALES = ['es', 'en', 'ca', 'fr'];
+// Only skip Spanish and English (source languages with static files)
+const SKIP_LOCALES = ['es', 'en'];
 
 export function useLanguageInstaller(options: UseLanguageInstallerOptions = {}) {
   const [installingLocale, setInstallingLocale] = useState<string | null>(null);
+  const [translationProgress, setTranslationProgress] = useState<{ current: number; total: number } | null>(null);
 
   const ensureSpanishSeeded = useCallback(async () => {
     const expected = Object.keys(esTranslations).length;
@@ -47,59 +49,117 @@ export function useLanguageInstaller(options: UseLanguageInstallerOptions = {}) 
     }
   }, []);
 
+  // Get all Spanish keys from database instead of static file
+  const getSpanishKeysFromDB = useCallback(async () => {
+    const allKeys: { translation_key: string; value: string }[] = [];
+    let from = 0;
+    const pageSize = 1000;
+    
+    while (true) {
+      const { data, error } = await supabase
+        .from('cms_translations')
+        .select('translation_key, value')
+        .eq('locale', 'es')
+        .range(from, from + pageSize - 1);
+      
+      if (error) throw error;
+      if (!data || data.length === 0) break;
+      
+      allKeys.push(...data);
+      if (data.length < pageSize) break;
+      from += pageSize;
+    }
+    
+    return allKeys;
+  }, []);
+
   const translateLocaleFromSpanish = useCallback(async (locale: string) => {
-    if (BASE_LOCALES.includes(locale)) return;
+    // Only skip Spanish and English (source languages)
+    if (SKIP_LOCALES.includes(locale)) return;
 
-    const translationKeys = Object.keys(esTranslations);
+    // Get all Spanish keys from database
+    const spanishKeys = await getSpanishKeysFromDB();
 
-    const { data: existing, error: existingError } = await supabase
-      .from('cms_translations')
-      .select('translation_key')
-      .eq('locale', locale)
-      .eq('namespace', UI_NAMESPACE);
+    // Get existing translations for target locale (paginated)
+    const existingKeys = new Set<string>();
+    let from = 0;
+    const pageSize = 1000;
+    
+    while (true) {
+      const { data, error } = await supabase
+        .from('cms_translations')
+        .select('translation_key')
+        .eq('locale', locale)
+        .range(from, from + pageSize - 1);
+      
+      if (error) throw error;
+      if (!data || data.length === 0) break;
+      
+      data.forEach((r: any) => existingKeys.add(r.translation_key));
+      if (data.length < pageSize) break;
+      from += pageSize;
+    }
 
-    if (existingError) throw existingError;
+    // Find keys that need translation
+    const keysToTranslate = spanishKeys.filter((k) => !existingKeys.has(k.translation_key));
 
-    const existingKeys = new Set((existing ?? []).map((r: any) => r.translation_key));
-    const keysToTranslate = translationKeys.filter((k) => !existingKeys.has(k));
+    if (keysToTranslate.length === 0) {
+      console.log(`All keys already translated for ${locale}`);
+      return;
+    }
 
-    if (keysToTranslate.length === 0) return;
+    console.log(`Translating ${keysToTranslate.length} keys for ${locale}`);
+    setTranslationProgress({ current: 0, total: keysToTranslate.length });
 
     const BATCH_SIZE = 25;
+    let translated = 0;
+    
     for (let i = 0; i < keysToTranslate.length; i += BATCH_SIZE) {
       const batch = keysToTranslate.slice(i, i + BATCH_SIZE);
-      const items = batch.map((key) => ({
-        key,
-        text: (esTranslations as any)[key],
+      const items = batch.map((k) => ({
+        key: k.translation_key,
+        text: k.value,
         namespace: UI_NAMESPACE,
       }));
 
-      const { error } = await supabase.functions.invoke('cms-batch-translate', {
-        body: {
-          items,
-          sourceLocale: 'es',
-          targetLocale: locale,
-          saveToDb: true,
-        },
-      });
+      try {
+        const { error } = await supabase.functions.invoke('cms-batch-translate', {
+          body: {
+            items,
+            sourceLocale: 'es',
+            targetLocale: locale,
+            saveToDb: true,
+          },
+        });
 
-      if (error) throw new Error(error.message);
+        if (error) {
+          console.error(`Batch translation error:`, error);
+          // Continue with next batch instead of failing completely
+        } else {
+          translated += batch.length;
+          setTranslationProgress({ current: translated, total: keysToTranslate.length });
+        }
+      } catch (err) {
+        console.error(`Batch ${i / BATCH_SIZE} failed:`, err);
+        // Continue with next batch
+      }
+
+      // Small delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
 
     // Update progress
     const { count: esCount, error: esCountError } = await supabase
       .from('cms_translations')
       .select('*', { count: 'exact', head: true })
-      .eq('locale', 'es')
-      .eq('namespace', UI_NAMESPACE);
+      .eq('locale', 'es');
 
     if (esCountError) throw esCountError;
 
     const { count: locCount, error: locCountError } = await supabase
       .from('cms_translations')
       .select('*', { count: 'exact', head: true })
-      .eq('locale', locale)
-      .eq('namespace', UI_NAMESPACE);
+      .eq('locale', locale);
 
     if (locCountError) throw locCountError;
 
@@ -109,7 +169,9 @@ export function useLanguageInstaller(options: UseLanguageInstallerOptions = {}) 
       .from('supported_languages')
       .update({ translation_progress: progress })
       .eq('locale', locale);
-  }, []);
+      
+    setTranslationProgress(null);
+  }, [getSpanishKeysFromDB]);
 
   const installLanguage = useCallback(
     async (locale: string) => {
@@ -136,5 +198,6 @@ export function useLanguageInstaller(options: UseLanguageInstallerOptions = {}) 
   return {
     installLanguage,
     installingLocale,
+    translationProgress,
   };
 }

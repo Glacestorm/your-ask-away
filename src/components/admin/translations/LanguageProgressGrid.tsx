@@ -24,6 +24,7 @@ interface LanguageProgressGridProps {
   onRefresh: () => void;
   onInstallLanguage?: (locale: string) => void;
   installingLocale?: string | null;
+  translationProgress?: { current: number; total: number } | null;
 }
 
 const getTierConfig = (tier: number) => {
@@ -48,6 +49,7 @@ export const LanguageProgressGrid: React.FC<LanguageProgressGridProps> = ({
   onRefresh,
   onInstallLanguage,
   installingLocale,
+  translationProgress,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedTiers, setExpandedTiers] = useState<number[]>([1, 2, 3, 4]);
@@ -159,14 +161,17 @@ export const LanguageProgressGrid: React.FC<LanguageProgressGridProps> = ({
                     {isExpanded && (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-4">
                         {langs.map(lang => {
-                          const isBase = ['es', 'en', 'ca', 'fr'].includes(lang.locale);
+                          const isBase = ['es', 'en'].includes(lang.locale);
                           const progress = lang.translation_progress || 0;
-                          const canInstall = !!onInstallLanguage && !isBase && progress === 0;
+                          const canInstall = !!onInstallLanguage && !isBase && progress < 100;
+                          const isInstalling = installingLocale === lang.locale;
 
                           return (
                             <div
                               key={lang.locale}
-                              className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/5 transition-colors"
+                              className={`flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/5 transition-colors ${
+                                isInstalling ? 'ring-2 ring-primary/50' : ''
+                              }`}
                             >
                               <span className="text-xl">{lang.flag_emoji || '🌐'}</span>
                               <div className="flex-1 min-w-0">
@@ -187,22 +192,30 @@ export const LanguageProgressGrid: React.FC<LanguageProgressGridProps> = ({
                                     {progress}%
                                   </span>
                                 </div>
+                                {isInstalling && translationProgress && (
+                                  <div className="mt-2 text-xs text-muted-foreground">
+                                    Traduciendo: {translationProgress.current}/{translationProgress.total} claves
+                                  </div>
+                                )}
                               </div>
 
                               <div className="flex items-center gap-2 shrink-0">
                                 {canInstall && (
                                   <Button
                                     size="sm"
-                                    variant="outline"
+                                    variant={progress > 0 ? "default" : "outline"}
                                     onClick={(e) => {
                                       e.preventDefault();
                                       e.stopPropagation();
                                       onInstallLanguage?.(lang.locale);
                                     }}
-                                    disabled={installingLocale === lang.locale}
+                                    disabled={isInstalling}
+                                    title={progress > 0 ? "Continuar traducción" : "Instalar idioma"}
                                   >
-                                    {installingLocale === lang.locale ? (
+                                    {isInstalling ? (
                                       <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : progress > 0 ? (
+                                      'Continuar'
                                     ) : (
                                       'Instalar'
                                     )}
