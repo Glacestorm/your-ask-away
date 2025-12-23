@@ -1,15 +1,18 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Award, Lock, CheckCircle, Globe, Clock } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const TrustBadges: React.FC = () => {
+  const { t } = useLanguage();
+
   const certifications = [
-    { icon: Shield, label: 'ISO 27001', description: 'Certificado en Seguridad' },
-    { icon: Lock, label: 'GDPR', description: 'Protección de Datos' },
-    { icon: Award, label: 'DORA', description: 'Resiliencia Operativa' },
-    { icon: CheckCircle, label: 'NIS2', description: 'Ciberseguridad' },
-    { icon: Globe, label: 'PSD2/PSD3', description: 'Open Banking' },
-    { icon: Clock, label: '99.99%', description: 'Uptime SLA' },
+    { icon: Shield, label: 'ISO 27001', description: t('store.trustBadges.items.iso27001') },
+    { icon: Lock, label: 'GDPR', description: t('store.trustBadges.items.gdpr') },
+    { icon: Award, label: 'DORA', description: t('store.trustBadges.items.dora') },
+    { icon: CheckCircle, label: 'NIS2', description: t('store.trustBadges.items.nis2') },
+    { icon: Globe, label: 'PSD2/PSD3', description: t('store.trustBadges.items.psd') },
+    { icon: Clock, label: '99.99%', description: t('store.trustBadges.items.uptime') },
   ];
 
   return (
@@ -21,8 +24,8 @@ const TrustBadges: React.FC = () => {
           viewport={{ once: true }}
           className="text-center mb-10"
         >
-          <h3 className="text-lg font-medium text-slate-400 mb-2">Confianza y Seguridad Garantizada</h3>
-          <p className="text-sm text-slate-500">Cumplimos con los más altos estándares de la industria</p>
+          <h3 className="text-lg font-medium text-slate-400 mb-2">{t('store.trustBadges.title')}</h3>
+          <p className="text-sm text-slate-500">{t('store.trustBadges.subtitle')}</p>
         </motion.div>
 
         <div className="flex flex-wrap justify-center gap-8">

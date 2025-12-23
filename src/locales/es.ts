@@ -1166,6 +1166,16 @@ export default {
   'store.pricingBadge.tooltip.annual.item5.label': 'Cloud:',
   'store.pricingBadge.tooltip.annual.item5.value': 'Infraestructura incluida',
 
+  // Store Trust Badges
+  'store.trustBadges.title': 'Confianza y Seguridad Garantizada',
+  'store.trustBadges.subtitle': 'Cumplimos con los más altos estándares de la industria',
+  'store.trustBadges.items.iso27001': 'Certificado en Seguridad',
+  'store.trustBadges.items.gdpr': 'Protección de Datos',
+  'store.trustBadges.items.dora': 'Resiliencia Operativa',
+  'store.trustBadges.items.nis2': 'Ciberseguridad',
+  'store.trustBadges.items.psd': 'Open Banking',
+  'store.trustBadges.items.uptime': 'Uptime SLA',
+
   // Store Features
   'store.features.badge': 'CARACTERÍSTICAS',
   'store.features.title': 'Todo lo que tu Empresa Necesita',
