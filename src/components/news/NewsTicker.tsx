@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Zap, TrendingUp } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface NewsItem {
   id: string;
@@ -13,6 +14,8 @@ interface NewsTickerProps {
 }
 
 const NewsTicker: React.FC<NewsTickerProps> = ({ items }) => {
+  const { t } = useLanguage();
+  
   if (!items || items.length === 0) return null;
 
   // Duplicate items for seamless loop
@@ -26,7 +29,7 @@ const NewsTicker: React.FC<NewsTickerProps> = ({ items }) => {
           <div className="flex-shrink-0 flex items-center gap-2 pr-4 border-r border-slate-700">
             <div className="flex items-center gap-1.5 px-2.5 py-1 bg-red-500/10 rounded-md">
               <Zap className="w-3 h-3 text-red-500 animate-pulse" />
-              <span className="text-xs font-bold text-red-400 uppercase tracking-wider">En vivo</span>
+              <span className="text-xs font-bold text-red-400 uppercase tracking-wider">{t('news.live')}</span>
             </div>
           </div>
 

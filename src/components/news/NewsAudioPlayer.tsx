@@ -4,6 +4,7 @@ import { Volume2, VolumeX, Play, Pause, Loader2, Headphones, Clock, RefreshCw } 
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface AudioSummary {
   id: string;
@@ -15,6 +16,7 @@ interface AudioSummary {
 }
 
 const NewsAudioPlayer: React.FC = () => {
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioSummary, setAudioSummary] = useState<AudioSummary | null>(null);
@@ -59,7 +61,7 @@ const NewsAudioPlayer: React.FC = () => {
       if (error) {
         // Handle rate limits
         if (error.message?.includes('429')) {
-          toast.error('Límite de solicitudes alcanzado. Intenta en unos minutos.');
+          toast.error(t('news.audio.rateLimit'));
           return;
         }
         throw error;
@@ -76,14 +78,14 @@ const NewsAudioPlayer: React.FC = () => {
             status: 'completed'
           });
           setDuration(data.summary.durationSeconds || 120);
-          toast.success('Resumen de audio generado correctamente');
+          toast.success(t('news.audio.generated'));
         } else if (data.message === 'No hay noticias para esta fecha') {
-          toast.info('No hay noticias disponibles para generar el resumen');
+          toast.info(t('news.audio.noNews'));
         }
       }
     } catch (error) {
       console.error('Error generating audio:', error);
-      toast.error('Error al generar el resumen de audio');
+      toast.error(t('news.audio.error'));
     } finally {
       setIsLoading(false);
     }
@@ -141,8 +143,8 @@ const NewsAudioPlayer: React.FC = () => {
             <Headphones className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-white">Resumen en Audio</h3>
-            <p className="text-sm text-slate-400">Escucha las noticias del día en 2 minutos</p>
+            <h3 className="text-lg font-semibold text-white">{t('news.audio.title')}</h3>
+            <p className="text-sm text-slate-400">{t('news.audio.subtitle')}</p>
           </div>
         </div>
 
@@ -150,7 +152,7 @@ const NewsAudioPlayer: React.FC = () => {
         {!audioSummary ? (
           <div className="text-center py-6">
             <p className="text-slate-400 mb-4">
-              Genera un resumen de audio con las noticias más importantes del día
+              {t('news.audio.generate')}
             </p>
             <Button
               onClick={generateAudio}
@@ -160,12 +162,12 @@ const NewsAudioPlayer: React.FC = () => {
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Generando resumen...
+                  {t('news.audio.generating')}
                 </>
               ) : (
                 <>
                   <Volume2 className="w-4 h-4 mr-2" />
-                  Generar Resumen de Audio
+                  {t('news.audio.generateButton')}
                 </>
               )}
             </Button>
@@ -216,8 +218,8 @@ const NewsAudioPlayer: React.FC = () => {
             ) : (
               <div className="bg-slate-800/50 rounded-xl p-4 text-center">
                 <VolumeX className="w-8 h-8 text-slate-500 mx-auto mb-2" />
-                <p className="text-sm text-slate-400">Audio no disponible</p>
-                <p className="text-xs text-slate-500">Configura ElevenLabs para generar audio</p>
+                <p className="text-sm text-slate-400">{t('news.audio.notAvailable')}</p>
+                <p className="text-xs text-slate-500">{t('news.audio.configureElevenlabs')}</p>
               </div>
             )}
 
@@ -228,7 +230,7 @@ const NewsAudioPlayer: React.FC = () => {
                   onClick={() => setShowTranscript(!showTranscript)}
                   className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-2"
                 >
-                  {showTranscript ? 'Ocultar transcripción' : 'Ver transcripción'}
+                  {showTranscript ? t('news.audio.hideTranscript') : t('news.audio.showTranscript')}
                 </button>
                 
                 <AnimatePresence>
@@ -254,7 +256,7 @@ const NewsAudioPlayer: React.FC = () => {
             <div className="flex items-center justify-between pt-2 border-t border-slate-700/50">
               <div className="flex items-center gap-2 text-xs text-slate-500">
                 <Clock className="w-3 h-3" />
-                <span>~{Math.round((audioSummary.duration_seconds || 120) / 60)} min de resumen</span>
+                <span>~{Math.round((audioSummary.duration_seconds || 120) / 60)} {t('news.audio.duration')}</span>
               </div>
               <Button
                 variant="ghost"
@@ -264,7 +266,7 @@ const NewsAudioPlayer: React.FC = () => {
                 className="text-slate-400 hover:text-emerald-400"
               >
                 <RefreshCw className={`w-3 h-3 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
-                Regenerar
+                {t('news.audio.regenerate')}
               </Button>
             </div>
           </div>

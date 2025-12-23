@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Web Speech API types
 interface SpeechRecognitionEvent extends Event {
@@ -42,6 +43,7 @@ interface SearchResult {
 }
 
 const NewsSearch: React.FC = () => {
+  const { t, language } = useLanguage();
   const [query, setQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -51,6 +53,17 @@ const NewsSearch: React.FC = () => {
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
+  // Get speech recognition language
+  const getSpeechLang = () => {
+    const langMap: Record<string, string> = {
+      'es': 'es-ES',
+      'en': 'en-US',
+      'ca': 'ca-ES',
+      'fr': 'fr-FR',
+    };
+    return langMap[language] || 'es-ES';
+  };
+
   // Initialize speech recognition
   useEffect(() => {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -58,7 +71,7 @@ const NewsSearch: React.FC = () => {
       recognitionRef.current = new SpeechRecognition();
       recognitionRef.current.continuous = false;
       recognitionRef.current.interimResults = true;
-      recognitionRef.current.lang = 'es-ES';
+      recognitionRef.current.lang = getSpeechLang();
 
       recognitionRef.current.onresult = (event) => {
         const transcript = Array.from(event.results)
@@ -73,7 +86,7 @@ const NewsSearch: React.FC = () => {
 
       recognitionRef.current.onerror = () => {
         setIsListening(false);
-        toast.error('Error al reconocer voz');
+        toast.error(t('news.voiceError'));
       };
     }
 
@@ -82,7 +95,7 @@ const NewsSearch: React.FC = () => {
         recognitionRef.current.abort();
       }
     };
-  }, []);
+  }, [language, t]);
 
   // Close results on click outside
   useEffect(() => {
@@ -98,7 +111,7 @@ const NewsSearch: React.FC = () => {
 
   const toggleListening = () => {
     if (!recognitionRef.current) {
-      toast.error('Tu navegador no soporta reconocimiento de voz');
+      toast.error(t('news.voiceNotSupported'));
       return;
     }
 
@@ -106,6 +119,7 @@ const NewsSearch: React.FC = () => {
       recognitionRef.current.stop();
       setIsListening(false);
     } else {
+      recognitionRef.current.lang = getSpeechLang();
       recognitionRef.current.start();
       setIsListening(true);
     }
@@ -159,7 +173,7 @@ const NewsSearch: React.FC = () => {
       }
     } catch (err) {
       console.error('Search error:', err);
-      toast.error('Error al buscar noticias');
+      toast.error(t('news.searchError'));
     } finally {
       setIsSearching(false);
     }
@@ -182,7 +196,7 @@ const NewsSearch: React.FC = () => {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             onFocus={() => hasSearched && setShowResults(true)}
-            placeholder="Buscar noticias económicas, normativas, tendencias..."
+            placeholder={t('news.searchPlaceholder')}
             className="pl-12 pr-4 h-14 bg-slate-800/50 border-slate-700 text-white placeholder:text-slate-500 rounded-full text-base focus:ring-2 focus:ring-primary/50 focus:border-primary"
           />
         </div>
@@ -196,7 +210,7 @@ const NewsSearch: React.FC = () => {
               ? 'bg-red-500/20 text-red-400 animate-pulse border-2 border-red-500' 
               : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-700/50 border border-slate-700'
           }`}
-          title={isListening ? 'Detener' : 'Buscar por voz'}
+          title={isListening ? t('common.close') : t('news.search')}
         >
           {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
         </Button>
@@ -209,7 +223,7 @@ const NewsSearch: React.FC = () => {
           {isSearching ? (
             <Loader2 className="w-5 h-5 animate-spin" />
           ) : (
-            'Buscar'
+            t('news.search')
           )}
         </Button>
       </div>
@@ -225,7 +239,7 @@ const NewsSearch: React.FC = () => {
           >
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/20 text-red-400 text-sm">
               <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-              Escuchando... Habla ahora
+              {t('news.listening')}
             </span>
           </motion.div>
         )}
@@ -243,7 +257,7 @@ const NewsSearch: React.FC = () => {
             <div className="p-4">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="text-sm font-medium text-slate-400">
-                  {isSearching ? 'Buscando...' : `${results.length} resultados encontrados`}
+                  {isSearching ? t('news.searching') : `${results.length} ${t('news.resultsFound')}`}
                 </h4>
                 <button
                   onClick={() => setShowResults(false)}
@@ -296,7 +310,7 @@ const NewsSearch: React.FC = () => {
                   {results.some(r => r.isAI) && (
                     <span className="inline-flex items-center gap-1">
                       <Sparkles className="w-3 h-3 text-primary" />
-                      Resultados obtenidos vía IA de fuentes oficiales
+                      {t('news.aiResults')}
                     </span>
                   )}
                 </p>
@@ -316,8 +330,8 @@ const NewsSearch: React.FC = () => {
             className="absolute top-full left-0 right-0 mt-3 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden z-50 p-8 text-center"
           >
             <Sparkles className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-            <p className="text-slate-400 mb-2">No se encontraron resultados para "{query}"</p>
-            <p className="text-sm text-slate-500">Intenta con otros términos de búsqueda</p>
+            <p className="text-slate-400 mb-2">{t('news.noResults')} "{query}"</p>
+            <p className="text-sm text-slate-500">{t('news.tryOther')}</p>
           </motion.div>
         )}
       </AnimatePresence>

@@ -2,9 +2,10 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, Tag, Sparkles, Shield, Newspaper, ArrowRight, Bell, Mail } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { es, enUS, fr, ca } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface NewsArticle {
   id: string;
@@ -30,6 +31,13 @@ const PremiumNewsSidebar: React.FC<PremiumNewsSidebarProps> = ({
   onTagClick,
   onArticleClick,
 }) => {
+  const { t, language } = useLanguage();
+
+  const getDateLocale = () => {
+    const locales: Record<string, typeof es> = { es, en: enUS, fr, ca };
+    return locales[language] || es;
+  };
+
   const importantNews = trendingNews.filter(a => 
     a.importance_level === 'critical' || a.importance_level === 'high'
   );
@@ -51,24 +59,24 @@ const PremiumNewsSidebar: React.FC<PremiumNewsSidebarProps> = ({
               <Bell className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">Alertas Premium</h3>
-              <p className="text-xs text-white/70">Noticias críticas en tu inbox</p>
+              <h3 className="text-lg font-bold text-white">{t('news.sidebar.premiumAlerts')}</h3>
+              <p className="text-xs text-white/70">{t('news.sidebar.criticalNews')}</p>
             </div>
           </div>
           
           <div className="space-y-3">
             <Input
-              placeholder="Tu email empresarial"
+              placeholder={t('news.sidebar.emailPlaceholder')}
               className="bg-white/10 border-white/20 text-white placeholder-white/50 focus:border-white/40 focus:ring-white/20"
             />
             <Button className="w-full bg-white text-emerald-600 hover:bg-white/90 font-semibold">
               <Mail className="w-4 h-4 mr-2" />
-              Suscribirse gratis
+              {t('news.sidebar.subscribeFree')}
             </Button>
           </div>
           
           <p className="text-xs text-white/60 mt-3 text-center">
-            Sin spam. Solo noticias relevantes para tu empresa.
+            {t('news.sidebar.noSpam')}
           </p>
         </div>
       </motion.div>
@@ -85,7 +93,7 @@ const PremiumNewsSidebar: React.FC<PremiumNewsSidebarProps> = ({
             <div className="p-2 bg-amber-500/20 rounded-lg">
               <Shield className="w-4 h-4 text-amber-400" />
             </div>
-            <h3 className="text-lg font-semibold text-white">Noticias Críticas</h3>
+            <h3 className="text-lg font-semibold text-white">{t('news.sidebar.criticalTitle')}</h3>
           </div>
           
           <div className="space-y-3">
@@ -128,9 +136,9 @@ const PremiumNewsSidebar: React.FC<PremiumNewsSidebarProps> = ({
             <div className="p-2 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-lg">
               <TrendingUp className="w-4 h-4 text-amber-400" />
             </div>
-            <h3 className="text-lg font-semibold text-white">Tendencias</h3>
+            <h3 className="text-lg font-semibold text-white">{t('news.sidebar.trending')}</h3>
           </div>
-          <span className="text-xs text-slate-500">Últimas 24h</span>
+          <span className="text-xs text-slate-500">{t('news.sidebar.last24h')}</span>
         </div>
         
         <div className="space-y-2">
@@ -155,7 +163,7 @@ const PremiumNewsSidebar: React.FC<PremiumNewsSidebarProps> = ({
                     {article.category}
                   </span>
                   <span>•</span>
-                  <span>{formatDistanceToNow(new Date(article.published_at), { locale: es })}</span>
+                  <span>{formatDistanceToNow(new Date(article.published_at), { locale: getDateLocale() })}</span>
                   {article.product_connection && (
                     <>
                       <span>•</span>
@@ -169,7 +177,7 @@ const PremiumNewsSidebar: React.FC<PremiumNewsSidebarProps> = ({
         </div>
         
         <Button variant="ghost" className="w-full mt-4 text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10">
-          Ver más tendencias
+          {t('news.sidebar.viewMore')}
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </motion.div>
@@ -185,7 +193,7 @@ const PremiumNewsSidebar: React.FC<PremiumNewsSidebarProps> = ({
           <div className="p-2 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-lg">
             <Tag className="w-4 h-4 text-purple-400" />
           </div>
-          <h3 className="text-lg font-semibold text-white">Tags Populares</h3>
+          <h3 className="text-lg font-semibold text-white">{t('news.sidebar.popularTags')}</h3>
         </div>
         
         <div className="flex flex-wrap gap-2">
@@ -231,37 +239,37 @@ const PremiumNewsSidebar: React.FC<PremiumNewsSidebarProps> = ({
               <Sparkles className="w-5 h-5 text-emerald-400" />
             </motion.div>
             <div>
-              <h3 className="text-lg font-bold text-white">Motor IA</h3>
-              <p className="text-xs text-slate-400">Análisis en tiempo real</p>
+              <h3 className="text-lg font-bold text-white">{t('news.sidebar.aiEngine')}</h3>
+              <p className="text-xs text-slate-400">{t('news.sidebar.realtime')}</p>
             </div>
           </div>
           
           <div className="grid grid-cols-2 gap-4">
             <div className="p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
               <p className="text-2xl font-bold text-emerald-400">{trendingNews.length}+</p>
-              <p className="text-xs text-slate-500 mt-1">Noticias analizadas</p>
+              <p className="text-xs text-slate-500 mt-1">{t('news.sidebar.analyzed')}</p>
             </div>
             <div className="p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
               <p className="text-2xl font-bold text-blue-400">5</p>
-              <p className="text-xs text-slate-500 mt-1">Fuentes activas</p>
+              <p className="text-xs text-slate-500 mt-1">{t('news.sidebar.activeSources')}</p>
             </div>
             <div className="p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
               <p className="text-2xl font-bold text-purple-400">
                 {trendingNews.filter(a => a.product_connection).length}
               </p>
-              <p className="text-xs text-slate-500 mt-1">Con ObelixIA</p>
+              <p className="text-xs text-slate-500 mt-1">{t('news.sidebar.withObelix')}</p>
             </div>
             <div className="p-3 bg-slate-800/50 rounded-xl border border-slate-700/50">
               <p className="text-2xl font-bold text-amber-400">{importantNews.length}</p>
-              <p className="text-xs text-slate-500 mt-1">Críticas</p>
+              <p className="text-xs text-slate-500 mt-1">{t('news.sidebar.criticalCount')}</p>
             </div>
           </div>
           
           <div className="mt-4 pt-4 border-t border-slate-700/50 flex items-center justify-between">
-            <span className="text-xs text-slate-500">Actualización automática</span>
+            <span className="text-xs text-slate-500">{t('news.sidebar.autoUpdate')}</span>
             <span className="flex items-center gap-1.5 text-xs">
               <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-              <span className="text-emerald-400 font-medium">En vivo</span>
+              <span className="text-emerald-400 font-medium">{t('news.sidebar.liveNow')}</span>
             </span>
           </div>
         </div>
@@ -278,13 +286,13 @@ const PremiumNewsSidebar: React.FC<PremiumNewsSidebarProps> = ({
         <div className="relative">
           <div className="flex items-center gap-3 mb-3">
             <Newspaper className="w-5 h-5 text-emerald-400" />
-            <span className="text-sm font-semibold text-white">Noticias que importan</span>
+            <span className="text-sm font-semibold text-white">{t('news.sidebar.newsMatters')}</span>
           </div>
           <p className="text-xs text-slate-400 mb-4 leading-relaxed">
-            ObelixIA analiza cada noticia para mostrarte exactamente cómo puede afectar a tu empresa y qué puedes hacer al respecto.
+            {t('news.sidebar.obelixAnalyzes')}
           </p>
           <Button className="w-full bg-emerald-500 hover:bg-emerald-600 text-white text-sm">
-            Más sobre ObelixIA
+            {t('news.sidebar.moreAboutObelix')}
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </div>
