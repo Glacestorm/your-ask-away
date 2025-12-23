@@ -22,6 +22,8 @@ interface LanguageProgressGridProps {
   languages: SupportedLanguage[];
   loading: boolean;
   onRefresh: () => void;
+  onInstallLanguage?: (locale: string) => void;
+  installingLocale?: string | null;
 }
 
 const getTierConfig = (tier: number) => {
@@ -43,7 +45,9 @@ const getStatusIcon = (progress: number) => {
 export const LanguageProgressGrid: React.FC<LanguageProgressGridProps> = ({
   languages,
   loading,
-  onRefresh
+  onRefresh,
+  onInstallLanguage,
+  installingLocale,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedTiers, setExpandedTiers] = useState<number[]>([1, 2, 3, 4]);
@@ -154,34 +158,61 @@ export const LanguageProgressGrid: React.FC<LanguageProgressGridProps> = ({
                     {/* Languages Grid */}
                     {isExpanded && (
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-4">
-                        {langs.map(lang => (
-                          <div
-                            key={lang.locale}
-                            className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/5 transition-colors"
-                          >
-                            <span className="text-xl">{lang.flag_emoji || '🌐'}</span>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <span className="font-medium text-sm truncate">
-                                  {lang.native_name || lang.name}
-                                </span>
-                                {lang.is_rtl && (
-                                  <Badge variant="outline" className="text-[10px] px-1">RTL</Badge>
-                                )}
+                        {langs.map(lang => {
+                          const isBase = ['es', 'en', 'ca', 'fr'].includes(lang.locale);
+                          const progress = lang.translation_progress || 0;
+                          const canInstall = !!onInstallLanguage && !isBase && progress === 0;
+
+                          return (
+                            <div
+                              key={lang.locale}
+                              className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/5 transition-colors"
+                            >
+                              <span className="text-xl">{lang.flag_emoji || '🌐'}</span>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium text-sm truncate">
+                                    {lang.native_name || lang.name}
+                                  </span>
+                                  {lang.is_rtl && (
+                                    <Badge variant="outline" className="text-[10px] px-1">RTL</Badge>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <Progress 
+                                    value={progress} 
+                                    className="flex-1 h-1.5" 
+                                  />
+                                  <span className="text-xs text-muted-foreground w-8">
+                                    {progress}%
+                                  </span>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-2 mt-1">
-                                <Progress 
-                                  value={lang.translation_progress || 0} 
-                                  className="flex-1 h-1.5" 
-                                />
-                                <span className="text-xs text-muted-foreground w-8">
-                                  {lang.translation_progress || 0}%
-                                </span>
+
+                              <div className="flex items-center gap-2 shrink-0">
+                                {canInstall && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      onInstallLanguage?.(lang.locale);
+                                    }}
+                                    disabled={installingLocale === lang.locale}
+                                  >
+                                    {installingLocale === lang.locale ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      'Instalar'
+                                    )}
+                                  </Button>
+                                )}
+                                {getStatusIcon(progress)}
                               </div>
                             </div>
-                            {getStatusIcon(lang.translation_progress || 0)}
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </div>
