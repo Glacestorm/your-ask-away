@@ -1273,4 +1273,13 @@ export default {
   'store.moduleDetail.benefit.support': 'Support technique par email',
   'store.moduleDetail.benefit.docs': 'Documentation complète',
   'store.moduleDetail.benefit.deployment': 'Installation SaaS ou On-Premise',
+  'store.moduleDetail.cert.iso27001': 'Gestion de la sécurité',
+  'store.moduleDetail.cert.gdpr': 'Protection des données',
+  'store.moduleDetail.cert.dora': 'Résilience opérationnelle',
+  'store.moduleDetail.cert.nis2': 'Cybersécurité',
+  'store.moduleDetail.defaultFeatures.dataManagement': 'Gestion complète des données',
+  'store.moduleDetail.defaultFeatures.dashboard': 'Tableau de bord interactif',
+  'store.moduleDetail.defaultFeatures.reports': 'Rapports et analyses',
+  'store.moduleDetail.defaultFeatures.export': 'Exportation de données',
+  'store.moduleDetail.defaultFeatures.api': 'API d\'intégration',
 };

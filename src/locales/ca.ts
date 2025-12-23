@@ -1276,4 +1276,13 @@ export default {
   'store.moduleDetail.benefit.support': 'Suport tècnic per email',
   'store.moduleDetail.benefit.docs': 'Documentació completa',
   'store.moduleDetail.benefit.deployment': 'Instal·lació SaaS o On-Premise',
+  'store.moduleDetail.cert.iso27001': 'Gestió de seguretat',
+  'store.moduleDetail.cert.gdpr': 'Protecció de dades',
+  'store.moduleDetail.cert.dora': 'Resiliència operativa',
+  'store.moduleDetail.cert.nis2': 'Ciberseguretat',
+  'store.moduleDetail.defaultFeatures.dataManagement': 'Gestió completa de dades',
+  'store.moduleDetail.defaultFeatures.dashboard': 'Panell de control interactiu',
+  'store.moduleDetail.defaultFeatures.reports': 'Informes i analítiques',
+  'store.moduleDetail.defaultFeatures.export': 'Exportació de dades',
+  'store.moduleDetail.defaultFeatures.api': 'API d\'integració',
 };

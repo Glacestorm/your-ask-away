@@ -109,6 +109,15 @@ const StoreModuleDetail: React.FC = () => {
 
   const [translatedName, setTranslatedName] = useState<string | null>(null);
   const [translatedDescription, setTranslatedDescription] = useState<string | null>(null);
+  const [translatedExtendedInfo, setTranslatedExtendedInfo] = useState<{
+    compatibility: string[];
+    highlights: string[];
+    useCases: string[];
+    requirements: string[];
+    support: string[];
+    security: string[];
+    premiumFeatures?: string[];
+  } | null>(null);
 
   useEffect(() => {
     if (!module) return;
@@ -116,6 +125,7 @@ const StoreModuleDetail: React.FC = () => {
     if (language === 'es') {
       setTranslatedName(null);
       setTranslatedDescription(null);
+      setTranslatedExtendedInfo(null);
       return;
     }
 
@@ -130,6 +140,120 @@ const StoreModuleDetail: React.FC = () => {
       if (!cancelled) {
         setTranslatedName(name);
         setTranslatedDescription(desc);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [language, module, translateAsync]);
+
+  // Translate extended info dynamically
+  useEffect(() => {
+    if (!module) return;
+
+    const baseCompatibility = ['PostgreSQL 14+', 'React 18+', 'Node.js 18+'];
+    const baseRequirements = ['Supabase o PostgreSQL local', 'Autenticación configurada', 'Mínimo 2GB RAM'];
+    const baseSupport = ['Documentación completa', 'Soporte por email', 'Actualizaciones durante 1 año'];
+    const baseSecurity = ['Cifrado AES-256', 'RLS (Row Level Security)', 'Auditoría de accesos', 'Cumplimiento GDPR'];
+    
+    let highlights: string[] = [];
+    let useCases: string[] = [];
+    let premiumFeatures: string[] = [];
+
+    if (module.category === 'core') {
+      highlights = [
+        'Módulo esencial incluido en todas las instalaciones',
+        'Base para todos los demás módulos',
+        'Gestión centralizada de datos',
+        'Dashboard principal integrado',
+      ];
+      useCases = [
+        'Gestión de empresas y contactos',
+        'Panel de control principal',
+        'Configuración del sistema',
+        'Gestión de usuarios y roles',
+      ];
+    } else if (module.category === 'horizontal') {
+      highlights = [
+        'Compatible con todos los sectores',
+        'Integración nativa con módulos core',
+        'Escalable para grandes volúmenes',
+        'API REST completa',
+      ];
+      useCases = [
+        'Visitas comerciales y seguimiento',
+        'Análisis financiero y contable',
+        'Gestión de objetivos y KPIs',
+        'Notificaciones y alertas',
+      ];
+    } else {
+      highlights = [
+        'Especializado para sector específico',
+        'Normativas sectoriales integradas',
+        'Ratios y métricas especializadas',
+        'Informes regulatorios automáticos',
+      ];
+      useCases = [
+        'Cumplimiento normativo sectorial',
+        'Análisis especializado del sector',
+        'Generación de informes de auditoría',
+        'Gestión de riesgos sectoriales',
+      ];
+      premiumFeatures = [
+        'Soporte prioritario 24/7',
+        'Onboarding personalizado',
+        'SLA garantizado 99.9%',
+        'Acceso anticipado a nuevas funciones',
+      ];
+    }
+
+    if (language === 'es') {
+      setTranslatedExtendedInfo({
+        compatibility: baseCompatibility,
+        highlights,
+        useCases,
+        requirements: baseRequirements,
+        support: baseSupport,
+        security: baseSecurity,
+        premiumFeatures: premiumFeatures.length > 0 ? premiumFeatures : undefined,
+      });
+      return;
+    }
+
+    let cancelled = false;
+
+    (async () => {
+      const translateArray = async (arr: string[]) => {
+        return Promise.all(arr.map(item => translateAsync(item, language, 'es')));
+      };
+
+      const [
+        translatedHighlights,
+        translatedUseCases,
+        translatedRequirements,
+        translatedSupport,
+        translatedSecurity,
+        translatedPremiumFeatures,
+      ] = await Promise.all([
+        translateArray(highlights),
+        translateArray(useCases),
+        translateArray(baseRequirements),
+        translateArray(baseSupport),
+        translateArray(baseSecurity),
+        premiumFeatures.length > 0 ? translateArray(premiumFeatures) : Promise.resolve([]),
+      ]);
+
+      if (!cancelled) {
+        setTranslatedExtendedInfo({
+          compatibility: baseCompatibility, // no translation needed for tech names
+          highlights: translatedHighlights,
+          useCases: translatedUseCases,
+          requirements: translatedRequirements,
+          support: translatedSupport,
+          security: translatedSecurity,
+          premiumFeatures: translatedPremiumFeatures.length > 0 ? translatedPremiumFeatures : undefined,
+        });
       }
     })();
 
@@ -188,76 +312,26 @@ const StoreModuleDetail: React.FC = () => {
       ? (module.features as { list: string[] }).list
       : [];
 
-  // Extended module information based on category
-  const getExtendedInfo = () => {
-    const baseInfo = {
-      compatibility: ['PostgreSQL 14+', 'React 18+', 'Node.js 18+'],
-      requirements: ['Supabase o PostgreSQL local', 'Autenticación configurada', 'Mínimo 2GB RAM'],
-      support: ['Documentación completa', 'Soporte por email', 'Actualizaciones durante 1 año'],
-      security: ['Cifrado AES-256', 'RLS (Row Level Security)', 'Auditoría de accesos', 'Cumplimiento GDPR'],
-    };
-
-    if (module.category === 'core') {
-      return {
-        ...baseInfo,
-        highlights: [
-          'Módulo esencial incluido en todas las instalaciones',
-          'Base para todos los demás módulos',
-          'Gestión centralizada de datos',
-          'Dashboard principal integrado',
-        ],
-        useCases: [
-          'Gestión de empresas y contactos',
-          'Panel de control principal',
-          'Configuración del sistema',
-          'Gestión de usuarios y roles',
-        ],
-      };
-    }
-
-    if (module.category === 'horizontal') {
-      return {
-        ...baseInfo,
-        highlights: [
-          'Compatible con todos los sectores',
-          'Integración nativa con módulos core',
-          'Escalable para grandes volúmenes',
-          'API REST completa',
-        ],
-        useCases: [
-          'Visitas comerciales y seguimiento',
-          'Análisis financiero y contable',
-          'Gestión de objetivos y KPIs',
-          'Notificaciones y alertas',
-        ],
-      };
-    }
-
-    // Vertical / Premium
-    return {
-      ...baseInfo,
-      highlights: [
-        'Especializado para sector específico',
-        'Normativas sectoriales integradas',
-        'Ratios y métricas especializadas',
-        'Informes regulatorios automáticos',
-      ],
-      useCases: [
-        'Cumplimiento normativo sectorial',
-        'Análisis especializado del sector',
-        'Generación de informes de auditoría',
-        'Gestión de riesgos sectoriales',
-      ],
-      premiumFeatures: [
-        'Soporte prioritario 24/7',
-        'Onboarding personalizado',
-        'SLA garantizado 99.9%',
-        'Acceso anticipado a nuevas funciones',
-      ],
-    };
+  // Extended module information - use translated version if available
+  const extendedInfo = translatedExtendedInfo ?? {
+    compatibility: ['PostgreSQL 14+', 'React 18+', 'Node.js 18+'],
+    requirements: ['Supabase o PostgreSQL local', 'Autenticación configurada', 'Mínimo 2GB RAM'],
+    support: ['Documentación completa', 'Soporte por email', 'Actualizaciones durante 1 año'],
+    security: ['Cifrado AES-256', 'RLS (Row Level Security)', 'Auditoría de accesos', 'Cumplimiento GDPR'],
+    highlights: module.category === 'core' 
+      ? ['Módulo esencial incluido en todas las instalaciones', 'Base para todos los demás módulos', 'Gestión centralizada de datos', 'Dashboard principal integrado']
+      : module.category === 'horizontal'
+        ? ['Compatible con todos los sectores', 'Integración nativa con módulos core', 'Escalable para grandes volúmenes', 'API REST completa']
+        : ['Especializado para sector específico', 'Normativas sectoriales integradas', 'Ratios y métricas especializadas', 'Informes regulatorios automáticos'],
+    useCases: module.category === 'core'
+      ? ['Gestión de empresas y contactos', 'Panel de control principal', 'Configuración del sistema', 'Gestión de usuarios y roles']
+      : module.category === 'horizontal'
+        ? ['Visitas comerciales y seguimiento', 'Análisis financiero y contable', 'Gestión de objetivos y KPIs', 'Notificaciones y alertas']
+        : ['Cumplimiento normativo sectorial', 'Análisis especializado del sector', 'Generación de informes de auditoría', 'Gestión de riesgos sectoriales'],
+    premiumFeatures: module.category === 'vertical' 
+      ? ['Soporte prioritario 24/7', 'Onboarding personalizado', 'SLA garantizado 99.9%', 'Acceso anticipado a nuevas funciones'] 
+      : undefined,
   };
-
-  const extendedInfo = getExtendedInfo();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -458,23 +532,23 @@ const StoreModuleDetail: React.FC = () => {
                       <>
                         <div className="flex items-start gap-3 text-slate-300">
                           <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-1" />
-                          <span>Gestión completa de datos</span>
+                          <span>{t('store.moduleDetail.defaultFeatures.dataManagement')}</span>
                         </div>
                         <div className="flex items-start gap-3 text-slate-300">
                           <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-1" />
-                          <span>Panel de control interactivo</span>
+                          <span>{t('store.moduleDetail.defaultFeatures.dashboard')}</span>
                         </div>
                         <div className="flex items-start gap-3 text-slate-300">
                           <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-1" />
-                          <span>Informes y analíticas</span>
+                          <span>{t('store.moduleDetail.defaultFeatures.reports')}</span>
                         </div>
                         <div className="flex items-start gap-3 text-slate-300">
                           <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-1" />
-                          <span>Exportación de datos</span>
+                          <span>{t('store.moduleDetail.defaultFeatures.export')}</span>
                         </div>
                         <div className="flex items-start gap-3 text-slate-300">
                           <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-1" />
-                          <span>API de integración</span>
+                          <span>{t('store.moduleDetail.defaultFeatures.api')}</span>
                         </div>
                       </>
                     )}
@@ -661,25 +735,25 @@ const StoreModuleDetail: React.FC = () => {
                       <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
                         ISO 27001
                       </Badge>
-                      <span className="text-sm">Gestión de seguridad</span>
+                      <span className="text-sm">{t('store.moduleDetail.cert.iso27001')}</span>
                     </div>
                     <div className="flex items-center gap-3 text-slate-300">
                       <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
                         GDPR
                       </Badge>
-                      <span className="text-sm">Protección de datos</span>
+                      <span className="text-sm">{t('store.moduleDetail.cert.gdpr')}</span>
                     </div>
                     <div className="flex items-center gap-3 text-slate-300">
                       <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">
                         DORA
                       </Badge>
-                      <span className="text-sm">Resiliencia operativa</span>
+                      <span className="text-sm">{t('store.moduleDetail.cert.dora')}</span>
                     </div>
                     <div className="flex items-center gap-3 text-slate-300">
                       <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30">
                         NIS2
                       </Badge>
-                      <span className="text-sm">Ciberseguridad</span>
+                      <span className="text-sm">{t('store.moduleDetail.cert.nis2')}</span>
                     </div>
                   </div>
                 </CardContent>
