@@ -381,10 +381,14 @@ export default function RemoteSupportPage() {
                   </CardContent>
                 </Card>
 
-                {/* Quick Action Log */}
+                {/* Quick Action Log with Voice Commands */}
                 <ActionQuickLog 
                   onLogAction={logAction} 
-                  isLogging={isLogging} 
+                  isLogging={isLogging}
+                  onSessionCommand={(command) => {
+                    if (command === 'pause') handlePauseSession();
+                    else if (command === 'end') handleEndSession();
+                  }}
                 />
 
                 {/* Session Summary with AI Copilot */}
