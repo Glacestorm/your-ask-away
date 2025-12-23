@@ -5,14 +5,16 @@ import frTranslations from '@/locales/fr';
 import enTranslations from '@/locales/en';
 import { supabase } from '@/integrations/supabase/client';
 
-// Expanded to support 65+ languages
+// Expanded to support 65+ languages including Spanish regional languages
 export type Language = 
   | 'ca' | 'es' | 'fr' | 'en' 
   | 'de' | 'pt' | 'pt-BR' | 'it' | 'zh-CN' | 'ja' | 'ko' | 'ru'
   | 'nl' | 'pl' | 'cs' | 'ro' | 'hu' | 'sv' | 'da' | 'no' | 'fi' | 'el' | 'tr' | 'uk' | 'ar' | 'he'
   | 'zh-TW' | 'th' | 'vi' | 'id' | 'ms' | 'hi' | 'bn' | 'tl' | 'ur' | 'fa' | 'bg' | 'hr' | 'sk' | 'sl' | 'et' | 'lv' | 'lt'
   | 'es-MX' | 'es-AR' | 'en-US' | 'fr-CA' | 'af'
-  | 'ga' | 'is' | 'mt' | 'lb' | 'bs' | 'sr' | 'mk' | 'sq' | 'ka' | 'hy' | 'az' | 'kk' | 'uz' | 'ne' | 'si' | 'my' | 'km' | 'lo' | 'am' | 'sw' | 'ha' | 'yo' | 'ig';
+  | 'ga' | 'is' | 'mt' | 'lb' | 'bs' | 'sr' | 'mk' | 'sq' | 'ka' | 'hy' | 'az' | 'kk' | 'uz' | 'ne' | 'si' | 'my' | 'km' | 'lo' | 'am' | 'sw' | 'ha' | 'yo' | 'ig'
+  // Spanish regional languages
+  | 'eu' | 'gl' | 'oc' | 'ast' | 'an';
 
 interface LanguageContextType {
   language: Language;
@@ -72,13 +74,15 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 const STORAGE_KEY = 'app-language';
 
-// All supported locale codes
+// All supported locale codes including Spanish regional languages
 const SUPPORTED_LOCALES: Language[] = [
   'ca', 'es', 'fr', 'en', 'de', 'pt', 'pt-BR', 'it', 'zh-CN', 'ja', 'ko', 'ru',
   'nl', 'pl', 'cs', 'ro', 'hu', 'sv', 'da', 'no', 'fi', 'el', 'tr', 'uk', 'ar', 'he',
   'zh-TW', 'th', 'vi', 'id', 'ms', 'hi', 'bn', 'tl', 'ur', 'fa', 'bg', 'hr', 'sk', 'sl', 'et', 'lv', 'lt',
   'es-MX', 'es-AR', 'en-US', 'fr-CA', 'af',
-  'ga', 'is', 'mt', 'lb', 'bs', 'sr', 'mk', 'sq', 'ka', 'hy', 'az', 'kk', 'uz', 'ne', 'si', 'my', 'km', 'lo', 'am', 'sw', 'ha', 'yo', 'ig'
+  'ga', 'is', 'mt', 'lb', 'bs', 'sr', 'mk', 'sq', 'ka', 'hy', 'az', 'kk', 'uz', 'ne', 'si', 'my', 'km', 'lo', 'am', 'sw', 'ha', 'yo', 'ig',
+  // Spanish regional languages
+  'eu', 'gl', 'oc', 'ast', 'an'
 ];
 
 const getInitialLanguage = (): Language => {

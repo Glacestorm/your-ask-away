@@ -41,7 +41,7 @@ export const TranslationBatchPanel: React.FC<TranslationBatchPanelProps> = ({
   const { toast } = useToast();
   const [jobs, setJobs] = useState<Record<string, TranslationJob>>({});
   const [isTranslating, setIsTranslating] = useState(false);
-  const [selectedTiers, setSelectedTiers] = useState<number[]>([2]);
+  const [selectedTiers, setSelectedTiers] = useState<number[]>([1, 2]);
   const [isSeeding, setIsSeeding] = useState(false);
   const [spanishKeysCount, setSpanishKeysCount] = useState<number | null>(null);
 
@@ -184,6 +184,7 @@ export const TranslationBatchPanel: React.FC<TranslationBatchPanelProps> = ({
   const handleTranslateAll = async () => {
     setIsTranslating(true);
     
+    // Exclude base static languages (es, ca, fr, en) but include regional languages like eu, gl, etc.
     const targetLanguages = languages.filter(
       l => selectedTiers.includes(l.tier || 1) && 
            !['es', 'ca', 'fr', 'en'].includes(l.locale) && 
@@ -219,6 +220,7 @@ export const TranslationBatchPanel: React.FC<TranslationBatchPanelProps> = ({
     return configs[tier] || { label: 'Other', color: 'bg-muted text-muted-foreground' };
   };
 
+  // Group languages by tier, excluding only base static languages
   const groupedByTier = languages
     .filter(l => l.is_active && !['es', 'ca', 'fr', 'en'].includes(l.locale))
     .reduce((acc, lang) => {
@@ -320,7 +322,7 @@ export const TranslationBatchPanel: React.FC<TranslationBatchPanelProps> = ({
                           checked ? [...prev, tier] : prev.filter(t => t !== tier)
                         );
                       }}
-                      disabled={tier === 1}
+                      disabled={false}
                     />
                   </div>
                   <p className="text-sm text-muted-foreground">
