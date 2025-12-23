@@ -10,23 +10,39 @@ const StoreFooter: React.FC = () => {
   const { t } = useLanguage();
 
   // Get footer groups from centralized navigation
-  const productGroup = footerNavigation.find(g => g.id === 'productos');
-  const solutionsGroup = footerNavigation.find(g => g.id === 'soluciones');
-  const developersGroup = footerNavigation.find(g => g.id === 'desarrolladores');
-  const companyGroup = footerNavigation.find(g => g.id === 'empresa');
-  const legalGroup = footerNavigation.find(g => g.id === 'legal');
+  const productGroup = footerNavigation.find((g) => g.id === 'productos');
+  const solutionsGroup = footerNavigation.find((g) => g.id === 'soluciones');
+  const developersGroup = footerNavigation.find((g) => g.id === 'desarrolladores');
+  const companyGroup = footerNavigation.find((g) => g.id === 'empresa');
+  const legalGroup = footerNavigation.find((g) => g.id === 'legal');
 
-  const FooterLinkGroup = ({ title, titleKey, items }: { title: string; titleKey?: string; items: { id: string; label: string; href: string }[] }) => (
+  const getItemLabel = (item: { id: string; label: string; labelKey?: string }): string => {
+    if (item.labelKey) {
+      const byKey = t(item.labelKey);
+      if (byKey !== item.labelKey) return byKey;
+    }
+
+    const footerKey = `footer.${item.id}`;
+    const byFooterKey = t(footerKey);
+    return byFooterKey !== footerKey ? byFooterKey : item.label;
+  };
+
+  const FooterLinkGroup = ({
+    title,
+    titleKey,
+    items,
+  }: {
+    title: string;
+    titleKey?: string;
+    items: { id: string; label: string; labelKey?: string; href: string }[];
+  }) => (
     <div>
       <h4 className="font-medium text-slate-200 mb-4">{titleKey ? t(titleKey) : title}</h4>
       <ul className="space-y-3">
         {items.map((item) => (
           <li key={item.id}>
-            <Link 
-              to={item.href} 
-              className="text-slate-400 hover:text-white transition-colors duration-200 text-sm"
-            >
-              {t(`footer.${item.id}`) !== `footer.${item.id}` ? t(`footer.${item.id}`) : item.label}
+            <Link to={item.href} className="text-slate-400 hover:text-white transition-colors duration-200 text-sm">
+              {getItemLabel(item)}
             </Link>
           </li>
         ))}
@@ -44,21 +60,19 @@ const StoreFooter: React.FC = () => {
             <Link to="/store" className="inline-block mb-6">
               <ObelixiaLogo size="md" variant="full" animated={false} dark />
             </Link>
-            <p className="text-slate-400 text-sm leading-relaxed mb-8 max-w-sm">
-              {t('footer.description')}
-            </p>
-            
+            <p className="text-slate-400 text-sm leading-relaxed mb-8 max-w-sm">{t('footer.description')}</p>
+
             {/* Contact Info */}
             <div className="space-y-3">
-              <a 
-                href="mailto:jfernandez@obelixia.com" 
+              <a
+                href="mailto:jfernandez@obelixia.com"
                 className="flex items-center gap-3 text-sm text-slate-400 hover:text-white transition-colors group"
               >
                 <Mail className="w-4 h-4 text-slate-500 group-hover:text-primary transition-colors" />
                 jfernandez@obelixia.com
               </a>
-              <a 
-                href="tel:+34606770033" 
+              <a
+                href="tel:+34606770033"
                 className="flex items-center gap-3 text-sm text-slate-400 hover:text-white transition-colors group"
               >
                 <Phone className="w-4 h-4 text-slate-500 group-hover:text-primary transition-colors" />
@@ -66,16 +80,24 @@ const StoreFooter: React.FC = () => {
               </a>
               <div className="flex items-center gap-3 text-sm text-slate-400">
                 <MapPin className="w-4 h-4 text-slate-500" />
-                León, España
+                {t('footer.location')}
               </div>
             </div>
           </div>
 
           {/* Link Columns */}
-          {productGroup && <FooterLinkGroup title={productGroup.title} titleKey={productGroup.titleKey} items={productGroup.items} />}
-          {solutionsGroup && <FooterLinkGroup title={solutionsGroup.title} titleKey={solutionsGroup.titleKey} items={solutionsGroup.items} />}
-          {developersGroup && <FooterLinkGroup title={developersGroup.title} titleKey={developersGroup.titleKey} items={developersGroup.items} />}
-          {companyGroup && <FooterLinkGroup title={companyGroup.title} titleKey={companyGroup.titleKey} items={companyGroup.items} />}
+          {productGroup && (
+            <FooterLinkGroup title={productGroup.title} titleKey={productGroup.titleKey} items={productGroup.items} />
+          )}
+          {solutionsGroup && (
+            <FooterLinkGroup title={solutionsGroup.title} titleKey={solutionsGroup.titleKey} items={solutionsGroup.items} />
+          )}
+          {developersGroup && (
+            <FooterLinkGroup title={developersGroup.title} titleKey={developersGroup.titleKey} items={developersGroup.items} />
+          )}
+          {companyGroup && (
+            <FooterLinkGroup title={companyGroup.title} titleKey={companyGroup.titleKey} items={companyGroup.items} />
+          )}
         </div>
       </div>
 
@@ -85,9 +107,7 @@ const StoreFooter: React.FC = () => {
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             {/* Copyright & Legal */}
             <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
-              <p className="text-sm text-slate-500">
-                {t('footer.copyright').replace('{year}', String(currentYear))}
-              </p>
+              <p className="text-sm text-slate-500">{t('footer.copyright').replace('{year}', String(currentYear))}</p>
               {legalGroup && (
                 <div className="flex items-center gap-6">
                   {legalGroup.items.slice(0, 3).map((item) => (
@@ -96,7 +116,7 @@ const StoreFooter: React.FC = () => {
                       to={item.href}
                       className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
                     >
-                      {item.label}
+                      {getItemLabel(item)}
                     </Link>
                   ))}
                 </div>
@@ -105,25 +125,25 @@ const StoreFooter: React.FC = () => {
 
             {/* Social Links */}
             <div className="flex items-center gap-4">
-              <a 
-                href="https://linkedin.com" 
-                target="_blank" 
+              <a
+                href="https://linkedin.com"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-slate-800/50 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-all duration-200"
               >
                 <Linkedin className="w-4 h-4" />
               </a>
-              <a 
-                href="https://twitter.com" 
-                target="_blank" 
+              <a
+                href="https://twitter.com"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-slate-800/50 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-all duration-200"
               >
                 <Twitter className="w-4 h-4" />
               </a>
-              <a 
-                href="https://github.com" 
-                target="_blank" 
+              <a
+                href="https://github.com"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 rounded-full bg-slate-800/50 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-all duration-200"
               >
@@ -138,3 +158,4 @@ const StoreFooter: React.FC = () => {
 };
 
 export default StoreFooter;
+
