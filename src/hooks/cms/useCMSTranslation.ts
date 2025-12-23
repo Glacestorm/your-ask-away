@@ -10,6 +10,9 @@ interface TranslationCache {
 
 const cache: TranslationCache = {};
 
+// Cache for AI translations (keyed by "source|target|text")
+const translateCache: Record<string, string> = {};
+
 export function useCMSTranslation(namespace: string = 'common') {
   const [translations, setTranslations] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -69,19 +72,27 @@ export function useCMSTranslation(namespace: string = 'common') {
       targetLocale: string,
       sourceLocaleOverride?: string
     ): Promise<string> => {
+      const sourceLocale = sourceLocaleOverride ?? language;
+      const cacheKey = `${sourceLocale}|${targetLocale}|${text}`;
+
+      if (translateCache[cacheKey]) return translateCache[cacheKey];
+
       try {
         const { data, error } = await supabase.functions.invoke('cms-translate-content', {
           body: {
             text,
-            sourceLocale: sourceLocaleOverride ?? language,
+            sourceLocale,
             targetLocale,
           },
         });
 
         if (error) throw error;
-        return data.translatedText;
+        const translated = data.translatedText as string;
+        translateCache[cacheKey] = translated;
+        return translated;
       } catch (err) {
         console.error('Translation error:', err);
+        translateCache[cacheKey] = text;
         return text;
       }
     },
