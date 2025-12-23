@@ -13,6 +13,7 @@ import { SessionDetailView } from '@/components/admin/remote-support/SessionDeta
 import { SessionSummaryCard } from '@/components/admin/remote-support/SessionSummaryCard';
 import { ActionQuickLog } from '@/components/admin/remote-support/ActionQuickLog';
 import { CopilotFloatingPanel } from '@/components/admin/remote-support/CopilotFloatingPanel';
+import { VoiceAgentPanel } from '@/components/admin/remote-support/VoiceAgentPanel';
 import { SupportAnalyticsDashboard } from '@/components/admin/remote-support/SupportAnalyticsDashboard';
 import { DualApprovalWorkflow } from '@/components/admin/remote-support/DualApprovalWorkflow';
 import { SessionExportButton } from '@/components/admin/remote-support/SessionExportButton';
@@ -398,8 +399,8 @@ export default function RemoteSupportPage() {
                   }}
                 />
 
-                {/* Session Summary with AI Copilot */}
-                <div className="grid gap-6 lg:grid-cols-4">
+                {/* Session Summary with AI Copilot and Voice Agent */}
+                <div className="grid gap-6 lg:grid-cols-5">
                   <div className="lg:col-span-2">
                     <SessionActionsTimeline sessionId={activeSession.id} />
                   </div>
@@ -422,6 +423,15 @@ export default function RemoteSupportPage() {
                           title: `Análisis: Riesgo ${analysis.riskLevel}`,
                           description: analysis.recommendations[0] || 'Análisis completado'
                         });
+                      }}
+                    />
+                  </div>
+                  <div className="lg:col-span-1">
+                    <VoiceAgentPanel 
+                      sessionId={activeSession.id}
+                      clientName={activeSession.client_name || undefined}
+                      onTranscript={(text, role) => {
+                        console.log(`[VoiceAgent] ${role}: ${text}`);
                       }}
                     />
                   </div>
