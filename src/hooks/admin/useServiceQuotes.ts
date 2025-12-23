@@ -1,12 +1,15 @@
 /**
  * Hook for managing service quotes (presupuestos)
  * Handles CRUD operations, status management, and client approval workflow
+ * 
+ * KB Pattern: lastRefresh, typed errors, auto-refresh
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// === TYPES ===
 export type ServiceType =
   | 'remote_support'
   | 'installation'
@@ -99,12 +102,28 @@ export interface CreateQuoteParams {
   paymentTerms?: string;
 }
 
+// KB Pattern: Typed error interface
+export interface QuotesError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export function useServiceQuotes(installationId?: string) {
   const [quotes, setQuotes] = useState<ServiceQuote[]>([]);
   const [currentQuote, setCurrentQuote] = useState<ServiceQuote | null>(null);
   const [quoteItems, setQuoteItems] = useState<ServiceQuoteItem[]>([]);
   const [quoteHistory, setQuoteHistory] = useState<QuoteHistoryEntry[]>([]);
   const [loading, setLoading] = useState(false);
+  
+  // KB Pattern: lastRefresh state
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  
+  // KB Pattern: Typed error state
+  const [error, setError] = useState<QuotesError | null>(null);
+  
+  // KB Pattern: Auto-refresh refs
+  const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch quotes for an installation
   const fetchQuotes = useCallback(async (targetInstallationId?: string) => {
@@ -112,26 +131,58 @@ export function useServiceQuotes(installationId?: string) {
     if (!instId) return;
 
     setLoading(true);
+    setError(null);
+    
     try {
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('service_quotes')
         .select('*')
         .eq('installation_id', instId)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (fetchError) throw fetchError;
+      
       setQuotes((data || []) as unknown as ServiceQuote[]);
-    } catch (error) {
-      console.error('Error fetching quotes:', error);
+      setLastRefresh(new Date());
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      console.error('Error fetching quotes:', err);
+      setError({ code: 'FETCH_ERROR', message, details: { installationId: instId } });
       toast.error('Error al cargar presupuestos');
     } finally {
       setLoading(false);
     }
   }, [installationId]);
 
+  // KB Pattern: Auto-refresh methods
+  const startAutoRefresh = useCallback((targetInstallationId?: string, intervalMs = 60000) => {
+    stopAutoRefresh();
+    const instId = targetInstallationId || installationId;
+    if (!instId) return;
+    
+    fetchQuotes(instId);
+    autoRefreshInterval.current = setInterval(() => {
+      fetchQuotes(instId);
+    }, intervalMs);
+  }, [fetchQuotes, installationId]);
+
+  const stopAutoRefresh = useCallback(() => {
+    if (autoRefreshInterval.current) {
+      clearInterval(autoRefreshInterval.current);
+      autoRefreshInterval.current = null;
+    }
+  }, []);
+
+  // KB Pattern: Cleanup on unmount
+  useEffect(() => {
+    return () => stopAutoRefresh();
+  }, [stopAutoRefresh]);
+
   // Fetch a specific quote with items and history
   const fetchQuote = useCallback(async (quoteId: string) => {
     setLoading(true);
+    setError(null);
+    
     try {
       // Fetch quote
       const { data: quoteData, error: quoteError } = await supabase
@@ -163,9 +214,12 @@ export function useServiceQuotes(installationId?: string) {
       if (historyError) throw historyError;
       setQuoteHistory((historyData || []) as unknown as QuoteHistoryEntry[]);
 
+      setLastRefresh(new Date());
       return quoteData as ServiceQuote;
-    } catch (error) {
-      console.error('Error fetching quote:', error);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      console.error('Error fetching quote:', err);
+      setError({ code: 'FETCH_QUOTE_ERROR', message, details: { quoteId } });
       toast.error('Error al cargar presupuesto');
       return null;
     } finally {
@@ -176,6 +230,8 @@ export function useServiceQuotes(installationId?: string) {
   // Create a new quote
   const createQuote = useCallback(async (params: CreateQuoteParams): Promise<ServiceQuote | null> => {
     setLoading(true);
+    setError(null);
+    
     try {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error('Usuario no autenticado');
@@ -214,20 +270,22 @@ export function useServiceQuotes(installationId?: string) {
         created_by: userData.user.id,
       };
 
-      const { data, error } = await supabase
+      const { data, error: insertError } = await supabase
         .from('service_quotes')
         .insert(insertData as any)
         .select()
         .single();
 
-      if (error) throw error;
+      if (insertError) throw insertError;
 
       const newQuote = data as unknown as ServiceQuote;
       setQuotes(prev => [newQuote, ...prev]);
       toast.success('Presupuesto creado correctamente');
       return newQuote;
-    } catch (error) {
-      console.error('Error creating quote:', error);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      console.error('Error creating quote:', err);
+      setError({ code: 'CREATE_ERROR', message });
       toast.error('Error al crear presupuesto');
       return null;
     } finally {
@@ -243,7 +301,7 @@ export function useServiceQuotes(installationId?: string) {
     try {
       const totalPrice = item.quantity * item.unit_price * (1 - (item.discount_percentage || 0) / 100);
 
-      const { data, error } = await supabase
+      const { data, error: insertError } = await supabase
         .from('service_quote_items')
         .insert({
           quote_id: quoteId,
@@ -253,7 +311,7 @@ export function useServiceQuotes(installationId?: string) {
         .select()
         .single();
 
-      if (error) throw error;
+      if (insertError) throw insertError;
 
       const newItem = data as ServiceQuoteItem;
       setQuoteItems(prev => [...prev, newItem]);
@@ -262,8 +320,10 @@ export function useServiceQuotes(installationId?: string) {
       await recalculateQuoteTotals(quoteId);
 
       return newItem;
-    } catch (error) {
-      console.error('Error adding quote item:', error);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      console.error('Error adding quote item:', err);
+      setError({ code: 'ADD_ITEM_ERROR', message, details: { quoteId } });
       toast.error('Error al añadir línea');
       return null;
     }
@@ -272,18 +332,20 @@ export function useServiceQuotes(installationId?: string) {
   // Remove item from quote
   const removeQuoteItem = useCallback(async (itemId: string, quoteId: string) => {
     try {
-      const { error } = await supabase
+      const { error: deleteError } = await supabase
         .from('service_quote_items')
         .delete()
         .eq('id', itemId);
 
-      if (error) throw error;
+      if (deleteError) throw deleteError;
 
       setQuoteItems(prev => prev.filter(i => i.id !== itemId));
       await recalculateQuoteTotals(quoteId);
       toast.success('Línea eliminada');
-    } catch (error) {
-      console.error('Error removing quote item:', error);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      console.error('Error removing quote item:', err);
+      setError({ code: 'REMOVE_ITEM_ERROR', message, details: { itemId, quoteId } });
       toast.error('Error al eliminar línea');
     }
   }, []);
@@ -291,11 +353,11 @@ export function useServiceQuotes(installationId?: string) {
   // Recalculate quote totals based on items
   const recalculateQuoteTotals = useCallback(async (quoteId: string) => {
     try {
-      const { data, error } = await supabase.rpc('calculate_quote_totals', {
+      const { data, error: rpcError } = await supabase.rpc('calculate_quote_totals', {
         p_quote_id: quoteId,
       });
 
-      if (error) throw error;
+      if (rpcError) throw rpcError;
 
       if (data && data[0]) {
         const { subtotal, tax_amount, total } = data[0];
@@ -317,8 +379,8 @@ export function useServiceQuotes(installationId?: string) {
           total_price: total,
         } : null);
       }
-    } catch (error) {
-      console.error('Error recalculating totals:', error);
+    } catch (err) {
+      console.error('Error recalculating totals:', err);
     }
   }, []);
 
@@ -335,12 +397,12 @@ export function useServiceQuotes(installationId?: string) {
         updateData.sent_at = new Date().toISOString();
       }
 
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from('service_quotes')
         .update(updateData)
         .eq('id', quoteId);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
       // Update local state
       setQuotes(prev => prev.map(q => 
@@ -351,8 +413,10 @@ export function useServiceQuotes(installationId?: string) {
       );
 
       toast.success(`Estado actualizado a: ${getStatusLabel(newStatus)}`);
-    } catch (error) {
-      console.error('Error updating status:', error);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      console.error('Error updating status:', err);
+      setError({ code: 'UPDATE_STATUS_ERROR', message, details: { quoteId, newStatus } });
       toast.error('Error al actualizar estado');
     }
   }, []);
@@ -396,12 +460,21 @@ export function useServiceQuotes(installationId?: string) {
     return stats;
   }, [quotes]);
 
+  // KB Pattern: Clear error
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return {
+    // State
     quotes,
     currentQuote,
     quoteItems,
     quoteHistory,
     loading,
+    error,
+    lastRefresh,
+    // Actions
     fetchQuotes,
     fetchQuote,
     createQuote,
@@ -411,6 +484,10 @@ export function useServiceQuotes(installationId?: string) {
     sendQuote,
     cancelQuote,
     getQuoteStats,
+    clearError,
+    // Auto-refresh
+    startAutoRefresh,
+    stopAutoRefresh,
   };
 }
 

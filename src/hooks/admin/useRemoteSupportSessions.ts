@@ -1,6 +1,8 @@
 /**
  * Hook for managing remote support sessions
  * Handles session creation, updates, and history
+ * 
+ * KB Pattern: lastRefresh, typed errors (realtime replaces auto-refresh)
  */
 
 import { useState, useCallback, useEffect } from 'react';
@@ -8,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
+// === TYPES ===
 export interface RemoteSupportSession {
   id: string;
   session_code: string;
@@ -44,27 +47,47 @@ export interface EndSessionParams {
   highRiskActionsCount?: number;
 }
 
+// KB Pattern: Typed error interface
+export interface SessionError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export function useRemoteSupportSessions() {
   const [sessions, setSessions] = useState<RemoteSupportSession[]>([]);
   const [activeSession, setActiveSession] = useState<RemoteSupportSession | null>(null);
   const [loading, setLoading] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  
+  // KB Pattern: lastRefresh state
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  
+  // KB Pattern: Typed error state
+  const [error, setError] = useState<SessionError | null>(null);
+  
   const { user } = useAuth();
 
   // Fetch all sessions for the current user
   const fetchSessions = useCallback(async () => {
     setLoading(true);
+    setError(null);
+    
     try {
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('remote_support_sessions')
         .select('*')
         .order('started_at', { ascending: false })
         .limit(50);
 
-      if (error) throw error;
+      if (fetchError) throw fetchError;
+      
       setSessions(data as RemoteSupportSession[]);
-    } catch (error) {
-      console.error('Error fetching sessions:', error);
+      setLastRefresh(new Date());
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      console.error('Error fetching sessions:', err);
+      setError({ code: 'FETCH_ERROR', message });
       toast.error('Error al cargar sesiones');
     } finally {
       setLoading(false);
@@ -103,6 +126,8 @@ export function useRemoteSupportSessions() {
     }
 
     setIsCreating(true);
+    setError(null);
+    
     try {
       const insertData = {
         session_code: params.sessionCode,
@@ -115,13 +140,13 @@ export function useRemoteSupportSessions() {
         metadata: {},
       };
 
-      const { data, error } = await supabase
+      const { data, error: insertError } = await supabase
         .from('remote_support_sessions')
         .insert([insertData] as any)
         .select()
         .single();
 
-      if (error) throw error;
+      if (insertError) throw insertError;
 
       const newSession = data as RemoteSupportSession;
       setActiveSession(newSession);
@@ -129,8 +154,10 @@ export function useRemoteSupportSessions() {
       
       toast.success('Sesión de soporte iniciada');
       return newSession;
-    } catch (error) {
-      console.error('Error creating session:', error);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      console.error('Error creating session:', err);
+      setError({ code: 'CREATE_ERROR', message });
       toast.error('Error al crear sesión');
       return null;
     } finally {
@@ -143,6 +170,8 @@ export function useRemoteSupportSessions() {
     sessionId: string, 
     params: EndSessionParams
   ): Promise<boolean> => {
+    setError(null);
+    
     try {
       const startedAt = activeSession?.started_at || sessions.find(s => s.id === sessionId)?.started_at;
       const durationMs = startedAt ? Date.now() - new Date(startedAt).getTime() : 0;
@@ -157,12 +186,12 @@ export function useRemoteSupportSessions() {
         high_risk_actions_count: params.highRiskActionsCount || 0,
       };
 
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from('remote_support_sessions')
         .update(updateData)
         .eq('id', sessionId);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
       setActiveSession(null);
       setSessions(prev => prev.map(s => 
@@ -173,8 +202,10 @@ export function useRemoteSupportSessions() {
 
       toast.success('Sesión finalizada correctamente');
       return true;
-    } catch (error) {
-      console.error('Error ending session:', error);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      console.error('Error ending session:', err);
+      setError({ code: 'END_SESSION_ERROR', message, details: { sessionId } });
       toast.error('Error al finalizar sesión');
       return false;
     }
@@ -182,13 +213,15 @@ export function useRemoteSupportSessions() {
 
   // Pause a session
   const pauseSession = useCallback(async (sessionId: string): Promise<boolean> => {
+    setError(null);
+    
     try {
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from('remote_support_sessions')
         .update({ status: 'paused' })
         .eq('id', sessionId);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
       setSessions(prev => prev.map(s => 
         s.id === sessionId ? { ...s, status: 'paused' as const } : s
@@ -200,8 +233,10 @@ export function useRemoteSupportSessions() {
 
       toast.info('Sesión pausada');
       return true;
-    } catch (error) {
-      console.error('Error pausing session:', error);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      console.error('Error pausing session:', err);
+      setError({ code: 'PAUSE_ERROR', message, details: { sessionId } });
       toast.error('Error al pausar sesión');
       return false;
     }
@@ -209,13 +244,15 @@ export function useRemoteSupportSessions() {
 
   // Resume a paused session
   const resumeSession = useCallback(async (sessionId: string): Promise<boolean> => {
+    setError(null);
+    
     try {
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from('remote_support_sessions')
         .update({ status: 'active' })
         .eq('id', sessionId);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
       const session = sessions.find(s => s.id === sessionId);
       if (session) {
@@ -228,19 +265,26 @@ export function useRemoteSupportSessions() {
 
       toast.success('Sesión reanudada');
       return true;
-    } catch (error) {
-      console.error('Error resuming session:', error);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      console.error('Error resuming session:', err);
+      setError({ code: 'RESUME_ERROR', message, details: { sessionId } });
       toast.error('Error al reanudar sesión');
       return false;
     }
   }, [sessions]);
+
+  // KB Pattern: Clear error
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
 
   // Load sessions on mount
   useEffect(() => {
     fetchSessions();
   }, [fetchSessions]);
 
-  // Subscribe to realtime updates
+  // Subscribe to realtime updates (KB: realtime replaces auto-refresh for this hook)
   useEffect(() => {
     const channel = supabase
       .channel('remote-support-sessions-changes')
@@ -258,6 +302,7 @@ export function useRemoteSupportSessions() {
               if (prev.some(s => s.id === newSession.id)) return prev;
               return [newSession, ...prev];
             });
+            setLastRefresh(new Date());
           } else if (payload.eventType === 'UPDATE') {
             const updatedSession = payload.new as RemoteSupportSession;
             setSessions(prev => prev.map(s => 
@@ -266,6 +311,7 @@ export function useRemoteSupportSessions() {
             if (activeSession?.id === updatedSession.id) {
               setActiveSession(updatedSession);
             }
+            setLastRefresh(new Date());
           }
         }
       )
@@ -277,16 +323,21 @@ export function useRemoteSupportSessions() {
   }, [activeSession]);
 
   return {
+    // State
     sessions,
     activeSession,
     loading,
     isCreating,
+    error,
+    lastRefresh,
+    // Actions
     fetchSessions,
     createSession,
     endSession,
     pauseSession,
     resumeSession,
     getTodayStats,
+    clearError,
   };
 }
 
