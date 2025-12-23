@@ -353,3 +353,6 @@ verify_jwt = true
 
 [functions.cms-batch-translate]
 verify_jwt = true
+
+[functions.support-copilot]
+verify_jwt = true
