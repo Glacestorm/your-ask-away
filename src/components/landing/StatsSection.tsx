@@ -2,47 +2,50 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Users, Building2, MessageSquare, Zap } from 'lucide-react';
 import AnimatedCounter from './AnimatedCounter';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface StatItem {
   value: number;
   suffix: string;
-  label: string;
+  labelKey: string;
   icon: React.ElementType;
-  description: string;
+  descriptionKey: string;
 }
 
 const stats: StatItem[] = [
   {
     value: 600,
     suffix: '+',
-    label: 'Empresas activas',
+    labelKey: 'landing.stats.companies',
     icon: Building2,
-    description: 'confían en ObelixIA',
+    descriptionKey: 'landing.stats.companiesDesc',
   },
   {
     value: 1600,
     suffix: '',
-    label: 'Usuarios diarios',
+    labelKey: 'landing.stats.dailyUsers',
     icon: Users,
-    description: 'gestionando su negocio',
+    descriptionKey: 'landing.stats.dailyUsersDesc',
   },
   {
     value: 200,
     suffix: 'K+',
-    label: 'Mensajes/día',
+    labelKey: 'landing.stats.messages',
     icon: MessageSquare,
-    description: 'procesados con IA',
+    descriptionKey: 'landing.stats.messagesDesc',
   },
   {
     value: 5,
     suffix: ' min',
-    label: 'SLA Soporte',
+    labelKey: 'landing.stats.sla',
     icon: Zap,
-    description: 'tiempo primera respuesta',
+    descriptionKey: 'landing.stats.slaDesc',
   },
 ];
 
 export const StatsSection: React.FC = () => {
+  const { t } = useLanguage();
+
   return (
     <section className="py-20 relative overflow-hidden">
       {/* Background glow */}
@@ -58,12 +61,12 @@ export const StatsSection: React.FC = () => {
           className="text-center mb-16"
         >
           <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm text-slate-400 mb-6">
-            Métricas en tiempo real
+            {t('landing.stats.badge')}
           </span>
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Quien ya usa ObelixIA{' '}
+            {t('landing.stats.title')}{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-violet-400">
-              no vuelve atrás
+              {t('landing.stats.titleHighlight')}
             </span>
           </h2>
         </motion.div>
@@ -71,7 +74,7 @@ export const StatsSection: React.FC = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat, index) => (
             <motion.div
-              key={stat.label}
+              key={stat.labelKey}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -96,10 +99,10 @@ export const StatsSection: React.FC = () => {
                   </div>
                   
                   <p className="text-lg font-semibold text-slate-300 mb-1">
-                    {stat.label}
+                    {t(stat.labelKey)}
                   </p>
                   <p className="text-sm text-slate-500">
-                    {stat.description}
+                    {t(stat.descriptionKey)}
                   </p>
                 </div>
               </div>

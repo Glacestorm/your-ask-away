@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useCart } from '@/contexts/CartContext';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Bundle {
   id: string;
@@ -24,6 +25,7 @@ const BundlesSection: React.FC = () => {
   const [bundles, setBundles] = useState<Bundle[]>([]);
   const { addItem } = useCart();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   useEffect(() => {
     const fetchBundles = async () => {
@@ -45,37 +47,37 @@ const BundlesSection: React.FC = () => {
     {
       id: 'b1',
       bundle_key: 'starter',
-      bundle_name: 'Pack Starter',
-      description: 'Perfecto para comenzar con lo esencial',
+      bundle_name: t('landing.bundles.starterName'),
+      description: t('landing.bundles.starterDesc'),
       module_keys: ['core', 'documentation', 'visits'],
       original_price: 149000,
       bundle_price: 99000,
       discount_percent: 33,
-      badge: 'Popular',
+      badge: t('landing.bundles.badgePopular'),
       is_featured: true,
     },
     {
       id: 'b2',
       bundle_key: 'banking_complete',
-      bundle_name: 'Pack Banca Completo',
-      description: 'Todo lo necesario para entidades financieras',
+      bundle_name: t('landing.bundles.bankingName'),
+      description: t('landing.bundles.bankingDesc'),
       module_keys: ['core', 'accounting', 'audit', 'banking_ai', 'compliance', 'risk_management'],
       original_price: 520000,
       bundle_price: 399000,
       discount_percent: 23,
-      badge: 'Recomendado',
+      badge: t('landing.bundles.badgeRecommended'),
       is_featured: true,
     },
     {
       id: 'b3',
       bundle_key: 'enterprise',
-      bundle_name: 'Pack Enterprise',
-      description: 'Licencia perpetua con todos los módulos y código fuente',
+      bundle_name: t('landing.bundles.enterpriseName'),
+      description: t('landing.bundles.enterpriseDesc'),
       module_keys: ['all'],
       original_price: 1200000,
       bundle_price: 880000,
       discount_percent: 27,
-      badge: 'Mejor Valor',
+      badge: t('landing.bundles.badgeBestValue'),
       is_featured: true,
     },
   ];
@@ -93,8 +95,8 @@ const BundlesSection: React.FC = () => {
     });
 
     toast({
-      title: 'Pack añadido',
-      description: `${bundle.bundle_name} se ha añadido a tu carrito`,
+      title: t('landing.bundles.toastTitle'),
+      description: `${bundle.bundle_name} ${t('landing.bundles.toastDesc')}`,
     });
   };
 
@@ -112,13 +114,13 @@ const BundlesSection: React.FC = () => {
         >
           <Badge className="mb-4 bg-purple-500/20 text-purple-300 border-purple-500/30">
             <Package className="w-3 h-3 mr-1" />
-            PACKS ESPECIALES
+            {t('landing.bundles.badge')}
           </Badge>
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Ahorra con Nuestros Packs
+            {t('landing.bundles.title')}
           </h2>
           <p className="text-xl text-slate-400 max-w-2xl mx-auto">
-            Combinaciones optimizadas de módulos con descuentos exclusivos
+            {t('landing.bundles.subtitle')}
           </p>
         </motion.div>
 
@@ -177,17 +179,17 @@ const BundlesSection: React.FC = () => {
                   <div className="text-sm text-slate-400">
                     {bundle.bundle_key === 'enterprise' ? (
                       <span className="flex flex-col items-center gap-1">
-                        <span className="text-amber-300">Licencia perpetua</span>
-                        <span className="text-[10px] text-slate-500">Pago único • Tuyo para siempre</span>
+                        <span className="text-amber-300">{t('landing.bundles.perpetualLicense')}</span>
+                        <span className="text-[10px] text-slate-500">{t('landing.bundles.oneTimePayment')}</span>
                       </span>
                     ) : (
                       <span className="flex flex-col items-center gap-1">
-                        <span>/año</span>
-                        <span className="text-[10px] text-slate-500">Renovable • Sin permanencia</span>
+                        <span>/{t('landing.bundles.year')}</span>
+                        <span className="text-[10px] text-slate-500">{t('landing.bundles.renewable')}</span>
                       </span>
                     )}
                   </div>
-                  <div className="text-[10px] text-slate-500 mt-1">SIN IVA</div>
+                  <div className="text-[10px] text-slate-500 mt-1">{t('landing.bundles.exVat')}</div>
                 </div>
 
                 {/* Features */}
@@ -199,12 +201,12 @@ const BundlesSection: React.FC = () => {
                         index === 1 ? 'text-emerald-400' :
                         'text-blue-400'
                       }`} />
-                      <span className="capitalize">{key === 'all' ? 'Todos los módulos' : key.replace('_', ' ')}</span>
+                      <span className="capitalize">{key === 'all' ? t('landing.bundles.allModules') : key.replace('_', ' ')}</span>
                     </div>
                   ))}
                   {bundle.module_keys.length > 5 && (
                     <div className="text-sm text-slate-400 pl-6">
-                      +{bundle.module_keys.length - 5} módulos más
+                      +{bundle.module_keys.length - 5} {t('landing.bundles.moreModules')}
                     </div>
                   )}
                 </div>
@@ -220,7 +222,7 @@ const BundlesSection: React.FC = () => {
                       'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700'
                   } text-white`}
                 >
-                  Añadir al Carrito
+                  {t('landing.bundles.addToCart')}
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </div>
