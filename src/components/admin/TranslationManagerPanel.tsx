@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useSupportedLanguages } from '@/hooks/useSupportedLanguages';
 import { supabase } from '@/integrations/supabase/client';
-import { Languages, Globe, Play, RefreshCw, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Languages, Globe, Play, RefreshCw, CheckCircle, AlertCircle, Loader2, Database, Upload } from 'lucide-react';
 
 // Spanish source translations (we'll translate from these)
 import esTranslations from '@/locales/es';
@@ -27,9 +27,65 @@ export const TranslationManagerPanel: React.FC = () => {
   const [jobs, setJobs] = useState<Record<string, TranslationJob>>({});
   const [isTranslating, setIsTranslating] = useState(false);
   const [selectedTiers, setSelectedTiers] = useState<number[]>([1, 2]);
+  const [isSeeding, setIsSeeding] = useState(false);
+  const [spanishKeysCount, setSpanishKeysCount] = useState<number | null>(null);
 
   const translationKeys = Object.keys(esTranslations);
   const totalKeys = translationKeys.length;
+
+  // Check how many Spanish keys are in DB
+  useEffect(() => {
+    const checkSpanishKeys = async () => {
+      const { count } = await supabase
+        .from('cms_translations')
+        .select('*', { count: 'exact', head: true })
+        .eq('locale', 'es');
+      setSpanishKeysCount(count || 0);
+    };
+    checkSpanishKeys();
+  }, []);
+
+  // Seed Spanish translations to DB as baseline
+  const handleSeedSpanish = async () => {
+    setIsSeeding(true);
+    try {
+      const BATCH_SIZE = 50;
+      const entries = Object.entries(esTranslations);
+      
+      for (let i = 0; i < entries.length; i += BATCH_SIZE) {
+        const batch = entries.slice(i, i + BATCH_SIZE);
+        const items = batch.map(([key, value]) => ({
+          locale: 'es',
+          translation_key: key,
+          value: value,
+          namespace: 'ui'
+        }));
+
+        const { error } = await supabase
+          .from('cms_translations')
+          .upsert(items, { onConflict: 'locale,translation_key' });
+
+        if (error) {
+          console.error('Error seeding Spanish:', error);
+          throw error;
+        }
+      }
+
+      setSpanishKeysCount(entries.length);
+      toast({
+        title: 'Base seeded',
+        description: `${entries.length} Spanish keys added to database`
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to seed Spanish translations',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsSeeding(false);
+    }
+  };
 
   const translateLanguage = useCallback(async (locale: string): Promise<boolean> => {
     const BATCH_SIZE = 25;
@@ -230,6 +286,33 @@ export const TranslationManagerPanel: React.FC = () => {
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Database Status & Seed */}
+        <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border">
+          <div className="flex items-center gap-3">
+            <Database className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <p className="font-medium text-sm">Spanish Base Keys in DB</p>
+              <p className="text-xs text-muted-foreground">
+                {spanishKeysCount !== null ? `${spanishKeysCount} / ${totalKeys} keys` : 'Loading...'}
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSeedSpanish}
+            disabled={isSeeding || spanishKeysCount === totalKeys}
+            className="gap-2"
+          >
+            {isSeeding ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Upload className="h-3 w-3" />
+            )}
+            {spanishKeysCount === totalKeys ? 'Synced' : 'Sync Spanish Base'}
+          </Button>
+        </div>
+
         {/* Tier Selection */}
         <div className="flex flex-wrap gap-4 p-4 bg-muted/50 rounded-lg">
           {[1, 2, 3, 4].map(tier => (
