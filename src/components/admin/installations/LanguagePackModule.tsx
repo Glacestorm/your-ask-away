@@ -10,7 +10,7 @@ import {
   Globe, Languages, Check, Sparkles, Search, RefreshCw, ChevronRight, Star, AlertCircle
 } from 'lucide-react';
 import { useSupportedLanguages } from '@/hooks/cms/useSupportedLanguages';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage, type Language } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -73,10 +73,10 @@ export function LanguagePackModule({ onLanguageChange, installationId }: Languag
   useEffect(() => { if (selectedLocale) loadPreview(selectedLocale); }, [selectedLocale]);
 
   const handleSelectLanguage = async (locale: string) => {
-    setSelectedLocale(locale);
+    setSelectedLocale(locale as Language);
     setDownloading(true);
     try {
-      setLanguage(locale as any);
+      setLanguage(locale as Language);
       onLanguageChange?.(locale);
       toast.success(`Idioma cambiado a ${languages.find(l => l.locale === locale)?.name || locale}`);
     } catch (error) {
