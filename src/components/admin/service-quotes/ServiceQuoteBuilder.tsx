@@ -24,10 +24,11 @@ import {
 } from '@/hooks/admin/useServiceQuotes';
 import { toast } from 'sonner';
 
-interface ServiceQuoteBuilderProps {
-  installationId: string;
+export interface ServiceQuoteBuilderProps {
+  installationId?: string;
   installationName?: string;
   onQuoteCreated?: (quoteId: string) => void;
+  onComplete?: () => void;
   onCancel?: () => void;
 }
 
@@ -61,6 +62,7 @@ export function ServiceQuoteBuilder({
   installationId,
   installationName,
   onQuoteCreated,
+  onComplete,
   onCancel,
 }: ServiceQuoteBuilderProps) {
   const { createQuote, loading } = useServiceQuotes();
@@ -135,7 +137,7 @@ export function ServiceQuoteBuilder({
     }
 
     const params: CreateQuoteParams = {
-      installationId,
+      installationId: installationId || '',
       serviceType,
       serviceTitle,
       serviceDescription,
@@ -153,6 +155,7 @@ export function ServiceQuoteBuilder({
     const quote = await createQuote(params);
     if (quote) {
       onQuoteCreated?.(quote.id);
+      onComplete?.();
     }
   };
 
