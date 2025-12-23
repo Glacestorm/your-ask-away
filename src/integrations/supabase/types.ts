@@ -2408,6 +2408,78 @@ export type Database = {
           },
         ]
       }
+      client_installations: {
+        Row: {
+          company_id: string | null
+          created_at: string
+          id: string
+          installation_config: Json | null
+          installation_key: string
+          installation_name: string
+          is_active: boolean
+          last_sync_at: string | null
+          preferred_locale: string
+          remote_access_allowed: boolean
+          remote_access_pin: string | null
+          remote_access_pin_expires_at: string | null
+          secondary_locales: string[] | null
+          updated_at: string
+          user_id: string | null
+          version: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          installation_config?: Json | null
+          installation_key?: string
+          installation_name: string
+          is_active?: boolean
+          last_sync_at?: string | null
+          preferred_locale?: string
+          remote_access_allowed?: boolean
+          remote_access_pin?: string | null
+          remote_access_pin_expires_at?: string | null
+          secondary_locales?: string[] | null
+          updated_at?: string
+          user_id?: string | null
+          version?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          installation_config?: Json | null
+          installation_key?: string
+          installation_name?: string
+          is_active?: boolean
+          last_sync_at?: string | null
+          preferred_locale?: string
+          remote_access_allowed?: boolean
+          remote_access_pin?: string | null
+          remote_access_pin_expires_at?: string | null
+          secondary_locales?: string[] | null
+          updated_at?: string
+          user_id?: string | null
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_installations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_installations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cms_api_keys: {
         Row: {
           created_at: string | null
@@ -8608,8 +8680,72 @@ export type Database = {
         }
         Relationships: []
       }
+      installation_downloads: {
+        Row: {
+          download_duration_ms: number | null
+          download_size_bytes: number | null
+          download_status: string
+          download_type: string
+          downloaded_at: string
+          error_message: string | null
+          id: string
+          installation_id: string
+          ip_address: unknown
+          locale_downloaded: string
+          module_id: string
+          module_version: string
+          user_agent: string | null
+        }
+        Insert: {
+          download_duration_ms?: number | null
+          download_size_bytes?: number | null
+          download_status?: string
+          download_type?: string
+          downloaded_at?: string
+          error_message?: string | null
+          id?: string
+          installation_id: string
+          ip_address?: unknown
+          locale_downloaded: string
+          module_id: string
+          module_version: string
+          user_agent?: string | null
+        }
+        Update: {
+          download_duration_ms?: number | null
+          download_size_bytes?: number | null
+          download_status?: string
+          download_type?: string
+          downloaded_at?: string
+          error_message?: string | null
+          id?: string
+          installation_id?: string
+          ip_address?: unknown
+          locale_downloaded?: string
+          module_id?: string
+          module_version?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "installation_downloads_installation_id_fkey"
+            columns: ["installation_id"]
+            isOneToOne: false
+            referencedRelation: "client_installations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "installation_downloads_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "app_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       installed_modules: {
         Row: {
+          auto_update_translations: boolean | null
           created_at: string | null
           id: string
           installed_at: string | null
@@ -8618,6 +8754,7 @@ export type Database = {
           last_used_at: string | null
           license_key: string | null
           license_type: Database["public"]["Enums"]["license_type"]
+          locale_installed: string | null
           module_id: string
           organization_id: string
           settings: Json | null
@@ -8627,6 +8764,7 @@ export type Database = {
           valid_until: string | null
         }
         Insert: {
+          auto_update_translations?: boolean | null
           created_at?: string | null
           id?: string
           installed_at?: string | null
@@ -8635,6 +8773,7 @@ export type Database = {
           last_used_at?: string | null
           license_key?: string | null
           license_type?: Database["public"]["Enums"]["license_type"]
+          locale_installed?: string | null
           module_id: string
           organization_id?: string
           settings?: Json | null
@@ -8644,6 +8783,7 @@ export type Database = {
           valid_until?: string | null
         }
         Update: {
+          auto_update_translations?: boolean | null
           created_at?: string | null
           id?: string
           installed_at?: string | null
@@ -8652,6 +8792,7 @@ export type Database = {
           last_used_at?: string | null
           license_key?: string | null
           license_type?: Database["public"]["Enums"]["license_type"]
+          locale_installed?: string | null
           module_id?: string
           organization_id?: string
           settings?: Json | null
@@ -10447,6 +10588,66 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      module_translations: {
+        Row: {
+          ai_generated: boolean
+          created_at: string
+          id: string
+          is_verified: boolean
+          locale: string
+          module_id: string
+          namespace: string
+          translation_key: string
+          translation_value: string
+          updated_at: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          ai_generated?: boolean
+          created_at?: string
+          id?: string
+          is_verified?: boolean
+          locale: string
+          module_id: string
+          namespace?: string
+          translation_key: string
+          translation_value: string
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          ai_generated?: boolean
+          created_at?: string
+          id?: string
+          is_verified?: boolean
+          locale?: string
+          module_id?: string
+          namespace?: string
+          translation_key?: string
+          translation_value?: string
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_translations_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "app_modules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "module_translations_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       monte_carlo_simulations: {
         Row: {
@@ -14732,6 +14933,75 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      remote_access_sessions: {
+        Row: {
+          actions_performed: Json[] | null
+          client_acknowledged_at: string | null
+          client_notified_at: string | null
+          created_at: string
+          ended_at: string | null
+          id: string
+          installation_id: string
+          ip_address: unknown
+          notes: string | null
+          session_status: string
+          session_type: string
+          started_at: string | null
+          support_user_id: string
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          actions_performed?: Json[] | null
+          client_acknowledged_at?: string | null
+          client_notified_at?: string | null
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          installation_id: string
+          ip_address?: unknown
+          notes?: string | null
+          session_status?: string
+          session_type?: string
+          started_at?: string | null
+          support_user_id: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          actions_performed?: Json[] | null
+          client_acknowledged_at?: string | null
+          client_notified_at?: string | null
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          installation_id?: string
+          ip_address?: unknown
+          notes?: string | null
+          session_status?: string
+          session_type?: string
+          started_at?: string | null
+          support_user_id?: string
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "remote_access_sessions_installation_id_fkey"
+            columns: ["installation_id"]
+            isOneToOne: false
+            referencedRelation: "client_installations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "remote_access_sessions_support_user_id_fkey"
+            columns: ["support_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       renewal_nurturing_activities: {
         Row: {
@@ -20656,6 +20926,10 @@ export type Database = {
           matching_cnaes: string[]
         }[]
       }
+      generate_remote_access_pin: {
+        Args: { p_installation_id: string; p_valid_hours?: number }
+        Returns: string
+      }
       get_company_chart_of_accounts: {
         Args: { p_company_id: string }
         Returns: Json
@@ -20826,6 +21100,10 @@ export type Database = {
       validate_accounting_sync: {
         Args: { p_company_id: string }
         Returns: Json
+      }
+      validate_remote_access_pin: {
+        Args: { p_installation_id: string; p_pin: string }
+        Returns: boolean
       }
     }
     Enums: {
