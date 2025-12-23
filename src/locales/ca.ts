@@ -1418,6 +1418,8 @@ export default {
   'store.updates': 'Actualitzacions automàtiques',
   'store.completeEnterpriseModule': 'Mòdul empresarial complet per al teu negoci.',
   'store.contactTeamForPrice': 'Contacta amb el nostre equip per al preu de {name}',
+  'store.badge.premium': 'PREMIUM',
+  'store.badge.core': 'CORE',
 
   // Landing Hero Explosive
   'landing.hero.badge': 'CRM AMB IA INTEGRADA',

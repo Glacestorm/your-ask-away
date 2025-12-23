@@ -1418,6 +1418,8 @@ export default {
   'store.updates': 'Automatic updates',
   'store.completeEnterpriseModule': 'Complete enterprise module for your business.',
   'store.contactTeamForPrice': 'Contact our team for pricing on {name}',
+  'store.badge.premium': 'PREMIUM',
+  'store.badge.core': 'CORE',
 
   // Landing Hero Explosive
   'landing.hero.badge': 'CRM WITH INTEGRATED AI',
