@@ -61,24 +61,37 @@ const ModuleCard: React.FC<ModuleCardProps> = ({ module, isPremium = false, show
 
     let cancelled = false;
 
-    (async () => {
-      const [featuresArr, desc, name] = await Promise.all([
-        rawFeatures.length > 0 
-          ? Promise.all(rawFeatures.map(f => translateAsync(f, language, 'es')))
-          : Promise.resolve([]),
-        module.description ? translateAsync(module.description, language, 'es') : Promise.resolve(null),
-        translateAsync(module.module_name, language, 'es'),
-      ]);
+    const featuresToTranslate = rawFeatures.slice(0, showFullDetails ? rawFeatures.length : 4);
 
-      if (!cancelled) {
-        setTranslatedFeatures(featuresArr.length > 0 ? featuresArr : null);
-        setTranslatedDescription(desc);
-        setTranslatedName(name);
+    (async () => {
+      try {
+        const [featuresArr, desc, name] = await Promise.all([
+          featuresToTranslate.length > 0
+            ? Promise.all(featuresToTranslate.map((f) => translateAsync(f, language, 'es')))
+            : Promise.resolve([]),
+          module.description ? translateAsync(module.description, language, 'es') : Promise.resolve(null),
+          translateAsync(module.module_name, language, 'es'),
+        ]);
+
+        if (!cancelled) {
+          setTranslatedFeatures(featuresArr.length > 0 ? featuresArr : null);
+          setTranslatedDescription(desc);
+          setTranslatedName(name);
+        }
+      } catch (e) {
+        // Never break UI if translation is unavailable
+        if (!cancelled) {
+          setTranslatedFeatures(null);
+          setTranslatedDescription(null);
+          setTranslatedName(null);
+        }
       }
     })();
 
-    return () => { cancelled = true; };
-  }, [language, module.module_name, module.description, rawFeatures.join(',')]);
+    return () => {
+      cancelled = true;
+    };
+  }, [language, module.module_name, module.description, showFullDetails, translateAsync, rawFeatures.join(',')]);
 
   const features = translatedFeatures ?? (rawFeatures.length > 0 ? rawFeatures : defaultFeatures);
   const displayName = translatedName ?? module.module_name;

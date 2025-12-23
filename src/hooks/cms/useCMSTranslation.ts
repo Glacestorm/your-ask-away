@@ -12,6 +12,27 @@ const cache: TranslationCache = {};
 
 // Cache for AI translations (keyed by "source|target|text")
 const translateCache: Record<string, string> = {};
+const translateInflight: Record<string, Promise<string>> = {};
+
+// Very small concurrency limit to avoid rate limiting when many components request translations at once
+const MAX_CONCURRENT_TRANSLATIONS = 2;
+let activeTranslations = 0;
+const translationWaiters: Array<() => void> = [];
+
+const acquireTranslationSlot = async (): Promise<void> => {
+  if (activeTranslations < MAX_CONCURRENT_TRANSLATIONS) {
+    activeTranslations += 1;
+    return;
+  }
+  await new Promise<void>((resolve) => translationWaiters.push(resolve));
+  activeTranslations += 1;
+};
+
+const releaseTranslationSlot = () => {
+  activeTranslations = Math.max(0, activeTranslations - 1);
+  const next = translationWaiters.shift();
+  if (next) next();
+};
 
 export function useCMSTranslation(namespace: string = 'common') {
   const [translations, setTranslations] = useState<Record<string, string>>({});
@@ -76,25 +97,34 @@ export function useCMSTranslation(namespace: string = 'common') {
       const cacheKey = `${sourceLocale}|${targetLocale}|${text}`;
 
       if (translateCache[cacheKey]) return translateCache[cacheKey];
+      if (translateInflight[cacheKey]) return translateInflight[cacheKey];
 
-      try {
-        const { data, error } = await supabase.functions.invoke('cms-translate-content', {
-          body: {
-            text,
-            sourceLocale,
-            targetLocale,
-          },
-        });
+      translateInflight[cacheKey] = (async () => {
+        await acquireTranslationSlot();
+        try {
+          const { data, error } = await supabase.functions.invoke('cms-translate-content', {
+            body: {
+              text,
+              sourceLocale,
+              targetLocale,
+            },
+          });
 
-        if (error) throw error;
-        const translated = data.translatedText as string;
-        translateCache[cacheKey] = translated;
-        return translated;
-      } catch (err) {
-        console.error('Translation error:', err);
-        translateCache[cacheKey] = text;
-        return text;
-      }
+          if (error) throw error;
+          const translated = (data?.translatedText as string) ?? text;
+          translateCache[cacheKey] = translated;
+          return translated;
+        } catch (err) {
+          console.error('Translation error:', err);
+          translateCache[cacheKey] = text;
+          return text;
+        } finally {
+          releaseTranslationSlot();
+          delete translateInflight[cacheKey];
+        }
+      })();
+
+      return translateInflight[cacheKey];
     },
     [language]
   );
