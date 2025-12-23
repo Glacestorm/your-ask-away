@@ -96,6 +96,10 @@ const DocsPage = lazy(() => import('@/pages/docs/DocsPage'));
 const StrategicPlanningPage = lazy(() => import('@/pages/strategic-planning/index'));
 const FinancialViabilityPage = lazy(() => import('@/pages/financial-viability/index'));
 
+// Admin - Service Quotes & Remote Support
+const ServiceQuotesPage = lazy(() => import('@/pages/admin/ServiceQuotesPage'));
+const RemoteSupportPage = lazy(() => import('@/pages/admin/RemoteSupportPage'));
+
 // Tipos
 export type RouteLayout = 'public' | 'dashboard' | 'minimal' | 'none';
 export type RoutePriority = 'high' | 'medium' | 'low';
@@ -225,6 +229,8 @@ export const dashboardRoutes: RouteConfig[] = [
 // ============================================
 export const adminRoutes: RouteConfig[] = [
   { path: '/admin', component: Admin, layout: 'none', priority: 'medium', delay: 50, meta: { title: 'Admin', requiresAuth: true, roles: ['admin', 'superadmin'] } },
+  { path: '/admin/service-quotes', component: ServiceQuotesPage, layout: 'none', priority: 'medium', meta: { title: 'Presupuestos de Servicio', requiresAuth: true, roles: ['admin', 'superadmin'] } },
+  { path: '/admin/remote-support', component: RemoteSupportPage, layout: 'none', priority: 'medium', meta: { title: 'Soporte Remoto', requiresAuth: true, roles: ['admin', 'superadmin'] } },
   { path: '/obelixia-admin', component: ObelixiaTeamAdmin, layout: 'dashboard', priority: 'medium', delay: 50, meta: { title: 'Obelixia Admin', requiresAuth: true, roles: ['superadmin'] } },
 ];
 
