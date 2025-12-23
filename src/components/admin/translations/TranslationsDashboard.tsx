@@ -125,14 +125,7 @@ export const TranslationsDashboard: React.FC = () => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          <LanguageProgressGrid 
-            languages={languages} 
-            loading={loading} 
-            onRefresh={refresh}
-            onInstallLanguage={installLanguage}
-            installingLocale={installingLocale}
-            translationProgress={translationProgress}
-          />
+          <LanguageProgressGrid />
         </TabsContent>
 
         <TabsContent value="verification" className="space-y-4">
@@ -147,7 +140,7 @@ export const TranslationsDashboard: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-4">
-          <TranslationSettingsPanel languages={languages} onRefresh={refresh} />
+          <TranslationSettingsPanel />
         </TabsContent>
       </Tabs>
     </div>
