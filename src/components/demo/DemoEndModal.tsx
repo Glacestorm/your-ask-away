@@ -36,7 +36,6 @@ export const DemoEndModal: React.FC<DemoEndModalProps> = ({ open, onOpenChange }
   const handleClose = () => {
     if (step === 'done') {
       navigate('/');
-      window.location.reload();
     }
     onOpenChange(false);
     setStep('confirm');

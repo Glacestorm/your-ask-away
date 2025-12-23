@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -16,6 +17,7 @@ export const NotificationService = () => {
   const { user } = useAuth();
   const { permission, showNotification } = useNotifications();
   const lastNotificationTime = useRef<number>(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!user || permission !== 'granted') return;
@@ -62,11 +64,11 @@ export const NotificationService = () => {
                   console.log('Notification marked as read');
                 });
               
-              // Navigate based on notification type
+              // Navigate using React Router (SPA navigation)
               if (notification.title.includes('Visita')) {
-                window.location.href = '/admin?section=map';
+                navigate('/admin?section=map');
               } else if (notification.title.includes('Alerta')) {
-                window.location.href = '/dashboard';
+                navigate('/dashboard');
               }
             },
           });
@@ -91,7 +93,7 @@ export const NotificationService = () => {
       console.log('Unsubscribing from notifications channel');
       supabase.removeChannel(channel);
     };
-  }, [user, permission]);
+  }, [user, permission, navigate]);
 
   return null; // This is a service component, no UI
 };

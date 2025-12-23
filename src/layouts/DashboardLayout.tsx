@@ -91,11 +91,11 @@ export function DashboardLayout({
         />
       </div>
 
-      {/* Main Content */}
+      {/* Main Content - Optimized transition for faster perceived navigation */}
       <motion.main
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.2 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.1, ease: 'easeOut' }}
         className={`flex-1 ${paddingClasses[contentPadding]}`}
       >
         {children}

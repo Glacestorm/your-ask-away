@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -41,6 +42,7 @@ const REMINDER_OPTIONS = [
 export const VisitReminders = () => {
   const { user } = useAuth();
   const { permission, supported, requestPermission, showNotification } = useNotifications();
+  const navigate = useNavigate();
   const [preference, setPreference] = useState<ReminderPreference | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -191,7 +193,7 @@ export const VisitReminders = () => {
       body: 'Tienes una visita programada a Empresa de Prueba en 1 hora',
       requireInteraction: true,
       onClick: () => {
-        window.location.href = '/admin?section=map';
+        navigate('/admin?section=map');
       },
     });
     toast.success('Notificación de prueba enviada');

@@ -40,11 +40,11 @@ export function PublicLayout({
       {/* Navbar */}
       {!hideNavbar && <MainNavbar />}
 
-      {/* Main Content */}
+      {/* Main Content - Optimized transition for faster navigation */}
       <motion.main
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.3 }}
+        transition={{ duration: 0.15, ease: 'easeOut' }}
         className={`flex-1 ${navbarPadding && !hideNavbar ? 'pt-24' : ''}`}
       >
         {children}
