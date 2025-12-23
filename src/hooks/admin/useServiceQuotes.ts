@@ -192,29 +192,31 @@ export function useServiceQuotes(installationId?: string) {
       const validUntil = new Date();
       validUntil.setDate(validUntil.getDate() + (params.validDays || 30));
 
+      const insertData = {
+        installation_id: params.installationId,
+        service_type: params.serviceType,
+        service_title: params.serviceTitle,
+        service_description: params.serviceDescription,
+        estimated_duration_minutes: params.estimatedDurationMinutes,
+        estimated_actions: params.estimatedActions || [],
+        hourly_rate: params.hourlyRate,
+        fixed_price: params.fixedPrice,
+        discount_percentage: params.discountPercentage || 0,
+        subtotal: subtotalAfterDiscount,
+        tax_rate: taxRate,
+        tax_amount: taxAmount,
+        total_price: totalPrice,
+        currency: 'EUR',
+        valid_until: validUntil.toISOString(),
+        terms_and_conditions: params.termsAndConditions,
+        payment_terms: params.paymentTerms,
+        status: 'draft',
+        created_by: userData.user.id,
+      };
+
       const { data, error } = await supabase
         .from('service_quotes')
-        .insert({
-          installation_id: params.installationId,
-          service_type: params.serviceType,
-          service_title: params.serviceTitle,
-          service_description: params.serviceDescription,
-          estimated_duration_minutes: params.estimatedDurationMinutes,
-          estimated_actions: params.estimatedActions || [],
-          hourly_rate: params.hourlyRate,
-          fixed_price: params.fixedPrice,
-          discount_percentage: params.discountPercentage || 0,
-          subtotal: subtotalAfterDiscount,
-          tax_rate: taxRate,
-          tax_amount: taxAmount,
-          total_price: totalPrice,
-          currency: 'EUR',
-          valid_until: validUntil.toISOString(),
-          terms_and_conditions: params.termsAndConditions,
-          payment_terms: params.paymentTerms,
-          status: 'draft',
-          created_by: userData.user.id,
-        })
+        .insert(insertData as any)
         .select()
         .single();
 
