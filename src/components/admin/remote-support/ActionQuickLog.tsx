@@ -1,6 +1,7 @@
 /**
  * Action Quick Log Component
  * Provides quick buttons to log common actions during a session
+ * With voice input support for hands-free logging
  */
 
 import { useState } from 'react';
@@ -9,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Separator } from '@/components/ui/separator';
 import {
   Dialog,
   DialogContent,
@@ -32,8 +34,10 @@ import {
   Terminal,
   Camera,
   AlertTriangle,
-  Plus
+  Plus,
+  Mic
 } from 'lucide-react';
+import { VoiceActionInput } from './VoiceActionInput';
 import type { ActionType, RiskLevel } from '@/hooks/admin/useSessionActionLogger';
 
 interface ActionQuickLogProps {
@@ -46,6 +50,7 @@ interface ActionQuickLogProps {
     metadata?: Record<string, unknown>;
   }) => Promise<unknown>;
   isLogging: boolean;
+  onSessionCommand?: (command: 'pause' | 'resume' | 'end') => void;
 }
 
 const quickActions = [
@@ -93,13 +98,14 @@ const quickActions = [
   },
 ];
 
-export function ActionQuickLog({ onLogAction, isLogging }: ActionQuickLogProps) {
+export function ActionQuickLog({ onLogAction, isLogging, onSessionCommand }: ActionQuickLogProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedAction, setSelectedAction] = useState<typeof quickActions[0] | null>(null);
   const [description, setDescription] = useState('');
   const [component, setComponent] = useState('');
   const [customRisk, setCustomRisk] = useState<RiskLevel | ''>('');
   const [requiresApproval, setRequiresApproval] = useState(false);
+  const [showVoiceInput, setShowVoiceInput] = useState(false);
 
   const handleQuickAction = (action: typeof quickActions[0]) => {
     setSelectedAction(action);
@@ -139,16 +145,59 @@ export function ActionQuickLog({ onLogAction, isLogging }: ActionQuickLogProps) 
     setIsDialogOpen(true);
   };
 
+  const handleVoiceAction = async (parsed: {
+    actionType: ActionType;
+    description: string;
+    componentAffected?: string;
+    riskLevel?: RiskLevel;
+  }) => {
+    // Pre-fill the dialog with voice-parsed data
+    setSelectedAction({
+      type: parsed.actionType,
+      label: 'Acción por Voz',
+      icon: Mic,
+      risk: parsed.riskLevel || 'low',
+      color: 'text-primary'
+    });
+    setDescription(parsed.description);
+    setComponent(parsed.componentAffected || '');
+    setCustomRisk(parsed.riskLevel || 'low');
+    setRequiresApproval(parsed.riskLevel === 'high' || parsed.riskLevel === 'critical');
+    setIsDialogOpen(true);
+  };
+
   return (
     <>
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4" />
-            Registro Rápido de Acciones
+          <CardTitle className="text-sm flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4" />
+              Registro Rápido de Acciones
+            </div>
+            <Button
+              variant={showVoiceInput ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setShowVoiceInput(!showVoiceInput)}
+              className="gap-1"
+            >
+              <Mic className="h-3 w-3" />
+              {showVoiceInput ? 'Ocultar Voz' : 'Voz'}
+            </Button>
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          {showVoiceInput && (
+            <>
+              <VoiceActionInput
+                onActionParsed={handleVoiceAction}
+                onSessionCommand={onSessionCommand}
+                disabled={isLogging}
+              />
+              <Separator />
+            </>
+          )}
+
           <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
             {quickActions.map((action) => {
               const Icon = action.icon;
