@@ -163,7 +163,8 @@ export function useLanguageInstaller(options: UseLanguageInstallerOptions = {}) 
 
     if (locCountError) throw locCountError;
 
-    const progress = esCount ? Math.round(((locCount ?? 0) / esCount) * 100) : 0;
+    // Cap progress at 100% to handle edge cases where locale might have more entries
+    const progress = esCount ? Math.min(100, Math.round(((locCount ?? 0) / esCount) * 100)) : 0;
 
     await supabase
       .from('supported_languages')
