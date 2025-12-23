@@ -1157,8 +1157,8 @@ const Admin = () => {
                       <Layers className="h-4 w-4 text-teal-500" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm text-teal-700 dark:text-teal-400">Traduccions</h4>
-                      <p className="text-xs text-muted-foreground">Gestió d'idiomes i traduccions</p>
+                      <h4 className="font-medium text-sm text-teal-700 dark:text-teal-400">{t('admin.card.translations')}</h4>
+                      <p className="text-xs text-muted-foreground">{t('admin.card.translations.desc')}</p>
                     </div>
                   </CardContent>
                 </Card>

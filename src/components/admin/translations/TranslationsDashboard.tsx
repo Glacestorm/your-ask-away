@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useSupportedLanguages } from '@/hooks/useSupportedLanguages';
 import { useLanguageInstaller } from '@/hooks/admin/useLanguageInstaller';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Languages, BarChart3, CheckSquare, Settings } from 'lucide-react';
 import { LanguageProgressGrid } from './LanguageProgressGrid';
 import { TranslationVerificationPanel } from './TranslationVerificationPanel';
@@ -10,6 +11,7 @@ import { TranslationBatchPanel } from './TranslationBatchPanel';
 import { TranslationSettingsPanel } from './TranslationSettingsPanel';
 
 export const TranslationsDashboard: React.FC = () => {
+  const { t } = useLanguage();
   const { languages, loading, refresh } = useSupportedLanguages();
   const { installLanguage, installingLocale, translationProgress } = useLanguageInstaller({ onComplete: refresh });
   const [activeTab, setActiveTab] = useState('overview');
@@ -34,9 +36,9 @@ export const TranslationsDashboard: React.FC = () => {
             <Languages className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">Translation Management</h1>
+            <h1 className="text-2xl font-bold">{t('translations.dashboard.title')}</h1>
             <p className="text-muted-foreground">
-              Manage {stats.total} languages with AI-powered translations
+              {t('translations.dashboard.subtitle', { count: stats.total })}
             </p>
           </div>
         </div>
@@ -48,7 +50,7 @@ export const TranslationsDashboard: React.FC = () => {
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Complete</p>
+                <p className="text-sm text-muted-foreground">{t('translations.stats.complete')}</p>
                 <p className="text-2xl font-bold text-green-600">{stats.complete}</p>
               </div>
               <div className="p-2 rounded-full bg-green-500/20">
@@ -62,7 +64,7 @@ export const TranslationsDashboard: React.FC = () => {
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">In Progress</p>
+                <p className="text-sm text-muted-foreground">{t('translations.stats.inProgress')}</p>
                 <p className="text-2xl font-bold text-amber-600">{stats.partial}</p>
               </div>
               <div className="p-2 rounded-full bg-amber-500/20">
@@ -76,7 +78,7 @@ export const TranslationsDashboard: React.FC = () => {
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Pending</p>
+                <p className="text-sm text-muted-foreground">{t('translations.stats.pending')}</p>
                 <p className="text-2xl font-bold text-red-600">{stats.pending}</p>
               </div>
               <div className="p-2 rounded-full bg-red-500/20">
@@ -90,7 +92,7 @@ export const TranslationsDashboard: React.FC = () => {
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Avg Progress</p>
+                <p className="text-sm text-muted-foreground">{t('translations.stats.avgProgress')}</p>
                 <p className="text-2xl font-bold text-primary">{stats.avgProgress}%</p>
               </div>
               <div className="p-2 rounded-full bg-primary/20">
@@ -106,19 +108,19 @@ export const TranslationsDashboard: React.FC = () => {
         <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
           <TabsTrigger value="overview" className="gap-2">
             <BarChart3 className="h-4 w-4" />
-            <span className="hidden sm:inline">Overview</span>
+            <span className="hidden sm:inline">{t('translations.tabs.overview')}</span>
           </TabsTrigger>
           <TabsTrigger value="verification" className="gap-2">
             <CheckSquare className="h-4 w-4" />
-            <span className="hidden sm:inline">Verification</span>
+            <span className="hidden sm:inline">{t('translations.tabs.verification')}</span>
           </TabsTrigger>
           <TabsTrigger value="batch" className="gap-2">
             <Languages className="h-4 w-4" />
-            <span className="hidden sm:inline">Batch Translate</span>
+            <span className="hidden sm:inline">{t('translations.tabs.batch')}</span>
           </TabsTrigger>
           <TabsTrigger value="settings" className="gap-2">
             <Settings className="h-4 w-4" />
-            <span className="hidden sm:inline">Settings</span>
+            <span className="hidden sm:inline">{t('translations.tabs.settings')}</span>
           </TabsTrigger>
         </TabsList>
 
