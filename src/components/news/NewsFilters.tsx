@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Search, Filter, X, Grid, List, LayoutGrid } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Search, X, LayoutGrid, List } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface NewsFiltersProps {
   categories: string[];
@@ -23,15 +23,27 @@ const NewsFilters: React.FC<NewsFiltersProps> = ({
   viewMode,
   onViewModeChange,
 }) => {
+  const { t } = useLanguage();
+
   const getCategoryIcon = (category: string) => {
     const icons: Record<string, string> = {
       'Todos': '🌐',
+      'All': '🌐',
+      'Tots': '🌐',
+      'Tous': '🌐',
       'Fiscal': '📊',
       'Compliance': '⚖️',
       'Finanzas': '💰',
+      'Finance': '💰',
+      'Finances': '💰',
       'Empresarial': '🏢',
+      'Business': '🏢',
       'Tecnología': '💻',
+      'Technology': '💻',
+      'Technologie': '💻',
       'Seguridad': '🔒',
+      'Security': '🔒',
+      'Sécurité': '🔒',
       'General': '📰',
     };
     return icons[category] || '📄';
@@ -46,7 +58,7 @@ const NewsFilters: React.FC<NewsFiltersProps> = ({
           <Input
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Buscar noticias..."
+            placeholder={t('news.filters.searchPlaceholder')}
             className="pl-10 bg-slate-900/50 border-slate-700 focus:border-emerald-500 text-white placeholder-slate-500"
           />
           {searchQuery && (

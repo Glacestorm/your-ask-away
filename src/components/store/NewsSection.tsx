@@ -7,9 +7,13 @@ import NewsTicker from '@/components/news/NewsTicker';
 import PremiumNewsCard from '@/components/news/PremiumNewsCard';
 import NewsSearch from '@/components/news/NewsSearch';
 import { useNewsArticles } from '@/hooks/useNewsArticles';
+import { useTranslatedNews } from '@/hooks/useTranslatedNews';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const NewsSection: React.FC = () => {
-  const { articles } = useNewsArticles({ limit: 6 });
+  const { articles: originalArticles } = useNewsArticles({ limit: 6 });
+  const { articles } = useTranslatedNews(originalArticles);
+  const { t } = useLanguage();
 
   // Don't render anything if no articles
   if (articles.length === 0) {
@@ -19,7 +23,7 @@ const NewsSection: React.FC = () => {
   const tickerItems = articles.slice(0, 6).map(article => ({
     id: article.id,
     title: article.title,
-    category: article.category || 'Noticias'
+    category: article.category || t('news.title')
   }));
 
   return (
@@ -34,13 +38,13 @@ const NewsSection: React.FC = () => {
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full mb-6">
             <Newspaper className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-primary">Actualización IA</span>
+            <span className="text-sm font-medium text-primary">{t('news.aiUpdate')}</span>
           </div>
           <h2 className="text-3xl md:text-4xl font-display font-semibold text-white mb-4">
-            Noticias Empresariales
+            {t('news.title')}
           </h2>
           <p className="text-lg text-slate-400">
-            Las últimas novedades del sector analizadas por inteligencia artificial
+            {t('news.subtitle')}
           </p>
         </motion.div>
 
@@ -82,7 +86,7 @@ const NewsSection: React.FC = () => {
                   image_credit: article.image_credit || article.source_name || 'Fuente',
                   source_name: article.source_name || 'Fuente',
                   source_url: article.source_url || '',
-                  category: article.category || 'Noticias',
+                  category: article.category || t('news.title'),
                   tags: article.tags || [],
                   published_at: article.published_at,
                   ai_summary: article.ai_summary || '',
@@ -108,7 +112,7 @@ const NewsSection: React.FC = () => {
               variant="outline"
               className="h-12 px-8 text-base font-medium border-slate-700 text-white hover:bg-slate-800 rounded-full"
             >
-              Ver todas las noticias
+              {t('news.viewAll')}
               <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
           </Link>
