@@ -6,13 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Headphones, Play, Clock, Activity, Shield, Pause, CheckCircle, XCircle, Eye, BarChart3, FileDown } from 'lucide-react';
+import { ArrowLeft, Headphones, Play, Clock, Activity, Shield, Pause, CheckCircle, XCircle, Eye, BarChart3, FileDown, Brain } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { SessionActionsTimeline } from '@/components/admin/service-quotes/SessionActionsTimeline';
 import { SessionDetailView } from '@/components/admin/remote-support/SessionDetailView';
 import { SessionSummaryCard } from '@/components/admin/remote-support/SessionSummaryCard';
 import { ActionQuickLog } from '@/components/admin/remote-support/ActionQuickLog';
-import { SupportAIAssistant } from '@/components/admin/remote-support/SupportAIAssistant';
+import { CopilotFloatingPanel } from '@/components/admin/remote-support/CopilotFloatingPanel';
 import { SupportAnalyticsDashboard } from '@/components/admin/remote-support/SupportAnalyticsDashboard';
 import { DualApprovalWorkflow } from '@/components/admin/remote-support/DualApprovalWorkflow';
 import { SessionExportButton } from '@/components/admin/remote-support/SessionExportButton';
@@ -415,12 +415,12 @@ export default function RemoteSupportPage() {
                     <DualApprovalWorkflow sessionId={activeSession.id} />
                   </div>
                   <div className="lg:col-span-1">
-                    <SupportAIAssistant 
+                    <CopilotFloatingPanel 
                       sessionContext={sessionContext}
-                      onActionSuggested={(action) => {
+                      onActionAnalyzed={(analysis) => {
                         toast({
-                          title: "Sugerencia aplicada",
-                          description: `Acción sugerida: ${action}`
+                          title: `Análisis: Riesgo ${analysis.riskLevel}`,
+                          description: analysis.recommendations[0] || 'Análisis completado'
                         });
                       }}
                     />
