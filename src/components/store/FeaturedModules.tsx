@@ -52,7 +52,12 @@ const FeaturedModules: React.FC = () => {
       base_price: null,
       category: 'core',
       is_core: true,
-      features: ['Gestión de empresas', 'Contactos', 'Pipeline', 'Informes'],
+      features: [
+        t('landing.modules.features.companyManagement'),
+        t('landing.modules.features.contacts'),
+        t('landing.modules.features.pipeline'),
+        t('landing.modules.features.reports'),
+      ],
     },
     {
       id: '2',
@@ -63,7 +68,12 @@ const FeaturedModules: React.FC = () => {
       base_price: null,
       category: 'horizontal',
       is_core: false,
-      features: ['Calendario', 'Rutas', 'Check-in/out', 'Informes'],
+      features: [
+        t('landing.modules.features.calendar'),
+        t('landing.modules.features.routes'),
+        t('landing.modules.features.checkInOut'),
+        t('landing.modules.features.reports'),
+      ],
     },
     {
       id: '3',
@@ -74,7 +84,12 @@ const FeaturedModules: React.FC = () => {
       base_price: null,
       category: 'horizontal',
       is_core: false,
-      features: ['Balance', 'PyG', 'Cash Flow', 'Ratios'],
+      features: [
+        t('landing.modules.features.balance'),
+        t('landing.modules.features.profitLoss'),
+        t('landing.modules.features.cashFlow'),
+        t('landing.modules.features.ratios'),
+      ],
     },
     {
       id: '4',
@@ -85,7 +100,12 @@ const FeaturedModules: React.FC = () => {
       base_price: null,
       category: 'horizontal',
       is_core: false,
-      features: ['KPIs', 'Dashboards', 'Alertas', 'Gamificación'],
+      features: [
+        t('landing.modules.features.kpis'),
+        t('landing.modules.features.dashboards'),
+        t('landing.modules.features.alerts'),
+        t('landing.modules.features.gamification'),
+      ],
     },
     {
       id: '5',
@@ -96,7 +116,12 @@ const FeaturedModules: React.FC = () => {
       base_price: null,
       category: 'horizontal',
       is_core: false,
-      features: ['Versionado', 'Templates', 'Firma digital', 'OCR'],
+      features: [
+        t('landing.modules.features.versioning'),
+        t('landing.modules.features.templates'),
+        t('landing.modules.features.digitalSignature'),
+        t('landing.modules.features.ocr'),
+      ],
     },
     {
       id: '6',
@@ -107,7 +132,12 @@ const FeaturedModules: React.FC = () => {
       base_price: null,
       category: 'horizontal',
       is_core: false,
-      features: ['Email', 'Push', 'SMS', 'In-app'],
+      features: [
+        t('landing.modules.features.email'),
+        t('landing.modules.features.push'),
+        t('landing.modules.features.sms'),
+        t('landing.modules.features.inApp'),
+      ],
     },
   ];
 

@@ -45,7 +45,7 @@ const HeroSection: React.FC = () => {
             >
               <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm text-slate-400">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                La plataforma líder en gestión empresarial con IA
+                {t('store.hero.badge')}
               </span>
             </motion.div>
 
@@ -56,9 +56,9 @@ const HeroSection: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="text-center text-5xl md:text-6xl lg:text-7xl font-display font-semibold text-white leading-[1.1] tracking-tight mb-8"
             >
-              Transforma tu empresa con{' '}
+              {t('store.hero.title1')}{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
-                inteligencia artificial
+                {t('store.hero.title3')}
               </span>
             </motion.h1>
 
@@ -69,8 +69,7 @@ const HeroSection: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-center text-xl md:text-2xl text-slate-400 max-w-2xl mx-auto mb-12 font-light leading-relaxed"
             >
-              Suite modular que integra CRM, analítica predictiva y automatización 
-              para banca, seguros, retail y manufactura.
+              {t('store.hero.subtitle')} {t('store.hero.feature1')}, {t('store.hero.feature2')} {t('store.hero.feature3')}.
             </motion.p>
 
             {/* CTAs */}
@@ -85,7 +84,7 @@ const HeroSection: React.FC = () => {
                   size="lg"
                   className="h-14 px-8 text-base font-medium bg-slate-800 text-white hover:bg-slate-700 rounded-full shadow-xl shadow-black/20 transition-all duration-300 border border-slate-600"
                 >
-                  Explorar Módulos
+                  {t('store.hero.cta1')}
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
@@ -98,7 +97,7 @@ const HeroSection: React.FC = () => {
                   className="relative h-14 px-8 text-base font-medium bg-slate-700/80 border-slate-500 text-white hover:bg-slate-600 rounded-full transition-all duration-300 pulse-wave"
                 >
                   <Play className="mr-2 w-5 h-5" />
-                  Ver Demo
+                  {t('store.hero.cta2')}
                 </Button>
               </div>
             </motion.div>
