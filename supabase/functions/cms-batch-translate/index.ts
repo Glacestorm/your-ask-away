@@ -195,50 +195,85 @@ Return format (JSON only, no markdown):
 
     // Clean markdown code blocks and extra whitespace if present
     rawContent = rawContent
-      .replace(/```json\n?/g, "")
+      .replace(/```json\n?/gi, "")
       .replace(/```\n?/g, "")
-      .replace(/^\s+/, "")  // Leading whitespace
-      .replace(/\s+$/, "") // Trailing whitespace
+      .replace(/^\s+/, "")
+      .replace(/\s+$/, "")
       .trim();
 
     // Try to extract JSON array if there's extra text around it
-    const jsonMatch = rawContent.match(/\[[\s\S]*\]/);
+    const jsonMatch = rawContent.match(/\[[\s\S]*?\]/);
     if (jsonMatch) {
       rawContent = jsonMatch[0];
     }
 
+    console.log("Raw AI content (first 300 chars):", rawContent.substring(0, 300));
+
     let translations: Array<{ index: number; translation: string }> = [];
-    try {
-      translations = JSON.parse(rawContent);
-      
-      // Validate that we got an array
-      if (!Array.isArray(translations)) {
-        console.error("AI response is not an array:", typeof translations);
-        throw new Error("Expected array response");
-      }
-    } catch (parseError) {
-      console.error("Failed to parse AI response:", rawContent.substring(0, 500));
-      console.error("Parse error:", parseError);
-      
-      // Fallback: try to extract translations manually from the response
-      // Sometimes AI returns slightly malformed JSON that can be fixed
+    
+    // Helper function to clean and parse JSON
+    const tryParseJSON = (content: string): Array<{ index: number; translation: string }> | null => {
       try {
-        // Remove any BOM characters and normalize
-        const cleanedContent = rawContent
+        // Remove BOM, control characters, and fix common issues
+        const cleaned = content
           .replace(/^\uFEFF/, "")
           .replace(/[\u0000-\u001F]+/g, " ")
-          .replace(/,\s*]/g, "]") // Remove trailing commas
-          .replace(/,\s*}/g, "}");
+          .replace(/,\s*]/g, "]")
+          .replace(/,\s*}/g, "}")
+          .replace(/\\n/g, " ")
+          .replace(/\n/g, " ")
+          .replace(/\r/g, "")
+          .replace(/\t/g, " ");
         
-        translations = JSON.parse(cleanedContent);
-      } catch (fallbackError) {
-        console.error("Fallback parse also failed");
-        return new Response(
-          JSON.stringify({ error: "Failed to parse translation response" }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+        const parsed = JSON.parse(cleaned);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+        return null;
+      } catch {
+        return null;
+      }
+    };
+
+    // Try direct parse first
+    translations = tryParseJSON(rawContent) || [];
+    
+    // If that failed, try extracting just the array portion more aggressively
+    if (translations.length === 0) {
+      const arrayStart = rawContent.indexOf("[");
+      const arrayEnd = rawContent.lastIndexOf("]");
+      
+      if (arrayStart !== -1 && arrayEnd !== -1 && arrayEnd > arrayStart) {
+        const arrayContent = rawContent.substring(arrayStart, arrayEnd + 1);
+        translations = tryParseJSON(arrayContent) || [];
       }
     }
+
+    // Final fallback: try to parse individual objects
+    if (translations.length === 0) {
+      console.log("Attempting regex-based extraction...");
+      const objectMatches = rawContent.matchAll(/\{\s*"index"\s*:\s*(\d+)\s*,\s*"translation"\s*:\s*"([^"]*(?:\\.[^"]*)*)"\s*\}/g);
+      
+      for (const match of objectMatches) {
+        const idx = parseInt(match[1], 10);
+        const trans = match[2].replace(/\\"/g, '"').replace(/\\n/g, " ");
+        translations.push({ index: idx, translation: trans });
+      }
+    }
+
+    // If still no translations, log detailed error and return failure
+    if (translations.length === 0) {
+      console.error("All parsing attempts failed. Raw content:", rawContent.substring(0, 1000));
+      return new Response(
+        JSON.stringify({ 
+          error: "Failed to parse translation response",
+          debug: rawContent.substring(0, 200)
+        }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`Successfully parsed ${translations.length} translations`);
 
     // Map translations back to original items
     const results = batchItems.map((item, idx) => {
