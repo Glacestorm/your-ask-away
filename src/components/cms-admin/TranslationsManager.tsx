@@ -9,6 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Languages, Search, Download, Upload, Wand2, Plus, Save, Loader2 } from 'lucide-react';
+import { useSupportedLanguages, SupportedLanguage } from '@/hooks/useSupportedLanguages';
 
 interface Translation {
   id: string;
@@ -18,13 +19,6 @@ interface Translation {
   namespace: string;
 }
 
-const languages = [
-  { code: 'en', name: 'English' },
-  { code: 'es', name: 'Español' },
-  { code: 'ca', name: 'Català' },
-  { code: 'fr', name: 'Français' },
-];
-
 interface GroupedTranslation {
   key: string;
   namespace: string;
@@ -32,15 +26,19 @@ interface GroupedTranslation {
 }
 
 export function TranslationsManager() {
+  const { activeLanguages: supportedLangs, loading: langsLoading } = useSupportedLanguages();
   const [translations, setTranslations] = useState<GroupedTranslation[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [selectedLang, setSelectedLang] = useState('en');
+  const [selectedLang, setSelectedLang] = useState('es');
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [newKey, setNewKey] = useState('');
   const [newTranslations, setNewTranslations] = useState<Record<string, string>>({});
 
-  useEffect(() => { loadTranslations(); }, []);
+  // Convert to simpler format for rendering
+  const languages = supportedLangs.map(l => ({ code: l.locale, name: l.native_name || l.name }));
+
+  useEffect(() => { if (!langsLoading) loadTranslations(); }, [langsLoading]);
 
   const loadTranslations = async () => {
     try {
@@ -148,7 +146,7 @@ export function TranslationsManager() {
 
   const filtered = translations.filter(t => t.key.toLowerCase().includes(search.toLowerCase()) || Object.values(t.translations).some(v => v?.value?.toLowerCase().includes(search.toLowerCase())));
 
-  if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+  if (loading || langsLoading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" /></div>;
 
   return (
     <div className="space-y-6">
