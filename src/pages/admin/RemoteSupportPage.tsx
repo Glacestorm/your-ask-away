@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +12,7 @@ import { SessionActionsTimeline } from '@/components/admin/service-quotes/Sessio
 import { SessionDetailView } from '@/components/admin/remote-support/SessionDetailView';
 import { SessionSummaryCard } from '@/components/admin/remote-support/SessionSummaryCard';
 import { ActionQuickLog } from '@/components/admin/remote-support/ActionQuickLog';
+import { SupportAIAssistant } from '@/components/admin/remote-support/SupportAIAssistant';
 import { useSessionActionLogger } from '@/hooks/admin/useSessionActionLogger';
 import { useRemoteSupportSessions } from '@/hooks/admin/useRemoteSupportSessions';
 import { toast } from '@/hooks/use-toast';
@@ -46,6 +47,8 @@ export default function RemoteSupportPage() {
     getSessionSummary,
     isLogging 
   } = useSessionActionLogger(activeSession?.id || null);
+
+  const { actions } = useSessionActionLogger(activeSession?.id || null);
 
   const stats = getTodayStats();
 
@@ -114,6 +117,31 @@ export default function RemoteSupportPage() {
   };
 
   const summary = getSessionSummary();
+
+  // Build session context for AI Copilot
+  const sessionContext = useMemo(() => {
+    if (!activeSession || activeSession.status !== 'active') return null;
+    
+    const now = new Date().getTime();
+    const startTime = new Date(activeSession.started_at).getTime();
+    const currentDuration = now - startTime;
+
+    return {
+      sessionId: activeSession.id,
+      sessionCode: activeSession.session_code,
+      clientName: activeSession.client_name || undefined,
+      startedAt: activeSession.started_at,
+      actionsCount: summary.totalActions,
+      highRiskCount: summary.highRiskActions,
+      currentDuration,
+      recentActions: actions.slice(-10).map(a => ({
+        action_type: a.action_type,
+        description: a.description || '',
+        risk_level: a.risk_level,
+        created_at: a.created_at
+      }))
+    };
+  }, [activeSession, summary, actions]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -359,19 +387,32 @@ export default function RemoteSupportPage() {
                   isLogging={isLogging} 
                 />
 
-                {/* Session Summary */}
-                <div className="grid gap-6 md:grid-cols-3">
-                  <div className="md:col-span-2">
+                {/* Session Summary with AI Copilot */}
+                <div className="grid gap-6 lg:grid-cols-4">
+                  <div className="lg:col-span-2">
                     <SessionActionsTimeline sessionId={activeSession.id} />
                   </div>
-                  <SessionSummaryCard
-                    totalActions={summary.totalActions}
-                    totalDuration={summary.totalDurationFormatted}
-                    highRiskActions={summary.highRiskActions}
-                    pendingApprovals={summary.pendingApprovals}
-                    completedActions={summary.totalActions - summary.pendingApprovals}
-                    actionsByType={summary.actionsByType}
-                  />
+                  <div className="lg:col-span-1">
+                    <SessionSummaryCard
+                      totalActions={summary.totalActions}
+                      totalDuration={summary.totalDurationFormatted}
+                      highRiskActions={summary.highRiskActions}
+                      pendingApprovals={summary.pendingApprovals}
+                      completedActions={summary.totalActions - summary.pendingApprovals}
+                      actionsByType={summary.actionsByType}
+                    />
+                  </div>
+                  <div className="lg:col-span-1">
+                    <SupportAIAssistant 
+                      sessionContext={sessionContext}
+                      onActionSuggested={(action) => {
+                        toast({
+                          title: "Sugerencia aplicada",
+                          description: `Acción sugerida: ${action}`
+                        });
+                      }}
+                    />
+                  </div>
                 </div>
               </>
             )}
