@@ -1,7 +1,7 @@
 // Enhanced Service Worker with Cache Strategies for Core Web Vitals optimization
 // Implements: Cache-First, Network-First, Stale-While-Revalidate strategies
 
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const STATIC_CACHE = `static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `dynamic-${CACHE_VERSION}`;
 const IMAGE_CACHE = `images-${CACHE_VERSION}`;
@@ -36,6 +36,19 @@ const EXCLUDED_DOMAINS = [
 function shouldExclude(url) {
   try {
     const urlObj = new URL(url);
+
+    // Never intercept dev-module requests (prevents “Failed to fetch dynamically imported module”)
+    // Vite (and Lovable preview) loads modules from these paths/params.
+    const isSameOrigin = urlObj.origin === self.location.origin;
+    const isDevModule = isSameOrigin && (
+      urlObj.pathname.startsWith('/src/') ||
+      urlObj.pathname.startsWith('/@') ||
+      urlObj.pathname.includes('/node_modules/') ||
+      urlObj.searchParams.has('t')
+    );
+
+    if (isDevModule) return true;
+
     return EXCLUDED_DOMAINS.some(domain => urlObj.hostname.includes(domain) || url.includes(domain));
   } catch {
     return true;
