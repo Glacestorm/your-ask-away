@@ -2,13 +2,7 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
-// === ERROR TIPADO KB ===
-export interface TransactionEnrichmentError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
 export interface RawTransaction {
   id?: string;
@@ -70,12 +64,27 @@ export interface EnrichmentResult {
 export function useTransactionEnrichment(companyId: string | null) {
   const queryClient = useQueryClient();
   const [isEnriching, setIsEnriching] = useState(false);
-  // === ESTADO KB ===
-  const [error, setError] = useState<TransactionEnrichmentError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoadingState = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
   const clearError = useCallback(() => setError(null), []);
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   // Fetch enriched transactions for a company
   const { data: enrichedTransactions, isLoading, refetch } = useQuery({
@@ -91,11 +100,7 @@ export function useTransactionEnrichment(companyId: string | null) {
         .limit(500);
 
       if (fetchError) {
-        setError({
-          code: 'FETCH_TRANSACTIONS_ERROR',
-          message: fetchError.message,
-          details: { originalError: String(fetchError) }
-        });
+        setError(createKBError('FETCH_TRANSACTIONS_ERROR', fetchError.message, { details: { originalError: String(fetchError) } }));
         throw fetchError;
       }
       setLastRefresh(new Date());
@@ -133,11 +138,7 @@ export function useTransactionEnrichment(companyId: string | null) {
       return data as EnrichmentResult;
     } catch (err: any) {
       console.error('Error enriching transactions:', err);
-      setError({
-        code: 'ENRICH_ERROR',
-        message: err.message,
-        details: { originalError: String(err) }
-      });
+      setError(createKBError('ENRICH_ERROR', err.message, { retryable: true, details: { originalError: String(err) } }));
       toast.error('Error al enriquecer transacciones: ' + err.message);
       return null;
     } finally {
@@ -225,7 +226,7 @@ export function useTransactionEnrichment(companyId: string | null) {
     summary,
     
     // Loading states
-    isLoading,
+    isLoading: isLoadingState || isLoading,
     isEnriching,
     
     // Actions
@@ -239,10 +240,17 @@ export function useTransactionEnrichment(companyId: string | null) {
     getByDateRange,
     getTopMerchants,
     
-    // === KB ADDITIONS ===
+    // === KB 2.0 STATE ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
-    clearError
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
   };
 }
 

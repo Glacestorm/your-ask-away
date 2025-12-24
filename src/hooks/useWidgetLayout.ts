@@ -1,11 +1,5 @@
 import { useState, useCallback } from 'react';
-
-// === ERROR TIPADO KB ===
-export interface WidgetLayoutError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+import { KBStatus, KBError } from '@/hooks/core';
 
 export interface WidgetConfig {
   id: string;
@@ -78,12 +72,27 @@ export function useWidgetLayout(section: string = 'mi-panel') {
   
   const [widgets, setWidgets] = useState<WidgetConfig[]>(() => loadWidgets(storageKey, section));
   const [isEditMode, setIsEditMode] = useState(false);
-  // === ESTADO KB ===
-  const [error, setError] = useState<WidgetLayoutError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
   const clearError = useCallback(() => setError(null), []);
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
   const reorderWidgets = useCallback((activeId: string, overId: string) => {
     setWidgets((prev) => {
       const newWidgets = [...prev];
@@ -137,9 +146,17 @@ export function useWidgetLayout(section: string = 'mi-panel') {
     toggleWidgetVisibility,
     resetLayout,
     isWidgetVisible,
-    // === KB ADDITIONS ===
+    // === KB 2.0 STATE ===
+    status,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
-    clearError
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
   };
 }

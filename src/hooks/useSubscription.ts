@@ -2,13 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-
-// === ERROR TIPADO KB ===
-export interface SubscriptionError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
 export type SubscriptionTier = 'core' | 'automation' | 'industry' | null;
 
@@ -17,7 +11,6 @@ interface SubscriptionState {
   tier: SubscriptionTier;
   productId: string | null;
   subscriptionEnd: string | null;
-  loading: boolean;
 }
 
 // Tier configuration with Stripe IDs
@@ -83,38 +76,84 @@ export function useSubscription() {
     tier: null,
     productId: null,
     subscriptionEnd: null,
-    loading: true,
   });
-  // === ESTADO KB ===
-  const [error, setError] = useState<SubscriptionError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
   const clearError = useCallback(() => setError(null), []);
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   const checkSubscription = useCallback(async () => {
     if (!user || !session) {
-      setState(prev => ({ ...prev, loading: false, subscribed: false, tier: null }));
+      setStatus('idle');
+      setState(prev => ({ ...prev, subscribed: false, tier: null }));
       return;
     }
 
+    const startTime = Date.now();
+    setStatus('loading');
+
     try {
-      const { data, error } = await supabase.functions.invoke('check-subscription');
+      const { data, error: fnError } = await supabase.functions.invoke('check-subscription');
       
-      if (error) throw error;
+      if (fnError) throw fnError;
       
       setState({
         subscribed: data.subscribed,
         tier: data.tier as SubscriptionTier,
         productId: data.product_id,
         subscriptionEnd: data.subscription_end,
-        loading: false,
       });
-    } catch (error) {
-      console.error('Error checking subscription:', error);
-      setState(prev => ({ ...prev, loading: false }));
+      
+      setStatus('success');
+      setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setError(null);
+      
+      collectTelemetry({
+        hookName: 'useSubscription',
+        operationName: 'checkSubscription',
+        startTime: new Date(startTime),
+        endTime: new Date(),
+        durationMs: Date.now() - startTime,
+        status: 'success',
+        retryCount,
+      });
+    } catch (err) {
+      const kbError = parseError(err);
+      setError(kbError);
+      setStatus('error');
+      
+      collectTelemetry({
+        hookName: 'useSubscription',
+        operationName: 'checkSubscription',
+        startTime: new Date(startTime),
+        endTime: new Date(),
+        durationMs: Date.now() - startTime,
+        status: 'error',
+        error: kbError,
+        retryCount,
+      });
+      
+      console.error('Error checking subscription:', err);
     }
-  }, [user, session]);
+  }, [user, session, retryCount]);
 
   useEffect(() => {
     checkSubscription();
@@ -184,9 +223,18 @@ export function useSubscription() {
     createCheckout,
     openCustomerPortal,
     tiers: SUBSCRIPTION_TIERS,
-    // === KB ADDITIONS ===
+    // === KB 2.0 STATE ===
+    status,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
+    reset,
+    loading: isLoading, // backwards compatibility
   };
 }

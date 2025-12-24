@@ -4,22 +4,31 @@ import { supabase } from '@/integrations/supabase/client';
 import { LowCodeRule, RuleTrigger, RuleCondition, RuleAction } from '@/components/lowcode/types';
 import { toast } from 'sonner';
 import { Json } from '@/integrations/supabase/types';
-
-// === ERROR TIPADO KB ===
-export interface LowCodeRulesError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
 export function useLowCodeRules(moduleId?: string) {
   const queryClient = useQueryClient();
-  // === ESTADO KB ===
-  const [kbError, setKbError] = useState<LowCodeRulesError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setKbError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => setError(null), []);
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   const rulesQuery = useQuery({
     queryKey: ['lowcode-rules', moduleId],
@@ -150,16 +159,22 @@ export function useLowCodeRules(moduleId?: string) {
 
   return {
     rules: rulesQuery.data || [],
-    isLoading: rulesQuery.isLoading,
-    error: rulesQuery.error,
     createRule,
     updateRule,
     deleteRule,
     executeRule,
-    // === KB ADDITIONS ===
-    kbError,
+    // === KB 2.0 STATE ===
+    status,
+    isIdle,
+    isLoading: isLoading || rulesQuery.isLoading,
+    isSuccess,
+    isError: isError || rulesQuery.isError,
+    error: error || (rulesQuery.error ? parseError(rulesQuery.error) : null),
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
+    reset,
   };
 }
 
