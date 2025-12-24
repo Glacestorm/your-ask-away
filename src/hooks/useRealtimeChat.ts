@@ -4,6 +4,13 @@ import { useAuth } from './useAuth';
 import { toast } from 'sonner';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
+// === ERROR TIPADO KB ===
+export interface RealtimeChatError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 interface ChatRoom {
   id: string;
   name: string;
@@ -64,9 +71,15 @@ export function useRealtimeChat(roomId?: string) {
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [sendingMessage, setSendingMessage] = useState(false);
+  // === ESTADO KB ===
+  const [error, setError] = useState<RealtimeChatError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   
   const channelRef = useRef<RealtimeChannel | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   // Load user's chat rooms
   const loadRooms = useCallback(async () => {
@@ -153,11 +166,13 @@ export function useRealtimeChat(roomId?: string) {
         setMessages(msgsWithSenders);
       }
 
-    } catch (error) {
-      console.error('Error loading room:', error);
+    } catch (err) {
+      console.error('Error loading room:', err);
+      setError({ code: 'LOAD_ROOM_ERROR', message: 'Error carregant la sala', details: { originalError: String(err) } });
       toast.error('Error carregant la sala');
     } finally {
       setLoading(false);
+      setLastRefresh(new Date());
     }
   }, []);
 
@@ -470,5 +485,9 @@ export function useRealtimeChat(roomId?: string) {
     startTyping,
     stopTyping,
     getUnreadCount,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
