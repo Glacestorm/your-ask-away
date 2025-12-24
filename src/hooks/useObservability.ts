@@ -3,8 +3,15 @@
  * Provides tracing for React components and user interactions
  */
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { observability, getObservability, initObservability } from '@/lib/observability';
+
+// === ERROR TIPADO KB ===
+export interface ObservabilityError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 interface UseObservabilityOptions {
   componentName: string;
@@ -20,6 +27,12 @@ export function useObservability(options: UseObservabilityOptions) {
   const { componentName, trackRenders = true, trackMounts = true, attributes = {} } = options;
   const renderCount = useRef(0);
   const mountSpanId = useRef<string | null>(null);
+  // === ESTADO KB ===
+  const [error, setError] = useState<ObservabilityError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   // Track component mount/unmount
   useEffect(() => {
@@ -134,6 +147,10 @@ export function useObservability(options: UseObservabilityOptions) {
     recordCounter: observability.recordCounter,
     recordGauge: observability.recordGauge,
     recordHistogram: observability.recordHistogram,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
 

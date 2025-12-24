@@ -1,8 +1,16 @@
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useCelebration } from './useCelebration';
 import { Json } from '@/integrations/supabase/types';
+
+// === ERROR TIPADO KB ===
+export interface OnboardingError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 export interface OnboardingStep {
   id: string;
@@ -60,6 +68,12 @@ export interface OnboardingProgress {
 export function useOnboarding(companyId?: string) {
   const queryClient = useQueryClient();
   const { celebrateGoalAchievement, fireCelebration, fireStarBurst } = useCelebration();
+  // === ESTADO KB ===
+  const [error, setError] = useState<OnboardingError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   // Fetch available templates
   const { data: templates, isLoading: loadingTemplates } = useQuery({
@@ -365,5 +379,9 @@ export function useOnboarding(companyId?: string) {
     getRecommendedTemplate,
     getNextStep,
     calculateStreak,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }

@@ -7,6 +7,13 @@
 import { useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+// === ERROR TIPADO KB ===
+export interface AIAgentsError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 // Agent Types
 export type AgentRole = 
   | 'analyst'      // Financial analysis, data interpretation
@@ -81,6 +88,11 @@ interface UseAIAgentsReturn {
   getAgentStatus: (agentId: string) => AgentStatus | null;
   getAgentThoughts: (agentId: string) => AgentThought[];
   clearAgentMemory: (agentId: string) => void;
+  
+  // === KB ADDITIONS ===
+  error: AIAgentsError | null;
+  lastRefresh: Date | null;
+  clearError: () => void;
 }
 
 // Available tools for agents
@@ -122,6 +134,12 @@ export function useAIAgents(): UseAIAgentsReturn {
   const [activeAgent, setActiveAgent] = useState<AIAgent | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
+  // === ESTADO KB ===
+  const [error, setError] = useState<AIAgentsError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const generateId = () => crypto.randomUUID();
 
@@ -426,6 +444,10 @@ export function useAIAgents(): UseAIAgentsReturn {
     getAgentStatus,
     getAgentThoughts,
     clearAgentMemory,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
 
