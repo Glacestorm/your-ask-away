@@ -3,6 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// === ERROR TIPADO KB ===
+export interface RetentionPlaybooksError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export interface RetentionPlaybook {
   id: string;
   name: string;
@@ -69,17 +76,31 @@ export interface PlaybookStepExecution {
 
 export function useRetentionPlaybooks() {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<RetentionPlaybooksError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   // Fetch all playbooks
   const { data: playbooks = [], isLoading: loadingPlaybooks, refetch: refetchPlaybooks } = useQuery({
     queryKey: ['retention-playbooks'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('retention_playbooks')
         .select('*')
         .order('priority', { ascending: true });
       
-      if (error) throw error;
+      if (fetchError) {
+        setError({
+          code: 'FETCH_PLAYBOOKS_ERROR',
+          message: fetchError.message,
+          details: { originalError: String(fetchError) }
+        });
+        throw fetchError;
+      }
+      setLastRefresh(new Date());
       return data as RetentionPlaybook[];
     }
   });
@@ -319,7 +340,11 @@ export function useRetentionPlaybooks() {
     cancelExecution: cancelExecutionMutation.mutateAsync,
     getSuggestedPlaybooks,
     isStarting: startPlaybookMutation.isPending,
-    isCompleting: completeStepMutation.isPending
+    isCompleting: completeStepMutation.isPending,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
 

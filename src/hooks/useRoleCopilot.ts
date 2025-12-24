@@ -4,6 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
+// === ERROR TIPADO KB ===
+export interface RoleCopilotError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export interface CopilotConfig {
   id: string;
   role: string;
@@ -70,6 +77,12 @@ export function useRoleCopilot() {
   const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentSuggestions, setCurrentSuggestions] = useState<CopilotSuggestion[]>([]);
+  // === ESTADO KB ===
+  const [error, setError] = useState<RoleCopilotError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   // Get copilot config for current role
   const { data: copilotConfig, isLoading: configLoading } = useQuery({
@@ -202,6 +215,7 @@ export function useRoleCopilot() {
       if (error) throw error;
       
       const suggestions = data.suggestions as CopilotSuggestion[];
+      setLastRefresh(new Date());
       setCurrentSuggestions(suggestions);
       
       // Update session with new suggestions
@@ -216,9 +230,15 @@ export function useRoleCopilot() {
       }
       
       return suggestions;
-    } catch (error) {
-      console.error('Error generating suggestions:', error);
-      toast.error('Error al generar sugerencias');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error al generar sugerencias';
+      setError({
+        code: 'GENERATE_SUGGESTIONS_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
+      console.error('Error generating suggestions:', err);
+      toast.error(message);
       return [];
     } finally {
       setIsProcessing(false);
@@ -354,6 +374,10 @@ export function useRoleCopilot() {
     dismissSuggestion,
     executeQuickAction,
     refetchSession,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
 
