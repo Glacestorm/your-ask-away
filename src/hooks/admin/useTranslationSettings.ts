@@ -2,36 +2,45 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { SupportedLanguage } from '@/hooks/useSupportedLanguages';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
 // === INTERFACES ===
-export interface TranslationSettingsError {
-  code: string;
-  message: string;
-  details?: string;
-}
-
 export interface TranslationSettingsContext {
   languageId?: string;
   locale?: string;
 }
 
+// KB 2.0: Re-export for backwards compat
+export type TranslationSettingsError = KBError;
+
 // === HOOK ===
 export function useTranslationSettings() {
   // Estado
   const [languages, setLanguages] = useState<SupportedLanguage[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<TranslationSettingsError | null>(null);
-  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [savingLocale, setSavingLocale] = useState<string | null>(null);
   const [deletingLocale, setDeletingLocale] = useState<string | null>(null);
+
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // === KB 2.0 COMPUTED ===
+  const isLoading = status === 'loading';
+  const isIdle = status === 'idle';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
 
   // Refs para auto-refresh
   const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
 
   // === FETCH LANGUAGES ===
   const fetchLanguages = useCallback(async () => {
-    setIsLoading(true);
+    setStatus('loading');
     setError(null);
+    const startTime = Date.now();
 
     try {
       const { data, error: fetchError } = await supabase
@@ -44,14 +53,20 @@ export function useTranslationSettings() {
 
       setLanguages(data as SupportedLanguage[]);
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setStatus('success');
+      setRetryCount(0);
+      collectTelemetry('useTranslationSettings', 'fetchLanguages', 'success', Date.now() - startTime);
       return data;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error desconocido';
-      setError({ code: 'FETCH_ERROR', message });
+      const parsedErr = parseError(err);
+      const kbError = createKBError('FETCH_ERROR', parsedErr.message, { retryable: true, details: { originalError: String(err) } });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useTranslationSettings', 'fetchLanguages', 'error', Date.now() - startTime, kbError);
       console.error('[useTranslationSettings] fetchLanguages error:', err);
       return null;
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -166,6 +181,22 @@ export function useTranslationSettings() {
     fetchLanguages();
   }, [fetchLanguages]);
 
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  // === KB 2.0 RESET ===
+  const reset = useCallback(() => {
+    setLanguages([]);
+    setError(null);
+    setStatus('idle');
+    setLastRefresh(null);
+    setLastSuccess(null);
+    setRetryCount(0);
+  }, []);
+
   // === RETURN ===
   return {
     // Estado
@@ -175,6 +206,15 @@ export function useTranslationSettings() {
     lastRefresh,
     savingLocale,
     deletingLocale,
+    // === KB 2.0 ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
     // Acciones
     fetchLanguages,
     toggleLanguageActive,

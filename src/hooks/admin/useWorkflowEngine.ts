@@ -1,12 +1,13 @@
 /**
  * Hook: useWorkflowEngine
  * Motor de Automatización de Workflows con Reglas Dinámicas
- * Fase 11 - Enterprise SaaS 2025-2026
+ * Fase 11 - Enterprise SaaS 2025-2026 + KB 2.0
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
 // === INTERFACES ===
 export interface WorkflowDefinition {
@@ -80,20 +81,31 @@ export interface WorkflowContext {
 // === HOOK ===
 export function useWorkflowEngine() {
   // Estado
-  const [isLoading, setIsLoading] = useState(false);
   const [workflows, setWorkflows] = useState<WorkflowDefinition[]>([]);
   const [executions, setExecutions] = useState<WorkflowExecution[]>([]);
   const [rules, setRules] = useState<AutomationRule[]>([]);
-  const [error, setError] = useState<string | null>(null);
+
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // === KB 2.0 COMPUTED ===
+  const isLoading = status === 'loading';
+  const isIdle = status === 'idle';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
 
   // Refs para auto-refresh
   const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
 
   // === GET WORKFLOWS ===
   const getWorkflows = useCallback(async (context: WorkflowContext = {}) => {
-    setIsLoading(true);
+    setStatus('loading');
     setError(null);
+    const startTime = Date.now();
 
     try {
       const { data: fnData, error: fnError } = await supabase.functions.invoke(
@@ -115,17 +127,23 @@ export function useWorkflowEngine() {
           setExecutions(fnData.data.executions || []);
         }
         setLastRefresh(new Date());
+        setLastSuccess(new Date());
+        setStatus('success');
+        setRetryCount(0);
+        collectTelemetry('useWorkflowEngine', 'getWorkflows', 'success', Date.now() - startTime);
         return fnData.data;
       }
 
       throw new Error(fnData?.error || 'Error al obtener workflows');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error desconocido';
-      setError(message);
+      const parsedErr = parseError(err);
+      const kbError = createKBError('GET_WORKFLOWS_ERROR', parsedErr.message, { retryable: true, details: { originalError: String(err) } });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useWorkflowEngine', 'getWorkflows', 'error', Date.now() - startTime, kbError);
       console.error('[useWorkflowEngine] getWorkflows error:', err);
       return null;
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -225,7 +243,8 @@ export function useWorkflowEngine() {
 
   // === GENERATE WORKFLOW WITH AI ===
   const generateWorkflow = useCallback(async (description: string, context?: Record<string, unknown>) => {
-    setIsLoading(true);
+    setStatus('loading');
+    const startTime = Date.now();
     try {
       const { data: fnData, error: fnError } = await supabase.functions.invoke(
         'workflow-engine',
@@ -241,6 +260,8 @@ export function useWorkflowEngine() {
 
       if (fnData?.success) {
         toast.success('Workflow generado con IA');
+        setStatus('success');
+        collectTelemetry('useWorkflowEngine', 'generateWorkflow', 'success', Date.now() - startTime);
         return fnData.data.workflow;
       }
 
@@ -248,9 +269,9 @@ export function useWorkflowEngine() {
     } catch (err) {
       console.error('[useWorkflowEngine] generateWorkflow error:', err);
       toast.error('Error al generar workflow');
+      setStatus('error');
+      collectTelemetry('useWorkflowEngine', 'generateWorkflow', 'error', Date.now() - startTime);
       return null;
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -299,6 +320,24 @@ export function useWorkflowEngine() {
     }
   }, []);
 
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  // === KB 2.0 RESET ===
+  const reset = useCallback(() => {
+    setWorkflows([]);
+    setExecutions([]);
+    setRules([]);
+    setError(null);
+    setStatus('idle');
+    setLastRefresh(null);
+    setLastSuccess(null);
+    setRetryCount(0);
+  }, []);
+
   // === CLEANUP ===
   useEffect(() => {
     return () => stopAutoRefresh();
@@ -313,6 +352,15 @@ export function useWorkflowEngine() {
     rules,
     error,
     lastRefresh,
+    // === KB 2.0 ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
     // Acciones
     getWorkflows,
     createWorkflow,

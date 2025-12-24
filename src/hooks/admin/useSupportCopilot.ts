@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
 export interface CopilotSuggestion {
   id: string;
@@ -71,27 +72,33 @@ export interface SessionContext {
   }>;
 }
 
-// KB Pattern: Typed error interface
-export interface SupportCopilotError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// KB 2.0: Re-export for backwards compat
+export type SupportCopilotError = KBError;
 
 export function useSupportCopilot() {
-  const [isLoading, setIsLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<CopilotSuggestion[]>([]);
   const [riskAssessment, setRiskAssessment] = useState<RiskAssessment | null>(null);
   const [nextBestActions, setNextBestActions] = useState<string[]>([]);
-  // KB Pattern: Typed error state
-  const [error, setError] = useState<SupportCopilotError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  
+  // === KB 2.0 COMPUTED ===
+  const isLoading = status === 'loading';
+  const isIdle = status === 'idle';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
   
   const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
 
   const getSuggestions = useCallback(async (sessionContext: SessionContext): Promise<SuggestionsResponse | null> => {
-    setIsLoading(true);
+    setStatus('loading');
     setError(null);
+    const startTime = Date.now();
 
     try {
       const { data, error: fnError } = await supabase.functions.invoke('support-copilot', {
@@ -109,17 +116,23 @@ export function useSupportCopilot() {
         setRiskAssessment(response.riskAssessment || null);
         setNextBestActions(response.nextBestActions || []);
         setLastRefresh(new Date());
+        setLastSuccess(new Date());
+        setStatus('success');
+        setRetryCount(0);
+        collectTelemetry('useSupportCopilot', 'getSuggestions', 'success', Date.now() - startTime);
         return response;
       }
 
       throw new Error('Invalid response from copilot');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error al obtener sugerencias';
-      setError({ code: 'GET_SUGGESTIONS_ERROR', message, details: { originalError: String(err) } });
+      const parsedErr = parseError(err);
+      const kbError = createKBError('GET_SUGGESTIONS_ERROR', parsedErr.message, { retryable: true, details: { originalError: String(err) } });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useSupportCopilot', 'getSuggestions', 'error', Date.now() - startTime, kbError);
       console.error('[useSupportCopilot] getSuggestions error:', err);
       return null;
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -151,7 +164,8 @@ export function useSupportCopilot() {
   const generateSummary = useCallback(async (
     sessionContext: SessionContext
   ): Promise<SessionSummary | null> => {
-    setIsLoading(true);
+    setStatus('loading');
+    const startTime = Date.now();
 
     try {
       const { data, error: fnError } = await supabase.functions.invoke('support-copilot', {
@@ -165,16 +179,18 @@ export function useSupportCopilot() {
 
       if (data?.success && data?.data) {
         toast.success('Resumen generado por IA');
+        setStatus('success');
+        collectTelemetry('useSupportCopilot', 'generateSummary', 'success', Date.now() - startTime);
         return data.data as SessionSummary;
       }
 
       return null;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error al generar resumen';
-      toast.error(message);
+      const parsedErr = parseError(err);
+      toast.error(parsedErr.message);
+      setStatus('error');
+      collectTelemetry('useSupportCopilot', 'generateSummary', 'error', Date.now() - startTime);
       return null;
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -231,11 +247,25 @@ export function useSupportCopilot() {
     setNextBestActions([]);
     setError(null);
     setLastRefresh(null);
+    setStatus('idle');
   }, []);
 
-  // KB Pattern: Clear error
+  // === KB 2.0 CLEAR ERROR ===
   const clearError = useCallback(() => {
     setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  // === KB 2.0 RESET ===
+  const reset = useCallback(() => {
+    setSuggestions([]);
+    setRiskAssessment(null);
+    setNextBestActions([]);
+    setError(null);
+    setStatus('idle');
+    setLastRefresh(null);
+    setLastSuccess(null);
+    setRetryCount(0);
   }, []);
 
   // Cleanup on unmount
@@ -253,6 +283,13 @@ export function useSupportCopilot() {
     nextBestActions,
     error,
     lastRefresh,
+    // === KB 2.0 ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
+    lastSuccess,
+    retryCount,
     
     // Actions
     getSuggestions,
@@ -263,7 +300,8 @@ export function useSupportCopilot() {
     stopAutoRefresh,
     dismissSuggestion,
     clearAll,
-    clearError
+    clearError,
+    reset
   };
 }
 
