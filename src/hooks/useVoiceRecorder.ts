@@ -1,5 +1,12 @@
 import { useState, useRef, useCallback } from 'react';
 
+// === ERROR TIPADO KB ===
+export interface VoiceRecorderError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 interface UseVoiceRecorderOptions {
   onRecordingComplete?: (audioBlob: Blob, audioUrl: string) => void;
   onError?: (error: string) => void;
@@ -12,6 +19,11 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}) {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [duration, setDuration] = useState(0);
+  // === ESTADO KB ===
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -158,5 +170,8 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}) {
     startRecording,
     stopRecording,
     cancelRecording,
+    // === KB ADDITIONS ===
+    lastRefresh,
+    clearError,
   };
 }
