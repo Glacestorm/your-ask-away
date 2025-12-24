@@ -1,18 +1,15 @@
 /**
- * View Transitions API Hook
+ * View Transitions API Hook - KB 2.0
  * Provides smooth page transitions using the browser's View Transitions API
  * Falls back gracefully on unsupported browsers
  */
 
 import { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { KBStatus, KBError } from './core/types';
 
-// === ERROR TIPADO KB ===
-export interface ViewTransitionsError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// === ERROR TIPADO KB 2.0 ===
+export type ViewTransitionsError = KBError;
 
 interface ViewTransitionOptions {
   skipTransition?: boolean;
@@ -24,9 +21,16 @@ interface UseViewTransitionsReturn {
   isTransitioning: boolean;
   navigateWithTransition: (to: string, options?: ViewTransitionOptions) => void;
   startViewTransition: (callback: () => void | Promise<void>) => void;
-  // === KB ADDITIONS ===
-  error: ViewTransitionsError | null;
+  // === KB 2.0 STATE ===
+  status: KBStatus;
+  isIdle: boolean;
+  isLoading: boolean;
+  isSuccess: boolean;
+  isError: boolean;
+  error: KBError | null;
   lastRefresh: Date | null;
+  lastSuccess: Date | null;
+  retryCount: number;
   clearError: () => void;
 }
 
@@ -40,12 +44,25 @@ export function useViewTransitions(): UseViewTransitionsReturn {
   const navigate = useNavigate();
   const location = useLocation();
   const isSupported = isViewTransitionsSupported();
-  // === ESTADO KB ===
-  const [error] = useState<ViewTransitionsError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh] = useState<Date | null>(null);
+  const [lastSuccess] = useState<Date | null>(null);
+  const [retryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => {}, []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
 
   // Add CSS for view transitions on mount
   useEffect(() => {
@@ -164,9 +181,16 @@ export function useViewTransitions(): UseViewTransitionsReturn {
     isTransitioning,
     navigateWithTransition,
     startViewTransition,
-    // === KB ADDITIONS ===
+    // === KB 2.0 STATE ===
+    status,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
   };
 }

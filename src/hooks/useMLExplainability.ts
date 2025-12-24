@@ -1,13 +1,10 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from './core';
 
-// === ERROR TIPADO KB ===
-export interface MLExplainabilityError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// === ERROR TIPADO KB 2.0 ===
+export type MLExplainabilityError = KBError;
 
 export interface ShapValue {
   feature: string;
@@ -44,14 +41,33 @@ export interface ExplainabilityResult {
 }
 
 export function useMLExplainability() {
-  const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<ExplainabilityResult | null>(null);
-  // === ESTADO KB ===
-  const [error, setError] = useState<MLExplainabilityError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+    setResult(null);
+  }, []);
 
   const explain = useCallback(async (
     modelType: 'credit_scoring' | 'churn_prediction' | 'anomaly_detection' | 'segmentation',
@@ -59,7 +75,8 @@ export function useMLExplainability() {
     method: 'shap' | 'lime' | 'both' = 'both',
     companyId?: string
   ) => {
-    setIsLoading(true);
+    const startTime = Date.now();
+    setStatus('loading');
     setError(null);
 
     try {
@@ -70,20 +87,22 @@ export function useMLExplainability() {
       if (fnError) throw fnError;
 
       setResult(data);
+      setStatus('success');
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry('useMLExplainability', 'explain', 'success', Date.now() - startTime);
       toast.success('Anàlisi SHAP/LIME completada');
       return data;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error en explainability';
-      setError({
-        code: 'EXPLAIN_ERROR',
-        message,
-        details: { originalError: String(err) }
-      });
-      toast.error(message);
+      const parsedErr = parseError(err);
+      const kbError = createKBError('EXPLAIN_ERROR', parsedErr.message, { originalError: String(err) });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useMLExplainability', 'explain', 'error', Date.now() - startTime, kbError);
+      toast.error(kbError.message);
       return null;
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -94,12 +113,19 @@ export function useMLExplainability() {
   return {
     explain,
     result,
+    getContributionColor,
+    // === KB 2.0 STATE ===
+    status,
+    isIdle,
     isLoading,
-    // === KB ADDITIONS ===
+    isSuccess,
+    isError,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
-    getContributionColor
+    reset,
   };
 }
 

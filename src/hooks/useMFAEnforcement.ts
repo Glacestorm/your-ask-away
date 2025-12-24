@@ -1,5 +1,5 @@
 /**
- * MFA Enforcement Hook
+ * MFA Enforcement Hook - KB 2.0
  * Ensures admin roles have MFA enabled
  * ISO 27001 Control A.8.5 - Secure Authentication
  */
@@ -7,13 +7,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { logAuthEvent } from '@/lib/security/auditLogger';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from './core';
 
-// === ERROR TIPADO KB ===
-export interface MFAEnforcementError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// === ERROR TIPADO KB 2.0 ===
+export type MFAEnforcementError = KBError;
 
 interface MFAStatus {
   required: boolean;
@@ -24,15 +21,21 @@ interface MFAStatus {
 
 interface UseMFAEnforcementReturn {
   mfaStatus: MFAStatus | null;
-  loading: boolean;
   showMFASetup: boolean;
   requiresMFANow: boolean;
   checkMFAStatus: () => Promise<void>;
   dismissMFAReminder: (hours?: number) => Promise<void>;
   completeMFASetup: (method: 'totp' | 'webauthn') => Promise<boolean>;
-  // === KB ADDITIONS ===
-  error: MFAEnforcementError | null;
+  // === KB 2.0 STATE ===
+  status: KBStatus;
+  isIdle: boolean;
+  loading: boolean;
+  isSuccess: boolean;
+  isError: boolean;
+  error: KBError | null;
   lastRefresh: Date | null;
+  lastSuccess: Date | null;
+  retryCount: number;
   clearError: () => void;
 }
 
@@ -44,16 +47,28 @@ let useAuthHook: (() => any) | null = null;
 
 export function useMFAEnforcement(): UseMFAEnforcementReturn | null {
   const [mfaStatus, setMFAStatus] = useState<MFAStatus | null>(null);
-  const [loading, setLoading] = useState(true);
   const [showMFASetup, setShowMFASetup] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
-  // === ESTADO KB ===
-  const [error, setError] = useState<MFAEnforcementError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('loading');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const loading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
   
   // Safely get auth context
   useEffect(() => {
@@ -100,12 +115,14 @@ export function useMFAEnforcement(): UseMFAEnforcementReturn | null {
   const checkMFAStatus = useCallback(async () => {
     if (!user) {
       setMFAStatus(null);
-      setLoading(false);
+      setStatus('idle');
       return;
     }
 
+    const startTime = Date.now();
     try {
-      setLoading(true);
+      setStatus('loading');
+      setError(null);
 
       // Check if user has MFA requirements record
       const { data: mfaReq, error } = await supabase
@@ -169,10 +186,20 @@ export function useMFAEnforcement(): UseMFAEnforcementReturn | null {
           })
           .eq('user_id', user.id);
       }
+      
+      setStatus('success');
+      setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry('useMFAEnforcement', 'checkMFAStatus', 'success', Date.now() - startTime);
     } catch (err) {
       console.error('MFA check error:', err);
-    } finally {
-      setLoading(false);
+      const parsedErr = parseError(err);
+      const kbError = createKBError('MFA_CHECK_ERROR', parsedErr.message, { originalError: String(err) });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useMFAEnforcement', 'checkMFAStatus', 'error', Date.now() - startTime, kbError);
     }
   }, [user, isAdminRole]);
 
@@ -236,15 +263,21 @@ export function useMFAEnforcement(): UseMFAEnforcementReturn | null {
 
   return {
     mfaStatus,
-    loading,
     showMFASetup,
     requiresMFANow,
     checkMFAStatus,
     dismissMFAReminder,
     completeMFASetup,
-    // === KB ADDITIONS ===
+    // === KB 2.0 STATE ===
+    status,
+    isIdle,
+    loading,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
   };
 }
