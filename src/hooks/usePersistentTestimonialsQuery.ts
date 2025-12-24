@@ -10,7 +10,14 @@ import {
   loadFromIDB,
   updateLastSync
 } from '@/lib/queryPersister';
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
+
+// === ERROR TIPADO KB ===
+export interface PersistentTestimonialsError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 interface Testimonial {
   id: string;
@@ -47,6 +54,12 @@ async function fetchTestimonials(): Promise<Testimonial[]> {
 
 export function usePersistentTestimonialsQuery() {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<PersistentTestimonialsError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const query = useQuery({
     queryKey: TESTIMONIALS_KEY,
@@ -102,6 +115,10 @@ export function usePersistentTestimonialsQuery() {
     testimonials: query.data ?? [],
     invalidate,
     prefetch,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
 

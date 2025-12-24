@@ -144,13 +144,27 @@ export function useSentimentAnalysis(companyId?: string) {
   };
 }
 
+// === ERROR TIPADO KB BULK ===
+export interface BulkSentimentAnalysisError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 // Hook for bulk sentiment analysis
 export function useBulkSentimentAnalysis() {
   const [progress, setProgress] = useState({ total: 0, completed: 0, current: '' });
   const [isProcessing, setIsProcessing] = useState(false);
+  // === ESTADO KB ===
+  const [error, setError] = useState<BulkSentimentAnalysisError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const analyzeVisitNotes = useCallback(async (visitIds: string[]) => {
     setIsProcessing(true);
+    setError(null);
     setProgress({ total: visitIds.length, completed: 0, current: '' });
 
     const results: SentimentResult[] = [];
@@ -184,14 +198,17 @@ export function useBulkSentimentAnalysis() {
             results.push(data.result);
           }
         }
-      } catch (error) {
-        console.error(`Error analyzing visit ${visitId}:`, error);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : `Error analyzing visit ${visitId}`;
+        setError({ code: 'BULK_ANALYZE_ERROR', message, details: { visitId, originalError: String(err) } });
+        console.error(`Error analyzing visit ${visitId}:`, err);
       }
 
       setProgress(prev => ({ ...prev, completed: i + 1 }));
     }
 
     setIsProcessing(false);
+    setLastRefresh(new Date());
     toast.success(`Análisis completado: ${results.length} visitas procesadas`);
     return results;
   }, []);
@@ -199,7 +216,11 @@ export function useBulkSentimentAnalysis() {
   return {
     analyzeVisitNotes,
     isProcessing,
-    progress
+    progress,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
 
