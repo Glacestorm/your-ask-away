@@ -12,11 +12,22 @@ import {
   type PartytownMetrics 
 } from '@/lib/partytown/config';
 
+// === ERROR TIPADO KB ===
+export interface PartytownError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 interface UsePartytownReturn {
   isSupported: boolean;
   metrics: PartytownMetrics;
   loadScript: (src: string, options?: ScriptLoadOptions) => Promise<void>;
   offloadAnalytics: (analyticsId: string, provider: 'plausible' | 'gtag') => void;
+  // === KB ADDITIONS ===
+  error: PartytownError | null;
+  lastRefresh: Date | null;
+  clearError: () => void;
 }
 
 interface ScriptLoadOptions {
@@ -29,11 +40,18 @@ interface ScriptLoadOptions {
 export function usePartytown(): UsePartytownReturn {
   const [isSupported] = useState(() => typeof Worker !== 'undefined');
   const [metrics, setMetrics] = useState<PartytownMetrics>(getPartytownMetrics());
+  // === ESTADO KB ===
+  const [error, setError] = useState<PartytownError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   // Update metrics periodically
   useEffect(() => {
     const interval = setInterval(() => {
       setMetrics(getPartytownMetrics());
+      setLastRefresh(new Date());
     }, 5000);
 
     return () => clearInterval(interval);
@@ -107,6 +125,10 @@ export function usePartytown(): UsePartytownReturn {
     metrics,
     loadScript,
     offloadAnalytics,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
 
