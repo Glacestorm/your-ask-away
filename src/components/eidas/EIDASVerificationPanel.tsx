@@ -37,6 +37,7 @@ import { QualifiedTrustServiceProvider } from '@/lib/eidas/types';
 export function EIDASVerificationPanel() {
   const {
     state,
+    isLoading,
     createDID,
     getDIDs,
     initiateKYCVerification,
@@ -108,7 +109,7 @@ export function EIDASVerificationPanel() {
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{state.error}</AlertDescription>
+          <AlertDescription>{state.error.message}</AlertDescription>
         </Alert>
       )}
 
@@ -158,9 +159,9 @@ export function EIDASVerificationPanel() {
                 <Button 
                   className="w-full" 
                   onClick={handleInitiateKYC}
-                  disabled={state.isLoading}
+                  disabled={isLoading}
                 >
-                  {state.isLoading ? (
+                  {isLoading ? (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   ) : (
                     <QrCode className="h-4 w-4 mr-2" />
@@ -351,8 +352,8 @@ export function EIDASVerificationPanel() {
                   <p className="text-muted-foreground mb-4">
                     No tens cap DID creat
                   </p>
-                  <Button onClick={handleCreateDID} disabled={state.isLoading}>
-                    {state.isLoading ? (
+                  <Button onClick={handleCreateDID} disabled={isLoading}>
+                    {isLoading ? (
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     ) : (
                       <Key className="h-4 w-4 mr-2" />
