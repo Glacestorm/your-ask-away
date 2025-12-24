@@ -1,16 +1,21 @@
 /**
  * Hook for generating and exporting remote support session data to PDF
  * 
- * KB Pattern: typed errors
+ * KB 2.0 Pattern
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { createKBError, parseError, collectTelemetry } from '@/hooks/core/useKBBase';
+
+// Re-export for backwards compat
+export type ExportError = KBError;
 
 // === TYPES ===
 export interface SessionExportData {
@@ -49,18 +54,47 @@ export interface ExportOptions {
   includeSummary: boolean;
 }
 
-// KB Pattern: Typed error interface
-export interface ExportError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
-
 export function useSessionExport() {
   const [isExporting, setIsExporting] = useState(false);
   
-  // KB Pattern: Typed error state
-  const [error, setError] = useState<ExportError | null>(null);
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
+
+  // Auto-refresh refs (optional for this hook)
+  const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
+
+  const stopAutoRefresh = useCallback(() => {
+    if (autoRefreshInterval.current) {
+      clearInterval(autoRefreshInterval.current);
+      autoRefreshInterval.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => stopAutoRefresh();
+  }, [stopAutoRefresh]);
 
   // Generate a verification hash
   const generateVerificationHash = useCallback((data: string): string => {
@@ -122,9 +156,10 @@ export function useSessionExport() {
         technician
       };
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error desconocido';
+      const parsedErr = parseError(err);
+      const kbError = createKBError('FETCH_DATA_ERROR', parsedErr.message, { details: { sessionId } });
+      setError(kbError);
       console.error('Error fetching session data:', err);
-      setError({ code: 'FETCH_DATA_ERROR', message, details: { sessionId } });
       return null;
     }
   }, []);
@@ -177,6 +212,8 @@ export function useSessionExport() {
   ): Promise<boolean> => {
     setIsExporting(true);
     setError(null);
+    setStatus('loading');
+    const startTime = Date.now();
     
     try {
       const data = await fetchSessionData(sessionId);
@@ -329,6 +366,12 @@ export function useSessionExport() {
         });
       }
 
+      setStatus('success');
+      setLastSuccess(new Date());
+      setLastRefresh(new Date());
+      setRetryCount(0);
+      collectTelemetry('useSessionExport', 'exportToPDF', 'success', Date.now() - startTime);
+
       toast({
         title: "Exportación completada",
         description: `Archivo: ${fileName}`,
@@ -336,9 +379,13 @@ export function useSessionExport() {
 
       return true;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error desconocido';
+      const parsedErr = parseError(err);
+      const kbError = createKBError('EXPORT_ERROR', parsedErr.message, { details: { sessionId } });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useSessionExport', 'exportToPDF', 'error', Date.now() - startTime, kbError);
       console.error('Error exporting session:', err);
-      setError({ code: 'EXPORT_ERROR', message, details: { sessionId } });
       toast({
         title: "Error de exportación",
         description: "No se pudo generar el PDF",
@@ -350,11 +397,6 @@ export function useSessionExport() {
     }
   }, [fetchSessionData, generateVerificationCode, generateVerificationHash, formatDuration, getActionLabel, getRiskLabel]);
 
-  // KB Pattern: Clear error
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-
   return {
     // State
     isExporting,
@@ -364,6 +406,16 @@ export function useSessionExport() {
     clearError,
     // Utilities
     generateVerificationCode,
-    generateVerificationHash
+    generateVerificationHash,
+    // === KB 2.0 STATE ===
+    status,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
+    lastRefresh,
+    lastSuccess,
+    retryCount,
+    reset,
   };
 }

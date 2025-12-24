@@ -2,13 +2,18 @@
  * Hook for managing remote support sessions
  * Handles session creation, updates, and history
  * 
- * KB Pattern: lastRefresh, typed errors (realtime replaces auto-refresh)
+ * KB 2.0 Pattern
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { createKBError, parseError, collectTelemetry } from '@/hooks/core/useKBBase';
+
+// Re-export for backwards compat
+export type SessionError = KBError;
 
 // === TYPES ===
 export interface RemoteSupportSession {
@@ -47,24 +52,39 @@ export interface EndSessionParams {
   highRiskActionsCount?: number;
 }
 
-// KB Pattern: Typed error interface
-export interface SessionError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
-
 export function useRemoteSupportSessions() {
   const [sessions, setSessions] = useState<RemoteSupportSession[]>([]);
   const [activeSession, setActiveSession] = useState<RemoteSupportSession | null>(null);
   const [loading, setLoading] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   
-  // KB Pattern: lastRefresh state
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
-  
-  // KB Pattern: Typed error state
-  const [error, setError] = useState<SessionError | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
+
+  // Auto-refresh refs (realtime replaces this but kept for consistency)
+  const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
   
   const { user } = useAuth();
 
@@ -72,6 +92,8 @@ export function useRemoteSupportSessions() {
   const fetchSessions = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setStatus('loading');
+    const startTime = Date.now();
     
     try {
       const { data, error: fetchError } = await supabase
@@ -83,16 +105,45 @@ export function useRemoteSupportSessions() {
       if (fetchError) throw fetchError;
       
       setSessions(data as RemoteSupportSession[]);
+      setStatus('success');
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry('useRemoteSupportSessions', 'fetchSessions', 'success', Date.now() - startTime);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error desconocido';
+      const parsedErr = parseError(err);
+      const kbError = createKBError('FETCH_ERROR', parsedErr.message, { originalError: err });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useRemoteSupportSessions', 'fetchSessions', 'error', Date.now() - startTime, kbError);
       console.error('Error fetching sessions:', err);
-      setError({ code: 'FETCH_ERROR', message });
       toast.error('Error al cargar sesiones');
     } finally {
       setLoading(false);
     }
   }, []);
+
+  // === AUTO-REFRESH ===
+  const startAutoRefresh = useCallback((intervalMs = 30000) => {
+    stopAutoRefresh();
+    fetchSessions();
+    autoRefreshInterval.current = setInterval(() => {
+      fetchSessions();
+    }, intervalMs);
+  }, [fetchSessions]);
+
+  const stopAutoRefresh = useCallback(() => {
+    if (autoRefreshInterval.current) {
+      clearInterval(autoRefreshInterval.current);
+      autoRefreshInterval.current = null;
+    }
+  }, []);
+
+  // === CLEANUP ===
+  useEffect(() => {
+    return () => stopAutoRefresh();
+  }, [stopAutoRefresh]);
 
   // Fetch today's sessions statistics
   const getTodayStats = useCallback(() => {
@@ -127,6 +178,7 @@ export function useRemoteSupportSessions() {
 
     setIsCreating(true);
     setError(null);
+    const startTime = Date.now();
     
     try {
       const insertData = {
@@ -152,12 +204,15 @@ export function useRemoteSupportSessions() {
       setActiveSession(newSession);
       setSessions(prev => [newSession, ...prev]);
       
+      collectTelemetry('useRemoteSupportSessions', 'createSession', 'success', Date.now() - startTime);
       toast.success('Sesión de soporte iniciada');
       return newSession;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error desconocido';
+      const parsedErr = parseError(err);
+      const kbError = createKBError('CREATE_ERROR', parsedErr.message, { originalError: err });
+      setError(kbError);
+      collectTelemetry('useRemoteSupportSessions', 'createSession', 'error', Date.now() - startTime, kbError);
       console.error('Error creating session:', err);
-      setError({ code: 'CREATE_ERROR', message });
       toast.error('Error al crear sesión');
       return null;
     } finally {
@@ -171,6 +226,7 @@ export function useRemoteSupportSessions() {
     params: EndSessionParams
   ): Promise<boolean> => {
     setError(null);
+    const startTime = Date.now();
     
     try {
       const startedAt = activeSession?.started_at || sessions.find(s => s.id === sessionId)?.started_at;
@@ -200,12 +256,15 @@ export function useRemoteSupportSessions() {
           : s
       ));
 
+      collectTelemetry('useRemoteSupportSessions', 'endSession', 'success', Date.now() - startTime);
       toast.success('Sesión finalizada correctamente');
       return true;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error desconocido';
+      const parsedErr = parseError(err);
+      const kbError = createKBError('END_SESSION_ERROR', parsedErr.message, { details: { sessionId } });
+      setError(kbError);
+      collectTelemetry('useRemoteSupportSessions', 'endSession', 'error', Date.now() - startTime, kbError);
       console.error('Error ending session:', err);
-      setError({ code: 'END_SESSION_ERROR', message, details: { sessionId } });
       toast.error('Error al finalizar sesión');
       return false;
     }
@@ -234,9 +293,10 @@ export function useRemoteSupportSessions() {
       toast.info('Sesión pausada');
       return true;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error desconocido';
+      const parsedErr = parseError(err);
+      const kbError = createKBError('PAUSE_ERROR', parsedErr.message, { details: { sessionId } });
+      setError(kbError);
       console.error('Error pausing session:', err);
-      setError({ code: 'PAUSE_ERROR', message, details: { sessionId } });
       toast.error('Error al pausar sesión');
       return false;
     }
@@ -266,25 +326,21 @@ export function useRemoteSupportSessions() {
       toast.success('Sesión reanudada');
       return true;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error desconocido';
+      const parsedErr = parseError(err);
+      const kbError = createKBError('RESUME_ERROR', parsedErr.message, { details: { sessionId } });
+      setError(kbError);
       console.error('Error resuming session:', err);
-      setError({ code: 'RESUME_ERROR', message, details: { sessionId } });
       toast.error('Error al reanudar sesión');
       return false;
     }
   }, [sessions]);
-
-  // KB Pattern: Clear error
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
 
   // Load sessions on mount
   useEffect(() => {
     fetchSessions();
   }, [fetchSessions]);
 
-  // Subscribe to realtime updates (KB: realtime replaces auto-refresh for this hook)
+  // Subscribe to realtime updates
   useEffect(() => {
     const channel = supabase
       .channel('remote-support-sessions-changes')
@@ -338,6 +394,17 @@ export function useRemoteSupportSessions() {
     resumeSession,
     getTodayStats,
     clearError,
+    startAutoRefresh,
+    stopAutoRefresh,
+    // === KB 2.0 STATE ===
+    status,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
+    lastSuccess,
+    retryCount,
+    reset,
   };
 }
 
