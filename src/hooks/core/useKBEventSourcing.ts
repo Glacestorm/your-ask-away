@@ -261,7 +261,7 @@ export function useKBEventSourcing<TState, TEvent extends KBEvent = KBEvent>(
       setState((prev) => {
         const rolledBackState = prev.pendingEvents
           .filter((e) => e.id !== event.id)
-          .reduce((s, e) => applyEvent(s, e), initialState);
+          .reduce((s, e) => applyEvent(s, e as TEvent), initialState);
 
         return {
           ...prev,

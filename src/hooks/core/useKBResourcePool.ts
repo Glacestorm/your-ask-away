@@ -524,7 +524,7 @@ export function useKBWorkerPool(config: {
     factory: () => new Worker(config.workerScript),
     destroy: (worker) => worker.terminate(),
     minSize: config.minWorkers ?? 1,
-    maxSize: config.maxWorkers ?? navigator.hardwareConcurrency || 4,
+    maxSize: config.maxWorkers ?? (navigator.hardwareConcurrency || 4),
   });
 
   const execute = useCallback(async <TInput, TOutput>(
