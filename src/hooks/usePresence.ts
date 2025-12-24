@@ -3,6 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { RealtimeChannel } from '@supabase/supabase-js';
 
+// === ERROR TIPADO KB ===
+export interface PresenceError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export interface OnlineUser {
   id: string;
   full_name: string;
@@ -28,6 +35,12 @@ export function usePresence(options: UsePresenceOptions = {}) {
   const profileDataRef = useRef<{ full_name: string; role: string; avatar_url?: string; oficina?: string } | null>(null);
   const isSubscribedRef = useRef(false);
   const lastTrackTimeRef = useRef(0);
+  // === ESTADO KB ===
+  const [error, setError] = useState<PresenceError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   // Fetch user profile data once
   useEffect(() => {
@@ -167,5 +180,9 @@ export function usePresence(options: UsePresenceOptions = {}) {
     isConnected,
     onlineCount: onlineUsers.length,
     updateCurrentPage,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }

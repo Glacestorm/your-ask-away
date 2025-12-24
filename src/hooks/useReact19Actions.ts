@@ -1,6 +1,13 @@
 import { useCallback, useState, useTransition, useOptimistic, useActionState } from 'react';
 import { toast } from '@/hooks/use-toast';
 
+// === ERROR TIPADO KB ===
+export interface React19ActionsError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 /**
  * React 19 Actions hook - Form handling with optimistic updates
  * Provides consistent action patterns across the application
