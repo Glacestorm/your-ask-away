@@ -223,28 +223,49 @@ export function useCustomer360(companyId: string | null) {
   };
 }
 
+// === ERROR TIPADO KB ===
+export interface Customer360BulkError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export function useCustomer360Bulk() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
+  // === ESTADO KB ===
+  const [error, setError] = useState<Customer360BulkError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const calculateAllProfiles = useCallback(async () => {
     setIsProcessing(true);
     setProgress(0);
+    setError(null);
 
     try {
-      const { data, error } = await supabase.functions.invoke('calculate-customer-360', {
+      const { data, error: fnError } = await supabase.functions.invoke('calculate-customer-360', {
         body: { calculateAll: true }
       });
 
-      if (error) throw error;
+      if (fnError) throw fnError;
 
       setProgress(100);
+      setLastRefresh(new Date());
       toast.success(`${data.processed} perfiles calculados`);
       return data;
-    } catch (error: any) {
-      console.error('Error calculating all profiles:', error);
-      toast.error('Error: ' + error.message);
-      throw error;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error calculating all profiles';
+      setError({
+        code: 'CALCULATE_ALL_PROFILES_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
+      console.error('Error calculating all profiles:', err);
+      toast.error('Error: ' + message);
+      throw err;
     } finally {
       setIsProcessing(false);
     }
@@ -254,5 +275,9 @@ export function useCustomer360Bulk() {
     calculateAllProfiles,
     isProcessing,
     progress,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }

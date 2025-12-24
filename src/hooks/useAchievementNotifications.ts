@@ -1,8 +1,15 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import confetti from 'canvas-confetti';
+
+// === ERROR TIPADO KB ===
+export interface AchievementNotificationsError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 const ACHIEVEMENT_NAMES: Record<string, string> = {
   first_visit: '¡Primera Visita!',
@@ -33,6 +40,12 @@ const ACHIEVEMENT_ICONS: Record<string, string> = {
 export function useAchievementNotifications() {
   const { user } = useAuth();
   const processedIds = useRef<Set<string>>(new Set());
+  // === ESTADO KB ===
+  const [error, setError] = useState<AchievementNotificationsError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -49,38 +62,50 @@ export function useAchievementNotifications() {
           filter: `gestor_id=eq.${user.id}`,
         },
         (payload) => {
-          const achievement = payload.new as {
-            id: string;
-            achievement_type: string;
-            points_earned: number;
-          };
+          try {
+            const achievement = payload.new as {
+              id: string;
+              achievement_type: string;
+              points_earned: number;
+            };
 
-          // Prevent duplicate notifications
-          if (processedIds.current.has(achievement.id)) return;
-          processedIds.current.add(achievement.id);
+            // Prevent duplicate notifications
+            if (processedIds.current.has(achievement.id)) return;
+            processedIds.current.add(achievement.id);
 
-          const name = ACHIEVEMENT_NAMES[achievement.achievement_type] || achievement.achievement_type;
-          const icon = ACHIEVEMENT_ICONS[achievement.achievement_type] || '🏅';
+            const name = ACHIEVEMENT_NAMES[achievement.achievement_type] || achievement.achievement_type;
+            const icon = ACHIEVEMENT_ICONS[achievement.achievement_type] || '🏅';
 
-          // Fire confetti
-          confetti({
-            particleCount: 100,
-            spread: 70,
-            origin: { y: 0.6 },
-            colors: ['#FFD700', '#FFA500', '#FF4500', '#32CD32', '#1E90FF'],
-          });
-
-          // Show toast notification
-          toast.success(`${icon} ${name} - +${achievement.points_earned} puntos`, {
-            duration: 5000,
-          });
-
-          // Also show browser notification if permitted
-          if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification(`${icon} ${name}`, {
-              body: `¡Has ganado ${achievement.points_earned} puntos!`,
-              icon: '/favicon.ico',
+            // Fire confetti
+            confetti({
+              particleCount: 100,
+              spread: 70,
+              origin: { y: 0.6 },
+              colors: ['#FFD700', '#FFA500', '#FF4500', '#32CD32', '#1E90FF'],
             });
+
+            // Show toast notification
+            toast.success(`${icon} ${name} - +${achievement.points_earned} puntos`, {
+              duration: 5000,
+            });
+
+            // Also show browser notification if permitted
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification(`${icon} ${name}`, {
+                body: `¡Has ganado ${achievement.points_earned} puntos!`,
+                icon: '/favicon.ico',
+              });
+            }
+            
+            setLastRefresh(new Date());
+          } catch (err) {
+            const message = err instanceof Error ? err.message : 'Error processing achievement';
+            setError({
+              code: 'ACHIEVEMENT_NOTIFICATION_ERROR',
+              message,
+              details: { originalError: String(err) }
+            });
+            console.error('[useAchievementNotifications] Error:', err);
           }
         }
       )
@@ -95,4 +120,11 @@ export function useAchievementNotifications() {
       supabase.removeChannel(channel);
     };
   }, [user?.id]);
+
+  return {
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
+  };
 }
