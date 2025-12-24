@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from './core';
 
 interface TypingPattern {
   avgKeyInterval: number;
@@ -57,21 +58,24 @@ interface BiometricAnomaly {
   rawData?: any;
 }
 
-// === ERROR TIPADO KB ===
-export interface BehavioralBiometricsError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// Re-export for backwards compat
+export type BehavioralBiometricsError = KBError;
 
 interface UseBehavioralBiometricsReturn {
   isCollecting: boolean;
   currentProfile: BiometricProfile | null;
   anomalies: BiometricAnomaly[];
   matchScore: number;
-  // === KB ADDITIONS ===
-  error: BehavioralBiometricsError | null;
+  // === KB 2.0 ===
+  status: KBStatus;
+  error: KBError | null;
+  isIdle: boolean;
+  isLoading: boolean;
+  isSuccess: boolean;
+  isError: boolean;
   lastRefresh: Date | null;
+  lastSuccess: Date | null;
+  retryCount: number;
   clearError: () => void;
   startCollection: () => void;
   stopCollection: () => void;
@@ -86,12 +90,25 @@ export function useBehavioralBiometrics(): UseBehavioralBiometricsReturn {
   const [currentProfile, setCurrentProfile] = useState<BiometricProfile | null>(null);
   const [anomalies, setAnomalies] = useState<BiometricAnomaly[]>([]);
   const [matchScore, setMatchScore] = useState(100);
-  // === ESTADO KB ===
-  const [error, setError] = useState<BehavioralBiometricsError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
   // Typing metrics
   const keyDownTimes = useRef<Map<string, number>>(new Map());
   const keyIntervals = useRef<number[]>([]);
@@ -552,9 +569,16 @@ export function useBehavioralBiometrics(): UseBehavioralBiometricsReturn {
     currentProfile,
     anomalies,
     matchScore,
-    // === KB ADDITIONS ===
+    // === KB 2.0 ===
+    status,
     error,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
     startCollection,
     stopCollection,

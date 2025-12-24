@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from './core';
 
 interface TransactionContext {
   amount: number;
@@ -48,12 +49,8 @@ interface RiskProfile {
   nextReviewDate: Date | null;
 }
 
-// === ERROR TIPADO KB ===
-export interface AMLFraudDetectionError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// Re-export for backwards compat
+export type AMLFraudDetectionError = KBError;
 
 interface UseAMLFraudDetectionReturn {
   isAnalyzing: boolean;
@@ -61,9 +58,16 @@ interface UseAMLFraudDetectionReturn {
   amlAlerts: AMLAlert[];
   riskProfile: RiskProfile | null;
   overallFraudScore: number;
-  // === KB ADDITIONS ===
-  error: AMLFraudDetectionError | null;
+  // === KB 2.0 ===
+  status: KBStatus;
+  error: KBError | null;
+  isIdle: boolean;
+  isLoading: boolean;
+  isSuccess: boolean;
+  isError: boolean;
   lastRefresh: Date | null;
+  lastSuccess: Date | null;
+  retryCount: number;
   clearError: () => void;
   analyzeTransaction: (context: TransactionContext) => Promise<{
     approved: boolean;
@@ -105,12 +109,25 @@ export function useAMLFraudDetection(): UseAMLFraudDetectionReturn {
   const [amlAlerts, setAmlAlerts] = useState<AMLAlert[]>([]);
   const [riskProfile, setRiskProfile] = useState<RiskProfile | null>(null);
   const [overallFraudScore, setOverallFraudScore] = useState(0);
-  // === ESTADO KB ===
-  const [error, setError] = useState<AMLFraudDetectionError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
 
   // Velocity analysis - check transaction frequency patterns
   const analyzeVelocity = useCallback(async (
@@ -615,9 +632,16 @@ export function useAMLFraudDetection(): UseAMLFraudDetectionReturn {
     amlAlerts,
     riskProfile,
     overallFraudScore,
-    // === KB ADDITIONS ===
+    // === KB 2.0 ===
+    status,
     error,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
     analyzeTransaction,
     checkAMLCompliance,

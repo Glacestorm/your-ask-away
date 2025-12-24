@@ -1,13 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from './core';
 
-// === ERROR TIPADO KB ===
-export interface AccountingSyncError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// Re-export for backwards compat
+export type AccountingSyncError = KBError;
 
 interface AccountingData {
   balance_sheet: Record<string, number>;
@@ -32,12 +29,24 @@ export function useAccountingSync(companyId?: string) {
     accounting_module_installed: false
   });
   const [accountingData, setAccountingData] = useState<AccountingData[]>([]);
-  // === ESTADO KB ===
-  const [error, setError] = useState<AccountingSyncError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
 
   // Check if accounting module is installed
   const checkAccountingModuleStatus = useCallback(async () => {
@@ -80,6 +89,10 @@ export function useAccountingSync(companyId?: string) {
     if (!companyId) return null;
     
     setIsLoading(true);
+    setStatus('loading');
+    setError(null);
+    const startTime = Date.now();
+    
     try {
       // Try to get data from company_financial_statements
       let query = supabase
@@ -114,13 +127,22 @@ export function useAccountingSync(companyId?: string) {
           synced_years: formattedData.map(d => d.fiscal_year)
         }));
 
+        setStatus('success');
+        setLastSuccess(new Date());
+        setRetryCount(0);
+        collectTelemetry('useAccountingSync', 'fetchAccountingData', 'success', Date.now() - startTime);
         return formattedData;
       }
 
+      setStatus('success');
       return null;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error fetching accounting data';
-      setError({ code: 'FETCH_DATA_ERROR', message, details: { originalError: String(err) } });
+      const parsedErr = parseError(err);
+      const kbError = createKBError('FETCH_DATA_ERROR', parsedErr.message, { originalError: String(err) });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useAccountingSync', 'fetchAccountingData', 'error', Date.now() - startTime, kbError);
       return null;
     } finally {
       setIsLoading(false);
@@ -131,6 +153,10 @@ export function useAccountingSync(companyId?: string) {
   // Sync accounting data to financial plan
   const syncToFinancialPlan = useCallback(async (planId: string, fiscalYear: number) => {
     setIsLoading(true);
+    setStatus('loading');
+    setError(null);
+    const startTime = Date.now();
+    
     try {
       const data = await fetchAccountingData(fiscalYear);
       if (!data || data.length === 0) {
@@ -232,12 +258,20 @@ export function useAccountingSync(companyId?: string) {
         last_sync: new Date().toISOString()
       }));
 
+      setStatus('success');
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry('useAccountingSync', 'syncToFinancialPlan', 'success', Date.now() - startTime);
       toast.success(`Datos del ejercicio ${fiscalYear} sincronizados correctamente`);
       return true;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error sincronizando datos';
-      setError({ code: 'SYNC_ERROR', message, details: { originalError: String(err) } });
-      toast.error(message);
+      const parsedErr = parseError(err);
+      const kbError = createKBError('SYNC_ERROR', parsedErr.message, { originalError: String(err) });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useAccountingSync', 'syncToFinancialPlan', 'error', Date.now() - startTime, kbError);
+      toast.error(kbError.message);
       return false;
     } finally {
       setIsLoading(false);
@@ -256,8 +290,14 @@ export function useAccountingSync(companyId?: string) {
     checkAccountingModuleStatus,
     fetchAccountingData,
     syncToFinancialPlan,
-    // === KB ADDITIONS ===
+    // === KB 2.0 ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError
   };
 }
