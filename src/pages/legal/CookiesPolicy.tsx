@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Cookie, Settings, BarChart3, Shield, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import StoreFooter from '@/components/store/StoreFooter';
+import UnifiedFooter from '@/components/layout/UnifiedFooter';
 
 const CookiesPolicy: React.FC = () => {
   const lastUpdated = "17 de diciembre de 2024";
@@ -262,7 +262,7 @@ const CookiesPolicy: React.FC = () => {
         </div>
       </main>
 
-      <StoreFooter />
+      <UnifiedFooter />
     </div>
   );
 };

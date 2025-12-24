@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Book, Code, Shield, Database, Users, Zap, FileText, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import StoreFooter from '@/components/store/StoreFooter';
+import UnifiedFooter from '@/components/layout/UnifiedFooter';
 
 const Documentation: React.FC = () => {
   const sections = [
@@ -163,7 +163,7 @@ const Documentation: React.FC = () => {
         </div>
       </section>
 
-      <StoreFooter />
+      <UnifiedFooter />
     </div>
   );
 };

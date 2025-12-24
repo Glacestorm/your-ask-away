@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import StoreFooter from '@/components/store/StoreFooter';
+import UnifiedFooter from '@/components/layout/UnifiedFooter';
 
 const Contact: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -255,7 +255,7 @@ const Contact: React.FC = () => {
         </div>
       </section>
 
-      <StoreFooter />
+      <UnifiedFooter />
     </div>
   );
 };

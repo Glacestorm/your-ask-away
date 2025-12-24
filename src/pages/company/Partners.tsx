@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Handshake, CheckCircle, ArrowRight, Building2, Users, Globe, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import StoreFooter from '@/components/store/StoreFooter';
+import UnifiedFooter from '@/components/layout/UnifiedFooter';
 
 const Partners: React.FC = () => {
   const benefits = [
@@ -152,7 +152,7 @@ const Partners: React.FC = () => {
         </div>
       </section>
 
-      <StoreFooter />
+      <UnifiedFooter />
     </div>
   );
 };

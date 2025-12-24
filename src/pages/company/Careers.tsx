@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Briefcase, MapPin, Clock, Users, Rocket, Heart, Coffee } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import StoreFooter from '@/components/store/StoreFooter';
+import UnifiedFooter from '@/components/layout/UnifiedFooter';
 
 const Careers: React.FC = () => {
   const perks = [
@@ -143,7 +143,7 @@ const Careers: React.FC = () => {
         </div>
       </section>
 
-      <StoreFooter />
+      <UnifiedFooter />
     </div>
   );
 };

@@ -6,7 +6,7 @@
 
 import React, { ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import { MainNavbar, MainFooter } from '@/components/navigation';
+import { MainNavbar, UnifiedFooter } from '@/components/navigation';
 import CartSidebar from '@/components/store/CartSidebar';
 
 interface PublicLayoutProps {
@@ -51,7 +51,7 @@ export function PublicLayout({
       </motion.main>
 
       {/* Footer */}
-      {!hideFooter && <MainFooter />}
+      {!hideFooter && <UnifiedFooter />}
 
       {/* Cart Sidebar - Siempre disponible en páginas públicas */}
       <CartSidebar />

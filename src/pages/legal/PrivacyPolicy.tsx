@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Shield, Users, Database, Lock, Eye, Mail, Globe, FileText, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import StoreFooter from '@/components/store/StoreFooter';
+import UnifiedFooter from '@/components/layout/UnifiedFooter';
 
 const PrivacyPolicy: React.FC = () => {
   const lastUpdated = "17 de diciembre de 2024";
@@ -292,7 +292,7 @@ const PrivacyPolicy: React.FC = () => {
         </div>
       </main>
 
-      <StoreFooter />
+      <UnifiedFooter />
     </div>
   );
 };

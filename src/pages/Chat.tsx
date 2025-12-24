@@ -7,7 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import StoreNavbar from '@/components/store/StoreNavbar';
-import StoreFooter from '@/components/store/StoreFooter';
+import UnifiedFooter from '@/components/layout/UnifiedFooter';
 
 interface Message {
   id: string;
@@ -211,7 +211,7 @@ const Chat = () => {
         </Card>
       </main>
 
-      <StoreFooter />
+      <UnifiedFooter />
     </div>
   );
 };
