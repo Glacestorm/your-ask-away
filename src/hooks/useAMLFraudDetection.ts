@@ -48,12 +48,23 @@ interface RiskProfile {
   nextReviewDate: Date | null;
 }
 
+// === ERROR TIPADO KB ===
+export interface AMLFraudDetectionError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 interface UseAMLFraudDetectionReturn {
   isAnalyzing: boolean;
   fraudIndicators: FraudIndicator[];
   amlAlerts: AMLAlert[];
   riskProfile: RiskProfile | null;
   overallFraudScore: number;
+  // === KB ADDITIONS ===
+  error: AMLFraudDetectionError | null;
+  lastRefresh: Date | null;
+  clearError: () => void;
   analyzeTransaction: (context: TransactionContext) => Promise<{
     approved: boolean;
     score: number;
@@ -94,6 +105,12 @@ export function useAMLFraudDetection(): UseAMLFraudDetectionReturn {
   const [amlAlerts, setAmlAlerts] = useState<AMLAlert[]>([]);
   const [riskProfile, setRiskProfile] = useState<RiskProfile | null>(null);
   const [overallFraudScore, setOverallFraudScore] = useState(0);
+  // === ESTADO KB ===
+  const [error, setError] = useState<AMLFraudDetectionError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   // Velocity analysis - check transaction frequency patterns
   const analyzeVelocity = useCallback(async (
@@ -598,6 +615,10 @@ export function useAMLFraudDetection(): UseAMLFraudDetectionReturn {
     amlAlerts,
     riskProfile,
     overallFraudScore,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
     analyzeTransaction,
     checkAMLCompliance,
     getUserRiskProfile,
