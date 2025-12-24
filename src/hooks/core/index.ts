@@ -1089,3 +1089,116 @@ export type {
   FeatureEvaluation,
   FeatureAnalytics,
 } from './useKBFeatureToggle';
+
+// =============================================================================
+// PHASE 18: Enterprise Observability & Compliance
+// =============================================================================
+
+// Distributed Tracing
+export {
+  useKBDistributedTracing,
+  useKBHTTPTracing,
+  useKBComponentTracing,
+  w3cTracePropagator,
+  consoleTracingExporter,
+} from './useKBDistributedTracing';
+
+export type {
+  Span,
+  SpanStatus,
+  SpanKindType,
+  TraceContext,
+  SpanAttributes,
+  SpanEvent,
+  SpanLink as TracingSpanLink,
+  TracerConfig,
+  TracingExporter,
+  TracePropagator,
+  TracingMetrics,
+} from './useKBDistributedTracing';
+
+// Config Management
+export {
+  useKBConfigManagement,
+  useKBFeatureConfig,
+  createEnvConfigSource,
+  createLocalStorageConfigSource,
+  createRemoteConfigSource,
+} from './useKBConfigManagement';
+
+export type {
+  ConfigValue,
+  ConfigObject,
+  ConfigArray,
+  ConfigSchema,
+  ConfigSource,
+  ConfigVersion,
+  ConfigValidationError,
+  ConfigManagerConfig,
+  ConfigChange,
+  ConfigMetrics,
+} from './useKBConfigManagement';
+
+// Audit Logging
+export {
+  useKBAuditLogging,
+  useKBComplianceAudit,
+  consoleAuditExporter,
+  createLocalStorageAuditExporter,
+  createHTTPAuditExporter,
+} from './useKBAuditLogging';
+
+export type {
+  AuditLevel,
+  AuditCategory,
+  AuditEntry,
+  AuditActor,
+  AuditResource,
+  AuditMetadata,
+  AuditFilter,
+  AuditExporter,
+  AuditConfig,
+  AuditEnricher,
+  AuditStats,
+} from './useKBAuditLogging';
+
+// Encryption
+export {
+  useKBEncryption,
+  useKBEncryptedStorage,
+  useKBFieldEncryption,
+} from './useKBEncryption';
+
+export type {
+  EncryptionAlgorithm,
+  HashAlgorithm,
+  KeyDerivationFunction,
+  EncryptionConfig,
+  EncryptedData,
+  KeyPair,
+  KeyMetadata,
+  EncryptionStats,
+} from './useKBEncryption';
+
+// Compliance (Phase 18 - renamed to avoid conflicts with useKBEnterprise)
+export {
+  useKBConsentManagement,
+  useKBDataSubjectRights,
+  useKBComplianceChecker,
+  useKBDataAnonymization,
+} from './useKBCompliance';
+
+export type {
+  ComplianceFramework as Phase18ComplianceFramework,
+  ConsentType,
+  DataCategory,
+  LawfulBasis,
+  ConsentRecord,
+  DataSubjectRequest,
+  DataProcessingRecord,
+  PrivacyPolicy,
+  PrivacyPolicySection,
+  ComplianceConfig as Phase18ComplianceConfig,
+  ComplianceStatus,
+  ComplianceIssue,
+} from './useKBCompliance';
