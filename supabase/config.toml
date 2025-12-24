@@ -374,3 +374,9 @@ verify_jwt = true
 
 [functions.cs-metrics-assistant]
 verify_jwt = true
+
+[functions.expansion-predictor]
+verify_jwt = true
+
+[functions.lead-scorer]
+verify_jwt = true
