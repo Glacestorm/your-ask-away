@@ -1,6 +1,14 @@
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+// === ERROR TIPADO KB ===
+export interface RenewalManagementError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 export interface RenewalOpportunity {
   id: string;
@@ -52,6 +60,12 @@ export interface RenewalDashboardData {
 
 export function useRenewalManagement() {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<RenewalManagementError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   // Fetch renewal opportunities
   const { data: renewals = [], isLoading, refetch } = useQuery({
@@ -266,7 +280,11 @@ export function useRenewalManagement() {
     fetchActivities,
     predictRenewal,
     isCreating: createRenewalMutation.isPending,
-    isUpdating: updateRenewalMutation.isPending
+    isUpdating: updateRenewalMutation.isPending,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
 

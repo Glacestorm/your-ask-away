@@ -3,6 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
+// === ERROR TIPADO KB ===
+export interface SubscriptionError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export type SubscriptionTier = 'core' | 'automation' | 'industry' | null;
 
 interface SubscriptionState {
@@ -78,6 +85,12 @@ export function useSubscription() {
     subscriptionEnd: null,
     loading: true,
   });
+  // === ESTADO KB ===
+  const [error, setError] = useState<SubscriptionError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const checkSubscription = useCallback(async () => {
     if (!user || !session) {
@@ -171,5 +184,9 @@ export function useSubscription() {
     createCheckout,
     openCustomerPortal,
     tiers: SUBSCRIPTION_TIERS,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
