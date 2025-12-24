@@ -399,6 +399,47 @@ export const KB = {
 } as const;
 
 // ============================================================================
+// PHASE 18: Enterprise Observability & Compliance
+// ============================================================================
+
+export {
+  useKBDistributedTracing,
+  useKBHTTPTracing,
+  useKBComponentTracing,
+  w3cTracePropagator,
+  consoleTracingExporter,
+} from './useKBDistributedTracing';
+
+export {
+  useKBConfigManagement,
+  useKBFeatureConfig,
+  createEnvConfigSource,
+  createLocalStorageConfigSource,
+  createRemoteConfigSource,
+} from './useKBConfigManagement';
+
+export {
+  useKBAuditLogging,
+  useKBComplianceAudit,
+  consoleAuditExporter,
+  createLocalStorageAuditExporter,
+  createHTTPAuditExporter,
+} from './useKBAuditLogging';
+
+export {
+  useKBEncryption,
+  useKBEncryptedStorage,
+  useKBFieldEncryption,
+} from './useKBEncryption';
+
+export {
+  useKBConsentManagement,
+  useKBDataSubjectRights,
+  useKBComplianceChecker,
+  useKBDataAnonymization,
+} from './useKBCompliance';
+
+// ============================================================================
 // TYPE EXPORTS
 // ============================================================================
 
