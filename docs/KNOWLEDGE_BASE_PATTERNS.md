@@ -787,6 +787,567 @@ export function {NombreModulo}Panel({
 
 ---
 
+## Patrón de Testing para Hooks
+
+### Descripción
+Patrón estándar para testing de hooks admin usando Vitest y Testing Library.
+
+### Implementación
+
+```typescript
+// src/hooks/admin/__tests__/useModuleName.test.ts
+
+import { renderHook, act, waitFor } from '@testing-library/react';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { useModuleName } from '../useModuleName';
+
+// Mock de Supabase
+vi.mock('@/integrations/supabase/client', () => ({
+  supabase: {
+    functions: { 
+      invoke: vi.fn().mockResolvedValue({ 
+        data: { success: true, data: [] }, 
+        error: null 
+      }) 
+    },
+    from: vi.fn(() => ({ 
+      select: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockReturnThis(),
+      update: vi.fn().mockReturnThis(),
+      delete: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({ data: null, error: null }),
+    })),
+  },
+}));
+
+describe('useModuleName', () => {
+  beforeEach(() => { 
+    vi.clearAllMocks(); 
+  });
+  
+  it('should initialize with correct default state', () => {
+    const { result } = renderHook(() => useModuleName());
+    
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.data).toEqual([]);
+    expect(result.current.error).toBeNull();
+    expect(result.current.lastRefresh).toBeNull();
+  });
+
+  it('should fetch data successfully', async () => {
+    const mockData = [{ id: '1', name: 'Test' }];
+    vi.mocked(supabase.functions.invoke).mockResolvedValueOnce({
+      data: { success: true, data: mockData },
+      error: null,
+    });
+
+    const { result } = renderHook(() => useModuleName());
+    
+    await act(async () => {
+      await result.current.fetchData();
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+      expect(result.current.data).toEqual(mockData);
+      expect(result.current.lastRefresh).toBeInstanceOf(Date);
+    });
+  });
+
+  it('should handle errors correctly', async () => {
+    vi.mocked(supabase.functions.invoke).mockResolvedValueOnce({
+      data: null,
+      error: new Error('API Error'),
+    });
+
+    const { result } = renderHook(() => useModuleName());
+    
+    await act(async () => {
+      await result.current.fetchData();
+    });
+
+    await waitFor(() => {
+      expect(result.current.error).not.toBeNull();
+      expect(result.current.error?.code).toBe('FETCH_ERROR');
+    });
+  });
+
+  it('should clear error when clearError is called', async () => {
+    const { result } = renderHook(() => useModuleName());
+    
+    // Simulate error state
+    await act(async () => {
+      result.current.fetchData(); // Will fail with mock
+    });
+
+    await act(() => {
+      result.current.clearError();
+    });
+
+    expect(result.current.error).toBeNull();
+  });
+});
+```
+
+### Testing de Edge Functions
+
+```typescript
+// supabase/functions/tests/{nombre-funcion}.test.ts
+
+import { assertEquals, assertExists } from "https://deno.land/std@0.208.0/testing/asserts.ts";
+
+const BASE_URL = "http://localhost:54321/functions/v1";
+
+Deno.test("function-name - should handle OPTIONS request", async () => {
+  const response = await fetch(`${BASE_URL}/function-name`, {
+    method: "OPTIONS",
+  });
+  
+  assertEquals(response.status, 200);
+  assertExists(response.headers.get("Access-Control-Allow-Origin"));
+});
+
+Deno.test("function-name - should return success for valid action", async () => {
+  const response = await fetch(`${BASE_URL}/function-name`, {
+    method: "POST",
+    headers: { 
+      "Content-Type": "application/json",
+      "Authorization": "Bearer test-token"
+    },
+    body: JSON.stringify({ action: "get_data" }),
+  });
+  
+  assertEquals(response.status, 200);
+  
+  const data = await response.json();
+  assertEquals(data.success, true);
+  assertExists(data.data);
+  assertExists(data.timestamp);
+});
+
+Deno.test("function-name - should handle invalid action", async () => {
+  const response = await fetch(`${BASE_URL}/function-name`, {
+    method: "POST",
+    headers: { 
+      "Content-Type": "application/json",
+      "Authorization": "Bearer test-token"
+    },
+    body: JSON.stringify({ action: "invalid_action" }),
+  });
+  
+  assertEquals(response.status, 500);
+  
+  const data = await response.json();
+  assertEquals(data.success, false);
+  assertExists(data.error);
+});
+
+Deno.test("function-name - should handle rate limiting gracefully", async () => {
+  // Test 429 response handling
+  const response = await fetch(`${BASE_URL}/function-name`, {
+    method: "POST",
+    headers: { 
+      "Content-Type": "application/json",
+      "X-Test-Rate-Limit": "true" // Header to trigger rate limit in test mode
+    },
+    body: JSON.stringify({ action: "get_data" }),
+  });
+  
+  if (response.status === 429) {
+    const data = await response.json();
+    assertExists(data.error);
+    assertExists(data.message);
+  }
+});
+```
+
+---
+
+## Patrón de Observabilidad y Logging
+
+### Descripción
+Uso del ObservabilityManager para instrumentación de hooks y componentes.
+
+### Implementación en Hooks
+
+```typescript
+// src/hooks/admin/useModuleName.ts
+
+import { observability } from '@/lib/observability';
+
+export function useModuleName() {
+  const fetchData = useCallback(async (context?: ModuloContext) => {
+    // Iniciar span de observabilidad
+    const spanId = observability.startSpan('module.fetchData', {
+      kind: 'client',
+      attributes: { 
+        'module.name': 'ModuleName',
+        'context.entityId': context?.entityId 
+      }
+    });
+    
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const startTime = performance.now();
+      
+      const { data: fnData, error: fnError } = await supabase.functions.invoke(
+        'function-name',
+        { body: { action: 'get_data', context } }
+      );
+
+      const duration = performance.now() - startTime;
+      
+      // Registrar métricas
+      observability.recordHistogram('module.fetch.duration', duration, { 
+        module: 'module_name',
+        success: String(!fnError)
+      });
+
+      if (fnError) {
+        observability.addSpanEvent(spanId, 'error', { 
+          message: fnError.message,
+          code: fnError.code
+        });
+        throw fnError;
+      }
+
+      if (fnData?.success && fnData?.data) {
+        observability.recordCounter('module.fetch.success', 1, { 
+          module: 'module_name' 
+        });
+        observability.endSpan(spanId, 'ok');
+        
+        setData(fnData.data);
+        setLastRefresh(new Date());
+        return fnData.data;
+      }
+
+      throw new Error('Invalid response');
+    } catch (err) {
+      observability.recordCounter('module.fetch.error', 1, { 
+        module: 'module_name',
+        error_type: err instanceof Error ? err.name : 'unknown'
+      });
+      observability.endSpan(spanId, 'error');
+      
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      setError({
+        code: 'FETCH_ERROR',
+        message,
+        details: { originalError: err }
+      });
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  return { /* ... */ };
+}
+```
+
+### Métricas Estándar por Módulo
+
+```typescript
+// Contadores - eventos discretos
+observability.recordCounter('module.action.count', 1, { 
+  module: 'business_intelligence', 
+  action: 'fetch' 
+});
+
+observability.recordCounter('module.error.count', 1, { 
+  module: 'support', 
+  error_code: 'NETWORK_ERROR' 
+});
+
+// Histogramas - distribuciones de valores
+observability.recordHistogram('module.action.duration', durationMs, { 
+  module: 'business_intelligence',
+  action: 'analyze'
+});
+
+observability.recordHistogram('module.data.size', dataLength, { 
+  module: 'reports' 
+});
+
+// Gauges - valores puntuales
+observability.recordGauge('module.active_sessions', count, { 
+  module: 'support' 
+});
+
+observability.recordGauge('module.queue_size', queueLength, { 
+  module: 'ai_tasks' 
+});
+```
+
+### Instrumentación de Componentes
+
+```typescript
+// src/components/admin/ModulePanel.tsx
+
+import { useObservability } from '@/hooks/useObservability';
+
+export function ModulePanel({ context }: ModulePanelProps) {
+  const { traceFunction, recordEvent, log } = useObservability({
+    componentName: 'ModulePanel',
+    trackMounts: true,
+    trackRenders: true,
+  });
+
+  const handleAction = traceFunction('handleAction', async (actionType: string) => {
+    recordEvent('action_started', { actionType });
+    
+    try {
+      await performAction(actionType);
+      recordEvent('action_completed', { actionType, success: true });
+    } catch (error) {
+      log('error', 'Action failed', { actionType, error });
+      recordEvent('action_failed', { actionType, error: String(error) });
+    }
+  });
+
+  return (
+    <Card>
+      <Button onClick={() => handleAction('analyze')}>
+        Analizar
+      </Button>
+    </Card>
+  );
+}
+```
+
+---
+
+## Patrones de Estado Avanzados (Opcional)
+
+### Descripción
+Patrones opcionales para módulos con estado complejo. Usar solo cuando los hooks básicos son insuficientes.
+
+### Patrón de Store Modular con Zustand
+
+```typescript
+// src/stores/moduleStore.ts
+// NOTA: Requiere instalar zustand: npm install zustand
+
+import { create } from 'zustand';
+import { persist, devtools } from 'zustand/middleware';
+
+interface ModuleError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
+interface ModuleData {
+  id: string;
+  name: string;
+  // ... otras propiedades
+}
+
+interface ModuleSlice {
+  // Estado
+  data: ModuleData[];
+  isLoading: boolean;
+  error: ModuleError | null;
+  lastRefresh: Date | null;
+  
+  // Acciones
+  fetchData: () => Promise<void>;
+  clearError: () => void;
+  reset: () => void;
+}
+
+export const useModuleStore = create<ModuleSlice>()(
+  devtools(
+    persist(
+      (set, get) => ({
+        // Estado inicial
+        data: [],
+        isLoading: false,
+        error: null,
+        lastRefresh: null,
+
+        // Acciones
+        fetchData: async () => {
+          set({ isLoading: true, error: null });
+          
+          try {
+            const { data, error } = await supabase.functions.invoke('module-fn', {
+              body: { action: 'get_data' }
+            });
+            
+            if (error) throw error;
+            
+            set({ 
+              data: data.data, 
+              isLoading: false,
+              lastRefresh: new Date()
+            });
+          } catch (err) {
+            set({ 
+              error: {
+                code: 'FETCH_ERROR',
+                message: err instanceof Error ? err.message : 'Error desconocido',
+                details: { originalError: err }
+              },
+              isLoading: false 
+            });
+          }
+        },
+
+        clearError: () => set({ error: null }),
+        
+        reset: () => set({ 
+          data: [], 
+          isLoading: false, 
+          error: null, 
+          lastRefresh: null 
+        }),
+      }),
+      { 
+        name: 'module-storage',
+        partialize: (state) => ({ data: state.data }) // Solo persistir data
+      }
+    ),
+    { name: 'ModuleStore' }
+  )
+);
+```
+
+### Patrón de Contexto Optimizado
+
+```typescript
+// src/contexts/ModuleContext.tsx
+
+import React, { createContext, useContext, useReducer, useMemo, useCallback } from 'react';
+
+// Tipos
+interface ModuleState {
+  data: ModuleData[];
+  isLoading: boolean;
+  error: ModuleError | null;
+  lastRefresh: Date | null;
+}
+
+type ModuleAction =
+  | { type: 'FETCH_START' }
+  | { type: 'FETCH_SUCCESS'; payload: ModuleData[] }
+  | { type: 'FETCH_ERROR'; payload: ModuleError }
+  | { type: 'CLEAR_ERROR' }
+  | { type: 'RESET' };
+
+// Estado inicial
+const initialState: ModuleState = {
+  data: [],
+  isLoading: false,
+  error: null,
+  lastRefresh: null,
+};
+
+// Reducer
+function moduleReducer(state: ModuleState, action: ModuleAction): ModuleState {
+  switch (action.type) {
+    case 'FETCH_START':
+      return { ...state, isLoading: true, error: null };
+    case 'FETCH_SUCCESS':
+      return { 
+        ...state, 
+        data: action.payload, 
+        isLoading: false,
+        lastRefresh: new Date()
+      };
+    case 'FETCH_ERROR':
+      return { ...state, error: action.payload, isLoading: false };
+    case 'CLEAR_ERROR':
+      return { ...state, error: null };
+    case 'RESET':
+      return initialState;
+    default:
+      return state;
+  }
+}
+
+// Contexto
+interface ModuleContextValue extends ModuleState {
+  fetchData: () => Promise<void>;
+  clearError: () => void;
+  reset: () => void;
+}
+
+const ModuleContext = createContext<ModuleContextValue | null>(null);
+
+// Provider
+export function ModuleProvider({ children }: { children: React.ReactNode }) {
+  const [state, dispatch] = useReducer(moduleReducer, initialState);
+
+  const fetchData = useCallback(async () => {
+    dispatch({ type: 'FETCH_START' });
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('module-fn', {
+        body: { action: 'get_data' }
+      });
+      
+      if (error) throw error;
+      dispatch({ type: 'FETCH_SUCCESS', payload: data.data });
+    } catch (err) {
+      dispatch({ 
+        type: 'FETCH_ERROR', 
+        payload: {
+          code: 'FETCH_ERROR',
+          message: err instanceof Error ? err.message : 'Error desconocido'
+        }
+      });
+    }
+  }, []);
+
+  const clearError = useCallback(() => {
+    dispatch({ type: 'CLEAR_ERROR' });
+  }, []);
+
+  const reset = useCallback(() => {
+    dispatch({ type: 'RESET' });
+  }, []);
+
+  // Memoizar para evitar re-renders innecesarios
+  const contextValue = useMemo<ModuleContextValue>(() => ({
+    ...state,
+    fetchData,
+    clearError,
+    reset,
+  }), [state, fetchData, clearError, reset]);
+
+  return (
+    <ModuleContext.Provider value={contextValue}>
+      {children}
+    </ModuleContext.Provider>
+  );
+}
+
+// Hook de consumo
+export function useModuleContext() {
+  const context = useContext(ModuleContext);
+  if (!context) {
+    throw new Error('useModuleContext must be used within ModuleProvider');
+  }
+  return context;
+}
+```
+
+### Cuándo Usar Cada Patrón
+
+| Patrón | Cuándo Usar | Complejidad |
+|--------|-------------|-------------|
+| Hook Básico (KB) | Mayoría de casos, estado local | Baja |
+| Zustand Store | Estado compartido entre componentes no relacionados | Media |
+| Context + Reducer | Estado compartido en árbol de componentes | Media |
+| TanStack Query | Datos del servidor con cache automático | Media-Alta |
+
+---
+
 ## Resumen de Patrones
 
 | Patrón | Uso Principal | Archivo Referencia |
@@ -798,10 +1359,16 @@ export function {NombreModulo}Panel({
 | Retry con Backoff | Errores transitorios | `src/lib/retryWithBackoff.ts` |
 | Edge Function IA | Backend con Lovable AI | `supabase/functions/` |
 | Componente UI | Paneles admin consistentes | `src/components/admin/` |
+| Testing Hooks | Tests unitarios de hooks | `src/hooks/**/__tests__/` |
+| Testing Edge Fns | Tests de funciones backend | `supabase/functions/tests/` |
+| Observabilidad | Instrumentación y métricas | `src/lib/observability.ts` |
+| Zustand Store | Estado global complejo | `src/stores/` |
+| Context Optimizado | Estado compartido en árbol | `src/contexts/` |
 
 ---
 
 ## Versionado
 
 - **v1.0.0** (2025-06-23): Documentación inicial de patrones
+- **v1.1.0** (2025-06-24): Añadidos patrones de Testing, Observabilidad y Estado Avanzado
 - Basado en tendencias Enterprise SaaS 2025-2026
