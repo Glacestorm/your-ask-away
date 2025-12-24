@@ -3,6 +3,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useAuth } from './useAuth';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 import {
   DID,
   VerifiableCredential,
@@ -26,8 +27,6 @@ import {
   createVerifiableCredential,
   signCredential,
   verifyCredential,
-  createVerifiablePresentation,
-  signPresentation,
   verifyPresentation,
   storeCredential,
   getStoredCredentials,
@@ -54,12 +53,8 @@ import {
   SUPPORTED_CREDENTIAL_TYPES
 } from '@/lib/eidas/eudiWallet';
 
-// === ERROR TIPADO KB ===
-export interface EIDASError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// === KB 2.0 ERROR TYPE (backwards compatible) ===
+export type EIDASError = KBError;
 
 export interface EIDASState {
   primaryDID: DID | null;
@@ -67,14 +62,22 @@ export interface EIDASState {
   pendingKYCRequest: KYCVerificationRequest | null;
   lastKYCResult: KYCVerificationResult | null;
   walletAvailable: boolean;
-  isLoading: boolean;
-  error: string | null;
-  // === KB ADDITIONS ===
+  // === KB 2.0 STATE ===
+  status: KBStatus;
+  error: KBError | null;
   lastRefresh: Date | null;
+  lastSuccess: Date | null;
+  retryCount: number;
 }
 
 export interface UseEIDASReturn {
   state: EIDASState;
+  
+  // === KB 2.0 COMPUTED STATES ===
+  isLoading: boolean;
+  isIdle: boolean;
+  isSuccess: boolean;
+  isError: boolean;
   
   // DID Management
   createDID: () => Promise<DID | null>;
@@ -109,6 +112,7 @@ export interface UseEIDASReturn {
   formatDIDDisplay: (did: string) => string;
   getSupportedCredentialTypes: () => typeof SUPPORTED_CREDENTIAL_TYPES;
   clearError: () => void;
+  reset: () => void;
 }
 
 export function useEIDAS(): UseEIDASReturn {
@@ -120,16 +124,24 @@ export function useEIDAS(): UseEIDASReturn {
     pendingKYCRequest: null,
     lastKYCResult: null,
     walletAvailable: false,
-    isLoading: false,
+    // === KB 2.0 STATE ===
+    status: 'idle',
     error: null,
-    // === KB ADDITIONS ===
-    lastRefresh: null
+    lastRefresh: null,
+    lastSuccess: null,
+    retryCount: 0,
   });
+
+  // === KB 2.0 COMPUTED STATES ===
+  const isLoading = state.status === 'loading';
+  const isIdle = state.status === 'idle';
+  const isSuccess = state.status === 'success';
+  const isError = state.status === 'error';
 
   // Initialize on mount
   useEffect(() => {
     const initialize = async () => {
-      setState(prev => ({ ...prev, isLoading: true }));
+      setState(prev => ({ ...prev, status: 'loading' }));
       
       try {
         // Load stored DIDs and credentials
@@ -144,13 +156,17 @@ export function useEIDAS(): UseEIDASReturn {
           primaryDID,
           credentials,
           walletAvailable: walletCheck.available,
-          isLoading: false
+          status: 'success',
+          lastRefresh: new Date(),
+          lastSuccess: new Date(),
         }));
-      } catch (error) {
+      } catch (err) {
+        const kbError = createKBError('EIDAS_INIT_ERROR', 'Failed to initialize eIDAS', { originalError: String(err) });
         setState(prev => ({
           ...prev,
-          isLoading: false,
-          error: 'Failed to initialize eIDAS'
+          status: 'error',
+          error: kbError,
+          retryCount: prev.retryCount + 1,
         }));
       }
     };
@@ -160,7 +176,7 @@ export function useEIDAS(): UseEIDASReturn {
 
   // Create a new DID
   const createDID = useCallback(async (): Promise<DID | null> => {
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
+    setState(prev => ({ ...prev, status: 'loading', error: null }));
     
     try {
       const { did } = await generateDIDKey();
@@ -169,15 +185,18 @@ export function useEIDAS(): UseEIDASReturn {
       setState(prev => ({
         ...prev,
         primaryDID: prev.primaryDID || did,
-        isLoading: false
+        status: 'success',
+        lastSuccess: new Date(),
       }));
       
       return did;
-    } catch (error) {
+    } catch (err) {
+      const kbError = createKBError('DID_CREATE_ERROR', 'Failed to create DID', { originalError: String(err) });
       setState(prev => ({
         ...prev,
-        isLoading: false,
-        error: 'Failed to create DID'
+        status: 'error',
+        error: kbError,
+        retryCount: prev.retryCount + 1,
       }));
       return null;
     }
@@ -242,7 +261,7 @@ export function useEIDAS(): UseEIDASReturn {
     deepLink: string;
     request: KYCVerificationRequest;
   } | null> => {
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
+    setState(prev => ({ ...prev, status: 'loading', error: null }));
     
     try {
       // Ensure we have a DID
@@ -275,15 +294,18 @@ export function useEIDAS(): UseEIDASReturn {
       setState(prev => ({
         ...prev,
         pendingKYCRequest: kycRequest,
-        isLoading: false
+        status: 'success',
+        lastSuccess: new Date(),
       }));
 
       return { qrData, deepLink, request: kycRequest };
-    } catch (error) {
+    } catch (err) {
+      const kbError = createKBError('KYC_INIT_ERROR', 'Failed to initiate KYC verification', { originalError: String(err) });
       setState(prev => ({
         ...prev,
-        isLoading: false,
-        error: 'Failed to initiate KYC verification'
+        status: 'error',
+        error: kbError,
+        retryCount: prev.retryCount + 1,
       }));
       return null;
     }
@@ -294,11 +316,12 @@ export function useEIDAS(): UseEIDASReturn {
     vpToken: string
   ): Promise<KYCVerificationResult | null> => {
     if (!state.pendingKYCRequest) {
-      setState(prev => ({ ...prev, error: 'No pending KYC request' }));
+      const kbError = createKBError('KYC_NO_REQUEST', 'No pending KYC request');
+      setState(prev => ({ ...prev, error: kbError, status: 'error' }));
       return null;
     }
 
-    setState(prev => ({ ...prev, isLoading: true, error: null }));
+    setState(prev => ({ ...prev, status: 'loading', error: null }));
 
     try {
       const result = await processPresentationResponse(
@@ -335,23 +358,26 @@ export function useEIDAS(): UseEIDASReturn {
         ...prev,
         lastKYCResult: kycResult,
         pendingKYCRequest: null,
-        isLoading: false
+        status: 'success',
+        lastSuccess: new Date(),
       }));
 
       return kycResult;
-    } catch (error) {
+    } catch (err) {
       const failedResult: KYCVerificationResult = {
         requestId: state.pendingKYCRequest.requestId,
         status: 'failed',
         credentials: []
       };
 
+      const kbError = createKBError('KYC_VERIFY_ERROR', `KYC verification failed: ${err}`, { originalError: String(err) });
       setState(prev => ({
         ...prev,
         lastKYCResult: failedResult,
         pendingKYCRequest: null,
-        isLoading: false,
-        error: `KYC verification failed: ${error}`
+        status: 'error',
+        error: kbError,
+        retryCount: prev.retryCount + 1,
       }));
 
       return failedResult;
@@ -408,13 +434,35 @@ export function useEIDAS(): UseEIDASReturn {
     return SUPPORTED_CREDENTIAL_TYPES;
   }, []);
 
-  // Clear error
+  // === KB 2.0 CLEAR ERROR ===
   const clearError = useCallback(() => {
-    setState(prev => ({ ...prev, error: null }));
+    setState(prev => ({ ...prev, error: null, status: prev.status === 'error' ? 'idle' : prev.status }));
+  }, []);
+
+  // === KB 2.0 RESET ===
+  const reset = useCallback(() => {
+    setState({
+      primaryDID: null,
+      credentials: [],
+      pendingKYCRequest: null,
+      lastKYCResult: null,
+      walletAvailable: false,
+      status: 'idle',
+      error: null,
+      lastRefresh: null,
+      lastSuccess: null,
+      retryCount: 0,
+    });
   }, []);
 
   return {
     state,
+    // === KB 2.0 COMPUTED STATES ===
+    isLoading,
+    isIdle,
+    isSuccess,
+    isError,
+    // Actions
     createDID,
     getDIDs,
     resolveDID: resolveDIDCallback,
@@ -432,6 +480,7 @@ export function useEIDAS(): UseEIDASReturn {
     getKYCHistory,
     formatDIDDisplay,
     getSupportedCredentialTypes,
-    clearError
+    clearError,
+    reset,
   };
 }
