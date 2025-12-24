@@ -1,5 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+
+// === ERROR TIPADO KB ===
+export interface SiteSettingsError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 interface SiteSettings {
   site_name: string;
@@ -32,20 +39,26 @@ const defaultSettings: SiteSettings = {
 export function useSiteSettings() {
   const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<SiteSettingsError | null>(null);
+  // === ESTADO KB ===
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   useEffect(() => {
     loadSettings();
   }, []);
 
   const loadSettings = async () => {
+    setError(null);
     try {
-      const { data, error } = await (supabase as any)
+      const { data, error: fetchError } = await (supabase as any)
         .from('cms_site_settings')
         .select('setting_key, setting_value')
         .eq('is_public', true);
 
-      if (error) throw error;
+      if (fetchError) throw fetchError;
 
       const settingsMap: Record<string, any> = {};
       for (const item of data || []) {
@@ -66,8 +79,10 @@ export function useSiteSettings() {
         ...settingsMap.social_links && { social_links: settingsMap.social_links },
         ...settingsMap.external_scripts && { external_scripts: settingsMap.external_scripts }
       }));
+      setLastRefresh(new Date());
     } catch (err) {
-      setError(err as Error);
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      setError({ code: 'LOAD_SETTINGS_ERROR', message });
       console.error('Error loading site settings:', err);
     } finally {
       setLoading(false);
@@ -93,5 +108,14 @@ export function useSiteSettings() {
     }
   };
 
-  return { settings, loading, error, updateSetting, refresh: loadSettings };
+  return { 
+    settings, 
+    loading, 
+    error, 
+    updateSetting, 
+    refresh: loadSettings,
+    // === KB ADDITIONS ===
+    lastRefresh,
+    clearError,
+  };
 }

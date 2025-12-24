@@ -1,4 +1,11 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+
+// === ERROR TIPADO KB ===
+export interface PerformanceMonitorError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 interface PerformanceMetrics {
   fcp: number | null;
@@ -26,6 +33,12 @@ export function usePerformanceMonitor(onMetricUpdate?: PerformanceObserverCallba
     ttfb: null,
     fid: null,
   });
+  // === ESTADO KB ===
+  const [error, setError] = useState<PerformanceMonitorError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const updateMetric = useCallback((name: keyof PerformanceMetrics, value: number) => {
     metricsRef.current[name] = value;
@@ -162,6 +175,10 @@ export function usePerformanceMonitor(onMetricUpdate?: PerformanceObserverCallba
     getMetrics,
     getPerformanceScore,
     metrics: metricsRef.current,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
 
