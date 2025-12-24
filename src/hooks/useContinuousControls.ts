@@ -3,6 +3,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { createKBError, parseError, collectTelemetry } from '@/hooks/core/useKBBase';
+
+// Re-export for backwards compat
+export type ContinuousControlsError = KBError;
 
 export interface ContinuousControl {
   id: string;
@@ -97,40 +102,83 @@ export function useContinuousControls() {
   const queryClient = useQueryClient();
   const [isRunning, setIsRunning] = useState(false);
 
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoadingState = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+  
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
+
   // Get all controls with latest status
   const { data: controls, isLoading: controlsLoading, refetch: refetchControls } = useQuery({
     queryKey: ['continuous-controls'],
     queryFn: async () => {
-      const { data: controlsData, error } = await supabase
-        .from('continuous_controls')
-        .select('*')
-        .order('control_category', { ascending: true })
-        .order('severity_on_failure', { ascending: false });
+      const startTime = Date.now();
+      setStatus('loading');
       
-      if (error) throw error;
-      
-      // Get latest execution for each control
-      const controlsWithStatus = await Promise.all(
-        (controlsData || []).map(async (control) => {
-          const { data: latestExecution } = await supabase
-            .from('control_executions')
-            .select('status, items_checked, items_failed')
-            .eq('control_id', control.id)
-            .order('execution_start', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-          
-          return {
-            ...control,
-            threshold_config: control.threshold_config as Record<string, unknown>,
-            last_status: latestExecution?.status || 'unknown',
-            items_checked: latestExecution?.items_checked || 0,
-            items_failed: latestExecution?.items_failed || 0,
-          } as ContinuousControl;
-        })
-      );
-      
-      return controlsWithStatus;
+      try {
+        const { data: controlsData, error: fetchError } = await supabase
+          .from('continuous_controls')
+          .select('*')
+          .order('control_category', { ascending: true })
+          .order('severity_on_failure', { ascending: false });
+        
+        if (fetchError) throw fetchError;
+        
+        // Get latest execution for each control
+        const controlsWithStatus = await Promise.all(
+          (controlsData || []).map(async (control) => {
+            const { data: latestExecution } = await supabase
+              .from('control_executions')
+              .select('status, items_checked, items_failed')
+              .eq('control_id', control.id)
+              .order('execution_start', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            
+            return {
+              ...control,
+              threshold_config: control.threshold_config as Record<string, unknown>,
+              last_status: latestExecution?.status || 'unknown',
+              items_checked: latestExecution?.items_checked || 0,
+              items_failed: latestExecution?.items_failed || 0,
+            } as ContinuousControl;
+          })
+        );
+        
+        setStatus('success');
+        setLastSuccess(new Date());
+        setLastRefresh(new Date());
+        setRetryCount(0);
+        collectTelemetry('useContinuousControls', 'fetchControls', 'success', Date.now() - startTime);
+        return controlsWithStatus;
+      } catch (err) {
+        const parsedErr = parseError(err);
+        const kbError = createKBError('FETCH_CONTROLS_ERROR', parsedErr.message, { originalError: String(err) });
+        setError(kbError);
+        setStatus('error');
+        setRetryCount(prev => prev + 1);
+        collectTelemetry('useContinuousControls', 'fetchControls', 'error', Date.now() - startTime, kbError);
+        throw err;
+      }
     },
   });
 
@@ -338,5 +386,17 @@ export function useContinuousControls() {
     getCriticalAlerts,
     refetchControls,
     refetchAlerts,
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoadingState,
+    isSuccess,
+    isError,
+    error,
+    lastRefresh,
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
   };
 }
