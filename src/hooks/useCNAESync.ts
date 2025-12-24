@@ -2,13 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { KBStatus, KBError } from './core';
 
-// === ERROR TIPADO KB ===
-export interface CNAESyncError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+export type CNAESyncError = KBError;
 interface SectorRatio {
   sector: string;
   ratios: Record<string, number>;
@@ -50,12 +46,21 @@ export function useCNAESync(companyId?: string) {
   const [companyCnaes, setCompanyCnaes] = useState<CompanyCNAE[]>([]);
   const [sectorRatios, setSectorRatios] = useState<SectorRatio | null>(null);
   const [zscoreCoefficients, setZscoreCoefficients] = useState<ZScoreCoefficients | null>(null);
-  // === ESTADO KB ===
-  const [error, setError] = useState<CNAESyncError | null>(null);
+  // === KB 2.0 ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  const isIdle = status === 'idle';
+  const isLoading = syncState.isLoading || status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  const clearError = useCallback(() => {
+    setError(null);
+    setSyncState(prev => ({ ...prev, error: null }));
+    if (status === 'error') setStatus('idle');
+  }, [status]);
   const fetchCompanyCnaes = useCallback(async () => {
     if (!companyId) return;
     
@@ -207,19 +212,24 @@ export function useCNAESync(companyId?: string) {
   }, [companyId, fetchCompanyCnaes]);
 
   return {
+    data: companyCnaes,
     syncState,
     companyCnaes,
     sectorRatios,
     zscoreCoefficients,
+    status,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
+    error,
+    clearError,
+    lastRefresh,
     fetchCompanyCnaes,
     fetchSectorRatios,
     fetchZScoreCoefficients,
     calculateWeightedRatios,
     calculateWeightedZScoreCoefficients,
     forceSyncAllCnaes,
-    // === KB ADDITIONS ===
-    error,
-    lastRefresh,
-    clearError,
   };
 }

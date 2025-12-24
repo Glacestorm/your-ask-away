@@ -2,13 +2,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useCallback, useEffect, useState } from 'react';
+import { KBStatus, KBError } from './core';
 
-// === ERROR TIPADO KB ===
-export interface BehavioralNudgesError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+export type BehavioralNudgesError = KBError;
 
 /**
  * Innovative Behavioral Nudges System
@@ -64,12 +60,20 @@ export function useBehavioralNudges(userId?: string, companyId?: string) {
   const queryClient = useQueryClient();
   const [activeNudges, setActiveNudges] = useState<BehavioralNudge[]>([]);
   const [streakData, setStreakData] = useState<UserStreak | null>(null);
-  // === ESTADO KB ===
-  const [error, setError] = useState<BehavioralNudgesError | null>(null);
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
   // Generate contextual nudges based on user behavior
   const generateNudges = useCallback(() => {
     const nudges: BehavioralNudge[] = [];
@@ -291,8 +295,17 @@ export function useBehavioralNudges(userId?: string, companyId?: string) {
   }, [streakData]);
 
   return {
+    data: activeNudges,
     activeNudges,
     streakData,
+    status,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
+    error,
+    clearError,
+    lastRefresh,
     dismissNudge,
     handleNudgeAction: handleNudgeAction.mutate,
     updateStreak: updateStreak.mutate,
@@ -300,9 +313,5 @@ export function useBehavioralNudges(userId?: string, companyId?: string) {
     getLeaderboardPosition,
     calculateEngagementScore,
     generateNudges,
-    // === KB ADDITIONS ===
-    error,
-    lastRefresh,
-    clearError,
   };
 }
