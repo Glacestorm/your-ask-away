@@ -4327,7 +4327,7 @@ export type Database = {
           gestor_id: string | null
           id: string
           import_batch_id: string | null
-          ingresos_creand: number | null
+          ingresos_entidad_principal: number | null
           is_vip: boolean | null
           latitude: number
           legal_form: string | null
@@ -4368,7 +4368,7 @@ export type Database = {
           gestor_id?: string | null
           id?: string
           import_batch_id?: string | null
-          ingresos_creand?: number | null
+          ingresos_entidad_principal?: number | null
           is_vip?: boolean | null
           latitude: number
           legal_form?: string | null
@@ -4409,7 +4409,7 @@ export type Database = {
           gestor_id?: string | null
           id?: string
           import_batch_id?: string | null
-          ingresos_creand?: number | null
+          ingresos_entidad_principal?: number | null
           is_vip?: boolean | null
           latitude?: number
           legal_form?: string | null

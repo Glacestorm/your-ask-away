@@ -189,7 +189,7 @@ serve(async (req) => {
     const result = await safeExternalAPICall(nominatimUrl, {
       method: 'GET',
       headers: {
-        'User-Agent': 'CreandBankingApp/1.0'
+        'User-Agent': 'ObelixIAApp/1.0'
       }
     }, 15000);
 
@@ -218,7 +218,7 @@ serve(async (req) => {
       const fallbackUrl = `https://nominatim.openstreetmap.org/search?format=json&q=Andorra&limit=1`;
       const fallbackResult = await safeExternalAPICall(fallbackUrl, {
         method: 'GET',
-        headers: { 'User-Agent': 'CreandBankingApp/1.0' }
+        headers: { 'User-Agent': 'ObelixIAApp/1.0' }
       }, 10000);
 
       if (fallbackResult.success && Array.isArray(fallbackResult.data) && fallbackResult.data.length > 0) {

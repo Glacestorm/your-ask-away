@@ -250,7 +250,7 @@ const handler = async (req: Request): Promise<Response> => {
             </div>
 
             <div class="footer">
-              <p><strong>Dashboard Comercial Creand</strong></p>
+              <p><strong>Dashboard Comercial ObelixIA</strong></p>
               <p>Sistema de Notificaciones de Oportunidades Críticas</p>
             </div>
           </div>

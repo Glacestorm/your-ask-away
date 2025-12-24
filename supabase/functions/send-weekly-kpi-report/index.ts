@@ -638,7 +638,7 @@ function generateEmailHTML(stats: KPIStats, reportDate: string): string {
         <!-- Footer -->
         <div style="background: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
           <p style="margin: 0; color: #6b7280; font-size: 12px;">
-            Este es un correo automático generado por el sistema de gestión de Creand.
+            Este es un correo automático generado por el sistema de gestión de ObelixIA.
           </p>
           <p style="margin: 5px 0 0 0; color: #9ca3af; font-size: 11px;">
             Para más detalles, acceda al panel de administración.
@@ -715,7 +715,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailPromises = profiles.map(async (profile) => {
       try {
         const result = await resend.emails.send({
-          from: "Creand <onboarding@resend.dev>",
+          from: "ObelixIA <onboarding@resend.dev>",
           to: [profile.email],
           subject: `📊 Resumen Semanal de Rendimiento - ${reportDate}`,
           html: htmlContent,

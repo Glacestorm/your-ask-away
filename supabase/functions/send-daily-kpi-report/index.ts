@@ -268,7 +268,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailPromises = profiles.map(async (profile) => {
       try {
         await resend.emails.send({
-          from: "Creand <onboarding@resend.dev>",
+          from: "ObelixIA <onboarding@resend.dev>",
           to: [profile.email],
           subject: `📋 Resumen Diario - ${reportDate}`,
           html: htmlContent,

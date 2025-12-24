@@ -29,9 +29,9 @@ interface Props {
 }
 
 const BANKS = [
-  { name: 'Creand', color: 'from-emerald-500 to-green-600', icon: '🏦' },
-  { name: 'Morabanc', color: 'from-blue-500 to-indigo-600', icon: '🏛️' },
-  { name: 'Andbank', color: 'from-amber-500 to-orange-600', icon: '🏢' }
+  { name: 'Entidad 1', color: 'from-emerald-500 to-green-600', icon: '🏦' },
+  { name: 'Entidad 2', color: 'from-blue-500 to-indigo-600', icon: '🏛️' },
+  { name: 'Entidad 3', color: 'from-amber-500 to-orange-600', icon: '🏢' }
 ];
 
 export function BankAffiliationsManager({ companyId }: Props) {
@@ -40,15 +40,15 @@ export function BankAffiliationsManager({ companyId }: Props) {
   const [saving, setSaving] = useState(false);
   const [isAutomatic, setIsAutomatic] = useState(false);
   const [percentages, setPercentages] = useState({
-    Creand: 0,
-    Morabanc: 0,
-    Andbank: 0,
+    'Entidad 1': 0,
+    'Entidad 2': 0,
+    'Entidad 3': 0,
   });
   
   // Financial data for automatic calculation
   const [facturacionAnual, setFacturacionAnual] = useState<number>(0);
   const [periodoFacturacion, setPeriodoFacturacion] = useState<string>('anual');
-  const [ingresosCreand, setIngresosCreand] = useState<number>(0);
+  const [ingresosEntidadPrincipal, setIngresosEntidadPrincipal] = useState<number>(0);
 
   useEffect(() => {
     fetchData();
@@ -73,7 +73,7 @@ export function BankAffiliationsManager({ companyId }: Props) {
       // Fetch company financial data
       const { data: companyData, error: companyError } = await supabase
         .from('companies')
-        .select('facturacion_anual, periodo_facturacion, ingresos_creand, vinculacion_modo')
+        .select('facturacion_anual, periodo_facturacion, ingresos_entidad_principal, vinculacion_modo')
         .eq('id', companyId)
         .single();
 
@@ -82,12 +82,12 @@ export function BankAffiliationsManager({ companyId }: Props) {
       if (companyData) {
         setFacturacionAnual(companyData.facturacion_anual || 0);
         setPeriodoFacturacion(companyData.periodo_facturacion || 'anual');
-        setIngresosCreand(companyData.ingresos_creand || 0);
+        setIngresosEntidadPrincipal(companyData.ingresos_entidad_principal || 0);
         setIsAutomatic(companyData.vinculacion_modo === 'automatica');
       }
       
       // Set percentages from affiliations
-      const newPercentages = { Creand: 0, Morabanc: 0, Andbank: 0 };
+      const newPercentages = { 'Entidad 1': 0, 'Entidad 2': 0, 'Entidad 3': 0 };
       affiliationsList.forEach((aff: BankAffiliation) => {
         if (aff.bank_name in newPercentages) {
           newPercentages[aff.bank_name as keyof typeof newPercentages] = aff.affiliation_percentage || 0;
@@ -108,25 +108,25 @@ export function BankAffiliationsManager({ companyId }: Props) {
       return;
     }
 
-    // Calculate Creand percentage based on revenue
-    const creandPercentage = Math.min(100, Math.round((ingresosCreand / facturacionAnual) * 100));
+    // Calculate primary entity percentage based on revenue
+    const entidad1Percentage = Math.min(100, Math.round((ingresosEntidadPrincipal / facturacionAnual) * 100));
     
-    // Distribute remaining percentage between Morabanc and Andbank
-    const remaining = 100 - creandPercentage;
-    const morabancPercentage = Math.round(remaining * 0.6); // 60% of remaining
-    const andbankPercentage = remaining - morabancPercentage; // Rest to Andbank
+    // Distribute remaining percentage between other entities
+    const remaining = 100 - entidad1Percentage;
+    const entidad2Percentage = Math.round(remaining * 0.6); // 60% of remaining
+    const entidad3Percentage = remaining - entidad2Percentage; // Rest to third entity
 
     setPercentages({
-      Creand: creandPercentage,
-      Morabanc: morabancPercentage,
-      Andbank: andbankPercentage,
+      'Entidad 1': entidad1Percentage,
+      'Entidad 2': entidad2Percentage,
+      'Entidad 3': entidad3Percentage,
     });
 
     toast.success('Porcentajes calculados automáticamente');
   };
 
   const handleSave = async () => {
-    const total = percentages.Creand + percentages.Morabanc + percentages.Andbank;
+    const total = percentages['Entidad 1'] + percentages['Entidad 2'] + percentages['Entidad 3'];
     
     // Allow a tolerance of ±0.5% to handle rounding precision issues
     if (Math.abs(total - 100) > 0.5) {
@@ -143,7 +143,7 @@ export function BankAffiliationsManager({ companyId }: Props) {
         .update({
           facturacion_anual: facturacionAnual,
           periodo_facturacion: periodoFacturacion,
-          ingresos_creand: ingresosCreand,
+          ingresos_entidad_principal: ingresosEntidadPrincipal,
           vinculacion_modo: isAutomatic ? 'automatica' : 'manual',
         })
         .eq('id', companyId);
@@ -199,7 +199,7 @@ export function BankAffiliationsManager({ companyId }: Props) {
     }
   };
 
-  const totalPercentage = percentages.Creand + percentages.Morabanc + percentages.Andbank;
+  const totalPercentage = percentages['Entidad 1'] + percentages['Entidad 2'] + percentages['Entidad 3'];
   const isValid = Math.abs(totalPercentage - 100) <= 0.5;
 
   if (loading) {
@@ -294,11 +294,11 @@ export function BankAffiliationsManager({ companyId }: Props) {
               </div>
             </div>
             <div className="space-y-1">
-              <Label className="text-[10px]">Ingresos Creand (€)</Label>
+              <Label className="text-[10px]">Ingresos Entidad Principal (€)</Label>
               <Input
                 type="number"
-                value={ingresosCreand || ''}
-                onChange={(e) => setIngresosCreand(Number(e.target.value))}
+                value={ingresosEntidadPrincipal || ''}
+                onChange={(e) => setIngresosEntidadPrincipal(Number(e.target.value))}
                 placeholder="450000"
                 className="h-7 text-xs"
               />

@@ -34,7 +34,7 @@ async function sendEmailViaResend(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Creand Banking CRM <onboarding@resend.dev>",
+        from: "ObelixIA Platform <onboarding@resend.dev>",
         to: [to],
         subject,
         html,
@@ -165,7 +165,7 @@ serve(async (req) => {
           <!-- Footer -->
           <div style="background: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
             <p style="color: #94a3b8; font-size: 11px; margin: 0;">
-              Creand Banking CRM - Sistema de Autenticación Adaptativa<br>
+              ObelixIA Platform - Sistema de Autenticación Adaptativa<br>
               Cumplimiento PSD2/PSD3 • DORA • OWASP MASVS
             </p>
           </div>

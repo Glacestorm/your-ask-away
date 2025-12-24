@@ -19,7 +19,7 @@ export const getAllProjectFiles = (): FileEntry[] => {
     // ═══════════════════════════════════════════════════════════════
     { path: 'src/App.tsx', lines: 88, category: 'Core', description: 'Main application component with React Router and providers' },
     { path: 'src/main.tsx', lines: 92, category: 'Core', description: 'Entry point with React 19 createRoot and Web Vitals' },
-    { path: 'src/index.css', lines: 468, category: 'Core', description: 'Global styles, CSS variables, 4 themes (day/night/creand/aurora)' },
+    { path: 'src/index.css', lines: 468, category: 'Core', description: 'Global styles, CSS variables, 4 themes (day/night/corporate/aurora)' },
     { path: 'src/App.css', lines: 50, category: 'Core', description: 'Application-specific styles' },
     { path: 'src/vite-env.d.ts', lines: 15, category: 'Core', description: 'Vite type declarations' },
     

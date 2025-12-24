@@ -38,7 +38,7 @@ const handler = async (req: Request): Promise<Response> => {
     const urgencyColor = daysUntil <= 1 ? '#ef4444' : '#f97316';
 
     const emailResponse = await resend.emails.send({
-      from: "Recordatorios Creand <onboarding@resend.dev>",
+      from: "Recordatorios ObelixIA <onboarding@resend.dev>",
       to: [to],
       subject: `⏰ Recordatorio: ${reminderType} - ${companyName}`,
       html: `
@@ -104,7 +104,7 @@ const handler = async (req: Request): Promise<Response> => {
                   Este es un recordatorio automático del sistema de gestión comercial.
                 </p>
                 <p style="font-size: 13px; color: #6b7280; margin: 8px 0 0 0;">
-                  © ${new Date().getFullYear()} Creand. Todos los derechos reservados.
+                  © ${new Date().getFullYear()} ObelixIA. Todos los derechos reservados.
                 </p>
               </div>
 

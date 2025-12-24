@@ -63,7 +63,7 @@ ${JSON.stringify(companies?.map(c => ({
   name: c.name,
   sector: c.sector,
   facturacion_anual: c.facturacion_anual,
-  ingresos_creand: c.ingresos_creand,
+  ingresos_entidad_principal: c.ingresos_entidad_principal,
   vinculacion_entidad_1: c.vinculacion_entidad_1,
   products_count: c.company_products?.length || 0,
   recent_visits: c.visits?.filter((v: any) => new Date(v.date) > new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)).length || 0,

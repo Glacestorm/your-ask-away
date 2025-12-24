@@ -128,7 +128,7 @@ ${JSON.stringify({
   sector: company.sector,
   segment: company.segment,
   facturacion_anual: company.facturacion_anual,
-  ingresos_creand: company.ingresos_creand,
+  ingresos_entidad_principal: company.ingresos_entidad_principal,
   vinculacion_entidad_1: company.vinculacion_entidad_1,
   products_count: company.company_products?.length || 0,
   health_score: company.health_scores?.[0]?.overall_score,
