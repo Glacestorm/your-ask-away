@@ -68,7 +68,11 @@ const formatCurrency = (value: number) =>
 const formatPercent = (value: number) => 
   `${(value * 100).toFixed(1)}%`;
 
-export function RevenueAIAgentsPanel() {
+interface RevenueAIAgentsPanelProps {
+  className?: string;
+}
+
+export function RevenueAIAgentsPanel({ className }: RevenueAIAgentsPanelProps) {
   const [activeTab, setActiveTab] = useState('overview');
   const [expandedInsights, setExpandedInsights] = useState<Set<string>>(new Set());
 
@@ -436,7 +440,7 @@ export function RevenueAIAgentsPanel() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className={cn("space-y-6", className)}>
       {/* Header */}
       <Card className="bg-gradient-to-r from-primary/10 via-purple-500/10 to-blue-500/10">
         <CardContent className="p-6">

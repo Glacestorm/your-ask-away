@@ -1,6 +1,6 @@
 /**
  * EnterpriseDashboardPage
- * Dashboard Ejecutivo Enterprise con los 4 paneles principales
+ * Dashboard Ejecutivo Enterprise con los 6 paneles principales
  * Fase 11 - Enterprise SaaS 2025-2026
  */
 
@@ -14,7 +14,9 @@ import {
   Shield,
   Activity,
   Workflow,
-  Brain
+  Brain,
+  Bot,
+  HeartPulse
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { 
@@ -23,9 +25,11 @@ import {
   WorkflowEnginePanel,
   BusinessIntelligencePanel
 } from '@/components/admin/enterprise';
+import { RevenueAIAgentsPanel } from '@/components/admin/revenue';
+import { PredictiveHealthScorePanel } from '@/components/admin/cs';
 import { cn } from '@/lib/utils';
 
-type PanelView = 'grid' | 'compliance' | 'command' | 'workflow' | 'bi';
+type PanelView = 'grid' | 'compliance' | 'command' | 'workflow' | 'bi' | 'revenue-ai' | 'health-score';
 
 export default function EnterpriseDashboardPage() {
   const [activeView, setActiveView] = useState<PanelView>('grid');
@@ -35,6 +39,8 @@ export default function EnterpriseDashboardPage() {
     { id: 'command', label: 'Command Center', icon: Activity, color: 'from-blue-500 to-indigo-600' },
     { id: 'workflow', label: 'Workflows', icon: Workflow, color: 'from-orange-500 to-amber-600' },
     { id: 'bi', label: 'Business Intelligence', icon: Brain, color: 'from-purple-500 to-pink-600' },
+    { id: 'revenue-ai', label: 'Revenue AI Agents', icon: Bot, color: 'from-cyan-500 to-teal-600' },
+    { id: 'health-score', label: 'Health Score ML', icon: HeartPulse, color: 'from-rose-500 to-red-600' },
   ] as const;
 
   const renderFullPanel = () => {
@@ -47,6 +53,10 @@ export default function EnterpriseDashboardPage() {
         return <WorkflowEnginePanel className="h-full" />;
       case 'bi':
         return <BusinessIntelligencePanel className="h-full" />;
+      case 'revenue-ai':
+        return <RevenueAIAgentsPanel className="h-full" />;
+      case 'health-score':
+        return <PredictiveHealthScorePanel className="h-full" />;
       default:
         return null;
     }
@@ -123,12 +133,14 @@ export default function EnterpriseDashboardPage() {
               ))}
             </div>
 
-            {/* 2x2 Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* 3x2 Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
               <ComplianceMonitorPanel />
               <CommandCenterPanel />
               <WorkflowEnginePanel />
               <BusinessIntelligencePanel />
+              <RevenueAIAgentsPanel />
+              <PredictiveHealthScorePanel />
             </div>
           </>
         ) : (
