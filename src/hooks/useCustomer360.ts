@@ -3,6 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// === ERROR TIPADO KB ===
+export interface Customer360Error {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export interface Customer360Profile {
   id: string;
   company_id: string;
@@ -71,6 +78,12 @@ export interface CustomerInteraction {
 export function useCustomer360(companyId: string | null) {
   const queryClient = useQueryClient();
   const [isCalculating, setIsCalculating] = useState(false);
+  // === ESTADO KB ===
+  const [error, setError] = useState<Customer360Error | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const { data: profile, isLoading: isLoadingProfile, refetch: refetchProfile } = useQuery({
     queryKey: ['customer-360-profile', companyId],
@@ -203,6 +216,10 @@ export function useCustomer360(companyId: string | null) {
     enrichTransactions,
     addInteraction: addInteraction.mutate,
     refetchProfile,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
 
