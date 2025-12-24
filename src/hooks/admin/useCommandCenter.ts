@@ -73,6 +73,13 @@ export interface CommandCenterContext {
   timeRange?: '1h' | '6h' | '24h' | '7d' | '30d';
 }
 
+// KB Pattern: Typed error interface
+export interface CommandCenterError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 // === HOOK ===
 export function useCommandCenter() {
   // Estado
@@ -81,7 +88,8 @@ export function useCommandCenter() {
   const [alerts, setAlerts] = useState<ActiveAlert[]>([]);
   const [systemHealth, setSystemHealth] = useState<SystemHealth | null>(null);
   const [liveActivity, setLiveActivity] = useState<LiveActivity[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  // KB Pattern: Typed error state
+  const [error, setError] = useState<CommandCenterError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
   // Refs para auto-refresh
@@ -123,7 +131,7 @@ export function useCommandCenter() {
       throw new Error(fnData?.error || 'Error al obtener datos del dashboard');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error desconocido';
-      setError(message);
+      setError({ code: 'DASHBOARD_ERROR', message, details: { originalError: String(err) } });
       console.error('[useCommandCenter] getDashboardData error:', err);
       return null;
     } finally {
@@ -264,6 +272,11 @@ export function useCommandCenter() {
     return () => stopAutoRefresh();
   }, [stopAutoRefresh]);
 
+  // KB Pattern: Clear error
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   // === RETURN ===
   return {
     // Estado
@@ -282,6 +295,7 @@ export function useCommandCenter() {
     executeCommand,
     startAutoRefresh,
     stopAutoRefresh,
+    clearError,
   };
 }
 

@@ -71,12 +71,20 @@ export interface SessionContext {
   }>;
 }
 
+// KB Pattern: Typed error interface
+export interface SupportCopilotError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export function useSupportCopilot() {
   const [isLoading, setIsLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<CopilotSuggestion[]>([]);
   const [riskAssessment, setRiskAssessment] = useState<RiskAssessment | null>(null);
   const [nextBestActions, setNextBestActions] = useState<string[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  // KB Pattern: Typed error state
+  const [error, setError] = useState<SupportCopilotError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   
   const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
@@ -107,7 +115,7 @@ export function useSupportCopilot() {
       throw new Error('Invalid response from copilot');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error al obtener sugerencias';
-      setError(message);
+      setError({ code: 'GET_SUGGESTIONS_ERROR', message, details: { originalError: String(err) } });
       console.error('[useSupportCopilot] getSuggestions error:', err);
       return null;
     } finally {
@@ -225,6 +233,11 @@ export function useSupportCopilot() {
     setLastRefresh(null);
   }, []);
 
+  // KB Pattern: Clear error
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -249,7 +262,8 @@ export function useSupportCopilot() {
     startAutoRefresh,
     stopAutoRefresh,
     dismissSuggestion,
-    clearAll
+    clearAll,
+    clearError
   };
 }
 

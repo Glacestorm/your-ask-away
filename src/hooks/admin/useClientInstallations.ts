@@ -179,6 +179,11 @@ export function useClientInstallations() {
     }
   };
 
+  // KB Pattern: Clear error
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return { 
     installations, 
     loading, 
@@ -190,7 +195,8 @@ export function useClientInstallations() {
     toggleRemoteAccess, 
     generateAccessPin,
     startAutoRefresh,
-    stopAutoRefresh
+    stopAutoRefresh,
+    clearError
   };
 }
 
@@ -274,6 +280,11 @@ export function useRemoteAccessSessions(installationId?: string) {
     }
   };
 
+  // KB Pattern: Clear error
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return { 
     sessions, 
     loading, 
@@ -283,7 +294,8 @@ export function useRemoteAccessSessions(installationId?: string) {
     createSession, 
     endSession,
     startAutoRefresh,
-    stopAutoRefresh
+    stopAutoRefresh,
+    clearError
   };
 }
 
@@ -369,6 +381,11 @@ export function useInstallationDownloads(installationId?: string) {
     }
   };
 
+  // KB Pattern: Clear error
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return { 
     downloads, 
     loading, 
@@ -378,6 +395,7 @@ export function useInstallationDownloads(installationId?: string) {
     fetchDownloads, 
     recordDownload,
     startAutoRefresh,
-    stopAutoRefresh
+    stopAutoRefresh,
+    clearError
   };
 }
