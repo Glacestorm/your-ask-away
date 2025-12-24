@@ -1,6 +1,6 @@
 /**
- * KB 2.0 - Base Hook Implementation
- * Provides state machine, retry logic, cancellation, and telemetry
+ * KB 2.5 - Base Hook Implementation
+ * Provides state machine, retry logic, cancellation, circuit breaker, and telemetry
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
@@ -10,7 +10,11 @@ import {
   KBRetryConfig,
   KBTelemetry,
   KBHookReturn,
+  KBCircuitBreakerConfig,
+  KBCircuitBreakerState,
+  KBCircuitState,
   KB_DEFAULT_RETRY_CONFIG,
+  KB_DEFAULT_CIRCUIT_BREAKER_CONFIG,
   KB_ERROR_CODES,
 } from './types';
 
@@ -142,8 +146,43 @@ function calculateBackoffDelay(
   attempt: number,
   config: KBRetryConfig
 ): number {
-  const delay = config.baseDelayMs * Math.pow(config.backoffMultiplier, attempt);
-  return Math.min(delay, config.maxDelayMs);
+  const delayMs = config.baseDelayMs * Math.pow(config.backoffMultiplier, attempt);
+  return Math.min(delayMs, config.maxDelayMs);
+}
+
+// === CIRCUIT BREAKER ===
+function createCircuitBreakerState(): KBCircuitBreakerState {
+  return {
+    state: 'CLOSED',
+    failures: 0,
+    successes: 0,
+    lastFailureTime: null,
+    lastStateChange: new Date(),
+    totalTrips: 0,
+  };
+}
+
+function shouldOpenCircuit(
+  state: KBCircuitBreakerState,
+  config: KBCircuitBreakerConfig
+): boolean {
+  return state.failures >= config.failureThreshold;
+}
+
+function shouldAttemptReset(
+  state: KBCircuitBreakerState,
+  config: KBCircuitBreakerConfig
+): boolean {
+  if (state.state !== 'OPEN' || !state.lastFailureTime) return false;
+  const timeSinceLastFailure = Date.now() - state.lastFailureTime.getTime();
+  return timeSinceLastFailure >= config.resetTimeoutMs;
+}
+
+function shouldCloseCircuit(
+  state: KBCircuitBreakerState,
+  config: KBCircuitBreakerConfig
+): boolean {
+  return state.state === 'HALF_OPEN' && state.successes >= config.successThreshold;
 }
 
 // === BASE HOOK ===
@@ -151,16 +190,23 @@ interface UseKBBaseOptions<T> {
   hookName: string;
   operationName?: string;
   retryConfig?: Partial<KBRetryConfig>;
+  circuitBreakerConfig?: Partial<KBCircuitBreakerConfig>;
   onSuccess?: (data: T) => void;
   onError?: (error: KBError) => void;
   initialData?: T | null;
 }
 
-export function useKBBase<T>(options: UseKBBaseOptions<T>): KBHookReturn<T> {
+export function useKBBase<T>(options: UseKBBaseOptions<T>): KBHookReturn<T> & {
+  _registerExecuteFn: (fn: (...args: unknown[]) => Promise<T>) => void;
+  _setData: React.Dispatch<React.SetStateAction<T | null>>;
+  _setStatus: React.Dispatch<React.SetStateAction<KBStatus>>;
+  _setError: React.Dispatch<React.SetStateAction<KBError | null>>;
+} {
   const {
     hookName,
     operationName = 'execute',
     retryConfig: customRetryConfig,
+    circuitBreakerConfig: customCircuitConfig,
     onSuccess,
     onError,
     initialData = null,
@@ -171,6 +217,11 @@ export function useKBBase<T>(options: UseKBBaseOptions<T>): KBHookReturn<T> {
     ...customRetryConfig,
   };
 
+  const circuitConfig: KBCircuitBreakerConfig = {
+    ...KB_DEFAULT_CIRCUIT_BREAKER_CONFIG,
+    ...customCircuitConfig,
+  };
+
   // State
   const [data, setData] = useState<T | null>(initialData);
   const [status, setStatus] = useState<KBStatus>('idle');
@@ -178,6 +229,11 @@ export function useKBBase<T>(options: UseKBBaseOptions<T>): KBHookReturn<T> {
   const [retryCount, setRetryCount] = useState(0);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  
+  // Circuit Breaker State
+  const [circuitBreakerState, setCircuitBreakerState] = useState<KBCircuitBreakerState>(
+    createCircuitBreakerState()
+  );
 
   // Refs for cancellation and cleanup
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -194,6 +250,25 @@ export function useKBBase<T>(options: UseKBBaseOptions<T>): KBHookReturn<T> {
       abortControllerRef.current?.abort();
     };
   }, []);
+
+  // Circuit Breaker: Auto-transition from OPEN to HALF_OPEN
+  useEffect(() => {
+    if (!circuitConfig.enabled || circuitBreakerState.state !== 'OPEN') return;
+
+    const checkResetTimeout = () => {
+      if (shouldAttemptReset(circuitBreakerState, circuitConfig)) {
+        setCircuitBreakerState(prev => ({
+          ...prev,
+          state: 'HALF_OPEN',
+          successes: 0,
+          lastStateChange: new Date(),
+        }));
+      }
+    };
+
+    const timer = setTimeout(checkResetTimeout, circuitConfig.resetTimeoutMs);
+    return () => clearTimeout(timer);
+  }, [circuitBreakerState.state, circuitBreakerState.lastFailureTime, circuitConfig]);
 
   // Computed states
   const isIdle = status === 'idle';
@@ -231,6 +306,61 @@ export function useKBBase<T>(options: UseKBBaseOptions<T>): KBHookReturn<T> {
     setRetryCount(0);
   }, [cancel, initialData]);
 
+  // Reset circuit breaker
+  const resetCircuit = useCallback(() => {
+    setCircuitBreakerState(createCircuitBreakerState());
+  }, []);
+
+  // Record circuit failure
+  const recordCircuitFailure = useCallback(() => {
+    if (!circuitConfig.enabled) return;
+    
+    setCircuitBreakerState(prev => {
+      const newFailures = prev.failures + 1;
+      const shouldTrip = newFailures >= circuitConfig.failureThreshold;
+      
+      return {
+        ...prev,
+        failures: newFailures,
+        lastFailureTime: new Date(),
+        state: shouldTrip ? 'OPEN' : prev.state,
+        totalTrips: shouldTrip && prev.state !== 'OPEN' ? prev.totalTrips + 1 : prev.totalTrips,
+        lastStateChange: shouldTrip && prev.state !== 'OPEN' ? new Date() : prev.lastStateChange,
+        successes: 0,
+      };
+    });
+  }, [circuitConfig]);
+
+  // Record circuit success
+  const recordCircuitSuccess = useCallback(() => {
+    if (!circuitConfig.enabled) return;
+    
+    setCircuitBreakerState(prev => {
+      if (prev.state === 'HALF_OPEN') {
+        const newSuccesses = prev.successes + 1;
+        if (newSuccesses >= circuitConfig.successThreshold) {
+          return {
+            ...prev,
+            state: 'CLOSED',
+            failures: 0,
+            successes: 0,
+            lastStateChange: new Date(),
+          };
+        }
+        return { ...prev, successes: newSuccesses };
+      }
+      
+      // In CLOSED state, reset failures on success
+      return { ...prev, failures: 0 };
+    });
+  }, [circuitConfig]);
+
+  // Check if circuit is open
+  const isCircuitOpen = useCallback((): boolean => {
+    if (!circuitConfig.enabled) return false;
+    return circuitBreakerState.state === 'OPEN';
+  }, [circuitConfig.enabled, circuitBreakerState.state]);
+
   // Execute with retry logic
   const executeWithRetry = useCallback(async (
     fn: (...args: unknown[]) => Promise<T>,
@@ -238,6 +368,32 @@ export function useKBBase<T>(options: UseKBBaseOptions<T>): KBHookReturn<T> {
     currentRetry: number = 0
   ): Promise<T | null> => {
     const startTime = new Date();
+    
+    // Check circuit breaker
+    if (isCircuitOpen()) {
+      const circuitError = createKBError(
+        KB_ERROR_CODES.CIRCUIT_OPEN,
+        'Circuit breaker is open. Service temporarily unavailable.',
+        { retryable: false, details: { circuitState: circuitBreakerState } }
+      );
+      setError(circuitError);
+      setStatus('error');
+      onError?.(circuitError);
+      
+      collectTelemetry({
+        hookName,
+        operationName,
+        startTime,
+        endTime: new Date(),
+        durationMs: 0,
+        status: 'error',
+        error: circuitError,
+        retryCount: currentRetry,
+        attributes: { circuitState: 'OPEN' },
+      });
+      
+      return null;
+    }
     
     // Create new abort controller for this operation
     abortControllerRef.current = new AbortController();
@@ -251,6 +407,9 @@ export function useKBBase<T>(options: UseKBBaseOptions<T>): KBHookReturn<T> {
       const result = await fn(...args);
       
       if (!isMountedRef.current) return null;
+      
+      // Record circuit success
+      recordCircuitSuccess();
       
       setData(result);
       setStatus('success');
@@ -267,6 +426,7 @@ export function useKBBase<T>(options: UseKBBaseOptions<T>): KBHookReturn<T> {
         durationMs: Date.now() - startTime.getTime(),
         status: 'success',
         retryCount: currentRetry,
+        attributes: { circuitState: circuitBreakerState.state },
       });
       
       onSuccess?.(result);
@@ -283,6 +443,9 @@ export function useKBBase<T>(options: UseKBBaseOptions<T>): KBHookReturn<T> {
       
       const parsedError = parseError(err);
       
+      // Record circuit failure
+      recordCircuitFailure();
+      
       // Check if we should retry
       if (parsedError.retryable && currentRetry < retryConfig.maxRetries) {
         const backoffDelay = calculateBackoffDelay(currentRetry, retryConfig);
@@ -298,6 +461,7 @@ export function useKBBase<T>(options: UseKBBaseOptions<T>): KBHookReturn<T> {
           error: parsedError,
           retryCount: currentRetry,
           metadata: { nextRetryIn: backoffDelay },
+          attributes: { circuitState: circuitBreakerState.state },
         });
         
         await delay(backoffDelay);
@@ -322,12 +486,23 @@ export function useKBBase<T>(options: UseKBBaseOptions<T>): KBHookReturn<T> {
         status: 'error',
         error: parsedError,
         retryCount: currentRetry,
+        attributes: { circuitState: circuitBreakerState.state },
       });
       
       onError?.(parsedError);
       return null;
     }
-  }, [hookName, operationName, retryConfig, onSuccess, onError]);
+  }, [
+    hookName,
+    operationName,
+    retryConfig,
+    circuitBreakerState,
+    isCircuitOpen,
+    recordCircuitSuccess,
+    recordCircuitFailure,
+    onSuccess,
+    onError,
+  ]);
 
   // Main execute function
   const execute = useCallback(async (...args: unknown[]): Promise<T | null> => {
@@ -395,16 +570,16 @@ export function useKBBase<T>(options: UseKBBaseOptions<T>): KBHookReturn<T> {
     lastRefresh,
     lastSuccess,
     
+    // Circuit Breaker (KB 2.5)
+    circuitState: circuitBreakerState.state,
+    circuitStats: circuitBreakerState,
+    resetCircuit,
+    
     // Internal (exposed for wrapper hooks)
     _registerExecuteFn: registerExecuteFn,
     _setData: setData,
     _setStatus: setStatus,
     _setError: setError,
-  } as KBHookReturn<T> & {
-    _registerExecuteFn: (fn: (...args: unknown[]) => Promise<T>) => void;
-    _setData: React.Dispatch<React.SetStateAction<T | null>>;
-    _setStatus: React.Dispatch<React.SetStateAction<KBStatus>>;
-    _setError: React.Dispatch<React.SetStateAction<KBError | null>>;
   };
 }
 

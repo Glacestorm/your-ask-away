@@ -1,10 +1,21 @@
 /**
- * KB 2.0 - Knowledge Base Pattern Types
+ * KB 2.5 - Knowledge Base Pattern Types
  * Enterprise-grade hook patterns for 2025-2026+
+ * 
+ * Includes:
+ * - State Machine
+ * - Typed Errors
+ * - Circuit Breaker
+ * - Smart Cache
+ * - OpenTelemetry
+ * - SSE/Streaming
  */
 
 // === STATUS MACHINE ===
 export type KBStatus = 'idle' | 'loading' | 'success' | 'error' | 'retrying' | 'cancelled';
+
+// === CIRCUIT BREAKER STATES ===
+export type KBCircuitState = 'CLOSED' | 'OPEN' | 'HALF_OPEN';
 
 // === ERROR TIPADO ===
 export interface KBError {
@@ -25,7 +36,57 @@ export interface KBRetryConfig {
   retryableErrors?: string[];
 }
 
-// === TELEMETRY ===
+// === CIRCUIT BREAKER CONFIG ===
+export interface KBCircuitBreakerConfig {
+  /** Number of consecutive failures before opening circuit */
+  failureThreshold: number;
+  /** Time in ms to wait before attempting half-open */
+  resetTimeoutMs: number;
+  /** Number of successful calls in half-open to close circuit */
+  successThreshold: number;
+  /** Enable/disable circuit breaker */
+  enabled: boolean;
+}
+
+// === CIRCUIT BREAKER STATE ===
+export interface KBCircuitBreakerState {
+  state: KBCircuitState;
+  failures: number;
+  successes: number;
+  lastFailureTime: Date | null;
+  lastStateChange: Date;
+  totalTrips: number;
+}
+
+// === CACHE CONFIG ===
+export interface KBCacheConfig {
+  /** Enable caching */
+  enabled: boolean;
+  /** Time in ms before data is considered stale */
+  staleTime: number;
+  /** Time in ms before cached data is garbage collected */
+  gcTime: number;
+  /** Cache key for this operation */
+  cacheKey?: string;
+  /** Enable stale-while-revalidate */
+  staleWhileRevalidate: boolean;
+  /** Persist to IndexedDB */
+  persist: boolean;
+  /** Storage key prefix */
+  storagePrefix: string;
+}
+
+// === CACHE ENTRY ===
+export interface KBCacheEntry<T> {
+  data: T;
+  timestamp: number;
+  staleTime: number;
+  gcTime: number;
+  key: string;
+  version: number;
+}
+
+// === TELEMETRY (OpenTelemetry Compatible) ===
 export interface KBTelemetry {
   hookName: string;
   operationName: string;
@@ -36,6 +97,84 @@ export interface KBTelemetry {
   error?: KBError;
   retryCount: number;
   metadata?: Record<string, unknown>;
+  // OpenTelemetry fields
+  traceId?: string;
+  spanId?: string;
+  parentSpanId?: string;
+  attributes?: Record<string, string | number | boolean>;
+}
+
+// === TELEMETRY SPAN ===
+export interface KBSpan {
+  traceId: string;
+  spanId: string;
+  parentSpanId?: string;
+  name: string;
+  startTime: number;
+  endTime?: number;
+  status: 'OK' | 'ERROR' | 'UNSET';
+  attributes: Record<string, string | number | boolean>;
+  events: KBSpanEvent[];
+}
+
+export interface KBSpanEvent {
+  name: string;
+  timestamp: number;
+  attributes?: Record<string, string | number | boolean>;
+}
+
+// === STREAM CONFIG ===
+export interface KBStreamConfig {
+  /** Reconnect on error */
+  autoReconnect: boolean;
+  /** Max reconnection attempts */
+  maxReconnects: number;
+  /** Reconnection delay in ms */
+  reconnectDelayMs: number;
+  /** Reconnection backoff multiplier */
+  reconnectBackoff: number;
+  /** Parse SSE data as JSON */
+  parseJson: boolean;
+  /** Custom headers for EventSource */
+  headers?: Record<string, string>;
+}
+
+// === STREAM STATE ===
+export interface KBStreamState<T> {
+  data: T | null;
+  chunks: string[];
+  totalChunks: number;
+  status: 'idle' | 'connecting' | 'streaming' | 'complete' | 'error' | 'reconnecting';
+  error: KBError | null;
+  progress: number;
+  reconnectAttempts: number;
+}
+
+// === STREAM RETURN ===
+export interface KBStreamReturn<T> {
+  // State
+  data: T | null;
+  chunks: string[];
+  status: KBStreamState<T>['status'];
+  error: KBError | null;
+  progress: number;
+  
+  // Computed
+  isIdle: boolean;
+  isConnecting: boolean;
+  isStreaming: boolean;
+  isComplete: boolean;
+  isError: boolean;
+  
+  // Controls
+  start: (url: string, body?: unknown) => Promise<void>;
+  stop: () => void;
+  reset: () => void;
+  
+  // Events
+  onChunk?: (chunk: string) => void;
+  onComplete?: (data: T) => void;
+  onError?: (error: KBError) => void;
 }
 
 // === HOOK RETURN BASE ===
@@ -68,6 +207,11 @@ export interface KBHookReturn<T> {
   // Metadata
   lastRefresh: Date | null;
   lastSuccess: Date | null;
+  
+  // Circuit Breaker (KB 2.5)
+  circuitState?: KBCircuitState;
+  circuitStats?: KBCircuitBreakerState;
+  resetCircuit?: () => void;
 }
 
 // === ASYNC HOOK RETURN ===
@@ -111,6 +255,9 @@ export interface KBQueryOptions<T> {
   onSuccess?: (data: T) => void;
   onError?: (error: KBError) => void;
   onSettled?: (data: T | null, error: KBError | null) => void;
+  // KB 2.5
+  circuitBreaker?: Partial<KBCircuitBreakerConfig>;
+  cache?: Partial<KBCacheConfig>;
 }
 
 // === MUTATION OPTIONS ===
@@ -120,6 +267,8 @@ export interface KBMutationOptions<T, TInput> {
   onSuccess?: (data: T, input: TInput, context: unknown) => void;
   onError?: (error: KBError, input: TInput, context: unknown) => void;
   onSettled?: (data: T | null, error: KBError | null, input: TInput, context: unknown) => void;
+  // KB 2.5
+  circuitBreaker?: Partial<KBCircuitBreakerConfig>;
 }
 
 // === DEFAULT CONFIGS ===
@@ -129,6 +278,30 @@ export const KB_DEFAULT_RETRY_CONFIG: KBRetryConfig = {
   maxDelayMs: 30000,
   backoffMultiplier: 2,
   retryableErrors: ['NETWORK_ERROR', 'TIMEOUT', 'RATE_LIMIT', '500', '502', '503', '504'],
+};
+
+export const KB_DEFAULT_CIRCUIT_BREAKER_CONFIG: KBCircuitBreakerConfig = {
+  failureThreshold: 5,
+  resetTimeoutMs: 30000,
+  successThreshold: 2,
+  enabled: true,
+};
+
+export const KB_DEFAULT_CACHE_CONFIG: KBCacheConfig = {
+  enabled: true,
+  staleTime: 5 * 60 * 1000, // 5 minutes
+  gcTime: 30 * 60 * 1000, // 30 minutes
+  staleWhileRevalidate: true,
+  persist: false,
+  storagePrefix: 'kb_cache_',
+};
+
+export const KB_DEFAULT_STREAM_CONFIG: KBStreamConfig = {
+  autoReconnect: true,
+  maxReconnects: 3,
+  reconnectDelayMs: 1000,
+  reconnectBackoff: 2,
+  parseJson: true,
 };
 
 export const KB_DEFAULT_QUERY_OPTIONS: KBQueryOptions<unknown> = {
@@ -153,6 +326,12 @@ export const KB_ERROR_CODES = {
   RATE_LIMIT: 'RATE_LIMIT',
   SERVER_ERROR: 'SERVER_ERROR',
   UNKNOWN: 'UNKNOWN',
+  // KB 2.5 - Circuit Breaker
+  CIRCUIT_OPEN: 'CIRCUIT_OPEN',
+  // KB 2.5 - Stream
+  STREAM_ERROR: 'STREAM_ERROR',
+  STREAM_TIMEOUT: 'STREAM_TIMEOUT',
+  MAX_RECONNECTS: 'MAX_RECONNECTS',
 } as const;
 
 export type KBErrorCode = typeof KB_ERROR_CODES[keyof typeof KB_ERROR_CODES];
