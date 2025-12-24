@@ -2,6 +2,13 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// === ERROR TIPADO KB ===
+export interface MLExplainabilityError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export interface ShapValue {
   feature: string;
   contribution: number;
@@ -39,7 +46,12 @@ export interface ExplainabilityResult {
 export function useMLExplainability() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<ExplainabilityResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // === ESTADO KB ===
+  const [error, setError] = useState<MLExplainabilityError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const explain = useCallback(async (
     modelType: 'credit_scoring' | 'churn_prediction' | 'anomaly_detection' | 'segmentation',
@@ -58,11 +70,16 @@ export function useMLExplainability() {
       if (fnError) throw fnError;
 
       setResult(data);
+      setLastRefresh(new Date());
       toast.success('Anàlisi SHAP/LIME completada');
       return data;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error en explainability';
-      setError(message);
+      setError({
+        code: 'EXPLAIN_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
       toast.error(message);
       return null;
     } finally {
@@ -78,7 +95,10 @@ export function useMLExplainability() {
     explain,
     result,
     isLoading,
+    // === KB ADDITIONS ===
     error,
+    lastRefresh,
+    clearError,
     getContributionColor
   };
 }

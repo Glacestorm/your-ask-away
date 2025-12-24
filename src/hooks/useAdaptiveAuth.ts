@@ -55,12 +55,22 @@ interface Challenge {
   expiresAt: string;
 }
 
+// === ERROR TIPADO KB ===
+export interface AdaptiveAuthError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 interface UseAdaptiveAuthReturn {
   riskAssessment: RiskAssessment | null;
   challenge: Challenge | null;
   isEvaluating: boolean;
   isVerifying: boolean;
-  error: string | null;
+  // === KB ADDITIONS ===
+  error: AdaptiveAuthError | null;
+  lastRefresh: Date | null;
+  clearError: () => void;
   behaviorMetrics: BehaviorMetrics;
   evaluateRisk: (action?: string, transactionValue?: number) => Promise<RiskAssessment | null>;
   verifyChallenge: (code: string) => Promise<boolean>;
@@ -137,7 +147,12 @@ export function useAdaptiveAuth(): UseAdaptiveAuthReturn {
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // === ESTADO KB ===
+  const [error, setError] = useState<AdaptiveAuthError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
   
   // Behavior metrics collection
   const [behaviorMetrics, setBehaviorMetrics] = useState<BehaviorMetrics>({});
@@ -224,12 +239,13 @@ export function useAdaptiveAuth(): UseAdaptiveAuthReturn {
     transactionValue?: number
   ): Promise<RiskAssessment | null> => {
     if (!user?.id) {
-      setError('Usuario no autenticado');
+      setError({ code: 'NOT_AUTHENTICATED', message: 'Usuario no autenticado' });
       return null;
     }
 
     setIsEvaluating(true);
     setError(null);
+    setLastRefresh(new Date());
 
     try {
       const deviceFingerprint = generateDeviceFingerprint();
@@ -266,7 +282,7 @@ export function useAdaptiveAuth(): UseAdaptiveAuthReturn {
       return assessment;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error evaluando riesgo';
-      setError(message);
+      setError({ code: 'EVALUATE_RISK_ERROR', message, details: { originalError: String(err) } });
       console.error('Adaptive auth error:', err);
       return null;
     } finally {
@@ -276,7 +292,7 @@ export function useAdaptiveAuth(): UseAdaptiveAuthReturn {
 
   const verifyChallenge = useCallback(async (code: string): Promise<boolean> => {
     if (!challenge?.id) {
-      setError('No hay desafío activo');
+      setError({ code: 'NO_CHALLENGE', message: 'No hay desafío activo' });
       return false;
     }
 
@@ -308,7 +324,7 @@ export function useAdaptiveAuth(): UseAdaptiveAuthReturn {
       return true;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error verificando código';
-      setError(message);
+      setError({ code: 'VERIFY_ERROR', message, details: { originalError: String(err) } });
       console.error('Verify challenge error:', err);
       return false;
     } finally {
@@ -361,7 +377,10 @@ export function useAdaptiveAuth(): UseAdaptiveAuthReturn {
     challenge,
     isEvaluating,
     isVerifying,
+    // === KB ADDITIONS ===
     error,
+    lastRefresh,
+    clearError,
     behaviorMetrics,
     evaluateRisk,
     verifyChallenge,
