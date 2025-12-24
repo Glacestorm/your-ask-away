@@ -2,13 +2,10 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from './core';
 
-// === ERROR TIPADO KB ===
-export interface CustomerConsentsError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// === KB 2.0 ERROR TYPE ===
+export type CustomerConsentsError = KBError;
 
 export type ConsentType = 'marketing' | 'email' | 'sms' | 'whatsapp' | 'phone' | 'analytics';
 export type ConsentStatus = 'granted' | 'denied' | 'pending' | 'withdrawn';
@@ -43,17 +40,39 @@ export interface ConsentSummary {
 
 export function useCustomerConsents(companyId: string | null) {
   const queryClient = useQueryClient();
-  // === ESTADO KB ===
-  const [error, setError] = useState<CustomerConsentsError | null>(null);
+
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoadingState = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
 
-  const { data: consents = [], isLoading } = useQuery({
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
+
+  const { data: consents = [], isLoading, refetch } = useQuery({
     queryKey: ['customer-consents', companyId],
     queryFn: async () => {
       if (!companyId) return [];
+      
+      const startTime = Date.now();
+      setStatus('loading');
       
       try {
         const { data, error: fetchError } = await supabase
@@ -63,16 +82,20 @@ export function useCustomerConsents(companyId: string | null) {
           .order('created_at', { ascending: false });
 
         if (fetchError) throw fetchError;
+        
+        setStatus('success');
         setLastRefresh(new Date());
-        setError(null);
+        setLastSuccess(new Date());
+        setRetryCount(0);
+        collectTelemetry('useCustomerConsents', 'fetchConsents', 'success', Date.now() - startTime);
+        
         return data as unknown as CustomerConsent[];
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Error desconocido';
-        setError({
-          code: 'FETCH_CONSENTS_ERROR',
-          message,
-          details: { originalError: String(err) }
-        });
+        const kbError = createKBError('FETCH_CONSENTS_ERROR', parseError(err).message, { originalError: String(err) });
+        setError(kbError);
+        setStatus('error');
+        setRetryCount(prev => prev + 1);
+        collectTelemetry('useCustomerConsents', 'fetchConsents', 'error', Date.now() - startTime, kbError);
         throw err;
       }
     },
@@ -104,7 +127,6 @@ export function useCustomerConsents(companyId: string | null) {
       legalBasis?: string;
       expiresAt?: string;
     }) => {
-      // Check if consent already exists
       const { data: existing } = await supabase
         .from('customer_consents')
         .select('id')
@@ -113,7 +135,6 @@ export function useCustomerConsents(companyId: string | null) {
         .maybeSingle();
 
       if (existing) {
-        // Update existing consent
         const { data, error } = await supabase
           .from('customer_consents')
           .update({
@@ -132,7 +153,6 @@ export function useCustomerConsents(companyId: string | null) {
         return data;
       }
 
-      // Create new consent
       const { data, error } = await supabase
         .from('customer_consents')
         .insert({
@@ -156,8 +176,8 @@ export function useCustomerConsents(companyId: string | null) {
       queryClient.invalidateQueries({ queryKey: ['customer-consents', companyId] });
       toast.success('Consentimiento otorgado');
     },
-    onError: (error: any) => {
-      toast.error('Error: ' + error.message);
+    onError: (err: any) => {
+      toast.error('Error: ' + err.message);
     },
   });
 
@@ -214,7 +234,6 @@ export function useCustomerConsents(companyId: string | null) {
             source: update.source,
           });
         } else {
-          // Find and withdraw
           const existing = consents.find(
             c => c.consent_type === update.consentType && c.status === 'granted'
           );
@@ -241,15 +260,23 @@ export function useCustomerConsents(companyId: string | null) {
   return {
     consents,
     consentSummary,
-    isLoading,
+    isLoading: isLoading || isLoadingState,
     grantConsent: grantConsent.mutate,
     withdrawConsent: withdrawConsent.mutate,
     bulkUpdateConsents: bulkUpdateConsents.mutate,
     canContact,
     isUpdating: grantConsent.isPending || withdrawConsent.isPending,
-    // === KB ADDITIONS ===
+    refetch,
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
-    clearError
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
   };
 }
