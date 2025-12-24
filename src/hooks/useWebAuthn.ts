@@ -2,6 +2,13 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// === ERROR TIPADO KB ===
+export interface WebAuthnError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 interface WebAuthnCredential {
   id: string;
   rawId: ArrayBuffer;
@@ -34,6 +41,10 @@ interface UseWebAuthnReturn {
   authenticateWithPasskey: (userEmail: string) => Promise<boolean>;
   listPasskeys: (userId: string) => Promise<PasskeyRecord[]>;
   removePasskey: (credentialId: string) => Promise<boolean>;
+  // === KB ADDITIONS ===
+  error: WebAuthnError | null;
+  lastRefresh: Date | null;
+  clearError: () => void;
 }
 
 // Convert ArrayBuffer to Base64URL
@@ -66,6 +77,12 @@ function generateRandomBytes(length: number): Uint8Array {
 export function useWebAuthn(): UseWebAuthnReturn {
   const [isRegistering, setIsRegistering] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  // === ESTADO KB ===
+  const [error, setError] = useState<WebAuthnError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   // Check if WebAuthn is supported
   const isSupported = typeof window !== 'undefined' && 
@@ -301,5 +318,9 @@ export function useWebAuthn(): UseWebAuthnReturn {
     authenticateWithPasskey,
     listPasskeys,
     removePasskey,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }

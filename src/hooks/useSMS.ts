@@ -3,6 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
 
+// === ERROR TIPADO KB ===
+export interface SMSError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 interface SMSTemplate {
   id: string;
   name: string;
@@ -33,6 +40,12 @@ export function useSMS() {
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [templates, setTemplates] = useState<SMSTemplate[]>([]);
+  // === ESTADO KB ===
+  const [error, setError] = useState<SMSError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const loadTemplates = useCallback(async () => {
     const { data, error } = await supabase
@@ -193,5 +206,9 @@ export function useSMS() {
     loading,
     sending,
     templates,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
