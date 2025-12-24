@@ -1,5 +1,12 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 
+// === ERROR TIPADO KB ===
+export interface VoiceChatError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 interface UseVoiceChatOptions {
   onTranscript?: (text: string) => void;
   onSpeakEnd?: () => void;
@@ -14,6 +21,11 @@ export function useVoiceChat(options: UseVoiceChatOptions = {}) {
   const [isSupported, setIsSupported] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [error, setError] = useState<string | null>(null);
+  // === ESTADO KB ===
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
   
   // Use any to avoid TypeScript conflicts with browser-specific SpeechRecognition implementations
   const recognitionRef = useRef<any>(null);
@@ -290,5 +302,8 @@ export function useVoiceChat(options: UseVoiceChatOptions = {}) {
     toggleListening,
     speak,
     stopSpeaking,
+    // === KB ADDITIONS ===
+    lastRefresh,
+    clearError,
   };
 }

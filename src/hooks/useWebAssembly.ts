@@ -25,6 +25,13 @@ import {
   isWasmSupported
 } from '@/lib/wasm';
 
+// === ERROR TIPADO KB ===
+export interface WebAssemblyError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 interface UseWebAssemblyResult {
   // Status
   isSupported: boolean;
@@ -49,6 +56,9 @@ interface UseWebAssemblyResult {
   // Utilities
   benchmark: () => Promise<{ jsTime: number; wasmTime: number; speedup: number }>;
   reinitialize: () => Promise<void>;
+  // === KB ADDITIONS ===
+  lastRefresh: Date | null;
+  clearError: () => void;
 }
 
 export function useWebAssembly(): UseWebAssemblyResult {
@@ -56,6 +66,11 @@ export function useWebAssembly(): UseWebAssemblyResult {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isUsingWasm, setIsUsingWasm] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  // === ESTADO KB ===
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const initialize = useCallback(async () => {
     setIsLoading(true);
@@ -67,6 +82,7 @@ export function useWebAssembly(): UseWebAssemblyResult {
       
       setIsInitialized(status.initialized);
       setIsUsingWasm(status.active);
+      setLastRefresh(new Date());
     } catch (err) {
       setError(err instanceof Error ? err : new Error('WASM initialization failed'));
     } finally {
@@ -102,7 +118,10 @@ export function useWebAssembly(): UseWebAssemblyResult {
     },
     
     benchmark,
-    reinitialize: initialize
+    reinitialize: initialize,
+    // === KB ADDITIONS ===
+    lastRefresh,
+    clearError,
   };
 }
 
