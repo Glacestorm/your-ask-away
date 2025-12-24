@@ -160,6 +160,28 @@ export {
   allowedFileTypes,
 } from './useKBSchema';
 
+// OpenTelemetry Enhanced (KB 4.5)
+export {
+  useKBSpan,
+  useComponentTracing,
+  useDBTracing,
+  useHTTPTracing,
+  SpanKind,
+  SemanticAttributes,
+  span,
+} from './useKBSpan';
+
+export type {
+  UseKBSpanOptions,
+  UseKBSpanReturn,
+  SpanEventOptions,
+  UseComponentTracingOptions,
+  UseComponentTracingReturn,
+  SpanLink,
+  SpanAttributeValue,
+  KBEnhancedSpan,
+} from './useKBSpan';
+
 // Re-export defaults
 export { default as useKBBaseDefault } from './useKBBase';
 export { default as useKBQueryDefault } from './useKBQuery';
