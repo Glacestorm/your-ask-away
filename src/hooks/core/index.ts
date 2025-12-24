@@ -149,6 +149,17 @@ export {
   resetKBOptimisticCircuits,
 } from './useKBReact19';
 
+// Schema Validation (KB 4.5)
+export {
+  useKBSchema,
+  useKBFormSchema,
+  useKBAsyncSchema,
+  KBSchemaPatterns,
+  noProfanity,
+  maxFileSize,
+  allowedFileTypes,
+} from './useKBSchema';
+
 // Re-export defaults
 export { default as useKBBaseDefault } from './useKBBase';
 export { default as useKBQueryDefault } from './useKBQuery';
@@ -161,3 +172,4 @@ export { default as useKBSignalDefault } from './useKBSignal';
 export { default as useKBEffectDefault } from './useKBEffect';
 export { default as useKBReactiveDefault } from './useKBReactive';
 export { default as useKBReact19Default } from './useKBReact19';
+export { default as useKBSchemaDefault } from './useKBSchema';
