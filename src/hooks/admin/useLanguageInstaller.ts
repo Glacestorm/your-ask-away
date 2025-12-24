@@ -2,6 +2,7 @@ import { useCallback, useState, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import esTranslations from '@/locales/es';
 import { toast } from 'sonner';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
 // === INTERFACES ===
 export interface LanguageInstallerContext {
@@ -10,11 +11,8 @@ export interface LanguageInstallerContext {
   namespace?: string;
 }
 
-export interface LanguageInstallerError {
-  code: string;
-  message: string;
-  details?: string;
-}
+// Re-export for backwards compat
+export type LanguageInstallerError = KBError;
 
 interface UseLanguageInstallerOptions {
   onComplete?: () => void | Promise<void>;
@@ -27,8 +25,31 @@ const SKIP_LOCALES = ['es', 'en'];
 export function useLanguageInstaller(options: UseLanguageInstallerOptions = {}) {
   const [installingLocale, setInstallingLocale] = useState<string | null>(null);
   const [translationProgress, setTranslationProgress] = useState<{ current: number; total: number } | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
-  const [error, setError] = useState<LanguageInstallerError | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   // Refs para auto-refresh de estado
   const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
@@ -197,7 +218,9 @@ export function useLanguageInstaller(options: UseLanguageInstallerOptions = {}) 
     async (locale: string) => {
       if (installingLocale) return;
 
+      const startTime = Date.now();
       setInstallingLocale(locale);
+      setStatus('loading');
       setError(null);
       toast.message(`Instalando idioma: ${locale}...`);
 
@@ -206,11 +229,18 @@ export function useLanguageInstaller(options: UseLanguageInstallerOptions = {}) 
         await translateLocaleFromSpanish(locale);
         toast.success(`Idioma instalado: ${locale}`);
         setLastRefresh(new Date());
+        setLastSuccess(new Date());
+        setStatus('success');
+        setRetryCount(0);
+        collectTelemetry('useLanguageInstaller', 'installLanguage', 'success', Date.now() - startTime);
         await options.onComplete?.();
       } catch (err) {
         console.error('Language install error:', err);
-        const message = err instanceof Error ? err.message : 'Error desconocido';
-        setError({ code: 'INSTALL_ERROR', message });
+        const kbError = createKBError('INSTALL_ERROR', err instanceof Error ? err.message : 'Error desconocido', { details: { locale } });
+        setError(kbError);
+        setStatus('error');
+        setRetryCount(prev => prev + 1);
+        collectTelemetry('useLanguageInstaller', 'installLanguage', 'error', Date.now() - startTime, kbError);
         toast.error('No se pudo instalar el idioma. Reintenta en unos segundos.');
       } finally {
         setInstallingLocale(null);
@@ -243,10 +273,20 @@ export function useLanguageInstaller(options: UseLanguageInstallerOptions = {}) 
     installLanguage,
     installingLocale,
     translationProgress,
-    lastRefresh,
     error,
     startAutoRefresh,
     stopAutoRefresh,
+    // === KB 2.0 STATE ===
+    status,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
+    lastRefresh,
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
   };
 }
 

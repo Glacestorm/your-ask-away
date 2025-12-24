@@ -2,13 +2,10 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfDay, subDays, format, startOfWeek, startOfMonth, eachDayOfInterval, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
-// === INTERFACES ===
-export interface SupportAnalyticsError {
-  code: string;
-  message: string;
-  details?: string;
-}
+// Re-export for backwards compat
+export type SupportAnalyticsError = KBError;
 
 export interface DailySessionStats {
   date: string;
@@ -69,15 +66,38 @@ export interface SupportAnalytics {
 // === HOOK ===
 export function useSupportAnalytics(daysRange: number = 30) {
   const [analytics, setAnalytics] = useState<SupportAnalytics | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<SupportAnalyticsError | null>(null);
+
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const loading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   // Refs para auto-refresh
   const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
 
   const fetchAnalytics = useCallback(async () => {
-    setLoading(true);
+    const startTime = Date.now();
+    setStatus('loading');
     setError(null);
 
     try {
@@ -179,13 +199,18 @@ export function useSupportAnalytics(daysRange: number = 30) {
       });
 
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setStatus('success');
+      setRetryCount(0);
+      collectTelemetry('useSupportAnalytics', 'fetchAnalytics', 'success', Date.now() - startTime);
 
     } catch (err) {
       console.error('Error fetching analytics:', err);
-      const message = err instanceof Error ? err.message : 'Error fetching analytics';
-      setError({ code: 'FETCH_ERROR', message });
-    } finally {
-      setLoading(false);
+      const kbError = createKBError('FETCH_ERROR', err instanceof Error ? err.message : 'Error fetching analytics', { details: { daysRange } });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useSupportAnalytics', 'fetchAnalytics', 'error', Date.now() - startTime, kbError);
     }
   }, [daysRange]);
 
@@ -215,11 +240,6 @@ export function useSupportAnalytics(daysRange: number = 30) {
     fetchAnalytics();
   }, [fetchAnalytics]);
 
-  // KB Pattern: Clear error
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-
   return { 
     analytics, 
     loading, 
@@ -228,7 +248,15 @@ export function useSupportAnalytics(daysRange: number = 30) {
     refetch: fetchAnalytics,
     startAutoRefresh,
     stopAutoRefresh,
-    clearError
+    clearError,
+    // === KB 2.0 STATE ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
+    lastSuccess,
+    retryCount,
+    reset,
   };
 }
 

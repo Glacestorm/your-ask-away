@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
 // === INTERFACES ===
 export interface ModuleTranslation {
@@ -33,25 +34,45 @@ export interface TranslationProgress {
   progress_percentage: number;
 }
 
-export interface ModuleTranslationsError {
-  code: string;
-  message: string;
-  details?: string;
-}
+// Re-export for backwards compat
+export type ModuleTranslationsError = KBError;
 
 // === HOOK ===
 export function useModuleTranslations(moduleId?: string, locale?: string) {
   const [translations, setTranslations] = useState<ModuleTranslationWithModule[]>([]);
-  const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState<TranslationProgress[]>([]);
-  const [error, setError] = useState<ModuleTranslationsError | null>(null);
+
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const loading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   // Refs para auto-refresh
   const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
 
   const fetchTranslations = useCallback(async () => {
-    setLoading(true);
+    const startTime = Date.now();
+    setStatus('loading');
     setError(null);
     try {
       let query = supabase
@@ -73,13 +94,18 @@ export function useModuleTranslations(moduleId?: string, locale?: string) {
       if (fetchError) throw fetchError;
       setTranslations(data as unknown as ModuleTranslationWithModule[]);
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setStatus('success');
+      setRetryCount(0);
+      collectTelemetry('useModuleTranslations', 'fetchTranslations', 'success', Date.now() - startTime);
     } catch (err) {
       console.error('Error fetching module translations:', err);
-      const message = err instanceof Error ? err.message : 'Error al cargar las traducciones del módulo';
-      setError({ code: 'FETCH_ERROR', message });
-      toast.error(message);
-    } finally {
-      setLoading(false);
+      const kbError = createKBError('FETCH_ERROR', err instanceof Error ? err.message : 'Error al cargar las traducciones del módulo', { details: { moduleId, locale } });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useModuleTranslations', 'fetchTranslations', 'error', Date.now() - startTime, kbError);
+      toast.error(kbError.message);
     }
   }, [moduleId, locale]);
 
@@ -327,7 +353,6 @@ export function useModuleTranslations(moduleId?: string, locale?: string) {
     loading,
     progress,
     error,
-    lastRefresh,
     fetchTranslations,
     addTranslation,
     updateTranslation,
@@ -335,7 +360,17 @@ export function useModuleTranslations(moduleId?: string, locale?: string) {
     bulkAddTranslations,
     translateModuleToLocale,
     startAutoRefresh,
-    stopAutoRefresh
+    stopAutoRefresh,
+    // === KB 2.0 STATE ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
+    lastRefresh,
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
   };
 }
 
