@@ -1,7 +1,15 @@
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
+
+// === ERROR TIPADO KB ===
+export interface FeedbackLoopsError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 export interface FeedbackLoop {
   id: string;
@@ -39,6 +47,12 @@ export interface FeedbackLoop {
 
 export function useFeedbackLoops() {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<FeedbackLoopsError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const { data: feedbackLoops, isLoading } = useQuery({
     queryKey: ['feedback-loops'],
@@ -157,5 +171,9 @@ export function useFeedbackLoops() {
     getStatusColor,
     getStatusLabel,
     getPriorityColor,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }

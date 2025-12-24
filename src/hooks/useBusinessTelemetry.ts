@@ -9,6 +9,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
 
+// === ERROR TIPADO KB ===
+export interface BusinessTelemetryError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export type MetricType = 
   | 'revenue'
   | 'conversion_rate'
@@ -66,8 +73,13 @@ export interface TelemetryAggregation {
 export function useBusinessTelemetry() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
   const [metrics, setMetrics] = useState<TelemetryMetric[]>([]);
+  // === ESTADO KB ===
+  const [error, setError] = useState<BusinessTelemetryError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   /**
    * Registrar una nueva métrica de telemetría
@@ -96,9 +108,9 @@ export function useBusinessTelemetry() {
       console.log('[BusinessTelemetry] Metric recorded:', metric.metric_type, metric.value);
       return data;
     } catch (err) {
-      const error = err instanceof Error ? err : new Error('Failed to record metric');
-      setError(error);
-      console.error('[BusinessTelemetry] Error recording metric:', error);
+      const message = err instanceof Error ? err.message : 'Failed to record metric';
+      setError({ code: 'RECORD_METRIC_ERROR', message, details: { originalError: String(err) } });
+      console.error('[BusinessTelemetry] Error recording metric:', err);
       return null;
     } finally {
       setLoading(false);
@@ -133,9 +145,9 @@ export function useBusinessTelemetry() {
       console.log('[BusinessTelemetry] Batch recorded:', metricsWithUser.length, 'metrics');
       return data;
     } catch (err) {
-      const error = err instanceof Error ? err : new Error('Failed to record metrics batch');
-      setError(error);
-      console.error('[BusinessTelemetry] Error recording batch:', error);
+      const message = err instanceof Error ? err.message : 'Failed to record metrics batch';
+      setError({ code: 'RECORD_BATCH_ERROR', message, details: { originalError: String(err) } });
+      console.error('[BusinessTelemetry] Error recording batch:', err);
       return null;
     } finally {
       setLoading(false);
@@ -181,9 +193,9 @@ export function useBusinessTelemetry() {
       setMetrics(data || []);
       return data;
     } catch (err) {
-      const error = err instanceof Error ? err : new Error('Failed to query metrics');
-      setError(error);
-      console.error('[BusinessTelemetry] Error querying metrics:', error);
+      const message = err instanceof Error ? err.message : 'Failed to query metrics';
+      setError({ code: 'QUERY_METRICS_ERROR', message, details: { originalError: String(err) } });
+      console.error('[BusinessTelemetry] Error querying metrics:', err);
       return null;
     } finally {
       setLoading(false);
@@ -244,9 +256,9 @@ export function useBusinessTelemetry() {
         count: values.length,
       };
     } catch (err) {
-      const error = err instanceof Error ? err : new Error('Failed to get aggregations');
-      setError(error);
-      console.error('[BusinessTelemetry] Error getting aggregations:', error);
+      const message = err instanceof Error ? err.message : 'Failed to get aggregations';
+      setError({ code: 'AGGREGATIONS_ERROR', message, details: { originalError: String(err) } });
+      console.error('[BusinessTelemetry] Error getting aggregations:', err);
       return null;
     } finally {
       setLoading(false);
@@ -272,9 +284,9 @@ export function useBusinessTelemetry() {
       toast.success('Métrica eliminada');
       return true;
     } catch (err) {
-      const error = err instanceof Error ? err : new Error('Failed to delete metric');
-      setError(error);
-      console.error('[BusinessTelemetry] Error deleting metric:', error);
+      const message = err instanceof Error ? err.message : 'Failed to delete metric';
+      setError({ code: 'DELETE_METRIC_ERROR', message, details: { originalError: String(err) } });
+      console.error('[BusinessTelemetry] Error deleting metric:', err);
       toast.error('Error al eliminar métrica');
       return false;
     } finally {
@@ -317,6 +329,9 @@ export function useBusinessTelemetry() {
     loading,
     error,
     metrics,
+    // === KB ADDITIONS ===
+    lastRefresh,
+    clearError,
     
     // Actions
     recordMetric,
