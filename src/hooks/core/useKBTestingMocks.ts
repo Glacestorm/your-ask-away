@@ -269,6 +269,7 @@ export function createMockQuery<T>(config?: MockConfig<T>): MockQueryReturn<T> {
         code: 'NETWORK_OFFLINE',
         message: 'Network is offline',
         retryable: true,
+        timestamp: new Date(),
       };
       status = 'error';
       recordEvent('error', undefined, new Error('Network offline'));
@@ -279,6 +280,7 @@ export function createMockQuery<T>(config?: MockConfig<T>): MockQueryReturn<T> {
           code: 'NETWORK_FLAKY',
           message: 'Connection failed (flaky network)',
           retryable: true,
+          timestamp: new Date(),
         };
         status = 'error';
         recordEvent('error', undefined, new Error('Flaky network'));
@@ -318,6 +320,7 @@ export function createMockQuery<T>(config?: MockConfig<T>): MockQueryReturn<T> {
         message: e instanceof Error ? e.message : 'Mock error',
         retryable: true,
         originalError: e,
+        timestamp: new Date(),
       };
       status = 'error';
       recordEvent('error', undefined, e instanceof Error ? e : new Error(String(e)));
@@ -339,8 +342,14 @@ export function createMockQuery<T>(config?: MockConfig<T>): MockQueryReturn<T> {
     isSuccess: status === 'success',
     isError: status === 'error',
     isIdle: status === 'idle',
+    isRetrying: status === 'retrying',
+    retryCount: 0,
+    canRetry: true,
+    lastRefresh: null,
+    lastSuccess: null,
     execute,
     retry,
+    clearError: () => { error = null; },
     
     _setData: (newData: T | null) => {
       data = newData;
@@ -432,6 +441,7 @@ export function createMockMutation<T, TInput = unknown>(
         message: e instanceof Error ? e.message : 'Mutation error',
         retryable: false,
         originalError: e,
+        timestamp: new Date(),
       };
       status = 'error';
       recordEvent('error', undefined, e instanceof Error ? e : new Error(String(e)));
@@ -443,12 +453,13 @@ export function createMockMutation<T, TInput = unknown>(
 
   return {
     data,
-    status,
+    get status() { return status; },
     error,
-    isLoading: status === 'loading',
-    isSuccess: status === 'success',
-    isError: status === 'error',
-    isIdle: status === 'idle',
+    get isIdle() { return status === 'idle'; },
+    get isPending() { return status === 'loading'; },
+    get isSuccess() { return status === 'success'; },
+    get isError() { return status === 'error'; },
+    clearError: () => { error = null; },
     mutate,
     mutateAsync,
     
@@ -458,7 +469,7 @@ export function createMockMutation<T, TInput = unknown>(
     },
     _timeline: timeline,
     _assertions: assertions,
-  };
+  } as MockMutationReturn<T, TInput>;
 }
 
 // ============================================================================
