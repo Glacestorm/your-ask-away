@@ -88,6 +88,41 @@ import {
   useKBEnterpriseAll,
 } from './useKBEnterprise';
 
+// Phase 14: State Machines & Workflows
+import { useKBStateMachine, useKBWorkflow } from './useKBStateMachine';
+
+// Phase 14: Pagination
+import {
+  useKBPagination,
+  useKBCursorPagination,
+  useKBInfiniteScroll,
+  useKBVirtualList,
+} from './useKBPagination';
+
+// Phase 14: Debounce & Throttle
+import { useKBDebounce, useKBThrottle } from './useKBDebounceThrottle';
+
+// Phase 14: Validation
+import { useKBValidation, useKBFormValidation } from './useKBValidation';
+
+// Phase 14: Analytics
+import { useKBAnalytics, useKBTracing } from './useKBAnalytics';
+
+// Phase 14: WebSocket
+import {
+  useKBWebSocket,
+  useKBChannel,
+  useKBPresence,
+  useKBRealtimeSync,
+} from './useKBWebSocket';
+
+// Phase 14: DataLoader
+import {
+  useKBDataLoader,
+  useKBQueryBatcher,
+  useKBPriorityLoader,
+} from './useKBDataLoader';
+
 // ============================================================================
 // UNIFIED KB NAMESPACE
 // ============================================================================
@@ -187,9 +222,43 @@ export const KB = {
   useBusinessIntelligence: useKBBusinessIntelligence,
   useEnterpriseAll: useKBEnterpriseAll,
 
-  // === UTILITIES ===
+// === UTILITIES ===
   createError: createKBError,
   collectTelemetry,
+
+  // === PHASE 14: ADVANCED PATTERNS ===
+  // State Machines & Workflows
+  useStateMachine: useKBStateMachine,
+  useWorkflow: useKBWorkflow,
+  
+  // Pagination & Infinite Scroll
+  usePagination: useKBPagination,
+  useCursorPagination: useKBCursorPagination,
+  useInfiniteScroll: useKBInfiniteScroll,
+  useVirtualList: useKBVirtualList,
+  
+  // Debounce & Throttle
+  useDebounce: useKBDebounce,
+  useThrottle: useKBThrottle,
+  
+  // Validation
+  useValidation: useKBValidation,
+  useFormValidation: useKBFormValidation,
+  
+  // Analytics & Telemetry
+  useAnalytics: useKBAnalytics,
+  useTracing: useKBTracing,
+  
+  // WebSocket & Real-time
+  useWebSocket: useKBWebSocket,
+  useChannel: useKBChannel,
+  usePresence: useKBPresence,
+  useRealtimeSync: useKBRealtimeSync,
+  
+  // DataLoader & Batching
+  useDataLoader: useKBDataLoader,
+  useQueryBatcher: useKBQueryBatcher,
+  usePriorityLoader: useKBPriorityLoader,
 } as const;
 
 // ============================================================================
