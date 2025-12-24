@@ -62,7 +62,11 @@ const CATEGORY_ICONS = {
 
 const formatPercent = (value: number) => `${(value * 100).toFixed(1)}%`;
 
-export function PredictiveHealthScorePanel() {
+interface PredictiveHealthScorePanelProps {
+  className?: string;
+}
+
+export function PredictiveHealthScorePanel({ className }: PredictiveHealthScorePanelProps) {
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedAccount, setSelectedAccount] = useState<CustomerHealthScore | null>(null);
   const [expandedFactors, setExpandedFactors] = useState<Set<string>>(new Set());
@@ -592,7 +596,7 @@ export function PredictiveHealthScorePanel() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className={cn("space-y-6", className)}>
       {/* Header */}
       <Card className="bg-gradient-to-r from-green-500/10 via-blue-500/10 to-purple-500/10">
         <CardContent className="p-6">
