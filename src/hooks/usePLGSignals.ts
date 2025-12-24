@@ -1,6 +1,14 @@
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+// === ERROR TIPADO KB ===
+export interface PLGSignalsError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 export interface PLGSignal {
   id: string;
@@ -30,21 +38,40 @@ export interface PLGSignal {
 
 export const usePLGSignals = () => {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<PLGSignalsError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const { data: signals, isLoading, refetch } = useQuery({
     queryKey: ['plg-signals'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('plg_signals')
-        .select(`
-          *,
-          company:companies(name)
-        `)
-        .order('detected_at', { ascending: false })
-        .limit(200);
-      
-      if (error) throw error;
-      return data as PLGSignal[];
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('plg_signals')
+          .select(`
+            *,
+            company:companies(name)
+          `)
+          .order('detected_at', { ascending: false })
+          .limit(200);
+        
+        if (fetchError) throw fetchError;
+        
+        setLastRefresh(new Date());
+        setError(null);
+        return data as PLGSignal[];
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Error desconocido';
+        setError({
+          code: 'FETCH_SIGNALS_ERROR',
+          message,
+          details: { originalError: String(err) }
+        });
+        throw err;
+      }
     }
   });
 
@@ -133,6 +160,10 @@ export const usePLGSignals = () => {
     getSignalsByType,
     getSignalsByCompany,
     getHighStrengthSignals,
-    getSignalStats
+    getSignalStats,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError
   };
 };

@@ -14,11 +14,19 @@ import {
   formatBytes,
 } from '@/lib/imageOptimizer';
 
+// === ERROR TIPADO KB ===
+export interface OptimizedImageError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 interface UseOptimizedImageReturn {
   // State
   isOptimizing: boolean;
   progress: number;
-  error: string | null;
+  error: OptimizedImageError | null;
+  lastRefresh: Date | null;
   
   // Single image operations
   optimize: (file: File, options?: ImageOptimizationOptions) => Promise<OptimizedImage | null>;
@@ -34,12 +42,18 @@ interface UseOptimizedImageReturn {
   formatBytes: (bytes: number) => string;
   getStats: (images: OptimizedImage[]) => ReturnType<typeof getOptimizationStats>;
   cleanup: (images: OptimizedImage | OptimizedImage[]) => void;
+  clearError: () => void;
 }
 
 export function useOptimizedImage(): UseOptimizedImageReturn {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [error, setError] = useState<string | null>(null);
+  // === ESTADO KB ===
+  const [error, setError] = useState<OptimizedImageError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const optimize = useCallback(async (
     file: File,
@@ -62,7 +76,11 @@ export function useOptimizedImage(): UseOptimizedImageReturn {
       return result;
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Failed to optimize image';
-      setError(message);
+      setError({
+        code: 'OPTIMIZE_ERROR',
+        message,
+        details: { originalError: String(e) }
+      });
       console.error('[useOptimizedImage] Optimization failed:', e);
       return null;
     } finally {
@@ -92,7 +110,11 @@ export function useOptimizedImage(): UseOptimizedImageReturn {
       return results;
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Failed to optimize images';
-      setError(message);
+      setError({
+        code: 'OPTIMIZE_BATCH_ERROR',
+        message,
+        details: { originalError: String(e) }
+      });
       console.error('[useOptimizedImage] Batch optimization failed:', e);
       return [];
     } finally {
@@ -112,10 +134,15 @@ export function useOptimizedImage(): UseOptimizedImageReturn {
       const format = await getBestFormat();
       const results = await generateResponsiveSizes(file, sizes, { format });
       setProgress(100);
+      setLastRefresh(new Date());
       return results;
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Failed to generate responsive images';
-      setError(message);
+      setError({
+        code: 'GENERATE_RESPONSIVE_ERROR',
+        message,
+        details: { originalError: String(e) }
+      });
       console.error('[useOptimizedImage] Responsive generation failed:', e);
       return new Map();
     } finally {
@@ -131,6 +158,7 @@ export function useOptimizedImage(): UseOptimizedImageReturn {
     isOptimizing,
     progress,
     error,
+    lastRefresh,
     optimize,
     optimizeBatch: optimizeBatchHandler,
     generateResponsive: generateResponsiveHandler,
@@ -138,6 +166,7 @@ export function useOptimizedImage(): UseOptimizedImageReturn {
     formatBytes,
     getStats: getOptimizationStats,
     cleanup,
+    clearError,
   };
 }
 

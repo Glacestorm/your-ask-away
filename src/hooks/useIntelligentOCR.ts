@@ -2,6 +2,13 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// === ERROR TIPADO KB ===
+export interface IntelligentOCRError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export interface OCRResult {
   document_type: 'invoice' | 'contract' | 'id_document' | 'financial_statement' | 'receipt' | 'other';
   confidence: number;
@@ -45,8 +52,13 @@ export interface ValidationFlag {
 export function useIntelligentOCR() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<OCRResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
+  // === ESTADO KB ===
+  const [error, setError] = useState<IntelligentOCRError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const processDocument = useCallback(async (
     fileUrl: string,
@@ -80,6 +92,8 @@ export function useIntelligentOCR() {
 
       setResult(data);
       setProgress(100);
+      setLastRefresh(new Date());
+      setError(null);
       
       if (data.validation_flags?.some((f: ValidationFlag) => f.type === 'error')) {
         toast.warning('Document processat amb advertències');
@@ -90,7 +104,11 @@ export function useIntelligentOCR() {
       return data;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error processant document';
-      setError(message);
+      setError({
+        code: 'PROCESS_DOCUMENT_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
       toast.error(message);
       return null;
     } finally {
@@ -133,9 +151,12 @@ export function useIntelligentOCR() {
     processMultipleDocuments,
     result,
     isLoading,
-    error,
     progress,
-    getEntityIcon
+    getEntityIcon,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError
   };
 }
 
