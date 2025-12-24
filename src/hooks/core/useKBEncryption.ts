@@ -247,7 +247,7 @@ export function useKBEncryption(config: EncryptionConfig = {}): {
     
     return {
       ...encrypted,
-      salt: arrayBufferToBase64(salt),
+      salt: arrayBufferToBase64(salt.buffer as ArrayBuffer),
     };
   }, [deriveKey, encrypt]);
 
