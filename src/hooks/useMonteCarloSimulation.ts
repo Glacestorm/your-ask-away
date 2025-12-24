@@ -2,13 +2,10 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
-// === ERROR TIPADO KB ===
-export interface MonteCarloError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// Re-export for backwards compat
+export type MonteCarloError = KBError;
 
 export interface MonteCarloSimulation {
   id: string;
@@ -43,16 +40,38 @@ export interface MonteCarloSimulation {
 
 export const useMonteCarloSimulation = () => {
   const queryClient = useQueryClient();
-  // === ESTADO KB ===
-  const [error, setError] = useState<MonteCarloError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoadingState = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   const { data: simulations, isLoading, refetch } = useQuery({
     queryKey: ['monte-carlo-simulations'],
     queryFn: async () => {
+      const startTime = Date.now();
+      setStatus('loading');
+      
       try {
         const { data, error: fetchError } = await supabase
           .from('monte_carlo_simulations')
@@ -61,16 +80,21 @@ export const useMonteCarloSimulation = () => {
           .limit(50);
         
         if (fetchError) throw fetchError;
+        
+        setStatus('success');
         setLastRefresh(new Date());
-        setError(null);
+        setLastSuccess(new Date());
+        setRetryCount(0);
+        collectTelemetry('useMonteCarloSimulation', 'fetchSimulations', 'success', Date.now() - startTime);
+        
         return data as MonteCarloSimulation[];
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Error desconocido';
-        setError({
-          code: 'FETCH_SIMULATIONS_ERROR',
-          message,
-          details: { originalError: String(err) }
-        });
+        const parsedErr = parseError(err);
+        const kbError = createKBError('FETCH_SIMULATIONS_ERROR', parsedErr.message, { originalError: String(err) });
+        setError(kbError);
+        setStatus('error');
+        setRetryCount(prev => prev + 1);
+        collectTelemetry('useMonteCarloSimulation', 'fetchSimulations', 'error', Date.now() - startTime, kbError);
         throw err;
       }
     }
@@ -83,26 +107,29 @@ export const useMonteCarloSimulation = () => {
       baseMetrics: Record<string, unknown>;
       variabilityRanges: Record<string, { min: number; max: number }>;
     }) => {
+      const startTime = Date.now();
+      
       const { data, error } = await supabase.functions.invoke('run-monte-carlo', {
         body: params
       });
       
       if (error) throw error;
+      
+      collectTelemetry('useMonteCarloSimulation', 'runSimulation', 'success', Date.now() - startTime);
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['monte-carlo-simulations'] });
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
       toast.success('Simulación Monte Carlo completada');
     },
     onError: (err) => {
-      const message = err instanceof Error ? err.message : 'Error en simulación';
-      setError({
-        code: 'RUN_SIMULATION_ERROR',
-        message,
-        details: { originalError: String(err) }
-      });
-      toast.error('Error en simulación: ' + message);
+      const parsedErr = parseError(err);
+      const kbError = createKBError('RUN_SIMULATION_ERROR', parsedErr.message, { originalError: String(err) });
+      setError(kbError);
+      setRetryCount(prev => prev + 1);
+      toast.error('Error en simulación: ' + kbError.message);
     }
   });
 
@@ -155,9 +182,17 @@ export const useMonteCarloSimulation = () => {
     getPercentileRange,
     getConfidenceLevel,
     compareSimulations,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoadingState,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
-    clearError
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
   };
 };

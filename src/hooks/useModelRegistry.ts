@@ -284,10 +284,18 @@ export function useModelRegistry() {
     promoteToProduction: promoteToProductionMutation.mutate,
     createABTest: createABTestMutation.mutate,
     completeABTest: completeABTestMutation.mutate,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoadingState,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
-    clearError
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
   };
 }
 
