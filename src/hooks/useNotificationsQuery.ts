@@ -4,13 +4,8 @@ import { queryKeys, invalidateRelatedQueries } from '@/lib/queryClient';
 import { useRealtimeChannel, REALTIME_CHANNELS } from './useRealtimeChannel';
 import { useAuth } from './useAuth';
 import { useMemo, useState, useCallback } from 'react';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
-// === ERROR TIPADO KB ===
-export interface NotificationsQueryError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
 interface Notification {
   id: string;
   user_id: string;
@@ -26,12 +21,27 @@ interface Notification {
 export function useNotificationsQuery() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  // === ESTADO KB ===
-  const [error, setError] = useState<NotificationsQueryError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isErrorState = status === 'error';
+
+  // === KB 2.0 METHODS ===
   const clearError = useCallback(() => setError(null), []);
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   // Set up realtime subscription
   const subscriptions = useMemo(
@@ -125,15 +135,21 @@ export function useNotificationsQuery() {
   return {
     notifications: query.data ?? [],
     unreadCount,
-    isLoading: query.isLoading,
-    isError: query.isError,
     refetch: query.refetch,
     markAsRead,
     markAllAsRead,
     deleteNotification,
-    // === KB ADDITIONS ===
-    error,
+    // === KB 2.0 STATE ===
+    status,
+    isIdle,
+    isLoading: isLoading || query.isLoading,
+    isSuccess,
+    isError: isErrorState || query.isError,
+    error: error || (query.error ? parseError(query.error) : null),
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
+    reset,
   };
 }

@@ -2,13 +2,7 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
-// === ERROR TIPADO KB ===
-export interface RevenueRiskAlertsError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
 export interface RevenueRiskAlert {
   id: string;
@@ -92,12 +86,27 @@ export interface RiskSummary {
 
 export const useRevenueRiskAlerts = () => {
   const queryClient = useQueryClient();
-  // === ESTADO KB ===
-  const [error, setError] = useState<RevenueRiskAlertsError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoadingState = status === 'loading';
+  const isSuccess = status === 'success';
+  const isErrorState = status === 'error';
+
+  // === KB 2.0 METHODS ===
   const clearError = useCallback(() => setError(null), []);
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   // Fetch risk alerts
   const { data: alerts, isLoading: alertsLoading, refetch: refetchAlerts } = useQuery({
@@ -119,11 +128,7 @@ export const useRevenueRiskAlerts = () => {
         return data as RevenueRiskAlert[];
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Error desconocido';
-        setError({
-          code: 'FETCH_ALERTS_ERROR',
-          message,
-          details: { originalError: String(err) }
-        });
+        setError(createKBError('FETCH_ALERTS_ERROR', message, { retryable: true, details: { originalError: String(err) } }));
         throw err;
       }
     }
@@ -353,7 +358,7 @@ export const useRevenueRiskAlerts = () => {
     simulations,
     benchmarks,
     riskSummary,
-    isLoading: alertsLoading || simulationsLoading || benchmarksLoading,
+    isLoading: isLoadingState || alertsLoading || simulationsLoading || benchmarksLoading,
     refetchAlerts,
     createAlert: createAlertMutation.mutateAsync,
     updateAlert: updateAlertMutation.mutateAsync,
@@ -366,9 +371,16 @@ export const useRevenueRiskAlerts = () => {
     runWhatIfSimulation,
     isCreatingAlert: createAlertMutation.isPending,
     isCreatingSimulation: createSimulationMutation.isPending,
-    // === KB ADDITIONS ===
+    // === KB 2.0 STATE ===
+    status,
+    isIdle,
+    isSuccess,
+    isError: isErrorState,
     error,
     lastRefresh,
-    clearError
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
   };
 };
