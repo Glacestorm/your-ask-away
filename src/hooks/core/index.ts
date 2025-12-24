@@ -220,6 +220,34 @@ export type {
   OfflineFirstConfig,
 } from './useKBOffline';
 
+// Performance Monitoring (KB 4.5)
+export {
+  useKBPerformance,
+  useKBResourceTiming,
+  useKBLongTask,
+  useKBComponentPerf,
+} from './useKBPerformance';
+
+export type {
+  WebVitalName,
+  WebVitalMetric,
+  PerformanceBudget,
+  BudgetViolation,
+  ResourceTiming,
+  LongTask,
+  MemoryInfo,
+  FrameRateInfo,
+  PerformanceSnapshot,
+  UseKBPerformanceOptions,
+  UseKBPerformanceReturn,
+  UseKBResourceTimingOptions,
+  UseKBResourceTimingReturn,
+  UseKBLongTaskOptions,
+  UseKBLongTaskReturn,
+  UseKBComponentPerfOptions,
+  UseKBComponentPerfReturn,
+} from './useKBPerformance';
+
 // Re-export defaults
 export { default as useKBBaseDefault } from './useKBBase';
 export { default as useKBQueryDefault } from './useKBQuery';
@@ -235,3 +263,4 @@ export { default as useKBReact19Default } from './useKBReact19';
 export { default as useKBSchemaDefault } from './useKBSchema';
 export { default as useKBOptimisticMutationDefault } from './useKBOptimisticMutation';
 export { default as useKBOfflineDefault } from './useKBOffline';
+export { default as useKBPerformanceDefault } from './useKBPerformance';
