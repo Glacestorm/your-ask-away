@@ -2,6 +2,13 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// === ERROR TIPADO KB ===
+export interface SectorComplianceError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export interface Regulation {
   id: string;
   title: string;
@@ -68,7 +75,12 @@ export interface ComplianceTask {
 
 export function useSectorCompliance() {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // === ESTADO KB ===
+  const [error, setError] = useState<SectorComplianceError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   // Get official regulations by sector
   const getOfficialRegulations = useCallback(async (sectorKey: string): Promise<Regulation[]> => {
@@ -104,7 +116,7 @@ export function useSectorCompliance() {
       }));
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error fetching regulations';
-      setError(message);
+      setError({ code: 'FETCH_REGULATIONS_ERROR', message, details: { originalError: String(err) } });
       console.error('Error fetching official regulations:', err);
       return [];
     } finally {
@@ -144,7 +156,7 @@ export function useSectorCompliance() {
       }));
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error fetching documents';
-      setError(message);
+      setError({ code: 'FETCH_DOCUMENTS_ERROR', message, details: { originalError: String(err) } });
       console.error('Error fetching internal documents:', err);
       return [];
     } finally {
@@ -192,7 +204,7 @@ export function useSectorCompliance() {
       return pending;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error fetching pending acknowledgments';
-      setError(message);
+      setError({ code: 'FETCH_ACKNOWLEDGMENTS_ERROR', message, details: { originalError: String(err) } });
       console.error('Error fetching pending acknowledgments:', err);
       return [];
     } finally {
@@ -271,7 +283,7 @@ export function useSectorCompliance() {
       } : null;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error uploading document';
-      setError(message);
+      setError({ code: 'UPLOAD_DOCUMENT_ERROR', message, details: { originalError: String(err) } });
       toast.error(message);
       console.error('Error uploading document:', err);
       return null;
@@ -306,7 +318,7 @@ export function useSectorCompliance() {
       toast.success('Documento confirmado correctamente');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error acknowledging document';
-      setError(message);
+      setError({ code: 'ACKNOWLEDGE_DOCUMENT_ERROR', message, details: { originalError: String(err) } });
       toast.error(message);
       console.error('Error acknowledging document:', err);
       throw err;
@@ -352,7 +364,7 @@ export function useSectorCompliance() {
       }));
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error fetching checklist';
-      setError(message);
+      setError({ code: 'FETCH_CHECKLIST_ERROR', message, details: { originalError: String(err) } });
       console.error('Error fetching compliance checklist:', err);
       return [];
     } finally {
@@ -387,7 +399,7 @@ export function useSectorCompliance() {
       }));
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error fetching tasks';
-      setError(message);
+      setError({ code: 'FETCH_TASKS_ERROR', message, details: { originalError: String(err) } });
       console.error('Error fetching tasks:', err);
       return [];
     } finally {
@@ -415,7 +427,7 @@ export function useSectorCompliance() {
       toast.success('Tarea completada');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error completing task';
-      setError(message);
+      setError({ code: 'COMPLETE_TASK_ERROR', message, details: { originalError: String(err) } });
       toast.error(message);
       throw err;
     } finally {
@@ -455,7 +467,7 @@ export function useSectorCompliance() {
       toast.success('Estado actualizado');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error updating status';
-      setError(message);
+      setError({ code: 'UPDATE_STATUS_ERROR', message, details: { originalError: String(err) } });
       toast.error(message);
       throw err;
     } finally {
@@ -465,7 +477,10 @@ export function useSectorCompliance() {
 
   return {
     loading,
+    // === KB ADDITIONS ===
     error,
+    lastRefresh,
+    clearError,
     getOfficialRegulations,
     getInternalDocuments,
     getPendingAcknowledgments,
