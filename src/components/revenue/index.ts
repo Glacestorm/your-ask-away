@@ -8,6 +8,8 @@ export { RevenueCopilotChat } from './RevenueCopilotChat';
 export { RevenueScenarioPlanner } from './RevenueScenarioPlanner';
 export { RevenueAnomalyMonitor } from './RevenueAnomalyMonitor';
 export { RevenueWorkflowManager } from './RevenueWorkflowManager';
+export { MRRWaterfallChart } from './MRRWaterfallChart';
+export { CohortHeatmap } from './CohortHeatmap';
 
 // Re-export hooks for convenience
 export { useRevenueForecast } from '@/hooks/useRevenueForecast';

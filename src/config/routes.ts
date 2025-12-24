@@ -58,8 +58,10 @@ const AgenciasLanding = lazy(() => import('@/pages/sectors/AgenciasLanding'));
 const SuscripcionesLanding = lazy(() => import('@/pages/sectors/SuscripcionesLanding'));
 const EducacionLanding = lazy(() => import('@/pages/sectors/EducacionLanding'));
 const SaludLanding = lazy(() => import('@/pages/sectors/SaludLanding'));
+const EmpresasLanding = lazy(() => import('@/pages/sectors/EmpresasLanding'));
 
 // Marketing
+const PreciosPage = lazy(() => import('@/pages/pricing/PreciosPage'));
 const ComparativasCRM = lazy(() => import('@/pages/comparativas/ComparativasCRM'));
 const ComparativasPage = lazy(() => import('@/pages/comparativas/index'));
 const CaseStudyDetail = lazy(() => import('@/pages/casos-de-exito/[slug]'));
@@ -146,8 +148,10 @@ export const publicRoutes: RouteConfig[] = [
   { path: '/sectores/suscripciones', component: SuscripcionesLanding, layout: 'public', priority: 'high', meta: { title: 'Suscripciones' } },
   { path: '/sectores/educacion', component: EducacionLanding, layout: 'public', priority: 'high', meta: { title: 'Educación' } },
   { path: '/sectores/salud', component: SaludLanding, layout: 'public', priority: 'high', meta: { title: 'Salud' } },
+  { path: '/sectores/empresas', component: EmpresasLanding, layout: 'none', priority: 'high', meta: { title: 'Empresas B2B' } },
   
   // Marketing
+  { path: '/pricing', component: PreciosPage, layout: 'none', priority: 'high', meta: { title: 'Planes y Precios' } },
   { path: '/comparativas', component: ComparativasCRM, layout: 'public', priority: 'high', meta: { title: 'Comparativas CRM' } },
   { path: '/seguridad', component: Seguridad, layout: 'public', priority: 'high', meta: { title: 'Seguridad' } },
   { path: '/precios', component: Precios, layout: 'public', priority: 'high', meta: { title: 'Precios' } },
