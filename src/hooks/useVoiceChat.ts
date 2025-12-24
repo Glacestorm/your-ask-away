@@ -1,11 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-
-// === ERROR TIPADO KB ===
-export interface VoiceChatError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { createKBError, collectTelemetry } from '@/hooks/core/useKBBase';
 
 interface UseVoiceChatOptions {
   onTranscript?: (text: string) => void;
@@ -20,12 +15,30 @@ export function useVoiceChat(options: UseVoiceChatOptions = {}) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
   const [transcript, setTranscript] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  // === ESTADO KB ===
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+  const isRetrying = status === 'retrying';
+
+  // === KB 2.0 METHODS ===
   const clearError = useCallback(() => setError(null), []);
+  
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+    setTranscript('');
+  }, []);
   
   // Use any to avoid TypeScript conflicts with browser-specific SpeechRecognition implementations
   const recognitionRef = useRef<any>(null);
@@ -51,6 +64,7 @@ export function useVoiceChat(options: UseVoiceChatOptions = {}) {
       console.log('Speech recognition started');
       setIsListening(true);
       setError(null);
+      setStatus('loading');
     };
 
     recognition.onaudiostart = () => {
@@ -86,6 +100,8 @@ export function useVoiceChat(options: UseVoiceChatOptions = {}) {
       const currentTranscript = finalTranscript || interimTranscript;
       if (currentTranscript) {
         setTranscript(currentTranscript);
+        setStatus('success');
+        setLastSuccess(new Date());
       }
       
       // Only call onTranscript callback with final results
@@ -96,26 +112,29 @@ export function useVoiceChat(options: UseVoiceChatOptions = {}) {
     
     recognition.onerror = (event: any) => {
       console.error('Speech recognition error:', event.error, event.message);
-      setError(event.error);
+      const kbError = createKBError(event.error, event.message || 'Error de reconocimiento de voz');
+      setError(kbError);
+      setStatus('error');
       setIsListening(false);
       
-      // Handle specific errors
-      if (event.error === 'not-allowed') {
-        console.error('Microphone permission denied');
-      } else if (event.error === 'no-speech') {
-        console.log('No speech detected');
-      } else if (event.error === 'network') {
-        console.error('Network error during speech recognition');
-      }
+      collectTelemetry({
+        hookName: 'useVoiceChat',
+        operationName: 'speechRecognition',
+        startTime: new Date(),
+        status: 'error',
+        error: kbError,
+        retryCount
+      });
     };
     
     recognition.onend = () => {
       console.log('Speech recognition ended');
       setIsListening(false);
+      setLastRefresh(new Date());
     };
     
     return recognition;
-  }, [language, onTranscript]);
+  }, [language, onTranscript, retryCount]);
 
   useEffect(() => {
     // Check browser support
@@ -155,7 +174,9 @@ export function useVoiceChat(options: UseVoiceChatOptions = {}) {
   }, [language]);
 
   const startListening = useCallback(async () => {
+    const startTime = new Date();
     setError(null);
+    setStatus('loading');
     
     // Check if already listening
     if (isListening) {
@@ -178,7 +199,20 @@ export function useVoiceChat(options: UseVoiceChatOptions = {}) {
       stream.getTracks().forEach(track => track.stop());
     } catch (permError) {
       console.error('Microphone permission error:', permError);
-      setError('microphone-permission');
+      const kbError = createKBError('microphone-permission', 'Permiso de micrófono denegado');
+      setError(kbError);
+      setStatus('error');
+      
+      collectTelemetry({
+        hookName: 'useVoiceChat',
+        operationName: 'startListening',
+        startTime,
+        endTime: new Date(),
+        durationMs: Date.now() - startTime.getTime(),
+        status: 'error',
+        error: kbError,
+        retryCount
+      });
       return;
     }
     
@@ -189,7 +223,9 @@ export function useVoiceChat(options: UseVoiceChatOptions = {}) {
     
     if (!recognitionRef.current) {
       console.error('Speech recognition not available');
-      setError('not-supported');
+      const kbError = createKBError('not-supported', 'Reconocimiento de voz no disponible');
+      setError(kbError);
+      setStatus('error');
       return;
     }
     
@@ -211,13 +247,17 @@ export function useVoiceChat(options: UseVoiceChatOptions = {}) {
           }, 100);
         } catch (e) {
           console.error('Error restarting recognition:', e);
-          setError('start-failed');
+          const kbError = createKBError('start-failed', 'Error al iniciar reconocimiento');
+          setError(kbError);
+          setStatus('error');
         }
       } else {
-        setError('start-failed');
+        const kbError = createKBError('start-failed', 'Error al iniciar reconocimiento');
+        setError(kbError);
+        setStatus('error');
       }
     }
-  }, [isListening, initRecognition]);
+  }, [isListening, initRecognition, retryCount]);
 
   const stopListening = useCallback(() => {
     if (!recognitionRef.current) return;
@@ -230,6 +270,7 @@ export function useVoiceChat(options: UseVoiceChatOptions = {}) {
     }
     
     setIsListening(false);
+    setLastRefresh(new Date());
   }, []);
 
   const speak = useCallback((text: string) => {
@@ -296,14 +337,23 @@ export function useVoiceChat(options: UseVoiceChatOptions = {}) {
     isSpeaking,
     isSupported,
     transcript,
-    error,
     startListening,
     stopListening,
     toggleListening,
     speak,
     stopSpeaking,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
+    isRetrying,
+    error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
+    reset,
   };
 }

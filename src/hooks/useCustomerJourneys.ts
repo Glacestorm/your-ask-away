@@ -2,13 +2,8 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
-// === ERROR TIPADO KB ===
-export interface CustomerJourneysError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { parseError, collectTelemetry } from '@/hooks/core/useKBBase';
 
 export interface JourneyStep {
   id: string;
@@ -70,16 +65,36 @@ export interface JourneyEnrollment {
 
 export function useCustomerJourneys() {
   const queryClient = useQueryClient();
-  // === ESTADO KB ===
-  const [error, setError] = useState<CustomerJourneysError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoadingState = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+  const isRetrying = status === 'retrying';
+
+  // === KB 2.0 METHODS ===
   const clearError = useCallback(() => setError(null), []);
+  
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   const { data: journeys = [], isLoading: isLoadingJourneys } = useQuery({
     queryKey: ['customer-journeys'],
     queryFn: async () => {
+      const startTime = new Date();
+      setStatus('loading');
+      
       try {
         const { data, error: fetchError } = await supabase
           .from('customer_journeys')
@@ -87,16 +102,39 @@ export function useCustomerJourneys() {
           .order('created_at', { ascending: false });
 
         if (fetchError) throw fetchError;
+        
+        setStatus('success');
+        setLastSuccess(new Date());
         setLastRefresh(new Date());
         setError(null);
+        
+        collectTelemetry({
+          hookName: 'useCustomerJourneys',
+          operationName: 'fetchJourneys',
+          startTime,
+          endTime: new Date(),
+          durationMs: Date.now() - startTime.getTime(),
+          status: 'success',
+          retryCount
+        });
+        
         return data as unknown as CustomerJourney[];
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Error desconocido';
-        setError({
-          code: 'FETCH_JOURNEYS_ERROR',
-          message,
-          details: { originalError: String(err) }
+        const kbError = parseError(err);
+        setError(kbError);
+        setStatus('error');
+        
+        collectTelemetry({
+          hookName: 'useCustomerJourneys',
+          operationName: 'fetchJourneys',
+          startTime,
+          endTime: new Date(),
+          durationMs: Date.now() - startTime.getTime(),
+          status: 'error',
+          error: kbError,
+          retryCount
         });
+        
         throw err;
       }
     },
@@ -118,17 +156,14 @@ export function useCustomerJourneys() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customer-journeys'] });
+      setLastSuccess(new Date());
       setLastRefresh(new Date());
       toast.success('Journey creado correctamente');
     },
     onError: (err: any) => {
-      const message = err instanceof Error ? err.message : 'Error al crear journey';
-      setError({
-        code: 'CREATE_JOURNEY_ERROR',
-        message,
-        details: { originalError: String(err) }
-      });
-      toast.error('Error al crear journey: ' + message);
+      const kbError = parseError(err);
+      setError(kbError);
+      toast.error('Error al crear journey: ' + kbError.message);
     },
   });
 
@@ -148,8 +183,10 @@ export function useCustomerJourneys() {
       queryClient.invalidateQueries({ queryKey: ['customer-journeys'] });
       toast.success('Journey actualizado');
     },
-    onError: (error: any) => {
-      toast.error('Error al actualizar: ' + error.message);
+    onError: (err: any) => {
+      const kbError = parseError(err);
+      setError(kbError);
+      toast.error('Error al actualizar: ' + kbError.message);
     },
   });
 
@@ -166,8 +203,10 @@ export function useCustomerJourneys() {
       queryClient.invalidateQueries({ queryKey: ['customer-journeys'] });
       toast.success('Journey eliminado');
     },
-    onError: (error: any) => {
-      toast.error('Error al eliminar: ' + error.message);
+    onError: (err: any) => {
+      const kbError = parseError(err);
+      setError(kbError);
+      toast.error('Error al eliminar: ' + kbError.message);
     },
   });
 
@@ -211,10 +250,19 @@ export function useCustomerJourneys() {
     pauseJourney: pauseJourney.mutate,
     isCreating: createJourney.isPending,
     isUpdating: updateJourney.isPending,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoadingState,
+    isSuccess,
+    isError,
+    isRetrying,
     error,
     lastRefresh,
-    clearError
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
   };
 }
 

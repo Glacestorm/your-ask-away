@@ -2,13 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
-// === ERROR TIPADO KB ===
-export interface RevenueAnomalyError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { parseError, collectTelemetry } from '@/hooks/core/useKBBase';
 
 export interface RevenueAnomalyAlert {
   id: string;
@@ -31,16 +26,36 @@ export interface RevenueAnomalyAlert {
 
 export const useRevenueAnomalyAlerts = () => {
   const queryClient = useQueryClient();
-  // === ESTADO KB ===
-  const [error, setError] = useState<RevenueAnomalyError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoadingState = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+  const isRetrying = status === 'retrying';
+
+  // === KB 2.0 METHODS ===
   const clearError = useCallback(() => setError(null), []);
+  
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   const { data: alerts, isLoading, refetch } = useQuery({
     queryKey: ['revenue-anomaly-alerts'],
     queryFn: async () => {
+      const startTime = new Date();
+      setStatus('loading');
+      
       try {
         const { data, error: fetchError } = await supabase
           .from('revenue_anomaly_alerts')
@@ -50,16 +65,38 @@ export const useRevenueAnomalyAlerts = () => {
         
         if (fetchError) throw fetchError;
         
+        setStatus('success');
+        setLastSuccess(new Date());
         setLastRefresh(new Date());
         setError(null);
+        
+        collectTelemetry({
+          hookName: 'useRevenueAnomalyAlerts',
+          operationName: 'fetchAlerts',
+          startTime,
+          endTime: new Date(),
+          durationMs: Date.now() - startTime.getTime(),
+          status: 'success',
+          retryCount
+        });
+        
         return data as RevenueAnomalyAlert[];
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Error desconocido';
-        setError({
-          code: 'FETCH_ALERTS_ERROR',
-          message,
-          details: { originalError: String(err) }
+        const kbError = parseError(err);
+        setError(kbError);
+        setStatus('error');
+        
+        collectTelemetry({
+          hookName: 'useRevenueAnomalyAlerts',
+          operationName: 'fetchAlerts',
+          startTime,
+          endTime: new Date(),
+          durationMs: Date.now() - startTime.getTime(),
+          status: 'error',
+          error: kbError,
+          retryCount
         });
+        
         throw err;
       }
     }
@@ -101,15 +138,12 @@ export const useRevenueAnomalyAlerts = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['revenue-anomaly-alerts'] });
+      setLastSuccess(new Date());
       toast.success('Alerta actualizada');
     },
     onError: (err) => {
-      const message = err instanceof Error ? err.message : 'Error al actualizar alerta';
-      setError({
-        code: 'UPDATE_ALERT_ERROR',
-        message,
-        details: { originalError: String(err) }
-      });
+      const kbError = parseError(err);
+      setError(kbError);
     }
   });
 
@@ -121,15 +155,12 @@ export const useRevenueAnomalyAlerts = () => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['revenue-anomaly-alerts'] });
+      setLastSuccess(new Date());
       toast.success(`Análisis completado: ${data.anomaliesDetected} anomalías detectadas`);
     },
     onError: (err) => {
-      const message = err instanceof Error ? err.message : 'Error al ejecutar detección';
-      setError({
-        code: 'RUN_DETECTION_ERROR',
-        message,
-        details: { originalError: String(err) }
-      });
+      const kbError = parseError(err);
+      setError(kbError);
     }
   });
 
@@ -140,10 +171,19 @@ export const useRevenueAnomalyAlerts = () => {
     alerts,
     isLoading,
     refetch,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoadingState,
+    isSuccess,
+    isError,
+    isRetrying,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
+    reset,
     // === EXISTING ===
     updateAlertStatus: updateAlertStatus.mutateAsync,
     runAnomalyDetection: runAnomalyDetection.mutateAsync,

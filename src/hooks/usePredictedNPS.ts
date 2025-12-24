@@ -2,13 +2,8 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
-// === ERROR TIPADO KB ===
-export interface PredictedNPSError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { parseError, collectTelemetry } from '@/hooks/core/useKBBase';
 
 export interface PredictedNPS {
   id: string;
@@ -29,16 +24,36 @@ export interface PredictedNPS {
 
 export function usePredictedNPS(companyId?: string) {
   const queryClient = useQueryClient();
-  // === ESTADO KB ===
-  const [error, setError] = useState<PredictedNPSError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoadingState = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+  const isRetrying = status === 'retrying';
+
+  // === KB 2.0 METHODS ===
   const clearError = useCallback(() => setError(null), []);
+  
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   const { data: predictions, isLoading } = useQuery({
     queryKey: ['predicted-nps', companyId],
     queryFn: async () => {
+      const startTime = new Date();
+      setStatus('loading');
+      
       try {
         let query = supabase
           .from('predicted_nps')
@@ -52,16 +67,39 @@ export function usePredictedNPS(companyId?: string) {
 
         const { data, error: fetchError } = await query;
         if (fetchError) throw fetchError;
+        
+        setStatus('success');
+        setLastSuccess(new Date());
         setLastRefresh(new Date());
         setError(null);
+        
+        collectTelemetry({
+          hookName: 'usePredictedNPS',
+          operationName: 'fetchPredictions',
+          startTime,
+          endTime: new Date(),
+          durationMs: Date.now() - startTime.getTime(),
+          status: 'success',
+          retryCount
+        });
+        
         return data as unknown as PredictedNPS[];
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Error desconocido';
-        setError({
-          code: 'FETCH_PREDICTIONS_ERROR',
-          message,
-          details: { originalError: String(err) }
+        const kbError = parseError(err);
+        setError(kbError);
+        setStatus('error');
+        
+        collectTelemetry({
+          hookName: 'usePredictedNPS',
+          operationName: 'fetchPredictions',
+          startTime,
+          endTime: new Date(),
+          durationMs: Date.now() - startTime.getTime(),
+          status: 'error',
+          error: kbError,
+          retryCount
         });
+        
         throw err;
       }
     },
@@ -78,17 +116,14 @@ export function usePredictedNPS(companyId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['predicted-nps'] });
+      setLastSuccess(new Date());
       setLastRefresh(new Date());
       toast.success('Predicción NPS generada correctamente');
     },
     onError: (err) => {
-      const message = err instanceof Error ? err.message : 'Error al predecir NPS';
-      setError({
-        code: 'PREDICT_NPS_ERROR',
-        message,
-        details: { originalError: String(err) }
-      });
-      toast.error(`Error al predecir NPS: ${message}`);
+      const kbError = parseError(err);
+      setError(kbError);
+      toast.error(`Error al predecir NPS: ${kbError.message}`);
     },
   });
 
@@ -127,9 +162,18 @@ export function usePredictedNPS(companyId?: string) {
     getRiskColor,
     getRiskLabel,
     getRiskLevel,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoadingState,
+    isSuccess,
+    isError,
+    isRetrying,
     error,
     lastRefresh,
-    clearError
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
   };
 }
