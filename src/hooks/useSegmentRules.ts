@@ -1,7 +1,14 @@
-import { useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+// === ERROR TIPADO KB ===
+export interface SegmentRulesError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 export interface SegmentCondition {
   field: string;
@@ -57,6 +64,12 @@ const SEGMENT_FIELD_OPTIONS = [
 
 export function useSegmentRules() {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<SegmentRulesError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const { data: segments = [], isLoading } = useQuery({
     queryKey: ['segment-rules'],
@@ -227,6 +240,10 @@ export function useSegmentRules() {
     refreshSegment,
     fieldOptions: SEGMENT_FIELD_OPTIONS,
     isCreating: createSegment.isPending,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
 
