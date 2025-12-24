@@ -310,6 +310,41 @@ export type {
   UseKBDevToolsIntegrationReturn,
 } from './useKBDevTools';
 
+// Middleware & Interceptors (KB 4.5)
+export {
+  useKBMiddleware,
+  useKBWithMiddleware,
+  MiddlewareChain,
+  KBMiddleware,
+  composeMiddleware,
+  createLoggingMiddleware,
+  createAuthMiddleware,
+  createRetryMiddleware,
+  createCacheMiddleware,
+  createRateLimitMiddleware,
+  createDeduplicationMiddleware,
+  createTimeoutMiddleware,
+  createTransformMiddleware,
+  createMetricsMiddleware,
+} from './useKBMiddleware';
+
+export type {
+  MiddlewareContext,
+  RequestContext,
+  ResponseContext,
+  ErrorContext,
+  NextFunction,
+  RequestInterceptor,
+  ResponseInterceptor,
+  ErrorInterceptor,
+  MiddlewareConfig,
+  MiddlewareChainOptions,
+  UseKBMiddlewareOptions,
+  UseKBMiddlewareReturn,
+  UseKBWithMiddlewareOptions,
+  UseKBWithMiddlewareReturn,
+} from './useKBMiddleware';
+
 // Re-export defaults
 export { default as useKBBaseDefault } from './useKBBase';
 export { default as useKBQueryDefault } from './useKBQuery';
@@ -328,3 +363,4 @@ export { default as useKBOfflineDefault } from './useKBOffline';
 export { default as useKBPerformanceDefault } from './useKBPerformance';
 export { default as useKBTestingDefault } from './useKBTesting';
 export { default as useKBDevToolsDefault } from './useKBDevTools';
+export { default as useKBMiddlewareDefault } from './useKBMiddleware';
