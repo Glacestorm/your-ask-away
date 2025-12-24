@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Filter, Grid, List } from 'lucide-react';
+import { Search, Filter, Grid, List, Settings } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Select,
   SelectContent,
@@ -16,6 +17,7 @@ import StoreNavbar from '@/components/store/StoreNavbar';
 import UnifiedFooter from '@/components/layout/UnifiedFooter';
 import ModuleCard from '@/components/store/ModuleCard';
 import CartSidebar from '@/components/store/CartSidebar';
+import { ModuleConfigurator } from '@/components/store/ModuleConfigurator';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Module {
@@ -87,6 +89,21 @@ const StoreModules: React.FC = () => {
               {t('store.exploreCollection')}
             </p>
           </motion.div>
+
+          {/* Tabs for Catalog/Configurator */}
+          <Tabs defaultValue="catalog" className="mb-8">
+            <TabsList className="bg-slate-800/50 border-slate-700">
+              <TabsTrigger value="catalog" className="data-[state=active]:bg-emerald-600">
+                <Grid className="w-4 h-4 mr-2" />
+                Catálogo
+              </TabsTrigger>
+              <TabsTrigger value="configurator" className="data-[state=active]:bg-emerald-600">
+                <Settings className="w-4 h-4 mr-2" />
+                Configurador Visual
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="catalog" className="mt-6">
 
           {/* Filters */}
           <motion.div
@@ -184,6 +201,12 @@ const StoreModules: React.FC = () => {
               </Button>
             </div>
           )}
+            </TabsContent>
+
+            <TabsContent value="configurator" className="mt-6">
+              <ModuleConfigurator />
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
 
