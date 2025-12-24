@@ -1,6 +1,14 @@
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+// === ERROR TIPADO KB ===
+export interface SupportTicketsError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 export interface SupportTicket {
   id: string;
@@ -70,6 +78,12 @@ export interface TicketFilters {
 
 export function useSupportTickets(filters?: TicketFilters) {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<SupportTicketsError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   // Fetch tickets
   const { data: tickets = [], isLoading, refetch } = useQuery({
@@ -96,9 +110,16 @@ export function useSupportTickets(filters?: TicketFilters) {
         query = query.eq('company_id', filters.companyId);
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
-
+      const { data, error: fetchError } = await query;
+      if (fetchError) {
+        setError({
+          code: 'FETCH_TICKETS_ERROR',
+          message: fetchError.message,
+          details: { originalError: String(fetchError) }
+        });
+        throw fetchError;
+      }
+      setLastRefresh(new Date());
       return data as unknown as SupportTicket[];
     }
   });
@@ -335,7 +356,11 @@ export function useSupportTickets(filters?: TicketFilters) {
     addResponse: addResponseMutation.mutateAsync,
     assignTicket: assignTicketMutation.mutateAsync,
     isCreating: createTicketMutation.isPending,
-    isUpdating: updateTicketMutation.isPending
+    isUpdating: updateTicketMutation.isPending,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError
   };
 }
 

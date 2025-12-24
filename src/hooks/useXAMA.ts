@@ -3,6 +3,13 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from './useAuth';
+
+// === ERROR TIPADO KB ===
+export interface XAMAError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 import { useBehavioralBiometrics } from './useBehavioralBiometrics';
 import { useAdaptiveAuth } from './useAdaptiveAuth';
 import { useWebAuthn } from './useWebAuthn';
@@ -50,6 +57,10 @@ export interface UseXAMAReturn {
   getRequiredVerifications: (sensitivity: 'low' | 'medium' | 'high' | 'critical') => string[];
   terminateSession: () => void;
   isAuthorizedForResource: (sensitivity: 'low' | 'medium' | 'high' | 'critical') => boolean;
+  // === KB ADDITIONS ===
+  error: XAMAError | null;
+  lastRefresh: Date | null;
+  clearError: () => void;
 }
 
 export function useXAMA(config: Partial<ContinuousAuthConfig> = {}): UseXAMAReturn {
@@ -68,6 +79,13 @@ export function useXAMA(config: Partial<ContinuousAuthConfig> = {}): UseXAMARetu
     sessionHealth: null,
     lastAnomalyDetection: null
   });
+  
+  // === ESTADO KB ===
+  const [error, setError] = useState<XAMAError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
   
   const baselineRef = useRef<BehaviorBaseline>(createEmptyBaseline());
   const continuousAuthIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -196,6 +214,7 @@ export function useXAMA(config: Partial<ContinuousAuthConfig> = {}): UseXAMARetu
       
       const sessionHealth = generateSessionHealthReport(profile);
       
+      setLastRefresh(new Date());
       setState(prev => ({
         ...prev,
         profile,
@@ -206,8 +225,13 @@ export function useXAMA(config: Partial<ContinuousAuthConfig> = {}): UseXAMARetu
       // Start continuous monitoring
       startContinuousAuth();
       
-    } catch (error) {
-      console.error('XAMA initialization error:', error);
+    } catch (err) {
+      console.error('XAMA initialization error:', err);
+      setError({
+        code: 'INIT_ERROR',
+        message: err instanceof Error ? err.message : 'Error de inicialización XAMA',
+        details: { originalError: String(err) }
+      });
       setState(prev => ({ ...prev, isVerifying: false }));
     }
   }, [user, startCollection, generateDeviceFingerprint, getTrustedDevices, evaluateRisk, riskAssessment]);
@@ -372,8 +396,13 @@ export function useXAMA(config: Partial<ContinuousAuthConfig> = {}): UseXAMARetu
       setState(prev => ({ ...prev, isVerifying: false }));
       return false;
       
-    } catch (error) {
-      console.error('Attribute verification error:', error);
+    } catch (err) {
+      console.error('Attribute verification error:', err);
+      setError({
+        code: 'VERIFY_ATTR_ERROR',
+        message: err instanceof Error ? err.message : 'Error verificando atributo',
+        details: { originalError: String(err) }
+      });
       setState(prev => ({ ...prev, isVerifying: false }));
       return false;
     }
@@ -495,6 +524,10 @@ export function useXAMA(config: Partial<ContinuousAuthConfig> = {}): UseXAMARetu
     addPasskeyVerification,
     getRequiredVerifications,
     terminateSession,
-    isAuthorizedForResource
+    isAuthorizedForResource,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError
   };
 }
