@@ -1,7 +1,18 @@
+/**
+ * Hooks for managing client installations and remote access sessions
+ * 
+ * KB 2.0 Pattern
+ */
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Json } from '@/integrations/supabase/types';
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { createKBError, parseError, collectTelemetry } from '@/hooks/core/useKBBase';
+
+// Re-export for backwards compat
+export type ClientInstallationsError = KBError;
 
 // === INTERFACES ===
 export interface ClientInstallation {
@@ -59,18 +70,35 @@ export interface InstallationDownload {
   module?: { module_name: string; module_key: string };
 }
 
-export interface ClientInstallationsError {
-  code: string;
-  message: string;
-  details?: string;
-}
-
 // === HOOK: useClientInstallations ===
 export function useClientInstallations() {
   const [installations, setInstallations] = useState<ClientInstallation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<ClientInstallationsError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   // Refs para auto-refresh
   const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
@@ -78,6 +106,9 @@ export function useClientInstallations() {
   const fetchInstallations = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setStatus('loading');
+    const startTime = Date.now();
+    
     try {
       const { data, error: fetchError } = await supabase
         .from('client_installations')
@@ -86,12 +117,20 @@ export function useClientInstallations() {
 
       if (fetchError) throw fetchError;
       setInstallations(data as unknown as ClientInstallation[]);
+      setStatus('success');
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry('useClientInstallations', 'fetchInstallations', 'success', Date.now() - startTime);
     } catch (err) {
+      const parsedErr = parseError(err);
+      const kbError = createKBError('FETCH_ERROR', parsedErr.message, { originalError: err });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useClientInstallations', 'fetchInstallations', 'error', Date.now() - startTime, kbError);
       console.error('Error fetching installations:', err);
-      const message = err instanceof Error ? err.message : 'Error al cargar las instalaciones';
-      setError({ code: 'FETCH_ERROR', message });
-      toast.error(message);
+      toast.error(parsedErr.message);
     } finally {
       setLoading(false);
     }
@@ -179,11 +218,6 @@ export function useClientInstallations() {
     }
   };
 
-  // KB Pattern: Clear error
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-
   return { 
     installations, 
     loading, 
@@ -196,7 +230,16 @@ export function useClientInstallations() {
     generateAccessPin,
     startAutoRefresh,
     stopAutoRefresh,
-    clearError
+    clearError,
+    // === KB 2.0 STATE ===
+    status,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
+    lastSuccess,
+    retryCount,
+    reset,
   };
 }
 
@@ -204,8 +247,31 @@ export function useClientInstallations() {
 export function useRemoteAccessSessions(installationId?: string) {
   const [sessions, setSessions] = useState<RemoteAccessSession[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<ClientInstallationsError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   // Refs para auto-refresh
   const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
@@ -213,18 +279,29 @@ export function useRemoteAccessSessions(installationId?: string) {
   const fetchSessions = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setStatus('loading');
+    const startTime = Date.now();
+    
     try {
       let query = supabase.from('remote_access_sessions').select(`*, support_user:profiles(full_name), installation:client_installations(installation_name)`).order('created_at', { ascending: false });
       if (installationId) query = query.eq('installation_id', installationId);
       const { data, error: fetchError } = await query;
       if (fetchError) throw fetchError;
       setSessions(data as unknown as RemoteAccessSession[]);
+      setStatus('success');
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry('useRemoteAccessSessions', 'fetchSessions', 'success', Date.now() - startTime);
     } catch (err) {
+      const parsedErr = parseError(err);
+      const kbError = createKBError('FETCH_ERROR', parsedErr.message, { originalError: err });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useRemoteAccessSessions', 'fetchSessions', 'error', Date.now() - startTime, kbError);
       console.error('Error fetching sessions:', err);
-      const message = err instanceof Error ? err.message : 'Error al cargar las sesiones';
-      setError({ code: 'FETCH_ERROR', message });
-      toast.error(message);
+      toast.error(parsedErr.message);
     } finally {
       setLoading(false);
     }
@@ -280,11 +357,6 @@ export function useRemoteAccessSessions(installationId?: string) {
     }
   };
 
-  // KB Pattern: Clear error
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-
   return { 
     sessions, 
     loading, 
@@ -295,7 +367,16 @@ export function useRemoteAccessSessions(installationId?: string) {
     endSession,
     startAutoRefresh,
     stopAutoRefresh,
-    clearError
+    clearError,
+    // === KB 2.0 STATE ===
+    status,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
+    lastSuccess,
+    retryCount,
+    reset,
   };
 }
 
@@ -303,9 +384,32 @@ export function useRemoteAccessSessions(installationId?: string) {
 export function useInstallationDownloads(installationId?: string) {
   const [downloads, setDownloads] = useState<InstallationDownload[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<ClientInstallationsError | null>(null);
-  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [stats, setStats] = useState({ totalDownloads: 0, byLocale: {} as Record<string, number>, byModule: {} as Record<string, number>, recentDownloads: 0 });
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   // Refs para auto-refresh
   const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
@@ -313,6 +417,9 @@ export function useInstallationDownloads(installationId?: string) {
   const fetchDownloads = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setStatus('loading');
+    const startTime = Date.now();
+    
     try {
       let query = supabase.from('installation_downloads').select(`*, module:app_modules(module_name, module_key)`).order('downloaded_at', { ascending: false });
       if (installationId) query = query.eq('installation_id', installationId);
@@ -336,12 +443,20 @@ export function useInstallationDownloads(installationId?: string) {
       });
 
       setStats({ totalDownloads: downloadsData.length, byLocale, byModule, recentDownloads: recentCount });
+      setStatus('success');
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry('useInstallationDownloads', 'fetchDownloads', 'success', Date.now() - startTime);
     } catch (err) {
+      const parsedErr = parseError(err);
+      const kbError = createKBError('FETCH_ERROR', parsedErr.message, { originalError: err });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useInstallationDownloads', 'fetchDownloads', 'error', Date.now() - startTime, kbError);
       console.error('Error fetching downloads:', err);
-      const message = err instanceof Error ? err.message : 'Error al cargar las descargas';
-      setError({ code: 'FETCH_ERROR', message });
-      toast.error(message);
+      toast.error(parsedErr.message);
     } finally {
       setLoading(false);
     }
@@ -381,11 +496,6 @@ export function useInstallationDownloads(installationId?: string) {
     }
   };
 
-  // KB Pattern: Clear error
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-
   return { 
     downloads, 
     loading, 
@@ -396,6 +506,15 @@ export function useInstallationDownloads(installationId?: string) {
     recordDownload,
     startAutoRefresh,
     stopAutoRefresh,
-    clearError
+    clearError,
+    // === KB 2.0 STATE ===
+    status,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
+    lastSuccess,
+    retryCount,
+    reset,
   };
 }
