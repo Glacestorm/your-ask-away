@@ -529,3 +529,130 @@ export type {
   MockTimeline,
   MockAssertion,
 } from './useKBTestingMocks';
+
+// ============================================================================
+// PHASE 14: Advanced Patterns
+// ============================================================================
+
+// State Machines & Workflows (KB 4.5)
+export {
+  useKBStateMachine,
+  useKBWorkflow,
+} from './useKBStateMachine';
+
+export type {
+  KBStateNode,
+  KBMachineConfig,
+  KBMachineState,
+  KBWorkflowStep,
+  KBWorkflowConfig,
+  KBWorkflowState,
+  KBEvent,
+  KBTransition,
+  KBAction,
+  KBGuard,
+} from './useKBStateMachine';
+
+// Pagination & Infinite Scroll (KB 4.5)
+export {
+  useKBPagination,
+  useKBCursorPagination,
+  useKBKeysetPagination,
+  useKBInfiniteScroll,
+  useKBVirtualList,
+} from './useKBPagination';
+
+export type {
+  KBPaginationConfig,
+  KBPaginationState,
+  KBPaginationActions,
+  KBCursorPaginationConfig,
+  KBCursorPaginationState,
+  KBInfiniteScrollConfig,
+  KBInfiniteScrollState,
+  KBVirtualListConfig,
+} from './useKBPagination';
+
+// Debounce & Throttle (KB 4.5)
+export {
+  useKBDebounce,
+  useKBThrottle,
+  useKBDebounceState,
+  useKBThrottleState,
+  useKBDebouncedCallback,
+  useKBThrottledCallback,
+  useKBSearchDebounce,
+  useKBResizeThrottle,
+  useKBScrollThrottle,
+  useKBInputDebounce,
+  useKBRAFThrottle,
+} from './useKBDebounceThrottle';
+
+// Data Validation & Schema Evolution (KB 4.5)
+export {
+  useKBValidation,
+  useKBSchemaEvolution,
+  useKBFormValidation,
+  validateWithSchema,
+} from './useKBValidation';
+
+export type {
+  KBValidationResult,
+  KBValidationError,
+  KBSchemaVersion,
+  KBSchemaRegistry,
+  KBValidationConfig,
+  KBFormValidationState,
+} from './useKBValidation';
+
+// Analytics & Telemetry (KB 4.5)
+export {
+  useKBAnalytics,
+  useKBTracing,
+} from './useKBAnalytics';
+
+export type {
+  KBAnalyticsEvent,
+  KBAnalyticsConfig,
+  KBAnalyticsContext,
+  KBMetricData,
+  KBSpanData,
+  KBAnalyticsProvider,
+} from './useKBAnalytics';
+
+// WebSocket & Real-time (KB 4.5)
+export {
+  useKBWebSocket,
+  useKBChannel,
+  useKBPresence,
+  useKBRealtimeSync,
+  useKBBinaryWebSocket,
+} from './useKBWebSocket';
+
+export type {
+  KBWebSocketConfig,
+  KBWebSocketState,
+  KBWebSocketStatus,
+  KBWebSocketMessage,
+  KBWebSocketReturn,
+  KBChannelConfig,
+  KBPresenceConfig,
+  KBPresenceUser,
+} from './useKBWebSocket';
+
+// Query Batching & DataLoader (KB 4.5)
+export {
+  useKBDataLoader,
+  useKBQueryBatcher,
+  useKBRequestDeduplicator,
+  useKBAggregateLoader,
+  useKBPriorityLoader,
+} from './useKBDataLoader';
+
+export type {
+  KBDataLoaderConfig,
+  KBDataLoaderStats,
+  KBQueryBatcherConfig,
+  KBAggregateLoaderConfig,
+  KBBatchedRequest,
+} from './useKBDataLoader';
