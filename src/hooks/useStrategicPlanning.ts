@@ -3,6 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Json } from '@/integrations/supabase/types';
 
+// === ERROR TIPADO KB ===
+export interface StrategicPlanningError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 // Types
 export interface DafoAnalysis {
   id: string;
@@ -129,7 +136,12 @@ export function useDafoAnalysis(companyId?: string) {
   const [analyses, setAnalyses] = useState<DafoAnalysis[]>([]);
   const [currentAnalysis, setCurrentAnalysis] = useState<DafoAnalysis | null>(null);
   const [items, setItems] = useState<DafoItem[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<StrategicPlanningError | null>(null);
+  // === ESTADO KB ===
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const fetchAnalyses = useCallback(async () => {
     setIsLoading(true);
@@ -146,8 +158,10 @@ export function useDafoAnalysis(companyId?: string) {
       const { data, error: fetchError } = await query;
       if (fetchError) throw fetchError;
       setAnalyses((data || []) as DafoAnalysis[]);
+      setLastRefresh(new Date());
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error fetching DAFO analyses');
+      const message = err instanceof Error ? err.message : 'Error fetching DAFO analyses';
+      setError({ code: 'FETCH_DAFO_ERROR', message, details: { originalError: String(err) } });
     } finally {
       setIsLoading(false);
     }
@@ -164,7 +178,8 @@ export function useDafoAnalysis(companyId?: string) {
       if (fetchError) throw fetchError;
       setItems((data || []) as DafoItem[]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error fetching DAFO items');
+      const message = err instanceof Error ? err.message : 'Error fetching DAFO items';
+      setError({ code: 'FETCH_ITEMS_ERROR', message, details: { originalError: String(err) } });
     }
   }, []);
 
@@ -291,7 +306,10 @@ export function useDafoAnalysis(companyId?: string) {
     updateAnalysis,
     addItem,
     updateItem,
-    deleteItem
+    deleteItem,
+    // === KB ADDITIONS ===
+    lastRefresh,
+    clearError
   };
 }
 
@@ -301,7 +319,12 @@ export function useBusinessPlanEvaluation(companyId?: string) {
   const [evaluations, setEvaluations] = useState<BusinessPlanEvaluation[]>([]);
   const [currentEvaluation, setCurrentEvaluation] = useState<BusinessPlanEvaluation | null>(null);
   const [sections, setSections] = useState<BusinessPlanSection[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<StrategicPlanningError | null>(null);
+  // === ESTADO KB ===
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const SECTION_TEMPLATES = [
     { number: 1, name: 'Idea de Negocio', weight: 0.10 },
@@ -331,8 +354,10 @@ export function useBusinessPlanEvaluation(companyId?: string) {
       const { data, error: fetchError } = await query;
       if (fetchError) throw fetchError;
       setEvaluations((data || []) as BusinessPlanEvaluation[]);
+      setLastRefresh(new Date());
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error fetching evaluations');
+      const message = err instanceof Error ? err.message : 'Error fetching evaluations';
+      setError({ code: 'FETCH_EVALUATIONS_ERROR', message, details: { originalError: String(err) } });
     } finally {
       setIsLoading(false);
     }
@@ -349,7 +374,8 @@ export function useBusinessPlanEvaluation(companyId?: string) {
       if (fetchError) throw fetchError;
       setSections((data || []) as BusinessPlanSection[]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error fetching sections');
+      const message = err instanceof Error ? err.message : 'Error fetching sections';
+      setError({ code: 'FETCH_SECTIONS_ERROR', message, details: { originalError: String(err) } });
     }
   }, []);
 
@@ -442,7 +468,10 @@ export function useBusinessPlanEvaluation(companyId?: string) {
     createEvaluation,
     updateSection,
     calculateTotalScore,
-    SECTION_TEMPLATES
+    SECTION_TEMPLATES,
+    // === KB ADDITIONS ===
+    lastRefresh,
+    clearError
   };
 }
 
@@ -454,7 +483,12 @@ export function useFinancialPlan(companyId?: string) {
   const [accounts, setAccounts] = useState<FinancialPlanAccount[]>([]);
   const [ratios, setRatios] = useState<FinancialPlanRatio[]>([]);
   const [scenarios, setScenarios] = useState<FinancialScenario[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<StrategicPlanningError | null>(null);
+  // === ESTADO KB ===
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const fetchPlans = useCallback(async () => {
     setIsLoading(true);
@@ -471,8 +505,10 @@ export function useFinancialPlan(companyId?: string) {
       const { data, error: fetchError } = await query;
       if (fetchError) throw fetchError;
       setPlans((data || []) as FinancialViabilityPlan[]);
+      setLastRefresh(new Date());
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error fetching financial plans');
+      const message = err instanceof Error ? err.message : 'Error fetching financial plans';
+      setError({ code: 'FETCH_PLANS_ERROR', message, details: { originalError: String(err) } });
     } finally {
       setIsLoading(false);
     }
@@ -494,7 +530,8 @@ export function useFinancialPlan(companyId?: string) {
       setRatios((ratiosRes.data || []) as FinancialPlanRatio[]);
       setScenarios((scenariosRes.data || []) as FinancialScenario[]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error fetching plan details');
+      const message = err instanceof Error ? err.message : 'Error fetching plan details';
+      setError({ code: 'FETCH_DETAILS_ERROR', message, details: { originalError: String(err) } });
     }
   }, []);
 
@@ -690,6 +727,9 @@ export function useFinancialPlan(companyId?: string) {
     updatePlan,
     upsertAccount,
     createScenario,
-    calculateRatios
+    calculateRatios,
+    // === KB ADDITIONS ===
+    lastRefresh,
+    clearError
   };
 }
