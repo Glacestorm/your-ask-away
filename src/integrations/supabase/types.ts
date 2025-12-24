@@ -7661,6 +7661,59 @@ export type Database = {
           },
         ]
       }
+      expansion_predictions: {
+        Row: {
+          company_id: string | null
+          confidence: number | null
+          created_at: string | null
+          id: string
+          model_version: string | null
+          optimal_timing: string | null
+          predicted_arr_uplift: number | null
+          predicted_mrr_uplift: number | null
+          propensity_score: number | null
+          recommended_products: Json | null
+          signals: Json | null
+          valid_until: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          confidence?: number | null
+          created_at?: string | null
+          id?: string
+          model_version?: string | null
+          optimal_timing?: string | null
+          predicted_arr_uplift?: number | null
+          predicted_mrr_uplift?: number | null
+          propensity_score?: number | null
+          recommended_products?: Json | null
+          signals?: Json | null
+          valid_until?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          confidence?: number | null
+          created_at?: string | null
+          id?: string
+          model_version?: string | null
+          optimal_timing?: string | null
+          predicted_arr_uplift?: number | null
+          predicted_mrr_uplift?: number | null
+          propensity_score?: number | null
+          recommended_products?: Json | null
+          signals?: Json | null
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expansion_predictions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       faq_categories: {
         Row: {
           color: string | null
@@ -9458,6 +9511,54 @@ export type Database = {
           sent_count?: number
           stats?: Json
           total_recipients?: number
+        }
+        Relationships: []
+      }
+      lead_distribution_rules: {
+        Row: {
+          agent_weights: Json | null
+          channel_filters: string[] | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          max_concurrent: number | null
+          name: string
+          priority: number | null
+          rule_type: string | null
+          specialty_filters: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          agent_weights?: Json | null
+          channel_filters?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_concurrent?: number | null
+          name: string
+          priority?: number | null
+          rule_type?: string | null
+          specialty_filters?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          agent_weights?: Json | null
+          channel_filters?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_concurrent?: number | null
+          name?: string
+          priority?: number | null
+          rule_type?: string | null
+          specialty_filters?: Json | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -13717,6 +13818,54 @@ export type Database = {
         }
         Relationships: []
       }
+      performance_metrics_history: {
+        Row: {
+          cls: number | null
+          connection_type: string | null
+          device_type: string | null
+          fcp: number | null
+          fid: number | null
+          id: string
+          inp: number | null
+          lcp: number | null
+          page_path: string | null
+          page_url: string
+          recorded_at: string | null
+          ttfb: number | null
+          user_agent: string | null
+        }
+        Insert: {
+          cls?: number | null
+          connection_type?: string | null
+          device_type?: string | null
+          fcp?: number | null
+          fid?: number | null
+          id?: string
+          inp?: number | null
+          lcp?: number | null
+          page_path?: string | null
+          page_url: string
+          recorded_at?: string | null
+          ttfb?: number | null
+          user_agent?: string | null
+        }
+        Update: {
+          cls?: number | null
+          connection_type?: string | null
+          device_type?: string | null
+          fcp?: number | null
+          fid?: number | null
+          id?: string
+          inp?: number | null
+          lcp?: number | null
+          page_path?: string | null
+          page_url?: string
+          recorded_at?: string | null
+          ttfb?: number | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       personalized_news_scores: {
         Row: {
           article_id: string
@@ -15122,6 +15271,80 @@ export type Database = {
             columns: ["success_plan_id"]
             isOneToOne: false
             referencedRelation: "success_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quotation_proposals: {
+        Row: {
+          addons: Json | null
+          base_price: number | null
+          billing_cycle: string | null
+          company_id: string | null
+          contact_email: string | null
+          contact_name: string | null
+          created_at: string | null
+          created_by: string | null
+          discount_applied: number | null
+          discount_percent: number | null
+          id: string
+          modules: Json
+          notes: string | null
+          pdf_url: string | null
+          status: string | null
+          total_price: number | null
+          updated_at: string | null
+          users_count: number
+          valid_until: string | null
+        }
+        Insert: {
+          addons?: Json | null
+          base_price?: number | null
+          billing_cycle?: string | null
+          company_id?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          discount_applied?: number | null
+          discount_percent?: number | null
+          id?: string
+          modules?: Json
+          notes?: string | null
+          pdf_url?: string | null
+          status?: string | null
+          total_price?: number | null
+          updated_at?: string | null
+          users_count?: number
+          valid_until?: string | null
+        }
+        Update: {
+          addons?: Json | null
+          base_price?: number | null
+          billing_cycle?: string | null
+          company_id?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          discount_applied?: number | null
+          discount_percent?: number | null
+          id?: string
+          modules?: Json
+          notes?: string | null
+          pdf_url?: string | null
+          status?: string | null
+          total_price?: number | null
+          updated_at?: string | null
+          users_count?: number
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotation_proposals_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]
@@ -18271,6 +18494,51 @@ export type Database = {
           },
         ]
       }
+      sla_configs: {
+        Row: {
+          business_hours_only: boolean | null
+          channel: string
+          created_at: string | null
+          escalation_after_minutes: number | null
+          escalation_to: string | null
+          first_response_minutes: number | null
+          id: string
+          is_active: boolean | null
+          name: string
+          priority: string | null
+          resolution_hours: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          business_hours_only?: boolean | null
+          channel: string
+          created_at?: string | null
+          escalation_after_minutes?: number | null
+          escalation_to?: string | null
+          first_response_minutes?: number | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          priority?: string | null
+          resolution_hours?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          business_hours_only?: boolean | null
+          channel?: string
+          created_at?: string | null
+          escalation_after_minutes?: number | null
+          escalation_to?: string | null
+          first_response_minutes?: number | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          priority?: string | null
+          resolution_hours?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       sla_policies: {
         Row: {
           business_hours_only: boolean | null
@@ -18318,6 +18586,59 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      sla_tracking: {
+        Row: {
+          conversation_id: string | null
+          created_at: string | null
+          escalated_at: string | null
+          escalated_to: string | null
+          first_response_at: string | null
+          first_response_met: boolean | null
+          id: string
+          resolution_at: string | null
+          resolution_met: boolean | null
+          sla_config_id: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          conversation_id?: string | null
+          created_at?: string | null
+          escalated_at?: string | null
+          escalated_to?: string | null
+          first_response_at?: string | null
+          first_response_met?: boolean | null
+          id?: string
+          resolution_at?: string | null
+          resolution_met?: boolean | null
+          sla_config_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          conversation_id?: string | null
+          created_at?: string | null
+          escalated_at?: string | null
+          escalated_to?: string | null
+          first_response_at?: string | null
+          first_response_met?: boolean | null
+          id?: string
+          resolution_at?: string | null
+          resolution_met?: boolean | null
+          sla_config_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sla_tracking_sla_config_id_fkey"
+            columns: ["sla_config_id"]
+            isOneToOne: false
+            referencedRelation: "sla_configs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sms_delivery_logs: {
         Row: {
