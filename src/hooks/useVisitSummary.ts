@@ -67,7 +67,8 @@ export function useVisitSummary() {
       toast.success('Resum generat correctament');
       return data;
     } catch (err) {
-      const kbError = createKBError('GENERATE_SUMMARY_ERROR', parseError(err), { originalError: String(err) });
+      const parsedErr = parseError(err);
+      const kbError = createKBError('GENERATE_SUMMARY_ERROR', parsedErr.message, { originalError: String(err) });
       setError(kbError);
       setStatus('error');
       setRetryCount(prev => prev + 1);
@@ -98,7 +99,8 @@ export function useVisitSummary() {
       toast.success(`${summaries.length}/${visitSheetIds.length} resums generats`);
       return summaries;
     } catch (err) {
-      const kbError = createKBError('BULK_SUMMARY_ERROR', parseError(err), { originalError: String(err) });
+      const parsedErr = parseError(err);
+      const kbError = createKBError('BULK_SUMMARY_ERROR', parsedErr.message, { originalError: String(err) });
       setError(kbError);
       setStatus('error');
       setRetryCount(prev => prev + 1);

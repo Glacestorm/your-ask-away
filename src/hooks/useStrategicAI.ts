@@ -102,7 +102,8 @@ export function useStrategicAI() {
       toast.success('Sugerencias DAFO generadas con IA');
       return data.suggestions;
     } catch (err) {
-      const kbError = createKBError('DAFO_GENERATION_ERROR', parseError(err), { originalError: String(err) });
+      const parsedErr = parseError(err);
+      const kbError = createKBError('DAFO_GENERATION_ERROR', parsedErr.message, { originalError: String(err) });
       setError(kbError);
       setStatus('error');
       setRetryCount(prev => prev + 1);
@@ -154,7 +155,8 @@ export function useStrategicAI() {
       toast.success('Coaching de Business Plan generado');
       return data.coaching;
     } catch (err) {
-      const kbError = createKBError('COACHING_ERROR', parseError(err), { originalError: String(err) });
+      const parsedErr = parseError(err);
+      const kbError = createKBError('COACHING_ERROR', parsedErr.message, { originalError: String(err) });
       setError(kbError);
       setStatus('error');
       setRetryCount(prev => prev + 1);
@@ -211,7 +213,8 @@ export function useStrategicAI() {
       toast.success('Escenarios predichos con IA');
       return data.scenarios;
     } catch (err) {
-      const kbError = createKBError('SCENARIO_PREDICTION_ERROR', parseError(err), { originalError: String(err) });
+      const parsedErr = parseError(err);
+      const kbError = createKBError('SCENARIO_PREDICTION_ERROR', parsedErr.message, { originalError: String(err) });
       setError(kbError);
       setStatus('error');
       setRetryCount(prev => prev + 1);

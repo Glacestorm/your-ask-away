@@ -101,7 +101,8 @@ export function useWebAssembly(): UseWebAssemblyResult {
       setRetryCount(0);
       collectTelemetry('useWebAssembly', 'initialize', 'success', Date.now() - startTime);
     } catch (err) {
-      const kbError = createKBError('WASM_INIT_ERROR', parseError(err), { originalError: String(err) });
+      const parsedErr = parseError(err);
+      const kbError = createKBError('WASM_INIT_ERROR', parsedErr.message, { originalError: String(err) });
       setError(kbError);
       setStatus('error');
       setRetryCount(prev => prev + 1);

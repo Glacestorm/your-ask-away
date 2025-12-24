@@ -23,16 +23,23 @@ export function collectTelemetry(
   operationName?: string,
   status?: 'success' | 'error',
   durationMs?: number,
-  error?: KBError
+  error?: KBError | string
 ): void {
+  const now = new Date();
+  const parsedError = typeof error === 'string' 
+    ? { code: 'UNKNOWN', message: error, timestamp: now, retryable: false } as KBError
+    : error;
+    
   const telemetry: KBTelemetry = typeof hookNameOrTelemetry === 'string'
     ? {
         hookName: hookNameOrTelemetry,
         operationName: operationName || 'unknown',
-        timestamp: new Date().toISOString(),
+        startTime: now,
+        endTime: now,
         durationMs: durationMs || 0,
         status: status || 'success',
-        error,
+        error: parsedError,
+        retryCount: 0,
       }
     : hookNameOrTelemetry;
 

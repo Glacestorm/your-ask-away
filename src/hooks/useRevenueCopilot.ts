@@ -62,7 +62,8 @@ export const useRevenueCopilot = () => {
         collectTelemetry('useRevenueCopilot', 'fetchSessions', 'success', Date.now() - startTime);
         return (data as unknown) as CopilotSession[];
       } catch (err) {
-        const kbError = createKBError('FETCH_SESSIONS_ERROR', parseError(err), { originalError: String(err) });
+        const parsedErr = parseError(err);
+        const kbError = createKBError('FETCH_SESSIONS_ERROR', parsedErr.message, { originalError: String(err) });
         setError(kbError);
         collectTelemetry('useRevenueCopilot', 'fetchSessions', 'error', Date.now() - startTime, kbError);
         throw err;
@@ -102,7 +103,8 @@ export const useRevenueCopilot = () => {
         insights: data.insights || []
       };
     } catch (err) {
-      const kbError = createKBError('SEND_MESSAGE_ERROR', parseError(err), { originalError: String(err) });
+      const parsedErr = parseError(err);
+      const kbError = createKBError('SEND_MESSAGE_ERROR', parsedErr.message, { originalError: String(err) });
       setError(kbError);
       setStatus('error');
       setRetryCount(prev => prev + 1);

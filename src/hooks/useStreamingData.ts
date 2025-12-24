@@ -85,7 +85,8 @@ export function useStreamingData<T>(
       setRetryCount(0);
       collectTelemetry('useStreamingData', 'streamData', 'success', Date.now() - startTime);
     } catch (err) {
-      const kbError = createKBError('STREAMING_ERROR', parseError(err), { originalError: String(err) });
+      const parsedErr = parseError(err);
+      const kbError = createKBError('STREAMING_ERROR', parsedErr.message, { originalError: String(err) });
       setError(kbError);
       setStatus('error');
       setRetryCount(prev => prev + 1);

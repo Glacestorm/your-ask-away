@@ -113,7 +113,8 @@ export function useIntelligentOCR() {
 
       return data;
     } catch (err) {
-      const kbError = createKBError('PROCESS_DOCUMENT_ERROR', parseError(err), { originalError: String(err) });
+      const parsedErr = parseError(err);
+      const kbError = createKBError('PROCESS_DOCUMENT_ERROR', parsedErr.message, { originalError: String(err) });
       setError(kbError);
       setStatus('error');
       setRetryCount(prev => prev + 1);
