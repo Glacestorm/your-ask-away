@@ -1,6 +1,14 @@
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+// === ERROR TIPADO KB ===
+export interface PredictedNPSError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 export interface PredictedNPS {
   id: string;
@@ -21,23 +29,41 @@ export interface PredictedNPS {
 
 export function usePredictedNPS(companyId?: string) {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<PredictedNPSError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const { data: predictions, isLoading } = useQuery({
     queryKey: ['predicted-nps', companyId],
     queryFn: async () => {
-      let query = supabase
-        .from('predicted_nps')
-        .select('*')
-        .gte('valid_until', new Date().toISOString())
-        .order('prediction_date', { ascending: false });
+      try {
+        let query = supabase
+          .from('predicted_nps')
+          .select('*')
+          .gte('valid_until', new Date().toISOString())
+          .order('prediction_date', { ascending: false });
 
-      if (companyId) {
-        query = query.eq('company_id', companyId);
+        if (companyId) {
+          query = query.eq('company_id', companyId);
+        }
+
+        const { data, error: fetchError } = await query;
+        if (fetchError) throw fetchError;
+        setLastRefresh(new Date());
+        setError(null);
+        return data as unknown as PredictedNPS[];
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Error desconocido';
+        setError({
+          code: 'FETCH_PREDICTIONS_ERROR',
+          message,
+          details: { originalError: String(err) }
+        });
+        throw err;
       }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as unknown as PredictedNPS[];
     },
     enabled: true,
   });
@@ -52,10 +78,17 @@ export function usePredictedNPS(companyId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['predicted-nps'] });
+      setLastRefresh(new Date());
       toast.success('Predicción NPS generada correctamente');
     },
-    onError: (error) => {
-      toast.error(`Error al predecir NPS: ${error.message}`);
+    onError: (err) => {
+      const message = err instanceof Error ? err.message : 'Error al predecir NPS';
+      setError({
+        code: 'PREDICT_NPS_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
+      toast.error(`Error al predecir NPS: ${message}`);
     },
   });
 
@@ -94,5 +127,9 @@ export function usePredictedNPS(companyId?: string) {
     getRiskColor,
     getRiskLabel,
     getRiskLevel,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError
   };
 }

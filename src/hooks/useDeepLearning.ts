@@ -2,6 +2,13 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// === ERROR TIPADO KB ===
+export interface DeepLearningError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export interface LayerInfo {
   name: string;
   units: number;
@@ -56,7 +63,12 @@ export interface DeepLearningResult {
 export function useDeepLearning() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<DeepLearningResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // === ESTADO KB ===
+  const [error, setError] = useState<DeepLearningError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const predict = useCallback(async (
     modelArchitecture: 'mlp' | 'lstm' | 'transformer' | 'autoencoder',
@@ -86,11 +98,16 @@ export function useDeepLearning() {
       if (fnError) throw fnError;
 
       setResult(data);
+      setLastRefresh(new Date());
       toast.success(`Predicció ${modelArchitecture.toUpperCase()} completada`);
       return data;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error en Deep Learning';
-      setError(message);
+      setError({
+        code: 'DEEP_LEARNING_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
       toast.error(message);
       return null;
     } finally {
@@ -118,7 +135,10 @@ export function useDeepLearning() {
     predict,
     result,
     isLoading,
+    // === KB ADDITIONS ===
     error,
+    lastRefresh,
+    clearError,
     getUncertaintyLevel,
     getArchitectureIcon
   };

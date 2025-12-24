@@ -2,6 +2,13 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// === ERROR TIPADO KB ===
+export interface AdvancedMLScoringError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export interface IndividualModelResult {
   model_name: string;
   model_type: string;
@@ -69,7 +76,12 @@ export interface AdvancedMLResult {
 export function useAdvancedMLScoring() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<AdvancedMLResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // === ESTADO KB ===
+  const [error, setError] = useState<AdvancedMLScoringError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const score = useCallback(async (
     scoringType: 'credit' | 'churn' | 'ltv' | 'propensity',
@@ -99,11 +111,16 @@ export function useAdvancedMLScoring() {
       if (fnError) throw fnError;
 
       setResult(data);
+      setLastRefresh(new Date());
       toast.success('Scoring ML avançat completat');
       return data;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error en scoring avançat';
-      setError(message);
+      setError({
+        code: 'ADVANCED_ML_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
       toast.error(message);
       return null;
     } finally {
@@ -137,7 +154,10 @@ export function useAdvancedMLScoring() {
     score,
     result,
     isLoading,
+    // === KB ADDITIONS ===
     error,
+    lastRefresh,
+    clearError,
     getRiskColor,
     getRiskBadgeVariant
   };

@@ -2,6 +2,13 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// === ERROR TIPADO KB ===
+export interface RandomForestError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export interface TreeVote {
   tree_id: number;
   vote: string | number;
@@ -41,7 +48,12 @@ export interface RandomForestResult {
 export function useRandomForest() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<RandomForestResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // === ESTADO KB ===
+  const [error, setError] = useState<RandomForestError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const predict = useCallback(async (
     task: 'classification' | 'regression',
@@ -71,11 +83,16 @@ export function useRandomForest() {
       if (fnError) throw fnError;
 
       setResult(data);
+      setLastRefresh(new Date());
       toast.success('Predicció Random Forest completada');
       return data;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error en Random Forest';
-      setError(message);
+      setError({
+        code: 'RANDOM_FOREST_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
       toast.error(message);
       return null;
     } finally {
@@ -93,7 +110,10 @@ export function useRandomForest() {
     predict,
     result,
     isLoading,
+    // === KB ADDITIONS ===
     error,
+    lastRefresh,
+    clearError,
     getImportanceColor
   };
 }

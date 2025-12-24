@@ -1,6 +1,14 @@
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+// === ERROR TIPADO KB ===
+export interface MonteCarloError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 export interface MonteCarloSimulation {
   id: string;
@@ -35,18 +43,36 @@ export interface MonteCarloSimulation {
 
 export const useMonteCarloSimulation = () => {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<MonteCarloError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const { data: simulations, isLoading, refetch } = useQuery({
     queryKey: ['monte-carlo-simulations'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('monte_carlo_simulations')
-        .select('*')
-        .order('simulation_date', { ascending: false })
-        .limit(50);
-      
-      if (error) throw error;
-      return data as MonteCarloSimulation[];
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('monte_carlo_simulations')
+          .select('*')
+          .order('simulation_date', { ascending: false })
+          .limit(50);
+        
+        if (fetchError) throw fetchError;
+        setLastRefresh(new Date());
+        setError(null);
+        return data as MonteCarloSimulation[];
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Error desconocido';
+        setError({
+          code: 'FETCH_SIMULATIONS_ERROR',
+          message,
+          details: { originalError: String(err) }
+        });
+        throw err;
+      }
     }
   });
 
@@ -66,10 +92,17 @@ export const useMonteCarloSimulation = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['monte-carlo-simulations'] });
+      setLastRefresh(new Date());
       toast.success('Simulación Monte Carlo completada');
     },
-    onError: (error) => {
-      toast.error('Error en simulación: ' + error.message);
+    onError: (err) => {
+      const message = err instanceof Error ? err.message : 'Error en simulación';
+      setError({
+        code: 'RUN_SIMULATION_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
+      toast.error('Error en simulación: ' + message);
     }
   });
 
@@ -121,6 +154,10 @@ export const useMonteCarloSimulation = () => {
     getSimulationById,
     getPercentileRange,
     getConfidenceLevel,
-    compareSimulations
+    compareSimulations,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError
   };
 };
