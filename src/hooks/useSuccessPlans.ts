@@ -1,7 +1,15 @@
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Json } from '@/integrations/supabase/types';
+
+// === ERROR TIPADO KB ===
+export interface SuccessPlansError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 export interface SuccessPlanObjective {
   id: string;
@@ -97,6 +105,12 @@ export interface QBRRecord {
 
 export function useSuccessPlans(companyId?: string) {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<SuccessPlansError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   // Fetch success plans
   const { data: successPlans, isLoading: loadingPlans } = useQuery({
@@ -111,8 +125,16 @@ export function useSuccessPlans(companyId?: string) {
         query = query.eq('company_id', companyId);
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
+      const { data, error: fetchError } = await query;
+      if (fetchError) {
+        setError({
+          code: 'FETCH_PLANS_ERROR',
+          message: fetchError.message,
+          details: { originalError: String(fetchError) }
+        });
+        throw fetchError;
+      }
+      setLastRefresh(new Date());
       return data.map(plan => ({
         ...plan,
         objectives: (plan.objectives as unknown as SuccessPlanObjective[]) || [],
@@ -493,5 +515,9 @@ export function useSuccessPlans(companyId?: string) {
     getUpcomingQBRs,
     getOverdueGoals,
     calculatePlanHealth,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }

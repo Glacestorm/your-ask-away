@@ -2,6 +2,13 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// === ERROR TIPADO KB ===
+export interface VisitSummaryError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export interface VisitSummary {
   summary: string;
   key_points: string[];
@@ -26,7 +33,12 @@ export interface ActionItem {
 export function useVisitSummary() {
   const [isLoading, setIsLoading] = useState(false);
   const [summary, setSummary] = useState<VisitSummary | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // === ESTADO KB ===
+  const [error, setError] = useState<VisitSummaryError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const generateSummary = useCallback(async (visitSheetId: string) => {
     setIsLoading(true);
@@ -40,11 +52,16 @@ export function useVisitSummary() {
       if (fnError) throw fnError;
 
       setSummary(data);
+      setLastRefresh(new Date());
       toast.success('Resum generat correctament');
       return data;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error generant resum';
-      setError(message);
+      setError({
+        code: 'GENERATE_SUMMARY_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
       toast.error(message);
       return null;
     } finally {
@@ -64,11 +81,16 @@ export function useVisitSummary() {
       );
 
       const summaries = results.filter(r => !r.error).map(r => r.data);
+      setLastRefresh(new Date());
       toast.success(`${summaries.length}/${visitSheetIds.length} resums generats`);
       return summaries;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error en generació massiva';
-      setError(message);
+      setError({
+        code: 'BULK_SUMMARY_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
       toast.error(message);
       return [];
     } finally {
@@ -90,7 +112,10 @@ export function useVisitSummary() {
     generateBulkSummaries,
     summary,
     isLoading,
+    // === KB ADDITIONS ===
     error,
+    lastRefresh,
+    clearError,
     getSentimentColor
   };
 }

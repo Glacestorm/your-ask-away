@@ -2,6 +2,13 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// === ERROR TIPADO KB ===
+export interface StrategicAIError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 interface DAFOSuggestion {
   category: 'threats' | 'opportunities' | 'weaknesses' | 'strengths';
   items: {
@@ -39,7 +46,12 @@ interface ScenarioPrediction {
 
 export function useStrategicAI() {
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // === ESTADO KB ===
+  const [error, setError] = useState<StrategicAIError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   // Generate DAFO suggestions using AI
   const generateDAFOSuggestions = useCallback(async (
@@ -76,11 +88,16 @@ export function useStrategicAI() {
         created_by: user?.user?.id
       });
 
+      setLastRefresh(new Date());
       toast.success('Sugerencias DAFO generadas con IA');
       return data.suggestions;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error generando sugerencias DAFO';
-      setError(message);
+      setError({
+        code: 'DAFO_GENERATION_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
       toast.error(message);
       return [];
     } finally {
@@ -121,11 +138,16 @@ export function useStrategicAI() {
         created_by: user?.user?.id
       });
 
+      setLastRefresh(new Date());
       toast.success('Coaching de Business Plan generado');
       return data.coaching;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error obteniendo coaching';
-      setError(message);
+      setError({
+        code: 'COACHING_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
       toast.error(message);
       return null;
     } finally {
@@ -171,11 +193,16 @@ export function useStrategicAI() {
         created_by: user?.user?.id
       });
 
+      setLastRefresh(new Date());
       toast.success('Escenarios predichos con IA');
       return data.scenarios;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error prediciendo escenarios';
-      setError(message);
+      setError({
+        code: 'SCENARIO_PREDICTION_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
       toast.error(message);
       return [];
     } finally {
@@ -202,7 +229,10 @@ export function useStrategicAI() {
 
   return {
     isLoading,
+    // === KB ADDITIONS ===
     error,
+    lastRefresh,
+    clearError,
     generateDAFOSuggestions,
     getBusinessPlanCoaching,
     predictScenarios,
