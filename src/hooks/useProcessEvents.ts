@@ -2,6 +2,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { ProcessEvent, EmitProcessEventParams, ProcessEventEntityType } from '@/types/bpmn';
 import { useToast } from '@/hooks/use-toast';
+import { useState, useCallback } from 'react';
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { createKBError } from '@/hooks/core/useKBBase';
 
 interface UseProcessEventsOptions {
   entityType?: ProcessEventEntityType;
@@ -16,32 +19,70 @@ export function useProcessEvents(options: UseProcessEventsOptions = {}) {
   const queryClient = useQueryClient();
   const { entityType, entityId, limit = 100, dateFrom, dateTo } = options;
 
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [kbError, setKbError] = useState<KBError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setKbError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setKbError(null);
+    setRetryCount(0);
+  }, []);
+
   // Fetch events
   const eventsQuery = useQuery({
     queryKey: ['process-events', entityType, entityId, limit, dateFrom?.toISOString(), dateTo?.toISOString()],
     queryFn: async () => {
-      let query = supabase
-        .from('process_events')
-        .select('*')
-        .order('occurred_at', { ascending: false })
-        .limit(limit);
+      setStatus('loading');
+      try {
+        let query = supabase
+          .from('process_events')
+          .select('*')
+          .order('occurred_at', { ascending: false })
+          .limit(limit);
 
-      if (entityType) {
-        query = query.eq('entity_type', entityType);
-      }
-      if (entityId) {
-        query = query.eq('entity_id', entityId);
-      }
-      if (dateFrom) {
-        query = query.gte('occurred_at', dateFrom.toISOString());
-      }
-      if (dateTo) {
-        query = query.lte('occurred_at', dateTo.toISOString());
-      }
+        if (entityType) {
+          query = query.eq('entity_type', entityType);
+        }
+        if (entityId) {
+          query = query.eq('entity_id', entityId);
+        }
+        if (dateFrom) {
+          query = query.gte('occurred_at', dateFrom.toISOString());
+        }
+        if (dateTo) {
+          query = query.lte('occurred_at', dateTo.toISOString());
+        }
 
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as ProcessEvent[];
+        const { data, error } = await query;
+        if (error) throw error;
+        
+        setStatus('success');
+        setLastSuccess(new Date());
+        setLastRefresh(new Date());
+        setRetryCount(0);
+        
+        return data as ProcessEvent[];
+      } catch (err) {
+        const kbErr = createKBError('FETCH_ERROR', err instanceof Error ? err.message : 'Error desconocido');
+        setKbError(kbErr);
+        setStatus('error');
+        throw err;
+      }
     },
   });
 
@@ -130,7 +171,7 @@ export function useProcessEvents(options: UseProcessEventsOptions = {}) {
     // Events
     events: eventsQuery.data || [],
     isLoading: eventsQuery.isLoading,
-    error: eventsQuery.error,
+    error: kbError || (eventsQuery.error ? createKBError('QUERY_ERROR', String(eventsQuery.error)) : null),
     refetch: eventsQuery.refetch,
 
     // Emit event
@@ -149,5 +190,16 @@ export function useProcessEvents(options: UseProcessEventsOptions = {}) {
 
     // Realtime
     subscribeToEvents,
+    
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
+    lastRefresh,
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
   };
 }
