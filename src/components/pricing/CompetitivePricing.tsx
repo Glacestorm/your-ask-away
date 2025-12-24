@@ -284,16 +284,16 @@ const PricingCard = ({
       <div className="text-center mb-8">
         <div className="flex items-center justify-center gap-3 mb-2">
           {originalPrice && billingCycle !== 'monthly' && (
-            <span className="text-xl text-slate-500 line-through">€{originalPrice.toLocaleString()}</span>
+            <span className="text-xl text-slate-500 line-through">{originalPrice.toLocaleString()}€</span>
           )}
           <div className="flex items-baseline">
-            <span className="text-5xl font-bold text-white">€{currentPrice.toLocaleString()}</span>
+            <span className="text-5xl font-bold text-white">{currentPrice.toLocaleString()}€</span>
             <span className="text-slate-400 ml-1">{getPriceLabel()}</span>
           </div>
         </div>
         {billingCycle !== 'monthly' && originalPrice && (
           <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/30">
-            {t('landing.pricing.youSave')} €{(originalPrice - currentPrice).toLocaleString()}
+            {t('landing.pricing.youSave')} {(originalPrice - currentPrice).toLocaleString()}€
           </Badge>
         )}
       </div>
