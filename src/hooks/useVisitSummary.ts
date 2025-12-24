@@ -1,13 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
-// === ERROR TIPADO KB ===
-export interface VisitSummaryError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
 export interface VisitSummary {
   summary: string;
@@ -31,17 +25,30 @@ export interface ActionItem {
 }
 
 export function useVisitSummary() {
-  const [isLoading, setIsLoading] = useState(false);
   const [summary, setSummary] = useState<VisitSummary | null>(null);
-  // === ESTADO KB ===
-  const [error, setError] = useState<VisitSummaryError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED STATES ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
 
   const generateSummary = useCallback(async (visitSheetId: string) => {
-    setIsLoading(true);
+    const startTime = Date.now();
+    setStatus('loading');
     setError(null);
 
     try {
@@ -52,25 +59,27 @@ export function useVisitSummary() {
       if (fnError) throw fnError;
 
       setSummary(data);
+      setStatus('success');
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry('useVisitSummary', 'generateSummary', 'success', Date.now() - startTime);
       toast.success('Resum generat correctament');
       return data;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error generant resum';
-      setError({
-        code: 'GENERATE_SUMMARY_ERROR',
-        message,
-        details: { originalError: String(err) }
-      });
-      toast.error(message);
+      const kbError = createKBError('GENERATE_SUMMARY_ERROR', parseError(err), { originalError: String(err) });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useVisitSummary', 'generateSummary', 'error', Date.now() - startTime, kbError);
+      toast.error(kbError.message);
       return null;
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
   const generateBulkSummaries = useCallback(async (visitSheetIds: string[]) => {
-    setIsLoading(true);
+    const startTime = Date.now();
+    setStatus('loading');
     setError(null);
 
     try {
@@ -81,20 +90,21 @@ export function useVisitSummary() {
       );
 
       const summaries = results.filter(r => !r.error).map(r => r.data);
+      setStatus('success');
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry('useVisitSummary', 'generateBulkSummaries', 'success', Date.now() - startTime);
       toast.success(`${summaries.length}/${visitSheetIds.length} resums generats`);
       return summaries;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error en generació massiva';
-      setError({
-        code: 'BULK_SUMMARY_ERROR',
-        message,
-        details: { originalError: String(err) }
-      });
-      toast.error(message);
+      const kbError = createKBError('BULK_SUMMARY_ERROR', parseError(err), { originalError: String(err) });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useVisitSummary', 'generateBulkSummaries', 'error', Date.now() - startTime, kbError);
+      toast.error(kbError.message);
       return [];
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -111,12 +121,18 @@ export function useVisitSummary() {
     generateSummary,
     generateBulkSummaries,
     summary,
-    isLoading,
-    // === KB ADDITIONS ===
+    getSentimentColor,
+    // === KB 2.0 STATE ===
+    status,
     error,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
-    getSentimentColor
   };
 }
 

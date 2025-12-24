@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useTransition, useDeferredValue } from 'react';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
 interface StreamingChunk<T> {
   data: T[];
@@ -21,19 +22,37 @@ export function useStreamingData<T>(
   const { chunkSize = 10, enabled = true, onChunk } = options;
   
   const [data, setData] = useState<T[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [error, setError] = useState<Error | null>(null);
   const [isPending, startTransition] = useTransition();
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // === KB 2.0 COMPUTED STATES ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
 
   // Deferred value for smooth UI updates
   const deferredData = useDeferredValue(data);
 
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
   const streamData = useCallback(async () => {
     if (!enabled) return;
     
-    setIsLoading(true);
+    const startTime = Date.now();
+    setStatus('loading');
     setError(null);
     setData([]);
     setProgress(0);
@@ -60,10 +79,17 @@ export function useStreamingData<T>(
       }
 
       setIsComplete(true);
+      setStatus('success');
+      setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry('useStreamingData', 'streamData', 'success', Date.now() - startTime);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Streaming failed'));
-    } finally {
-      setIsLoading(false);
+      const kbError = createKBError('STREAMING_ERROR', parseError(err), { originalError: String(err) });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useStreamingData', 'streamData', 'error', Date.now() - startTime, kbError);
     }
   }, [fetchFn, chunkSize, enabled, onChunk]);
 
@@ -73,12 +99,21 @@ export function useStreamingData<T>(
 
   return {
     data: deferredData,
-    isLoading,
     isComplete,
     progress,
-    error,
     isPending,
     refetch: streamData,
+    // === KB 2.0 STATE ===
+    status,
+    error,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
+    lastRefresh,
+    lastSuccess,
+    retryCount,
+    clearError,
   };
 }
 

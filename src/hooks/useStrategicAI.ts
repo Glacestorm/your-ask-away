@@ -1,13 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
-// === ERROR TIPADO KB ===
-export interface StrategicAIError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
 interface DAFOSuggestion {
   category: 'threats' | 'opportunities' | 'weaknesses' | 'strengths';
@@ -45,13 +39,24 @@ interface ScenarioPrediction {
 }
 
 export function useStrategicAI() {
-  const [isLoading, setIsLoading] = useState(false);
-  // === ESTADO KB ===
-  const [error, setError] = useState<StrategicAIError | null>(null);
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED STATES ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
 
   // Generate DAFO suggestions using AI
   const generateDAFOSuggestions = useCallback(async (
@@ -59,7 +64,8 @@ export function useStrategicAI() {
     projectDescription: string,
     existingItems?: { category: string; description: string }[]
   ): Promise<DAFOSuggestion[]> => {
-    setIsLoading(true);
+    const startTime = Date.now();
+    setStatus('loading');
     setError(null);
 
     try {
@@ -88,20 +94,21 @@ export function useStrategicAI() {
         created_by: user?.user?.id
       });
 
+      setStatus('success');
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry('useStrategicAI', 'generateDAFOSuggestions', 'success', Date.now() - startTime);
       toast.success('Sugerencias DAFO generadas con IA');
       return data.suggestions;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error generando sugerencias DAFO';
-      setError({
-        code: 'DAFO_GENERATION_ERROR',
-        message,
-        details: { originalError: String(err) }
-      });
-      toast.error(message);
+      const kbError = createKBError('DAFO_GENERATION_ERROR', parseError(err), { originalError: String(err) });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useStrategicAI', 'generateDAFOSuggestions', 'error', Date.now() - startTime, kbError);
+      toast.error(kbError.message);
       return [];
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -110,7 +117,8 @@ export function useStrategicAI() {
     evaluationId: string,
     sections: { section_number: number; section_name: string; section_score: number; questions: any[] }[]
   ): Promise<BusinessPlanCoachResponse | null> => {
-    setIsLoading(true);
+    const startTime = Date.now();
+    setStatus('loading');
     setError(null);
 
     try {
@@ -138,20 +146,21 @@ export function useStrategicAI() {
         created_by: user?.user?.id
       });
 
+      setStatus('success');
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry('useStrategicAI', 'getBusinessPlanCoaching', 'success', Date.now() - startTime);
       toast.success('Coaching de Business Plan generado');
       return data.coaching;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error obteniendo coaching';
-      setError({
-        code: 'COACHING_ERROR',
-        message,
-        details: { originalError: String(err) }
-      });
-      toast.error(message);
+      const kbError = createKBError('COACHING_ERROR', parseError(err), { originalError: String(err) });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useStrategicAI', 'getBusinessPlanCoaching', 'error', Date.now() - startTime, kbError);
+      toast.error(kbError.message);
       return null;
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -165,7 +174,8 @@ export function useStrategicAI() {
       sector_key: string;
     }
   ): Promise<ScenarioPrediction[]> => {
-    setIsLoading(true);
+    const startTime = Date.now();
+    setStatus('loading');
     setError(null);
 
     try {
@@ -193,20 +203,21 @@ export function useStrategicAI() {
         created_by: user?.user?.id
       });
 
+      setStatus('success');
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry('useStrategicAI', 'predictScenarios', 'success', Date.now() - startTime);
       toast.success('Escenarios predichos con IA');
       return data.scenarios;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error prediciendo escenarios';
-      setError({
-        code: 'SCENARIO_PREDICTION_ERROR',
-        message,
-        details: { originalError: String(err) }
-      });
-      toast.error(message);
+      const kbError = createKBError('SCENARIO_PREDICTION_ERROR', parseError(err), { originalError: String(err) });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useStrategicAI', 'predictScenarios', 'error', Date.now() - startTime, kbError);
+      toast.error(kbError.message);
       return [];
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -228,14 +239,20 @@ export function useStrategicAI() {
   }, []);
 
   return {
-    isLoading,
-    // === KB ADDITIONS ===
-    error,
-    lastRefresh,
-    clearError,
     generateDAFOSuggestions,
     getBusinessPlanCoaching,
     predictScenarios,
-    getSectorBenchmarks
+    getSectorBenchmarks,
+    // === KB 2.0 STATE ===
+    status,
+    error,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
+    lastRefresh,
+    lastSuccess,
+    retryCount,
+    clearError,
   };
 }

@@ -1,13 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
-// === ERROR TIPADO KB ===
-export interface DeepLearningError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
 export interface LayerInfo {
   name: string;
@@ -61,14 +55,26 @@ export interface DeepLearningResult {
 }
 
 export function useDeepLearning() {
-  const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<DeepLearningResult | null>(null);
-  // === ESTADO KB ===
-  const [error, setError] = useState<DeepLearningError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED STATES ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
 
   const predict = useCallback(async (
     modelArchitecture: 'mlp' | 'lstm' | 'transformer' | 'autoencoder',
@@ -80,7 +86,8 @@ export function useDeepLearning() {
       layers?: number[];
     }
   ) => {
-    setIsLoading(true);
+    const startTime = Date.now();
+    setStatus('loading');
     setError(null);
 
     try {
@@ -98,20 +105,21 @@ export function useDeepLearning() {
       if (fnError) throw fnError;
 
       setResult(data);
+      setStatus('success');
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry('useDeepLearning', 'predict', 'success', Date.now() - startTime);
       toast.success(`Predicció ${modelArchitecture.toUpperCase()} completada`);
       return data;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error en Deep Learning';
-      setError({
-        code: 'DEEP_LEARNING_ERROR',
-        message,
-        details: { originalError: String(err) }
-      });
-      toast.error(message);
+      const kbError = createKBError('DEEP_LEARNING_ERROR', parseError(err), { originalError: String(err) });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useDeepLearning', 'predict', 'error', Date.now() - startTime, kbError);
+      toast.error(kbError.message);
       return null;
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -134,13 +142,19 @@ export function useDeepLearning() {
   return {
     predict,
     result,
-    isLoading,
-    // === KB ADDITIONS ===
-    error,
-    lastRefresh,
-    clearError,
     getUncertaintyLevel,
-    getArchitectureIcon
+    getArchitectureIcon,
+    // === KB 2.0 STATE ===
+    status,
+    error,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
+    lastRefresh,
+    lastSuccess,
+    retryCount,
+    clearError,
   };
 }
 

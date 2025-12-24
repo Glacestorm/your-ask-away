@@ -1,13 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
-// === ERROR TIPADO KB ===
-export interface IntelligentOCRError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
 export interface OCRResult {
   document_type: 'invoice' | 'contract' | 'id_document' | 'financial_statement' | 'receipt' | 'other';
@@ -50,15 +44,27 @@ export interface ValidationFlag {
 }
 
 export function useIntelligentOCR() {
-  const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<OCRResult | null>(null);
   const [progress, setProgress] = useState(0);
-  // === ESTADO KB ===
-  const [error, setError] = useState<IntelligentOCRError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED STATES ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
 
   const processDocument = useCallback(async (
     fileUrl: string,
@@ -69,7 +75,8 @@ export function useIntelligentOCR() {
       language?: string;
     }
   ) => {
-    setIsLoading(true);
+    const startTime = Date.now();
+    setStatus('loading');
     setError(null);
     setProgress(10);
 
@@ -92,8 +99,11 @@ export function useIntelligentOCR() {
 
       setResult(data);
       setProgress(100);
+      setStatus('success');
       setLastRefresh(new Date());
-      setError(null);
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry('useIntelligentOCR', 'processDocument', 'success', Date.now() - startTime);
       
       if (data.validation_flags?.some((f: ValidationFlag) => f.type === 'error')) {
         toast.warning('Document processat amb advertències');
@@ -103,16 +113,14 @@ export function useIntelligentOCR() {
 
       return data;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error processant document';
-      setError({
-        code: 'PROCESS_DOCUMENT_ERROR',
-        message,
-        details: { originalError: String(err) }
-      });
-      toast.error(message);
+      const kbError = createKBError('PROCESS_DOCUMENT_ERROR', parseError(err), { originalError: String(err) });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useIntelligentOCR', 'processDocument', 'error', Date.now() - startTime, kbError);
+      toast.error(kbError.message);
       return null;
     } finally {
-      setIsLoading(false);
       setTimeout(() => setProgress(0), 1000);
     }
   }, []);
@@ -150,13 +158,19 @@ export function useIntelligentOCR() {
     processDocument,
     processMultipleDocuments,
     result,
-    isLoading,
     progress,
     getEntityIcon,
-    // === KB ADDITIONS ===
+    // === KB 2.0 STATE ===
+    status,
     error,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
     lastRefresh,
-    clearError
+    lastSuccess,
+    retryCount,
+    clearError,
   };
 }
 

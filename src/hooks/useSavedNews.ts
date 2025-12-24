@@ -3,27 +3,33 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
-
-// === ERROR TIPADO KB ===
-export interface SavedNewsError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
 export function useSavedNews(articleId?: string) {
   const { user } = useAuth();
   const { t } = useLanguage();
   const [isSaved, setIsSaved] = useState(false);
   const [savedArticleIds, setSavedArticleIds] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  // === ESTADO KB ===
-  const [error, setError] = useState<SavedNewsError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
-  // Check if specific article is saved
+  // === KB 2.0 COMPUTED STATES ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
   useEffect(() => {
     if (articleId && user) {
       checkIfSaved();
@@ -57,7 +63,10 @@ export function useSavedNews(articleId?: string) {
 
     if (!articleId) return;
 
-    setIsLoading(true);
+    const startTime = Date.now();
+    setStatus('loading');
+    setError(null);
+    
     try {
       if (isSaved) {
         const { error } = await supabase
@@ -78,17 +87,27 @@ export function useSavedNews(articleId?: string) {
         setIsSaved(true);
         toast.success(t('news.saved.added') || 'Saved article');
       }
+      
+      setStatus('success');
+      setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry('useSavedNews', 'toggleSave', 'success', Date.now() - startTime);
     } catch (err) {
       console.error('Error toggling save:', err);
+      const kbError = createKBError('TOGGLE_SAVE_ERROR', parseError(err), { originalError: String(err) });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useSavedNews', 'toggleSave', 'error', Date.now() - startTime, kbError);
       toast.error(t('news.saved.error') || 'Error saving article');
-    } finally {
-      setIsLoading(false);
     }
   }, [user, articleId, isSaved, t]);
 
   const fetchSavedArticles = useCallback(async () => {
     if (!user) return [];
 
+    const startTime = Date.now();
     try {
       const { data, error } = await supabase
         .from('saved_news')
@@ -100,9 +119,13 @@ export function useSavedNews(articleId?: string) {
       
       const ids = (data || []).map(item => item.article_id);
       setSavedArticleIds(ids);
+      setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      collectTelemetry('useSavedNews', 'fetchSavedArticles', 'success', Date.now() - startTime);
       return ids;
     } catch (err) {
       console.error('Error fetching saved articles:', err);
+      collectTelemetry('useSavedNews', 'fetchSavedArticles', 'error', Date.now() - startTime);
       return [];
     }
   }, [user]);
@@ -113,14 +136,20 @@ export function useSavedNews(articleId?: string) {
 
   return {
     isSaved,
-    isLoading,
     toggleSave,
     fetchSavedArticles,
     savedArticleIds,
     isArticleSaved,
-    // === KB ADDITIONS ===
+    // === KB 2.0 STATE ===
+    status,
     error,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
   };
 }

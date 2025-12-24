@@ -1,13 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
-// === ERROR TIPADO KB ===
-export interface ProductRecommendationsError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
 export interface ProductRecommendation {
   product_id: string;
@@ -34,15 +28,27 @@ export interface RecommendationContext {
 }
 
 export function useProductRecommendations() {
-  const [isLoading, setIsLoading] = useState(false);
   const [recommendations, setRecommendations] = useState<ProductRecommendation[]>([]);
   const [context, setContext] = useState<RecommendationContext | null>(null);
-  // === ESTADO KB ===
-  const [error, setError] = useState<ProductRecommendationsError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED STATES ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
 
   const getRecommendations = useCallback(async (
     companyId: string,
@@ -52,7 +58,8 @@ export function useProductRecommendations() {
       min_relevance?: number;
     }
   ) => {
-    setIsLoading(true);
+    const startTime = Date.now();
+    setStatus('loading');
     setError(null);
 
     try {
@@ -69,21 +76,22 @@ export function useProductRecommendations() {
 
       setRecommendations(data.recommendations || []);
       setContext(data.context || null);
+      setStatus('success');
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry('useProductRecommendations', 'getRecommendations', 'success', Date.now() - startTime);
       
       toast.success(`${data.recommendations?.length || 0} recomanacions generades`);
       return data;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error generant recomanacions';
-      setError({
-        code: 'RECOMMENDATIONS_ERROR',
-        message,
-        details: { originalError: String(err) }
-      });
-      toast.error(message);
+      const kbError = createKBError('RECOMMENDATIONS_ERROR', parseError(err), { originalError: String(err) });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useProductRecommendations', 'getRecommendations', 'error', Date.now() - startTime, kbError);
+      toast.error(kbError.message);
       return null;
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -101,12 +109,18 @@ export function useProductRecommendations() {
     getRecommendations,
     recommendations,
     context,
-    isLoading,
-    // === KB ADDITIONS ===
+    getTimingLabel,
+    // === KB 2.0 STATE ===
+    status,
     error,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
-    getTimingLabel
   };
 }
 
