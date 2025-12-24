@@ -1,14 +1,34 @@
+/**
+ * useLowCodePages - KB 2.0 Migration
+ * Low-code page management with state machine
+ */
+
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { LowCodePage, PageComponent } from '@/components/lowcode/types';
 import { toast } from 'sonner';
+import { KBStatus, KBError, parseError, collectTelemetry } from '@/hooks/core';
 
 export function useLowCodePages(moduleId?: string) {
   const queryClient = useQueryClient();
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
 
   const pagesQuery = useQuery({
     queryKey: ['lowcode-pages', moduleId],
     queryFn: async () => {
+      const startTime = Date.now();
+      setStatus('loading');
+      
       let query = supabase
         .from('lowcode_page_definitions')
         .select('*')
@@ -18,8 +38,16 @@ export function useLowCodePages(moduleId?: string) {
         query = query.eq('module_id', moduleId);
       }
       
-      const { data, error } = await query;
-      if (error) throw error;
+      const { data, error: fetchError } = await query;
+      
+      if (fetchError) {
+        setStatus('error');
+        throw fetchError;
+      }
+      
+      setStatus('success');
+      setLastRefresh(new Date());
+      collectTelemetry('useLowCodePages', 'fetchPages', 'success', Date.now() - startTime);
       
       return data.map(page => ({
         id: page.id,
@@ -41,9 +69,10 @@ export function useLowCodePages(moduleId?: string) {
 
   const createPage = useMutation({
     mutationFn: async (page: Partial<LowCodePage>) => {
+      const startTime = Date.now();
       const { data: user } = await supabase.auth.getUser();
       
-      const { data, error } = await supabase
+      const { data, error: insertError } = await supabase
         .from('lowcode_page_definitions')
         .insert({
           page_name: page.page_name || 'Nueva Página',
@@ -59,20 +88,24 @@ export function useLowCodePages(moduleId?: string) {
         .select()
         .single();
       
-      if (error) throw error;
+      if (insertError) throw insertError;
+      collectTelemetry('useLowCodePages', 'createPage', 'success', Date.now() - startTime);
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lowcode-pages'] });
       toast.success('Página creada correctamente');
     },
-    onError: (error) => {
-      toast.error('Error al crear página: ' + error.message);
+    onError: (err: Error) => {
+      const kbError = parseError(err);
+      setError(kbError);
+      toast.error('Error al crear página: ' + err.message);
     },
   });
 
   const updatePage = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<LowCodePage> & { id: string }) => {
+      const startTime = Date.now();
       const updateData: Record<string, unknown> = {
         updated_at: new Date().toISOString(),
       };
@@ -84,49 +117,69 @@ export function useLowCodePages(moduleId?: string) {
       if (updates.is_public !== undefined) updateData.status = updates.is_public ? 'published' : 'draft';
       if (updates.permissions) updateData.visibility_rules = JSON.parse(JSON.stringify(updates.permissions));
 
-      const { data, error } = await supabase
+      const { data, error: updateError } = await supabase
         .from('lowcode_page_definitions')
         .update(updateData)
         .eq('id', id)
         .select()
         .single();
       
-      if (error) throw error;
+      if (updateError) throw updateError;
+      collectTelemetry('useLowCodePages', 'updatePage', 'success', Date.now() - startTime);
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lowcode-pages'] });
       toast.success('Página actualizada');
     },
-    onError: (error) => {
-      toast.error('Error al actualizar página: ' + error.message);
+    onError: (err: Error) => {
+      const kbError = parseError(err);
+      setError(kbError);
+      toast.error('Error al actualizar página: ' + err.message);
     },
   });
 
   const deletePage = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const startTime = Date.now();
+      const { error: deleteError } = await supabase
         .from('lowcode_page_definitions')
         .delete()
         .eq('id', id);
       
-      if (error) throw error;
+      if (deleteError) throw deleteError;
+      collectTelemetry('useLowCodePages', 'deletePage', 'success', Date.now() - startTime);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lowcode-pages'] });
       toast.success('Página eliminada');
     },
-    onError: (error) => {
-      toast.error('Error al eliminar página: ' + error.message);
+    onError: (err: Error) => {
+      const kbError = parseError(err);
+      setError(kbError);
+      toast.error('Error al eliminar página: ' + err.message);
     },
   });
 
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = pagesQuery.isLoading;
+  const isSuccess = status === 'success';
+  const isError = status === 'error' || !!pagesQuery.error;
+
   return {
     pages: pagesQuery.data || [],
-    isLoading: pagesQuery.isLoading,
-    error: pagesQuery.error,
+    isLoading,
+    error: error || (pagesQuery.error ? parseError(pagesQuery.error) : null),
     createPage,
     updatePage,
     deletePage,
+    // === KB 2.0 ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
+    lastRefresh,
+    clearError,
   };
 }
