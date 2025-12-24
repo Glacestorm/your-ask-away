@@ -326,7 +326,7 @@ serve(async (req) => {
         Este es un correo automático generado por el Sistema de Monitorización de Salud.
       </p>
       <p style="color: rgba(255,255,255,0.5); margin: 8px 0 0 0; font-size: 12px;">
-        Creand Business Intelligence Platform
+        ObelixIA Business Intelligence Platform
       </p>
     </div>
   </div>

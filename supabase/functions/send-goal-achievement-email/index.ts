@@ -42,7 +42,7 @@ serve(async (req: Request): Promise<Response> => {
     console.log(`Sending achievement email to ${to} for ${metricLabel}`);
 
     const emailResponse = await resend.emails.send({
-      from: "Creand CRM <onboarding@resend.dev>",
+      from: "ObelixIA CRM <onboarding@resend.dev>",
       to: [to],
       subject: `🎯 Felicitats! Has assolit el teu objectiu de ${metricLabel}`,
       html: `
@@ -118,7 +118,7 @@ serve(async (req: Request): Promise<Response> => {
                   <tr>
                     <td style="background-color: #f9fafb; padding: 24px 40px; text-align: center; border-top: 1px solid #e5e7eb;">
                       <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-                        Aquest és un missatge automàtic del sistema CRM de Creand.
+                        Aquest és un missatge automàtic del sistema CRM de ObelixIA.
                       </p>
                     </td>
                   </tr>

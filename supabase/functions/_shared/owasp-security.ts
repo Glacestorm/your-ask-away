@@ -502,7 +502,7 @@ export async function safeExternalAPICall(
       signal: controller.signal,
       headers: {
         ...options.headers,
-        'User-Agent': 'CreandBankingApp/1.0'
+        'User-Agent': 'ObelixIAApp/1.0'
       }
     });
     

@@ -30,7 +30,7 @@ const KPI_DEFINITIONS: KPIDefinition[] = [
   { code: 'CROSS_SELL_RATIO', name: 'Ràtio Cross-Sell', category: 'commercial', formula: 'products_per_client', dataSources: ['company_products'], thresholds: { low: 1.5, high: 4 } },
   
   // Financial KPIs (10)
-  { code: 'REVENUE_TOTAL', name: 'Ingressos Totals', category: 'financial', formula: 'SUM(ingresos_creand)', dataSources: ['companies'], thresholds: { low: 50000, high: 200000 } },
+  { code: 'REVENUE_TOTAL', name: 'Ingressos Totals', category: 'financial', formula: 'SUM(ingresos_entidad_principal)', dataSources: ['companies'], thresholds: { low: 50000, high: 200000 } },
   { code: 'REVENUE_GROWTH', name: 'Creixement Ingressos', category: 'financial', formula: '(current-previous)/previous*100', dataSources: ['companies'], thresholds: { low: 5, high: 20 } },
   { code: 'AVG_CLIENT_VALUE', name: 'Valor Mitjà Client', category: 'financial', formula: 'SUM(revenue)/COUNT(clients)', dataSources: ['companies'], thresholds: { low: 5000, high: 25000 } },
   { code: 'PL_TOTAL', name: 'P&L Total', category: 'financial', formula: 'SUM(pl_banco)', dataSources: ['companies'], thresholds: { low: 10000, high: 100000 } },
@@ -255,7 +255,7 @@ serve(async (req) => {
           currentValue = opportunities.length > 0 ? (won / opportunities.length) * 100 : 0;
           break;
         case 'REVENUE_TOTAL':
-          currentValue = filteredCompanies.reduce((sum, c) => sum + (c.ingresos_creand || 0), 0);
+          currentValue = filteredCompanies.reduce((sum, c) => sum + (c.ingresos_entidad_principal || 0), 0);
           break;
         case 'ACTIVE_CLIENTS':
           currentValue = filteredCompanies.filter(c => c.status_id !== null).length;

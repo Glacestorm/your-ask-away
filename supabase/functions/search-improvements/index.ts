@@ -860,7 +860,7 @@ function getDefaultImprovements(): ImprovementsAnalysis & {
         installed: true,
         installedDetails: [
           "Tailwind CSS 3.x actiu",
-          "4 temes: day, night, creand, aurora",
+          "4 temes: day, night, corporate, aurora",
           "CSS variables en index.css",
           "ThemeSelector component",
           "Transicions suaus entre temes"
@@ -1458,7 +1458,7 @@ function getDefaultImprovements(): ImprovementsAnalysis & {
         name: "14. Tailwind CSS 3 amb Design System",
         relevance: "Sistema de disseny complet amb 4 temes",
         adoptionRate: "Producció estable",
-        recommendation: "✅ INSTAL·LAT - 4 temes (day/night/creand/aurora)",
+        recommendation: "✅ INSTAL·LAT - 4 temes (day/night/corporate/aurora)",
         integrationPotential: "IMPLEMENTAT 100%",
         installed: true
       },
@@ -1541,7 +1541,7 @@ function getDefaultImprovements(): ImprovementsAnalysis & {
       "✅ INSTAL·LAT: HTTP/3 support amb Alt-Svc headers i preconnect hints (vite.config.ts, index.html)"
     ],
     uxEnhancements: [
-      "✅ INSTAL·LAT: Sistema 4 temes (day/night/creand/aurora)",
+      "✅ INSTAL·LAT: Sistema 4 temes (day/night/corporate/aurora)",
       "✅ INSTAL·LAT: Multi-idioma (CA/ES/EN/FR)",
       "✅ INSTAL·LAT: Mode offline amb sincronització",
       "✅ INSTAL·LAT: Firma digital en canvas",

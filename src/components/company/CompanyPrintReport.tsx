@@ -14,7 +14,7 @@ interface CompanyPrintReportProps {
 type ExtendedCompany = CompanyWithDetails & {
   facturacion_anual?: number | null;
   periodo_facturacion?: string | null;
-  ingresos_creand?: number | null;
+  ingresos_entidad_principal?: number | null;
   tags?: string[] | null;
 };
 
@@ -137,8 +137,8 @@ export const CompanyPrintReport = ({ companies, title = "Informe de Empresas" }:
                   <span className="text-gray-500">Período:</span>
                   <span>{company.periodo_facturacion || '-'}</span>
                   
-                  <span className="text-gray-500">Ingresos Creand:</span>
-                  <span>{formatCurrency(company.ingresos_creand)}</span>
+                  <span className="text-gray-500">Ingresos Entidad Principal:</span>
+                  <span>{formatCurrency(company.ingresos_entidad_principal)}</span>
                   
                   <span className="text-gray-500">P&L Banco:</span>
                   <span>{formatCurrency(company.pl_banco)}</span>
@@ -155,7 +155,7 @@ export const CompanyPrintReport = ({ companies, title = "Informe de Empresas" }:
               <div className="space-y-2">
                 <h3 className="font-semibold text-gray-700 border-b pb-1">Vinculación y Contacto</h3>
                 <div className="grid grid-cols-2 gap-1">
-                  <span className="text-gray-500">Vinc. Creand:</span>
+                  <span className="text-gray-500">Vinc. Entidad 1:</span>
                   <span className="font-medium text-green-700">{formatPercent(company.vinculacion_entidad_1)}</span>
                   
                   <span className="text-gray-500">Vinc. Morabanc:</span>
@@ -226,7 +226,7 @@ export const CompanyPrintReport = ({ companies, title = "Informe de Empresas" }:
 
       {/* Footer */}
       <div className="mt-8 pt-4 border-t text-center text-sm text-gray-500">
-        <p>Informe generado automáticamente - Creand Business Management</p>
+        <p>Informe generado automáticamente - ObelixIA Business Management</p>
       </div>
 
       {/* Print Styles */}
@@ -256,7 +256,7 @@ export const printCompaniesReport = (companies: CompanyWithDetails[], title?: st
   type ExtendedCompany = CompanyWithDetails & {
     facturacion_anual?: number | null;
     periodo_facturacion?: string | null;
-    ingresos_creand?: number | null;
+    ingresos_entidad_principal?: number | null;
     tags?: string[] | null;
   };
 
@@ -323,7 +323,7 @@ export const printCompaniesReport = (companies: CompanyWithDetails[], title?: st
             <table>
               <tr><td>Facturación:</td><td>${formatCurrency(company.facturacion_anual || company.turnover)}</td></tr>
               <tr><td>Período:</td><td>${company.periodo_facturacion || '-'}</td></tr>
-              <tr><td>Ingresos Creand:</td><td>${formatCurrency(company.ingresos_creand)}</td></tr>
+              <tr><td>Ingresos Entidad Principal:</td><td>${formatCurrency(company.ingresos_entidad_principal)}</td></tr>
               <tr><td>P&L Banco:</td><td>${formatCurrency(company.pl_banco)}</td></tr>
               <tr><td>Beneficios:</td><td>${formatCurrency(company.beneficios)}</td></tr>
               <tr><td>BP:</td><td>${company.bp || '-'}</td></tr>
@@ -332,7 +332,7 @@ export const printCompaniesReport = (companies: CompanyWithDetails[], title?: st
           <div class="detail-column">
             <h3>Vinculación y Contacto</h3>
             <table>
-              <tr><td>Vinc. Creand:</td><td class="highlight-green">${formatPercent(company.vinculacion_entidad_1)}</td></tr>
+              <tr><td>Vinc. Entidad 1:</td><td class="highlight-green">${formatPercent(company.vinculacion_entidad_1)}</td></tr>
               <tr><td>Vinc. Morabanc:</td><td>${formatPercent(company.vinculacion_entidad_2)}</td></tr>
               <tr><td>Vinc. Andbank:</td><td>${formatPercent(company.vinculacion_entidad_3)}</td></tr>
               <tr><td>Teléfono:</td><td>${company.phone || '-'}</td></tr>
