@@ -169,7 +169,7 @@ export function useServiceQuotes(installationId?: string) {
       collectTelemetry('useServiceQuotes', 'fetchQuotes', 'success', Date.now() - startTime);
     } catch (err) {
       const parsedErr = parseError(err);
-      const kbError = createKBError('FETCH_ERROR', parsedErr.message, { installationId: instId });
+      const kbError = createKBError('FETCH_ERROR', parsedErr.message, { details: { installationId: instId } });
       setError(kbError);
       setStatus('error');
       setRetryCount(prev => prev + 1);
@@ -251,7 +251,7 @@ export function useServiceQuotes(installationId?: string) {
       return quoteData as ServiceQuote;
     } catch (err) {
       const parsedErr = parseError(err);
-      const kbError = createKBError('FETCH_QUOTE_ERROR', parsedErr.message, { quoteId });
+      const kbError = createKBError('FETCH_QUOTE_ERROR', parsedErr.message, { details: { quoteId } });
       setError(kbError);
       setStatus('error');
       setRetryCount(prev => prev + 1);
@@ -322,7 +322,7 @@ export function useServiceQuotes(installationId?: string) {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error desconocido';
       console.error('Error creating quote:', err);
-      setError({ code: 'CREATE_ERROR', message });
+      setError(createKBError('CREATE_ERROR', message));
       toast.error('Error al crear presupuesto');
       return null;
     } finally {
@@ -360,7 +360,7 @@ export function useServiceQuotes(installationId?: string) {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error desconocido';
       console.error('Error adding quote item:', err);
-      setError({ code: 'ADD_ITEM_ERROR', message, details: { quoteId } });
+      setError(createKBError('ADD_ITEM_ERROR', message, { details: { quoteId } }));
       toast.error('Error al añadir línea');
       return null;
     }
@@ -382,7 +382,7 @@ export function useServiceQuotes(installationId?: string) {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error desconocido';
       console.error('Error removing quote item:', err);
-      setError({ code: 'REMOVE_ITEM_ERROR', message, details: { itemId, quoteId } });
+      setError(createKBError('REMOVE_ITEM_ERROR', message, { details: { itemId, quoteId } }));
       toast.error('Error al eliminar línea');
     }
   }, []);
@@ -453,7 +453,7 @@ export function useServiceQuotes(installationId?: string) {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error desconocido';
       console.error('Error updating status:', err);
-      setError({ code: 'UPDATE_STATUS_ERROR', message, details: { quoteId, newStatus } });
+      setError(createKBError('UPDATE_STATUS_ERROR', message, { details: { quoteId, newStatus } }));
       toast.error('Error al actualizar estado');
     }
   }, []);
@@ -496,11 +496,6 @@ export function useServiceQuotes(installationId?: string) {
 
     return stats;
   }, [quotes]);
-
-  // KB Pattern: Clear error
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
 
   return {
     // State
