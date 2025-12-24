@@ -10,19 +10,40 @@ import type {
   SurveyTrigger
 } from '@/types/satisfaction';
 
+// === ERROR TIPADO KB ===
+export interface SatisfactionSurveysError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export function useSatisfactionSurveys() {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<SatisfactionSurveysError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   // Fetch all surveys
   const { data: surveys, isLoading: loadingSurveys } = useQuery({
     queryKey: ['satisfaction-surveys'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('satisfaction_surveys')
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (fetchError) {
+        setError({
+          code: 'FETCH_SURVEYS_ERROR',
+          message: fetchError.message,
+          details: { originalError: String(fetchError) }
+        });
+        throw fetchError;
+      }
+      setLastRefresh(new Date());
       return data as SatisfactionSurvey[];
     }
   });
@@ -122,7 +143,11 @@ export function useSatisfactionSurveys() {
     deleteSurvey: deleteSurveyMutation.mutateAsync,
     isCreating: createSurveyMutation.isPending,
     isUpdating: updateSurveyMutation.isPending,
-    isDeleting: deleteSurveyMutation.isPending
+    isDeleting: deleteSurveyMutation.isPending,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
 
