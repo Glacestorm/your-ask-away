@@ -57,11 +57,22 @@ interface BiometricAnomaly {
   rawData?: any;
 }
 
+// === ERROR TIPADO KB ===
+export interface BehavioralBiometricsError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 interface UseBehavioralBiometricsReturn {
   isCollecting: boolean;
   currentProfile: BiometricProfile | null;
   anomalies: BiometricAnomaly[];
   matchScore: number;
+  // === KB ADDITIONS ===
+  error: BehavioralBiometricsError | null;
+  lastRefresh: Date | null;
+  clearError: () => void;
   startCollection: () => void;
   stopCollection: () => void;
   getTypingDNA: () => TypingPattern | null;
@@ -75,7 +86,12 @@ export function useBehavioralBiometrics(): UseBehavioralBiometricsReturn {
   const [currentProfile, setCurrentProfile] = useState<BiometricProfile | null>(null);
   const [anomalies, setAnomalies] = useState<BiometricAnomaly[]>([]);
   const [matchScore, setMatchScore] = useState(100);
+  // === ESTADO KB ===
+  const [error, setError] = useState<BehavioralBiometricsError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
   // Typing metrics
   const keyDownTimes = useRef<Map<string, number>>(new Map());
   const keyIntervals = useRef<number[]>([]);
@@ -536,6 +552,10 @@ export function useBehavioralBiometrics(): UseBehavioralBiometricsReturn {
     currentProfile,
     anomalies,
     matchScore,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
     startCollection,
     stopCollection,
     getTypingDNA,

@@ -3,6 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useCallback, useEffect, useState } from 'react';
 
+// === ERROR TIPADO KB ===
+export interface BehavioralNudgesError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 /**
  * Innovative Behavioral Nudges System
  * Based on Octalysis Framework and behavioral science research
@@ -57,7 +64,12 @@ export function useBehavioralNudges(userId?: string, companyId?: string) {
   const queryClient = useQueryClient();
   const [activeNudges, setActiveNudges] = useState<BehavioralNudge[]>([]);
   const [streakData, setStreakData] = useState<UserStreak | null>(null);
+  // === ESTADO KB ===
+  const [error, setError] = useState<BehavioralNudgesError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
   // Generate contextual nudges based on user behavior
   const generateNudges = useCallback(() => {
     const nudges: BehavioralNudge[] = [];
@@ -288,5 +300,9 @@ export function useBehavioralNudges(userId?: string, companyId?: string) {
     getLeaderboardPosition,
     calculateEngagementScore,
     generateNudges,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }

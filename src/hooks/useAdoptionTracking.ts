@@ -2,7 +2,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Json } from '@/integrations/supabase/types';
+import { useState, useCallback } from 'react';
 
+// === ERROR TIPADO KB ===
+export interface AdoptionTrackingError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 export interface FeatureUsage {
   id: string;
   company_id?: string;
@@ -79,7 +86,12 @@ export interface AdoptionScore {
 
 export function useAdoptionTracking(companyId?: string) {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<AdoptionTrackingError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
   // Fetch feature usage for a company
   const { data: featureUsage, isLoading: loadingUsage } = useQuery({
     queryKey: ['feature-usage', companyId],
@@ -448,5 +460,9 @@ export function useAdoptionTracking(companyId?: string) {
     isPredicting: predictTimeToValue.isPending,
     getAdoptionSummary,
     getRiskIndicators,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
