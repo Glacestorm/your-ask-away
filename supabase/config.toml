@@ -371,3 +371,6 @@ verify_jwt = true
 
 [functions.business-intelligence]
 verify_jwt = true
+
+[functions.cs-metrics-assistant]
+verify_jwt = true
