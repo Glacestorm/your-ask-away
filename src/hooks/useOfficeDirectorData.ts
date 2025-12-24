@@ -2,7 +2,9 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format, subMonths } from 'date-fns';
 import { DateRange } from 'react-day-picker';
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { createKBError } from '@/hooks/core/useKBBase';
 
 interface GestorDetail {
   name: string;
@@ -196,6 +198,31 @@ async function fetchOfficeData(
  * - Fetches all gestor data in single bulk operation
  */
 export function useOfficeDirectorData(dateRange: DateRange | undefined, oficina: string | null) {
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
+
   const { fromDate, toDate, prevFromDate, prevToDate, cacheKey } = useMemo(() => {
     if (!dateRange?.from || !dateRange?.to || !oficina) {
       return { fromDate: '', toDate: '', prevFromDate: '', prevToDate: '', cacheKey: '' };
@@ -217,7 +244,22 @@ export function useOfficeDirectorData(dateRange: DateRange | undefined, oficina:
 
   const query = useQuery({
     queryKey: ['dashboard', 'office', cacheKey],
-    queryFn: () => fetchOfficeData(oficina!, fromDate, toDate, prevFromDate, prevToDate),
+    queryFn: async () => {
+      setStatus('loading');
+      try {
+        const result = await fetchOfficeData(oficina!, fromDate, toDate, prevFromDate, prevToDate);
+        setStatus('success');
+        setLastSuccess(new Date());
+        setLastRefresh(new Date());
+        setRetryCount(0);
+        return result;
+      } catch (err) {
+        const kbError = createKBError('FETCH_ERROR', err instanceof Error ? err.message : 'Error desconocido');
+        setError(kbError);
+        setStatus('error');
+        throw err;
+      }
+    },
     enabled: !!cacheKey && !!oficina,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
@@ -226,7 +268,18 @@ export function useOfficeDirectorData(dateRange: DateRange | undefined, oficina:
   return {
     data: query.data || null,
     loading: query.isLoading,
-    error: query.error,
+    error: error || (query.error ? createKBError('QUERY_ERROR', String(query.error)) : null),
     refetch: query.refetch,
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoading: isLoading || query.isLoading,
+    isSuccess,
+    isError,
+    lastRefresh,
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
   };
 }

@@ -4,13 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useCelebration } from './useCelebration';
 import { Json } from '@/integrations/supabase/types';
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { createKBError, collectTelemetry } from '@/hooks/core/useKBBase';
 
-// === ERROR TIPADO KB ===
-export interface OnboardingError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// === ERROR TIPADO KB 2.0 ===
+export type OnboardingError = KBError;
 
 export interface OnboardingStep {
   id: string;
@@ -68,12 +66,31 @@ export interface OnboardingProgress {
 export function useOnboarding(companyId?: string) {
   const queryClient = useQueryClient();
   const { celebrateGoalAchievement, fireCelebration, fireStarBurst } = useCelebration();
-  // === ESTADO KB ===
-  const [error, setError] = useState<OnboardingError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   // Fetch available templates
   const { data: templates, isLoading: loadingTemplates } = useQuery({
@@ -379,9 +396,17 @@ export function useOnboarding(companyId?: string) {
     getRecommendedTemplate,
     getNextStep,
     calculateStreak,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoading: isLoading || loadingTemplates || loadingProgress,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
+    reset,
   };
 }

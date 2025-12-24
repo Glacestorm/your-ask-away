@@ -1,6 +1,8 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { createKBError, collectTelemetry } from '@/hooks/core/useKBBase';
 
 export interface ConflictInfo {
   recordId: string;
@@ -22,6 +24,30 @@ export function useOptimisticLock({
   versionField = 'updated_at',
   onConflict,
 }: UseOptimisticLockOptions) {
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
   const [isUpdating, setIsUpdating] = useState(false);
   const [conflict, setConflict] = useState<ConflictInfo | null>(null);
 
@@ -175,5 +201,17 @@ export function useOptimisticLock({
     conflict,
     clearConflict,
     hasConflict: conflict !== null,
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoading: isLoading || isUpdating,
+    isSuccess,
+    isError,
+    error,
+    lastRefresh,
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
   };
 }
