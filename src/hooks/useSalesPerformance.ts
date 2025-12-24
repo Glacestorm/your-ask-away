@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from './core';
 
 export interface SalesQuota {
   id: string;
@@ -370,26 +371,66 @@ export function useSalesPerformanceMutations() {
 }
 
 export function useCalculateSalesPerformance() {
-  const [isCalculating, setIsCalculating] = useState(false);
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  const calculate = async () => {
-    setIsCalculating(true);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isCalculating = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const calculate = useCallback(async () => {
+    setStatus('loading');
+    setError(null);
+    setLastRefresh(new Date());
+    const startTime = Date.now();
+    
     try {
-      const { data, error } = await supabase.functions.invoke('calculate-sales-performance', {
+      const { data, error: fnError } = await supabase.functions.invoke('calculate-sales-performance', {
         body: { calculateAll: true }
       });
       
-      if (error) throw error;
+      if (fnError) throw fnError;
       toast.success('Rendimiento de ventas calculado');
+      setLastSuccess(new Date());
+      setStatus('success');
+      setRetryCount(0);
+      collectTelemetry('useCalculateSalesPerformance', 'calculate', 'success', Date.now() - startTime);
       return data;
-    } catch (error) {
-      console.error('Error calculating sales performance:', error);
+    } catch (err) {
+      const kbError = parseError(err);
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useCalculateSalesPerformance', 'calculate', 'error', Date.now() - startTime, kbError);
+      console.error('Error calculating sales performance:', err);
       toast.error('Error al calcular el rendimiento');
-      throw error;
-    } finally {
-      setIsCalculating(false);
+      throw err;
     }
-  };
+  }, []);
 
-  return { calculate, isCalculating };
+  return {
+    calculate,
+    isCalculating,
+    // === KB 2.0 ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
+    error,
+    lastRefresh,
+    lastSuccess,
+    retryCount,
+    clearError
+  };
 }

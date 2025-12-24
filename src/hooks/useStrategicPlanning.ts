@@ -2,13 +2,10 @@ import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Json } from '@/integrations/supabase/types';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from './core';
 
-// === ERROR TIPADO KB ===
-export interface StrategicPlanningError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// === KB 2.0 ERROR TYPE ===
+export type StrategicPlanningError = KBError;
 
 // Types
 export interface DafoAnalysis {
@@ -132,19 +129,32 @@ export interface FinancialScenario {
 
 // DAFO Hook
 export function useDafoAnalysis(companyId?: string) {
-  const [isLoading, setIsLoading] = useState(false);
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
   const [analyses, setAnalyses] = useState<DafoAnalysis[]>([]);
   const [currentAnalysis, setCurrentAnalysis] = useState<DafoAnalysis | null>(null);
   const [items, setItems] = useState<DafoItem[]>([]);
-  const [error, setError] = useState<StrategicPlanningError | null>(null);
-  // === ESTADO KB ===
-  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
 
   const fetchAnalyses = useCallback(async () => {
-    setIsLoading(true);
+    setStatus('loading');
+    setError(null);
+    const startTime = Date.now();
     try {
       let query = supabase
         .from('business_dafo_analysis')
@@ -159,11 +169,16 @@ export function useDafoAnalysis(companyId?: string) {
       if (fetchError) throw fetchError;
       setAnalyses((data || []) as DafoAnalysis[]);
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setStatus('success');
+      setRetryCount(0);
+      collectTelemetry('useDafoAnalysis', 'fetchAnalyses', 'success', Date.now() - startTime);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error fetching DAFO analyses';
-      setError({ code: 'FETCH_DAFO_ERROR', message, details: { originalError: String(err) } });
-    } finally {
-      setIsLoading(false);
+      const kbError = parseError(err);
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useDafoAnalysis', 'fetchAnalyses', 'error', Date.now() - startTime, kbError);
     }
   }, [companyId]);
 
@@ -178,8 +193,8 @@ export function useDafoAnalysis(companyId?: string) {
       if (fetchError) throw fetchError;
       setItems((data || []) as DafoItem[]);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error fetching DAFO items';
-      setError({ code: 'FETCH_ITEMS_ERROR', message, details: { originalError: String(err) } });
+      const kbError = parseError(err);
+      setError(kbError);
     }
   }, []);
 
@@ -307,24 +322,41 @@ export function useDafoAnalysis(companyId?: string) {
     addItem,
     updateItem,
     deleteItem,
-    // === KB ADDITIONS ===
+    // === KB 2.0 ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError
   };
 }
 
 // Business Plan Evaluation Hook
 export function useBusinessPlanEvaluation(companyId?: string) {
-  const [isLoading, setIsLoading] = useState(false);
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
   const [evaluations, setEvaluations] = useState<BusinessPlanEvaluation[]>([]);
   const [currentEvaluation, setCurrentEvaluation] = useState<BusinessPlanEvaluation | null>(null);
   const [sections, setSections] = useState<BusinessPlanSection[]>([]);
-  const [error, setError] = useState<StrategicPlanningError | null>(null);
-  // === ESTADO KB ===
-  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
 
   const SECTION_TEMPLATES = [
     { number: 1, name: 'Idea de Negocio', weight: 0.10 },
@@ -340,7 +372,9 @@ export function useBusinessPlanEvaluation(companyId?: string) {
   ];
 
   const fetchEvaluations = useCallback(async () => {
-    setIsLoading(true);
+    setStatus('loading');
+    setError(null);
+    const startTime = Date.now();
     try {
       let query = supabase
         .from('business_plan_evaluations')
@@ -355,11 +389,16 @@ export function useBusinessPlanEvaluation(companyId?: string) {
       if (fetchError) throw fetchError;
       setEvaluations((data || []) as BusinessPlanEvaluation[]);
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setStatus('success');
+      setRetryCount(0);
+      collectTelemetry('useBusinessPlanEvaluation', 'fetchEvaluations', 'success', Date.now() - startTime);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error fetching evaluations';
-      setError({ code: 'FETCH_EVALUATIONS_ERROR', message, details: { originalError: String(err) } });
-    } finally {
-      setIsLoading(false);
+      const kbError = parseError(err);
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useBusinessPlanEvaluation', 'fetchEvaluations', 'error', Date.now() - startTime, kbError);
     }
   }, [companyId]);
 
@@ -374,8 +413,8 @@ export function useBusinessPlanEvaluation(companyId?: string) {
       if (fetchError) throw fetchError;
       setSections((data || []) as BusinessPlanSection[]);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error fetching sections';
-      setError({ code: 'FETCH_SECTIONS_ERROR', message, details: { originalError: String(err) } });
+      const kbError = parseError(err);
+      setError(kbError);
     }
   }, []);
 
@@ -469,29 +508,48 @@ export function useBusinessPlanEvaluation(companyId?: string) {
     updateSection,
     calculateTotalScore,
     SECTION_TEMPLATES,
-    // === KB ADDITIONS ===
+    // === KB 2.0 ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError
   };
 }
 
 // Financial Plan Hook
 export function useFinancialPlan(companyId?: string) {
-  const [isLoading, setIsLoading] = useState(false);
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
   const [plans, setPlans] = useState<FinancialViabilityPlan[]>([]);
   const [currentPlan, setCurrentPlan] = useState<FinancialViabilityPlan | null>(null);
   const [accounts, setAccounts] = useState<FinancialPlanAccount[]>([]);
   const [ratios, setRatios] = useState<FinancialPlanRatio[]>([]);
   const [scenarios, setScenarios] = useState<FinancialScenario[]>([]);
-  const [error, setError] = useState<StrategicPlanningError | null>(null);
-  // === ESTADO KB ===
-  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
 
   const fetchPlans = useCallback(async () => {
-    setIsLoading(true);
+    setStatus('loading');
+    setError(null);
+    const startTime = Date.now();
     try {
       let query = supabase
         .from('financial_viability_plans')
@@ -506,11 +564,16 @@ export function useFinancialPlan(companyId?: string) {
       if (fetchError) throw fetchError;
       setPlans((data || []) as FinancialViabilityPlan[]);
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setStatus('success');
+      setRetryCount(0);
+      collectTelemetry('useFinancialPlan', 'fetchPlans', 'success', Date.now() - startTime);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error fetching financial plans';
-      setError({ code: 'FETCH_PLANS_ERROR', message, details: { originalError: String(err) } });
-    } finally {
-      setIsLoading(false);
+      const kbError = parseError(err);
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useFinancialPlan', 'fetchPlans', 'error', Date.now() - startTime, kbError);
     }
   }, [companyId]);
 
@@ -530,8 +593,8 @@ export function useFinancialPlan(companyId?: string) {
       setRatios((ratiosRes.data || []) as FinancialPlanRatio[]);
       setScenarios((scenariosRes.data || []) as FinancialScenario[]);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error fetching plan details';
-      setError({ code: 'FETCH_DETAILS_ERROR', message, details: { originalError: String(err) } });
+      const kbError = parseError(err);
+      setError(kbError);
     }
   }, []);
 
@@ -728,8 +791,14 @@ export function useFinancialPlan(companyId?: string) {
     upsertAccount,
     createScenario,
     calculateRatios,
-    // === KB ADDITIONS ===
+    // === KB 2.0 ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError
   };
 }

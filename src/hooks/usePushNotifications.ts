@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from './core';
 
-interface PushSubscription {
+interface PushSubscriptionData {
   id: string;
   endpoint: string;
   device_type?: string;
@@ -14,10 +15,27 @@ interface PushSubscription {
 
 export function usePushNotifications() {
   const { user } = useAuth();
-  const [subscriptions, setSubscriptions] = useState<PushSubscription[]>([]);
+  const [subscriptions, setSubscriptions] = useState<PushSubscriptionData[]>([]);
   const [isSupported, setIsSupported] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>('default');
-  const [loading, setLoading] = useState(false);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const loading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
 
   useEffect(() => {
     const supported = 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
@@ -49,7 +67,7 @@ export function usePushNotifications() {
     }
   };
 
-  const requestPermission = async (): Promise<boolean> => {
+  const requestPermission = useCallback(async (): Promise<boolean> => {
     if (!isSupported) {
       toast.error('El teu navegador no suporta notificacions push');
       return false;
@@ -67,17 +85,22 @@ export function usePushNotifications() {
         return false;
       }
       return false;
-    } catch (error) {
-      console.error('Error requesting permission:', error);
+    } catch (err) {
+      const kbError = parseError(err);
+      setError(kbError);
+      console.error('Error requesting permission:', err);
       toast.error('Error sol·licitant permís');
       return false;
     }
-  };
+  }, [isSupported]);
 
-  const subscribe = async () => {
+  const subscribe = useCallback(async () => {
     if (!user || !isSupported) return;
 
-    setLoading(true);
+    setStatus('loading');
+    setError(null);
+    const startTime = Date.now();
+    
     try {
       const registration = await navigator.serviceWorker.register('/sw.js');
       await navigator.serviceWorker.ready;
@@ -89,7 +112,7 @@ export function usePushNotifications() {
       const subscriptionJSON = subscription.toJSON();
 
       // Save to database
-      const { error } = await supabase
+      const { error: dbError } = await supabase
         .from('push_subscriptions')
         .upsert({
           user_id: user.id,
@@ -103,20 +126,27 @@ export function usePushNotifications() {
           onConflict: 'user_id,endpoint',
         });
 
-      if (error) throw error;
+      if (dbError) throw dbError;
 
       await loadSubscriptions();
       toast.success('Notificacions push activades');
-    } catch (error) {
-      console.error('Subscribe error:', error);
+      setLastSuccess(new Date());
+      setStatus('success');
+      setRetryCount(0);
+      collectTelemetry('usePushNotifications', 'subscribe', 'success', Date.now() - startTime);
+    } catch (err) {
+      const kbError = parseError(err);
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('usePushNotifications', 'subscribe', 'error', Date.now() - startTime, kbError);
+      console.error('Subscribe error:', err);
       toast.error('Error activant notificacions');
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [user, isSupported]);
 
-  const unsubscribe = async (subscriptionId?: string) => {
-    setLoading(true);
+  const unsubscribe = useCallback(async (subscriptionId?: string) => {
+    setStatus('loading');
     try {
       const registration = await navigator.serviceWorker.ready;
       const subscription = await registration.pushManager.getSubscription();
@@ -139,13 +169,15 @@ export function usePushNotifications() {
 
       await loadSubscriptions();
       toast.success('Notificacions push desactivades');
-    } catch (error) {
-      console.error('Unsubscribe error:', error);
+      setStatus('success');
+    } catch (err) {
+      const kbError = parseError(err);
+      setError(kbError);
+      setStatus('error');
+      console.error('Unsubscribe error:', err);
       toast.error('Error desactivant notificacions');
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [user]);
 
   const sendPushNotification = async (
     userId: string | null,
@@ -198,6 +230,16 @@ export function usePushNotifications() {
     sendPushNotification,
     sendTestNotification,
     loadSubscriptions,
+    // === KB 2.0 ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
+    error,
+    lastRefresh,
+    lastSuccess,
+    retryCount,
+    clearError
   };
 }
 

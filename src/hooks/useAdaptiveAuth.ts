@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from './core';
 
 interface DeviceFingerprint {
   userAgent: string;
@@ -55,21 +56,23 @@ interface Challenge {
   expiresAt: string;
 }
 
-// === ERROR TIPADO KB ===
-export interface AdaptiveAuthError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// === KB 2.0 ERROR TYPE ===
+export type AdaptiveAuthError = KBError;
 
 interface UseAdaptiveAuthReturn {
   riskAssessment: RiskAssessment | null;
   challenge: Challenge | null;
   isEvaluating: boolean;
   isVerifying: boolean;
-  // === KB ADDITIONS ===
+  // === KB 2.0 ===
+  status: KBStatus;
+  isIdle: boolean;
+  isSuccess: boolean;
+  isError: boolean;
   error: AdaptiveAuthError | null;
   lastRefresh: Date | null;
+  lastSuccess: Date | null;
+  retryCount: number;
   clearError: () => void;
   behaviorMetrics: BehaviorMetrics;
   evaluateRisk: (action?: string, transactionValue?: number) => Promise<RiskAssessment | null>;
@@ -147,12 +150,23 @@ export function useAdaptiveAuth(): UseAdaptiveAuthReturn {
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
-  // === ESTADO KB ===
-  const [error, setError] = useState<AdaptiveAuthError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
   
   // Behavior metrics collection
   const [behaviorMetrics, setBehaviorMetrics] = useState<BehaviorMetrics>({});
@@ -239,13 +253,16 @@ export function useAdaptiveAuth(): UseAdaptiveAuthReturn {
     transactionValue?: number
   ): Promise<RiskAssessment | null> => {
     if (!user?.id) {
-      setError({ code: 'NOT_AUTHENTICATED', message: 'Usuario no autenticado' });
+      const kbError = createKBError('NOT_AUTHENTICATED', 'Usuario no autenticado', { retryable: false });
+      setError(kbError);
       return null;
     }
 
     setIsEvaluating(true);
+    setStatus('loading');
     setError(null);
     setLastRefresh(new Date());
+    const startTime = Date.now();
 
     try {
       const deviceFingerprint = generateDeviceFingerprint();
@@ -268,21 +285,30 @@ export function useAdaptiveAuth(): UseAdaptiveAuthReturn {
       if (fnError) throw fnError;
 
       if (data.error) {
-        setError(data.error);
+        const kbError = createKBError(data.error.code || 'EVALUATION_ERROR', data.error.message || 'Error en evaluación', { retryable: true });
+        setError(kbError);
+        setStatus('error');
         return null;
       }
 
       const assessment = data.assessment as RiskAssessment;
       setRiskAssessment(assessment);
+      setLastSuccess(new Date());
+      setStatus('success');
+      setRetryCount(0);
 
       if (data.challenge) {
         setChallenge(data.challenge);
       }
 
+      collectTelemetry('useAdaptiveAuth', 'evaluateRisk', 'success', Date.now() - startTime);
       return assessment;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error evaluando riesgo';
-      setError({ code: 'EVALUATE_RISK_ERROR', message, details: { originalError: String(err) } });
+      const kbError = parseError(err);
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useAdaptiveAuth', 'evaluateRisk', 'error', Date.now() - startTime, kbError);
       console.error('Adaptive auth error:', err);
       return null;
     } finally {
@@ -292,7 +318,8 @@ export function useAdaptiveAuth(): UseAdaptiveAuthReturn {
 
   const verifyChallenge = useCallback(async (code: string): Promise<boolean> => {
     if (!challenge?.id) {
-      setError({ code: 'NO_CHALLENGE', message: 'No hay desafío activo' });
+      const kbError = createKBError('NO_CHALLENGE', 'No hay desafío activo', { retryable: false });
+      setError(kbError);
       return false;
     }
 
@@ -311,7 +338,8 @@ export function useAdaptiveAuth(): UseAdaptiveAuthReturn {
       if (fnError) throw fnError;
 
       if (!data.success) {
-        setError(data.error || 'Verificación fallida');
+        const kbError = createKBError('VERIFY_FAILED', data.error?.message || 'Verificación fallida', { retryable: true });
+        setError(kbError);
         return false;
       }
 
@@ -323,8 +351,8 @@ export function useAdaptiveAuth(): UseAdaptiveAuthReturn {
 
       return true;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error verificando código';
-      setError({ code: 'VERIFY_ERROR', message, details: { originalError: String(err) } });
+      const kbError = parseError(err);
+      setError(kbError);
       console.error('Verify challenge error:', err);
       return false;
     } finally {
@@ -377,9 +405,15 @@ export function useAdaptiveAuth(): UseAdaptiveAuthReturn {
     challenge,
     isEvaluating,
     isVerifying,
-    // === KB ADDITIONS ===
+    // === KB 2.0 ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
     behaviorMetrics,
     evaluateRisk,
