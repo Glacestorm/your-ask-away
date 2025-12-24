@@ -1,6 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useCMSTranslation } from '@/hooks/cms/useCMSTranslation';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { createKBError, parseError, collectTelemetry } from '@/hooks/core/useKBBase';
 
 interface FAQ {
   id: string;
@@ -24,6 +26,17 @@ interface TranslatedFAQs {
   faqs: FAQ[];
   categories: FAQCategory[];
   isTranslating: boolean;
+  // === KB 2.0 ===
+  status: KBStatus;
+  error: KBError | null;
+  isIdle: boolean;
+  isLoading: boolean;
+  isSuccess: boolean;
+  isError: boolean;
+  lastRefresh: Date | null;
+  lastSuccess: Date | null;
+  retryCount: number;
+  clearError: () => void;
 }
 
 export function useTranslatedFAQs(
@@ -36,8 +49,27 @@ export function useTranslatedFAQs(
   const [translatedCategories, setTranslatedCategories] = useState<FAQCategory[]>(originalCategories);
   const [isTranslating, setIsTranslating] = useState(false);
   
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  
   const lastLanguageRef = useRef<string>(language);
   const lastDataRef = useRef<string>('');
+
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
 
   useEffect(() => {
     const dataKey = `${originalFaqs.map(f => f.id).join(',')}|${originalCategories.map(c => c.id).join(',')}`;
@@ -55,6 +87,7 @@ export function useTranslatedFAQs(
       setTranslatedFaqs(originalFaqs);
       setTranslatedCategories(originalCategories);
       setIsTranslating(false);
+      setStatus('success');
       return;
     }
 
@@ -63,11 +96,15 @@ export function useTranslatedFAQs(
       setTranslatedFaqs([]);
       setTranslatedCategories([]);
       setIsTranslating(false);
+      setStatus('success');
       return;
     }
 
     const translateAll = async () => {
       setIsTranslating(true);
+      setStatus('loading');
+      setError(null);
+      const startTime = Date.now();
 
       try {
         // Collect all texts to translate
@@ -112,12 +149,23 @@ export function useTranslatedFAQs(
         
         setTranslatedCategories(newCategories);
         setTranslatedFaqs(newFaqs);
-      } catch (error) {
-        console.error('Error translating FAQs:', error);
+        setStatus('success');
+        setLastSuccess(new Date());
+        setRetryCount(0);
+        collectTelemetry('useTranslatedFAQs', 'translateAll', 'success', Date.now() - startTime);
+      } catch (err) {
+        const parsedErr = parseError(err);
+        const kbError = createKBError('TRANSLATION_ERROR', parsedErr.message, { originalError: String(err) });
+        setError(kbError);
+        setStatus('error');
+        setRetryCount(prev => prev + 1);
+        collectTelemetry('useTranslatedFAQs', 'translateAll', 'error', Date.now() - startTime, kbError);
+        console.error('Error translating FAQs:', err);
         setTranslatedFaqs(originalFaqs);
         setTranslatedCategories(originalCategories);
       } finally {
         setIsTranslating(false);
+        setLastRefresh(new Date());
       }
     };
 
@@ -128,5 +176,16 @@ export function useTranslatedFAQs(
     faqs: translatedFaqs,
     categories: translatedCategories,
     isTranslating,
+    // === KB 2.0 ===
+    status,
+    error,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
+    lastRefresh,
+    lastSuccess,
+    retryCount,
+    clearError,
   };
 }

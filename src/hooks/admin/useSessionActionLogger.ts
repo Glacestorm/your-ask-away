@@ -2,13 +2,18 @@
  * Hook for logging granular session actions during remote support sessions
  * Provides real-time action tracking for compliance and auditing
  * 
- * KB Pattern: lastRefresh, typed errors (realtime replaces auto-refresh)
+ * KB 2.0 Pattern
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { createKBError, parseError, collectTelemetry } from '@/hooks/core/useKBBase';
+
+// Re-export for backwards compat
+export type ActionLoggerError = KBError;
 
 // === TYPES ===
 export type ActionType =
@@ -61,28 +66,40 @@ export interface LogActionParams {
   metadata?: Record<string, unknown>;
 }
 
-// KB Pattern: Typed error interface
-export interface ActionLoggerError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
-
 export function useSessionActionLogger(sessionId: string | null) {
   const [actions, setActions] = useState<SessionAction[]>([]);
   const [loading, setLoading] = useState(false);
   const [isLogging, setIsLogging] = useState(false);
   
-  // KB Pattern: lastRefresh state
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   
-  // KB Pattern: Typed error state
-  const [error, setError] = useState<ActionLoggerError | null>(null);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoadingState = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
   
   const actionStartTime = useRef<number | null>(null);
   const { user } = useAuth();
 
-  // Subscribe to realtime updates (KB: realtime replaces auto-refresh)
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+  
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
+
+  // Subscribe to realtime updates
   useEffect(() => {
     if (!sessionId) return;
 
@@ -104,6 +121,7 @@ export function useSessionActionLogger(sessionId: string | null) {
             return [...prev, newAction];
           });
           setLastRefresh(new Date());
+          setStatus('success');
         }
       )
       .subscribe();
@@ -121,13 +139,16 @@ export function useSessionActionLogger(sessionId: string | null) {
   // Log an action to the database
   const logAction = useCallback(async (params: LogActionParams): Promise<SessionAction | null> => {
     if (!sessionId) {
+      const kbError = createKBError('NO_SESSION', 'No hay sesión activa');
+      setError(kbError);
       console.error('No session ID provided for action logging');
-      setError({ code: 'NO_SESSION', message: 'No hay sesión activa' });
       return null;
     }
 
     setIsLogging(true);
     setError(null);
+    setStatus('loading');
+    const startTime = Date.now();
     
     const duration = actionStartTime.current ? Date.now() - actionStartTime.current : undefined;
     actionStartTime.current = null;
@@ -162,11 +183,19 @@ export function useSessionActionLogger(sessionId: string | null) {
         toast.warning(`Acción de alto riesgo registrada: ${params.description}`);
       }
 
+      setStatus('success');
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry('useSessionActionLogger', 'logAction', 'success', Date.now() - startTime);
       return newAction;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error desconocido';
+      const parsedErr = parseError(err);
+      const kbError = createKBError('LOG_ACTION_ERROR', parsedErr.message, { sessionId, actionType: params.actionType });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useSessionActionLogger', 'logAction', 'error', Date.now() - startTime, kbError);
       console.error('Error logging action:', err);
-      setError({ code: 'LOG_ACTION_ERROR', message, details: { sessionId, actionType: params.actionType } });
       toast.error('Error al registrar acción');
       return null;
     } finally {
@@ -180,6 +209,8 @@ export function useSessionActionLogger(sessionId: string | null) {
 
     setLoading(true);
     setError(null);
+    setStatus('loading');
+    const startTime = Date.now();
     
     try {
       const { data, error: fetchError } = await supabase
@@ -191,11 +222,19 @@ export function useSessionActionLogger(sessionId: string | null) {
       if (fetchError) throw fetchError;
       
       setActions(data as SessionAction[]);
+      setStatus('success');
+      setLastSuccess(new Date());
       setLastRefresh(new Date());
+      setRetryCount(0);
+      collectTelemetry('useSessionActionLogger', 'fetchActions', 'success', Date.now() - startTime);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error desconocido';
+      const parsedErr = parseError(err);
+      const kbError = createKBError('FETCH_ACTIONS_ERROR', parsedErr.message, { sessionId });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useSessionActionLogger', 'fetchActions', 'error', Date.now() - startTime, kbError);
       console.error('Error fetching actions:', err);
-      setError({ code: 'FETCH_ACTIONS_ERROR', message, details: { sessionId } });
       toast.error('Error al cargar acciones');
     } finally {
       setLoading(false);
@@ -303,11 +342,6 @@ export function useSessionActionLogger(sessionId: string | null) {
     });
   }, [logAction]);
 
-  // KB Pattern: Clear error
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-
   return {
     // State
     actions,
@@ -329,6 +363,15 @@ export function useSessionActionLogger(sessionId: string | null) {
     logError,
     logSessionStart,
     logSessionEnd,
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoadingState,
+    isSuccess,
+    isError,
+    lastSuccess,
+    retryCount,
+    reset,
   };
 }
 

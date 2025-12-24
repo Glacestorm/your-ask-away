@@ -2,12 +2,17 @@
  * Hook for managing service quotes (presupuestos)
  * Handles CRUD operations, status management, and client approval workflow
  * 
- * KB Pattern: lastRefresh, typed errors, auto-refresh
+ * KB 2.0 Pattern
  */
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { createKBError, parseError, collectTelemetry } from '@/hooks/core/useKBBase';
+
+// Re-export for backwards compat
+export type QuotesError = KBError;
 
 // === TYPES ===
 export type ServiceType =
@@ -102,13 +107,6 @@ export interface CreateQuoteParams {
   paymentTerms?: string;
 }
 
-// KB Pattern: Typed error interface
-export interface QuotesError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
-
 export function useServiceQuotes(installationId?: string) {
   const [quotes, setQuotes] = useState<ServiceQuote[]>([]);
   const [currentQuote, setCurrentQuote] = useState<ServiceQuote | null>(null);
@@ -116,13 +114,32 @@ export function useServiceQuotes(installationId?: string) {
   const [quoteHistory, setQuoteHistory] = useState<QuoteHistoryEntry[]>([]);
   const [loading, setLoading] = useState(false);
   
-  // KB Pattern: lastRefresh state
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   
-  // KB Pattern: Typed error state
-  const [error, setError] = useState<QuotesError | null>(null);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
   
-  // KB Pattern: Auto-refresh refs
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
+  
+  // Auto-refresh refs
   const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch quotes for an installation
@@ -132,6 +149,8 @@ export function useServiceQuotes(installationId?: string) {
 
     setLoading(true);
     setError(null);
+    setStatus('loading');
+    const startTime = Date.now();
     
     try {
       const { data, error: fetchError } = await supabase
@@ -143,18 +162,26 @@ export function useServiceQuotes(installationId?: string) {
       if (fetchError) throw fetchError;
       
       setQuotes((data || []) as unknown as ServiceQuote[]);
+      setStatus('success');
+      setLastSuccess(new Date());
       setLastRefresh(new Date());
+      setRetryCount(0);
+      collectTelemetry('useServiceQuotes', 'fetchQuotes', 'success', Date.now() - startTime);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error desconocido';
+      const parsedErr = parseError(err);
+      const kbError = createKBError('FETCH_ERROR', parsedErr.message, { installationId: instId });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useServiceQuotes', 'fetchQuotes', 'error', Date.now() - startTime, kbError);
       console.error('Error fetching quotes:', err);
-      setError({ code: 'FETCH_ERROR', message, details: { installationId: instId } });
       toast.error('Error al cargar presupuestos');
     } finally {
       setLoading(false);
     }
   }, [installationId]);
 
-  // KB Pattern: Auto-refresh methods
+  // Auto-refresh methods
   const startAutoRefresh = useCallback((targetInstallationId?: string, intervalMs = 60000) => {
     stopAutoRefresh();
     const instId = targetInstallationId || installationId;
@@ -173,7 +200,7 @@ export function useServiceQuotes(installationId?: string) {
     }
   }, []);
 
-  // KB Pattern: Cleanup on unmount
+  // Cleanup on unmount
   useEffect(() => {
     return () => stopAutoRefresh();
   }, [stopAutoRefresh]);
@@ -182,6 +209,8 @@ export function useServiceQuotes(installationId?: string) {
   const fetchQuote = useCallback(async (quoteId: string) => {
     setLoading(true);
     setError(null);
+    setStatus('loading');
+    const startTime = Date.now();
     
     try {
       // Fetch quote
@@ -214,12 +243,20 @@ export function useServiceQuotes(installationId?: string) {
       if (historyError) throw historyError;
       setQuoteHistory((historyData || []) as unknown as QuoteHistoryEntry[]);
 
+      setStatus('success');
+      setLastSuccess(new Date());
       setLastRefresh(new Date());
+      setRetryCount(0);
+      collectTelemetry('useServiceQuotes', 'fetchQuote', 'success', Date.now() - startTime);
       return quoteData as ServiceQuote;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error desconocido';
+      const parsedErr = parseError(err);
+      const kbError = createKBError('FETCH_QUOTE_ERROR', parsedErr.message, { quoteId });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useServiceQuotes', 'fetchQuote', 'error', Date.now() - startTime, kbError);
       console.error('Error fetching quote:', err);
-      setError({ code: 'FETCH_QUOTE_ERROR', message, details: { quoteId } });
       toast.error('Error al cargar presupuesto');
       return null;
     } finally {
