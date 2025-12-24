@@ -182,6 +182,22 @@ export type {
   KBEnhancedSpan,
 } from './useKBSpan';
 
+// Optimistic Mutations (KB 4.5)
+export {
+  useKBOptimisticMutation,
+  useKBBatchMutation,
+  useKBMutationQueue,
+} from './useKBOptimisticMutation';
+
+export type {
+  OptimisticMutationOptions,
+  OptimisticMutationState,
+  OptimisticMutationReturn,
+  MutationHistoryEntry,
+  MutationStats,
+  BatchMutationOptions,
+} from './useKBOptimisticMutation';
+
 // Re-export defaults
 export { default as useKBBaseDefault } from './useKBBase';
 export { default as useKBQueryDefault } from './useKBQuery';
@@ -195,3 +211,4 @@ export { default as useKBEffectDefault } from './useKBEffect';
 export { default as useKBReactiveDefault } from './useKBReactive';
 export { default as useKBReact19Default } from './useKBReact19';
 export { default as useKBSchemaDefault } from './useKBSchema';
+export { default as useKBOptimisticMutationDefault } from './useKBOptimisticMutation';
