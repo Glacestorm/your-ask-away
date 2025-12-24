@@ -24,21 +24,13 @@ import {
   benchmarkCalculations,
   isWasmSupported
 } from '@/lib/wasm';
-
-// === ERROR TIPADO KB ===
-export interface WebAssemblyError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
 interface UseWebAssemblyResult {
   // Status
   isSupported: boolean;
   isInitialized: boolean;
   isUsingWasm: boolean;
-  isLoading: boolean;
-  error: Error | null;
   
   // Financial calculations
   calculations: {
@@ -56,37 +48,64 @@ interface UseWebAssemblyResult {
   // Utilities
   benchmark: () => Promise<{ jsTime: number; wasmTime: number; speedup: number }>;
   reinitialize: () => Promise<void>;
-  // === KB ADDITIONS ===
+  // === KB 2.0 STATE ===
+  status: KBStatus;
+  error: KBError | null;
+  isIdle: boolean;
+  isLoading: boolean;
+  isSuccess: boolean;
+  isError: boolean;
   lastRefresh: Date | null;
+  lastSuccess: Date | null;
+  retryCount: number;
   clearError: () => void;
 }
 
 export function useWebAssembly(): UseWebAssemblyResult {
-  const [isLoading, setIsLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isUsingWasm, setIsUsingWasm] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  // === ESTADO KB ===
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED STATES ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
 
   const initialize = useCallback(async () => {
-    setIsLoading(true);
+    const startTime = Date.now();
+    setStatus('loading');
     setError(null);
     
     try {
-      const wasmEnabled = await initFinancialWasm();
-      const status = getWasmStatus();
+      await initFinancialWasm();
+      const wasmStatus = getWasmStatus();
       
-      setIsInitialized(status.initialized);
-      setIsUsingWasm(status.active);
+      setIsInitialized(wasmStatus.initialized);
+      setIsUsingWasm(wasmStatus.active);
+      setStatus('success');
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry('useWebAssembly', 'initialize', 'success', Date.now() - startTime);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('WASM initialization failed'));
-    } finally {
-      setIsLoading(false);
+      const kbError = createKBError('WASM_INIT_ERROR', parseError(err), { originalError: String(err) });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useWebAssembly', 'initialize', 'error', Date.now() - startTime, kbError);
     }
   }, []);
 
@@ -102,8 +121,6 @@ export function useWebAssembly(): UseWebAssemblyResult {
     isSupported: isWasmSupported(),
     isInitialized,
     isUsingWasm,
-    isLoading,
-    error,
     
     calculations: {
       zScoreOriginal: calculateZScoreOriginal,
@@ -119,8 +136,16 @@ export function useWebAssembly(): UseWebAssemblyResult {
     
     benchmark,
     reinitialize: initialize,
-    // === KB ADDITIONS ===
+    // === KB 2.0 STATE ===
+    status,
+    error,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
   };
 }

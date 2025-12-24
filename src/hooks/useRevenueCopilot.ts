@@ -2,13 +2,7 @@ import { useState, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
-// === ERROR TIPADO KB ===
-export interface RevenueCopilotError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
 export interface CopilotMessage {
   role: 'user' | 'assistant';
@@ -28,17 +22,30 @@ export interface CopilotSession {
 export const useRevenueCopilot = () => {
   const queryClient = useQueryClient();
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  // === ESTADO KB ===
-  const [error, setError] = useState<RevenueCopilotError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED STATES ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
 
   const { data: sessions, refetch } = useQuery({
     queryKey: ['copilot-sessions'],
     queryFn: async () => {
+      const startTime = Date.now();
       try {
         const { data, error: fetchError } = await supabase
           .from('revenue_copilot_sessions')
@@ -50,15 +57,14 @@ export const useRevenueCopilot = () => {
         if (fetchError) throw fetchError;
         
         setLastRefresh(new Date());
+        setLastSuccess(new Date());
         setError(null);
+        collectTelemetry('useRevenueCopilot', 'fetchSessions', 'success', Date.now() - startTime);
         return (data as unknown) as CopilotSession[];
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Error desconocido';
-        setError({
-          code: 'FETCH_SESSIONS_ERROR',
-          message,
-          details: { originalError: String(err) }
-        });
+        const kbError = createKBError('FETCH_SESSIONS_ERROR', parseError(err), { originalError: String(err) });
+        setError(kbError);
+        collectTelemetry('useRevenueCopilot', 'fetchSessions', 'error', Date.now() - startTime, kbError);
         throw err;
       }
     }
@@ -68,7 +74,8 @@ export const useRevenueCopilot = () => {
     message: string,
     context?: Record<string, unknown>
   ): Promise<{ response: string; sessionId: string; insights: string[] }> => {
-    setIsLoading(true);
+    const startTime = Date.now();
+    setStatus('loading');
     setError(null);
     
     try {
@@ -83,7 +90,11 @@ export const useRevenueCopilot = () => {
       }
       
       queryClient.invalidateQueries({ queryKey: ['copilot-sessions'] });
+      setStatus('success');
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry('useRevenueCopilot', 'sendMessage', 'success', Date.now() - startTime);
       
       return {
         response: data.message,
@@ -91,35 +102,39 @@ export const useRevenueCopilot = () => {
         insights: data.insights || []
       };
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error en el copilot';
-      setError({
-        code: 'SEND_MESSAGE_ERROR',
-        message,
-        details: { originalError: String(err) }
-      });
+      const kbError = createKBError('SEND_MESSAGE_ERROR', parseError(err), { originalError: String(err) });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useRevenueCopilot', 'sendMessage', 'error', Date.now() - startTime, kbError);
       toast.error('Error en el copilot');
       throw err;
-    } finally {
-      setIsLoading(false);
     }
   }, [currentSessionId, queryClient]);
 
   const startNewSession = useCallback(() => {
     setCurrentSessionId(null);
     setError(null);
+    setStatus('idle');
   }, []);
 
   return {
     sessions,
     currentSessionId,
-    isLoading,
     sendMessage,
     startNewSession,
     setCurrentSessionId,
     refetch,
-    // === KB ADDITIONS ===
+    // === KB 2.0 STATE ===
+    status,
     error,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
     lastRefresh,
-    clearError
+    lastSuccess,
+    retryCount,
+    clearError,
   };
 };

@@ -18,7 +18,24 @@ import {
 const telemetryQueue: KBTelemetry[] = [];
 const MAX_TELEMETRY_QUEUE = 100;
 
-export function collectTelemetry(telemetry: KBTelemetry): void {
+export function collectTelemetry(
+  hookNameOrTelemetry: string | KBTelemetry,
+  operationName?: string,
+  status?: 'success' | 'error',
+  durationMs?: number,
+  error?: KBError
+): void {
+  const telemetry: KBTelemetry = typeof hookNameOrTelemetry === 'string'
+    ? {
+        hookName: hookNameOrTelemetry,
+        operationName: operationName || 'unknown',
+        timestamp: new Date().toISOString(),
+        durationMs: durationMs || 0,
+        status: status || 'success',
+        error,
+      }
+    : hookNameOrTelemetry;
+
   telemetryQueue.push(telemetry);
   if (telemetryQueue.length > MAX_TELEMETRY_QUEUE) {
     telemetryQueue.shift();

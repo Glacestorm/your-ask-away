@@ -1,13 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-
-// === ERROR TIPADO KB ===
-export interface NewsArticlesError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
 export interface NewsArticle {
   id: string;
@@ -71,7 +65,6 @@ const dedupeImages = (items: NewsArticle[]): NewsArticle[] => {
   const shouldDedupe = (cleanedUrl: string) => {
     try {
       const u = new URL(cleanedUrl);
-      // Don’t dedupe our generic category fallbacks; otherwise most items end up blank.
       if (u.hostname === 'images.unsplash.com') return false;
       return true;
     } catch {
@@ -102,18 +95,31 @@ export function useNewsArticles(options: UseNewsArticlesOptions = {}) {
   const { category = 'Todos', searchQuery = '', limit = 20 } = options;
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [featuredArticle, setFeaturedArticle] = useState<NewsArticle | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<NewsArticlesError | null>(null);
   const { toast } = useToast();
-  // === ESTADO KB ===
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED STATES ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
 
   const fetchArticles = useCallback(async () => {
+    const startTime = Date.now();
     try {
-      setIsLoading(true);
+      setStatus('loading');
       setError(null);
 
       let query = supabase
@@ -138,13 +144,11 @@ export function useNewsArticles(options: UseNewsArticlesOptions = {}) {
       const rawArticlesData = (data || []) as NewsArticle[];
       const articlesData = dedupeImages(rawArticlesData);
 
-      // Get featured article
       const featured = articlesData.find(a => a.is_featured);
       if (featured) {
         setFeaturedArticle(featured);
         setArticles(articlesData.filter(a => !a.is_featured));
       } else if (articlesData.length > 0) {
-        // Use highest relevance as featured if none marked
         const sorted = [...articlesData].sort((a, b) => b.relevance_score - a.relevance_score);
         setFeaturedArticle(sorted[0]);
         setArticles(articlesData.filter(a => a.id !== sorted[0].id));
@@ -152,13 +156,20 @@ export function useNewsArticles(options: UseNewsArticlesOptions = {}) {
         setFeaturedArticle(null);
         setArticles([]);
       }
+      
+      setStatus('success');
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry('useNewsArticles', 'fetchArticles', 'success', Date.now() - startTime);
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error fetching news:', err);
-      setError({ code: 'FETCH_NEWS_ERROR', message: err.message, details: { originalError: String(err) } });
-    } finally {
-      setIsLoading(false);
+      const kbError = createKBError('FETCH_NEWS_ERROR', parseError(err), { originalError: String(err) });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useNewsArticles', 'fetchArticles', 'error', Date.now() - startTime, kbError);
     }
   }, [category, searchQuery, limit]);
 
@@ -179,22 +190,20 @@ export function useNewsArticles(options: UseNewsArticlesOptions = {}) {
       });
 
       await fetchArticles();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error refreshing news:', err);
       toast({
         title: 'Error al actualizar',
-        description: err.message,
+        description: parseError(err),
         variant: 'destructive',
       });
     }
   }, [fetchArticles, toast]);
 
-  // Initial fetch
   useEffect(() => {
     fetchArticles();
   }, [fetchArticles]);
 
-  // Subscribe to realtime updates
   useEffect(() => {
     const channel = supabase
       .channel('news-updates')
@@ -240,14 +249,12 @@ export function useNewsArticles(options: UseNewsArticlesOptions = {}) {
     };
   }, [toast]);
 
-  // Get unique categories
   const getCategories = useCallback(() => {
     const cats = new Set(articles.map(a => a.category));
     if (featuredArticle) cats.add(featuredArticle.category);
     return ['Todos', ...Array.from(cats)];
   }, [articles, featuredArticle]);
 
-  // Get popular tags
   const getPopularTags = useCallback(() => {
     const tagCount: Record<string, number> = {};
     [...articles, featuredArticle].filter(Boolean).forEach(article => {
@@ -263,14 +270,20 @@ export function useNewsArticles(options: UseNewsArticlesOptions = {}) {
   return {
     articles,
     featuredArticle,
-    isLoading,
-    error,
     refreshNews,
     refetch: fetchArticles,
     getCategories,
     getPopularTags,
-    // === KB ADDITIONS ===
+    // === KB 2.0 STATE ===
+    status,
+    error,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
   };
 }
