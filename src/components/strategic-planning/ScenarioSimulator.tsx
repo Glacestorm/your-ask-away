@@ -2,9 +2,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
-import { TrendingUp, TrendingDown, Minus, Sparkles, FileDown, FileSpreadsheet } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Sparkles, FileDown, FileSpreadsheet, Brain, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { useFinancialPlan } from '@/hooks/useStrategicPlanning';
+import { useStrategicAI } from '@/hooks/useStrategicAI';
 import { ScenarioCharts } from './ScenarioCharts';
 import { generateViabilityPDF, downloadPDF, printPDF } from './PDFGenerator';
 import { exportScenariosToExcel } from '@/lib/excelExport';
@@ -19,12 +20,14 @@ const SCENARIO_TYPES = {
 
 export function ScenarioSimulator() {
   const { plans, currentPlan, setCurrentPlan, scenarios, createScenario, fetchPlanDetails } = useFinancialPlan();
+  const { predictScenarios, isLoading: isAIPredicting } = useStrategicAI();
   const [variables, setVariables] = useState({
     revenueGrowth: 10,
     costReduction: 5,
     investmentLevel: 50,
     marketExpansion: 20
   });
+  const [aiPredictions, setAIPredictions] = useState<any[]>([]);
 
   const handleCreateScenarios = async () => {
     if (!currentPlan) return;
@@ -40,6 +43,48 @@ export function ScenarioSimulator() {
           market_expansion: variables.marketExpansion * config.multiplier
         }
       });
+    }
+  };
+
+  const handleAIPrediction = async () => {
+    if (!currentPlan) return;
+    
+    // Build baseline data from variables
+    const years = currentPlan.projection_years;
+    const baseRevenue = 100000; // Base revenue for projection
+    const revenues = Array.from({ length: years }, (_, i) => 
+      baseRevenue * Math.pow(1 + variables.revenueGrowth / 100, i + 1)
+    );
+    const costs = revenues.map(r => r * (1 - variables.costReduction / 100) * 0.7);
+    const investments = Array.from({ length: years }, () => 
+      baseRevenue * (variables.investmentLevel / 100)
+    );
+    
+    const predictions = await predictScenarios(currentPlan.id, {
+      revenues,
+      costs,
+      investments,
+      sector_key: (currentPlan as any).sector_key || 'general'
+    });
+    
+    if (predictions.length > 0) {
+      setAIPredictions(predictions);
+      
+      // Create scenarios from AI predictions
+      for (const pred of predictions) {
+        await createScenario(currentPlan.id, {
+          scenario_name: `IA: ${SCENARIO_TYPES[pred.scenario_type]?.label || pred.scenario_type}`,
+          scenario_type: pred.scenario_type,
+          variables: { 
+            ai_generated: true,
+            probability: pred.probability,
+            key_assumptions: pred.key_assumptions 
+          },
+          npv: pred.projected_metrics.npv,
+          irr: pred.projected_metrics.irr / 100,
+          breakeven_year: pred.projected_metrics.breakeven_year
+        });
+      }
     }
   };
 
@@ -78,6 +123,10 @@ export function ScenarioSimulator() {
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setCurrentPlan(null)}>Cambiar Plan</Button>
           <Button onClick={handleCreateScenarios} className="gap-2"><Sparkles className="h-4 w-4" /> Generar Escenarios</Button>
+          <Button onClick={handleAIPrediction} disabled={isAIPredicting} variant="secondary" className="gap-2">
+            {isAIPredicting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Brain className="h-4 w-4" />}
+            Predicción IA
+          </Button>
           
           {/* Export Dropdown */}
           {scenarios.length > 0 && (
