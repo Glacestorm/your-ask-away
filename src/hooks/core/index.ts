@@ -656,3 +656,156 @@ export type {
   KBAggregateLoaderConfig,
   KBBatchedRequest,
 } from './useKBDataLoader';
+
+// ============================================================================
+// PHASE 15: Advanced State & Sync Patterns
+// ============================================================================
+
+// Prefetching & Preloading (KB 4.5 - Phase 15)
+export {
+  useKBPrefetch as useKBPrefetchAdvanced,
+  useKBPreload,
+  useKBLinkPrefetch,
+  useKBPredictivePrefetch,
+  useKBBatchPrefetch,
+  useKBRoutePreload,
+} from './useKBPrefetch';
+
+export type {
+  KBPrefetchConfig as KBPrefetchAdvancedConfig,
+  KBPrefetchState as KBPrefetchAdvancedState,
+  KBPrefetchReturn,
+  KBPreloadConfig,
+  KBPreloadResource,
+  KBPreloadState,
+  KBLinkPrefetchConfig,
+  KBPredictivePrefetchConfig,
+  KBPredictionContext,
+  KBBatchPrefetchConfig,
+  KBRoutePreloadConfig,
+} from './useKBPrefetch';
+
+// Background Sync (KB 4.5)
+export {
+  useKBBackgroundSync,
+  useKBPeriodicSync,
+  useKBSyncStatus,
+  useKBOptimisticSync,
+} from './useKBBackgroundSync';
+
+export type {
+  KBSyncConfig,
+  KBSyncState,
+  KBSyncOperation,
+  KBSyncResult,
+  KBSyncError,
+  KBSyncConflict,
+  KBSyncReturn,
+  KBPeriodicSyncConfig,
+  KBOptimisticSyncConfig,
+} from './useKBBackgroundSync';
+
+// Undo/Redo (KB 4.5)
+export {
+  useKBUndoRedo,
+  useKBStateHistory,
+  useKBTransactional,
+  useKBCheckpoint,
+  createCommand,
+  createValueCommand,
+} from './useKBUndoRedo';
+
+export type {
+  KBCommand,
+  KBUndoRedoConfig,
+  KBUndoRedoState,
+  KBUndoRedoReturn,
+  KBStateHistoryConfig,
+  KBTransactionContext,
+} from './useKBUndoRedo';
+
+// Snapshot & Restore (KB 4.5)
+export {
+  useKBSnapshot,
+  useKBFormSnapshot,
+  useKBStateSerializer,
+} from './useKBSnapshot';
+
+export type {
+  KBSnapshotConfig,
+  KBSnapshot,
+  KBSnapshotState,
+  KBSnapshotReturn,
+  KBSnapshotDiff,
+  KBSerializerConfig,
+} from './useKBSnapshot';
+
+// Query Persistence (KB 4.5)
+export {
+  useKBQueryPersistence,
+  useKBURLQuery,
+  useKBFilterPersistence,
+  useKBSortPersistence,
+  useKBViewPersistence,
+} from './useKBQueryPersistence';
+
+export type {
+  KBQueryPersistenceConfig,
+  KBQueryPersistenceState,
+  KBQueryPersistenceReturn,
+  KBURLQueryConfig,
+  KBFilter,
+  KBFilterPersistenceConfig,
+  KBSort,
+  KBSortPersistenceConfig,
+  KBViewConfig,
+} from './useKBQueryPersistence';
+
+// Request Cancellation (KB 4.5)
+export {
+  useKBCancellation,
+  useKBAbortableFetch,
+  useKBRaceCondition,
+  useKBDebounceCancel,
+  useKBSequentialCancel,
+  useKBCancellablePromise,
+  KBCancellationError,
+} from './useKBCancellation';
+
+export type {
+  KBCancellationConfig,
+  KBCancellationToken,
+  KBCancellationState,
+  KBCancellationReturn,
+  KBAbortableFetchConfig,
+} from './useKBCancellation';
+
+// Hydration & SSR (KB 4.5)
+export {
+  useKBHydration,
+  useKBIsomorphic,
+  useKBClientOnly,
+  useKBSSRSafe,
+  useKBHydratedState,
+  useKBDeferred,
+  useKBWindowEvent,
+  useKBMediaQuery,
+  useKBPrefersDarkMode,
+  useKBPrefersReducedMotion,
+  useKBDocumentVisibility,
+  useKBNetworkStatus,
+  useKBScrollRestoration,
+  getHydrationData,
+  setHydrationData,
+  markHydrated,
+  isHydrated,
+  dehydrateAll,
+  createHydrationScript,
+} from './useKBHydration';
+
+export type {
+  KBHydrationConfig,
+  KBHydrationState,
+  KBHydrationReturn,
+  KBNetworkStatus,
+} from './useKBHydration';

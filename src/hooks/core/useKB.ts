@@ -259,6 +259,62 @@ export const KB = {
   useDataLoader: useKBDataLoader,
   useQueryBatcher: useKBQueryBatcher,
   usePriorityLoader: useKBPriorityLoader,
+
+  // === PHASE 15: ADVANCED STATE & SYNC PATTERNS ===
+  // Prefetching & Preloading
+  usePrefetchAdvanced: null as unknown as typeof import('./useKBPrefetch').useKBPrefetch,
+  usePreload: null as unknown as typeof import('./useKBPrefetch').useKBPreload,
+  useLinkPrefetch: null as unknown as typeof import('./useKBPrefetch').useKBLinkPrefetch,
+  usePredictivePrefetch: null as unknown as typeof import('./useKBPrefetch').useKBPredictivePrefetch,
+  useBatchPrefetch: null as unknown as typeof import('./useKBPrefetch').useKBBatchPrefetch,
+  useRoutePreload: null as unknown as typeof import('./useKBPrefetch').useKBRoutePreload,
+  
+  // Background Sync
+  useBackgroundSync: null as unknown as typeof import('./useKBBackgroundSync').useKBBackgroundSync,
+  usePeriodicSync: null as unknown as typeof import('./useKBBackgroundSync').useKBPeriodicSync,
+  useSyncStatus: null as unknown as typeof import('./useKBBackgroundSync').useKBSyncStatus,
+  useOptimisticSync: null as unknown as typeof import('./useKBBackgroundSync').useKBOptimisticSync,
+  
+  // Undo/Redo
+  useUndoRedo: null as unknown as typeof import('./useKBUndoRedo').useKBUndoRedo,
+  useStateHistory: null as unknown as typeof import('./useKBUndoRedo').useKBStateHistory,
+  useTransactional: null as unknown as typeof import('./useKBUndoRedo').useKBTransactional,
+  useCheckpoint: null as unknown as typeof import('./useKBUndoRedo').useKBCheckpoint,
+  
+  // Snapshot & Restore
+  useSnapshot: null as unknown as typeof import('./useKBSnapshot').useKBSnapshot,
+  useFormSnapshot: null as unknown as typeof import('./useKBSnapshot').useKBFormSnapshot,
+  useStateSerializer: null as unknown as typeof import('./useKBSnapshot').useKBStateSerializer,
+  
+  // Query Persistence
+  useQueryPersistence: null as unknown as typeof import('./useKBQueryPersistence').useKBQueryPersistence,
+  useURLQuery: null as unknown as typeof import('./useKBQueryPersistence').useKBURLQuery,
+  useFilterPersistence: null as unknown as typeof import('./useKBQueryPersistence').useKBFilterPersistence,
+  useSortPersistence: null as unknown as typeof import('./useKBQueryPersistence').useKBSortPersistence,
+  useViewPersistence: null as unknown as typeof import('./useKBQueryPersistence').useKBViewPersistence,
+  
+  // Request Cancellation
+  useCancellation: null as unknown as typeof import('./useKBCancellation').useKBCancellation,
+  useAbortableFetch: null as unknown as typeof import('./useKBCancellation').useKBAbortableFetch,
+  useRaceCondition: null as unknown as typeof import('./useKBCancellation').useKBRaceCondition,
+  useDebounceCancel: null as unknown as typeof import('./useKBCancellation').useKBDebounceCancel,
+  useSequentialCancel: null as unknown as typeof import('./useKBCancellation').useKBSequentialCancel,
+  useCancellablePromise: null as unknown as typeof import('./useKBCancellation').useKBCancellablePromise,
+  
+  // Hydration & SSR
+  useHydration: null as unknown as typeof import('./useKBHydration').useKBHydration,
+  useIsomorphic: null as unknown as typeof import('./useKBHydration').useKBIsomorphic,
+  useClientOnly: null as unknown as typeof import('./useKBHydration').useKBClientOnly,
+  useSSRSafe: null as unknown as typeof import('./useKBHydration').useKBSSRSafe,
+  useHydratedState: null as unknown as typeof import('./useKBHydration').useKBHydratedState,
+  useDeferred: null as unknown as typeof import('./useKBHydration').useKBDeferred,
+  useWindowEvent: null as unknown as typeof import('./useKBHydration').useKBWindowEvent,
+  useMediaQuery: null as unknown as typeof import('./useKBHydration').useKBMediaQuery,
+  usePrefersDarkMode: null as unknown as typeof import('./useKBHydration').useKBPrefersDarkMode,
+  usePrefersReducedMotion: null as unknown as typeof import('./useKBHydration').useKBPrefersReducedMotion,
+  useDocumentVisibility: null as unknown as typeof import('./useKBHydration').useKBDocumentVisibility,
+  useNetworkStatus: null as unknown as typeof import('./useKBHydration').useKBNetworkStatus,
+  useScrollRestoration: null as unknown as typeof import('./useKBHydration').useKBScrollRestoration,
 } as const;
 
 // ============================================================================
