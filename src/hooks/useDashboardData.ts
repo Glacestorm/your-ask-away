@@ -2,13 +2,10 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { format, subDays, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import { DateRange } from 'react-day-picker';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
-// === ERROR TIPADO KB ===
-export interface DashboardDataError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+export type DashboardDataError = KBError;
+
 interface GestorDetail {
   id: string;
   name: string;
@@ -46,12 +43,25 @@ const CACHE_DURATION = 60000; // 1 minute cache
 export function useDashboardData(dateRange: DateRange | undefined) {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  // === ESTADO KB ===
-  const [error, setError] = useState<DashboardDataError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
   
   const cacheRef = useRef<{ data: DashboardData; timestamp: number; key: string } | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -272,11 +282,11 @@ export function useDashboardData(dateRange: DateRange | undefined) {
       setError(null);
     } catch (err) {
       if (err instanceof Error && err.name !== 'AbortError') {
-        setError({
-          code: 'FETCH_DASHBOARD_ERROR',
-          message: err.message,
-          details: { originalError: String(err) }
-        });
+        const parsed = parseError(err);
+        const kbError = createKBError('FETCH_DASHBOARD_ERROR', parsed.message, { retryable: true });
+        setError(kbError);
+        setStatus('error');
+        setRetryCount(prev => prev + 1);
         console.error('Error fetching dashboard data:', err);
       }
     } finally {
@@ -302,9 +312,16 @@ export function useDashboardData(dateRange: DateRange | undefined) {
   return { 
     data, 
     loading, 
-    // === KB ADDITIONS ===
+    // === KB 2.0 STATE ===
+    status,
     error, 
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
     refetch 
   };
