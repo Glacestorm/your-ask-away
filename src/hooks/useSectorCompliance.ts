@@ -1,13 +1,10 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from './core';
 
-// === ERROR TIPADO KB ===
-export interface SectorComplianceError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// KB 2.0: Re-export for backwards compat
+export type SectorComplianceError = KBError;
 
 export interface Regulation {
   id: string;
@@ -74,18 +71,39 @@ export interface ComplianceTask {
 }
 
 export function useSectorCompliance() {
-  const [loading, setLoading] = useState(false);
-  // === ESTADO KB ===
-  const [error, setError] = useState<SectorComplianceError | null>(null);
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const loading = status === 'loading';
+  const isIdle = status === 'idle';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  // === KB 2.0 RESET ===
+  const reset = useCallback(() => {
+    setError(null);
+    setStatus('idle');
+    setLastRefresh(null);
+    setLastSuccess(null);
+    setRetryCount(0);
+  }, []);
 
   // Get official regulations by sector
   const getOfficialRegulations = useCallback(async (sectorKey: string): Promise<Regulation[]> => {
-    setLoading(true);
+    setStatus('loading');
     setError(null);
+    const startTime = Date.now();
     
     try {
       const { data, error: queryError } = await supabase
@@ -98,7 +116,7 @@ export function useSectorCompliance() {
 
       if (queryError) throw queryError;
       
-      return (data || []).map(doc => ({
+      const result = (data || []).map(doc => ({
         id: doc.id,
         title: doc.title,
         description: doc.description,
@@ -114,20 +132,30 @@ export function useSectorCompliance() {
         metadata: (doc.metadata as Record<string, any>) || {},
         created_at: doc.created_at
       }));
+
+      setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setStatus('success');
+      setRetryCount(0);
+      collectTelemetry('useSectorCompliance', 'getOfficialRegulations', 'success', Date.now() - startTime);
+      return result;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error fetching regulations';
-      setError({ code: 'FETCH_REGULATIONS_ERROR', message, details: { originalError: String(err) } });
+      const parsedErr = parseError(err);
+      const kbError = createKBError('FETCH_REGULATIONS_ERROR', parsedErr.message, { retryable: true, details: { originalError: String(err) } });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useSectorCompliance', 'getOfficialRegulations', 'error', Date.now() - startTime, kbError);
       console.error('Error fetching official regulations:', err);
       return [];
-    } finally {
-      setLoading(false);
     }
   }, []);
 
   // Get internal documents for an organization
   const getInternalDocuments = useCallback(async (organizationId: string): Promise<ComplianceDocument[]> => {
-    setLoading(true);
+    setStatus('loading');
     setError(null);
+    const startTime = Date.now();
     
     try {
       const { data, error: queryError } = await supabase
@@ -140,7 +168,7 @@ export function useSectorCompliance() {
 
       if (queryError) throw queryError;
       
-      return (data || []).map(doc => ({
+      const result = (data || []).map(doc => ({
         id: doc.id,
         organization_id: doc.organization_id,
         document_type: doc.document_type,
@@ -154,20 +182,26 @@ export function useSectorCompliance() {
         created_at: doc.created_at,
         updated_at: doc.updated_at
       }));
+
+      setStatus('success');
+      collectTelemetry('useSectorCompliance', 'getInternalDocuments', 'success', Date.now() - startTime);
+      return result;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error fetching documents';
-      setError({ code: 'FETCH_DOCUMENTS_ERROR', message, details: { originalError: String(err) } });
+      const parsedErr = parseError(err);
+      const kbError = createKBError('FETCH_DOCUMENTS_ERROR', parsedErr.message, { retryable: true, details: { originalError: String(err) } });
+      setError(kbError);
+      setStatus('error');
+      collectTelemetry('useSectorCompliance', 'getInternalDocuments', 'error', Date.now() - startTime, kbError);
       console.error('Error fetching internal documents:', err);
       return [];
-    } finally {
-      setLoading(false);
     }
   }, []);
 
   // Get pending acknowledgments for an employee
   const getPendingAcknowledgments = useCallback(async (employeeId: string): Promise<PendingAcknowledgment[]> => {
-    setLoading(true);
+    setStatus('loading');
     setError(null);
+    const startTime = Date.now();
     
     try {
       // Get documents that require acknowledgment
@@ -201,14 +235,17 @@ export function useSectorCompliance() {
           is_mandatory: doc.is_mandatory || false
         }));
 
+      setStatus('success');
+      collectTelemetry('useSectorCompliance', 'getPendingAcknowledgments', 'success', Date.now() - startTime);
       return pending;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error fetching pending acknowledgments';
-      setError({ code: 'FETCH_ACKNOWLEDGMENTS_ERROR', message, details: { originalError: String(err) } });
+      const parsedErr = parseError(err);
+      const kbError = createKBError('FETCH_ACKNOWLEDGMENTS_ERROR', parsedErr.message, { retryable: true, details: { originalError: String(err) } });
+      setError(kbError);
+      setStatus('error');
+      collectTelemetry('useSectorCompliance', 'getPendingAcknowledgments', 'error', Date.now() - startTime, kbError);
       console.error('Error fetching pending acknowledgments:', err);
       return [];
-    } finally {
-      setLoading(false);
     }
   }, []);
 
@@ -225,8 +262,9 @@ export function useSectorCompliance() {
       acknowledgment_deadline?: string;
     }
   ): Promise<ComplianceDocument | null> => {
-    setLoading(true);
+    setStatus('loading');
     setError(null);
+    const startTime = Date.now();
     
     try {
       // Upload file to storage
@@ -266,6 +304,8 @@ export function useSectorCompliance() {
       if (insertError) throw insertError;
 
       toast.success('Documento subido correctamente');
+      setStatus('success');
+      collectTelemetry('useSectorCompliance', 'uploadInternalDocument', 'success', Date.now() - startTime);
 
       return doc ? {
         id: doc.id,
@@ -282,20 +322,22 @@ export function useSectorCompliance() {
         updated_at: doc.updated_at
       } : null;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error uploading document';
-      setError({ code: 'UPLOAD_DOCUMENT_ERROR', message, details: { originalError: String(err) } });
-      toast.error(message);
+      const parsedErr = parseError(err);
+      const kbError = createKBError('UPLOAD_DOCUMENT_ERROR', parsedErr.message, { retryable: false, details: { originalError: String(err) } });
+      setError(kbError);
+      setStatus('error');
+      toast.error(kbError.message);
+      collectTelemetry('useSectorCompliance', 'uploadInternalDocument', 'error', Date.now() - startTime, kbError);
       console.error('Error uploading document:', err);
       return null;
-    } finally {
-      setLoading(false);
     }
   }, []);
 
   // Acknowledge a document
   const acknowledgeDocument = useCallback(async (documentId: string): Promise<void> => {
-    setLoading(true);
+    setStatus('loading');
     setError(null);
+    const startTime = Date.now();
     
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -316,21 +358,25 @@ export function useSectorCompliance() {
       if (insertError) throw insertError;
 
       toast.success('Documento confirmado correctamente');
+      setStatus('success');
+      collectTelemetry('useSectorCompliance', 'acknowledgeDocument', 'success', Date.now() - startTime);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error acknowledging document';
-      setError({ code: 'ACKNOWLEDGE_DOCUMENT_ERROR', message, details: { originalError: String(err) } });
-      toast.error(message);
+      const parsedErr = parseError(err);
+      const kbError = createKBError('ACKNOWLEDGE_DOCUMENT_ERROR', parsedErr.message, { retryable: false, details: { originalError: String(err) } });
+      setError(kbError);
+      setStatus('error');
+      toast.error(kbError.message);
+      collectTelemetry('useSectorCompliance', 'acknowledgeDocument', 'error', Date.now() - startTime, kbError);
       console.error('Error acknowledging document:', err);
       throw err;
-    } finally {
-      setLoading(false);
     }
   }, []);
 
   // Get compliance checklist for an employee
   const getComplianceChecklist = useCallback(async (employeeId: string): Promise<ChecklistItem[]> => {
-    setLoading(true);
+    setStatus('loading');
     setError(null);
+    const startTime = Date.now();
     
     try {
       const { data: requirements, error: reqError } = await supabase
@@ -351,7 +397,7 @@ export function useSectorCompliance() {
 
       if (reqError) throw reqError;
 
-      return (requirements || []).map((req: any) => ({
+      const result = (requirements || []).map((req: any) => ({
         id: req.id,
         requirement_id: req.id,
         title: req.requirement_title,
@@ -362,20 +408,26 @@ export function useSectorCompliance() {
         due_date: req.due_date,
         document_title: req.organization_compliance_documents?.title || 'Sin documento'
       }));
+
+      setStatus('success');
+      collectTelemetry('useSectorCompliance', 'getComplianceChecklist', 'success', Date.now() - startTime);
+      return result;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error fetching checklist';
-      setError({ code: 'FETCH_CHECKLIST_ERROR', message, details: { originalError: String(err) } });
+      const parsedErr = parseError(err);
+      const kbError = createKBError('FETCH_CHECKLIST_ERROR', parsedErr.message, { retryable: true, details: { originalError: String(err) } });
+      setError(kbError);
+      setStatus('error');
+      collectTelemetry('useSectorCompliance', 'getComplianceChecklist', 'error', Date.now() - startTime, kbError);
       console.error('Error fetching compliance checklist:', err);
       return [];
-    } finally {
-      setLoading(false);
     }
   }, []);
 
   // Get assigned tasks
   const getAssignedTasks = useCallback(async (userId: string): Promise<ComplianceTask[]> => {
-    setLoading(true);
+    setStatus('loading');
     setError(null);
+    const startTime = Date.now();
     
     try {
       const { data, error: queryError } = await supabase
@@ -387,7 +439,7 @@ export function useSectorCompliance() {
 
       if (queryError) throw queryError;
 
-      return (data || []).map(task => ({
+      const result = (data || []).map(task => ({
         id: task.id,
         task_type: task.task_type,
         title: task.title,
@@ -397,20 +449,26 @@ export function useSectorCompliance() {
         due_date: task.due_date,
         document_id: task.document_id
       }));
+
+      setStatus('success');
+      collectTelemetry('useSectorCompliance', 'getAssignedTasks', 'success', Date.now() - startTime);
+      return result;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error fetching tasks';
-      setError({ code: 'FETCH_TASKS_ERROR', message, details: { originalError: String(err) } });
+      const parsedErr = parseError(err);
+      const kbError = createKBError('FETCH_TASKS_ERROR', parsedErr.message, { retryable: true, details: { originalError: String(err) } });
+      setError(kbError);
+      setStatus('error');
+      collectTelemetry('useSectorCompliance', 'getAssignedTasks', 'error', Date.now() - startTime, kbError);
       console.error('Error fetching tasks:', err);
       return [];
-    } finally {
-      setLoading(false);
     }
   }, []);
 
   // Complete a task
   const completeTask = useCallback(async (taskId: string, result?: string): Promise<void> => {
-    setLoading(true);
+    setStatus('loading');
     setError(null);
+    const startTime = Date.now();
     
     try {
       const { error: updateError } = await supabase
@@ -425,34 +483,38 @@ export function useSectorCompliance() {
       if (updateError) throw updateError;
 
       toast.success('Tarea completada');
+      setStatus('success');
+      collectTelemetry('useSectorCompliance', 'completeTask', 'success', Date.now() - startTime);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error completing task';
-      setError({ code: 'COMPLETE_TASK_ERROR', message, details: { originalError: String(err) } });
-      toast.error(message);
+      const parsedErr = parseError(err);
+      const kbError = createKBError('COMPLETE_TASK_ERROR', parsedErr.message, { retryable: false, details: { originalError: String(err) } });
+      setError(kbError);
+      setStatus('error');
+      toast.error(kbError.message);
+      collectTelemetry('useSectorCompliance', 'completeTask', 'error', Date.now() - startTime, kbError);
       throw err;
-    } finally {
-      setLoading(false);
     }
   }, []);
 
   // Update requirement status
   const updateRequirementStatus = useCallback(async (
     requirementId: string,
-    status: 'pending' | 'in_progress' | 'compliant' | 'non_compliant' | 'not_applicable',
+    newStatus: 'pending' | 'in_progress' | 'compliant' | 'non_compliant' | 'not_applicable',
     notes?: string
   ): Promise<void> => {
-    setLoading(true);
+    setStatus('loading');
     setError(null);
+    const startTime = Date.now();
     
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
       const updateData: any = {
-        status,
+        status: newStatus,
         notes: notes || null
       };
 
-      if (status === 'compliant') {
+      if (newStatus === 'compliant') {
         updateData.completed_at = new Date().toISOString();
         updateData.completed_by = user?.id || null;
       }
@@ -465,22 +527,33 @@ export function useSectorCompliance() {
       if (updateError) throw updateError;
 
       toast.success('Estado actualizado');
+      setStatus('success');
+      collectTelemetry('useSectorCompliance', 'updateRequirementStatus', 'success', Date.now() - startTime);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error updating status';
-      setError({ code: 'UPDATE_STATUS_ERROR', message, details: { originalError: String(err) } });
-      toast.error(message);
+      const parsedErr = parseError(err);
+      const kbError = createKBError('UPDATE_STATUS_ERROR', parsedErr.message, { retryable: false, details: { originalError: String(err) } });
+      setError(kbError);
+      setStatus('error');
+      toast.error(kbError.message);
+      collectTelemetry('useSectorCompliance', 'updateRequirementStatus', 'error', Date.now() - startTime, kbError);
       throw err;
-    } finally {
-      setLoading(false);
     }
   }, []);
 
   return {
     loading,
-    // === KB ADDITIONS ===
+    // === KB 2.0 ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
+    reset,
+    // Actions
     getOfficialRegulations,
     getInternalDocuments,
     getPendingAcknowledgments,

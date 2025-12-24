@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Json } from '@/integrations/supabase/types';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from './core';
 
 export interface SectorFeature {
   title: string;
@@ -99,13 +100,43 @@ const parseJsonArray = <T,>(json: Json | null | undefined): T[] => {
 
 export function useSectors(options: UseSectorsOptions = {}) {
   const [sectors, setSectors] = useState<Sector[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const fetchSectors = async () => {
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // === KB 2.0 COMPUTED ===
+  const loading = status === 'loading';
+  const isIdle = status === 'idle';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  // === KB 2.0 RESET ===
+  const reset = useCallback(() => {
+    setSectors([]);
+    setError(null);
+    setStatus('idle');
+    setLastRefresh(null);
+    setLastSuccess(null);
+    setRetryCount(0);
+  }, []);
+
+  const fetchSectors = useCallback(async () => {
+    setStatus('loading');
+    setError(null);
+    const startTime = Date.now();
+
     try {
-      setLoading(true);
       let query = supabase
         .from('sectors')
         .select('*')
@@ -136,14 +167,21 @@ export function useSectors(options: UseSectorsOptions = {}) {
       }));
 
       setSectors(parsedSectors);
-      setError(null);
+      setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setStatus('success');
+      setRetryCount(0);
+      collectTelemetry('useSectors', 'fetchSectors', 'success', Date.now() - startTime);
     } catch (err) {
+      const parsedErr = parseError(err);
+      const kbError = createKBError('FETCH_SECTORS_ERROR', parsedErr.message, { retryable: true, details: { originalError: String(err) } });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useSectors', 'fetchSectors', 'error', Date.now() - startTime, kbError);
       console.error('Error fetching sectors:', err);
-      setError('Error al cargar los sectores');
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [options.featured, options.limit]);
 
   const createSector = async (sectorData: Partial<Sector>) => {
     try {
@@ -265,5 +303,15 @@ export function useSectors(options: UseSectorsOptions = {}) {
     deleteSector,
     updateOrder,
     findSectorByCNAE,
+    // === KB 2.0 ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
+    lastRefresh,
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
   };
 }
