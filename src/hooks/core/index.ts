@@ -1343,3 +1343,54 @@ export { default as useKBGraphQLDefault } from './useKBGraphQL';
 export { default as useKBOfflineDataDefault } from './useKBOfflineData';
 export { default as useKBPrefetchDefault } from './useKBPrefetch';
 export { default as useKBOptimisticDefault } from './useKBOptimistic';
+
+// ============================================================================
+// PHASE 21: Advanced Orchestration Patterns
+// ============================================================================
+
+// Orchestrator (Phase 21)
+export {
+  useKBOrchestrator as useKBAdvancedOrchestrator,
+} from './useKBOrchestrator';
+
+export type {
+  OrchestratorStep,
+  OrchestratorContext,
+  OrchestratorResult,
+  OrchestratorConfig,
+  UseKBOrchestratorOptions,
+  UseKBOrchestratorReturn,
+} from './useKBOrchestrator';
+
+// Pipeline (Phase 21)
+export {
+  useKBPipeline,
+} from './useKBPipeline';
+
+export type {
+  PipelineStage,
+  PipelineContext,
+  PipelineResult,
+  PipelineConfig,
+  UseKBPipelineOptions,
+  UseKBPipelineReturn,
+} from './useKBPipeline';
+
+// Compose (Phase 21)
+export {
+  useKBCompose,
+} from './useKBCompose';
+
+export type {
+  ComposableHook,
+  ComposeContext,
+  ComposeResult,
+  ComposeConfig,
+  UseKBComposeOptions,
+  UseKBComposeReturn,
+} from './useKBCompose';
+
+// Phase 21 Defaults
+export { default as useKBAdvancedOrchestratorDefault } from './useKBOrchestrator';
+export { default as useKBPipelineDefault } from './useKBPipeline';
+export { default as useKBComposeDefault } from './useKBCompose';

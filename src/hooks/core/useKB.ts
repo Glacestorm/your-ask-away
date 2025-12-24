@@ -499,6 +499,22 @@ export {
 } from './useKBOptimistic';
 
 // ============================================================================
+// PHASE 21: Advanced Orchestration Patterns
+// ============================================================================
+
+export {
+  useKBOrchestrator as useKBAdvancedOrchestrator,
+} from './useKBOrchestrator';
+
+export {
+  useKBPipeline,
+} from './useKBPipeline';
+
+export {
+  useKBCompose,
+} from './useKBCompose';
+
+// ============================================================================
 // TYPE EXPORTS
 // ============================================================================
 
