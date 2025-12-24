@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import StoreNavbar from '@/components/store/StoreNavbar';
-import StoreFooter from '@/components/store/StoreFooter';
+import UnifiedFooter from '@/components/layout/UnifiedFooter';
 import CartSidebar from '@/components/store/CartSidebar';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -204,7 +204,7 @@ const StoreLanding: React.FC = () => {
         <NewsSection />
       </Suspense>
 
-      <StoreFooter />
+      <UnifiedFooter />
       <CartSidebar />
       
       <Suspense fallback={null}>

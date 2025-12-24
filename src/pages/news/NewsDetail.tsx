@@ -12,7 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSavedNews } from '@/hooks/useSavedNews';
 import { toast } from 'sonner';
-import StoreFooter from '@/components/store/StoreFooter';
+import UnifiedFooter from '@/components/layout/UnifiedFooter';
 import { getNewsImageFallback } from '@/lib/news/placeholders';
 import DOMPurify from 'dompurify';
 
@@ -346,7 +346,7 @@ const NewsDetail: React.FC = () => {
         </motion.div>
       </article>
 
-      <StoreFooter />
+      <UnifiedFooter />
     </div>
   );
 };

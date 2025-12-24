@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import StoreNavbar from '@/components/store/StoreNavbar';
-import StoreFooter from '@/components/store/StoreFooter';
+import UnifiedFooter from '@/components/layout/UnifiedFooter';
 import ModuleCard from '@/components/store/ModuleCard';
 import CartSidebar from '@/components/store/CartSidebar';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -187,7 +187,7 @@ const StoreModules: React.FC = () => {
         </div>
       </main>
 
-      <StoreFooter />
+      <UnifiedFooter />
     </div>
   );
 };

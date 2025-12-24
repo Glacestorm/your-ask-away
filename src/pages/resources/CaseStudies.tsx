@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Trophy, TrendingUp, Users, Clock, Building2, ArrowRight, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import StoreFooter from '@/components/store/StoreFooter';
+import UnifiedFooter from '@/components/layout/UnifiedFooter';
 
 const CaseStudies: React.FC = () => {
   const cases = [
@@ -171,7 +171,7 @@ const CaseStudies: React.FC = () => {
         </div>
       </section>
 
-      <StoreFooter />
+      <UnifiedFooter />
     </div>
   );
 };

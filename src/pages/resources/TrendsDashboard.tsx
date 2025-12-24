@@ -12,7 +12,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import MainNavbar from '@/components/navigation/MainNavbar';
-import MainFooter from '@/components/navigation/MainFooter';
+import UnifiedFooter from '@/components/layout/UnifiedFooter';
 
 interface TrendData {
   trend: string;
@@ -458,7 +458,7 @@ const TrendsDashboard: React.FC = () => {
         </div>
       </section>
 
-      <MainFooter />
+      <UnifiedFooter />
     </div>
   );
 };

@@ -17,7 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useSectors } from '@/hooks/useSectors';
 import { CaseStudyCard } from '@/components/sectors/CaseStudyCard';
 import StoreNavbar from '@/components/store/StoreNavbar';
-import StoreFooter from '@/components/store/StoreFooter';
+import UnifiedFooter from '@/components/layout/UnifiedFooter';
 
 const iconMap: Record<string, React.ElementType> = {
   ShoppingCart: Building2,
@@ -373,7 +373,7 @@ const SectorDetail: React.FC = () => {
         </div>
       </section>
 
-      <StoreFooter />
+      <UnifiedFooter />
     </div>
   );
 };

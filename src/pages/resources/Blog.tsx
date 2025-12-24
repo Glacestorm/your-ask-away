@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, RefreshCw, Loader2, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import StoreFooter from '@/components/store/StoreFooter';
+import UnifiedFooter from '@/components/layout/UnifiedFooter';
 import PremiumNewsHero from '@/components/news/PremiumNewsHero';
 import PremiumNewsCard from '@/components/news/PremiumNewsCard';
 import NewsTicker from '@/components/news/NewsTicker';
@@ -176,7 +176,7 @@ const Blog: React.FC = () => {
         </div>
       </section>
 
-      <StoreFooter />
+      <UnifiedFooter />
     </div>
   );
 };

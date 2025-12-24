@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, FileText, Scale, Shield, AlertTriangle, Users, CreditCard, Ban, RefreshCw, Gavel } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import StoreFooter from '@/components/store/StoreFooter';
+import UnifiedFooter from '@/components/layout/UnifiedFooter';
 
 const TermsOfService: React.FC = () => {
   const lastUpdated = "17 de diciembre de 2024";
@@ -294,7 +294,7 @@ const TermsOfService: React.FC = () => {
         </div>
       </main>
 
-      <StoreFooter />
+      <UnifiedFooter />
     </div>
   );
 };

@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Users, Target, Award, Sparkles, Shield, Globe, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import StoreFooter from '@/components/store/StoreFooter';
+import UnifiedFooter from '@/components/layout/UnifiedFooter';
 import { ObelixiaLogo } from '@/components/ui/ObelixiaLogo';
 
 const About: React.FC = () => {
@@ -200,7 +200,7 @@ const About: React.FC = () => {
         </div>
       </section>
 
-      <StoreFooter />
+      <UnifiedFooter />
     </div>
   );
 };
