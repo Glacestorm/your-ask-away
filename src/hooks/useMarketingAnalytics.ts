@@ -1,6 +1,12 @@
-import { useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+// === ERROR TIPADO KB ===
+export interface MarketingAnalyticsError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 interface MarketingEvent {
   event_name: string;
   event_type: string;
@@ -11,6 +17,13 @@ interface MarketingEvent {
 }
 
 export function useMarketingAnalytics() {
+  // === ESTADO KB ===
+  const [error, setError] = useState<MarketingAnalyticsError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
+
   const getSessionId = useCallback(() => {
     let sessionId = sessionStorage.getItem('marketing_session_id');
     if (!sessionId) {
@@ -35,9 +48,17 @@ export function useMarketingAnalytics() {
       };
 
       await supabase.from('marketing_events').insert([event]);
+      setLastRefresh(new Date());
+      setError(null);
       console.log(`[Marketing] Tracked: ${eventName}`, eventData);
-    } catch (error) {
-      console.error('[Marketing] Error tracking event:', error);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error tracking event';
+      setError({
+        code: 'TRACK_EVENT_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
+      console.error('[Marketing] Error tracking event:', err);
     }
   }, [getSessionId]);
 
@@ -68,5 +89,9 @@ export function useMarketingAnalytics() {
     trackDemoRequest,
     trackLeadCapture,
     trackCTAClick,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError
   };
 }

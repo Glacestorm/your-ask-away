@@ -3,6 +3,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
+// === ERROR TIPADO KB ===
+export interface ModelRegistryError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 export interface MLModel {
   id: string;
   model_name: string;
@@ -44,7 +50,12 @@ export interface ABTest {
 
 export function useModelRegistry() {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<ModelRegistryError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
   // Fetch all models
   const { data: models, isLoading: modelsLoading } = useQuery({
     queryKey: ['ml-models'],
@@ -229,7 +240,11 @@ export function useModelRegistry() {
     updateModel: updateModelMutation.mutate,
     promoteToProduction: promoteToProductionMutation.mutate,
     createABTest: createABTestMutation.mutate,
-    completeABTest: completeABTestMutation.mutate
+    completeABTest: completeABTestMutation.mutate,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError
   };
 }
 
