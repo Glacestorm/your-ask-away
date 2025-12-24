@@ -1,11 +1,21 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useCMSTranslation } from '@/hooks/cms/useCMSTranslation';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { NewsArticle } from '@/hooks/useNewsArticles';
 
+// === ERROR TIPADO KB ===
+export interface TranslatedNewsError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 interface TranslatedNews {
   articles: NewsArticle[];
   isTranslating: boolean;
+  error: TranslatedNewsError | null;
+  lastRefresh: Date | null;
+  clearError: () => void;
 }
 
 export function useTranslatedNews(originalArticles: NewsArticle[]): TranslatedNews {
@@ -13,9 +23,15 @@ export function useTranslatedNews(originalArticles: NewsArticle[]): TranslatedNe
   const { translateBatchAsync } = useCMSTranslation();
   const [translatedArticles, setTranslatedArticles] = useState<NewsArticle[]>(originalArticles);
   const [isTranslating, setIsTranslating] = useState(false);
+  // === ESTADO KB ===
+  const [error, setError] = useState<TranslatedNewsError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   
   const lastLanguageRef = useRef<string>(language);
   const lastArticlesRef = useRef<string>('');
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   useEffect(() => {
     const articlesKey = originalArticles.map(a => a.id).join(',');
@@ -77,8 +93,14 @@ export function useTranslatedNews(originalArticles: NewsArticle[]): TranslatedNe
         });
         
         setTranslatedArticles(newArticles);
-      } catch (error) {
-        console.error('Error translating news:', error);
+        setLastRefresh(new Date());
+      } catch (err) {
+        console.error('Error translating news:', err);
+        setError({
+          code: 'TRANSLATION_ERROR',
+          message: err instanceof Error ? err.message : 'Error al traducir noticias',
+          details: { language }
+        });
         setTranslatedArticles(originalArticles);
       } finally {
         setIsTranslating(false);
@@ -91,5 +113,8 @@ export function useTranslatedNews(originalArticles: NewsArticle[]): TranslatedNe
   return {
     articles: translatedArticles,
     isTranslating,
+    error,
+    lastRefresh,
+    clearError,
   };
 }
