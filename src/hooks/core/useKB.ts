@@ -315,6 +315,55 @@ export const KB = {
   useDocumentVisibility: null as unknown as typeof import('./useKBHydration').useKBDocumentVisibility,
   useNetworkStatus: null as unknown as typeof import('./useKBHydration').useKBNetworkStatus,
   useScrollRestoration: null as unknown as typeof import('./useKBHydration').useKBScrollRestoration,
+  
+  // ========== PHASE 16: ENTERPRISE PATTERNS ==========
+  
+  // Dependency Injection
+  useService: null as unknown as typeof import('./useKBDependencyInjection').useService,
+  useServices: null as unknown as typeof import('./useKBDependencyInjection').useServices,
+  useContainer: null as unknown as typeof import('./useKBDependencyInjection').useContainer,
+  useServiceRegistration: null as unknown as typeof import('./useKBDependencyInjection').useServiceRegistration,
+  useLazyService: null as unknown as typeof import('./useKBDependencyInjection').useLazyService,
+  useOptionalService: null as unknown as typeof import('./useKBDependencyInjection').useOptionalService,
+  
+  // Event Sourcing
+  useEventSourcing: null as unknown as typeof import('./useKBEventSourcing').useKBEventSourcing,
+  useProjection: null as unknown as typeof import('./useKBEventSourcing').useKBProjection,
+  useAggregate: null as unknown as typeof import('./useKBEventSourcing').useKBAggregate,
+  
+  // CQRS
+  useCQRS: null as unknown as typeof import('./useKBCQRS').useKBCQRS,
+  useCommand: null as unknown as typeof import('./useKBCQRS').useKBCommand,
+  useQueryCQRS: null as unknown as typeof import('./useKBCQRS').useKBQueryCQRS,
+  useReadModel: null as unknown as typeof import('./useKBCQRS').useKBReadModel,
+  useWriteModel: null as unknown as typeof import('./useKBCQRS').useKBWriteModel,
+  
+  // Saga
+  useSaga: null as unknown as typeof import('./useKBSaga').useKBSaga,
+  useSagaBuilder: null as unknown as typeof import('./useKBSaga').useKBSagaBuilder,
+  useOrchestrator: null as unknown as typeof import('./useKBSaga').useKBOrchestrator,
+  
+  // Plugin System
+  usePlugin: null as unknown as typeof import('./useKBPlugin').usePlugin,
+  usePluginHost: null as unknown as typeof import('./useKBPlugin').usePluginHost,
+  usePluginApi: null as unknown as typeof import('./useKBPlugin').usePluginApi,
+  usePlugins: null as unknown as typeof import('./useKBPlugin').usePlugins,
+  usePluginRegistration: null as unknown as typeof import('./useKBPlugin').usePluginRegistration,
+  usePluginEvent: null as unknown as typeof import('./useKBPlugin').usePluginEvent,
+  
+  // Resource Pool
+  useResourcePool: null as unknown as typeof import('./useKBResourcePool').useKBResourcePool,
+  useConnectionPool: null as unknown as typeof import('./useKBResourcePool').useKBConnectionPool,
+  useWorkerPool: null as unknown as typeof import('./useKBResourcePool').useKBWorkerPool,
+  useSemaphore: null as unknown as typeof import('./useKBResourcePool').useKBSemaphore,
+  useRateLimiter: null as unknown as typeof import('./useKBResourcePool').useKBRateLimiter,
+  
+  // Health Check
+  useHealthCheck: null as unknown as typeof import('./useKBHealthCheck').useKBHealthCheck,
+  useLivenessProbe: null as unknown as typeof import('./useKBHealthCheck').useKBLivenessProbe,
+  useReadinessProbe: null as unknown as typeof import('./useKBHealthCheck').useKBReadinessProbe,
+  useStartupProbe: null as unknown as typeof import('./useKBHealthCheck').useKBStartupProbe,
+  useDependencyHealth: null as unknown as typeof import('./useKBHealthCheck').useKBDependencyHealth,
 } as const;
 
 // ============================================================================
