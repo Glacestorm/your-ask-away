@@ -1,10 +1,23 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
+
+// === ERROR TIPADO KB ===
+export interface CelebrationError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 const CELEBRATED_GOALS_KEY = 'celebrated_goals';
 
 export function useCelebration() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  // === ESTADO KB ===
+  const [error, setError] = useState<CelebrationError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const getCelebratedGoals = useCallback((): string[] => {
     try {
@@ -109,5 +122,9 @@ export function useCelebration() {
     hasBeenCelebrated,
     fireCelebration,
     fireStarBurst,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }

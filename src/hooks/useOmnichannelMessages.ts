@@ -1,7 +1,14 @@
-import { useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+// === ERROR TIPADO KB ===
+export interface OmnichannelError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 export type ChannelType = 'email' | 'sms' | 'whatsapp' | 'voice' | 'push' | 'in_app';
 export type MessageStatus = 'pending' | 'sent' | 'delivered' | 'opened' | 'clicked' | 'bounced' | 'failed';
@@ -80,6 +87,12 @@ export interface ChannelConnector {
 
 export function useOmnichannelMessages(companyId?: string, channel?: ChannelType) {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<OmnichannelError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const { data: messages = [], isLoading } = useQuery({
     queryKey: ['omnichannel-messages', companyId, channel],
@@ -161,6 +174,10 @@ export function useOmnichannelMessages(companyId?: string, channel?: ChannelType
     sendMessage: sendMessage.mutate,
     updateMessageStatus: updateMessageStatus.mutate,
     isSending: sendMessage.isPending,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
 

@@ -1,5 +1,12 @@
 import { useState, useTransition, useCallback } from 'react';
 
+// === ERROR TIPADO KB ===
+export interface TransitionStateError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 /**
  * Custom hook that wraps useState with useTransition for non-blocking updates
  * Uses React 19's concurrent features for better Core Web Vitals (INP)
