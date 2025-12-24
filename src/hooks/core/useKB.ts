@@ -469,6 +469,36 @@ export {
 } from './useKBPubSub';
 
 // ============================================================================
+// PHASE 20: Data Layer & API Integration
+// ============================================================================
+
+export {
+  useKBGraphQL,
+  useKBMutationGQL,
+  useKBSubscriptionGQL,
+} from './useKBGraphQL';
+
+export {
+  useKBOfflineData,
+  useKBSyncManager,
+  useKBConflictResolver,
+} from './useKBOfflineData';
+
+export {
+  useKBPrefetch,
+  useKBPreload,
+  useKBLinkPrefetch,
+  useKBPredictivePrefetch,
+  useKBBatchPrefetch,
+  useKBRoutePreload,
+} from './useKBPrefetch';
+
+export {
+  useKBOptimisticList,
+  useKBOptimisticForm,
+} from './useKBOptimistic';
+
+// ============================================================================
 // TYPE EXPORTS
 // ============================================================================
 
