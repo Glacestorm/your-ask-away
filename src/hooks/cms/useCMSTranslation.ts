@@ -14,24 +14,40 @@ const cache: TranslationCache = {};
 const translateCache: Record<string, string> = {};
 const translateInflight: Record<string, Promise<string>> = {};
 
-// Very small concurrency limit to avoid rate limiting when many components request translations at once
-const MAX_CONCURRENT_TRANSLATIONS = 2;
+// Stricter concurrency limit to avoid rate limiting
+const MAX_CONCURRENT_TRANSLATIONS = 1;
 let activeTranslations = 0;
-const translationWaiters: Array<() => void> = [];
+const translationQueue: Array<{ resolve: () => void; priority: number }> = [];
+
+// Delay between translations to avoid rate limiting (ms)
+const TRANSLATION_DELAY_MS = 500;
+let lastTranslationTime = 0;
 
 const acquireTranslationSlot = async (): Promise<void> => {
-  if (activeTranslations < MAX_CONCURRENT_TRANSLATIONS) {
-    activeTranslations += 1;
-    return;
+  // Wait for slot availability
+  if (activeTranslations >= MAX_CONCURRENT_TRANSLATIONS) {
+    await new Promise<void>((resolve) => {
+      translationQueue.push({ resolve, priority: Date.now() });
+      // Sort by priority (FIFO)
+      translationQueue.sort((a, b) => a.priority - b.priority);
+    });
   }
-  await new Promise<void>((resolve) => translationWaiters.push(resolve));
+  
+  // Enforce delay between translations
+  const now = Date.now();
+  const timeSinceLastTranslation = now - lastTranslationTime;
+  if (timeSinceLastTranslation < TRANSLATION_DELAY_MS) {
+    await new Promise(resolve => setTimeout(resolve, TRANSLATION_DELAY_MS - timeSinceLastTranslation));
+  }
+  
   activeTranslations += 1;
+  lastTranslationTime = Date.now();
 };
 
 const releaseTranslationSlot = () => {
   activeTranslations = Math.max(0, activeTranslations - 1);
-  const next = translationWaiters.shift();
-  if (next) next();
+  const next = translationQueue.shift();
+  if (next) next.resolve();
 };
 
 export function useCMSTranslation(namespace: string = 'common') {

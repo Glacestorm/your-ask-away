@@ -25,16 +25,58 @@ function safeJsonParse(text: string): any {
 }
 
 function mapGatewayErrorToStatus(status: number, bodyText: string) {
-  // Prefer HTTP status when available
   if (status === 429) return { status: 429, msg: "Rate limits exceeded, please try again later." };
   if (status === 402) return { status: 402, msg: "Payment required, please add funds to your Lovable AI workspace." };
 
-  // Fallback to parsing gateway error payload
   const parsed = safeJsonParse(bodyText) as GatewayErrorPayload | null;
   const t = parsed?.error?.type ?? parsed?.type;
   if (t === "rate_limited") return { status: 429, msg: "Rate limits exceeded, please try again later." };
 
   return { status: 503, msg: "Translation service unavailable" };
+}
+
+// Sleep helper for exponential backoff
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Retry with exponential backoff
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit,
+  maxRetries: number = 3,
+  baseDelay: number = 1000
+): Promise<Response> {
+  let lastError: Error | null = null;
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const response = await fetch(url, options);
+      
+      // If rate limited, wait and retry
+      if (response.status === 429 && attempt < maxRetries - 1) {
+        const retryAfter = response.headers.get('Retry-After');
+        const delay = retryAfter 
+          ? parseInt(retryAfter) * 1000 
+          : baseDelay * Math.pow(2, attempt) + Math.random() * 1000;
+        
+        console.log(`Rate limited, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await sleep(delay);
+        continue;
+      }
+      
+      return response;
+    } catch (error) {
+      lastError = error as Error;
+      if (attempt < maxRetries - 1) {
+        const delay = baseDelay * Math.pow(2, attempt) + Math.random() * 500;
+        console.log(`Request failed, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await sleep(delay);
+      }
+    }
+  }
+  
+  throw lastError || new Error('Max retries exceeded');
 }
 
 serve(async (req) => {
@@ -61,10 +103,26 @@ serve(async (req) => {
       });
     }
 
+    // Skip translation for very short text or same locale
+    if (text.trim().length < 2 || sourceLocale === targetLocale) {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          translatedText: text,
+          sourceLocale,
+          targetLocale,
+          skipped: true,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const languageNames: Record<string, string> = {
       en: "English",
       es: "Spanish",
       ca: "Catalan",
+      eu: "Basque",
+      gl: "Galician",
       fr: "French",
       de: "German",
       it: "Italian",
@@ -82,24 +140,31 @@ Only return the translated text, nothing else.
 Text to translate:
 ${text}`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${lovableApiKey}`,
-        "Content-Type": "application/json",
+    const response = await fetchWithRetry(
+      "https://ai.gateway.lovable.dev/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${lovableApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash-lite",
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are a professional translator. Provide accurate, natural-sounding translations while preserving the original meaning and tone.",
+            },
+            { role: "user", content: prompt },
+          ],
+          temperature: 0.3,
+          max_tokens: 500,
+        }),
       },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are a professional translator. Provide accurate, natural-sounding translations while preserving the original meaning and tone.",
-          },
-          { role: "user", content: prompt },
-        ],
-      }),
-    });
+      3,
+      2000
+    );
 
     if (!response.ok) {
       const bodyText = await response.text();
@@ -136,4 +201,3 @@ ${text}`;
     });
   }
 });
-
