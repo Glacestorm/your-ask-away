@@ -282,6 +282,34 @@ export type {
   MockStoreReturn,
 } from './useKBTesting';
 
+// DevTools & Debugging (KB 4.5)
+export {
+  useKBDevTools,
+  useHookInspector,
+  usePerformanceProfiler,
+  useKBDevToolsIntegration,
+  computeStateDiff,
+  KBDevTools,
+} from './useKBDevTools';
+
+export type {
+  DevToolsAction,
+  DevToolsState,
+  DevToolsFilters,
+  HookSnapshot,
+  PerformanceProfile,
+  StateTimeline,
+  StateDiff,
+  UseKBDevToolsOptions,
+  UseKBDevToolsReturn,
+  UseHookInspectorOptions,
+  UseHookInspectorReturn,
+  UsePerformanceProfilerOptions,
+  UsePerformanceProfilerReturn,
+  UseKBDevToolsIntegrationOptions,
+  UseKBDevToolsIntegrationReturn,
+} from './useKBDevTools';
+
 // Re-export defaults
 export { default as useKBBaseDefault } from './useKBBase';
 export { default as useKBQueryDefault } from './useKBQuery';
@@ -299,3 +327,4 @@ export { default as useKBOptimisticMutationDefault } from './useKBOptimisticMuta
 export { default as useKBOfflineDefault } from './useKBOffline';
 export { default as useKBPerformanceDefault } from './useKBPerformance';
 export { default as useKBTestingDefault } from './useKBTesting';
+export { default as useKBDevToolsDefault } from './useKBDevTools';
