@@ -181,8 +181,21 @@ export function useOmnichannelMessages(companyId?: string, channel?: ChannelType
   };
 }
 
+// === ERROR TIPADO KB ===
+export interface OmnichannelTemplatesError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export function useOmnichannelTemplates(channel?: ChannelType) {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<OmnichannelTemplatesError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const { data: templates = [], isLoading } = useQuery({
     queryKey: ['omnichannel-templates', channel],
@@ -194,8 +207,9 @@ export function useOmnichannelTemplates(channel?: ChannelType) {
 
       if (channel) query = query.eq('channel', channel);
 
-      const { data, error } = await query;
-      if (error) throw error;
+      const { data, error: fetchError } = await query;
+      if (fetchError) throw fetchError;
+      setLastRefresh(new Date());
       return data as unknown as OmnichannelTemplate[];
     },
   });
@@ -278,21 +292,39 @@ export function useOmnichannelTemplates(channel?: ChannelType) {
     deleteTemplate: deleteTemplate.mutate,
     applyTemplate,
     isCreating: createTemplate.isPending,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
+}
+
+// === ERROR TIPADO KB ===
+export interface ChannelConnectorsError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
 }
 
 export function useChannelConnectors() {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<ChannelConnectorsError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const { data: connectors = [], isLoading } = useQuery({
     queryKey: ['channel-connectors'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('channel_connectors')
         .select('*')
         .order('channel_type');
 
-      if (error) throw error;
+      if (fetchError) throw fetchError;
+      setLastRefresh(new Date());
       return data as unknown as ChannelConnector[];
     },
   });
@@ -346,25 +378,43 @@ export function useChannelConnectors() {
     isLoading,
     updateConnector: updateConnector.mutate,
     testConnector,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
 
+// === ERROR TIPADO KB ===
+export interface MessageAnalyticsError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export function useMessageAnalytics(dateRange?: { start: Date; end: Date }) {
-  return useQuery({
+  // === ESTADO KB ===
+  const [error, setError] = useState<MessageAnalyticsError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
+
+  const query = useQuery({
     queryKey: ['message-analytics', dateRange?.start, dateRange?.end],
     queryFn: async () => {
-      let query = supabase
+      let queryBuilder = supabase
         .from('omnichannel_messages')
         .select('channel, status, created_at');
 
       if (dateRange) {
-        query = query
+        queryBuilder = queryBuilder
           .gte('created_at', dateRange.start.toISOString())
           .lte('created_at', dateRange.end.toISOString());
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
+      const { data, error: fetchError } = await queryBuilder;
+      if (fetchError) throw fetchError;
 
       // Aggregate stats
       const channelStats: Record<string, { total: number; delivered: number; opened: number; clicked: number; failed: number }> = {};
@@ -388,10 +438,19 @@ export function useMessageAnalytics(dateRange?: { start: Date; end: Date }) {
         }
       }
 
+      setLastRefresh(new Date());
       return {
         total: data?.length || 0,
         byChannel: channelStats,
       };
     },
   });
+
+  return {
+    ...query,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
+  };
 }
