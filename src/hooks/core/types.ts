@@ -1,5 +1,5 @@
 /**
- * KB 2.5 - Knowledge Base Pattern Types
+ * KB 3.0 - Knowledge Base Pattern Types
  * Enterprise-grade hook patterns for 2025-2026+
  * 
  * Includes:
@@ -9,6 +9,9 @@
  * - Smart Cache
  * - OpenTelemetry
  * - SSE/Streaming
+ * - Suspense-First (KB 3.0)
+ * - Bulkhead Pattern (KB 3.0)
+ * - Query Deduplication (KB 3.0)
  */
 
 // === STATUS MACHINE ===
@@ -335,3 +338,56 @@ export const KB_ERROR_CODES = {
 } as const;
 
 export type KBErrorCode = typeof KB_ERROR_CODES[keyof typeof KB_ERROR_CODES];
+
+// === KB 3.0 - BULKHEAD CONFIG ===
+export interface KBBulkheadConfig {
+  /** Maximum concurrent executions */
+  maxConcurrent: number;
+  /** Maximum queue size */
+  maxQueueSize: number;
+  /** Queue timeout in ms */
+  queueTimeoutMs: number;
+  /** Execution timeout in ms */
+  executionTimeoutMs: number;
+  /** Default priority (higher = more priority) */
+  defaultPriority: number;
+  /** Enable bulkhead */
+  enabled: boolean;
+  /** Bulkhead pool name */
+  name: string;
+}
+
+export const KB_DEFAULT_BULKHEAD_CONFIG: KBBulkheadConfig = {
+  maxConcurrent: 5,
+  maxQueueSize: 100,
+  queueTimeoutMs: 30000,
+  executionTimeoutMs: 60000,
+  defaultPriority: 5,
+  enabled: true,
+  name: 'default',
+};
+
+// === KB 3.0 - SUSPENSE RESOURCE ===
+export interface KBResourceState<T> {
+  status: 'pending' | 'success' | 'error';
+  data: T | null;
+  error: KBError | null;
+  timestamp: number;
+}
+
+export interface KBResource<T> {
+  read(): T;
+  preload(): void;
+  refresh(): void;
+}
+
+// === KB 3.0 - QUERY DEDUP STATE ===
+export interface KBQueryState<T> {
+  data: T | null;
+  status: KBStatus;
+  error: KBError | null;
+  dataUpdatedAt: number | null;
+  errorUpdatedAt: number | null;
+  fetchStatus: 'idle' | 'fetching';
+  isStale: boolean;
+}
