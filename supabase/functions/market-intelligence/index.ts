@@ -93,6 +93,3 @@ Genera 6-8 insights relevantes distribuidos entre las 4 categorías DAFO.`;
     });
   }
 });
-    });
-  }
-});
