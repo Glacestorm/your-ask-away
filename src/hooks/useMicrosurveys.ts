@@ -3,13 +3,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { parseError, collectTelemetry } from '@/hooks/core/useKBBase';
 
-// === ERROR TIPADO KB ===
-export interface MicrosurveysError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// Re-export for backwards compat
+export type MicrosurveysError = KBError;
 
 export interface Microsurvey {
   id: string;
@@ -45,22 +43,66 @@ export interface MicrosurveyResponse {
 
 export function useMicrosurveys() {
   const queryClient = useQueryClient();
-  // === ESTADO KB ===
-  const [error, setError] = useState<MicrosurveysError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoadingState = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   const { data: microsurveys, isLoading } = useQuery({
     queryKey: ['microsurveys'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('microsurveys')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return data as unknown as Microsurvey[];
+      const startTime = new Date();
+      setStatus('loading');
+      
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('microsurveys')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (fetchError) throw fetchError;
+        
+        setStatus('success');
+        setLastSuccess(new Date());
+        setLastRefresh(new Date());
+        
+        collectTelemetry({
+          hookName: 'useMicrosurveys',
+          operationName: 'fetchMicrosurveys',
+          startTime,
+          endTime: new Date(),
+          durationMs: Date.now() - startTime.getTime(),
+          status: 'success',
+          retryCount
+        });
+        
+        return data as unknown as Microsurvey[];
+      } catch (err) {
+        const kbError = parseError(err);
+        setError(kbError);
+        setStatus('error');
+        throw err;
+      }
     },
   });
 
@@ -116,15 +158,21 @@ export function useMicrosurveys() {
 
   const toggleActive = useMutation({
     mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from('microsurveys')
         .update({ is_active: isActive })
         .eq('id', id);
-      if (error) throw error;
+      if (updateError) throw updateError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['microsurveys'] });
+      setLastSuccess(new Date());
       toast.success('Estado actualizado');
+    },
+    onError: (err) => {
+      const kbError = parseError(err);
+      setError(kbError);
+      toast.error('Error: ' + kbError.message);
     },
   });
 
@@ -138,9 +186,17 @@ export function useMicrosurveys() {
     toggleActive: toggleActive.mutate,
     isCreating: createMicrosurvey.isPending,
     isSubmitting: submitResponse.isPending,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoadingState,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
+    reset,
   };
 }
