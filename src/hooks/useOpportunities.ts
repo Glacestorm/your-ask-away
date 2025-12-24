@@ -1,7 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { createKBError } from '@/hooks/core/useKBBase';
 
 export type OpportunityStage = 'discovery' | 'proposal' | 'negotiation' | 'won' | 'lost';
 
@@ -48,31 +50,69 @@ interface OpportunityFilters {
 export function useOpportunities(filters: OpportunityFilters = {}) {
   const queryClient = useQueryClient();
 
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [kbError, setKbError] = useState<KBError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setKbError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setKbError(null);
+    setRetryCount(0);
+  }, []);
+
   const { data: opportunities = [], isLoading, error, refetch } = useQuery({
     queryKey: ['opportunities', filters],
     queryFn: async () => {
-      let query = supabase
-        .from('opportunities')
-        .select(`
-          *,
-          company:companies(id, name, is_vip),
-          contact:company_contacts(id, contact_name, position)
-        `)
-        .order('updated_at', { ascending: false });
+      setStatus('loading');
+      try {
+        let query = supabase
+          .from('opportunities')
+          .select(`
+            *,
+            company:companies(id, name, is_vip),
+            contact:company_contacts(id, contact_name, position)
+          `)
+          .order('updated_at', { ascending: false });
 
-      if (filters.stage && filters.stage !== 'all') {
-        query = query.eq('stage', filters.stage);
-      }
-      if (filters.ownerId) {
-        query = query.eq('owner_id', filters.ownerId);
-      }
-      if (filters.companyId) {
-        query = query.eq('company_id', filters.companyId);
-      }
+        if (filters.stage && filters.stage !== 'all') {
+          query = query.eq('stage', filters.stage);
+        }
+        if (filters.ownerId) {
+          query = query.eq('owner_id', filters.ownerId);
+        }
+        if (filters.companyId) {
+          query = query.eq('company_id', filters.companyId);
+        }
 
-      const { data, error } = await query;
-      if (error) throw error;
-      return (data || []) as unknown as Opportunity[];
+        const { data, error: fetchError } = await query;
+        if (fetchError) throw fetchError;
+        
+        setStatus('success');
+        setLastSuccess(new Date());
+        setLastRefresh(new Date());
+        setRetryCount(0);
+        
+        return (data || []) as unknown as Opportunity[];
+      } catch (err) {
+        const kbErr = createKBError('FETCH_ERROR', err instanceof Error ? err.message : 'Error desconocido');
+        setKbError(kbErr);
+        setStatus('error');
+        throw err;
+      }
     },
     staleTime: 30000,
   });
@@ -201,12 +241,22 @@ export function useOpportunities(filters: OpportunityFilters = {}) {
   return {
     opportunities,
     isLoading,
-    error,
+    error: kbError || (error ? createKBError('QUERY_ERROR', String(error)) : null),
     refetch,
     createOpportunity,
     updateOpportunity,
     deleteOpportunity,
     moveStage,
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
+    lastRefresh,
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
   };
 }
 
