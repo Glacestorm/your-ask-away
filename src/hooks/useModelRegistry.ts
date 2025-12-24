@@ -2,13 +2,11 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { parseError, collectTelemetry } from '@/hooks/core/useKBBase';
 
-// === ERROR TIPADO KB ===
-export interface ModelRegistryError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// Re-export for backwards compat
+export type ModelRegistryError = KBError;
 export interface MLModel {
   id: string;
   model_name: string;
@@ -50,23 +48,68 @@ export interface ABTest {
 
 export function useModelRegistry() {
   const queryClient = useQueryClient();
-  // === ESTADO KB ===
-  const [error, setError] = useState<ModelRegistryError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoadingState = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
+
   // Fetch all models
   const { data: models, isLoading: modelsLoading } = useQuery({
     queryKey: ['ml-models'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('ml_model_registry')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const startTime = new Date();
+      setStatus('loading');
+      
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('ml_model_registry')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data as MLModel[];
+        if (fetchError) throw fetchError;
+        
+        setStatus('success');
+        setLastSuccess(new Date());
+        setLastRefresh(new Date());
+        
+        collectTelemetry({
+          hookName: 'useModelRegistry',
+          operationName: 'fetchModels',
+          startTime,
+          endTime: new Date(),
+          durationMs: Date.now() - startTime.getTime(),
+          status: 'success',
+          retryCount
+        });
+        
+        return data as MLModel[];
+      } catch (err) {
+        const kbError = parseError(err);
+        setError(kbError);
+        setStatus('error');
+        throw err;
+      }
     },
     staleTime: 5 * 60 * 1000 // 5 minutes
   });
@@ -75,12 +118,12 @@ export function useModelRegistry() {
   const { data: abTests, isLoading: abTestsLoading } = useQuery({
     queryKey: ['ml-ab-tests'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('ml_ab_tests')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (fetchError) throw fetchError;
       return data as ABTest[];
     },
     staleTime: 5 * 60 * 1000
