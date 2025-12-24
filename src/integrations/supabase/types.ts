@@ -905,6 +905,71 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_alerts: {
+        Row: {
+          alert_type: string
+          auto_generated: boolean | null
+          created_at: string | null
+          days_until_due: number | null
+          description: string | null
+          due_date: string | null
+          id: string
+          is_read: boolean | null
+          is_resolved: boolean | null
+          organization_id: string | null
+          related_entity_id: string | null
+          related_entity_type: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string | null
+          title: string
+        }
+        Insert: {
+          alert_type: string
+          auto_generated?: boolean | null
+          created_at?: string | null
+          days_until_due?: number | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          is_read?: boolean | null
+          is_resolved?: boolean | null
+          organization_id?: string | null
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string | null
+          title: string
+        }
+        Update: {
+          alert_type?: string
+          auto_generated?: boolean | null
+          created_at?: string | null
+          days_until_due?: number | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          is_read?: boolean | null
+          is_resolved?: boolean | null
+          organization_id?: string | null
+          related_entity_id?: string | null
+          related_entity_type?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_alerts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_evidence: {
         Row: {
           collected_at: string | null
@@ -1086,6 +1151,59 @@ export type Database = {
             columns: ["template_id"]
             isOneToOne: false
             referencedRelation: "auditor_report_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      auditor_access_tokens: {
+        Row: {
+          access_count: number | null
+          auditor_email: string
+          auditor_name: string | null
+          created_at: string | null
+          created_by: string | null
+          expires_at: string
+          id: string
+          is_active: boolean | null
+          last_accessed_at: string | null
+          organization_id: string | null
+          permissions: Json | null
+          token_hash: string
+        }
+        Insert: {
+          access_count?: number | null
+          auditor_email: string
+          auditor_name?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          expires_at: string
+          id?: string
+          is_active?: boolean | null
+          last_accessed_at?: string | null
+          organization_id?: string | null
+          permissions?: Json | null
+          token_hash: string
+        }
+        Update: {
+          access_count?: number | null
+          auditor_email?: string
+          auditor_name?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          is_active?: boolean | null
+          last_accessed_at?: string | null
+          organization_id?: string | null
+          permissions?: Json | null
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auditor_access_tokens_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -1610,6 +1728,71 @@ export type Database = {
             columns: ["gestor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      blockchain_audit_entries: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_id: string | null
+          block_number: number | null
+          created_at: string | null
+          data_hash: string
+          entity_id: string
+          entity_type: string
+          entry_type: string
+          id: string
+          is_verified: boolean | null
+          merkle_root: string | null
+          metadata: Json | null
+          organization_id: string | null
+          previous_hash: string | null
+          timestamp: string | null
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_id?: string | null
+          block_number?: number | null
+          created_at?: string | null
+          data_hash: string
+          entity_id: string
+          entity_type: string
+          entry_type: string
+          id?: string
+          is_verified?: boolean | null
+          merkle_root?: string | null
+          metadata?: Json | null
+          organization_id?: string | null
+          previous_hash?: string | null
+          timestamp?: string | null
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          block_number?: number | null
+          created_at?: string | null
+          data_hash?: string
+          entity_id?: string
+          entity_type?: string
+          entry_type?: string
+          id?: string
+          is_verified?: boolean | null
+          merkle_root?: string | null
+          metadata?: Json | null
+          organization_id?: string | null
+          previous_hash?: string | null
+          timestamp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blockchain_audit_entries_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -4152,6 +4335,7 @@ export type Database = {
           name: string
           observaciones: string | null
           oficina: string | null
+          organization_id: string | null
           parroquia: string
           periodo_facturacion: string | null
           phone: string | null
@@ -4192,6 +4376,7 @@ export type Database = {
           name: string
           observaciones?: string | null
           oficina?: string | null
+          organization_id?: string | null
           parroquia: string
           periodo_facturacion?: string | null
           phone?: string | null
@@ -4232,6 +4417,7 @@ export type Database = {
           name?: string
           observaciones?: string | null
           oficina?: string | null
+          organization_id?: string | null
           parroquia?: string
           periodo_facturacion?: string | null
           phone?: string | null
@@ -4263,6 +4449,13 @@ export type Database = {
             columns: ["import_batch_id"]
             isOneToOne: false
             referencedRelation: "import_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "companies_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
           {
@@ -6804,6 +6997,66 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      digital_signatures: {
+        Row: {
+          certificate_issuer: string | null
+          certificate_serial: string | null
+          created_at: string | null
+          document_hash: string
+          document_id: string
+          document_type: string
+          eidas_level: string | null
+          id: string
+          signature_data: Json | null
+          signature_type: string | null
+          signed_at: string | null
+          signer_email: string
+          signer_id: string | null
+          signer_name: string
+          timestamp_authority: string | null
+          verification_status: string | null
+          verified_at: string | null
+        }
+        Insert: {
+          certificate_issuer?: string | null
+          certificate_serial?: string | null
+          created_at?: string | null
+          document_hash: string
+          document_id: string
+          document_type: string
+          eidas_level?: string | null
+          id?: string
+          signature_data?: Json | null
+          signature_type?: string | null
+          signed_at?: string | null
+          signer_email: string
+          signer_id?: string | null
+          signer_name: string
+          timestamp_authority?: string | null
+          verification_status?: string | null
+          verified_at?: string | null
+        }
+        Update: {
+          certificate_issuer?: string | null
+          certificate_serial?: string | null
+          created_at?: string | null
+          document_hash?: string
+          document_id?: string
+          document_type?: string
+          eidas_level?: string | null
+          id?: string
+          signature_data?: Json | null
+          signature_type?: string | null
+          signed_at?: string | null
+          signer_email?: string
+          signer_id?: string | null
+          signer_name?: string
+          timestamp_authority?: string | null
+          verification_status?: string | null
+          verified_at?: string | null
+        }
+        Relationships: []
       }
       dora_compliance_items: {
         Row: {
@@ -10649,6 +10902,53 @@ export type Database = {
           },
         ]
       }
+      module_trials: {
+        Row: {
+          converted_at: string | null
+          converted_to_purchase: boolean | null
+          created_at: string | null
+          expires_at: string
+          id: string
+          module_key: string
+          organization_id: string | null
+          started_at: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          converted_at?: string | null
+          converted_to_purchase?: boolean | null
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          module_key: string
+          organization_id?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          converted_at?: string | null
+          converted_to_purchase?: boolean | null
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          module_key?: string
+          organization_id?: string | null
+          started_at?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_trials_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       monte_carlo_simulations: {
         Row: {
           base_arr: number | null
@@ -12873,6 +13173,63 @@ export type Database = {
           },
         ]
       }
+      organizations: {
+        Row: {
+          billing_address: Json | null
+          billing_email: string | null
+          created_at: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          logo_url: string | null
+          max_users: number | null
+          name: string
+          settings: Json | null
+          slug: string
+          stripe_customer_id: string | null
+          subscription_plan: string | null
+          subscription_status: string | null
+          trial_ends_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          billing_address?: Json | null
+          billing_email?: string | null
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          logo_url?: string | null
+          max_users?: number | null
+          name: string
+          settings?: Json | null
+          slug: string
+          stripe_customer_id?: string | null
+          subscription_plan?: string | null
+          subscription_status?: string | null
+          trial_ends_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          billing_address?: Json | null
+          billing_email?: string | null
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          logo_url?: string | null
+          max_users?: number | null
+          name?: string
+          settings?: Json | null
+          slug?: string
+          stripe_customer_id?: string | null
+          subscription_plan?: string | null
+          subscription_status?: string | null
+          trial_ends_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       partner_applications: {
         Row: {
           api_scopes: string[] | null
@@ -14322,7 +14679,9 @@ export type Database = {
           gestor_number: string | null
           id: string
           oficina: string | null
+          organization_id: string | null
           updated_at: string | null
+          user_role: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -14333,7 +14692,9 @@ export type Database = {
           gestor_number?: string | null
           id: string
           oficina?: string | null
+          organization_id?: string | null
           updated_at?: string | null
+          user_role?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -14344,9 +14705,19 @@ export type Database = {
           gestor_number?: string | null
           id?: string
           oficina?: string | null
+          organization_id?: string | null
           updated_at?: string | null
+          user_role?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       provisional_balance_sheets: {
         Row: {
