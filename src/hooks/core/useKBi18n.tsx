@@ -298,8 +298,8 @@ export function I18nProvider({ config, children, initialTranslations }: I18nProv
     const localeTranslations = state.translations[state.locale] as TranslationDictionary | undefined;
     const value = localeTranslations ? getNestedValue(localeTranslations, key) : undefined;
 
-    if (value && typeof value === 'object' && 'other' in value) {
-      const text = selectPluralForm(count, value as PluralRules, state.locale);
+    if (value && typeof value === 'object' && 'other' in (value as Record<string, unknown>)) {
+      const text = selectPluralForm(count, value as unknown as PluralRules, state.locale);
       return interpolate(text, { ...options, count });
     }
 

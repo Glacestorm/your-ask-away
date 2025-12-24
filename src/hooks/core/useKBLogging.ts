@@ -314,7 +314,7 @@ class KBLogger {
         name: options.error.name,
         message: options.error.message,
         stack: this.config.includeStackTraces ? options.error.stack : undefined,
-        code: (options.error as KBError).code,
+        code: 'code' in options.error ? String((options.error as { code?: unknown }).code) : undefined,
       };
     }
 
@@ -504,14 +504,14 @@ export function useKBLogging(options?: UseKBLoggingOptions): UseKBLoggingReturn 
         try {
           const result = await operation();
           const duration = performance.now() - start;
-          kbLogger.info(`${message} completed`, { context: ctx, component, duration });
+          kbLogger.info(`${message} completed`, { context: ctx, component, data: { duration } });
           return result;
         } catch (e) {
           const duration = performance.now() - start;
           kbLogger.error(`${message} failed`, { 
             context: ctx, 
             component, 
-            duration,
+            data: { duration },
             error: e instanceof Error ? e : new Error(String(e))
           });
           throw e;
@@ -565,8 +565,7 @@ export function useKBPerformanceLogging(component: string) {
     setLogs(prev => [...prev, entry]);
     kbLogger.info(`Performance: ${name}`, { 
       component, 
-      duration,
-      data: metadata 
+      data: { ...metadata, duration } 
     });
 
     return entry;

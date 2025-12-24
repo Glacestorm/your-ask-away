@@ -429,3 +429,103 @@ export type {
 
 // Unified API (KB 4.5)
 export { KB, default as KBDefault } from './useKB';
+
+// ============================================================================
+// PHASE 13: Advanced Features
+// ============================================================================
+
+// Error Boundaries & Recovery (KB 4.5)
+export {
+  useKBErrorBoundary,
+  useKBAsyncErrorBoundary,
+  useKBErrorRecovery,
+  KBErrorBoundaryComponent,
+  withKBErrorBoundary,
+} from './useKBErrorBoundary';
+
+export type {
+  KBErrorBoundaryConfig,
+  KBErrorState,
+  KBErrorBoundaryReturn,
+  KBAsyncErrorBoundaryReturn,
+  KBAsyncErrorBoundaryOptions,
+  KBErrorRecoveryOptions,
+  RecoveryStrategy,
+  RecoveryPlan,
+} from './useKBErrorBoundary';
+
+// Logging & Monitoring (KB 4.5)
+export {
+  useKBLogging,
+  useKBPerformanceLogging,
+  consoleExporter,
+  localStorageExporter,
+  createHttpExporter,
+  createBatchExporter,
+} from './useKBLogging';
+
+export type {
+  LogLevel,
+  LogEntry,
+  LogExporter,
+  LoggerConfig,
+  LoggerMetrics,
+  PerformanceLogEntry,
+} from './useKBLogging';
+
+// Advanced Cache Strategies (KB 4.5)
+export {
+  useKBLRUCache,
+  useKBCacheWarming,
+  useKBPrefetch,
+  useKBSmartCache,
+  LRUCache,
+  calculateDynamicTTL,
+} from './useKBAdvancedCache';
+
+export type {
+  LRUCacheConfig,
+  DynamicTTLConfig,
+  CacheMetadata,
+  CacheWarmingConfig,
+  PrefetchConfig,
+  SmartCacheConfig,
+} from './useKBAdvancedCache';
+
+// i18n & Localization (KB 4.5)
+export {
+  useKBi18n,
+  useKBTranslation,
+  useKBLocaleDirection,
+  I18nProvider,
+} from './useKBi18n';
+
+export type {
+  Locale,
+  TranslationKey,
+  TranslationValue,
+  TranslationDictionary,
+  LocaleConfig,
+  I18nConfig,
+} from './useKBi18n';
+
+// Testing Mocks (KB 4.5)
+export {
+  mockStore,
+  MockTimer,
+  MockNetwork,
+  createMockQuery as createAdvancedMockQuery,
+  createMockMutation as createAdvancedMockMutation,
+  createMockStream,
+  waitFor,
+  waitForCondition,
+  createSpyFn,
+  createMockProvider,
+} from './useKBTestingMocks';
+
+export type {
+  MockConfig,
+  MockStore as MockStoreType,
+  MockTimeline,
+  MockAssertion,
+} from './useKBTestingMocks';
