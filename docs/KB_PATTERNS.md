@@ -1,4 +1,4 @@
-# KB 3.0 - Knowledge Base Pattern Documentation
+# KB 4.0 - Knowledge Base Pattern Documentation
 
 Enterprise-grade React hook patterns para aplicaciones 2025-2026+.
 
@@ -9,6 +9,7 @@ Enterprise-grade React hook patterns para aplicaciones 2025-2026+.
 | KB 2.0 | State Machine, Typed Errors, Retry, Telemetry |
 | KB 2.5 | + Circuit Breaker, SSE/Streaming, Smart Cache, OpenTelemetry |
 | KB 3.0 | + Suspense-First, Bulkhead Pattern, Query Deduplication |
+| KB 4.0 | + Signals (Fine-grained Reactivity), Effect-TS Style, Reactive Store |
 
 ## Core Features
 
@@ -366,4 +367,70 @@ const { data, isFetching } = useKBQueryDedup({ ... });
   - Typed Errors
   - Exponential Retry
   - Cancellation Support
+
+---
+
+## KB 4.0 Features (Disruptivo)
+
+### 8. Signals Integration
+
+Fine-grained reactivity with @preact/signals-react:
+
+```typescript
+import { useKBSignal, useKBComputed } from '@/hooks/core';
+
+const { signals, computed, execute, batchUpdate } = useKBSignal<User>('user-data');
+
+// Fine-grained updates - no re-renders
+signals.data.value = newUser;
+
+// Batch multiple updates
+batchUpdate(() => {
+  signals.data.value = user;
+  signals.status.value = 'success';
+});
+
+// Computed values with auto-tracking
+const isReady = computed.isSuccess;
+```
+
+### 9. Effect-TS Style Operations
+
+Typed async operations with composable pipelines:
+
+```typescript
+import { tryPromise, pipe, map, catchAll, retry, exponentialSchedule } from '@/hooks/core';
+
+const fetchUser = pipe(
+  tryPromise(() => api.getUser(id)),
+  map(user => ({ ...user, fullName: `${user.first} ${user.last}` })),
+  retry(exponentialSchedule({ maxAttempts: 3 })),
+  catchAll(error => succeed({ id, name: 'Unknown' }))
+);
+
+// In component
+const { data, execute } = useKBEffectQuery(fetchUser);
+```
+
+### 10. Reactive Store Pattern
+
+Combines Signals + Effects with time-travel:
+
+```typescript
+import { useKBReactive, loggerMiddleware } from '@/hooks/core';
+
+const store = useKBReactive({
+  name: 'app-state',
+  initialState: { count: 0, items: [] },
+  middleware: [loggerMiddleware()],
+  persist: true,
+});
+
+// Update state
+store.update(s => ({ ...s, count: s.count + 1 }));
+
+// Undo/Redo
+store.undo();
+store.redo();
+```
   - Basic Telemetry
