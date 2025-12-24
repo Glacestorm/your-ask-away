@@ -3,13 +3,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { createKBError, parseError, collectTelemetry } from '@/hooks/core/useKBBase';
 
-// === ERROR TIPADO KB ===
-export interface RoleCopilotError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// Re-export for backwards compat
+export type RoleCopilotError = KBError;
 
 export interface CopilotConfig {
   id: string;
@@ -77,12 +75,31 @@ export function useRoleCopilot() {
   const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentSuggestions, setCurrentSuggestions] = useState<CopilotSuggestion[]>([]);
-  // === ESTADO KB ===
-  const [error, setError] = useState<RoleCopilotError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+  
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   // Get copilot config for current role
   const { data: copilotConfig, isLoading: configLoading } = useQuery({
@@ -201,9 +218,13 @@ export function useRoleCopilot() {
   const generateSuggestions = useCallback(async (context?: Record<string, unknown>) => {
     if (!user?.id || !copilotConfig) return [];
     
+    const startTime = new Date();
     setIsProcessing(true);
+    setStatus('loading');
+    setError(null);
+    
     try {
-      const { data, error } = await supabase.functions.invoke('copilot-assistant', {
+      const { data, error: fnError } = await supabase.functions.invoke('copilot-assistant', {
         body: {
           action: 'generate_suggestions',
           userId: user.id,
@@ -212,11 +233,24 @@ export function useRoleCopilot() {
         },
       });
       
-      if (error) throw error;
+      if (fnError) throw fnError;
       
       const suggestions = data.suggestions as CopilotSuggestion[];
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
       setCurrentSuggestions(suggestions);
+      setStatus('success');
+      setRetryCount(0);
+      
+      collectTelemetry({
+        hookName: 'useRoleCopilot',
+        operationName: 'generateSuggestions',
+        startTime,
+        endTime: new Date(),
+        durationMs: Date.now() - startTime.getTime(),
+        status: 'success',
+        retryCount,
+      });
       
       // Update session with new suggestions
       if (session?.id) {
@@ -231,19 +265,33 @@ export function useRoleCopilot() {
       
       return suggestions;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error al generar sugerencias';
-      setError({
-        code: 'GENERATE_SUGGESTIONS_ERROR',
-        message,
-        details: { originalError: String(err) }
+      const kbError = createKBError(
+        'GENERATE_SUGGESTIONS_ERROR',
+        err instanceof Error ? err.message : 'Error al generar sugerencias',
+        { originalError: String(err) }
+      );
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      
+      collectTelemetry({
+        hookName: 'useRoleCopilot',
+        operationName: 'generateSuggestions',
+        startTime,
+        endTime: new Date(),
+        durationMs: Date.now() - startTime.getTime(),
+        status: 'error',
+        error: kbError,
+        retryCount,
       });
+      
       console.error('Error generating suggestions:', err);
-      toast.error(message);
+      toast.error(kbError.message);
       return [];
     } finally {
       setIsProcessing(false);
     }
-  }, [user?.id, copilotConfig, session?.id]);
+  }, [user?.id, copilotConfig, session?.id, retryCount]);
 
   // Execute action
   const executeAction = useMutation({
@@ -374,10 +422,18 @@ export function useRoleCopilot() {
     dismissSuggestion,
     executeQuickAction,
     refetchSession,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
+    reset,
   };
 }
 

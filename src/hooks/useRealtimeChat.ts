@@ -3,13 +3,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
 import { RealtimeChannel } from '@supabase/supabase-js';
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { createKBError, collectTelemetry } from '@/hooks/core/useKBBase';
 
-// === ERROR TIPADO KB ===
-export interface RealtimeChatError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// Re-export for backwards compat
+export type RealtimeChatError = KBError;
 
 interface ChatRoom {
   id: string;
@@ -71,15 +69,34 @@ export function useRealtimeChat(roomId?: string) {
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [sendingMessage, setSendingMessage] = useState(false);
-  // === ESTADO KB ===
-  const [error, setError] = useState<RealtimeChatError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   
   const channelRef = useRef<RealtimeChannel | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoadingState = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+  
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   // Load user's chat rooms
   const loadRooms = useCallback(async () => {
@@ -110,7 +127,11 @@ export function useRealtimeChat(roomId?: string) {
 
   // Load room details
   const loadRoom = useCallback(async (id: string) => {
+    const startTime = new Date();
     setLoading(true);
+    setStatus('loading');
+    setError(null);
+    
     try {
       const { data: room, error: roomError } = await supabase
         .from('chat_rooms')
@@ -165,16 +186,45 @@ export function useRealtimeChat(roomId?: string) {
         );
         setMessages(msgsWithSenders);
       }
+      
+      setStatus('success');
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      
+      collectTelemetry({
+        hookName: 'useRealtimeChat',
+        operationName: 'loadRoom',
+        startTime,
+        endTime: new Date(),
+        durationMs: Date.now() - startTime.getTime(),
+        status: 'success',
+        retryCount,
+      });
 
     } catch (err) {
       console.error('Error loading room:', err);
-      setError({ code: 'LOAD_ROOM_ERROR', message: 'Error carregant la sala', details: { originalError: String(err) } });
+      const kbError = createKBError('LOAD_ROOM_ERROR', 'Error carregant la sala', { originalError: String(err) });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      
+      collectTelemetry({
+        hookName: 'useRealtimeChat',
+        operationName: 'loadRoom',
+        startTime,
+        endTime: new Date(),
+        durationMs: Date.now() - startTime.getTime(),
+        status: 'error',
+        error: kbError,
+        retryCount,
+      });
+      
       toast.error('Error carregant la sala');
     } finally {
       setLoading(false);
       setLastRefresh(new Date());
     }
-  }, []);
+  }, [retryCount]);
 
   // Subscribe to room updates
   useEffect(() => {
@@ -485,9 +535,17 @@ export function useRealtimeChat(roomId?: string) {
     startTyping,
     stopTyping,
     getUnreadCount,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoadingState,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
+    reset,
   };
 }
