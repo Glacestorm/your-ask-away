@@ -1726,6 +1726,8 @@ export default {
   'landing.roi.sectorIndustry': 'Industrie',
   'landing.roi.sectorServices': 'Services',
   'landing.roi.sectorHealthcare': 'Santé',
+  'landing.roi.savingsPotential': 'Votre Potentiel d\'Économies',
+  'landing.roi.yearExVat': 'an HT',
 
   // Landing Contact Section
   'landing.contact.badge': 'Contact Commercial',

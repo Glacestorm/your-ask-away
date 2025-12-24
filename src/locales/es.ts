@@ -1822,6 +1822,8 @@ export default {
   'landing.roi.sectorIndustry': 'Industria',
   'landing.roi.sectorServices': 'Servicios',
   'landing.roi.sectorHealthcare': 'Salud',
+  'landing.roi.savingsPotential': 'Tu Potencial de Ahorro',
+  'landing.roi.yearExVat': 'año sin IVA',
 
   // Landing Contact Section
   'landing.contact.badge': 'Contacto Comercial',
