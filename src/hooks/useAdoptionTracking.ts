@@ -3,13 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Json } from '@/integrations/supabase/types';
 import { useState, useCallback } from 'react';
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { parseError, collectTelemetry } from '@/hooks/core/useKBBase';
 
-// === ERROR TIPADO KB ===
-export interface AdoptionTrackingError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
 export interface FeatureUsage {
   id: string;
   company_id?: string;
@@ -86,28 +82,83 @@ export interface AdoptionScore {
 
 export function useAdoptionTracking(companyId?: string) {
   const queryClient = useQueryClient();
-  // === ESTADO KB ===
-  const [error, setError] = useState<AdoptionTrackingError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoadingState = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+  const isRetrying = status === 'retrying';
+
+  // === KB 2.0 METHODS ===
   const clearError = useCallback(() => setError(null), []);
+  
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
+
   // Fetch feature usage for a company
   const { data: featureUsage, isLoading: loadingUsage } = useQuery({
     queryKey: ['feature-usage', companyId],
     queryFn: async () => {
-      let query = supabase
-        .from('feature_usage_tracking')
-        .select('*')
-        .order('last_used_at', { ascending: false });
+      const startTime = new Date();
+      setStatus('loading');
+      
+      try {
+        let query = supabase
+          .from('feature_usage_tracking')
+          .select('*')
+          .order('last_used_at', { ascending: false });
 
-      if (companyId) {
-        query = query.eq('company_id', companyId);
+        if (companyId) {
+          query = query.eq('company_id', companyId);
+        }
+
+        const { data, error: fetchError } = await query.limit(100);
+        if (fetchError) throw fetchError;
+        
+        setStatus('success');
+        setLastSuccess(new Date());
+        setLastRefresh(new Date());
+        
+        collectTelemetry({
+          hookName: 'useAdoptionTracking',
+          operationName: 'fetchFeatureUsage',
+          startTime,
+          endTime: new Date(),
+          durationMs: Date.now() - startTime.getTime(),
+          status: 'success',
+          retryCount
+        });
+        
+        return data as FeatureUsage[];
+      } catch (err) {
+        const kbError = parseError(err);
+        setError(kbError);
+        setStatus('error');
+        
+        collectTelemetry({
+          hookName: 'useAdoptionTracking',
+          operationName: 'fetchFeatureUsage',
+          startTime,
+          endTime: new Date(),
+          durationMs: Date.now() - startTime.getTime(),
+          status: 'error',
+          error: kbError,
+          retryCount
+        });
+        
+        throw err;
       }
-
-      const { data, error } = await query.limit(100);
-      if (error) throw error;
-      return data as FeatureUsage[];
     },
   });
 
@@ -353,8 +404,10 @@ export function useAdoptionTracking(companyId?: string) {
       queryClient.invalidateQueries({ queryKey: ['time-to-value'] });
       toast.success(`Predicción TTV: ${data.predicted_days} días`);
     },
-    onError: (error) => {
-      toast.error(`Error en predicción: ${error.message}`);
+    onError: (err) => {
+      const kbError = parseError(err);
+      setError(kbError);
+      toast.error(`Error en predicción: ${kbError.message}`);
     },
   });
 
@@ -460,9 +513,18 @@ export function useAdoptionTracking(companyId?: string) {
     isPredicting: predictTimeToValue.isPending,
     getAdoptionSummary,
     getRiskIndicators,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoadingState,
+    isSuccess,
+    isError,
+    isRetrying,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
+    reset,
   };
 }

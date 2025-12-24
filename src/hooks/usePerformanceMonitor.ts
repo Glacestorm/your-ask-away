@@ -1,11 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-
-// === ERROR TIPADO KB ===
-export interface PerformanceMonitorError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+import { KBStatus, KBError } from '@/hooks/core/types';
 
 interface PerformanceMetrics {
   fcp: number | null;
@@ -33,15 +27,29 @@ export function usePerformanceMonitor(onMetricUpdate?: PerformanceObserverCallba
     ttfb: null,
     fid: null,
   });
-  // === ESTADO KB ===
-  const [error, setError] = useState<PerformanceMonitorError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+  const isRetrying = status === 'retrying';
+
+  // === KB 2.0 METHODS ===
   const clearError = useCallback(() => setError(null), []);
 
   const updateMetric = useCallback((name: keyof PerformanceMetrics, value: number) => {
     metricsRef.current[name] = value;
+    setLastRefresh(new Date());
+    setLastSuccess(new Date());
+    setStatus('success');
     onMetricUpdate?.({ [name]: value });
   }, [onMetricUpdate]);
 
@@ -50,6 +58,7 @@ export function usePerformanceMonitor(onMetricUpdate?: PerformanceObserverCallba
       return;
     }
 
+    setStatus('loading');
     const observers: PerformanceObserver[] = [];
 
     // First Contentful Paint (FCP)
@@ -139,6 +148,9 @@ export function usePerformanceMonitor(onMetricUpdate?: PerformanceObserverCallba
       console.debug('FID observer not supported');
     }
 
+    setStatus('success');
+    setLastSuccess(new Date());
+
     return () => {
       observers.forEach((observer) => observer.disconnect());
     };
@@ -175,9 +187,17 @@ export function usePerformanceMonitor(onMetricUpdate?: PerformanceObserverCallba
     getMetrics,
     getPerformanceScore,
     metrics: metricsRef.current,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
+    isRetrying,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
   };
 }

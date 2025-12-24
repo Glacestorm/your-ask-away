@@ -2,13 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { RealtimeChannel } from '@supabase/supabase-js';
-
-// === ERROR TIPADO KB ===
-export interface PresenceError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { createKBError, collectTelemetry } from '@/hooks/core/useKBBase';
 
 export interface OnlineUser {
   id: string;
@@ -35,40 +30,91 @@ export function usePresence(options: UsePresenceOptions = {}) {
   const profileDataRef = useRef<{ full_name: string; role: string; avatar_url?: string; oficina?: string } | null>(null);
   const isSubscribedRef = useRef(false);
   const lastTrackTimeRef = useRef(0);
-  // === ESTADO KB ===
-  const [error, setError] = useState<PresenceError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+  const isRetrying = status === 'retrying';
+
+  // === KB 2.0 METHODS ===
   const clearError = useCallback(() => setError(null), []);
+  
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   // Fetch user profile data once
   useEffect(() => {
     if (!user?.id) return;
 
     const fetchProfile = async () => {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('full_name, avatar_url, oficina')
-        .eq('id', user.id)
-        .single();
+      const startTime = new Date();
+      setStatus('loading');
+      
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name, avatar_url, oficina')
+          .eq('id', user.id)
+          .single();
 
-      const { data: roleData } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .single();
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .single();
 
-      profileDataRef.current = {
-        full_name: profile?.full_name || user.email || 'Unknown',
-        role: roleData?.role || 'user',
-        avatar_url: profile?.avatar_url,
-        oficina: profile?.oficina,
-      };
+        profileDataRef.current = {
+          full_name: profile?.full_name || user.email || 'Unknown',
+          role: roleData?.role || 'user',
+          avatar_url: profile?.avatar_url,
+          oficina: profile?.oficina,
+        };
+        
+        setStatus('success');
+        setLastSuccess(new Date());
+        setLastRefresh(new Date());
+        
+        collectTelemetry({
+          hookName: 'usePresence',
+          operationName: 'fetchProfile',
+          startTime,
+          endTime: new Date(),
+          durationMs: Date.now() - startTime.getTime(),
+          status: 'success',
+          retryCount
+        });
+      } catch (err) {
+        const kbError = createKBError('PROFILE_FETCH_ERROR', 'Error al cargar perfil');
+        setError(kbError);
+        setStatus('error');
+        
+        collectTelemetry({
+          hookName: 'usePresence',
+          operationName: 'fetchProfile',
+          startTime,
+          endTime: new Date(),
+          durationMs: Date.now() - startTime.getTime(),
+          status: 'error',
+          error: kbError,
+          retryCount
+        });
+      }
     };
 
     fetchProfile();
-  }, [user?.id, user?.email]);
+  }, [user?.id, user?.email, retryCount]);
 
   const trackPresence = useCallback(
     async (currentPage?: string) => {
@@ -125,11 +171,14 @@ export function usePresence(options: UsePresenceOptions = {}) {
         });
 
         setOnlineUsers(users);
+        setLastRefresh(new Date());
       })
-      .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
+      .subscribe(async (subscribeStatus) => {
+        if (subscribeStatus === 'SUBSCRIBED') {
           isSubscribedRef.current = true;
           setIsConnected(true);
+          setStatus('success');
+          setLastSuccess(new Date());
           
           // Wait for profile data then track once
           let attempts = 0;
@@ -140,9 +189,10 @@ export function usePresence(options: UsePresenceOptions = {}) {
           if (profileDataRef.current) {
             trackPresence(trackPage ? window.location.pathname : undefined);
           }
-        } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+        } else if (subscribeStatus === 'CLOSED' || subscribeStatus === 'CHANNEL_ERROR') {
           isSubscribedRef.current = false;
           setIsConnected(false);
+          setStatus('error');
         }
       });
 
@@ -180,9 +230,18 @@ export function usePresence(options: UsePresenceOptions = {}) {
     isConnected,
     onlineCount: onlineUsers.length,
     updateCurrentPage,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
+    isRetrying,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
+    reset,
   };
 }

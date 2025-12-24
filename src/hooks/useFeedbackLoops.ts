@@ -3,13 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
-
-// === ERROR TIPADO KB ===
-export interface FeedbackLoopsError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { parseError, collectTelemetry } from '@/hooks/core/useKBBase';
 
 export interface FeedbackLoop {
   id: string;
@@ -47,25 +42,81 @@ export interface FeedbackLoop {
 
 export function useFeedbackLoops() {
   const queryClient = useQueryClient();
-  // === ESTADO KB ===
-  const [error, setError] = useState<FeedbackLoopsError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoadingState = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+  const isRetrying = status === 'retrying';
+
+  // === KB 2.0 METHODS ===
   const clearError = useCallback(() => setError(null), []);
+  
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   const { data: feedbackLoops, isLoading } = useQuery({
     queryKey: ['feedback-loops'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('feedback_loops')
-        .select(`
-          *,
-          company:companies(id, name)
-        `)
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return data as unknown as FeedbackLoop[];
+      const startTime = new Date();
+      setStatus('loading');
+      
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('feedback_loops')
+          .select(`
+            *,
+            company:companies(id, name)
+          `)
+          .order('created_at', { ascending: false });
+          
+        if (fetchError) throw fetchError;
+        
+        setStatus('success');
+        setLastSuccess(new Date());
+        setLastRefresh(new Date());
+        setError(null);
+        
+        collectTelemetry({
+          hookName: 'useFeedbackLoops',
+          operationName: 'fetchFeedbackLoops',
+          startTime,
+          endTime: new Date(),
+          durationMs: Date.now() - startTime.getTime(),
+          status: 'success',
+          retryCount
+        });
+        
+        return data as unknown as FeedbackLoop[];
+      } catch (err) {
+        const kbError = parseError(err);
+        setError(kbError);
+        setStatus('error');
+        
+        collectTelemetry({
+          hookName: 'useFeedbackLoops',
+          operationName: 'fetchFeedbackLoops',
+          startTime,
+          endTime: new Date(),
+          durationMs: Date.now() - startTime.getTime(),
+          status: 'error',
+          error: kbError,
+          retryCount
+        });
+        
+        throw err;
+      }
     },
   });
 
@@ -121,10 +172,13 @@ export function useFeedbackLoops() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['feedback-loops'] });
       queryClient.invalidateQueries({ queryKey: ['feedback-loops-stats'] });
+      setLastSuccess(new Date());
       toast.success('Acción procesada correctamente');
     },
-    onError: (error) => {
-      toast.error(`Error al procesar acción: ${error.message}`);
+    onError: (err) => {
+      const kbError = parseError(err);
+      setError(kbError);
+      toast.error(`Error al procesar acción: ${kbError.message}`);
     },
   });
 
@@ -171,9 +225,18 @@ export function useFeedbackLoops() {
     getStatusColor,
     getStatusLabel,
     getPriorityColor,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoadingState,
+    isSuccess,
+    isError,
+    isRetrying,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
+    reset,
   };
 }

@@ -4,6 +4,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { createKBError, collectTelemetry } from '@/hooks/core/useKBBase';
 import {
   initOfflineDB,
   offlineCompanies,
@@ -19,13 +21,6 @@ import {
   SyncStatus,
   PendingOperation,
 } from '@/lib/offlineStorage';
-
-// === ERROR TIPADO KB ===
-export interface OfflineSyncError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
 
 export interface UseOfflineSyncOptions {
   autoSync?: boolean;
@@ -60,9 +55,20 @@ export interface UseOfflineSyncReturn {
   
   // Clear cache
   clearOfflineCache: () => Promise<void>;
-  // KB additions
-  error: OfflineSyncError | null;
+  
+  // KB 2.0 additions
+  status: KBStatus;
+  isIdle: boolean;
+  isLoading: boolean;
+  isSuccess: boolean;
+  isError: boolean;
+  isRetrying: boolean;
+  error: KBError | null;
+  lastRefresh: Date | null;
+  lastSuccess: Date | null;
+  retryCount: number;
   clearError: () => void;
+  reset: () => void;
 }
 
 export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineSyncReturn {
@@ -77,11 +83,29 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineS
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [pendingCount, setPendingCount] = useState(0);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
-  // === ESTADO KB ===
-  const [error, setError] = useState<OfflineSyncError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+  const isRetrying = status === 'retrying';
+
+  // === KB 2.0 METHODS ===
   const clearError = useCallback(() => setError(null), []);
+  
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
   
   const syncIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const isInitialized = useRef(false);
@@ -93,16 +117,21 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineS
       
       try {
         await initOfflineDB();
-        const status = await getSyncStatus();
-        setSyncStatus(status);
-        setPendingCount(status.pendingCount);
-        if (status.lastSyncTime > 0) {
-          setLastSyncTime(new Date(status.lastSyncTime));
+        const statusData = await getSyncStatus();
+        setSyncStatus(statusData);
+        setPendingCount(statusData.pendingCount);
+        if (statusData.lastSyncTime > 0) {
+          setLastSyncTime(new Date(statusData.lastSyncTime));
         }
         isInitialized.current = true;
-        console.log('[OfflineSync] Initialized with status:', status);
-      } catch (error) {
-        console.error('[OfflineSync] Initialization failed:', error);
+        setStatus('success');
+        setLastSuccess(new Date());
+        console.log('[OfflineSync] Initialized with status:', statusData);
+      } catch (err) {
+        console.error('[OfflineSync] Initialization failed:', err);
+        const kbError = createKBError('INIT_ERROR', 'Error al inicializar sincronización offline');
+        setError(kbError);
+        setStatus('error');
       }
     };
 
@@ -217,12 +246,12 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineS
         await removePendingOperation(operation.id);
         successCount++;
         console.log(`[OfflineSync] Successfully synced operation:`, operation.id);
-      } catch (error) {
-        console.error(`[OfflineSync] Failed to sync operation:`, operation.id, error);
+      } catch (err) {
+        console.error(`[OfflineSync] Failed to sync operation:`, operation.id, err);
         await updatePendingOperation(operation.id, {
           status: 'failed',
           retryCount: operation.retryCount + 1,
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: err instanceof Error ? err.message : 'Unknown error',
         });
       }
     }
@@ -234,7 +263,9 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineS
   const syncNow = useCallback(async () => {
     if (!isOnline || isSyncing) return;
 
+    const startTime = new Date();
     setIsSyncing(true);
+    setStatus('loading');
     await updateSyncStatus({ isSyncing: true });
 
     try {
@@ -252,8 +283,23 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineS
         isSyncing: false,
       });
 
-      const status = await getSyncStatus();
-      setSyncStatus(status);
+      const statusData = await getSyncStatus();
+      setSyncStatus(statusData);
+      
+      setStatus('success');
+      setLastSuccess(new Date());
+      setLastRefresh(new Date());
+
+      collectTelemetry({
+        hookName: 'useOfflineSync',
+        operationName: 'syncNow',
+        startTime,
+        endTime: new Date(),
+        durationMs: Date.now() - startTime.getTime(),
+        status: 'success',
+        retryCount,
+        metadata: { syncedCount }
+      });
 
       if (syncedCount > 0) {
         toast.success(`Sincronització completada`, {
@@ -261,12 +307,21 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineS
         });
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error de sincronització';
-      setError({
-        code: 'SYNC_ERROR',
-        message,
-        details: { originalError: String(err) }
+      const kbError = createKBError('SYNC_ERROR', 'Error de sincronització', { originalError: err });
+      setError(kbError);
+      setStatus('error');
+      
+      collectTelemetry({
+        hookName: 'useOfflineSync',
+        operationName: 'syncNow',
+        startTime,
+        endTime: new Date(),
+        durationMs: Date.now() - startTime.getTime(),
+        status: 'error',
+        error: kbError,
+        retryCount
       });
+      
       console.error('[OfflineSync] Sync failed:', err);
       toast.error('Error de sincronització', {
         description: 'Es reintentarà automàticament',
@@ -275,7 +330,7 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineS
       setIsSyncing(false);
       await updateSyncStatus({ isSyncing: false });
     }
-  }, [isOnline, isSyncing, syncPendingOperations]);
+  }, [isOnline, isSyncing, syncPendingOperations, retryCount]);
 
   // Cache companies from server
   const cacheCompanies = useCallback(async (userId: string) => {
@@ -293,8 +348,8 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineS
         await offlineCompanies.saveBulk(data as Array<{ id: string; [key: string]: unknown }>);
         console.log(`[OfflineSync] Cached ${data.length} companies`);
       }
-    } catch (error) {
-      console.error('[OfflineSync] Failed to cache companies:', error);
+    } catch (err) {
+      console.error('[OfflineSync] Failed to cache companies:', err);
     }
   }, []);
 
@@ -314,8 +369,8 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineS
         await offlineVisits.saveBulk(data as Array<{ id: string; [key: string]: unknown }>);
         console.log(`[OfflineSync] Cached ${data.length} visits`);
       }
-    } catch (error) {
-      console.error('[OfflineSync] Failed to cache visits:', error);
+    } catch (err) {
+      console.error('[OfflineSync] Failed to cache visits:', err);
     }
   }, []);
 
@@ -335,8 +390,8 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineS
         await offlineGoals.saveBulk(data as Array<{ id: string; [key: string]: unknown }>);
         console.log(`[OfflineSync] Cached ${data.length} goals`);
       }
-    } catch (error) {
-      console.error('[OfflineSync] Failed to cache goals:', error);
+    } catch (err) {
+      console.error('[OfflineSync] Failed to cache goals:', err);
     }
   }, []);
 
@@ -356,8 +411,8 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineS
         await offlineVisitSheets.saveBulk(data as Array<{ id: string; [key: string]: unknown }>);
         console.log(`[OfflineSync] Cached ${data.length} visit sheets`);
       }
-    } catch (error) {
-      console.error('[OfflineSync] Failed to cache visit sheets:', error);
+    } catch (err) {
+      console.error('[OfflineSync] Failed to cache visit sheets:', err);
     }
   }, []);
 
@@ -447,8 +502,18 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineS
     getOfflineVisits,
     getOfflineGoals,
     clearOfflineCache,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
+    isRetrying,
     error,
-    clearError
+    lastRefresh,
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
   };
 }

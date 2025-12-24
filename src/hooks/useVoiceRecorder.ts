@@ -1,11 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
-
-// === ERROR TIPADO KB ===
-export interface VoiceRecorderError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { createKBError, parseError, collectTelemetry } from '@/hooks/core/useKBBase';
 
 interface UseVoiceRecorderOptions {
   onRecordingComplete?: (audioBlob: Blob, audioUrl: string) => void;
@@ -17,13 +12,32 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}) {
   
   const [isRecording, setIsRecording] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [duration, setDuration] = useState(0);
-  // === ESTADO KB ===
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+  const isRetrying = status === 'retrying';
+
+  // === KB 2.0 METHODS ===
   const clearError = useCallback(() => setError(null), []);
+  
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+    setAudioUrl(null);
+    setDuration(0);
+  }, []);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -31,8 +45,11 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}) {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const startRecording = useCallback(async () => {
+    const startTime = new Date();
+    setStatus('loading');
+    setError(null);
+    
     try {
-      setError(null);
       audioChunksRef.current = [];
       
       console.log('Requesting microphone access...');
@@ -90,14 +107,29 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}) {
 
       mediaRecorder.onerror = (event) => {
         console.error('MediaRecorder error:', event);
-        const errorMsg = 'Error durante la grabación';
-        setError(errorMsg);
-        onError?.(errorMsg);
+        const kbError = createKBError('RECORDING_ERROR', 'Error durante la grabación');
+        setError(kbError);
+        setStatus('error');
+        onError?.('Error durante la grabación');
+        
+        collectTelemetry({
+          hookName: 'useVoiceRecorder',
+          operationName: 'startRecording',
+          startTime,
+          endTime: new Date(),
+          durationMs: Date.now() - startTime.getTime(),
+          status: 'error',
+          error: kbError,
+          retryCount
+        });
       };
 
       mediaRecorder.start(100); // Collect data every 100ms
       setIsRecording(true);
       setDuration(0);
+      setStatus('success');
+      setLastSuccess(new Date());
+      setLastRefresh(new Date());
       
       // Start timer
       timerRef.current = setInterval(() => {
@@ -105,24 +137,51 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}) {
       }, 1000);
       
       console.log('Recording started');
+      
+      collectTelemetry({
+        hookName: 'useVoiceRecorder',
+        operationName: 'startRecording',
+        startTime,
+        endTime: new Date(),
+        durationMs: Date.now() - startTime.getTime(),
+        status: 'success',
+        retryCount
+      });
     } catch (err) {
       console.error('Error starting recording:', err);
       let errorMsg = 'Error al acceder al micrófono';
+      let errorCode = 'MICROPHONE_ERROR';
       
       if (err instanceof Error) {
         if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
           errorMsg = 'Permiso de micrófono denegado. Por favor, permite el acceso.';
+          errorCode = 'PERMISSION_DENIED';
         } else if (err.name === 'NotFoundError') {
           errorMsg = 'No se encontró ningún micrófono.';
+          errorCode = 'NOT_FOUND';
         } else if (err.name === 'NotReadableError') {
           errorMsg = 'El micrófono está siendo usado por otra aplicación.';
+          errorCode = 'IN_USE';
         }
       }
       
-      setError(errorMsg);
+      const kbError = createKBError(errorCode, errorMsg, { retryable: false, originalError: err });
+      setError(kbError);
+      setStatus('error');
       onError?.(errorMsg);
+      
+      collectTelemetry({
+        hookName: 'useVoiceRecorder',
+        operationName: 'startRecording',
+        startTime,
+        endTime: new Date(),
+        durationMs: Date.now() - startTime.getTime(),
+        status: 'error',
+        error: kbError,
+        retryCount
+      });
     }
-  }, [onRecordingComplete, onError]);
+  }, [onRecordingComplete, onError, retryCount]);
 
   const stopRecording = useCallback(() => {
     console.log('Stopping recording...');
@@ -165,13 +224,22 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}) {
   return {
     isRecording,
     audioUrl,
-    error,
     duration,
     startRecording,
     stopRecording,
     cancelRecording,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
+    isRetrying,
+    error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
+    reset,
   };
 }

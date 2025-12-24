@@ -2,13 +2,8 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
-// === ERROR TIPADO KB ===
-export interface RenewalManagementError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { createKBError, parseError, collectTelemetry } from '@/hooks/core/useKBBase';
 
 export interface RenewalOpportunity {
   id: string;
@@ -60,24 +55,79 @@ export interface RenewalDashboardData {
 
 export function useRenewalManagement() {
   const queryClient = useQueryClient();
-  // === ESTADO KB ===
-  const [error, setError] = useState<RenewalManagementError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoadingState = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+  const isRetrying = status === 'retrying';
+
+  // === KB 2.0 METHODS ===
   const clearError = useCallback(() => setError(null), []);
+  
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   // Fetch renewal opportunities
   const { data: renewals = [], isLoading, refetch } = useQuery({
     queryKey: ['renewal-opportunities'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('renewal_opportunities')
-        .select('*')
-        .order('renewal_date', { ascending: true });
+      const startTime = new Date();
+      setStatus('loading');
+      
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('renewal_opportunities')
+          .select('*')
+          .order('renewal_date', { ascending: true });
 
-      if (error) throw error;
-      return data as unknown as RenewalOpportunity[];
+        if (fetchError) throw fetchError;
+        
+        setStatus('success');
+        setLastSuccess(new Date());
+        setLastRefresh(new Date());
+        setError(null);
+        
+        collectTelemetry({
+          hookName: 'useRenewalManagement',
+          operationName: 'fetchRenewals',
+          startTime,
+          endTime: new Date(),
+          durationMs: Date.now() - startTime.getTime(),
+          status: 'success',
+          retryCount
+        });
+        
+        return data as unknown as RenewalOpportunity[];
+      } catch (err) {
+        const kbError = parseError(err);
+        setError(kbError);
+        setStatus('error');
+        
+        collectTelemetry({
+          hookName: 'useRenewalManagement',
+          operationName: 'fetchRenewals',
+          startTime,
+          endTime: new Date(),
+          durationMs: Date.now() - startTime.getTime(),
+          status: 'error',
+          error: kbError,
+          retryCount
+        });
+        
+        throw err;
+      }
     }
   });
 
@@ -139,10 +189,13 @@ export function useRenewalManagement() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['renewal-opportunities'] });
+      setLastSuccess(new Date());
       toast.success('Oportunidad de renovación creada');
     },
-    onError: (error) => {
-      toast.error(`Error: ${error.message}`);
+    onError: (err) => {
+      const kbError = parseError(err);
+      setError(kbError);
+      toast.error(`Error: ${kbError.message}`);
     }
   });
 
@@ -163,8 +216,10 @@ export function useRenewalManagement() {
       queryClient.invalidateQueries({ queryKey: ['renewal-opportunities'] });
       toast.success('Renovación actualizada');
     },
-    onError: (error) => {
-      toast.error(`Error: ${error.message}`);
+    onError: (err) => {
+      const kbError = parseError(err);
+      setError(kbError);
+      toast.error(`Error: ${kbError.message}`);
     }
   });
 
@@ -201,8 +256,10 @@ export function useRenewalManagement() {
       queryClient.invalidateQueries({ queryKey: ['renewal-opportunities'] });
       toast.success('Actividad registrada');
     },
-    onError: (error) => {
-      toast.error(`Error: ${error.message}`);
+    onError: (err) => {
+      const kbError = parseError(err);
+      setError(kbError);
+      toast.error(`Error: ${kbError.message}`);
     }
   });
 
@@ -241,8 +298,10 @@ export function useRenewalManagement() {
         : 'Resultado de renovación registrado';
       toast.success(message);
     },
-    onError: (error) => {
-      toast.error(`Error: ${error.message}`);
+    onError: (err) => {
+      const kbError = parseError(err);
+      setError(kbError);
+      toast.error(`Error: ${kbError.message}`);
     }
   });
 
@@ -281,10 +340,19 @@ export function useRenewalManagement() {
     predictRenewal,
     isCreating: createRenewalMutation.isPending,
     isUpdating: updateRenewalMutation.isPending,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoadingState,
+    isSuccess,
+    isError,
+    isRetrying,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
+    reset,
   };
 }
 
