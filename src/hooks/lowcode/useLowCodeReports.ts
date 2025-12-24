@@ -1,14 +1,34 @@
+/**
+ * useLowCodeReports - KB 2.0 Migration
+ * Low-code report management with state machine
+ */
+
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { LowCodeReport, ReportColumn, ReportFilter, ReportGrouping, ReportSorting, ChartConfig } from '@/components/lowcode/types';
 import { toast } from 'sonner';
+import { KBStatus, KBError, parseError, collectTelemetry } from '@/hooks/core';
 
 export function useLowCodeReports(moduleId?: string) {
   const queryClient = useQueryClient();
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
 
   const reportsQuery = useQuery({
     queryKey: ['lowcode-reports', moduleId],
     queryFn: async () => {
+      const startTime = Date.now();
+      setStatus('loading');
+      
       let query = supabase
         .from('lowcode_report_definitions')
         .select('*')
@@ -18,8 +38,16 @@ export function useLowCodeReports(moduleId?: string) {
         query = query.eq('module_id', moduleId);
       }
       
-      const { data, error } = await query;
-      if (error) throw error;
+      const { data, error: fetchError } = await query;
+      
+      if (fetchError) {
+        setStatus('error');
+        throw fetchError;
+      }
+      
+      setStatus('success');
+      setLastRefresh(new Date());
+      collectTelemetry('useLowCodeReports', 'fetchReports', 'success', Date.now() - startTime);
       
       return data.map(report => ({
         id: report.id,
@@ -43,9 +71,10 @@ export function useLowCodeReports(moduleId?: string) {
 
   const createReport = useMutation({
     mutationFn: async (report: Partial<LowCodeReport>) => {
+      const startTime = Date.now();
       const { data: user } = await supabase.auth.getUser();
       
-      const { data, error } = await supabase
+      const { data, error: insertError } = await supabase
         .from('lowcode_report_definitions')
         .insert({
           report_name: report.report_name || 'Nuevo Reporte',
@@ -64,20 +93,24 @@ export function useLowCodeReports(moduleId?: string) {
         .select()
         .single();
       
-      if (error) throw error;
+      if (insertError) throw insertError;
+      collectTelemetry('useLowCodeReports', 'createReport', 'success', Date.now() - startTime);
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lowcode-reports'] });
       toast.success('Reporte creado correctamente');
     },
-    onError: (error) => {
-      toast.error('Error al crear reporte: ' + error.message);
+    onError: (err: Error) => {
+      const kbError = parseError(err);
+      setError(kbError);
+      toast.error('Error al crear reporte: ' + err.message);
     },
   });
 
   const updateReport = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<LowCodeReport> & { id: string }) => {
+      const startTime = Date.now();
       const updateData: Record<string, unknown> = {
         updated_at: new Date().toISOString(),
       };
@@ -92,49 +125,69 @@ export function useLowCodeReports(moduleId?: string) {
       if (updates.chart_config !== undefined) updateData.visualizations = updates.chart_config ? JSON.parse(JSON.stringify(updates.chart_config)) : null;
       if (updates.is_public !== undefined) updateData.status = updates.is_public ? 'published' : 'draft';
 
-      const { data, error } = await supabase
+      const { data, error: updateError } = await supabase
         .from('lowcode_report_definitions')
         .update(updateData)
         .eq('id', id)
         .select()
         .single();
       
-      if (error) throw error;
+      if (updateError) throw updateError;
+      collectTelemetry('useLowCodeReports', 'updateReport', 'success', Date.now() - startTime);
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lowcode-reports'] });
       toast.success('Reporte actualizado');
     },
-    onError: (error) => {
-      toast.error('Error al actualizar reporte: ' + error.message);
+    onError: (err: Error) => {
+      const kbError = parseError(err);
+      setError(kbError);
+      toast.error('Error al actualizar reporte: ' + err.message);
     },
   });
 
   const deleteReport = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const startTime = Date.now();
+      const { error: deleteError } = await supabase
         .from('lowcode_report_definitions')
         .delete()
         .eq('id', id);
       
-      if (error) throw error;
+      if (deleteError) throw deleteError;
+      collectTelemetry('useLowCodeReports', 'deleteReport', 'success', Date.now() - startTime);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lowcode-reports'] });
       toast.success('Reporte eliminado');
     },
-    onError: (error) => {
-      toast.error('Error al eliminar reporte: ' + error.message);
+    onError: (err: Error) => {
+      const kbError = parseError(err);
+      setError(kbError);
+      toast.error('Error al eliminar reporte: ' + err.message);
     },
   });
 
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = reportsQuery.isLoading;
+  const isSuccess = status === 'success';
+  const isError = status === 'error' || !!reportsQuery.error;
+
   return {
     reports: reportsQuery.data || [],
-    isLoading: reportsQuery.isLoading,
-    error: reportsQuery.error,
+    isLoading,
+    error: error || (reportsQuery.error ? parseError(reportsQuery.error) : null),
     createReport,
     updateReport,
     deleteReport,
+    // === KB 2.0 ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
+    lastRefresh,
+    clearError,
   };
 }
