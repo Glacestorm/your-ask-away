@@ -1,13 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Json } from '@/integrations/supabase/types';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from './core';
 
-// === ERROR TIPADO KB ===
-export interface AccountingConfigError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// Re-export for backwards compat
+export type AccountingConfigError = KBError;
 
 export interface SectorChartOfAccounts {
   id: string;
@@ -101,7 +98,7 @@ export interface SyncStatus {
 
 interface UseAccountingConfigReturn {
   loading: boolean;
-  error: string | null;
+  error: KBError | null;
   config: CompanyAccountingConfig | null;
   sectorCharts: SectorChartOfAccounts[];
   syncStatus: SyncStatus | null;
@@ -111,8 +108,15 @@ interface UseAccountingConfigReturn {
   validateSync: (companyId: string) => Promise<SyncStatus | null>;
   forceSyncConfig: (companyId: string) => Promise<void>;
   getSectorForCnae: (cnaeCode: string) => SectorChartOfAccounts | null;
-  // === KB ADDITIONS ===
+  // === KB 2.0 ===
+  status: KBStatus;
+  isIdle: boolean;
+  isLoading: boolean;
+  isSuccess: boolean;
+  isError: boolean;
   lastRefresh: Date | null;
+  lastSuccess: Date | null;
+  retryCount: number;
   clearError: () => void;
 }
 
@@ -137,17 +141,30 @@ function parseSectorChart(data: Record<string, Json>): SectorChartOfAccounts {
 
 export function useAccountingConfig(companyId?: string): UseAccountingConfigReturn {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [config, setConfig] = useState<CompanyAccountingConfig | null>(null);
   const [sectorCharts, setSectorCharts] = useState<SectorChartOfAccounts[]>([]);
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [weightedZScore, setWeightedZScore] = useState<WeightedZScoreCoefficients | null>(null);
   const [weightedBenchmarks, setWeightedBenchmarks] = useState<WeightedBenchmarks>({});
-  // === ESTADO KB ===
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
 
   // Fetch all sector charts for reference
   const fetchSectorCharts = useCallback(async () => {
@@ -183,7 +200,9 @@ export function useAccountingConfig(companyId?: string): UseAccountingConfigRetu
   // Fetch company-specific accounting configuration
   const fetchConfig = useCallback(async (targetCompanyId: string) => {
     setLoading(true);
+    setStatus('loading');
     setError(null);
+    const startTime = Date.now();
 
     try {
       // Call the database function to get weighted config
@@ -210,11 +229,20 @@ export function useAccountingConfig(companyId?: string): UseAccountingConfigRetu
           setWeightedBenchmarks(weighted);
         }
         setLastRefresh(new Date());
+        setLastSuccess(new Date());
+        setStatus('success');
+        setRetryCount(0);
+        collectTelemetry('useAccountingConfig', 'fetchConfig', 'success', Date.now() - startTime);
       }
 
     } catch (err) {
       console.error('Error fetching accounting config:', err);
-      setError(err instanceof Error ? err.message : 'Error fetching config');
+      const parsedErr = parseError(err);
+      const kbError = createKBError('FETCH_CONFIG_ERROR', parsedErr.message, { originalError: String(err) });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useAccountingConfig', 'fetchConfig', 'error', Date.now() - startTime, kbError);
     } finally {
       setLoading(false);
     }
@@ -268,7 +296,10 @@ export function useAccountingConfig(companyId?: string): UseAccountingConfigRetu
 
     } catch (err) {
       console.error('Error forcing sync:', err);
-      setError(err instanceof Error ? err.message : 'Error forcing sync');
+      const parsedErr = parseError(err);
+      const kbError = createKBError('FORCE_SYNC_ERROR', parsedErr.message, { originalError: String(err) });
+      setError(kbError);
+      setStatus('error');
     } finally {
       setLoading(false);
     }
@@ -429,8 +460,15 @@ export function useAccountingConfig(companyId?: string): UseAccountingConfigRetu
     validateSync,
     forceSyncConfig,
     getSectorForCnae,
-    // === KB ADDITIONS ===
+    // === KB 2.0 ===
+    status,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError
   };
 }
