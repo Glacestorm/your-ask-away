@@ -3,6 +3,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+// === ERROR TIPADO KB ===
+export interface CNAESyncError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 interface SectorRatio {
   sector: string;
   ratios: Record<string, number>;
@@ -44,7 +50,12 @@ export function useCNAESync(companyId?: string) {
   const [companyCnaes, setCompanyCnaes] = useState<CompanyCNAE[]>([]);
   const [sectorRatios, setSectorRatios] = useState<SectorRatio | null>(null);
   const [zscoreCoefficients, setZscoreCoefficients] = useState<ZScoreCoefficients | null>(null);
+  // === ESTADO KB ===
+  const [error, setError] = useState<CNAESyncError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
   const fetchCompanyCnaes = useCallback(async () => {
     if (!companyId) return;
     
@@ -205,6 +216,10 @@ export function useCNAESync(companyId?: string) {
     fetchZScoreCoefficients,
     calculateWeightedRatios,
     calculateWeightedZScoreCoefficients,
-    forceSyncAllCnaes
+    forceSyncAllCnaes,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
