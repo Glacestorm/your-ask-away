@@ -311,10 +311,15 @@ export function useKBRateLimiting(config: RateLimitConfig): UseKBRateLimitReturn
   // Process queue
   const processQueue = useCallback(() => {
     while (queueRef.current.length > 0) {
-      const canProcess = (limiter as TokenBucket | SlidingWindow | LeakyBucket | FixedWindow)
-        .tryConsume ? 
-        (limiter as SlidingWindow | FixedWindow).tryConsume() :
-        (limiter as TokenBucket).tryConsume();
+      let canProcess: boolean;
+      
+      if ('tryAdd' in limiter) {
+        canProcess = (limiter as LeakyBucket).tryAdd();
+      } else if ('tryConsume' in limiter) {
+        canProcess = (limiter as TokenBucket | SlidingWindow | FixedWindow).tryConsume();
+      } else {
+        canProcess = false;
+      }
         
       if (!canProcess) break;
 
