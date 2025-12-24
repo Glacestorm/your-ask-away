@@ -126,7 +126,7 @@ export interface RouteConfig {
 export const publicRoutes: RouteConfig[] = [
   // Store - StoreLanding tiene su propio navbar integrado, usa 'none'
   { path: '/store', component: StoreLanding, layout: 'none', priority: 'high', meta: { title: 'Store' } },
-  { path: '/store/modules', component: StoreModules, layout: 'public', priority: 'high', meta: { title: 'Módulos' } },
+  { path: '/store/modules', component: StoreModules, layout: 'none', priority: 'high', meta: { title: 'Módulos' } },
   { path: '/store/modules/:moduleKey', component: StoreModuleDetail, layout: 'public', priority: 'high' },
   { path: '/store/deployment', component: StoreDeployment, layout: 'public', priority: 'high' },
   { path: '/store/checkout', component: StoreCheckout, layout: 'public', priority: 'high' },
@@ -170,10 +170,10 @@ export const publicRoutes: RouteConfig[] = [
 // RUTAS COMPANY (Sobre nosotros, Contacto...)
 // ============================================
 export const companyRoutes: RouteConfig[] = [
-  { path: '/about', component: About, layout: 'public', priority: 'low', meta: { title: 'Sobre Nosotros' } },
-  { path: '/contact', component: Contact, layout: 'public', priority: 'low', meta: { title: 'Contacto' } },
-  { path: '/partners', component: Partners, layout: 'public', priority: 'low', meta: { title: 'Partners' } },
-  { path: '/careers', component: Careers, layout: 'public', priority: 'low', meta: { title: 'Carreras' } },
+  { path: '/about', component: About, layout: 'none', priority: 'low', meta: { title: 'Sobre Nosotros' } },
+  { path: '/contact', component: Contact, layout: 'none', priority: 'low', meta: { title: 'Contacto' } },
+  { path: '/partners', component: Partners, layout: 'none', priority: 'low', meta: { title: 'Partners' } },
+  { path: '/careers', component: Careers, layout: 'none', priority: 'low', meta: { title: 'Carreras' } },
 ];
 
 // ============================================
@@ -195,10 +195,10 @@ export const resourceRoutes: RouteConfig[] = [
 // RUTAS LEGALES
 // ============================================
 export const legalRoutes: RouteConfig[] = [
-  { path: '/terms', component: TermsOfService, layout: 'public', priority: 'low', meta: { title: 'Términos de Servicio' } },
-  { path: '/privacy', component: PrivacyPolicy, layout: 'public', priority: 'low', meta: { title: 'Política de Privacidad' } },
-  { path: '/cookies', component: CookiesPolicy, layout: 'public', priority: 'low', meta: { title: 'Política de Cookies' } },
-  { path: '/gdpr', component: GDPR, layout: 'public', priority: 'low', meta: { title: 'GDPR' } },
+  { path: '/terms', component: TermsOfService, layout: 'none', priority: 'low', meta: { title: 'Términos de Servicio' } },
+  { path: '/privacy', component: PrivacyPolicy, layout: 'none', priority: 'low', meta: { title: 'Política de Privacidad' } },
+  { path: '/cookies', component: CookiesPolicy, layout: 'none', priority: 'low', meta: { title: 'Política de Cookies' } },
+  { path: '/gdpr', component: GDPR, layout: 'none', priority: 'low', meta: { title: 'GDPR' } },
 ];
 
 // ============================================
