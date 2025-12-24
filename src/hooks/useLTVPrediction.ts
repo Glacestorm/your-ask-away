@@ -2,13 +2,9 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from './core';
 
-// === ERROR TIPADO KB ===
-export interface LTVPredictionError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+export type LTVPredictionError = KBError;
 
 export interface LTVPrediction {
   id: string;
@@ -37,16 +33,29 @@ export interface LTVPrediction {
 
 export const useLTVPrediction = () => {
   const queryClient = useQueryClient();
-  // === ESTADO KB ===
-  const [error, setError] = useState<LTVPredictionError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
 
   const { data: predictions, isLoading, refetch } = useQuery({
     queryKey: ['ltv-predictions'],
     queryFn: async () => {
+      const startTime = new Date();
       try {
         const { data, error: fetchError } = await supabase
           .from('ltv_predictions')
@@ -59,16 +68,38 @@ export const useLTVPrediction = () => {
         
         if (fetchError) throw fetchError;
         
+        setStatus('success');
         setLastRefresh(new Date());
+        setLastSuccess(new Date());
         setError(null);
+        
+        collectTelemetry({
+          hookName: 'useLTVPrediction',
+          operationName: 'fetchPredictions',
+          startTime,
+          endTime: new Date(),
+          durationMs: Date.now() - startTime.getTime(),
+          status: 'success',
+          retryCount: 0
+        });
+        
         return data as LTVPrediction[];
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Error desconocido';
-        setError({
-          code: 'FETCH_PREDICTIONS_ERROR',
-          message,
-          details: { originalError: String(err) }
+        const kbError = createKBError('FETCH_PREDICTIONS_ERROR', parseError(err).message, { originalError: err });
+        setError(kbError);
+        setStatus('error');
+        
+        collectTelemetry({
+          hookName: 'useLTVPrediction',
+          operationName: 'fetchPredictions',
+          startTime,
+          endTime: new Date(),
+          durationMs: Date.now() - startTime.getTime(),
+          status: 'error',
+          error: kbError,
+          retryCount
         });
+        
         throw err;
       }
     }
@@ -89,16 +120,13 @@ export const useLTVPrediction = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ltv-predictions'] });
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
       toast.success('Predicción LTV calculada');
     },
     onError: (err) => {
-      const message = err instanceof Error ? err.message : 'Error al calcular LTV';
-      setError({
-        code: 'PREDICT_LTV_ERROR',
-        message,
-        details: { originalError: String(err) }
-      });
-      toast.error('Error al calcular LTV: ' + message);
+      const kbError = createKBError('PREDICT_LTV_ERROR', parseError(err).message, { originalError: err });
+      setError(kbError);
+      toast.error('Error al calcular LTV: ' + kbError.message);
     }
   });
 
@@ -147,6 +175,7 @@ export const useLTVPrediction = () => {
 
   return {
     predictions,
+    data: predictions,
     isLoading,
     refetch,
     predictLTV: predictLTVMutation.mutateAsync,
@@ -157,9 +186,15 @@ export const useLTVPrediction = () => {
     getLTVBySegment,
     getHighValueCustomers,
     getChurnRiskCustomers,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError
   };
 };
