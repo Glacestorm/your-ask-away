@@ -440,6 +440,35 @@ export {
 } from './useKBCompliance';
 
 // ============================================================================
+// PHASE 19: Advanced State & Communication
+// ============================================================================
+
+export {
+  useKBEventBus,
+  useKBEventSubscription,
+  useKBEventEmitter,
+} from './useKBEventBus';
+
+export {
+  useKBStateSync,
+  useKBSyncedValue,
+  useKBCrossTabState,
+} from './useKBStateSync';
+
+export {
+  useKBInlineWorker,
+  useKBWorkerTask,
+  createInlineWorker,
+} from './useKBWorker';
+
+export {
+  useKBPubSub,
+  useKBTopic,
+  useKBPublisher,
+  useKBSubscriber,
+} from './useKBPubSub';
+
+// ============================================================================
 // TYPE EXPORTS
 // ============================================================================
 
