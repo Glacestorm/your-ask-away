@@ -215,6 +215,11 @@ export function useSupportAnalytics(daysRange: number = 30) {
     fetchAnalytics();
   }, [fetchAnalytics]);
 
+  // KB Pattern: Clear error
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return { 
     analytics, 
     loading, 
@@ -222,7 +227,8 @@ export function useSupportAnalytics(daysRange: number = 30) {
     lastRefresh,
     refetch: fetchAnalytics,
     startAutoRefresh,
-    stopAutoRefresh
+    stopAutoRefresh,
+    clearError
   };
 }
 

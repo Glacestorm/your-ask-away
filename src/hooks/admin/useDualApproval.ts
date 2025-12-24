@@ -313,6 +313,11 @@ export function useDualApproval(sessionId: string | null) {
     return 'expired';
   };
 
+  // KB Pattern: Clear error
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return {
     pendingRequests,
     allRequests,
@@ -327,7 +332,8 @@ export function useDualApproval(sessionId: string | null) {
     waitForApproval,
     refetch: fetchRequests,
     startAutoRefresh,
-    stopAutoRefresh
+    stopAutoRefresh,
+    clearError
   };
 }
 

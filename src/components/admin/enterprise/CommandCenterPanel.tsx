@@ -157,7 +157,7 @@ export function CommandCenterPanel({
         {error ? (
           <div className="flex items-center gap-2 p-3 bg-destructive/10 rounded-lg text-sm">
             <AlertTriangle className="h-4 w-4 text-destructive" />
-            {error}
+            {error.message}
           </div>
         ) : (
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
