@@ -248,6 +248,40 @@ export type {
   UseKBComponentPerfReturn,
 } from './useKBPerformance';
 
+// Testing Utilities (KB 4.5)
+export {
+  createMockQuery,
+  createMockMutation,
+  createMockStore,
+  waitForKBState,
+  flushPromises,
+  createDeferred,
+  createNetworkSimulator,
+  createKBTestContext,
+  recordCall,
+  assertKBState,
+  assertCallCount,
+  assertLastCallArgs,
+  useRenderCounter,
+  useValueTracker,
+  useExecutionTimer,
+  createStateSnapshot,
+  compareSnapshots,
+  createKBTestWrapper,
+} from './useKBTesting';
+
+export type {
+  MockQueryOptions,
+  MockMutationOptions,
+  MockStoreOptions,
+  TestWrapperOptions,
+  KBTestContext,
+  CallHistoryEntry,
+  MockQueryReturn,
+  MockMutationReturn,
+  MockStoreReturn,
+} from './useKBTesting';
+
 // Re-export defaults
 export { default as useKBBaseDefault } from './useKBBase';
 export { default as useKBQueryDefault } from './useKBQuery';
@@ -264,3 +298,4 @@ export { default as useKBSchemaDefault } from './useKBSchema';
 export { default as useKBOptimisticMutationDefault } from './useKBOptimisticMutation';
 export { default as useKBOfflineDefault } from './useKBOffline';
 export { default as useKBPerformanceDefault } from './useKBPerformance';
+export { default as useKBTestingDefault } from './useKBTesting';
