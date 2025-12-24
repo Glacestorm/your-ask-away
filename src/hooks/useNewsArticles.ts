@@ -2,6 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+// === ERROR TIPADO KB ===
+export interface NewsArticlesError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export interface NewsArticle {
   id: string;
   title: string;
@@ -96,8 +103,13 @@ export function useNewsArticles(options: UseNewsArticlesOptions = {}) {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [featuredArticle, setFeaturedArticle] = useState<NewsArticle | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<NewsArticlesError | null>(null);
   const { toast } = useToast();
+  // === ESTADO KB ===
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const fetchArticles = useCallback(async () => {
     try {
@@ -140,10 +152,11 @@ export function useNewsArticles(options: UseNewsArticlesOptions = {}) {
         setFeaturedArticle(null);
         setArticles([]);
       }
+      setLastRefresh(new Date());
 
     } catch (err: any) {
       console.error('Error fetching news:', err);
-      setError(err.message);
+      setError({ code: 'FETCH_NEWS_ERROR', message: err.message, details: { originalError: String(err) } });
     } finally {
       setIsLoading(false);
     }
@@ -256,5 +269,8 @@ export function useNewsArticles(options: UseNewsArticlesOptions = {}) {
     refetch: fetchArticles,
     getCategories,
     getPopularTags,
+    // === KB ADDITIONS ===
+    lastRefresh,
+    clearError,
   };
 }
