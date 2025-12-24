@@ -2,13 +2,10 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
-// === ERROR TIPADO KB ===
-export interface RevenueWorkflowsError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// === ERROR TIPADO KB 2.0 ===
+export type RevenueWorkflowsError = KBError;
 
 export interface WorkflowCondition {
   field: string;
@@ -52,16 +49,38 @@ export interface WorkflowExecution {
 
 export const useRevenueWorkflows = () => {
   const queryClient = useQueryClient();
-  // === ESTADO KB ===
-  const [error, setError] = useState<RevenueWorkflowsError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoadingState = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   const { data: workflows, isLoading, refetch } = useQuery({
     queryKey: ['revenue-workflows'],
     queryFn: async () => {
+      const startTime = Date.now();
+      setStatus('loading');
+      
       try {
         const { data, error: fetchError } = await supabase
           .from('revenue_workflows')
@@ -71,15 +90,20 @@ export const useRevenueWorkflows = () => {
         if (fetchError) throw fetchError;
         
         setLastRefresh(new Date());
+        setLastSuccess(new Date());
         setError(null);
+        setStatus('success');
+        setRetryCount(0);
+        
+        collectTelemetry('useRevenueWorkflows', 'fetchWorkflows', 'success', Date.now() - startTime);
         return (data as unknown) as RevenueWorkflow[];
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Error desconocido';
-        setError({
-          code: 'FETCH_WORKFLOWS_ERROR',
-          message,
-          details: { originalError: String(err) }
-        });
+        const kbError = parseError(err);
+        setError(kbError);
+        setStatus('error');
+        setRetryCount(prev => prev + 1);
+        
+        collectTelemetry('useRevenueWorkflows', 'fetchWorkflows', 'error', Date.now() - startTime, kbError);
         throw err;
       }
     }
@@ -113,15 +137,12 @@ export const useRevenueWorkflows = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['revenue-workflows'] });
+      setLastSuccess(new Date());
       toast.success('Workflow creado');
     },
     onError: (err) => {
-      const message = err instanceof Error ? err.message : 'Error al crear workflow';
-      setError({
-        code: 'CREATE_WORKFLOW_ERROR',
-        message,
-        details: { originalError: String(err) }
-      });
+      const kbError = parseError(err);
+      setError(kbError);
     }
   });
 
@@ -133,15 +154,12 @@ export const useRevenueWorkflows = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['revenue-workflows'] });
+      setLastSuccess(new Date());
       toast.success('Workflow actualizado');
     },
     onError: (err) => {
-      const message = err instanceof Error ? err.message : 'Error al actualizar workflow';
-      setError({
-        code: 'UPDATE_WORKFLOW_ERROR',
-        message,
-        details: { originalError: String(err) }
-      });
+      const kbError = parseError(err);
+      setError(kbError);
     }
   });
 
@@ -152,15 +170,12 @@ export const useRevenueWorkflows = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['revenue-workflows'] });
+      setLastSuccess(new Date());
       toast.success('Workflow eliminado');
     },
     onError: (err) => {
-      const message = err instanceof Error ? err.message : 'Error al eliminar workflow';
-      setError({
-        code: 'DELETE_WORKFLOW_ERROR',
-        message,
-        details: { originalError: String(err) }
-      });
+      const kbError = parseError(err);
+      setError(kbError);
     }
   });
 
@@ -174,15 +189,12 @@ export const useRevenueWorkflows = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workflow-executions'] });
+      setLastSuccess(new Date());
       toast.success('Workflow ejecutado');
     },
     onError: (err) => {
-      const message = err instanceof Error ? err.message : 'Error al ejecutar workflow';
-      setError({
-        code: 'EXECUTE_WORKFLOW_ERROR',
-        message,
-        details: { originalError: String(err) }
-      });
+      const kbError = parseError(err);
+      setError(kbError);
     }
   });
 
@@ -193,7 +205,7 @@ export const useRevenueWorkflows = () => {
   return {
     workflows,
     executions,
-    isLoading,
+    isLoading: isLoading || isLoadingState,
     refetch,
     createWorkflow: createWorkflow.mutateAsync,
     updateWorkflow: updateWorkflow.mutateAsync,
@@ -201,9 +213,16 @@ export const useRevenueWorkflows = () => {
     executeWorkflow: executeWorkflow.mutateAsync,
     toggleWorkflow,
     activeWorkflows: workflows?.filter(w => w.is_active) || [],
-    // === KB ADDITIONS ===
+    // === KB 2.0 STATE ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
-    clearError
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
   };
 };
