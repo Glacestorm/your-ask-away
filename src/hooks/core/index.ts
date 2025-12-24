@@ -198,6 +198,28 @@ export type {
   BatchMutationOptions,
 } from './useKBOptimisticMutation';
 
+// Offline-First (KB 4.5)
+export {
+  useKBOffline,
+  useKBSyncQueue,
+  useKBOfflineFirst,
+  useNetworkStatus,
+} from './useKBOffline';
+
+export type {
+  ConflictResolutionStrategy,
+  SyncStatus,
+  OfflineEntry,
+  SyncOperation,
+  ConflictInfo,
+  KBOfflineConfig,
+  SyncResult,
+  KBOfflineState,
+  KBOfflineReturn,
+  SyncQueueConfig,
+  OfflineFirstConfig,
+} from './useKBOffline';
+
 // Re-export defaults
 export { default as useKBBaseDefault } from './useKBBase';
 export { default as useKBQueryDefault } from './useKBQuery';
@@ -212,3 +234,4 @@ export { default as useKBReactiveDefault } from './useKBReactive';
 export { default as useKBReact19Default } from './useKBReact19';
 export { default as useKBSchemaDefault } from './useKBSchema';
 export { default as useKBOptimisticMutationDefault } from './useKBOptimisticMutation';
+export { default as useKBOfflineDefault } from './useKBOffline';
