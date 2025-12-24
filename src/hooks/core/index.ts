@@ -1286,3 +1286,60 @@ export { default as useKBEventBusDefault } from './useKBEventBus';
 export { default as useKBStateSyncDefault } from './useKBStateSync';
 export { default as useKBWorkerDefault } from './useKBWorker';
 export { default as useKBPubSubDefault } from './useKBPubSub';
+
+// ============================================================================
+// PHASE 20: Data Layer & API Integration
+// ============================================================================
+
+// GraphQL Hook (Phase 20)
+export {
+  useKBGraphQL,
+  useKBMutationGQL,
+  useKBSubscriptionGQL,
+} from './useKBGraphQL';
+
+export type {
+  GraphQLConfig,
+  GraphQLError,
+  GraphQLResponse,
+  QueryOptions,
+  MutationOptions as GraphQLMutationOptions,
+  CachePolicy,
+  GraphQLMetrics,
+} from './useKBGraphQL';
+
+// Offline Data (Phase 20)
+export {
+  useKBOfflineData,
+  useKBSyncManager,
+  useKBConflictResolver,
+} from './useKBOfflineData';
+
+export type {
+  OfflineConfig as OfflineDataConfig,
+  OfflineState as OfflineDataState,
+  QueuedOperation as OfflineQueuedOperation,
+  SyncProgress as OfflineSyncProgress,
+  ConflictResolution as OfflineConflictResolution,
+  OfflineMetrics as OfflineDataMetrics,
+} from './useKBOfflineData';
+
+// Optimistic Hook (Phase 20)
+export {
+  useKBOptimisticList,
+  useKBOptimisticForm,
+} from './useKBOptimistic';
+
+export type {
+  OptimisticConfig as Phase20OptimisticConfig,
+  OptimisticStatus,
+  OptimisticUpdate,
+  OptimisticQueue,
+  OptimisticConflict,
+} from './useKBOptimistic';
+
+// Phase 20 Defaults
+export { default as useKBGraphQLDefault } from './useKBGraphQL';
+export { default as useKBOfflineDataDefault } from './useKBOfflineData';
+export { default as useKBPrefetchDefault } from './useKBPrefetch';
+export { default as useKBOptimisticDefault } from './useKBOptimistic';
