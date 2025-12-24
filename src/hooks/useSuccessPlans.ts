@@ -1,15 +1,17 @@
-import { useState, useCallback } from 'react';
+/**
+ * useSuccessPlans - KB 2.0 Migration
+ * Enterprise-grade success plans with state machine and telemetry
+ */
+
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Json } from '@/integrations/supabase/types';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
-// === ERROR TIPADO KB ===
-export interface SuccessPlansError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// === ERROR TIPADO KB 2.0 ===
+export type SuccessPlansError = KBError;
 
 export interface SuccessPlanObjective {
   id: string;
@@ -105,12 +107,38 @@ export interface QBRRecord {
 
 export function useSuccessPlans(companyId?: string) {
   const queryClient = useQueryClient();
-  // === ESTADO KB ===
-  const [error, setError] = useState<SuccessPlansError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
+
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isQueryLoading = status === 'loading';
+  const isSuccessStatus = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   // Fetch success plans
   const { data: successPlans, isLoading: loadingPlans } = useQuery({
@@ -127,14 +155,16 @@ export function useSuccessPlans(companyId?: string) {
 
       const { data, error: fetchError } = await query;
       if (fetchError) {
-        setError({
-          code: 'FETCH_PLANS_ERROR',
-          message: fetchError.message,
-          details: { originalError: String(fetchError) }
-        });
+        const kbError = createKBError('FETCH_PLANS_ERROR', fetchError.message, { retryable: true });
+        setError(kbError);
+        setStatus('error');
+        setRetryCount(prev => prev + 1);
+        collectTelemetry('useSuccessPlans', 'fetchPlans', 'error', 0, kbError);
         throw fetchError;
       }
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setStatus('success');
       return data.map(plan => ({
         ...plan,
         objectives: (plan.objectives as unknown as SuccessPlanObjective[]) || [],
@@ -496,12 +526,35 @@ export function useSuccessPlans(companyId?: string) {
   };
 
   return {
+    // Data
     successPlans,
     goals,
     qbrRecords,
+    data: successPlans,
+    
+    // State Machine KB 2.0
+    status,
+    isIdle,
+    isLoading: loadingPlans || loadingGoals || loadingQBRs || isQueryLoading,
+    isSuccess: isSuccessStatus,
+    isError,
+    
+    // Error Management KB 2.0
+    error,
+    clearError,
+    
+    // Metadata
+    lastRefresh,
+    lastSuccess,
+    retryCount,
+    
+    // Control
+    reset,
     loadingPlans,
     loadingGoals,
     loadingQBRs,
+    
+    // Actions
     generateSuccessPlan: generateSuccessPlan.mutate,
     isGeneratingPlan: generateSuccessPlan.isPending,
     createSuccessPlan: createSuccessPlan.mutate,
@@ -515,9 +568,7 @@ export function useSuccessPlans(companyId?: string) {
     getUpcomingQBRs,
     getOverdueGoals,
     calculatePlanHealth,
-    // === KB ADDITIONS ===
-    error,
-    lastRefresh,
-    clearError,
   };
 }
+
+export default useSuccessPlans;

@@ -1,14 +1,16 @@
-import { useState, useCallback } from 'react';
+/**
+ * useExpansionIntelligence - KB 2.0 Migration
+ * Enterprise-grade expansion intelligence with state machine and telemetry
+ */
+
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
-// === ERROR TIPADO KB ===
-export interface ExpansionIntelligenceError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// === ERROR TIPADO KB 2.0 ===
+export type ExpansionIntelligenceError = KBError;
 
 export interface ExpansionOpportunity {
   id: string;
@@ -72,12 +74,38 @@ export interface ExpansionMetrics {
 
 export const useExpansionIntelligence = () => {
   const queryClient = useQueryClient();
-  // === ESTADO KB ===
-  const [error, setError] = useState<ExpansionIntelligenceError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
+
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   // Fetch expansion opportunities
   const { data: opportunities, isLoading: opportunitiesLoading, refetch: refetchOpportunities } = useQuery({
@@ -109,11 +137,15 @@ export const useExpansionIntelligence = () => {
         .order('calculation_date', { ascending: false });
       
       if (error) {
-        setError({ code: 'FETCH_OPPORTUNITIES_ERROR', message: error.message, details: { originalError: String(error) } });
+        const kbError = createKBError('FETCH_ROI_ERROR', error.message, { retryable: true });
+        setError(kbError);
+        setStatus('error');
         throw error;
       }
       
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setStatus('success');
       return data as CustomerROI[];
     }
   });
@@ -279,10 +311,32 @@ export const useExpansionIntelligence = () => {
   };
 
   return {
+    // Data
     opportunities,
     roiData,
+    data: opportunities,
     expansionMetrics,
-    isLoading: opportunitiesLoading || roiLoading,
+    
+    // State Machine KB 2.0
+    status,
+    isIdle,
+    isLoading: opportunitiesLoading || roiLoading || isLoading,
+    isSuccess,
+    isError,
+    
+    // Error Management KB 2.0
+    error,
+    clearError,
+    
+    // Metadata
+    lastRefresh,
+    lastSuccess,
+    retryCount,
+    
+    // Control
+    reset,
+    
+    // Actions
     refetchOpportunities,
     createOpportunity: createOpportunityMutation.mutateAsync,
     updateOpportunity: updateOpportunityMutation.mutateAsync,
@@ -295,9 +349,7 @@ export const useExpansionIntelligence = () => {
     getReadyForExpansion,
     isCreating: createOpportunityMutation.isPending,
     isUpdating: updateOpportunityMutation.isPending,
-    // === KB ADDITIONS ===
-    error,
-    lastRefresh,
-    clearError
   };
 };
+
+export default useExpansionIntelligence;

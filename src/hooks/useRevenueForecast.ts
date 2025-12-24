@@ -1,14 +1,16 @@
-import { useState, useCallback } from 'react';
+/**
+ * useRevenueForecast - KB 2.0 Migration
+ * Enterprise-grade revenue forecasting with state machine and telemetry
+ */
+
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
-// === ERROR TIPADO KB ===
-export interface RevenueForecastError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// === ERROR TIPADO KB 2.0 ===
+export type RevenueForecastError = KBError;
 
 export interface RevenueForecast {
   id: string;
@@ -34,12 +36,38 @@ export interface RevenueForecast {
 
 export const useRevenueForecast = () => {
   const queryClient = useQueryClient();
-  // === ESTADO KB ===
-  const [error, setError] = useState<RevenueForecastError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
+
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isQueryLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   const { data: forecasts, isLoading, refetch } = useQuery({
     queryKey: ['revenue-forecasts'],
@@ -56,12 +84,12 @@ export const useRevenueForecast = () => {
         setError(null);
         return data as RevenueForecast[];
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Error desconocido';
-        setError({
-          code: 'FETCH_FORECASTS_ERROR',
-          message,
-          details: { originalError: String(err) }
-        });
+        const parsed = parseError(err);
+        const kbError = createKBError('FETCH_FORECASTS_ERROR', parsed.message, { retryable: true });
+        setError(kbError);
+        setStatus('error');
+        setRetryCount(prev => prev + 1);
+        collectTelemetry('useRevenueForecast', 'fetchForecasts', 'error', 0, kbError);
         throw err;
       }
     }
@@ -82,16 +110,20 @@ export const useRevenueForecast = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['revenue-forecasts'] });
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setStatus('success');
+      setRetryCount(0);
+      collectTelemetry('useRevenueForecast', 'generateForecast', 'success', 0);
       toast.success('Pronóstico generado correctamente');
     },
     onError: (err) => {
-      const message = err instanceof Error ? err.message : 'Error al generar pronóstico';
-      setError({
-        code: 'GENERATE_FORECAST_ERROR',
-        message,
-        details: { originalError: String(err) }
-      });
-      toast.error('Error al generar pronóstico: ' + message);
+      const parsed = parseError(err);
+      const kbError = createKBError('GENERATE_FORECAST_ERROR', parsed.message, { retryable: true });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useRevenueForecast', 'generateForecast', 'error', 0, kbError);
+      toast.error('Error al generar pronóstico: ' + parsed.message);
     }
   });
 
@@ -129,18 +161,38 @@ export const useRevenueForecast = () => {
   };
 
   return {
+    // Data
     forecasts,
-    isLoading,
+    data: forecasts,
+    
+    // State Machine KB 2.0
+    status,
+    isIdle,
+    isLoading: isLoading || isQueryLoading,
+    isSuccess,
+    isError,
+    
+    // Error Management KB 2.0
+    error,
+    clearError,
+    
+    // Metadata
+    lastRefresh,
+    lastSuccess,
+    retryCount,
+    
+    // Control
+    reset,
     refetch,
+    
+    // Actions
     generateForecast: generateForecastMutation.mutateAsync,
     isGenerating: generateForecastMutation.isPending,
     getLatestForecast,
     getForecastsByScenario,
     getConfidenceIntervals,
     getForecastTrend,
-    // === KB ADDITIONS ===
-    error,
-    lastRefresh,
-    clearError
   };
 };
+
+export default useRevenueForecast;

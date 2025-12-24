@@ -1,14 +1,16 @@
-import { useState, useCallback } from 'react';
+/**
+ * useRetentionPlaybooks - KB 2.0 Migration
+ * Enterprise-grade retention playbooks with state machine and telemetry
+ */
+
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
-// === ERROR TIPADO KB ===
-export interface RetentionPlaybooksError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// === ERROR TIPADO KB 2.0 ===
+export type RetentionPlaybooksError = KBError;
 
 export interface RetentionPlaybook {
   id: string;
@@ -76,12 +78,38 @@ export interface PlaybookStepExecution {
 
 export function useRetentionPlaybooks() {
   const queryClient = useQueryClient();
-  // === ESTADO KB ===
-  const [error, setError] = useState<RetentionPlaybooksError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
+
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isQueryLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   // Fetch all playbooks
   const { data: playbooks = [], isLoading: loadingPlaybooks, refetch: refetchPlaybooks } = useQuery({
@@ -93,14 +121,16 @@ export function useRetentionPlaybooks() {
         .order('priority', { ascending: true });
       
       if (fetchError) {
-        setError({
-          code: 'FETCH_PLAYBOOKS_ERROR',
-          message: fetchError.message,
-          details: { originalError: String(fetchError) }
-        });
+        const kbError = createKBError('FETCH_PLAYBOOKS_ERROR', fetchError.message, { retryable: true });
+        setError(kbError);
+        setStatus('error');
+        setRetryCount(prev => prev + 1);
+        collectTelemetry('useRetentionPlaybooks', 'fetchPlaybooks', 'error', 0, kbError);
         throw fetchError;
       }
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setStatus('success');
       return data as RetentionPlaybook[];
     }
   });
@@ -326,12 +356,35 @@ export function useRetentionPlaybooks() {
   }, [playbooks]);
 
   return {
+    // Data
     playbooks,
     activeExecutions,
+    data: playbooks,
+    
+    // State Machine KB 2.0
+    status,
+    isIdle,
+    isLoading: loadingPlaybooks || loadingExecutions || isQueryLoading,
+    isSuccess,
+    isError,
+    
+    // Error Management KB 2.0
+    error,
+    clearError,
+    
+    // Metadata
+    lastRefresh,
+    lastSuccess,
+    retryCount,
+    
+    // Control
+    reset,
     loadingPlaybooks,
     loadingExecutions,
     refetchPlaybooks,
     refetchExecutions,
+    
+    // Actions
     fetchPlaybookSteps,
     startPlaybook: startPlaybookMutation.mutateAsync,
     completeStep: completeStepMutation.mutateAsync,
@@ -341,10 +394,6 @@ export function useRetentionPlaybooks() {
     getSuggestedPlaybooks,
     isStarting: startPlaybookMutation.isPending,
     isCompleting: completeStepMutation.isPending,
-    // === KB ADDITIONS ===
-    error,
-    lastRefresh,
-    clearError,
   };
 }
 
