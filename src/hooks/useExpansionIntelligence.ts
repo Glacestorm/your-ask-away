@@ -1,6 +1,14 @@
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+// === ERROR TIPADO KB ===
+export interface ExpansionIntelligenceError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 export interface ExpansionOpportunity {
   id: string;
@@ -64,6 +72,12 @@ export interface ExpansionMetrics {
 
 export const useExpansionIntelligence = () => {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<ExpansionIntelligenceError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   // Fetch expansion opportunities
   const { data: opportunities, isLoading: opportunitiesLoading, refetch: refetchOpportunities } = useQuery({
@@ -94,7 +108,12 @@ export const useExpansionIntelligence = () => {
         `)
         .order('calculation_date', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        setError({ code: 'FETCH_OPPORTUNITIES_ERROR', message: error.message, details: { originalError: String(error) } });
+        throw error;
+      }
+      
+      setLastRefresh(new Date());
       return data as CustomerROI[];
     }
   });
@@ -275,6 +294,10 @@ export const useExpansionIntelligence = () => {
     getCompanyROI,
     getReadyForExpansion,
     isCreating: createOpportunityMutation.isPending,
-    isUpdating: updateOpportunityMutation.isPending
+    isUpdating: updateOpportunityMutation.isPending,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError
   };
 };

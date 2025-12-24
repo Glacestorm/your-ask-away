@@ -2,6 +2,13 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// === ERROR TIPADO KB ===
+export interface AnomalyDetectionError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export interface AnomalyResult {
   anomaly_id: string;
   type: 'velocity' | 'amount' | 'pattern' | 'geographic' | 'behavioral';
@@ -33,7 +40,12 @@ export interface AnomalyDetectionConfig {
 export function useAnomalyDetection() {
   const [isLoading, setIsLoading] = useState(false);
   const [anomalies, setAnomalies] = useState<AnomalyResult[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  // === ESTADO KB ===
+  const [error, setError] = useState<AnomalyDetectionError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const detectAnomalies = useCallback(async (
     companyId: string,
@@ -58,6 +70,7 @@ export function useAnomalyDetection() {
       if (fnError) throw fnError;
 
       setAnomalies(data.anomalies || []);
+      setLastRefresh(new Date());
       
       if (data.anomalies?.length > 0) {
         const critical = data.anomalies.filter((a: AnomalyResult) => a.severity === 'critical').length;
@@ -73,7 +86,11 @@ export function useAnomalyDetection() {
       return data.anomalies;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error en detecció anomalies';
-      setError(message);
+      setError({
+        code: 'DETECT_ANOMALIES_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
       toast.error(message);
       return [];
     } finally {
@@ -95,7 +112,10 @@ export function useAnomalyDetection() {
     detectAnomalies,
     anomalies,
     isLoading,
+    // === KB ADDITIONS ===
     error,
+    lastRefresh,
+    clearError,
     getSeverityColor
   };
 }

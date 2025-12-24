@@ -4,6 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
+// === ERROR TIPADO KB ===
+export interface NBAError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export interface NBAActionType {
   id: string;
   action_code: string;
@@ -59,6 +66,12 @@ export function useNextBestAction() {
   const { user, userRole } = useAuth();
   const queryClient = useQueryClient();
   const [isExecuting, setIsExecuting] = useState(false);
+  // === ESTADO KB ===
+  const [error, setError] = useState<NBAError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   // Get action types for current role
   const { data: actionTypes, isLoading: typesLoading } = useQuery({
@@ -98,7 +111,12 @@ export function useNextBestAction() {
         .order('priority', { ascending: false })
         .order('score', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        setError({ code: 'FETCH_ACTION_TYPES_ERROR', message: error.message, details: { originalError: String(error) } });
+        throw error;
+      }
+      
+      setLastRefresh(new Date());
       
       // Enrich with entity names
       const enrichedItems = await Promise.all(
@@ -145,7 +163,12 @@ export function useNextBestAction() {
         .select('status, estimated_value, mrr_impact_actual, action_type:nba_action_types(action_category)')
         .eq('user_id', user.id);
       
-      if (error) throw error;
+      if (error) {
+        setError({ code: 'FETCH_NBA_QUEUE_ERROR', message: error.message, details: { originalError: String(error) } });
+        throw error;
+      }
+      
+      setLastRefresh(new Date());
       
       const pending = data.filter(d => d.status === 'pending').length;
       const completed = data.filter(d => d.status === 'completed').length;
@@ -194,8 +217,10 @@ export function useNextBestAction() {
       refetchQueue();
       queryClient.invalidateQueries({ queryKey: ['nba-stats'] });
     },
-    onError: (error) => {
-      console.error('Error generating NBAs:', error);
+    onError: (err) => {
+      const message = err instanceof Error ? err.message : 'Error generating NBAs';
+      setError({ code: 'GENERATE_NBAS_ERROR', message, details: { originalError: String(err) } });
+      console.error('Error generating NBAs:', err);
       toast.error('Error al generar acciones');
     },
   });
@@ -242,8 +267,10 @@ export function useNextBestAction() {
         });
       }
     },
-    onError: (error) => {
-      console.error('Error executing NBA:', error);
+    onError: (err) => {
+      const message = err instanceof Error ? err.message : 'Error executing NBA';
+      setError({ code: 'EXECUTE_NBA_ERROR', message, details: { originalError: String(err) } });
+      console.error('Error executing NBA:', err);
       toast.error('Error al ejecutar la acción');
     },
     onSettled: () => {
@@ -328,5 +355,9 @@ export function useNextBestAction() {
     getTopNBAs,
     getNBAsByCategory,
     refetchQueue,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError
   };
 }
