@@ -1,8 +1,14 @@
-# KB 2.5 - Knowledge Base Pattern Documentation
+# KB 3.0 - Knowledge Base Pattern Documentation
 
-## Overview
+Enterprise-grade React hook patterns para aplicaciones 2025-2026+.
 
-KB 2.5 is an enterprise-grade hook pattern system for React applications, designed for 2025-2026+. It provides a robust foundation for managing asynchronous operations with built-in resilience, observability, and performance features.
+## Versiones
+
+| Versión | Features |
+|---------|----------|
+| KB 2.0 | State Machine, Typed Errors, Retry, Telemetry |
+| KB 2.5 | + Circuit Breaker, SSE/Streaming, Smart Cache, OpenTelemetry |
+| KB 3.0 | + Suspense-First, Bulkhead Pattern, Query Deduplication |
 
 ## Core Features
 
@@ -37,53 +43,26 @@ interface KBError {
 }
 ```
 
-**Built-in Error Codes:**
-- `NETWORK_ERROR` - Network connectivity issues
-- `TIMEOUT` - Request timeout
-- `CANCELLED` - User cancelled operation
-- `UNAUTHORIZED` - Authentication required
-- `FORBIDDEN` - Permission denied
-- `NOT_FOUND` - Resource not found
-- `VALIDATION_ERROR` - Input validation failed
-- `RATE_LIMIT` - Too many requests
-- `SERVER_ERROR` - Server-side error
-- `CIRCUIT_OPEN` - Circuit breaker is open
-- `STREAM_ERROR` - Streaming error
-- `MAX_RECONNECTS` - Max reconnection attempts reached
-
-### 3. Retry Logic
-
-Automatic retry with exponential backoff:
-
-```typescript
-interface KBRetryConfig {
-  maxRetries: number;      // Default: 3
-  baseDelayMs: number;     // Default: 1000
-  maxDelayMs: number;      // Default: 30000
-  backoffMultiplier: number; // Default: 2
-  retryableErrors?: string[]; // Codes that trigger retry
-}
-```
-
-### 4. Circuit Breaker (KB 2.5)
+### 3. Circuit Breaker (KB 2.5)
 
 Prevents overwhelming failing services:
 
 ```typescript
-interface KBCircuitBreakerConfig {
-  failureThreshold: number;  // Failures before opening (default: 5)
-  resetTimeoutMs: number;    // Time before half-open (default: 30000)
-  successThreshold: number;  // Successes to close (default: 2)
-  enabled: boolean;          // Enable/disable feature
-}
+const hook = useKBBase({
+  hookName: 'myHook',
+  circuitBreakerConfig: {
+    enabled: true,
+    failureThreshold: 3,
+    resetTimeoutMs: 60000,
+  },
+});
+
+// Access circuit state
+console.log(hook.circuitState); // 'CLOSED' | 'OPEN' | 'HALF_OPEN'
+hook.resetCircuit(); // Manual reset
 ```
 
-**States:**
-- `CLOSED`: Normal operation, requests flow through
-- `OPEN`: Service unhealthy, requests fail immediately
-- `HALF_OPEN`: Testing if service recovered
-
-### 5. SSE/Streaming (KB 2.5)
+### 4. SSE/Streaming (KB 2.5)
 
 Built-in support for Server-Sent Events:
 
@@ -94,207 +73,288 @@ const { data, chunks, status, start, stop } = useKBStream<string>({
   onComplete: (data) => console.log('Complete:', data),
 });
 
-// Start streaming
 await start('/api/chat', { message: 'Hello' });
 ```
 
-### 6. Smart Cache (KB 2.5)
+---
 
-Intelligent caching with stale-while-revalidate:
+## KB 3.0 Features
 
-```typescript
-import { getWithSWR, invalidateCacheEntry } from '@/lib/kbCache';
+### 5. Suspense-First Design (KB 3.0)
 
-const result = await getWithSWR(
-  'user-profile',
-  () => fetchProfile(),
-  { staleTime: 5 * 60 * 1000 }
-);
-
-if (result.isStale) {
-  // Data is stale but returned immediately
-  // Fresh data will be fetched in background
-}
-```
-
-### 7. OpenTelemetry Telemetry (KB 2.5)
-
-Distributed tracing support:
+Native React Suspense integration:
 
 ```typescript
-import { startSpan, endSpan, trace } from '@/lib/kbTelemetry';
+import { useKBSuspenseQuery, preloadResource } from '@/hooks/core';
 
-// Manual span management
-const span = startSpan('fetchUserData');
-try {
-  const data = await fetchUser();
-  endSpan(span.spanId, 'OK');
-} catch (error) {
-  endSpan(span.spanId, 'ERROR');
-}
-
-// Automatic tracing
-const result = await trace('fetchUserData', () => fetchUser());
-```
-
-## Usage Examples
-
-### Basic Query Hook
-
-```typescript
-import { useKBQuery } from '@/hooks/core';
-
-function useUserProfile(userId: string) {
-  return useKBQuery({
-    hookName: 'useUserProfile',
-    queryFn: () => supabase.from('profiles').select('*').eq('id', userId).single(),
-    enabled: !!userId,
-    staleTime: 5 * 60 * 1000,
-    onError: (error) => toast.error(error.message),
-  });
-}
-```
-
-### Mutation with Optimistic Updates
-
-```typescript
-import { useKBMutation } from '@/hooks/core';
-
-function useUpdateProfile() {
-  return useKBMutation({
-    hookName: 'useUpdateProfile',
-    mutationFn: (data) => supabase.from('profiles').update(data).eq('id', data.id),
-    onMutate: (data) => {
-      // Optimistic update
-      queryClient.setQueryData(['profile', data.id], data);
-      return { previousData: queryClient.getQueryData(['profile', data.id]) };
-    },
-    onError: (error, data, context) => {
-      // Rollback
-      queryClient.setQueryData(['profile', data.id], context.previousData);
-    },
-  });
-}
-```
-
-### Streaming AI Response
-
-```typescript
-import { useKBStream } from '@/hooks/core';
-
-function useAIChat() {
-  const stream = useKBStream<string>({
-    hookName: 'useAIChat',
-    onChunk: (chunk) => {
-      // Update UI with each token
-      setMessages(prev => {
-        const last = prev[prev.length - 1];
-        if (last?.role === 'assistant') {
-          return prev.map((m, i) => 
-            i === prev.length - 1 ? { ...m, content: m.content + chunk } : m
-          );
-        }
-        return [...prev, { role: 'assistant', content: chunk }];
-      });
-    },
+// Component using Suspense
+function UserProfile({ userId }: { userId: string }) {
+  // This will suspend until data is ready
+  const { data, refresh } = useKBSuspenseQuery({
+    key: `user:${userId}`,
+    fetcher: () => fetchUser(userId),
   });
 
-  const sendMessage = async (message: string) => {
-    await stream.start(
-      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
-      { messages: [...messages, { role: 'user', content: message }] }
-    );
-  };
-
-  return { ...stream, sendMessage };
+  return <div>{data.name}</div>;
 }
+
+// Parent with Suspense boundary
+function App() {
+  return (
+    <Suspense fallback={<Spinner />}>
+      <ErrorBoundary fallback={<Error />}>
+        <UserProfile userId="123" />
+      </ErrorBoundary>
+    </Suspense>
+  );
+}
+
+// Preload for faster navigation
+preloadResource('user:123', () => fetchUser('123'));
 ```
 
-### With Circuit Breaker
+#### Dynamic Resources
 
 ```typescript
-import { useKBBase } from '@/hooks/core';
+import { useKBResource } from '@/hooks/core';
 
-function useExternalAPI() {
-  return useKBBase({
-    hookName: 'useExternalAPI',
-    circuitBreakerConfig: {
-      enabled: true,
-      failureThreshold: 3,
-      resetTimeoutMs: 60000,
-    },
-    onError: (error) => {
-      if (error.code === 'CIRCUIT_OPEN') {
-        toast.error('Service temporarily unavailable. Please try again later.');
-      }
-    },
-  });
-}
-```
-
-## Migration from KB 2.0
-
-KB 2.5 is fully backward compatible with KB 2.0. New features are opt-in:
-
-### Enable Circuit Breaker
-
-```typescript
-// Before (KB 2.0)
-const hook = useKBBase({ hookName: 'myHook' });
-
-// After (KB 2.5)
-const hook = useKBBase({
-  hookName: 'myHook',
-  circuitBreakerConfig: { enabled: true },
+const userResource = useKBResource({
+  key: (id) => `user:${id}`,
+  fetcher: (id) => fetchUser(id),
 });
+
+// Preload before navigation
+userResource.preload('123');
+
+// In component (inside Suspense)
+const data = userResource.read('123');
 ```
 
-### Use Smart Cache
+### 6. Bulkhead Pattern (KB 3.0)
+
+Resource isolation and concurrency limiting:
 
 ```typescript
-// Import and use cache utilities
-import { getWithSWR, setCacheEntry, getCacheEntry } from '@/lib/kbCache';
+import { useKBBulkhead, getBulkheadStats } from '@/hooks/core';
+
+// Create isolated execution pools
+const { execute, status, poolState, queuePosition } = useKBBulkhead({
+  poolName: 'external-api',
+  config: {
+    maxConcurrent: 3,     // Max 3 concurrent requests
+    maxQueueSize: 50,     // Max 50 queued requests
+    queueTimeoutMs: 30000, // 30s queue timeout
+    executionTimeoutMs: 60000, // 60s execution timeout
+  },
+  fn: async (params) => await callExternalAPI(params),
+  priority: 5, // Higher = more priority
+});
+
+// Execute with automatic queueing
+const result = await execute({ id: '123' });
+
+// Monitor pool state
+console.log(poolState.activeCount);   // Currently executing
+console.log(poolState.queuedCount);   // Waiting in queue
+console.log(queuePosition);           // Your position in queue (if queued)
+
+// Get all pools stats
+const allStats = getBulkheadStats();
 ```
 
-### Add Telemetry
+#### Utility Functions
 
 ```typescript
-// Import and use telemetry
-import { startSpan, endSpan, telemetryProvider, ConsoleExporter } from '@/lib/kbTelemetry';
+import { executeWithBulkhead, withBulkhead } from '@/hooks/core';
 
-// Add exporter in app initialization
-telemetryProvider.addExporter(new ConsoleExporter());
-telemetryProvider.startAutoExport(10000);
+// One-off execution
+const data = await executeWithBulkhead('api-pool', fetchData, {
+  priority: 10,
+  timeoutMs: 5000,
+});
+
+// Decorator pattern
+const limitedFetch = withBulkhead('api-pool', fetchData, { priority: 5 });
+const result = await limitedFetch();
 ```
 
-## Best Practices
+### 7. Query Deduplication (KB 3.0)
 
-1. **Always use hookName**: Helps with debugging and telemetry
-2. **Handle all error codes**: Especially `CIRCUIT_OPEN` for circuit breaker
-3. **Configure staleTime**: Reduce unnecessary network requests
-4. **Use streaming for AI**: Better UX with token-by-token updates
-5. **Enable telemetry in production**: Use BatchExporter for observability
-6. **Configure circuit breaker thresholds**: Based on your SLA requirements
+Automatic deduplication of concurrent identical queries:
+
+```typescript
+import { useKBQueryDedup, prefetchQuery, invalidateQueries } from '@/hooks/core';
+
+function UserList() {
+  const { 
+    data, 
+    isLoading, 
+    isFetching, // True during background refetch
+    isStale,    // True if data is stale
+    refetch,
+    invalidate,
+  } = useKBQueryDedup({
+    key: 'users',
+    fetcher: () => fetchUsers(),
+    staleTime: 5 * 60 * 1000,      // 5 minutes
+    refetchInterval: 30000,         // Auto-refetch every 30s
+    refetchOnWindowFocus: true,    // Refetch when tab gains focus
+  });
+
+  return (
+    <div>
+      {isLoading && <Spinner />}
+      {data?.map(user => <User key={user.id} {...user} />)}
+      {isFetching && !isLoading && <RefreshIndicator />}
+    </div>
+  );
+}
+
+// Prefetch for navigation
+await prefetchQuery('users', fetchUsers);
+
+// Invalidate queries by prefix
+invalidateQueries('user*'); // Invalidates 'users', 'user:123', etc.
+```
+
+#### Query Data Manipulation
+
+```typescript
+import { getQueryData, setQueryData } from '@/hooks/core';
+
+// Optimistic update
+const currentData = getQueryData<User[]>('users');
+setQueryData('users', [...currentData, newUser]);
+
+// Query will automatically refetch if stale
+```
+
+---
+
+## Usage Patterns
+
+### Combined KB 3.0 Pattern
+
+```typescript
+// High-priority API with Bulkhead + Deduplication
+function useCriticalData(id: string) {
+  const bulkhead = useKBBulkhead({
+    poolName: 'critical',
+    config: { maxConcurrent: 2, maxQueueSize: 10 },
+    fn: (id) => fetchCriticalData(id),
+    priority: 10,
+  });
+
+  const query = useKBQueryDedup({
+    key: `critical:${id}`,
+    fetcher: () => bulkhead.execute(id),
+    staleTime: 60000,
+  });
+
+  return query;
+}
+```
+
+### Suspense + Bulkhead
+
+```typescript
+function ExpensiveComponent({ id }: { id: string }) {
+  const resource = useKBResource({
+    key: (id) => `expensive:${id}`,
+    fetcher: async (id) => {
+      // Uses bulkhead for rate limiting
+      return executeWithBulkhead('expensive-pool', () => 
+        fetchExpensiveData(id)
+      );
+    },
+  });
+
+  const data = resource.read(id); // Suspends
+  return <Display data={data} />;
+}
+```
+
+---
 
 ## File Structure
 
 ```
 src/
 ├── hooks/core/
-│   ├── index.ts           # Exports
-│   ├── types.ts           # Type definitions
-│   ├── useKBBase.ts       # Base hook with circuit breaker
+│   ├── index.ts           # All exports
+│   ├── types.ts           # Type definitions (KB 3.0)
+│   ├── useKBBase.ts       # Base hook + Circuit Breaker
 │   ├── useKBQuery.ts      # Query hook
 │   ├── useKBMutation.ts   # Mutation hook
-│   └── useKBStream.ts     # Streaming hook
+│   ├── useKBStream.ts     # Streaming hook (KB 2.5)
+│   ├── useKBSuspense.ts   # Suspense hooks (KB 3.0)
+│   ├── useKBBulkhead.ts   # Bulkhead pattern (KB 3.0)
+│   └── useKBQueryDedup.ts # Query deduplication (KB 3.0)
 ├── lib/
 │   ├── kbTelemetry.ts     # OpenTelemetry utilities
 │   └── kbCache.ts         # Smart cache layer
 ```
 
+---
+
+## Best Practices
+
+### KB 3.0 Specific
+
+1. **Use Suspense for data fetching**
+   - Cleaner components without loading states
+   - Better streaming SSR support
+
+2. **Configure Bulkheads per resource type**
+   - Separate pools for different API endpoints
+   - Prevent cascade failures
+
+3. **Enable Query Deduplication**
+   - Reduces redundant network requests
+   - Automatic background refetching
+
+4. **Set appropriate priorities**
+   - Critical operations get higher priority
+   - Background syncs get lower priority
+
+5. **Monitor pool states**
+   - Use `getBulkheadStats()` for observability
+   - Alert on high queue sizes
+
+---
+
+## Migration Guide
+
+### From KB 2.5 to KB 3.0
+
+KB 3.0 is fully backward compatible. New features are opt-in:
+
+```typescript
+// KB 2.5 - Works unchanged
+const { data, isLoading } = useKBQuery({ ... });
+
+// KB 3.0 - Optional Suspense
+const { data } = useKBSuspenseQuery({ ... }); // Requires Suspense boundary
+
+// KB 3.0 - Optional Bulkhead
+const { execute } = useKBBulkhead({ ... });
+
+// KB 3.0 - Optional Deduplication
+const { data, isFetching } = useKBQueryDedup({ ... });
+```
+
+---
+
 ## Version History
 
-- **KB 2.5** (Current)
+- **KB 3.0** (Current)
+  - Suspense-First Design
+  - Bulkhead Pattern
+  - Query Deduplication
+  - Resource preloading
+  - Priority-based queueing
+
+- **KB 2.5**
   - Circuit Breaker Pattern
   - SSE/Streaming Support
   - OpenTelemetry Integration
