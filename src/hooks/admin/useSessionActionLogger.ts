@@ -190,7 +190,7 @@ export function useSessionActionLogger(sessionId: string | null) {
       return newAction;
     } catch (err) {
       const parsedErr = parseError(err);
-      const kbError = createKBError('LOG_ACTION_ERROR', parsedErr.message, { sessionId, actionType: params.actionType });
+      const kbError = createKBError('LOG_ACTION_ERROR', parsedErr.message, { details: { sessionId, actionType: params.actionType } });
       setError(kbError);
       setStatus('error');
       setRetryCount(prev => prev + 1);
@@ -229,7 +229,7 @@ export function useSessionActionLogger(sessionId: string | null) {
       collectTelemetry('useSessionActionLogger', 'fetchActions', 'success', Date.now() - startTime);
     } catch (err) {
       const parsedErr = parseError(err);
-      const kbError = createKBError('FETCH_ACTIONS_ERROR', parsedErr.message, { sessionId });
+      const kbError = createKBError('FETCH_ACTIONS_ERROR', parsedErr.message, { details: { sessionId } });
       setError(kbError);
       setStatus('error');
       setRetryCount(prev => prev + 1);
