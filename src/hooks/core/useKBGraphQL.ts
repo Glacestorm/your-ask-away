@@ -396,7 +396,7 @@ export function useKBGraphQL<TData = unknown>(config: GraphQLConfig) {
         }
 
         if (isMountedRef.current) {
-          setData(result.data as TData);
+          setData(result.data as unknown as TData);
           setMetrics(prev => ({ ...prev, successfulOperations: prev.successfulOperations + 1 }));
         }
         options?.onCompleted?.(result.data);
@@ -464,7 +464,7 @@ export function useKBGraphQL<TData = unknown>(config: GraphQLConfig) {
         }
 
         if (isMountedRef.current) {
-          setData(result.data as TData);
+          setData(result.data as unknown as TData);
           setMetrics(prev => ({ ...prev, successfulOperations: prev.successfulOperations + 1 }));
         }
         options?.onCompleted?.(result.data);
