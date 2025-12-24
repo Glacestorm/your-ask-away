@@ -1,12 +1,9 @@
 import { useCallback, useState, useTransition, useOptimistic, useActionState } from 'react';
 import { toast } from '@/hooks/use-toast';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from './core';
 
-// === ERROR TIPADO KB ===
-export interface React19ActionsError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// Re-export for backwards compat
+export type React19ActionsError = KBError;
 
 /**
  * React 19 Actions hook - Form handling with optimistic updates
@@ -176,13 +173,37 @@ export function useCachedFetch<T>(
     }
     return null;
   });
-  const [isLoading, setIsLoading] = useState(!data);
-  const [error, setError] = useState<Error | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const fetchData = useCallback(async (background = false) => {
-    if (!background) setIsLoading(true);
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>(!data ? 'loading' : 'idle');
+  const [error, setError] = useState<KBError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
     setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
+
+  const fetchData = useCallback(async (background = false) => {
+    if (!background) setStatus('loading');
+    setError(null);
+    const startTime = Date.now();
 
     try {
       const result = await fetcher();
@@ -192,13 +213,20 @@ export function useCachedFetch<T>(
         setData(result);
       });
       
+      setStatus('success');
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry('useCachedFetch', 'fetchData', 'success', Date.now() - startTime);
       return result;
     } catch (err) {
-      const error = err instanceof Error ? err : new Error('Fetch failed');
-      setError(error);
-      throw error;
+      const kbError = parseError(err);
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useCachedFetch', 'fetchData', 'error', Date.now() - startTime, kbError);
+      throw err;
     } finally {
-      setIsLoading(false);
+      setLastRefresh(new Date());
     }
   }, [key, fetcher, ttl]);
 
@@ -224,6 +252,16 @@ export function useCachedFetch<T>(
     error,
     refetch: fetchData,
     invalidate,
+    // === KB 2.0 ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
+    lastRefresh,
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
   };
 }
 

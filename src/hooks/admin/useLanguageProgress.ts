@@ -1,13 +1,10 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { SupportedLanguage } from '@/hooks/useSupportedLanguages';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
-// === INTERFACES ===
-export interface LanguageProgressError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// Re-export for backwards compat
+export type LanguageProgressError = KBError;
 
 export interface TierStats {
   tier: number;
@@ -21,10 +18,20 @@ export interface TierStats {
 export function useLanguageProgress() {
   // Estado
   const [languages, setLanguages] = useState<SupportedLanguage[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<LanguageProgressError | null>(null);
-  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [tierStats, setTierStats] = useState<TierStats[]>([]);
+
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('loading');
+  const [error, setError] = useState<KBError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
 
   // Refs para auto-refresh
   const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
@@ -60,10 +67,23 @@ export function useLanguageProgress() {
     }).sort((a, b) => a.tier - b.tier);
   }, []);
 
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
+
   // === FETCH LANGUAGES ===
   const fetchLanguages = useCallback(async () => {
-    setIsLoading(true);
+    setStatus('loading');
     setError(null);
+    const startTime = Date.now();
 
     try {
       const { data, error: fetchError } = await supabase
@@ -79,19 +99,21 @@ export function useLanguageProgress() {
       setLanguages(langsData);
       setTierStats(calculateTierStats(langsData));
       setLastRefresh(new Date());
+      setStatus('success');
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry('useLanguageProgress', 'fetchLanguages', 'success', Date.now() - startTime);
       return langsData;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error desconocido';
-      setError({ code: 'FETCH_ERROR', message, details: { originalError: String(err) } });
+      const kbError = parseError(err);
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useLanguageProgress', 'fetchLanguages', 'error', Date.now() - startTime, kbError);
       console.error('[useLanguageProgress] fetchLanguages error:', err);
       return null;
-    } finally {
-      setIsLoading(false);
     }
   }, [calculateTierStats]);
-
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
 
   // === GET OVERALL STATS ===
   const getOverallStats = useCallback(() => {
@@ -150,6 +172,14 @@ export function useLanguageProgress() {
     clearError,
     startAutoRefresh,
     stopAutoRefresh,
+    // === KB 2.0 ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
+    lastSuccess,
+    retryCount,
+    reset,
   };
 }
 

@@ -7,6 +7,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
 // === INTERFACES ===
 export interface KPIMetric {
@@ -90,21 +91,44 @@ export interface BIContext {
 // === HOOK ===
 export function useBusinessIntelligence() {
   // Estado
-  const [isLoading, setIsLoading] = useState(false);
   const [kpis, setKpis] = useState<KPIMetric[]>([]);
   const [insights, setInsights] = useState<AIInsight[]>([]);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [correlations, setCorrelations] = useState<DataCorrelation[]>([]);
-  const [error, setError] = useState<string | null>(null);
+
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   // Refs para auto-refresh
   const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
 
   // === GET ANALYTICS DATA ===
   const getAnalyticsData = useCallback(async (context: BIContext = {}) => {
-    setIsLoading(true);
+    setStatus('loading');
     setError(null);
+    const startTime = Date.now();
 
     try {
       const { data: fnData, error: fnError } = await supabase.functions.invoke(
@@ -130,23 +154,29 @@ export function useBusinessIntelligence() {
         setPredictions(fnData.data.predictions || []);
         setCorrelations(fnData.data.correlations || []);
         setLastRefresh(new Date());
+        setStatus('success');
+        setLastSuccess(new Date());
+        setRetryCount(0);
+        collectTelemetry('useBusinessIntelligence', 'getAnalyticsData', 'success', Date.now() - startTime);
         return fnData.data;
       }
 
       throw new Error(fnData?.error || 'Error al obtener datos analíticos');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error desconocido';
-      setError(message);
+      const kbError = parseError(err);
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useBusinessIntelligence', 'getAnalyticsData', 'error', Date.now() - startTime, kbError);
       console.error('[useBusinessIntelligence] getAnalyticsData error:', err);
       return null;
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
   // === GENERATE AI INSIGHTS ===
   const generateInsights = useCallback(async (context: BIContext = {}) => {
-    setIsLoading(true);
+    setStatus('loading');
+    const startTime = Date.now();
     try {
       const { data: fnData, error: fnError } = await supabase.functions.invoke(
         'business-intelligence',
@@ -162,6 +192,8 @@ export function useBusinessIntelligence() {
 
       if (fnData?.success) {
         setInsights(fnData.data.insights || []);
+        setStatus('success');
+        collectTelemetry('useBusinessIntelligence', 'generateInsights', 'success', Date.now() - startTime);
         toast.success('Insights generados correctamente');
         return fnData.data.insights;
       }
@@ -169,10 +201,10 @@ export function useBusinessIntelligence() {
       return [];
     } catch (err) {
       console.error('[useBusinessIntelligence] generateInsights error:', err);
+      setStatus('error');
+      collectTelemetry('useBusinessIntelligence', 'generateInsights', 'error', Date.now() - startTime, parseError(err));
       toast.error('Error al generar insights');
       return [];
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -259,7 +291,8 @@ export function useBusinessIntelligence() {
 
   // === GENERATE REPORT ===
   const generateReport = useCallback(async (config: Partial<ReportConfig>) => {
-    setIsLoading(true);
+    setStatus('loading');
+    const startTime = Date.now();
     try {
       const { data: fnData, error: fnError } = await supabase.functions.invoke(
         'business-intelligence',
@@ -274,6 +307,8 @@ export function useBusinessIntelligence() {
       if (fnError) throw fnError;
 
       if (fnData?.success) {
+        setStatus('success');
+        collectTelemetry('useBusinessIntelligence', 'generateReport', 'success', Date.now() - startTime);
         toast.success('Reporte generado correctamente');
         return fnData.data;
       }
@@ -281,10 +316,10 @@ export function useBusinessIntelligence() {
       return null;
     } catch (err) {
       console.error('[useBusinessIntelligence] generateReport error:', err);
+      setStatus('error');
+      collectTelemetry('useBusinessIntelligence', 'generateReport', 'error', Date.now() - startTime, parseError(err));
       toast.error('Error al generar reporte');
       return null;
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -360,6 +395,15 @@ export function useBusinessIntelligence() {
     exportData,
     startAutoRefresh,
     stopAutoRefresh,
+    // === KB 2.0 ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
   };
 }
 
