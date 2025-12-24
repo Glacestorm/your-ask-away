@@ -2,13 +2,10 @@ import { useState, useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { parseError, collectTelemetry } from '@/hooks/core/useKBBase';
 
-// === ERROR TIPADO KB ===
-export interface SmartPrioritizationError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+export type SmartPrioritizationError = KBError;
 
 export interface PrioritizedAccount {
   companyId: string;
@@ -26,12 +23,31 @@ export interface PrioritizedAccount {
 
 export const useSmartPrioritization = () => {
   const queryClient = useQueryClient();
-  // === ESTADO KB ===
-  const [error, setError] = useState<SmartPrioritizationError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+  
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   const prioritizeAccountsMutation = useMutation({
     mutationFn: async (params: { 
@@ -46,26 +62,54 @@ export const useSmartPrioritization = () => {
         lastActivity: string;
       }>;
     }) => {
-      const { data, error } = await supabase.functions.invoke('prioritize-accounts', {
+      setStatus('loading');
+      const startTime = new Date();
+      
+      const { data, error: invokeError } = await supabase.functions.invoke('prioritize-accounts', {
         body: params
       });
       
-      if (error) throw error;
+      if (invokeError) {
+        const kbError = parseError(invokeError);
+        setError(kbError);
+        setStatus('error');
+        collectTelemetry({
+          hookName: 'useSmartPrioritization',
+          operationName: 'prioritizeAccounts',
+          startTime,
+          endTime: new Date(),
+          durationMs: Date.now() - startTime.getTime(),
+          status: 'error',
+          error: kbError,
+          retryCount
+        });
+        throw invokeError;
+      }
+      
+      collectTelemetry({
+        hookName: 'useSmartPrioritization',
+        operationName: 'prioritizeAccounts',
+        startTime,
+        endTime: new Date(),
+        durationMs: Date.now() - startTime.getTime(),
+        status: 'success',
+        retryCount
+      });
+      
       return data as { prioritizedAccounts: PrioritizedAccount[] };
     },
     onSuccess: () => {
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setStatus('success');
       setError(null);
       toast.success('Cuentas priorizadas con IA');
     },
     onError: (err) => {
-      const message = err instanceof Error ? err.message : 'Error al priorizar';
-      setError({
-        code: 'PRIORITIZE_ERROR',
-        message,
-        details: { originalError: String(err) }
-      });
-      toast.error('Error al priorizar: ' + message);
+      const kbError = parseError(err);
+      setError(kbError);
+      setStatus('error');
+      toast.error('Error al priorizar: ' + kbError.message);
     }
   });
 
@@ -127,9 +171,17 @@ export const useSmartPrioritization = () => {
     getStrategicBets,
     getTotalPotentialRevenue,
     getTotalAtRiskRevenue,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
-    clearError
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset
   };
 };

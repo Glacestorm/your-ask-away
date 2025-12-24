@@ -3,13 +3,10 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from './useAuth';
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { parseError, collectTelemetry } from '@/hooks/core/useKBBase';
 
-// === ERROR TIPADO KB ===
-export interface XAMAError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+export type XAMAError = KBError;
 import { useBehavioralBiometrics } from './useBehavioralBiometrics';
 import { useAdaptiveAuth } from './useAdaptiveAuth';
 import { useWebAuthn } from './useWebAuthn';
@@ -57,10 +54,18 @@ export interface UseXAMAReturn {
   getRequiredVerifications: (sensitivity: 'low' | 'medium' | 'high' | 'critical') => string[];
   terminateSession: () => void;
   isAuthorizedForResource: (sensitivity: 'low' | 'medium' | 'high' | 'critical') => boolean;
-  // === KB ADDITIONS ===
-  error: XAMAError | null;
+  // === KB 2.0 RETURN ===
+  status: KBStatus;
+  isIdle: boolean;
+  isLoading: boolean;
+  isSuccess: boolean;
+  isError: boolean;
+  error: KBError | null;
   lastRefresh: Date | null;
+  lastSuccess: Date | null;
+  retryCount: number;
   clearError: () => void;
+  reset: () => void;
 }
 
 export function useXAMA(config: Partial<ContinuousAuthConfig> = {}): UseXAMAReturn {
@@ -80,12 +85,30 @@ export function useXAMA(config: Partial<ContinuousAuthConfig> = {}): UseXAMARetu
     lastAnomalyDetection: null
   });
   
-  // === ESTADO KB ===
-  const [error, setError] = useState<XAMAError | null>(null);
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccessState = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+  
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
   
   const baselineRef = useRef<BehaviorBaseline>(createEmptyBaseline());
   const continuousAuthIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -227,11 +250,9 @@ export function useXAMA(config: Partial<ContinuousAuthConfig> = {}): UseXAMARetu
       
     } catch (err) {
       console.error('XAMA initialization error:', err);
-      setError({
-        code: 'INIT_ERROR',
-        message: err instanceof Error ? err.message : 'Error de inicialización XAMA',
-        details: { originalError: String(err) }
-      });
+      const kbError = parseError(err);
+      setError(kbError);
+      setStatus('error');
       setState(prev => ({ ...prev, isVerifying: false }));
     }
   }, [user, startCollection, generateDeviceFingerprint, getTrustedDevices, evaluateRisk, riskAssessment]);
@@ -398,11 +419,9 @@ export function useXAMA(config: Partial<ContinuousAuthConfig> = {}): UseXAMARetu
       
     } catch (err) {
       console.error('Attribute verification error:', err);
-      setError({
-        code: 'VERIFY_ATTR_ERROR',
-        message: err instanceof Error ? err.message : 'Error verificando atributo',
-        details: { originalError: String(err) }
-      });
+      const kbError = parseError(err);
+      setError(kbError);
+      setStatus('error');
       setState(prev => ({ ...prev, isVerifying: false }));
       return false;
     }
@@ -525,9 +544,17 @@ export function useXAMA(config: Partial<ContinuousAuthConfig> = {}): UseXAMARetu
     getRequiredVerifications,
     terminateSession,
     isAuthorizedForResource,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoading,
+    isSuccess: isSuccessState,
+    isError,
     error,
     lastRefresh,
-    clearError
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset
   };
 }
