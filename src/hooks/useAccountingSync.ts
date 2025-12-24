@@ -2,6 +2,13 @@ import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// === ERROR TIPADO KB ===
+export interface AccountingSyncError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 interface AccountingData {
   balance_sheet: Record<string, number>;
   income_statement: Record<string, number>;
@@ -25,7 +32,12 @@ export function useAccountingSync(companyId?: string) {
     accounting_module_installed: false
   });
   const [accountingData, setAccountingData] = useState<AccountingData[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  // === ESTADO KB ===
+  const [error, setError] = useState<AccountingSyncError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   // Check if accounting module is installed
   const checkAccountingModuleStatus = useCallback(async () => {
@@ -108,10 +120,11 @@ export function useAccountingSync(companyId?: string) {
       return null;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error fetching accounting data';
-      setError(message);
+      setError({ code: 'FETCH_DATA_ERROR', message, details: { originalError: String(err) } });
       return null;
     } finally {
       setIsLoading(false);
+      setLastRefresh(new Date());
     }
   }, [companyId]);
 
@@ -223,7 +236,7 @@ export function useAccountingSync(companyId?: string) {
       return true;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error sincronizando datos';
-      setError(message);
+      setError({ code: 'SYNC_ERROR', message, details: { originalError: String(err) } });
       toast.error(message);
       return false;
     } finally {
@@ -242,6 +255,9 @@ export function useAccountingSync(companyId?: string) {
     accountingData,
     checkAccountingModuleStatus,
     fetchAccountingData,
-    syncToFinancialPlan
+    syncToFinancialPlan,
+    // === KB ADDITIONS ===
+    lastRefresh,
+    clearError
   };
 }
