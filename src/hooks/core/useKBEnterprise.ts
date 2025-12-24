@@ -212,6 +212,8 @@ export interface UseKBEnterpriseBaseReturn<T> {
   isLoading: boolean;
   isSuccess: boolean;
   isError: boolean;
+  refresh: () => Promise<T | void>;
+  startAutoRefresh: (intervalMs?: number) => void;
   stopAutoRefresh: () => void;
   isAutoRefreshing: boolean;
 }
@@ -286,7 +288,6 @@ export function useKBEnterpriseBase<T>({
     isLoading: false,
     isSuccess: data !== null,
     isError: false,
-    lastRefresh,
     refresh,
     startAutoRefresh,
     stopAutoRefresh,
@@ -409,9 +410,12 @@ export function useKBCompliance({
       setLastRefresh(new Date());
 
       collectTelemetry({
+        hookName: 'useKBCompliance',
         operationName: 'compliance-fetch',
-        duration: 0,
-        success: true,
+        startTime: new Date(),
+        durationMs: 0,
+        status: 'success',
+        retryCount: 0,
         metadata: { sector, scanDepth },
       });
     } catch (err) {
