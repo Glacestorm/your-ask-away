@@ -809,3 +809,166 @@ export type {
   KBHydrationReturn,
   KBNetworkStatus,
 } from './useKBHydration';
+
+// ============================================================================
+// PHASE 16: ENTERPRISE PATTERNS
+// ============================================================================
+
+// Dependency Injection (KB 4.5)
+export {
+  useService,
+  useServices,
+  useContainer,
+  useServiceRegistration,
+  useLazyService,
+  useOptionalService,
+  ContainerProvider,
+  createContainer,
+  createServiceDescriptor,
+  createServiceIdentifier,
+  Injectable,
+  Inject,
+  createModule,
+  registerModule,
+  createMockContainer,
+} from './useKBDependencyInjection';
+
+export type {
+  ServiceIdentifier,
+  ServiceDescriptor,
+  ServiceRegistration,
+  IContainer,
+  ContainerConfig,
+  ServiceLifecycle,
+  ContainerProviderProps,
+  ModuleDefinition,
+} from './useKBDependencyInjection';
+
+// Event Sourcing (KB 4.5)
+export {
+  useKBEventSourcing,
+  useKBProjection,
+  useKBAggregate,
+  createEventStore,
+  createProjection,
+  createEvent,
+} from './useKBEventSourcing';
+
+export type {
+  KBEvent as KBEventSourcing,
+  EventMetadata,
+  Snapshot,
+  EventStore,
+  Projection,
+  KBEventSourcingConfig,
+  KBEventSourcingState,
+} from './useKBEventSourcing';
+
+// CQRS Pattern (KB 4.5)
+export {
+  useKBCQRS,
+  useKBCommand,
+  useKBQueryCQRS,
+  useKBReadModel,
+  useKBWriteModel,
+  getCommandBus,
+  getQueryBus,
+  createValidationMiddleware,
+  createAuditMiddleware,
+} from './useKBCQRS';
+
+export type {
+  Command,
+  CommandMetadata,
+  CommandResult,
+  Query,
+  QueryResult,
+  CommandHandler,
+  QueryHandler,
+  CommandMiddleware,
+  KBCQRSConfig,
+} from './useKBCQRS';
+
+// Saga Pattern (KB 4.5)
+export {
+  useKBSaga,
+  useKBSagaBuilder,
+  useKBOrchestrator,
+  createSaga,
+  createStep,
+  createApiStep,
+  createDbStep,
+  createNotificationStep,
+} from './useKBSaga';
+
+export type {
+  SagaStep,
+  SagaDefinition,
+  SagaStatus,
+  SagaStepResult,
+  SagaState,
+  SagaConfig,
+} from './useKBSaga';
+
+// Plugin System (KB 4.5)
+export {
+  usePlugin,
+  usePluginHost,
+  usePluginApi,
+  usePlugins,
+  usePluginRegistration,
+  usePluginEvent,
+  usePluginHook,
+  usePluginComponents,
+  usePluginRoutes,
+  PluginProvider,
+  createPlugin,
+  createPluginApi,
+  createExtensionPoint,
+  useExtensionPoint,
+} from './useKBPlugin';
+
+export type {
+  Plugin,
+  PluginHooks,
+  PluginRoute,
+  PluginHost,
+  PluginManagerConfig,
+  PluginState,
+  PluginProviderProps,
+} from './useKBPlugin';
+
+// Resource Pool (KB 4.5)
+export {
+  useKBResourcePool,
+  useKBConnectionPool,
+  useKBWorkerPool,
+  useKBSemaphore,
+  useKBRateLimiter,
+  createResourcePool,
+} from './useKBResourcePool';
+
+export type {
+  PooledResource,
+  ResourcePoolConfig,
+  PoolStats,
+} from './useKBResourcePool';
+
+// Health Check (KB 4.5)
+export {
+  useKBHealthCheck,
+  useKBLivenessProbe,
+  useKBReadinessProbe,
+  useKBStartupProbe,
+  useKBDependencyHealth,
+  createHealthCheck,
+  CommonHealthChecks,
+} from './useKBHealthCheck';
+
+export type {
+  HealthStatus,
+  HealthCheckResult,
+  HealthCheck,
+  HealthReport,
+  HealthCheckConfig,
+} from './useKBHealthCheck';
