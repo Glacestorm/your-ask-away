@@ -1,6 +1,14 @@
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+// === ERROR TIPADO KB ===
+export interface SurveyGamificationError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 export interface FeedbackGamification {
   id: string;
@@ -20,19 +28,33 @@ export interface FeedbackGamification {
 
 export function useSurveyGamification(companyId?: string) {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<SurveyGamificationError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const { data: gamification, isLoading } = useQuery({
     queryKey: ['survey-gamification', companyId],
     queryFn: async () => {
       if (!companyId) return null;
       
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('feedback_gamification')
         .select('*')
         .eq('company_id', companyId)
         .maybeSingle();
       
-      if (error) throw error;
+      if (fetchError) {
+        setError({
+          code: 'FETCH_GAMIFICATION_ERROR',
+          message: fetchError.message,
+          details: { originalError: String(fetchError) }
+        });
+        throw fetchError;
+      }
+      setLastRefresh(new Date());
       return data as unknown as FeedbackGamification | null;
     },
     enabled: !!companyId,
@@ -181,5 +203,9 @@ export function useSurveyGamification(companyId?: string) {
     getLevelFromCoins,
     getBadgeIcon,
     getBadgeName,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
