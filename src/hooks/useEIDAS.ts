@@ -54,6 +54,13 @@ import {
   SUPPORTED_CREDENTIAL_TYPES
 } from '@/lib/eidas/eudiWallet';
 
+// === ERROR TIPADO KB ===
+export interface EIDASError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export interface EIDASState {
   primaryDID: DID | null;
   credentials: VerifiableCredential[];
@@ -62,6 +69,8 @@ export interface EIDASState {
   walletAvailable: boolean;
   isLoading: boolean;
   error: string | null;
+  // === KB ADDITIONS ===
+  lastRefresh: Date | null;
 }
 
 export interface UseEIDASReturn {
@@ -112,7 +121,9 @@ export function useEIDAS(): UseEIDASReturn {
     lastKYCResult: null,
     walletAvailable: false,
     isLoading: false,
-    error: null
+    error: null,
+    // === KB ADDITIONS ===
+    lastRefresh: null
   });
 
   // Initialize on mount

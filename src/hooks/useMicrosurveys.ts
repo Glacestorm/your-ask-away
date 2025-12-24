@@ -1,7 +1,15 @@
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
+
+// === ERROR TIPADO KB ===
+export interface MicrosurveysError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 export interface Microsurvey {
   id: string;
@@ -37,6 +45,12 @@ export interface MicrosurveyResponse {
 
 export function useMicrosurveys() {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<MicrosurveysError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const { data: microsurveys, isLoading } = useQuery({
     queryKey: ['microsurveys'],
@@ -124,5 +138,9 @@ export function useMicrosurveys() {
     toggleActive: toggleActive.mutate,
     isCreating: createMicrosurvey.isPending,
     isSubmitting: submitResponse.isPending,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
