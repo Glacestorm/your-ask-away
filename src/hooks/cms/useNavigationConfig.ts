@@ -1,7 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
+
+// === ERROR TIPADO KB ===
+export interface NavigationConfigError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 interface NavigationItem {
   id: string;
@@ -33,14 +40,21 @@ const defaultConfig: NavigationConfig = {
 export function useNavigationConfig() {
   const [navigation, setNavigation] = useState<NavigationConfig>(defaultConfig);
   const [loading, setLoading] = useState(true);
+  // === ESTADO KB ===
+  const [error, setError] = useState<NavigationConfigError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const { language } = useLanguage();
   const { userRole } = useAuth();
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   useEffect(() => {
     loadNavigation();
   }, [language, userRole]);
 
   const loadNavigation = async () => {
+    setError(null);
     try {
       const { data, error } = await (supabase as any)
         .from('cms_navigation_items')
@@ -99,7 +113,10 @@ export function useNavigationConfig() {
       }
 
       setNavigation(grouped);
+      setLastRefresh(new Date());
     } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      setError({ code: 'LOAD_NAVIGATION_ERROR', message, details: { originalError: String(err) } });
       console.error('Error loading navigation:', err);
     } finally {
       setLoading(false);
@@ -114,7 +131,11 @@ export function useNavigationConfig() {
     navigation, 
     loading, 
     getMenuItems,
-    refresh: loadNavigation 
+    refresh: loadNavigation,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
 

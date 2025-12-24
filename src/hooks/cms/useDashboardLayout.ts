@@ -1,6 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+
+// === ERROR TIPADO KB ===
+export interface DashboardLayoutError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 interface Widget {
   id: string;
@@ -36,8 +43,13 @@ const defaultLayout: DashboardLayout = {
 export function useDashboardLayout() {
   const [layout, setLayout] = useState<DashboardLayout>(defaultLayout);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<DashboardLayoutError | null>(null);
+  // === ESTADO KB ===
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const { userRole } = useAuth();
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   useEffect(() => {
     if (userRole) {
@@ -46,6 +58,7 @@ export function useDashboardLayout() {
   }, [userRole]);
 
   const loadLayout = async () => {
+    setError(null);
     try {
       // First try to get role-specific layout
       let { data, error } = await (supabase as any)
@@ -82,9 +95,11 @@ export function useDashboardLayout() {
           })),
           gridConfig: data.grid_config || defaultLayout.gridConfig
         });
+        setLastRefresh(new Date());
       }
     } catch (err) {
-      setError(err as Error);
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      setError({ code: 'LOAD_LAYOUT_ERROR', message, details: { originalError: String(err) } });
       console.error('Error loading dashboard layout:', err);
     } finally {
       setLoading(false);
@@ -146,6 +161,9 @@ export function useDashboardLayout() {
     updateWidgetPosition,
     toggleWidgetVisibility,
     getVisibleWidgets,
-    refresh: loadLayout 
+    refresh: loadLayout,
+    // === KB ADDITIONS ===
+    lastRefresh,
+    clearError,
   };
 }

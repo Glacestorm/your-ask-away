@@ -11,7 +11,14 @@ import {
   loadFromIDB,
   updateLastSync
 } from '@/lib/queryPersister';
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
+
+// === ERROR TIPADO KB ===
+export interface PersistentSectorsError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 interface Sector {
   id: string;
@@ -46,6 +53,12 @@ async function fetchSectors(): Promise<Sector[]> {
 
 export function usePersistentSectorsQuery() {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<PersistentSectorsError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const query = useQuery({
     queryKey: PERSISTENT_QUERY_KEYS.SECTORS,
@@ -76,6 +89,7 @@ export function usePersistentSectorsQuery() {
     if (query.data && query.data.length > 0) {
       saveToIDB('sectors', query.data);
       updateLastSync();
+      setLastRefresh(new Date());
     }
   }, [query.data]);
 
@@ -106,6 +120,10 @@ export function usePersistentSectorsQuery() {
     sectors: query.data ?? [],
     invalidate,
     prefetch,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
 
