@@ -6,7 +6,7 @@ import { SupportedLanguage } from '@/hooks/useSupportedLanguages';
 export interface LanguageProgressError {
   code: string;
   message: string;
-  details?: string;
+  details?: Record<string, unknown>;
 }
 
 export interface TierStats {
@@ -82,13 +82,16 @@ export function useLanguageProgress() {
       return langsData;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error desconocido';
-      setError({ code: 'FETCH_ERROR', message });
+      setError({ code: 'FETCH_ERROR', message, details: { originalError: String(err) } });
       console.error('[useLanguageProgress] fetchLanguages error:', err);
       return null;
     } finally {
       setIsLoading(false);
     }
   }, [calculateTierStats]);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   // === GET OVERALL STATS ===
   const getOverallStats = useCallback(() => {
@@ -144,6 +147,7 @@ export function useLanguageProgress() {
     overallStats: getOverallStats(),
     // Acciones
     fetchLanguages,
+    clearError,
     startAutoRefresh,
     stopAutoRefresh,
   };

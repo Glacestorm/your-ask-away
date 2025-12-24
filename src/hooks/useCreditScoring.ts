@@ -2,6 +2,13 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// === ERROR TIPADO KB ===
+export interface CreditScoringError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export interface CreditScoreResult {
   score: number; // 0-1000
   rating: 'AAA' | 'AA' | 'A' | 'BBB' | 'BB' | 'B' | 'CCC' | 'CC' | 'C' | 'D';
@@ -32,7 +39,12 @@ export interface ExplainabilityReport {
 export function useCreditScoring() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<CreditScoreResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // === ESTADO KB ===
+  const [error, setError] = useState<CreditScoringError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const calculateScore = useCallback(async (companyId: string) => {
     setIsLoading(true);
@@ -46,11 +58,16 @@ export function useCreditScoring() {
       if (fnError) throw fnError;
 
       setResult(data);
+      setLastRefresh(new Date());
       toast.success('Scoring creditici calculat correctament');
       return data;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error calculant scoring';
-      setError(message);
+      setError({
+        code: 'CALCULATE_SCORE_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
       toast.error(message);
       return null;
     } finally {
@@ -78,7 +95,10 @@ export function useCreditScoring() {
     calculateScore,
     result,
     isLoading,
+    // === KB ADDITIONS ===
     error,
+    lastRefresh,
+    clearError,
     getRatingColor
   };
 }
