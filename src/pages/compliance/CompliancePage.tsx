@@ -1,6 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { DashboardLayout } from '@/layouts';
 import { ComplianceDashboard, ComplianceFramework, AuditLog } from '@/components/compliance';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SmartAuditAlerts } from '@/components/audit/SmartAuditAlerts';
+import { BlockchainAuditPanel } from '@/components/audit/BlockchainAuditPanel';
+import { DigitalSignaturePanel } from '@/components/audit/DigitalSignaturePanel';
+import { AuditorPortalManager } from '@/components/audit/AuditorPortalManager';
+import { Shield, AlertTriangle, Link2, FileSignature, Users } from 'lucide-react';
 
 const demoFrameworks: ComplianceFramework[] = [
   {
@@ -87,13 +93,56 @@ const demoAuditLogs: AuditLog[] = [
 const CompliancePage = () => {
   return (
     <DashboardLayout title="Compliance">
-      <div className="p-6">
-        <ComplianceDashboard 
-          frameworks={demoFrameworks}
-          auditLogs={demoAuditLogs}
-          onRunAudit={(id) => console.log('Running audit for', id)}
-          onExportReport={(id) => console.log('Exporting report for', id)}
-        />
+      <div className="p-6 space-y-6">
+        <Tabs defaultValue="dashboard" className="w-full">
+          <TabsList className="grid w-full grid-cols-5 mb-6">
+            <TabsTrigger value="dashboard" className="flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              Dashboard
+            </TabsTrigger>
+            <TabsTrigger value="alerts" className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4" />
+              Alertas
+            </TabsTrigger>
+            <TabsTrigger value="blockchain" className="flex items-center gap-2">
+              <Link2 className="h-4 w-4" />
+              Blockchain
+            </TabsTrigger>
+            <TabsTrigger value="signatures" className="flex items-center gap-2">
+              <FileSignature className="h-4 w-4" />
+              Firmas
+            </TabsTrigger>
+            <TabsTrigger value="auditors" className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              Auditores
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="dashboard">
+            <ComplianceDashboard 
+              frameworks={demoFrameworks}
+              auditLogs={demoAuditLogs}
+              onRunAudit={(id) => console.log('Running audit for', id)}
+              onExportReport={(id) => console.log('Exporting report for', id)}
+            />
+          </TabsContent>
+
+          <TabsContent value="alerts">
+            <SmartAuditAlerts />
+          </TabsContent>
+
+          <TabsContent value="blockchain">
+            <BlockchainAuditPanel />
+          </TabsContent>
+
+          <TabsContent value="signatures">
+            <DigitalSignaturePanel />
+          </TabsContent>
+
+          <TabsContent value="auditors">
+            <AuditorPortalManager />
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
   );
