@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from './core';
 
 export interface HealthScoreDimension {
   name: string;
@@ -72,25 +73,40 @@ const DEFAULT_CONFIG: HealthScoreConfig = {
   }
 };
 
-// === ERROR TIPADO KB ===
-export interface CustomerHealthScoreError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+export type CustomerHealthScoreError = KBError;
 
 export function useCustomerHealthScore() {
-  const [isLoading, setIsLoading] = useState(false);
   const [healthScores, setHealthScores] = useState<CustomerHealthScore[]>([]);
-  // === ESTADO KB ===
-  const [error, setError] = useState<CustomerHealthScoreError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+    setHealthScores([]);
+  }, []);
 
   const calculateHealthScore = useCallback(async (companyId: string, config: HealthScoreConfig = DEFAULT_CONFIG): Promise<CustomerHealthScore | null> => {
-    setIsLoading(true);
+    const startTime = new Date();
+    setStatus('loading');
     setError(null);
 
     try {
@@ -227,23 +243,44 @@ export function useCustomerHealthScore() {
         lastUpdated: new Date().toISOString()
       };
 
+      setStatus('success');
+      setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      
+      collectTelemetry({
+        hookName: 'useCustomerHealthScore',
+        operationName: 'calculateHealthScore',
+        startTime,
+        endTime: new Date(),
+        durationMs: Date.now() - startTime.getTime(),
+        status: 'success',
+        retryCount: 0
+      });
+
       return healthScore;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error calculating health score';
-      setError({
-        code: 'CALCULATE_HEALTH_SCORE_ERROR',
-        message,
-        details: { originalError: String(err) }
+      const kbError = createKBError('CALCULATE_HEALTH_SCORE_ERROR', parseError(err).message, { originalError: err });
+      setError(kbError);
+      setStatus('error');
+      
+      collectTelemetry({
+        hookName: 'useCustomerHealthScore',
+        operationName: 'calculateHealthScore',
+        startTime,
+        endTime: new Date(),
+        durationMs: Date.now() - startTime.getTime(),
+        status: 'error',
+        error: kbError,
+        retryCount
       });
+      
       console.error('Health score calculation error:', err);
       return null;
-    } finally {
-      setIsLoading(false);
     }
-  }, []);
+  }, [retryCount]);
 
   const calculateBulkHealthScores = useCallback(async (companyIds: string[]): Promise<CustomerHealthScore[]> => {
-    setIsLoading(true);
+    setStatus('loading');
     const scores: CustomerHealthScore[] = [];
 
     for (const companyId of companyIds) {
@@ -253,7 +290,8 @@ export function useCustomerHealthScore() {
 
     setHealthScores(scores);
     setLastRefresh(new Date());
-    setIsLoading(false);
+    setLastSuccess(new Date());
+    setStatus('success');
     return scores;
   }, [calculateHealthScore]);
 
@@ -278,11 +316,19 @@ export function useCustomerHealthScore() {
     calculateHealthScore,
     calculateBulkHealthScores,
     healthScores,
+    data: healthScores,
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
     isLoading,
-    // === KB ADDITIONS ===
+    isSuccess,
+    isError,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
+    reset,
     getHealthScoreColor,
     getRiskLevelColor
   };

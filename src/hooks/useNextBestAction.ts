@@ -3,13 +3,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from './core';
 
-// === ERROR TIPADO KB ===
-export interface NBAError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+export type NBAError = KBError;
 
 export interface NBAActionType {
   id: string;
@@ -66,12 +62,24 @@ export function useNextBestAction() {
   const { user, userRole } = useAuth();
   const queryClient = useQueryClient();
   const [isExecuting, setIsExecuting] = useState(false);
-  // === ESTADO KB ===
-  const [error, setError] = useState<NBAError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
 
   // Get action types for current role
   const { data: actionTypes, isLoading: typesLoading } = useQuery({
@@ -112,11 +120,14 @@ export function useNextBestAction() {
         .order('score', { ascending: false });
       
       if (error) {
-        setError({ code: 'FETCH_ACTION_TYPES_ERROR', message: error.message, details: { originalError: String(error) } });
+        const kbError = createKBError('FETCH_ACTION_TYPES_ERROR', error.message, { originalError: error });
+        setError(kbError);
         throw error;
       }
       
+      setStatus('success');
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
       
       // Enrich with entity names
       const enrichedItems = await Promise.all(
@@ -164,11 +175,13 @@ export function useNextBestAction() {
         .eq('user_id', user.id);
       
       if (error) {
-        setError({ code: 'FETCH_NBA_QUEUE_ERROR', message: error.message, details: { originalError: String(error) } });
+        const kbError = createKBError('FETCH_NBA_QUEUE_ERROR', error.message, { originalError: error });
+        setError(kbError);
         throw error;
       }
       
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
       
       const pending = data.filter(d => d.status === 'pending').length;
       const completed = data.filter(d => d.status === 'completed').length;
@@ -218,8 +231,8 @@ export function useNextBestAction() {
       queryClient.invalidateQueries({ queryKey: ['nba-stats'] });
     },
     onError: (err) => {
-      const message = err instanceof Error ? err.message : 'Error generating NBAs';
-      setError({ code: 'GENERATE_NBAS_ERROR', message, details: { originalError: String(err) } });
+      const kbError = createKBError('GENERATE_NBAS_ERROR', parseError(err).message, { originalError: err });
+      setError(kbError);
       console.error('Error generating NBAs:', err);
       toast.error('Error al generar acciones');
     },
@@ -268,8 +281,8 @@ export function useNextBestAction() {
       }
     },
     onError: (err) => {
-      const message = err instanceof Error ? err.message : 'Error executing NBA';
-      setError({ code: 'EXECUTE_NBA_ERROR', message, details: { originalError: String(err) } });
+      const kbError = createKBError('EXECUTE_NBA_ERROR', parseError(err).message, { originalError: err });
+      setError(kbError);
       console.error('Error executing NBA:', err);
       toast.error('Error al ejecutar la acción');
     },
@@ -355,9 +368,15 @@ export function useNextBestAction() {
     getTopNBAs,
     getNBAsByCategory,
     refetchQueue,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError
   };
 }

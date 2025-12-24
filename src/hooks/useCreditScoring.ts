@@ -1,13 +1,9 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from './core';
 
-// === ERROR TIPADO KB ===
-export interface CreditScoringError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+export type CreditScoringError = KBError;
 
 export interface CreditScoreResult {
   score: number; // 0-1000
@@ -37,17 +33,37 @@ export interface ExplainabilityReport {
 }
 
 export function useCreditScoring() {
-  const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<CreditScoreResult | null>(null);
-  // === ESTADO KB ===
-  const [error, setError] = useState<CreditScoringError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+    setResult(null);
+  }, []);
 
   const calculateScore = useCallback(async (companyId: string) => {
-    setIsLoading(true);
+    const startTime = new Date();
+    setStatus('loading');
     setError(null);
 
     try {
@@ -58,22 +74,43 @@ export function useCreditScoring() {
       if (fnError) throw fnError;
 
       setResult(data);
+      setStatus('success');
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      
+      collectTelemetry({
+        hookName: 'useCreditScoring',
+        operationName: 'calculateScore',
+        startTime,
+        endTime: new Date(),
+        durationMs: Date.now() - startTime.getTime(),
+        status: 'success',
+        retryCount: 0
+      });
+      
       toast.success('Scoring creditici calculat correctament');
       return data;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error calculant scoring';
-      setError({
-        code: 'CALCULATE_SCORE_ERROR',
-        message,
-        details: { originalError: String(err) }
+      const kbError = createKBError('CALCULATE_SCORE_ERROR', parseError(err).message, { originalError: err });
+      setError(kbError);
+      setStatus('error');
+      
+      collectTelemetry({
+        hookName: 'useCreditScoring',
+        operationName: 'calculateScore',
+        startTime,
+        endTime: new Date(),
+        durationMs: Date.now() - startTime.getTime(),
+        status: 'error',
+        error: kbError,
+        retryCount
       });
-      toast.error(message);
+      
+      toast.error(kbError.message);
       return null;
-    } finally {
-      setIsLoading(false);
     }
-  }, []);
+  }, [retryCount]);
 
   const getRatingColor = useCallback((rating: CreditScoreResult['rating']): string => {
     const colors: Record<CreditScoreResult['rating'], string> = {
@@ -94,11 +131,19 @@ export function useCreditScoring() {
   return {
     calculateScore,
     result,
+    data: result,
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
     isLoading,
-    // === KB ADDITIONS ===
+    isSuccess,
+    isError,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
+    reset,
     getRatingColor
   };
 }
