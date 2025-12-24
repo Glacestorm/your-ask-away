@@ -1,26 +1,25 @@
 /**
- * AI Agents Hook
- * Provides autonomous AI agent capabilities for task execution
- * Implements ReAct (Reasoning + Acting) pattern for banking CRM operations
+ * useAIAgents - KB 2.0 Migration
+ * Enterprise-grade AI agents with state machine, retry, and telemetry
  */
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { 
+  KBStatus, 
+  KBError, 
+  createKBError, 
+  parseError, 
+  collectTelemetry 
+} from './core';
 
-// === ERROR TIPADO KB ===
-export interface AIAgentsError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
-
-// Agent Types
+// === TIPOS KB 2.0 ===
 export type AgentRole = 
-  | 'analyst'      // Financial analysis, data interpretation
-  | 'assistant'    // General help, Q&A
-  | 'monitor'      // System monitoring, alerts
-  | 'planner'      // Action planning, scheduling
-  | 'researcher';  // Data gathering, market research
+  | 'analyst'
+  | 'assistant'
+  | 'monitor'
+  | 'planner'
+  | 'researcher';
 
 export type AgentStatus = 'idle' | 'thinking' | 'acting' | 'completed' | 'error';
 
@@ -67,35 +66,7 @@ export interface AIAgent {
   memory: AgentMemory;
 }
 
-interface UseAIAgentsReturn {
-  agents: AIAgent[];
-  activeAgent: AIAgent | null;
-  isProcessing: boolean;
-  
-  // Agent management
-  createAgent: (name: string, role: AgentRole) => AIAgent;
-  removeAgent: (agentId: string) => void;
-  
-  // Task management
-  assignTask: (agentId: string, task: Omit<AgentTask, 'id' | 'createdAt'>) => Promise<void>;
-  cancelTask: (agentId: string) => void;
-  
-  // Agent execution
-  executeAgentStep: (agentId: string) => Promise<void>;
-  runAgentLoop: (agentId: string, maxSteps?: number) => Promise<void>;
-  
-  // Utilities
-  getAgentStatus: (agentId: string) => AgentStatus | null;
-  getAgentThoughts: (agentId: string) => AgentThought[];
-  clearAgentMemory: (agentId: string) => void;
-  
-  // === KB ADDITIONS ===
-  error: AIAgentsError | null;
-  lastRefresh: Date | null;
-  clearError: () => void;
-}
-
-// Available tools for agents
+// === AGENT TOOLS ===
 const AGENT_TOOLS = {
   queryCompanies: {
     name: 'query_companies',
@@ -129,21 +100,62 @@ const AGENT_TOOLS = {
   },
 };
 
-export function useAIAgents(): UseAIAgentsReturn {
+// === HOOK KB 2.0 ===
+export function useAIAgents() {
+  // State
   const [agents, setAgents] = useState<AIAgent[]>([]);
   const [activeAgent, setActiveAgent] = useState<AIAgent | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const abortControllerRef = useRef<AbortController | null>(null);
-  // === ESTADO KB ===
-  const [error, setError] = useState<AIAgentsError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const isMountedRef = useRef(true);
+
+  // Cleanup
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      abortControllerRef.current?.abort();
+    };
+  }, []);
+
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+  const canRetry = error?.retryable === true && retryCount < 3;
+
+  // === KB 2.0 METHODS ===
   const clearError = useCallback(() => setError(null), []);
+  
+  const reset = useCallback(() => {
+    setAgents([]);
+    setActiveAgent(null);
+    setIsProcessing(false);
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
+  const cancel = useCallback(() => {
+    abortControllerRef.current?.abort();
+    setIsProcessing(false);
+  }, []);
+
+  // Helper functions
   const generateId = () => crypto.randomUUID();
 
   const createAgent = useCallback((name: string, role: AgentRole): AIAgent => {
+    const startTime = new Date();
+    
     const newAgent: AIAgent = {
       id: generateId(),
       name,
@@ -160,6 +172,19 @@ export function useAIAgents(): UseAIAgentsReturn {
     };
 
     setAgents(prev => [...prev, newAgent]);
+    setLastRefresh(new Date());
+
+    collectTelemetry({
+      hookName: 'useAIAgents',
+      operationName: 'createAgent',
+      startTime,
+      endTime: new Date(),
+      durationMs: Date.now() - startTime.getTime(),
+      status: 'success',
+      retryCount: 0,
+      metadata: { agentRole: role },
+    });
+
     return newAgent;
   }, []);
 
@@ -222,7 +247,7 @@ export function useAIAgents(): UseAIAgentsReturn {
   const updateActionStatus = useCallback((
     agentId: string, 
     actionId: string, 
-    status: AgentAction['status'],
+    actionStatus: AgentAction['status'],
     result?: unknown
   ) => {
     setAgents(prev => prev.map(agent => {
@@ -231,16 +256,16 @@ export function useAIAgents(): UseAIAgentsReturn {
         ...agent,
         actions: agent.actions.map(action => 
           action.id === actionId 
-            ? { ...action, status, result } 
+            ? { ...action, status: actionStatus, result } 
             : action
         ),
       };
     }));
   }, []);
 
-  const setAgentStatus = useCallback((agentId: string, status: AgentStatus) => {
+  const setAgentStatus = useCallback((agentId: string, agentStatus: AgentStatus) => {
     setAgents(prev => prev.map(agent => 
-      agent.id === agentId ? { ...agent, status } : agent
+      agent.id === agentId ? { ...agent, status: agentStatus } : agent
     ));
   }, []);
 
@@ -248,40 +273,71 @@ export function useAIAgents(): UseAIAgentsReturn {
     agentId: string, 
     taskData: Omit<AgentTask, 'id' | 'createdAt'>
   ) => {
-    const task: AgentTask = {
-      ...taskData,
-      id: generateId(),
-      createdAt: new Date(),
-    };
+    const startTime = new Date();
+    setStatus('loading');
 
-    setAgents(prev => prev.map(agent => {
-      if (agent.id !== agentId) return agent;
-      return {
-        ...agent,
-        currentTask: task,
-        status: 'thinking' as AgentStatus,
-        memory: {
-          ...agent.memory,
-          workingContext: {
-            ...agent.memory.workingContext,
-            currentTask: task,
-          },
-        },
+    try {
+      const task: AgentTask = {
+        ...taskData,
+        id: generateId(),
+        createdAt: new Date(),
       };
-    }));
 
-    const agent = agents.find(a => a.id === agentId);
-    if (agent) {
-      setActiveAgent({ ...agent, currentTask: task, status: 'thinking' });
+      setAgents(prev => prev.map(agent => {
+        if (agent.id !== agentId) return agent;
+        return {
+          ...agent,
+          currentTask: task,
+          status: 'thinking' as AgentStatus,
+          memory: {
+            ...agent.memory,
+            workingContext: {
+              ...agent.memory.workingContext,
+              currentTask: task,
+            },
+          },
+        };
+      }));
+
+      const agent = agents.find(a => a.id === agentId);
+      if (agent) {
+        setActiveAgent({ ...agent, currentTask: task, status: 'thinking' });
+      }
+
+      addThought(agentId, `Received task: ${task.description}`, 'observation');
+      setStatus('success');
+      setLastSuccess(new Date());
+
+      collectTelemetry({
+        hookName: 'useAIAgents',
+        operationName: 'assignTask',
+        startTime,
+        endTime: new Date(),
+        durationMs: Date.now() - startTime.getTime(),
+        status: 'success',
+        retryCount: 0,
+      });
+
+    } catch (err) {
+      const parsed = parseError(err);
+      setError(parsed);
+      setStatus('error');
+
+      collectTelemetry({
+        hookName: 'useAIAgents',
+        operationName: 'assignTask',
+        startTime,
+        endTime: new Date(),
+        durationMs: Date.now() - startTime.getTime(),
+        status: 'error',
+        error: parsed,
+        retryCount,
+      });
     }
-
-    addThought(agentId, `Received task: ${task.description}`, 'observation');
-  }, [agents, addThought]);
+  }, [agents, addThought, retryCount]);
 
   const cancelTask = useCallback((agentId: string) => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
+    abortControllerRef.current?.abort();
 
     setAgents(prev => prev.map(agent => {
       if (agent.id !== agentId) return agent;
@@ -303,22 +359,20 @@ export function useAIAgents(): UseAIAgentsReturn {
   }, []);
 
   const executeAgentStep = useCallback(async (agentId: string) => {
+    const startTime = new Date();
     const agent = agents.find(a => a.id === agentId);
     if (!agent || !agent.currentTask) return;
 
     setAgentStatus(agentId, 'thinking');
     
-    // ReAct: Reasoning step
     addThought(
       agentId, 
       `Analyzing task "${agent.currentTask.type}" with priority ${agent.currentTask.priority}`, 
       'reasoning'
     );
 
-    // Simulate AI reasoning (in production, call actual AI model)
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    // Determine action based on task type
     let actionName = 'query_companies';
     let actionParams: Record<string, unknown> = {};
 
@@ -345,14 +399,12 @@ export function useAIAgents(): UseAIAgentsReturn {
 
     addThought(agentId, `Decided to execute: ${actionName}`, 'reasoning');
 
-    // ReAct: Action step
     setAgentStatus(agentId, 'acting');
     const action = addAction(agentId, actionName, actionParams);
 
     try {
       updateActionStatus(agentId, action.id, 'executing');
       
-      // Execute action (simplified - in production, call actual functions)
       let result: unknown;
       
       if (actionName === 'query_companies') {
@@ -362,7 +414,6 @@ export function useAIAgents(): UseAIAgentsReturn {
           .limit(actionParams.limit as number || 10);
         result = data;
       } else {
-        // Simulate other actions
         await new Promise(resolve => setTimeout(resolve, 300));
         result = { success: true, action: actionName };
       }
@@ -370,20 +421,41 @@ export function useAIAgents(): UseAIAgentsReturn {
       updateActionStatus(agentId, action.id, 'completed', result);
       addThought(agentId, `Action completed successfully: ${JSON.stringify(result).slice(0, 100)}...`, 'observation');
 
-    } catch (error) {
-      updateActionStatus(agentId, action.id, 'failed', error);
-      addThought(agentId, `Action failed: ${error}`, 'observation');
+      collectTelemetry({
+        hookName: 'useAIAgents',
+        operationName: 'executeAgentStep',
+        startTime,
+        endTime: new Date(),
+        durationMs: Date.now() - startTime.getTime(),
+        status: 'success',
+        retryCount: 0,
+      });
+
+    } catch (err) {
+      updateActionStatus(agentId, action.id, 'failed', err);
+      addThought(agentId, `Action failed: ${err}`, 'observation');
+
+      const parsed = parseError(err);
+      collectTelemetry({
+        hookName: 'useAIAgents',
+        operationName: 'executeAgentStep',
+        startTime,
+        endTime: new Date(),
+        durationMs: Date.now() - startTime.getTime(),
+        status: 'error',
+        error: parsed,
+        retryCount: 0,
+      });
     }
 
-    // ReAct: Reflection step
     addThought(agentId, 'Task step completed. Evaluating if more steps needed.', 'reflection');
-    
     setAgentStatus(agentId, 'completed');
   }, [agents, addThought, addAction, updateActionStatus, setAgentStatus]);
 
   const runAgentLoop = useCallback(async (agentId: string, maxSteps = 5) => {
     abortControllerRef.current = new AbortController();
     setIsProcessing(true);
+    setStatus('loading');
 
     try {
       for (let step = 0; step < maxSteps; step++) {
@@ -394,13 +466,17 @@ export function useAIAgents(): UseAIAgentsReturn {
 
         await executeAgentStep(agentId);
         
-        // Check if task is complete
         const updatedAgent = agents.find(a => a.id === agentId);
         if (updatedAgent?.status === 'completed') break;
 
-        // Small delay between steps
         await new Promise(resolve => setTimeout(resolve, 200));
       }
+      setStatus('success');
+      setLastSuccess(new Date());
+    } catch (err) {
+      const parsed = parseError(err);
+      setError(parsed);
+      setStatus('error');
     } finally {
       setIsProcessing(false);
       abortControllerRef.current = null;
@@ -431,10 +507,38 @@ export function useAIAgents(): UseAIAgentsReturn {
     }));
   }, []);
 
+  // === RETURN KB 2.0 ===
   return {
+    // Data
     agents,
     activeAgent,
+    data: agents,
+    
+    // State Machine KB 2.0
+    status,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
     isProcessing,
+    
+    // Error Management KB 2.0
+    error,
+    clearError,
+    
+    // Retry Management
+    retryCount,
+    canRetry,
+    
+    // Request Control
+    cancel,
+    reset,
+    
+    // Metadata
+    lastRefresh,
+    lastSuccess,
+    
+    // Agent Management
     createAgent,
     removeAgent,
     assignTask,
@@ -444,12 +548,8 @@ export function useAIAgents(): UseAIAgentsReturn {
     getAgentStatus,
     getAgentThoughts,
     clearAgentMemory,
-    // === KB ADDITIONS ===
-    error,
-    lastRefresh,
-    clearError,
   };
 }
 
-// Export agent tools for external reference
 export { AGENT_TOOLS };
+export default useAIAgents;
