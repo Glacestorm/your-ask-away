@@ -8,6 +8,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { logAuthEvent } from '@/lib/security/auditLogger';
 
+// === ERROR TIPADO KB ===
+export interface MFAEnforcementError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 interface MFAStatus {
   required: boolean;
   enabled: boolean;
@@ -23,6 +30,10 @@ interface UseMFAEnforcementReturn {
   checkMFAStatus: () => Promise<void>;
   dismissMFAReminder: (hours?: number) => Promise<void>;
   completeMFASetup: (method: 'totp' | 'webauthn') => Promise<boolean>;
+  // === KB ADDITIONS ===
+  error: MFAEnforcementError | null;
+  lastRefresh: Date | null;
+  clearError: () => void;
 }
 
 // Admin roles that require MFA
@@ -37,6 +48,12 @@ export function useMFAEnforcement(): UseMFAEnforcementReturn | null {
   const [showMFASetup, setShowMFASetup] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  // === ESTADO KB ===
+  const [error, setError] = useState<MFAEnforcementError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
   
   // Safely get auth context
   useEffect(() => {
@@ -225,5 +242,9 @@ export function useMFAEnforcement(): UseMFAEnforcementReturn | null {
     checkMFAStatus,
     dismissMFAReminder,
     completeMFASetup,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }

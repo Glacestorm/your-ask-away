@@ -3,8 +3,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { queryKeys, invalidateRelatedQueries } from '@/lib/queryClient';
 import { useRealtimeChannel, REALTIME_CHANNELS } from './useRealtimeChannel';
 import { useAuth } from './useAuth';
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 
+// === ERROR TIPADO KB ===
+export interface NotificationsQueryError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 interface Notification {
   id: string;
   user_id: string;
@@ -20,6 +26,12 @@ interface Notification {
 export function useNotificationsQuery() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<NotificationsQueryError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   // Set up realtime subscription
   const subscriptions = useMemo(
@@ -119,5 +131,9 @@ export function useNotificationsQuery() {
     markAsRead,
     markAllAsRead,
     deleteNotification,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
