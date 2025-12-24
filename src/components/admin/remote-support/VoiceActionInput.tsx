@@ -288,7 +288,7 @@ export function VoiceActionInput({ onActionParsed, onSessionCommand, disabled }:
       </div>
 
       {error && (
-        <p className="text-xs text-destructive">{error}</p>
+        <p className="text-xs text-destructive">{error.message}</p>
       )}
 
       {lastTranscript && !isRecording && (
