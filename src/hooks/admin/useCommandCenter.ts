@@ -7,6 +7,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
 // === INTERFACES ===
 export interface SystemMetric {
@@ -73,32 +74,50 @@ export interface CommandCenterContext {
   timeRange?: '1h' | '6h' | '24h' | '7d' | '30d';
 }
 
-// KB Pattern: Typed error interface
-export interface CommandCenterError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// Re-export for backwards compat
+export type CommandCenterError = KBError;
 
 // === HOOK ===
 export function useCommandCenter() {
   // Estado
-  const [isLoading, setIsLoading] = useState(false);
   const [metrics, setMetrics] = useState<SystemMetric[]>([]);
   const [alerts, setAlerts] = useState<ActiveAlert[]>([]);
   const [systemHealth, setSystemHealth] = useState<SystemHealth | null>(null);
   const [liveActivity, setLiveActivity] = useState<LiveActivity[]>([]);
-  // KB Pattern: Typed error state
-  const [error, setError] = useState<CommandCenterError | null>(null);
+
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
 
   // Refs para auto-refresh
   const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
 
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
+
   // === GET DASHBOARD DATA ===
   const getDashboardData = useCallback(async (context: CommandCenterContext = {}) => {
-    setIsLoading(true);
+    setStatus('loading');
     setError(null);
+    const startTime = Date.now();
 
     try {
       const { data: fnData, error: fnError } = await supabase.functions.invoke(
@@ -125,17 +144,22 @@ export function useCommandCenter() {
         setSystemHealth(fnData.data.systemHealth);
         setLiveActivity(fnData.data.activity || []);
         setLastRefresh(new Date());
+        setStatus('success');
+        setLastSuccess(new Date());
+        setRetryCount(0);
+        collectTelemetry('useCommandCenter', 'getDashboardData', 'success', Date.now() - startTime);
         return fnData.data;
       }
 
       throw new Error(fnData?.error || 'Error al obtener datos del dashboard');
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error desconocido';
-      setError({ code: 'DASHBOARD_ERROR', message, details: { originalError: String(err) } });
+      const kbError = parseError(err);
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useCommandCenter', 'getDashboardData', 'error', Date.now() - startTime, kbError);
       console.error('[useCommandCenter] getDashboardData error:', err);
       return null;
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -272,11 +296,6 @@ export function useCommandCenter() {
     return () => stopAutoRefresh();
   }, [stopAutoRefresh]);
 
-  // KB Pattern: Clear error
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-
   // === RETURN ===
   return {
     // Estado
@@ -296,6 +315,14 @@ export function useCommandCenter() {
     startAutoRefresh,
     stopAutoRefresh,
     clearError,
+    // === KB 2.0 ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
+    lastSuccess,
+    retryCount,
+    reset,
   };
 }
 
