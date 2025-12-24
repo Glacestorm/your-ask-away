@@ -2,13 +2,10 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
-// === ERROR TIPADO KB ===
-export interface RevenueIntelligenceError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// === ERROR TIPADO KB 2.0 ===
+export type RevenueIntelligenceError = KBError;
 
 export interface RevenueEvent {
   id: string;
@@ -91,28 +88,56 @@ export interface RevenueCohort {
 
 export const useRevenueIntelligence = () => {
   const queryClient = useQueryClient();
-  // === ESTADO KB ===
-  const [error, setError] = useState<RevenueIntelligenceError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoadingState = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   // Fetch revenue events
   const { data: revenueEvents, isLoading: eventsLoading, refetch: refetchEvents } = useQuery({
     queryKey: ['revenue-events'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('revenue_events')
-        .select(`
-          *,
-          company:companies(name)
-        `)
-        .order('event_date', { ascending: false })
-        .limit(500);
-      
-      if (error) throw error;
-      return data as RevenueEvent[];
+      const startTime = Date.now();
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('revenue_events')
+          .select(`
+            *,
+            company:companies(name)
+          `)
+          .order('event_date', { ascending: false })
+          .limit(500);
+        
+        if (fetchError) throw fetchError;
+        
+        collectTelemetry('useRevenueIntelligence', 'fetchEvents', 'success', Date.now() - startTime);
+        return data as RevenueEvent[];
+      } catch (err) {
+        const kbError = parseError(err);
+        collectTelemetry('useRevenueIntelligence', 'fetchEvents', 'error', Date.now() - startTime, kbError);
+        throw err;
+      }
     }
   });
 
@@ -120,19 +145,28 @@ export const useRevenueIntelligence = () => {
   const { data: mrrSnapshots, isLoading: snapshotsLoading } = useQuery({
     queryKey: ['mrr-snapshots'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('mrr_snapshots')
-        .select('*')
-        .order('snapshot_date', { ascending: false })
-        .limit(24);
-      
-      if (error) {
-        setError({ code: 'FETCH_REVENUE_EVENTS_ERROR', message: error.message, details: { originalError: String(error) } });
-        throw error;
+      const startTime = Date.now();
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('mrr_snapshots')
+          .select('*')
+          .order('snapshot_date', { ascending: false })
+          .limit(24);
+        
+        if (fetchError) throw fetchError;
+        
+        setLastRefresh(new Date());
+        setLastSuccess(new Date());
+        setError(null);
+        collectTelemetry('useRevenueIntelligence', 'fetchSnapshots', 'success', Date.now() - startTime);
+        return data as MRRSnapshot[];
+      } catch (err) {
+        const kbError = parseError(err);
+        setError(kbError);
+        setRetryCount(prev => prev + 1);
+        collectTelemetry('useRevenueIntelligence', 'fetchSnapshots', 'error', Date.now() - startTime, kbError);
+        throw err;
       }
-      
-      setLastRefresh(new Date());
-      return data as MRRSnapshot[];
     }
   });
 
@@ -252,7 +286,7 @@ export const useRevenueIntelligence = () => {
     mrrSnapshots,
     cohorts,
     currentMetrics,
-    isLoading: eventsLoading || snapshotsLoading || cohortsLoading,
+    isLoading: eventsLoading || snapshotsLoading || cohortsLoading || isLoadingState,
     refetchEvents,
     createEvent: createEventMutation.mutateAsync,
     createSnapshot: createSnapshotMutation.mutateAsync,
@@ -260,9 +294,16 @@ export const useRevenueIntelligence = () => {
     getMRRTrendData,
     getRevenueBySegment,
     isCreatingEvent: createEventMutation.isPending,
-    // === KB ADDITIONS ===
+    // === KB 2.0 STATE ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
-    clearError
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
   };
 };
