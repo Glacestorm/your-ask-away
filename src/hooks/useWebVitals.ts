@@ -8,6 +8,13 @@ import {
   clearStoredMetrics
 } from '@/lib/webVitals';
 
+// === ERROR TIPADO KB ===
+export interface WebVitalsError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 interface WebVitalsState {
   LCP: WebVitalsMetric | null;
   FID: WebVitalsMetric | null;
@@ -36,6 +43,12 @@ export function useWebVitals(options: UseWebVitalsOptions = {}) {
     FCP: null,
     TTFB: null,
   });
+  // === ESTADO KB ===
+  const [error] = useState<WebVitalsError | null>(null);
+  const [lastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => {}, []);
 
   useEffect(() => {
     const handleMetric = (metric: WebVitalsMetric) => {
@@ -79,6 +92,10 @@ export function useWebVitals(options: UseWebVitalsOptions = {}) {
     overallScore: getOverallScore(),
     getHistory,
     clearHistory,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
 

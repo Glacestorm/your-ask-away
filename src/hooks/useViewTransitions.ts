@@ -7,6 +7,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+// === ERROR TIPADO KB ===
+export interface ViewTransitionsError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 interface ViewTransitionOptions {
   skipTransition?: boolean;
   transitionName?: string;
@@ -17,6 +24,10 @@ interface UseViewTransitionsReturn {
   isTransitioning: boolean;
   navigateWithTransition: (to: string, options?: ViewTransitionOptions) => void;
   startViewTransition: (callback: () => void | Promise<void>) => void;
+  // === KB ADDITIONS ===
+  error: ViewTransitionsError | null;
+  lastRefresh: Date | null;
+  clearError: () => void;
 }
 
 // Check if View Transitions API is supported
@@ -29,6 +40,12 @@ export function useViewTransitions(): UseViewTransitionsReturn {
   const navigate = useNavigate();
   const location = useLocation();
   const isSupported = isViewTransitionsSupported();
+  // === ESTADO KB ===
+  const [error] = useState<ViewTransitionsError | null>(null);
+  const [lastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => {}, []);
 
   // Add CSS for view transitions on mount
   useEffect(() => {
@@ -147,6 +164,10 @@ export function useViewTransitions(): UseViewTransitionsReturn {
     isTransitioning,
     navigateWithTransition,
     startViewTransition,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
 
