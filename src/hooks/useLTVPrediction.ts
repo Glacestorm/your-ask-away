@@ -1,6 +1,14 @@
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+// === ERROR TIPADO KB ===
+export interface LTVPredictionError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 export interface LTVPrediction {
   id: string;
@@ -29,21 +37,40 @@ export interface LTVPrediction {
 
 export const useLTVPrediction = () => {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<LTVPredictionError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const { data: predictions, isLoading, refetch } = useQuery({
     queryKey: ['ltv-predictions'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('ltv_predictions')
-        .select(`
-          *,
-          company:companies(name)
-        `)
-        .order('prediction_date', { ascending: false })
-        .limit(100);
-      
-      if (error) throw error;
-      return data as LTVPrediction[];
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('ltv_predictions')
+          .select(`
+            *,
+            company:companies(name)
+          `)
+          .order('prediction_date', { ascending: false })
+          .limit(100);
+        
+        if (fetchError) throw fetchError;
+        
+        setLastRefresh(new Date());
+        setError(null);
+        return data as LTVPrediction[];
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Error desconocido';
+        setError({
+          code: 'FETCH_PREDICTIONS_ERROR',
+          message,
+          details: { originalError: String(err) }
+        });
+        throw err;
+      }
     }
   });
 
@@ -52,19 +79,26 @@ export const useLTVPrediction = () => {
       companyId: string;
       customerData: Record<string, unknown>;
     }) => {
-      const { data, error } = await supabase.functions.invoke('predict-ltv', {
+      const { data, error: invokeError } = await supabase.functions.invoke('predict-ltv', {
         body: params
       });
       
-      if (error) throw error;
+      if (invokeError) throw invokeError;
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ltv-predictions'] });
+      setLastRefresh(new Date());
       toast.success('Predicción LTV calculada');
     },
-    onError: (error) => {
-      toast.error('Error al calcular LTV: ' + error.message);
+    onError: (err) => {
+      const message = err instanceof Error ? err.message : 'Error al calcular LTV';
+      setError({
+        code: 'PREDICT_LTV_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
+      toast.error('Error al calcular LTV: ' + message);
     }
   });
 
@@ -122,6 +156,10 @@ export const useLTVPrediction = () => {
     getAverageLTVToCAC,
     getLTVBySegment,
     getHighValueCustomers,
-    getChurnRiskCustomers
+    getChurnRiskCustomers,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError
   };
 };

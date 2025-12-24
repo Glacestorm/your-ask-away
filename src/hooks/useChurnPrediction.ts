@@ -2,6 +2,13 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// === ERROR TIPADO KB ===
+export interface ChurnPredictionError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export interface ChurnPrediction {
   company_id: string;
   company_name: string;
@@ -35,7 +42,12 @@ export interface RetentionAction {
 export function useChurnPrediction() {
   const [isLoading, setIsLoading] = useState(false);
   const [predictions, setPredictions] = useState<ChurnPrediction[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  // === ESTADO KB ===
+  const [error, setError] = useState<ChurnPredictionError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const predictChurn = useCallback(async (
     companyIds?: string[],
@@ -61,6 +73,7 @@ export function useChurnPrediction() {
       if (fnError) throw fnError;
 
       setPredictions(data.predictions || []);
+      setLastRefresh(new Date());
       
       const atRisk = (data.predictions || []).filter(
         (p: ChurnPrediction) => p.risk_level === 'high' || p.risk_level === 'critical'
@@ -75,7 +88,11 @@ export function useChurnPrediction() {
       return data.predictions;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error en predicció churn';
-      setError(message);
+      setError({
+        code: 'PREDICT_CHURN_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
       toast.error(message);
       return [];
     } finally {
@@ -101,7 +118,10 @@ export function useChurnPrediction() {
     predictChurn,
     predictions,
     isLoading,
+    // === KB ADDITIONS ===
     error,
+    lastRefresh,
+    clearError,
     getRiskColor,
     getTotalValueAtRisk
   };
