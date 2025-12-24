@@ -279,11 +279,11 @@ export function useScopedContainer(): IContainer {
 export function useServiceRegistration() {
   const container = useContainer();
 
-  const register = useCallback(<T>(descriptor: ServiceDescriptor<T>) => {
+  const register = useCallback(<T,>(descriptor: ServiceDescriptor<T>) => {
     container.register(descriptor);
   }, [container]);
 
-  const registerSingleton = useCallback(<T>(
+  const registerSingleton = useCallback(<T,>(
     identifier: ServiceIdentifier<T>,
     factory: () => T,
     options?: Partial<ServiceDescriptor<T>>
@@ -296,7 +296,7 @@ export function useServiceRegistration() {
     });
   }, [container]);
 
-  const registerTransient = useCallback(<T>(
+  const registerTransient = useCallback(<T,>(
     identifier: ServiceIdentifier<T>,
     factory: () => T,
     options?: Partial<ServiceDescriptor<T>>
@@ -309,7 +309,7 @@ export function useServiceRegistration() {
     });
   }, [container]);
 
-  const registerScoped = useCallback(<T>(
+  const registerScoped = useCallback(<T,>(
     identifier: ServiceIdentifier<T>,
     factory: () => T,
     options?: Partial<ServiceDescriptor<T>>
@@ -402,18 +402,19 @@ export function createServiceIdentifier<T>(name: string): ServiceIdentifier<T> {
 const metadataKey = Symbol('inject:metadata');
 
 export function Injectable(options?: Partial<ServiceDescriptor>): ClassDecorator {
-  return (target: Function) => {
-    Reflect.defineMetadata?.(metadataKey, options || {}, target);
+  return ((target: Function) => {
+    // Store metadata on the function itself
+    Object.defineProperty(target, metadataKey, { value: options || {}, writable: true });
     return target;
-  };
+  }) as ClassDecorator;
 }
 
 export function Inject(identifier: ServiceIdentifier): ParameterDecorator {
-  return (target: Object, propertyKey: string | symbol | undefined, parameterIndex: number) => {
-    const existingInjections = Reflect.getMetadata?.(metadataKey, target) || [];
+  return ((target: Object, _propertyKey: string | symbol | undefined, parameterIndex: number) => {
+    const existingInjections: unknown[] = (target as { [key: symbol]: unknown[] })[metadataKey] || [];
     existingInjections[parameterIndex] = identifier;
-    Reflect.defineMetadata?.(metadataKey, existingInjections, target);
-  };
+    Object.defineProperty(target, metadataKey, { value: existingInjections, writable: true });
+  }) as ParameterDecorator;
 }
 
 // ============================================================================
@@ -454,7 +455,7 @@ export function createMockContainer(overrides: Map<ServiceIdentifier, unknown> =
   
   return {
     register: container.register.bind(container),
-    resolve: <T>(identifier: ServiceIdentifier<T>): T => {
+    resolve: <T,>(identifier: ServiceIdentifier<T>): T => {
       if (overrides.has(identifier)) {
         return overrides.get(identifier) as T;
       }

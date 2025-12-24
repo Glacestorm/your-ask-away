@@ -155,11 +155,11 @@ class DefaultCommandBus implements CommandBus {
     };
 
     // Apply middleware
-    let chain = executeHandler;
+    let chain: () => Promise<CommandResult<TResult>> = executeHandler;
     for (let i = this.middleware.length - 1; i >= 0; i--) {
       const middleware = this.middleware[i];
       const next = chain;
-      chain = () => middleware(command, next);
+      chain = () => middleware(command, next) as Promise<CommandResult<TResult>>;
     }
 
     return chain();
