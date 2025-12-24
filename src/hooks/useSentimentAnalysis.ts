@@ -3,13 +3,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { SentimentAnalysis, SentimentType } from '@/types/satisfaction';
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { parseError, collectTelemetry } from '@/hooks/core/useKBBase';
 
-// === ERROR TIPADO KB ===
-export interface SentimentAnalysisError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+export type SentimentAnalysisError = KBError;
 
 interface AnalyzeSentimentParams {
   content: string;
@@ -34,12 +31,31 @@ interface SentimentResult {
 export function useSentimentAnalysis(companyId?: string) {
   const queryClient = useQueryClient();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  // === ESTADO KB ===
-  const [error, setError] = useState<SentimentAnalysisError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+  
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   // Fetch sentiment history for a company
   const { data: sentimentHistory, isLoading: loadingHistory, refetch } = useQuery({
@@ -63,32 +79,59 @@ export function useSentimentAnalysis(companyId?: string) {
   // Analyze text sentiment
   const analyzeSentiment = useCallback(async (params: AnalyzeSentimentParams): Promise<SentimentResult | null> => {
     setIsAnalyzing(true);
+    setStatus('loading');
+    const startTime = new Date();
     
     try {
-      const { data, error } = await supabase.functions.invoke('analyze-sentiment', {
+      const { data, error: invokeError } = await supabase.functions.invoke('analyze-sentiment', {
         body: params
       });
 
-      if (error) {
-        setError({ code: 'FETCH_SENTIMENT_HISTORY_ERROR', message: error.message, details: { originalError: String(error) } });
-        throw error;
+      if (invokeError) {
+        const kbError = parseError(invokeError);
+        setError(kbError);
+        setStatus('error');
+        collectTelemetry({
+          hookName: 'useSentimentAnalysis',
+          operationName: 'analyzeSentiment',
+          startTime,
+          endTime: new Date(),
+          durationMs: Date.now() - startTime.getTime(),
+          status: 'error',
+          error: kbError,
+          retryCount
+        });
+        throw invokeError;
       }
       
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setStatus('success');
+      setError(null);
+      
+      collectTelemetry({
+        hookName: 'useSentimentAnalysis',
+        operationName: 'analyzeSentiment',
+        startTime,
+        endTime: new Date(),
+        durationMs: Date.now() - startTime.getTime(),
+        status: 'success',
+        retryCount
+      });
       
       if (params.save_result && params.company_id) {
         queryClient.invalidateQueries({ queryKey: ['sentiment-analysis', params.company_id] });
       }
 
       return data.result as SentimentResult;
-    } catch (error) {
-      console.error('Error analyzing sentiment:', error);
+    } catch (err) {
+      console.error('Error analyzing sentiment:', err);
       toast.error('Error al analizar sentimiento');
       return null;
     } finally {
       setIsAnalyzing(false);
     }
-  }, [queryClient]);
+  }, [queryClient, retryCount]);
 
   // Calculate average sentiment for the company
   const averageSentiment = sentimentHistory && sentimentHistory.length > 0
@@ -137,35 +180,59 @@ export function useSentimentAnalysis(companyId?: string) {
     averageSentiment,
     sentimentTrend: sentimentTrend(),
     refetch,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
-    clearError
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset
   };
 }
 
-// === ERROR TIPADO KB BULK ===
-export interface BulkSentimentAnalysisError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+export type BulkSentimentAnalysisError = KBError;
 
 // Hook for bulk sentiment analysis
 export function useBulkSentimentAnalysis() {
   const [progress, setProgress] = useState({ total: 0, completed: 0, current: '' });
   const [isProcessing, setIsProcessing] = useState(false);
-  // === ESTADO KB ===
-  const [error, setError] = useState<BulkSentimentAnalysisError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+  
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   const analyzeVisitNotes = useCallback(async (visitIds: string[]) => {
     setIsProcessing(true);
+    setStatus('loading');
     setError(null);
     setProgress({ total: visitIds.length, completed: 0, current: '' });
+    const startTime = new Date();
 
     const results: SentimentResult[] = [];
 
@@ -199,8 +266,8 @@ export function useBulkSentimentAnalysis() {
           }
         }
       } catch (err) {
-        const message = err instanceof Error ? err.message : `Error analyzing visit ${visitId}`;
-        setError({ code: 'BULK_ANALYZE_ERROR', message, details: { visitId, originalError: String(err) } });
+        const kbError = parseError(err);
+        setError(kbError);
         console.error(`Error analyzing visit ${visitId}:`, err);
       }
 
@@ -209,18 +276,40 @@ export function useBulkSentimentAnalysis() {
 
     setIsProcessing(false);
     setLastRefresh(new Date());
+    setLastSuccess(new Date());
+    setStatus('success');
+    
+    collectTelemetry({
+      hookName: 'useBulkSentimentAnalysis',
+      operationName: 'analyzeVisitNotes',
+      startTime,
+      endTime: new Date(),
+      durationMs: Date.now() - startTime.getTime(),
+      status: 'success',
+      retryCount,
+      metadata: { processedCount: results.length }
+    });
+    
     toast.success(`Análisis completado: ${results.length} visitas procesadas`);
     return results;
-  }, []);
+  }, [retryCount]);
 
   return {
     analyzeVisitNotes,
     isProcessing,
     progress,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
+    reset
   };
 }
 

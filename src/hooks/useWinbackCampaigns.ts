@@ -2,13 +2,10 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { parseError, collectTelemetry } from '@/hooks/core/useKBBase';
 
-// === ERROR TIPADO KB ===
-export interface WinbackCampaignsError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+export type WinbackCampaignsError = KBError;
 
 export interface WinbackCampaign {
   id: string;
@@ -81,31 +78,65 @@ export interface CampaignStats {
 
 export function useWinbackCampaigns() {
   const queryClient = useQueryClient();
-  // === ESTADO KB ===
-  const [error, setError] = useState<WinbackCampaignsError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoadingState = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+  
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   // Fetch campaigns with stats
   const { data: campaigns = [], isLoading, refetch } = useQuery({
     queryKey: ['winback-campaigns'],
     queryFn: async () => {
+      setStatus('loading');
+      const startTime = new Date();
+      
       const { data: campaignsData, error: fetchError } = await supabase
         .from('winback_campaigns')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (fetchError) {
-        setError({
-          code: 'FETCH_CAMPAIGNS_ERROR',
-          message: fetchError.message,
-          details: { originalError: String(fetchError) }
+        const kbError = parseError(fetchError);
+        setError(kbError);
+        setStatus('error');
+        collectTelemetry({
+          hookName: 'useWinbackCampaigns',
+          operationName: 'fetchCampaigns',
+          startTime,
+          endTime: new Date(),
+          durationMs: Date.now() - startTime.getTime(),
+          status: 'error',
+          error: kbError,
+          retryCount
         });
         throw fetchError;
       }
+      
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setStatus('success');
+      setError(null);
 
       // Get stats for each campaign
       const campaignsWithStats = await Promise.all(
@@ -427,10 +458,18 @@ export function useWinbackCampaigns() {
     getABTestResults,
     findChurnedCompanies,
     isCreating: createCampaignMutation.isPending,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoadingState,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
+    reset
   };
 }
 
