@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Globe } from 'lucide-react';
+import { Globe, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage, Language } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
+import { LanguageDrawer } from './LanguageDrawer';
 
 const languages = [
   { code: 'en' as Language, name: 'English', flag: '🇬🇧' },
@@ -14,6 +15,7 @@ const languages = [
 
 export function FloatingLanguageSelector() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const { language, setLanguage } = useLanguage();
   
   const currentLanguage = languages.find(lang => lang.code === language);
@@ -21,6 +23,11 @@ export function FloatingLanguageSelector() {
   const handleSelectLanguage = (langCode: Language) => {
     setLanguage(langCode);
     setIsOpen(false);
+  };
+
+  const handleOpenDrawer = () => {
+    setIsOpen(false);
+    setIsDrawerOpen(true);
   };
 
   return (
@@ -49,7 +56,7 @@ export function FloatingLanguageSelector() {
               className="flex items-center justify-center"
             >
               {isOpen ? (
-                <span className="text-2xl">{currentLanguage?.flag}</span>
+                <span className="text-2xl">{currentLanguage?.flag || '🌐'}</span>
               ) : (
                 <Globe className="w-6 h-6 text-white" />
               )}
@@ -68,7 +75,7 @@ export function FloatingLanguageSelector() {
             transition={{ duration: 0.2 }}
             className="fixed bottom-24 left-6 z-50"
           >
-            <div className="bg-slate-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10 overflow-hidden p-2 min-w-[160px]">
+            <div className="bg-slate-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10 overflow-hidden p-2 min-w-[180px]">
               {languages.map((lang) => (
                 <motion.button
                   key={lang.code}
@@ -92,6 +99,18 @@ export function FloatingLanguageSelector() {
                   )}
                 </motion.button>
               ))}
+
+              {/* More Languages Button */}
+              <motion.button
+                onClick={handleOpenDrawer}
+                whileHover={{ scale: 1.02, x: 4 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-colors text-gray-300 hover:bg-white/10 border-t border-white/10 mt-1 pt-3"
+              >
+                <span className="text-xl">🌐</span>
+                <span className="font-medium">Más idiomas...</span>
+                <MoreHorizontal className="ml-auto w-4 h-4 text-gray-500" />
+              </motion.button>
             </div>
           </motion.div>
         )}
@@ -109,6 +128,9 @@ export function FloatingLanguageSelector() {
           />
         )}
       </AnimatePresence>
+
+      {/* Language Drawer */}
+      <LanguageDrawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen} />
     </>
   );
 }
