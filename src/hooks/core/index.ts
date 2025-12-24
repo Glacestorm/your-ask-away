@@ -345,6 +345,39 @@ export type {
   UseKBWithMiddlewareReturn,
 } from './useKBMiddleware';
 
+// Feature Flags & A/B Testing (KB 4.5)
+export {
+  useFeatureFlag,
+  useIsFeatureEnabled,
+  useFeatureVariant,
+  useABTest,
+  useFeatureFlagContext,
+  useRegisterFlags,
+  useFeatureFlagOverrides,
+  FeatureFlagProvider,
+  FeatureGate,
+  KBFeatureFlags,
+} from './useKBFeatureFlags';
+
+export type {
+  FlagValue,
+  FeatureFlag,
+  FlagVariant,
+  TargetingRule,
+  TargetingOperator,
+  RolloutConfig,
+  UserContext,
+  FlagEvaluation,
+  EvaluationReason,
+  ABTestConfig,
+  ABVariant,
+  ABExposure,
+  FeatureFlagProviderProps,
+  FeatureGateProps,
+  UseABTestOptions,
+  UseABTestReturn,
+} from './useKBFeatureFlags';
+
 // Re-export defaults
 export { default as useKBBaseDefault } from './useKBBase';
 export { default as useKBQueryDefault } from './useKBQuery';
@@ -364,3 +397,4 @@ export { default as useKBPerformanceDefault } from './useKBPerformance';
 export { default as useKBTestingDefault } from './useKBTesting';
 export { default as useKBDevToolsDefault } from './useKBDevTools';
 export { default as useKBMiddlewareDefault } from './useKBMiddleware';
+export { default as useKBFeatureFlagsDefault } from './useKBFeatureFlags';
