@@ -5,13 +5,10 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { observability, getObservability, initObservability } from '@/lib/observability';
+import { KBStatus, KBError } from '@/hooks/core';
 
-// === ERROR TIPADO KB ===
-export interface ObservabilityError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// Re-export for backwards compat
+export type ObservabilityError = KBError;
 
 interface UseObservabilityOptions {
   componentName: string;
@@ -27,12 +24,31 @@ export function useObservability(options: UseObservabilityOptions) {
   const { componentName, trackRenders = true, trackMounts = true, attributes = {} } = options;
   const renderCount = useRef(0);
   const mountSpanId = useRef<string | null>(null);
-  // === ESTADO KB ===
-  const [error, setError] = useState<ObservabilityError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   // Track component mount/unmount
   useEffect(() => {
@@ -147,10 +163,18 @@ export function useObservability(options: UseObservabilityOptions) {
     recordCounter: observability.recordCounter,
     recordGauge: observability.recordGauge,
     recordHistogram: observability.recordHistogram,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
+    reset,
   };
 }
 

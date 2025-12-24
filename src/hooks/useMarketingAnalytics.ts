@@ -1,12 +1,10 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
-// === ERROR TIPADO KB ===
-export interface MarketingAnalyticsError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// Re-export for backwards compat
+export type MarketingAnalyticsError = KBError;
+
 interface MarketingEvent {
   event_name: string;
   event_type: string;
@@ -17,12 +15,30 @@ interface MarketingEvent {
 }
 
 export function useMarketingAnalytics() {
-  // === ESTADO KB ===
-  const [error, setError] = useState<MarketingAnalyticsError | null>(null);
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   const getSessionId = useCallback(() => {
     let sessionId = sessionStorage.getItem('marketing_session_id');
@@ -37,6 +53,10 @@ export function useMarketingAnalytics() {
     eventName: string, 
     eventData: Record<string, string> = {}
   ) => {
+    const startTime = Date.now();
+    setStatus('loading');
+    setError(null);
+
     try {
       const event: MarketingEvent = {
         event_name: eventName,
@@ -48,16 +68,20 @@ export function useMarketingAnalytics() {
       };
 
       await supabase.from('marketing_events').insert([event]);
+      
+      setStatus('success');
       setLastRefresh(new Date());
-      setError(null);
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry('useMarketingAnalytics', 'trackEvent', 'success', Date.now() - startTime);
       console.log(`[Marketing] Tracked: ${eventName}`, eventData);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error tracking event';
-      setError({
-        code: 'TRACK_EVENT_ERROR',
-        message,
-        details: { originalError: String(err) }
-      });
+      const parsedErr = parseError(err);
+      const kbError = createKBError('TRACK_EVENT_ERROR', parsedErr.message, { originalError: String(err) });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useMarketingAnalytics', 'trackEvent', 'error', Date.now() - startTime, kbError);
       console.error('[Marketing] Error tracking event:', err);
     }
   }, [getSessionId]);
@@ -89,9 +113,17 @@ export function useMarketingAnalytics() {
     trackDemoRequest,
     trackLeadCapture,
     trackCTAClick,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
-    clearError
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
   };
 }

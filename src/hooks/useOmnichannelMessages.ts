@@ -2,13 +2,10 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
-// === ERROR TIPADO KB ===
-export interface OmnichannelError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// Re-export for backwards compat
+export type OmnichannelError = KBError;
 
 export type ChannelType = 'email' | 'sms' | 'whatsapp' | 'voice' | 'push' | 'in_app';
 export type MessageStatus = 'pending' | 'sent' | 'delivered' | 'opened' | 'clicked' | 'bounced' | 'failed';
@@ -87,28 +84,67 @@ export interface ChannelConnector {
 
 export function useOmnichannelMessages(companyId?: string, channel?: ChannelType) {
   const queryClient = useQueryClient();
-  // === ESTADO KB ===
-  const [error, setError] = useState<OmnichannelError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoadingState = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   const { data: messages = [], isLoading } = useQuery({
     queryKey: ['omnichannel-messages', companyId, channel],
     queryFn: async () => {
-      let query = supabase
-        .from('omnichannel_messages')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(100);
+      const startTime = Date.now();
+      setStatus('loading');
+      
+      try {
+        let query = supabase
+          .from('omnichannel_messages')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(100);
 
-      if (companyId) query = query.eq('company_id', companyId);
-      if (channel) query = query.eq('channel', channel);
+        if (companyId) query = query.eq('company_id', companyId);
+        if (channel) query = query.eq('channel', channel);
 
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as unknown as OmnichannelMessage[];
+        const { data, error: fetchError } = await query;
+        if (fetchError) throw fetchError;
+        
+        setStatus('success');
+        setLastRefresh(new Date());
+        setLastSuccess(new Date());
+        setRetryCount(0);
+        collectTelemetry('useOmnichannelMessages', 'fetchMessages', 'success', Date.now() - startTime);
+        
+        return data as unknown as OmnichannelMessage[];
+      } catch (err) {
+        const parsedErr = parseError(err);
+        const kbError = createKBError('FETCH_MESSAGES_ERROR', parsedErr.message, { originalError: String(err) });
+        setError(kbError);
+        setStatus('error');
+        setRetryCount(prev => prev + 1);
+        collectTelemetry('useOmnichannelMessages', 'fetchMessages', 'error', Date.now() - startTime, kbError);
+        throw err;
+      }
     },
   });
 
@@ -126,8 +162,6 @@ export function useOmnichannelMessages(companyId?: string, channel?: ChannelType
 
       if (error) throw error;
 
-      // In production, this would trigger an edge function to actually send the message
-      // For now, simulate sending
       await supabase
         .from('omnichannel_messages')
         .update({
@@ -140,10 +174,13 @@ export function useOmnichannelMessages(companyId?: string, channel?: ChannelType
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['omnichannel-messages'] });
+      setLastSuccess(new Date());
       toast.success('Mensaje enviado');
     },
-    onError: (error: any) => {
-      toast.error('Error al enviar: ' + error.message);
+    onError: (err: any) => {
+      const kbError = createKBError('SEND_MESSAGE_ERROR', parseError(err).message, { originalError: err });
+      setError(kbError);
+      toast.error('Error al enviar: ' + kbError.message);
     },
   });
 
@@ -174,43 +211,84 @@ export function useOmnichannelMessages(companyId?: string, channel?: ChannelType
     sendMessage: sendMessage.mutate,
     updateMessageStatus: updateMessageStatus.mutate,
     isSending: sendMessage.isPending,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoadingState,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
+    reset,
   };
 }
 
-// === ERROR TIPADO KB ===
-export interface OmnichannelTemplatesError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// Re-export for backwards compat
+export type OmnichannelTemplatesError = KBError;
 
 export function useOmnichannelTemplates(channel?: ChannelType) {
   const queryClient = useQueryClient();
-  // === ESTADO KB ===
-  const [error, setError] = useState<OmnichannelTemplatesError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoadingState = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   const { data: templates = [], isLoading } = useQuery({
     queryKey: ['omnichannel-templates', channel],
     queryFn: async () => {
-      let query = supabase
-        .from('omnichannel_templates')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const startTime = Date.now();
+      setStatus('loading');
+      
+      try {
+        let query = supabase
+          .from('omnichannel_templates')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      if (channel) query = query.eq('channel', channel);
+        if (channel) query = query.eq('channel', channel);
 
-      const { data, error: fetchError } = await query;
-      if (fetchError) throw fetchError;
-      setLastRefresh(new Date());
-      return data as unknown as OmnichannelTemplate[];
+        const { data, error: fetchError } = await query;
+        if (fetchError) throw fetchError;
+        
+        setStatus('success');
+        setLastRefresh(new Date());
+        setLastSuccess(new Date());
+        setRetryCount(0);
+        collectTelemetry('useOmnichannelTemplates', 'fetchTemplates', 'success', Date.now() - startTime);
+        
+        return data as unknown as OmnichannelTemplate[];
+      } catch (err) {
+        const parsedErr = parseError(err);
+        const kbError = createKBError('FETCH_TEMPLATES_ERROR', parsedErr.message, { originalError: String(err) });
+        setError(kbError);
+        setStatus('error');
+        setRetryCount(prev => prev + 1);
+        throw err;
+      }
     },
   });
 
@@ -231,6 +309,7 @@ export function useOmnichannelTemplates(channel?: ChannelType) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['omnichannel-templates'] });
+      setLastSuccess(new Date());
       toast.success('Plantilla creada');
     },
   });
@@ -292,40 +371,81 @@ export function useOmnichannelTemplates(channel?: ChannelType) {
     deleteTemplate: deleteTemplate.mutate,
     applyTemplate,
     isCreating: createTemplate.isPending,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoadingState,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
+    reset,
   };
 }
 
-// === ERROR TIPADO KB ===
-export interface ChannelConnectorsError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// Re-export for backwards compat
+export type ChannelConnectorsError = KBError;
 
 export function useChannelConnectors() {
   const queryClient = useQueryClient();
-  // === ESTADO KB ===
-  const [error, setError] = useState<ChannelConnectorsError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoadingState = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   const { data: connectors = [], isLoading } = useQuery({
     queryKey: ['channel-connectors'],
     queryFn: async () => {
-      const { data, error: fetchError } = await supabase
-        .from('channel_connectors')
-        .select('*')
-        .order('channel_type');
+      const startTime = Date.now();
+      setStatus('loading');
+      
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('channel_connectors')
+          .select('*')
+          .order('channel_type');
 
-      if (fetchError) throw fetchError;
-      setLastRefresh(new Date());
-      return data as unknown as ChannelConnector[];
+        if (fetchError) throw fetchError;
+        
+        setStatus('success');
+        setLastRefresh(new Date());
+        setLastSuccess(new Date());
+        setRetryCount(0);
+        collectTelemetry('useChannelConnectors', 'fetchConnectors', 'success', Date.now() - startTime);
+        
+        return data as unknown as ChannelConnector[];
+      } catch (err) {
+        const parsedErr = parseError(err);
+        const kbError = createKBError('FETCH_CONNECTORS_ERROR', parsedErr.message, { originalError: String(err) });
+        setError(kbError);
+        setStatus('error');
+        setRetryCount(prev => prev + 1);
+        throw err;
+      }
     },
   });
 
@@ -343,16 +463,15 @@ export function useChannelConnectors() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['channel-connectors'] });
+      setLastSuccess(new Date());
       toast.success('Conector actualizado');
     },
   });
 
   const testConnector = useCallback(async (channelType: ChannelType) => {
     try {
-      // This would call an edge function to test the connector
       toast.info(`Probando conexión ${channelType}...`);
       
-      // Simulate test
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       await supabase
@@ -378,79 +497,126 @@ export function useChannelConnectors() {
     isLoading,
     updateConnector: updateConnector.mutate,
     testConnector,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoadingState,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
+    reset,
   };
 }
 
-// === ERROR TIPADO KB ===
-export interface MessageAnalyticsError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// Re-export for backwards compat
+export type MessageAnalyticsError = KBError;
 
 export function useMessageAnalytics(dateRange?: { start: Date; end: Date }) {
-  // === ESTADO KB ===
-  const [error, setError] = useState<MessageAnalyticsError | null>(null);
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoadingState = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   const query = useQuery({
     queryKey: ['message-analytics', dateRange?.start, dateRange?.end],
     queryFn: async () => {
-      let queryBuilder = supabase
-        .from('omnichannel_messages')
-        .select('channel, status, created_at');
-
-      if (dateRange) {
-        queryBuilder = queryBuilder
-          .gte('created_at', dateRange.start.toISOString())
-          .lte('created_at', dateRange.end.toISOString());
-      }
-
-      const { data, error: fetchError } = await queryBuilder;
-      if (fetchError) throw fetchError;
-
-      // Aggregate stats
-      const channelStats: Record<string, { total: number; delivered: number; opened: number; clicked: number; failed: number }> = {};
+      const startTime = Date.now();
+      setStatus('loading');
       
-      for (const msg of data || []) {
-        if (!channelStats[msg.channel]) {
-          channelStats[msg.channel] = { total: 0, delivered: 0, opened: 0, clicked: 0, failed: 0 };
-        }
-        channelStats[msg.channel].total++;
-        if (msg.status === 'delivered' || msg.status === 'opened' || msg.status === 'clicked') {
-          channelStats[msg.channel].delivered++;
-        }
-        if (msg.status === 'opened' || msg.status === 'clicked') {
-          channelStats[msg.channel].opened++;
-        }
-        if (msg.status === 'clicked') {
-          channelStats[msg.channel].clicked++;
-        }
-        if (msg.status === 'failed' || msg.status === 'bounced') {
-          channelStats[msg.channel].failed++;
-        }
-      }
+      try {
+        let queryBuilder = supabase
+          .from('omnichannel_messages')
+          .select('channel, status, created_at');
 
-      setLastRefresh(new Date());
-      return {
-        total: data?.length || 0,
-        byChannel: channelStats,
-      };
+        if (dateRange) {
+          queryBuilder = queryBuilder
+            .gte('created_at', dateRange.start.toISOString())
+            .lte('created_at', dateRange.end.toISOString());
+        }
+
+        const { data, error: fetchError } = await queryBuilder;
+        if (fetchError) throw fetchError;
+
+        // Aggregate stats
+        const channelStats: Record<string, { total: number; delivered: number; opened: number; clicked: number; failed: number }> = {};
+        
+        for (const msg of data || []) {
+          if (!channelStats[msg.channel]) {
+            channelStats[msg.channel] = { total: 0, delivered: 0, opened: 0, clicked: 0, failed: 0 };
+          }
+          channelStats[msg.channel].total++;
+          if (msg.status === 'delivered' || msg.status === 'opened' || msg.status === 'clicked') {
+            channelStats[msg.channel].delivered++;
+          }
+          if (msg.status === 'opened' || msg.status === 'clicked') {
+            channelStats[msg.channel].opened++;
+          }
+          if (msg.status === 'clicked') {
+            channelStats[msg.channel].clicked++;
+          }
+          if (msg.status === 'failed' || msg.status === 'bounced') {
+            channelStats[msg.channel].failed++;
+          }
+        }
+
+        setStatus('success');
+        setLastRefresh(new Date());
+        setLastSuccess(new Date());
+        setRetryCount(0);
+        collectTelemetry('useMessageAnalytics', 'fetchAnalytics', 'success', Date.now() - startTime);
+
+        return {
+          total: data?.length || 0,
+          byChannel: channelStats,
+        };
+      } catch (err) {
+        const parsedErr = parseError(err);
+        const kbError = createKBError('FETCH_ANALYTICS_ERROR', parsedErr.message, { originalError: String(err) });
+        setError(kbError);
+        setStatus('error');
+        setRetryCount(prev => prev + 1);
+        throw err;
+      }
     },
   });
 
   return {
     ...query,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoadingState,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
+    reset,
   };
 }
