@@ -237,11 +237,12 @@ const StoreNavbar: React.FC = () => {
                   {item.megaMenu ? (
                     <button
                       type="button"
-                      className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                      className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-base font-semibold transition-all duration-200 ${
                         useDarkTheme 
-                          ? 'text-white/90 hover:text-white hover:bg-white/10'
-                          : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
+                          ? 'text-white/95 hover:text-white hover:bg-white/10 hover:shadow-[0_4px_12px_rgba(255,255,255,0.1)] hover:-translate-y-0.5'
+                          : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 hover:shadow-md hover:-translate-y-0.5'
                       }`}
+                      style={{ textShadow: useDarkTheme ? '0 1px 2px rgba(0,0,0,0.3)' : 'none' }}
                     >
                       {item.label}
                       <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${activeMenu === item.id ? 'rotate-180' : ''}`} />
@@ -249,11 +250,12 @@ const StoreNavbar: React.FC = () => {
                   ) : (
                     <Link
                       to={item.href || '#'}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                      className={`px-5 py-2.5 rounded-xl text-base font-semibold transition-all duration-200 ${
                         useDarkTheme 
-                          ? 'text-white/90 hover:text-white hover:bg-white/10'
-                          : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
+                          ? 'text-white/95 hover:text-white hover:bg-white/10 hover:shadow-[0_4px_12px_rgba(255,255,255,0.1)] hover:-translate-y-0.5'
+                          : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 hover:shadow-md hover:-translate-y-0.5'
                       }`}
+                      style={{ textShadow: useDarkTheme ? '0 1px 2px rgba(0,0,0,0.3)' : 'none' }}
                     >
                       {item.label}
                     </Link>
@@ -285,36 +287,40 @@ const StoreNavbar: React.FC = () => {
             </AnimatePresence>
 
             {/* Right Section */}
-            <div className="hidden lg:flex items-center gap-3">
+            <div className="hidden lg:flex items-center gap-4">
               <button
                 onClick={openLogin}
-                className={`px-4 py-2 text-sm font-medium transition-colors duration-200 ${
+                className={`px-5 py-2.5 text-base font-semibold transition-all duration-200 rounded-xl ${
                   useDarkTheme 
-                    ? 'text-white/90 hover:text-white'
-                    : 'text-slate-700 hover:text-slate-900'
+                    ? 'text-white/95 hover:text-white hover:bg-white/10 hover:-translate-y-0.5'
+                    : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 hover:-translate-y-0.5'
                 }`}
+                style={{ textShadow: useDarkTheme ? '0 1px 2px rgba(0,0,0,0.3)' : 'none' }}
               >
                 {t('nav.login')}
               </button>
 
               <button
                 onClick={openRegister}
-                className="px-5 py-2.5 text-sm font-medium bg-primary hover:bg-primary/90 text-white rounded-full transition-all duration-200 shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30"
+                className="px-6 py-2.5 text-base font-semibold bg-gradient-to-b from-primary via-primary to-primary/85 text-white rounded-xl transition-all duration-200 
+                  shadow-[0_4px_12px_-2px_hsl(var(--primary)/0.5),0_2px_4px_-2px_hsl(var(--primary)/0.4),inset_0_1px_0_rgba(255,255,255,0.2)]
+                  hover:shadow-[0_6px_16px_-2px_hsl(var(--primary)/0.6),0_3px_6px_-2px_hsl(var(--primary)/0.5),inset_0_1px_0_rgba(255,255,255,0.25)]
+                  hover:-translate-y-0.5 active:translate-y-0 active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]"
               >
                 {t('nav.register')}
               </button>
 
               <button
                 onClick={() => setIsCartOpen(true)}
-                className={`relative p-2.5 rounded-full transition-colors duration-200 ${
+                className={`relative p-3 rounded-xl transition-all duration-200 ${
                   useDarkTheme
-                    ? 'text-white/90 hover:bg-white/10'
-                    : 'text-slate-700 hover:bg-slate-100'
+                    ? 'text-white/95 hover:bg-white/10 hover:shadow-[0_4px_12px_rgba(255,255,255,0.1)] hover:-translate-y-0.5'
+                    : 'text-slate-700 hover:bg-slate-100 hover:shadow-md hover:-translate-y-0.5'
                 }`}
               >
                 <ShoppingCart className="w-5 h-5" />
                 {itemCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 w-5 h-5 flex items-center justify-center bg-primary text-white text-[10px] font-bold rounded-full">
+                  <span className="absolute -top-0.5 -right-0.5 w-5 h-5 flex items-center justify-center bg-primary text-white text-xs font-bold rounded-full shadow-lg">
                     {itemCount}
                   </span>
                 )}
