@@ -398,3 +398,34 @@ export { default as useKBTestingDefault } from './useKBTesting';
 export { default as useKBDevToolsDefault } from './useKBDevTools';
 export { default as useKBMiddlewareDefault } from './useKBMiddleware';
 export { default as useKBFeatureFlagsDefault } from './useKBFeatureFlags';
+
+// Enterprise Hooks (KB 4.5)
+export {
+  useKBEnterpriseBase,
+  useKBCompliance,
+  useKBCommandCenter,
+  useKBWorkflowEngine,
+  useKBBusinessIntelligence,
+  useKBEnterpriseAll,
+} from './useKBEnterprise';
+
+export type {
+  EnterpriseContext,
+  ComplianceMetrics,
+  ComplianceViolation,
+  PredictedRisk,
+  SystemHealth,
+  SystemHealthMetric,
+  Alert,
+  LiveActivity,
+  Workflow,
+  WorkflowExecution,
+  AutomationRule,
+  KPI,
+  BIInsight,
+  Prediction,
+  Correlation,
+} from './useKBEnterprise';
+
+// Unified API (KB 4.5)
+export { KB, default as KBDefault } from './useKB';
