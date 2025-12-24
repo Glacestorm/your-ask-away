@@ -2,8 +2,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { queryKeys, invalidateRelatedQueries } from '@/lib/queryClient';
 import { useRealtimeChannel, REALTIME_CHANNELS } from './useRealtimeChannel';
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import type { Database } from '@/integrations/supabase/types';
+
+// === ERROR TIPADO KB ===
+export interface VisitsQueryError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 type VisitRow = Database['public']['Tables']['visits']['Row'];
 type VisitInsert = Database['public']['Tables']['visits']['Insert'];
@@ -126,6 +133,13 @@ export function useVisitsQuery(filters: VisitsFilter = {}) {
     updateVisit,
     deleteVisit,
   };
+}
+
+// === ERROR TIPADO KB para useVisitsByCompany ===
+export interface VisitsByCompanyError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
 }
 
 export function useVisitsByCompany(companyId: string) {
