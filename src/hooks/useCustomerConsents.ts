@@ -1,6 +1,14 @@
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+// === ERROR TIPADO KB ===
+export interface CustomerConsentsError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 export type ConsentType = 'marketing' | 'email' | 'sms' | 'whatsapp' | 'phone' | 'analytics';
 export type ConsentStatus = 'granted' | 'denied' | 'pending' | 'withdrawn';
@@ -35,20 +43,38 @@ export interface ConsentSummary {
 
 export function useCustomerConsents(companyId: string | null) {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<CustomerConsentsError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const { data: consents = [], isLoading } = useQuery({
     queryKey: ['customer-consents', companyId],
     queryFn: async () => {
       if (!companyId) return [];
       
-      const { data, error } = await supabase
-        .from('customer_consents')
-        .select('*')
-        .eq('company_id', companyId)
-        .order('created_at', { ascending: false });
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('customer_consents')
+          .select('*')
+          .eq('company_id', companyId)
+          .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data as unknown as CustomerConsent[];
+        if (fetchError) throw fetchError;
+        setLastRefresh(new Date());
+        setError(null);
+        return data as unknown as CustomerConsent[];
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Error desconocido';
+        setError({
+          code: 'FETCH_CONSENTS_ERROR',
+          message,
+          details: { originalError: String(err) }
+        });
+        throw err;
+      }
     },
     enabled: !!companyId,
   });
@@ -221,5 +247,9 @@ export function useCustomerConsents(companyId: string | null) {
     bulkUpdateConsents: bulkUpdateConsents.mutate,
     canContact,
     isUpdating: grantConsent.isPending || withdrawConsent.isPending,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError
   };
 }

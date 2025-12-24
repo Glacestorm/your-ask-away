@@ -1,11 +1,17 @@
 import { useState, useCallback } from 'react';
 
+// === ERROR TIPADO KB ===
+export interface WidgetLayoutError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export interface WidgetConfig {
   id: string;
   visible: boolean;
   order: number;
 }
-
 const STORAGE_KEY = 'dashboard-widget-layout';
 
 // Default widgets for each dashboard section
@@ -72,7 +78,12 @@ export function useWidgetLayout(section: string = 'mi-panel') {
   
   const [widgets, setWidgets] = useState<WidgetConfig[]>(() => loadWidgets(storageKey, section));
   const [isEditMode, setIsEditMode] = useState(false);
+  // === ESTADO KB ===
+  const [error, setError] = useState<WidgetLayoutError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
   const reorderWidgets = useCallback((activeId: string, overId: string) => {
     setWidgets((prev) => {
       const newWidgets = [...prev];
@@ -126,5 +137,9 @@ export function useWidgetLayout(section: string = 'mi-panel') {
     toggleWidgetVisibility,
     resetLayout,
     isWidgetVisible,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError
   };
 }

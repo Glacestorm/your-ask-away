@@ -10,6 +10,13 @@ import {
   ErrorContext 
 } from '@/lib/errorHandling';
 
+// === ERROR TIPADO KB ===
+export interface ErrorHandlingError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 interface UseErrorHandlingOptions {
   component?: string;
   showToasts?: boolean;
@@ -30,7 +37,8 @@ export function useErrorHandling(options: UseErrorHandlingOptions = {}) {
     isRecoverable: true,
   });
   const errorCountRef = useRef(0);
-
+  // === ESTADO KB ===
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const handleError = useCallback((
     error: unknown,
     context?: Partial<ErrorContext>
@@ -161,5 +169,7 @@ export function useErrorHandling(options: UseErrorHandlingOptions = {}) {
     executeWithRetry,
     handleNetworkError,
     errorCount: errorCountRef.current,
+    // === KB ADDITIONS ===
+    lastRefresh
   };
 }

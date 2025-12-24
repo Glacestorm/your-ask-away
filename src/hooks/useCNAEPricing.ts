@@ -2,6 +2,12 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+// === ERROR TIPADO KB ===
+export interface CNAEPricingError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 export interface CNAEPriceDetail {
   cnae_code: string;
   base_price: number;
@@ -72,15 +78,21 @@ export function useCNAEPricing() {
   const [pricingResult, setPricingResult] = useState<PricingResult | null>(null);
   const [bundleSuggestions, setBundleSuggestions] = useState<BundleSuggestionResult | null>(null);
   const { toast } = useToast();
+  // === ESTADO KB ===
+  const [error, setError] = useState<CNAEPricingError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
   const calculatePricing = useCallback(async (
     cnaeCodes: string[],
     companyTurnover?: number,
     companyId?: string
   ): Promise<PricingResult | null> => {
     setIsLoading(true);
+    setError(null);
     try {
-      const { data, error } = await supabase.functions.invoke('calculate-multi-cnae-pricing', {
+      const { data, error: fnError } = await supabase.functions.invoke('calculate-multi-cnae-pricing', {
         body: {
           cnae_codes: cnaeCodes,
           company_turnover: companyTurnover,
@@ -88,15 +100,22 @@ export function useCNAEPricing() {
         }
       });
 
-      if (error) throw error;
+      if (fnError) throw fnError;
 
       setPricingResult(data);
+      setLastRefresh(new Date());
       return data;
-    } catch (error: any) {
-      console.error('Error calculating pricing:', error);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No se pudo calcular el precio';
+      setError({
+        code: 'CALCULATE_PRICING_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
+      console.error('Error calculating pricing:', err);
       toast({
         title: 'Error',
-        description: 'No se pudo calcular el precio',
+        description: message,
         variant: 'destructive'
       });
       return null;
@@ -249,6 +268,10 @@ export function useCNAEPricing() {
     addCompanyCnae,
     removeCompanyCnae,
     getComplexityTierColor,
-    getTurnoverTierLabel
+    getTurnoverTierLabel,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError
   };
 }
