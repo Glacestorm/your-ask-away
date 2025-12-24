@@ -2,6 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Json } from '@/integrations/supabase/types';
 
+// === ERROR TIPADO KB ===
+export interface AccountingConfigError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export interface SectorChartOfAccounts {
   id: string;
   sector_key: string;
@@ -104,6 +111,9 @@ interface UseAccountingConfigReturn {
   validateSync: (companyId: string) => Promise<SyncStatus | null>;
   forceSyncConfig: (companyId: string) => Promise<void>;
   getSectorForCnae: (cnaeCode: string) => SectorChartOfAccounts | null;
+  // === KB ADDITIONS ===
+  lastRefresh: Date | null;
+  clearError: () => void;
 }
 
 // Helper to safely parse JSON fields
@@ -133,6 +143,11 @@ export function useAccountingConfig(companyId?: string): UseAccountingConfigRetu
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [weightedZScore, setWeightedZScore] = useState<WeightedZScoreCoefficients | null>(null);
   const [weightedBenchmarks, setWeightedBenchmarks] = useState<WeightedBenchmarks>({});
+  // === ESTADO KB ===
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   // Fetch all sector charts for reference
   const fetchSectorCharts = useCallback(async () => {
@@ -194,6 +209,7 @@ export function useAccountingConfig(companyId?: string): UseAccountingConfigRetu
           const weighted = calculateWeightedBenchmarks(configData);
           setWeightedBenchmarks(weighted);
         }
+        setLastRefresh(new Date());
       }
 
     } catch (err) {
@@ -412,6 +428,9 @@ export function useAccountingConfig(companyId?: string): UseAccountingConfigRetu
     fetchConfig,
     validateSync,
     forceSyncConfig,
-    getSectorForCnae
+    getSectorForCnae,
+    // === KB ADDITIONS ===
+    lastRefresh,
+    clearError
   };
 }
