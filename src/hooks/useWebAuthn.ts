@@ -1,13 +1,11 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { createKBError, collectTelemetry } from '@/hooks/core/useKBBase';
 
-// === ERROR TIPADO KB ===
-export interface WebAuthnError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// Re-export for backwards compat
+export type WebAuthnError = KBError;
 
 interface WebAuthnCredential {
   id: string;
@@ -41,10 +39,18 @@ interface UseWebAuthnReturn {
   authenticateWithPasskey: (userEmail: string) => Promise<boolean>;
   listPasskeys: (userId: string) => Promise<PasskeyRecord[]>;
   removePasskey: (credentialId: string) => Promise<boolean>;
-  // === KB ADDITIONS ===
-  error: WebAuthnError | null;
+  // === KB 2.0 RETURN ===
+  status: KBStatus;
+  isIdle: boolean;
+  isLoading: boolean;
+  isSuccess: boolean;
+  isError: boolean;
+  error: KBError | null;
   lastRefresh: Date | null;
+  lastSuccess: Date | null;
+  retryCount: number;
   clearError: () => void;
+  reset: () => void;
 }
 
 // Convert ArrayBuffer to Base64URL
@@ -77,12 +83,31 @@ function generateRandomBytes(length: number): Uint8Array {
 export function useWebAuthn(): UseWebAuthnReturn {
   const [isRegistering, setIsRegistering] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
-  // === ESTADO KB ===
-  const [error, setError] = useState<WebAuthnError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+  
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   // Check if WebAuthn is supported
   const isSupported = typeof window !== 'undefined' && 
@@ -318,9 +343,17 @@ export function useWebAuthn(): UseWebAuthnReturn {
     authenticateWithPasskey,
     listPasskeys,
     removePasskey,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
+    reset,
   };
 }
