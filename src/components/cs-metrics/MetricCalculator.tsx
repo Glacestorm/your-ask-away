@@ -212,22 +212,17 @@ export function MetricCalculator() {
     }
 
     // Get interpretation from metric ranges
-    const range = selectedMetric?.interpretation.ranges.find(
+    const matchedRange = selectedMetric?.interpretation.ranges.find(
       r => calculatedValue >= r.min && calculatedValue <= r.max
     );
-    const interpretation = range?.label || 'Valor calculado';
-    const benchmark = `Comparado con benchmarks SaaS: ${range?.label || 'N/A'}`;
-
-    // Find recommendation from interpretation ranges
-    const range = selectedMetric?.interpretation.ranges.find(
-      r => calculatedValue >= r.min && calculatedValue <= r.max
-    );
+    const interpretation = matchedRange?.label || 'Valor calculado';
+    const benchmark = `Comparado con benchmarks SaaS: ${matchedRange?.label || 'N/A'}`;
 
     setResult({
       value: calculatedValue,
       interpretation,
       benchmark,
-      recommendation: range?.recommendation || 'Analiza los factores que influyen en esta métrica.'
+      recommendation: matchedRange?.recommendation || 'Analiza los factores que influyen en esta métrica.'
     });
   };
 
