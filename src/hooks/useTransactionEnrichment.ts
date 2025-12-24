@@ -3,6 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// === ERROR TIPADO KB ===
+export interface TransactionEnrichmentError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export interface RawTransaction {
   id?: string;
   transaction_id?: string;
@@ -63,6 +70,12 @@ export interface EnrichmentResult {
 export function useTransactionEnrichment(companyId: string | null) {
   const queryClient = useQueryClient();
   const [isEnriching, setIsEnriching] = useState(false);
+  // === ESTADO KB ===
+  const [error, setError] = useState<TransactionEnrichmentError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   // Fetch enriched transactions for a company
   const { data: enrichedTransactions, isLoading, refetch } = useQuery({
@@ -70,14 +83,22 @@ export function useTransactionEnrichment(companyId: string | null) {
     queryFn: async () => {
       if (!companyId) return [];
       
-      const { data, error } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('enriched_transactions')
         .select('*')
         .eq('company_id', companyId)
         .order('transaction_date', { ascending: false })
         .limit(500);
 
-      if (error) throw error;
+      if (fetchError) {
+        setError({
+          code: 'FETCH_TRANSACTIONS_ERROR',
+          message: fetchError.message,
+          details: { originalError: String(fetchError) }
+        });
+        throw fetchError;
+      }
+      setLastRefresh(new Date());
       return data as EnrichedTransaction[];
     },
     enabled: !!companyId,
@@ -110,9 +131,14 @@ export function useTransactionEnrichment(companyId: string | null) {
       
       toast.success(`${data.enriched_count} transacciones enriquecidas`);
       return data as EnrichmentResult;
-    } catch (error: any) {
-      console.error('Error enriching transactions:', error);
-      toast.error('Error al enriquecer transacciones: ' + error.message);
+    } catch (err: any) {
+      console.error('Error enriching transactions:', err);
+      setError({
+        code: 'ENRICH_ERROR',
+        message: err.message,
+        details: { originalError: String(err) }
+      });
+      toast.error('Error al enriquecer transacciones: ' + err.message);
       return null;
     } finally {
       setIsEnriching(false);
@@ -212,6 +238,11 @@ export function useTransactionEnrichment(companyId: string | null) {
     getRecurringTransactions,
     getByDateRange,
     getTopMerchants,
+    
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError
   };
 }
 
