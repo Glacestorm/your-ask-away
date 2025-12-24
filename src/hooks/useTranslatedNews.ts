@@ -2,19 +2,23 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useCMSTranslation } from '@/hooks/cms/useCMSTranslation';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { NewsArticle } from '@/hooks/useNewsArticles';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
-// === ERROR TIPADO KB ===
-export interface TranslatedNewsError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+export type TranslatedNewsError = KBError;
 
 interface TranslatedNews {
   articles: NewsArticle[];
   isTranslating: boolean;
-  error: TranslatedNewsError | null;
+  // === KB 2.0 ===
+  status: KBStatus;
+  error: KBError | null;
+  isIdle: boolean;
+  isLoading: boolean;
+  isSuccess: boolean;
+  isError: boolean;
   lastRefresh: Date | null;
+  lastSuccess: Date | null;
+  retryCount: number;
   clearError: () => void;
 }
 
@@ -23,15 +27,28 @@ export function useTranslatedNews(originalArticles: NewsArticle[]): TranslatedNe
   const { translateBatchAsync } = useCMSTranslation();
   const [translatedArticles, setTranslatedArticles] = useState<NewsArticle[]>(originalArticles);
   const [isTranslating, setIsTranslating] = useState(false);
-  // === ESTADO KB ===
-  const [error, setError] = useState<TranslatedNewsError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   
   const lastLanguageRef = useRef<string>(language);
   const lastArticlesRef = useRef<string>('');
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 CLEAR ERROR ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
 
   useEffect(() => {
     const articlesKey = originalArticles.map(a => a.id).join(',');
@@ -48,6 +65,7 @@ export function useTranslatedNews(originalArticles: NewsArticle[]): TranslatedNe
     if (language === 'es') {
       setTranslatedArticles(originalArticles);
       setIsTranslating(false);
+      setStatus('success');
       return;
     }
 
@@ -55,11 +73,15 @@ export function useTranslatedNews(originalArticles: NewsArticle[]): TranslatedNe
     if (originalArticles.length === 0) {
       setTranslatedArticles([]);
       setIsTranslating(false);
+      setStatus('success');
       return;
     }
 
     const translateAll = async () => {
+      const startTime = Date.now();
       setIsTranslating(true);
+      setStatus('loading');
+      setError(null);
 
       try {
         // Collect all texts to translate in batches
@@ -93,15 +115,20 @@ export function useTranslatedNews(originalArticles: NewsArticle[]): TranslatedNe
         });
         
         setTranslatedArticles(newArticles);
+        setStatus('success');
         setLastRefresh(new Date());
+        setLastSuccess(new Date());
+        setRetryCount(0);
+        collectTelemetry('useTranslatedNews', 'translateAll', 'success', Date.now() - startTime);
       } catch (err) {
         console.error('Error translating news:', err);
-        setError({
-          code: 'TRANSLATION_ERROR',
-          message: err instanceof Error ? err.message : 'Error al traducir noticias',
-          details: { language }
-        });
+        const parsed = parseError(err);
+        const kbError = createKBError('TRANSLATION_ERROR', parsed.message, { retryable: true });
+        setError(kbError);
+        setStatus('error');
+        setRetryCount(prev => prev + 1);
         setTranslatedArticles(originalArticles);
+        collectTelemetry('useTranslatedNews', 'translateAll', 'error', Date.now() - startTime, kbError);
       } finally {
         setIsTranslating(false);
       }
@@ -113,8 +140,16 @@ export function useTranslatedNews(originalArticles: NewsArticle[]): TranslatedNe
   return {
     articles: translatedArticles,
     isTranslating,
+    // === KB 2.0 ===
+    status,
     error,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
     lastRefresh,
+    lastSuccess,
+    retryCount,
     clearError,
   };
 }
