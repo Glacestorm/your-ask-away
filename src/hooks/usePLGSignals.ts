@@ -2,13 +2,11 @@ import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { createKBError, collectTelemetry } from '@/hooks/core/useKBBase';
 
-// === ERROR TIPADO KB ===
-export interface PLGSignalsError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// === ERROR TIPADO KB 2.0 ===
+export type PLGSignalsError = KBError;
 
 export interface PLGSignal {
   id: string;
@@ -38,16 +36,37 @@ export interface PLGSignal {
 
 export const usePLGSignals = () => {
   const queryClient = useQueryClient();
-  // === ESTADO KB ===
-  const [error, setError] = useState<PLGSignalsError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   const { data: signals, isLoading, refetch } = useQuery({
     queryKey: ['plg-signals'],
     queryFn: async () => {
+      const startTime = new Date();
+      setStatus('loading');
+      
       try {
         const { data, error: fetchError } = await supabase
           .from('plg_signals')
@@ -60,16 +79,38 @@ export const usePLGSignals = () => {
         
         if (fetchError) throw fetchError;
         
+        setStatus('success');
+        setLastSuccess(new Date());
         setLastRefresh(new Date());
-        setError(null);
+        setRetryCount(0);
+        
+        collectTelemetry({
+          hookName: 'usePLGSignals',
+          operationName: 'fetchSignals',
+          startTime,
+          endTime: new Date(),
+          durationMs: Date.now() - startTime.getTime(),
+          status: 'success',
+          retryCount
+        });
+        
         return data as PLGSignal[];
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Error desconocido';
-        setError({
-          code: 'FETCH_SIGNALS_ERROR',
-          message,
-          details: { originalError: String(err) }
+        const kbError = createKBError('FETCH_SIGNALS_ERROR', err instanceof Error ? err.message : 'Error desconocido');
+        setError(kbError);
+        setStatus('error');
+        
+        collectTelemetry({
+          hookName: 'usePLGSignals',
+          operationName: 'fetchSignals',
+          startTime,
+          endTime: new Date(),
+          durationMs: Date.now() - startTime.getTime(),
+          status: 'error',
+          error: kbError,
+          retryCount
         });
+        
         throw err;
       }
     }
@@ -161,9 +202,16 @@ export const usePLGSignals = () => {
     getSignalsByCompany,
     getHighStrengthSignals,
     getSignalStats,
-    // === KB ADDITIONS ===
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
     error,
     lastRefresh,
-    clearError
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
   };
 };

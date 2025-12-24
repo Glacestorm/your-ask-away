@@ -12,6 +12,9 @@ import type {
   TriggerConditions
 } from '@/types/bpmn';
 import { useToast } from '@/hooks/use-toast';
+import { useState, useCallback } from 'react';
+import { KBStatus, KBError } from '@/hooks/core/types';
+import { createKBError } from '@/hooks/core/useKBBase';
 
 interface UseProcessDefinitionsOptions {
   entityType?: BPMNEntityType;
@@ -35,28 +38,66 @@ export function useProcessDefinitions(options: UseProcessDefinitionsOptions = {}
   const queryClient = useQueryClient();
   const { entityType, activeOnly = false, templatesOnly = false } = options;
 
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [kbError, setKbError] = useState<KBError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setKbError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setKbError(null);
+    setRetryCount(0);
+  }, []);
+
   // Fetch definitions
   const definitionsQuery = useQuery({
     queryKey: ['process-definitions', entityType, activeOnly, templatesOnly],
     queryFn: async () => {
-      let query = supabase
-        .from('bpmn_process_definitions')
-        .select('*')
-        .order('updated_at', { ascending: false });
+      setStatus('loading');
+      try {
+        let query = supabase
+          .from('bpmn_process_definitions')
+          .select('*')
+          .order('updated_at', { ascending: false });
 
-      if (entityType) {
-        query = query.eq('entity_type', entityType);
-      }
-      if (activeOnly) {
-        query = query.eq('is_active', true);
-      }
-      if (templatesOnly) {
-        query = query.eq('is_template', true);
-      }
+        if (entityType) {
+          query = query.eq('entity_type', entityType);
+        }
+        if (activeOnly) {
+          query = query.eq('is_active', true);
+        }
+        if (templatesOnly) {
+          query = query.eq('is_template', true);
+        }
 
-      const { data, error } = await query;
-      if (error) throw error;
-      return (data || []).map(mapRowToDefinition);
+        const { data, error } = await query;
+        if (error) throw error;
+        
+        setStatus('success');
+        setLastSuccess(new Date());
+        setLastRefresh(new Date());
+        setRetryCount(0);
+        
+        return (data || []).map(mapRowToDefinition);
+      } catch (err) {
+        const kbErr = createKBError('FETCH_ERROR', err instanceof Error ? err.message : 'Error desconocido');
+        setKbError(kbErr);
+        setStatus('error');
+        throw err;
+      }
     },
   });
 
@@ -251,7 +292,7 @@ export function useProcessDefinitions(options: UseProcessDefinitionsOptions = {}
     // Data
     definitions: definitionsQuery.data || [],
     isLoading: definitionsQuery.isLoading,
-    error: definitionsQuery.error,
+    error: kbError || (definitionsQuery.error ? createKBError('QUERY_ERROR', String(definitionsQuery.error)) : null),
     refetch: definitionsQuery.refetch,
 
     // CRUD
@@ -266,5 +307,16 @@ export function useProcessDefinitions(options: UseProcessDefinitionsOptions = {}
     isCreating: createMutation.isPending,
     isUpdating: updateMutation.isPending,
     isDeleting: deleteMutation.isPending,
+    
+    // === KB 2.0 RETURN ===
+    status,
+    isIdle,
+    isSuccess,
+    isError,
+    lastRefresh,
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
   };
 }
