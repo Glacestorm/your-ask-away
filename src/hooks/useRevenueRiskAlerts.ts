@@ -1,6 +1,14 @@
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+// === ERROR TIPADO KB ===
+export interface RevenueRiskAlertsError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 export interface RevenueRiskAlert {
   id: string;
@@ -84,21 +92,40 @@ export interface RiskSummary {
 
 export const useRevenueRiskAlerts = () => {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<RevenueRiskAlertsError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   // Fetch risk alerts
   const { data: alerts, isLoading: alertsLoading, refetch: refetchAlerts } = useQuery({
     queryKey: ['revenue-risk-alerts'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('revenue_risk_alerts')
-        .select(`
-          *,
-          company:companies(name)
-        `)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data as RevenueRiskAlert[];
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('revenue_risk_alerts')
+          .select(`
+            *,
+            company:companies(name)
+          `)
+          .order('created_at', { ascending: false });
+        
+        if (fetchError) throw fetchError;
+        
+        setLastRefresh(new Date());
+        setError(null);
+        return data as RevenueRiskAlert[];
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Error desconocido';
+        setError({
+          code: 'FETCH_ALERTS_ERROR',
+          message,
+          details: { originalError: String(err) }
+        });
+        throw err;
+      }
     }
   });
 
@@ -338,6 +365,10 @@ export const useRevenueRiskAlerts = () => {
     compareWithBenchmark,
     runWhatIfSimulation,
     isCreatingAlert: createAlertMutation.isPending,
-    isCreatingSimulation: createSimulationMutation.isPending
+    isCreatingSimulation: createSimulationMutation.isPending,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError
   };
 };

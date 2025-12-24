@@ -1,5 +1,13 @@
+import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+
+// === ERROR TIPADO KB ===
+export interface RevenueAttributionError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 export interface RevenueAttribution {
   id: string;
@@ -24,20 +32,40 @@ export interface RevenueAttribution {
 }
 
 export const useRevenueAttribution = () => {
+  // === ESTADO KB ===
+  const [error, setError] = useState<RevenueAttributionError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
+
   const { data: attributions, isLoading, refetch } = useQuery({
     queryKey: ['revenue-attributions'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('revenue_attributions')
-        .select(`
-          *,
-          company:companies(name)
-        `)
-        .order('created_at', { ascending: false })
-        .limit(500);
-      
-      if (error) throw error;
-      return data as RevenueAttribution[];
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('revenue_attributions')
+          .select(`
+            *,
+            company:companies(name)
+          `)
+          .order('created_at', { ascending: false })
+          .limit(500);
+        
+        if (fetchError) throw fetchError;
+        
+        setLastRefresh(new Date());
+        setError(null);
+        return data as RevenueAttribution[];
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Error desconocido';
+        setError({
+          code: 'FETCH_ATTRIBUTIONS_ERROR',
+          message,
+          details: { originalError: String(err) }
+        });
+        throw err;
+      }
     }
   });
 
@@ -136,6 +164,10 @@ export const useRevenueAttribution = () => {
     getTotalAttributedRevenue,
     getCustomerJourney,
     getChannelROI,
-    getAverageConversionTime
+    getAverageConversionTime,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError
   };
 };

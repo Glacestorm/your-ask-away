@@ -1,6 +1,14 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState, useCallback } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+// === ERROR TIPADO KB ===
+export interface SmartPrioritizationError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 export interface PrioritizedAccount {
   companyId: string;
@@ -18,6 +26,12 @@ export interface PrioritizedAccount {
 
 export const useSmartPrioritization = () => {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<SmartPrioritizationError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const prioritizeAccountsMutation = useMutation({
     mutationFn: async (params: { 
@@ -40,10 +54,18 @@ export const useSmartPrioritization = () => {
       return data as { prioritizedAccounts: PrioritizedAccount[] };
     },
     onSuccess: () => {
+      setLastRefresh(new Date());
+      setError(null);
       toast.success('Cuentas priorizadas con IA');
     },
-    onError: (error) => {
-      toast.error('Error al priorizar: ' + error.message);
+    onError: (err) => {
+      const message = err instanceof Error ? err.message : 'Error al priorizar';
+      setError({
+        code: 'PRIORITIZE_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
+      toast.error('Error al priorizar: ' + message);
     }
   });
 
@@ -104,6 +126,10 @@ export const useSmartPrioritization = () => {
     getQuickWins,
     getStrategicBets,
     getTotalPotentialRevenue,
-    getTotalAtRiskRevenue
+    getTotalAtRiskRevenue,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError
   };
 };
