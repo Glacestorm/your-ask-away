@@ -1,10 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from '@/hooks/core';
 
 // === TYPES ===
 export type ApprovalRequestType = 'high_risk_action' | 'session_end' | 'data_export' | 'config_change';
 export type ApprovalStatus = 'pending' | 'approved' | 'rejected' | 'expired';
+
+// === ERROR TIPADO KB 2.0 ===
+export type DualApprovalError = KBError;
 
 // === INTERFACES ===
 export interface ApprovalRequest {
@@ -32,20 +36,36 @@ export interface CreateApprovalParams {
   expiresInMinutes?: number;
 }
 
-export interface DualApprovalError {
-  code: string;
-  message: string;
-  details?: string;
-}
-
 // === HOOK ===
 export function useDualApproval(sessionId: string | null) {
   const [pendingRequests, setPendingRequests] = useState<ApprovalRequest[]>([]);
   const [allRequests, setAllRequests] = useState<ApprovalRequest[]>([]);
-  const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<DualApprovalError | null>(null);
+  
+  // === KB 2.0 STATE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  // === KB 2.0 COMPUTED ===
+  const isIdle = status === 'idle';
+  const loading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+
+  // === KB 2.0 METHODS ===
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   // Refs para auto-refresh (aunque realtime lo cubre, mantenemos para consistencia con KB)
   const autoRefreshInterval = useRef<NodeJS.Timeout | null>(null);
@@ -54,7 +74,8 @@ export function useDualApproval(sessionId: string | null) {
   const fetchRequests = useCallback(async () => {
     if (!sessionId) return;
     
-    setLoading(true);
+    const startTime = Date.now();
+    setStatus('loading');
     setError(null);
     try {
       const { data, error: fetchError } = await supabase
@@ -68,13 +89,19 @@ export function useDualApproval(sessionId: string | null) {
       const requests = (data || []) as ApprovalRequest[];
       setAllRequests(requests);
       setPendingRequests(requests.filter(r => r.status === 'pending'));
+      setStatus('success');
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry('useDualApproval', 'fetchRequests', 'success', Date.now() - startTime);
     } catch (err) {
       console.error('Error fetching approval requests:', err);
-      const message = err instanceof Error ? err.message : 'Error al cargar solicitudes';
-      setError({ code: 'FETCH_ERROR', message });
-    } finally {
-      setLoading(false);
+      const parsedErr = parseError(err);
+      const kbError = createKBError('FETCH_ERROR', parsedErr.message, { originalError: String(err) });
+      setError(kbError);
+      setStatus('error');
+      setRetryCount(prev => prev + 1);
+      collectTelemetry('useDualApproval', 'fetchRequests', 'error', Date.now() - startTime, kbError);
     }
   }, [sessionId]);
 
@@ -193,11 +220,12 @@ export function useDualApproval(sessionId: string | null) {
       return data as ApprovalRequest;
     } catch (err) {
       console.error('Error creating approval request:', err);
-      const message = err instanceof Error ? err.message : 'No se pudo crear la solicitud de aprobación';
-      setError({ code: 'CREATE_ERROR', message });
+      const parsedErr = parseError(err);
+      const kbError = createKBError('CREATE_ERROR', parsedErr.message, { originalError: String(err) });
+      setError(kbError);
       toast({
         title: "Error",
-        description: message,
+        description: kbError.message,
         variant: "destructive"
       });
       return null;
@@ -230,11 +258,12 @@ export function useDualApproval(sessionId: string | null) {
       return true;
     } catch (err) {
       console.error('Error approving request:', err);
-      const message = err instanceof Error ? err.message : 'No se pudo aprobar la solicitud';
-      setError({ code: 'APPROVE_ERROR', message });
+      const parsedErr = parseError(err);
+      const kbError = createKBError('APPROVE_ERROR', parsedErr.message, { originalError: String(err) });
+      setError(kbError);
       toast({
         title: "Error",
-        description: message,
+        description: kbError.message,
         variant: "destructive"
       });
       return false;
@@ -268,11 +297,12 @@ export function useDualApproval(sessionId: string | null) {
       return true;
     } catch (err) {
       console.error('Error rejecting request:', err);
-      const message = err instanceof Error ? err.message : 'No se pudo rechazar la solicitud';
-      setError({ code: 'REJECT_ERROR', message });
+      const parsedErr = parseError(err);
+      const kbError = createKBError('REJECT_ERROR', parsedErr.message, { originalError: String(err) });
+      setError(kbError);
       toast({
         title: "Error",
-        description: message,
+        description: kbError.message,
         variant: "destructive"
       });
       return false;
@@ -313,18 +343,10 @@ export function useDualApproval(sessionId: string | null) {
     return 'expired';
   };
 
-  // KB Pattern: Clear error
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-
   return {
     pendingRequests,
     allRequests,
-    loading,
     isSubmitting,
-    error,
-    lastRefresh,
     requestApproval,
     approveRequest,
     rejectRequest,
@@ -333,7 +355,18 @@ export function useDualApproval(sessionId: string | null) {
     refetch: fetchRequests,
     startAutoRefresh,
     stopAutoRefresh,
-    clearError
+    // === KB 2.0 STATE ===
+    status,
+    isIdle,
+    loading,
+    isSuccess,
+    isError,
+    error,
+    lastRefresh,
+    lastSuccess,
+    retryCount,
+    clearError,
+    reset,
   };
 }
 
