@@ -1,6 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
+// === ERROR TIPADO KB ===
+export interface SupportedLanguagesError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export interface SupportedLanguage {
   id: string;
   locale: string;
@@ -19,7 +26,10 @@ interface UseSupportedLanguagesReturn {
   languages: SupportedLanguage[];
   activeLanguages: SupportedLanguage[];
   loading: boolean;
-  error: Error | null;
+  // === KB ADDITIONS ===
+  error: SupportedLanguagesError | null;
+  lastRefresh: Date | null;
+  clearError: () => void;
   refresh: () => Promise<void>;
   getLanguageByLocale: (locale: string) => SupportedLanguage | undefined;
   isRTL: (locale: string) => boolean;
@@ -33,7 +43,12 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 export function useSupportedLanguages(): UseSupportedLanguagesReturn {
   const [languages, setLanguages] = useState<SupportedLanguage[]>(languagesCache || []);
   const [loading, setLoading] = useState(!languagesCache);
-  const [error, setError] = useState<Error | null>(null);
+  // === ESTADO KB ===
+  const [error, setError] = useState<SupportedLanguagesError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const loadLanguages = useCallback(async (force = false) => {
     // Use cache if valid
@@ -57,10 +72,16 @@ export function useSupportedLanguages(): UseSupportedLanguagesReturn {
       languagesCache = langs;
       cacheTimestamp = Date.now();
       setLanguages(langs);
+      setLastRefresh(new Date());
       setError(null);
     } catch (err) {
       console.error('Error loading supported languages:', err);
-      setError(err instanceof Error ? err : new Error('Failed to load languages'));
+      const message = err instanceof Error ? err.message : 'Failed to load languages';
+      setError({
+        code: 'FETCH_LANGUAGES_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
     } finally {
       setLoading(false);
     }
@@ -117,7 +138,10 @@ export function useSupportedLanguages(): UseSupportedLanguagesReturn {
     languages,
     activeLanguages,
     loading,
+    // === KB ADDITIONS ===
     error,
+    lastRefresh,
+    clearError,
     refresh,
     getLanguageByLocale,
     isRTL,

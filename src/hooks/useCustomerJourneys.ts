@@ -3,6 +3,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// === ERROR TIPADO KB ===
+export interface CustomerJourneysError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export interface JourneyStep {
   id: string;
   journey_id: string;
@@ -63,17 +70,35 @@ export interface JourneyEnrollment {
 
 export function useCustomerJourneys() {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<CustomerJourneysError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const { data: journeys = [], isLoading: isLoadingJourneys } = useQuery({
     queryKey: ['customer-journeys'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('customer_journeys')
-        .select('*')
-        .order('created_at', { ascending: false });
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('customer_journeys')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data as unknown as CustomerJourney[];
+        if (fetchError) throw fetchError;
+        setLastRefresh(new Date());
+        setError(null);
+        return data as unknown as CustomerJourney[];
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Error desconocido';
+        setError({
+          code: 'FETCH_JOURNEYS_ERROR',
+          message,
+          details: { originalError: String(err) }
+        });
+        throw err;
+      }
     },
   });
 
@@ -93,10 +118,17 @@ export function useCustomerJourneys() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customer-journeys'] });
+      setLastRefresh(new Date());
       toast.success('Journey creado correctamente');
     },
-    onError: (error: any) => {
-      toast.error('Error al crear journey: ' + error.message);
+    onError: (err: any) => {
+      const message = err instanceof Error ? err.message : 'Error al crear journey';
+      setError({
+        code: 'CREATE_JOURNEY_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
+      toast.error('Error al crear journey: ' + message);
     },
   });
 
@@ -179,6 +211,10 @@ export function useCustomerJourneys() {
     pauseJourney: pauseJourney.mutate,
     isCreating: createJourney.isPending,
     isUpdating: updateJourney.isPending,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError
   };
 }
 
