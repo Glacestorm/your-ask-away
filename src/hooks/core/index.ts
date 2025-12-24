@@ -972,3 +972,120 @@ export type {
   HealthReport,
   HealthCheckConfig,
 } from './useKBHealthCheck';
+
+// ============================================================================
+// PHASE 17: ADVANCED ENTERPRISE PATTERNS
+// ============================================================================
+
+// Rate Limiting (KB 4.5)
+export {
+  useKBRateLimiting,
+  useKBDistributedRateLimiting,
+  useKBQuotaManagement,
+} from './useKBRateLimiting';
+
+export type {
+  RateLimitAlgorithm,
+  RateLimitConfig,
+  RateLimitInfo,
+  RateLimitStats,
+  QuotaConfig,
+  QuotaState,
+} from './useKBRateLimiting';
+
+// Distributed Circuit Breaker (KB 4.5)
+export {
+  useKBDistributedCircuitBreaker,
+  useKBCircuitBreakerGroup,
+  withCircuitBreaker,
+  getCircuit,
+  getAllCircuits,
+  resetAllCircuits,
+  CircuitOpenError,
+} from './useKBDistributedCircuitBreaker';
+
+export type {
+  CircuitState,
+  CircuitBreakerConfig,
+  CircuitStats,
+  CircuitHealth,
+} from './useKBDistributedCircuitBreaker';
+
+// Tenant Isolation (KB 4.5)
+export {
+  TenantProvider,
+  useTenant,
+  useTenantId,
+  useTenantSettings,
+  useTenantFeature,
+  useTenantQuota,
+  useKBTenantData,
+  useKBTenantResources,
+  useKBTenantStorage,
+  useKBTenantGuard,
+  useKBTenantAudit,
+} from './useKBTenantIsolation';
+
+export type {
+  Tenant,
+  TenantStatus,
+  TenantSettings,
+  TenantQuotas,
+  TenantContext,
+  TenantResourceUsage,
+} from './useKBTenantIsolation';
+
+// API Gateway (KB 4.5)
+export {
+  useKBAPIGateway,
+  useKBAPIComposition,
+} from './useKBAPIGateway';
+
+export type {
+  APIEndpoint,
+  APIRoute,
+  APIRequest,
+  APIResponse,
+  GatewayConfig,
+  GatewayStats,
+} from './useKBAPIGateway';
+
+// Service Mesh (KB 4.5)
+export {
+  useKBServiceMesh,
+  useKBSidecar,
+} from './useKBServiceMesh';
+
+export type {
+  ServiceDefinition,
+  ServiceEndpoint,
+  ServiceCall,
+  ServiceResponse,
+  ServiceHealth,
+  ServiceMeshConfig,
+  ServiceMeshMetrics,
+} from './useKBServiceMesh';
+
+// Feature Toggle Enterprise (KB 4.5)
+export {
+  FeatureToggleProvider,
+  useFeatureToggle as useKBFeatureToggle,
+  useFeatureEnabled,
+  useFeatureValue,
+  useFeatureVariant,
+  useFeatureOverride,
+  useFeatureAnalytics,
+  FeatureGateComponent,
+  createFeatureToggle,
+  createTargetingRule,
+} from './useKBFeatureToggle';
+
+export type {
+  FeatureToggle,
+  FeatureVariant,
+  TargetingRules,
+  TargetingRule,
+  RolloutConfig,
+  FeatureEvaluation,
+  FeatureAnalytics,
+} from './useKBFeatureToggle';
