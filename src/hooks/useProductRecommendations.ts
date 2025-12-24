@@ -2,6 +2,13 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+// === ERROR TIPADO KB ===
+export interface ProductRecommendationsError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export interface ProductRecommendation {
   product_id: string;
   product_name: string;
@@ -30,7 +37,12 @@ export function useProductRecommendations() {
   const [isLoading, setIsLoading] = useState(false);
   const [recommendations, setRecommendations] = useState<ProductRecommendation[]>([]);
   const [context, setContext] = useState<RecommendationContext | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // === ESTADO KB ===
+  const [error, setError] = useState<ProductRecommendationsError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const getRecommendations = useCallback(async (
     companyId: string,
@@ -57,12 +69,17 @@ export function useProductRecommendations() {
 
       setRecommendations(data.recommendations || []);
       setContext(data.context || null);
+      setLastRefresh(new Date());
       
       toast.success(`${data.recommendations?.length || 0} recomanacions generades`);
       return data;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error generant recomanacions';
-      setError(message);
+      setError({
+        code: 'RECOMMENDATIONS_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
       toast.error(message);
       return null;
     } finally {
@@ -85,7 +102,10 @@ export function useProductRecommendations() {
     recommendations,
     context,
     isLoading,
+    // === KB ADDITIONS ===
     error,
+    lastRefresh,
+    clearError,
     getTimingLabel
   };
 }

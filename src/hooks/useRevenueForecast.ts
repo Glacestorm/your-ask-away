@@ -1,6 +1,14 @@
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+// === ERROR TIPADO KB ===
+export interface RevenueForecastError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 export interface RevenueForecast {
   id: string;
@@ -26,18 +34,36 @@ export interface RevenueForecast {
 
 export const useRevenueForecast = () => {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<RevenueForecastError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const { data: forecasts, isLoading, refetch } = useQuery({
     queryKey: ['revenue-forecasts'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('revenue_forecasts')
-        .select('*')
-        .order('forecast_date', { ascending: false })
-        .limit(50);
-      
-      if (error) throw error;
-      return data as RevenueForecast[];
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('revenue_forecasts')
+          .select('*')
+          .order('forecast_date', { ascending: false })
+          .limit(50);
+        
+        if (fetchError) throw fetchError;
+        setLastRefresh(new Date());
+        setError(null);
+        return data as RevenueForecast[];
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Error desconocido';
+        setError({
+          code: 'FETCH_FORECASTS_ERROR',
+          message,
+          details: { originalError: String(err) }
+        });
+        throw err;
+      }
     }
   });
 
@@ -55,10 +81,17 @@ export const useRevenueForecast = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['revenue-forecasts'] });
+      setLastRefresh(new Date());
       toast.success('Pronóstico generado correctamente');
     },
-    onError: (error) => {
-      toast.error('Error al generar pronóstico: ' + error.message);
+    onError: (err) => {
+      const message = err instanceof Error ? err.message : 'Error al generar pronóstico';
+      setError({
+        code: 'GENERATE_FORECAST_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
+      toast.error('Error al generar pronóstico: ' + message);
     }
   });
 
@@ -104,6 +137,10 @@ export const useRevenueForecast = () => {
     getLatestForecast,
     getForecastsByScenario,
     getConfidenceIntervals,
-    getForecastTrend
+    getForecastTrend,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError
   };
 };
