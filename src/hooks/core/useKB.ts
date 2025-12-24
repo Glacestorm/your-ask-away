@@ -364,6 +364,38 @@ export const KB = {
   useReadinessProbe: null as unknown as typeof import('./useKBHealthCheck').useKBReadinessProbe,
   useStartupProbe: null as unknown as typeof import('./useKBHealthCheck').useKBStartupProbe,
   useDependencyHealth: null as unknown as typeof import('./useKBHealthCheck').useKBDependencyHealth,
+  
+  // ========== PHASE 17: DISTRIBUTED SYSTEMS ==========
+  
+  // Rate Limiting
+  useRateLimiting: null as unknown as typeof import('./useKBRateLimiting').useKBRateLimiting,
+  useDistributedRateLimiting: null as unknown as typeof import('./useKBRateLimiting').useKBDistributedRateLimiting,
+  
+  // Distributed Circuit Breaker
+  useDistributedCircuitBreaker: null as unknown as typeof import('./useKBDistributedCircuitBreaker').useKBDistributedCircuitBreaker,
+  useCircuitBreakerGroup: null as unknown as typeof import('./useKBDistributedCircuitBreaker').useKBCircuitBreakerGroup,
+  
+  // Multi-Tenant Isolation
+  useTenantData: null as unknown as typeof import('./useKBTenantIsolation').useKBTenantData,
+  useTenantResources: null as unknown as typeof import('./useKBTenantIsolation').useKBTenantResources,
+  useTenantStorage: null as unknown as typeof import('./useKBTenantIsolation').useKBTenantStorage,
+  useTenantGuard: null as unknown as typeof import('./useKBTenantIsolation').useKBTenantGuard,
+  useTenantAudit: null as unknown as typeof import('./useKBTenantIsolation').useKBTenantAudit,
+  
+  // API Gateway
+  useAPIGateway: null as unknown as typeof import('./useKBAPIGateway').useKBAPIGateway,
+  useAPIComposition: null as unknown as typeof import('./useKBAPIGateway').useKBAPIComposition,
+  
+  // Service Mesh
+  useServiceMesh: null as unknown as typeof import('./useKBServiceMesh').useKBServiceMesh,
+  useSidecar: null as unknown as typeof import('./useKBServiceMesh').useKBSidecar,
+  
+  // Feature Toggle Enterprise
+  useFeatureToggleEnterprise: null as unknown as typeof import('./useKBFeatureToggle').useFeatureToggle,
+  useFeatureEnabled: null as unknown as typeof import('./useKBFeatureToggle').useFeatureEnabled,
+  useFeatureValue: null as unknown as typeof import('./useKBFeatureToggle').useFeatureValue,
+  useFeatureOverride: null as unknown as typeof import('./useKBFeatureToggle').useFeatureOverride,
+  useFeatureAnalytics: null as unknown as typeof import('./useKBFeatureToggle').useFeatureAnalytics,
 } as const;
 
 // ============================================================================
