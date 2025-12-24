@@ -85,7 +85,8 @@ export function useProductRecommendations() {
       toast.success(`${data.recommendations?.length || 0} recomanacions generades`);
       return data;
     } catch (err) {
-      const kbError = createKBError('RECOMMENDATIONS_ERROR', parseError(err), { originalError: String(err) });
+      const parsedErr = parseError(err);
+      const kbError = createKBError('RECOMMENDATIONS_ERROR', parsedErr.message, { originalError: String(err) });
       setError(kbError);
       setStatus('error');
       setRetryCount(prev => prev + 1);

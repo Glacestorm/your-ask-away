@@ -95,7 +95,8 @@ export function useSavedNews(articleId?: string) {
       collectTelemetry('useSavedNews', 'toggleSave', 'success', Date.now() - startTime);
     } catch (err) {
       console.error('Error toggling save:', err);
-      const kbError = createKBError('TOGGLE_SAVE_ERROR', parseError(err), { originalError: String(err) });
+      const parsedErr = parseError(err);
+      const kbError = createKBError('TOGGLE_SAVE_ERROR', parsedErr.message, { originalError: String(err) });
       setError(kbError);
       setStatus('error');
       setRetryCount(prev => prev + 1);

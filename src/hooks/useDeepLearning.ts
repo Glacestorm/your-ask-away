@@ -113,7 +113,8 @@ export function useDeepLearning() {
       toast.success(`Predicció ${modelArchitecture.toUpperCase()} completada`);
       return data;
     } catch (err) {
-      const kbError = createKBError('DEEP_LEARNING_ERROR', parseError(err), { originalError: String(err) });
+      const parsedErr = parseError(err);
+      const kbError = createKBError('DEEP_LEARNING_ERROR', parsedErr.message, { originalError: String(err) });
       setError(kbError);
       setStatus('error');
       setRetryCount(prev => prev + 1);

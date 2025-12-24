@@ -165,7 +165,8 @@ export function useNewsArticles(options: UseNewsArticlesOptions = {}) {
 
     } catch (err: unknown) {
       console.error('Error fetching news:', err);
-      const kbError = createKBError('FETCH_NEWS_ERROR', parseError(err), { originalError: String(err) });
+      const parsedErr = parseError(err);
+      const kbError = createKBError('FETCH_NEWS_ERROR', parsedErr.message, { originalError: String(err) });
       setError(kbError);
       setStatus('error');
       setRetryCount(prev => prev + 1);
@@ -194,7 +195,7 @@ export function useNewsArticles(options: UseNewsArticlesOptions = {}) {
       console.error('Error refreshing news:', err);
       toast({
         title: 'Error al actualizar',
-        description: parseError(err),
+        description: parseError(err).message,
         variant: 'destructive',
       });
     }
