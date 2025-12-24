@@ -1,4 +1,11 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef } from 'react';
+
+// === ERROR TIPADO KB ===
+export interface NavigationHistoryError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 interface NavigationHistoryResult {
   canGoBack: boolean;
@@ -7,13 +14,22 @@ interface NavigationHistoryResult {
   goForward: () => string | null;
   push: (section: string) => void;
   current: string | null;
+  // === KB ADDITIONS ===
+  error: NavigationHistoryError | null;
+  lastRefresh: Date | null;
+  clearError: () => void;
 }
 
 export function useNavigationHistory(initialSection?: string): NavigationHistoryResult {
   const [history, setHistory] = useState<string[]>(initialSection ? [initialSection] : []);
   const [currentIndex, setCurrentIndex] = useState(initialSection ? 0 : -1);
   const isNavigating = useRef(false);
+  // === ESTADO KB ===
+  const [error] = useState<NavigationHistoryError | null>(null);
+  const [lastRefresh] = useState<Date | null>(null);
 
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => {}, []);
   const canGoBack = currentIndex > 0;
   const canGoForward = currentIndex < history.length - 1;
   const current = currentIndex >= 0 ? history[currentIndex] : null;
@@ -61,5 +77,9 @@ export function useNavigationHistory(initialSection?: string): NavigationHistory
     goForward,
     push,
     current,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }

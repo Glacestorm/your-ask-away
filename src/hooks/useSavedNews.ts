@@ -4,13 +4,25 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { useLanguage } from '@/contexts/LanguageContext';
 
+// === ERROR TIPADO KB ===
+export interface SavedNewsError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export function useSavedNews(articleId?: string) {
   const { user } = useAuth();
   const { t } = useLanguage();
   const [isSaved, setIsSaved] = useState(false);
   const [savedArticleIds, setSavedArticleIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  // === ESTADO KB ===
+  const [error, setError] = useState<SavedNewsError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
   // Check if specific article is saved
   useEffect(() => {
     if (articleId && user) {
@@ -106,5 +118,9 @@ export function useSavedNews(articleId?: string) {
     fetchSavedArticles,
     savedArticleIds,
     isArticleSaved,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
   };
 }
