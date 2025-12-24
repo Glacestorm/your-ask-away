@@ -1202,3 +1202,87 @@ export type {
   ComplianceStatus,
   ComplianceIssue,
 } from './useKBCompliance';
+
+// ============================================================================
+// PHASE 19: Advanced State & Communication (additional exports)
+// ============================================================================
+
+// Event Bus (Phase 19)
+export {
+  useKBEventBus,
+  useKBEventSubscription,
+  useKBEventEmitter,
+} from './useKBEventBus';
+
+export type {
+  EventPriority,
+  BusEvent,
+  EventSubscription,
+  SubscriptionOptions as EventSubscriptionOptions,
+  EventHandler as BusEventHandler,
+  EventBusConfig,
+  DeadLetterEntry,
+  EventBusMetrics,
+  EventMetadata as BusEventMetadata,
+} from './useKBEventBus';
+
+// State Sync (Phase 19)
+export {
+  useKBStateSync,
+  useKBSyncedValue,
+  useKBCrossTabState,
+} from './useKBStateSync';
+
+export type {
+  MergeStrategy,
+  VersionVector,
+  SyncedState,
+  StateChange,
+  ConflictInfo as StateSyncConflictInfo,
+  ConflictResolver,
+  StateSyncConfig,
+  Snapshot as StateSyncSnapshot,
+  StateSyncMetrics,
+} from './useKBStateSync';
+
+// Worker (Phase 19 additions)
+export {
+  useKBInlineWorker,
+  useKBWorkerTask,
+  createInlineWorker,
+} from './useKBWorker';
+
+export type {
+  WorkerStatus,
+  WorkerTask,
+  WorkerInfo,
+  WorkerPoolConfig,
+  WorkerMessage,
+  WorkerPoolMetrics,
+} from './useKBWorker';
+
+// PubSub (Phase 19)
+export {
+  useKBPubSub,
+  useKBTopic,
+  useKBPublisher,
+  useKBSubscriber,
+} from './useKBPubSub';
+
+export type {
+  DeliveryGuarantee,
+  PubSubMessage,
+  Subscription as PubSubSubscription,
+  SubscriptionOptions as PubSubSubscriptionOptions,
+  MessageHandler,
+  ConsumerGroup,
+  TopicConfig,
+  PubSubConfig,
+  PubSubMetrics,
+} from './useKBPubSub';
+
+// Phase 19 Defaults
+export { default as useKBEventBusDefault } from './useKBEventBus';
+export { default as useKBStateSyncDefault } from './useKBStateSync';
+export { default as useKBWorkerDefault } from './useKBWorker';
+export { default as useKBPubSubDefault } from './useKBPubSub';
