@@ -163,7 +163,7 @@ export const publicRoutes: RouteConfig[] = [
   // Features
   { path: '/lowcode', component: LowCodePage, layout: 'public', priority: 'medium', meta: { title: 'Low Code' } },
   { path: '/cdp', component: CDPDashboard, layout: 'public', priority: 'medium', meta: { title: 'CDP Dashboard' } },
-  { path: '/chat', component: Chat, layout: 'public', priority: 'high', meta: { title: 'Chat IA' } },
+  { path: '/chat', component: Chat, layout: 'none', priority: 'high', meta: { title: 'Chat IA' } },
 ];
 
 // ============================================
@@ -180,11 +180,11 @@ export const companyRoutes: RouteConfig[] = [
 // RUTAS RECURSOS (Docs, API, Blog)
 // ============================================
 export const resourceRoutes: RouteConfig[] = [
-  { path: '/docs', component: Documentation, layout: 'public', priority: 'low', meta: { title: 'Documentación' } },
-  { path: '/api', component: APIReference, layout: 'public', priority: 'low', meta: { title: 'API Reference' } },
+  { path: '/docs', component: Documentation, layout: 'none', priority: 'low', meta: { title: 'Documentación' } },
+  { path: '/api', component: APIReference, layout: 'none', priority: 'low', meta: { title: 'API Reference' } },
   { path: '/blog', component: Blog, layout: 'none', priority: 'low', meta: { title: 'Blog' } },
   { path: '/news/:id', component: NewsDetail, layout: 'none', priority: 'high', meta: { title: 'News' } },
-  { path: '/cases', component: CaseStudies, layout: 'public', priority: 'low', meta: { title: 'Casos de Éxito' } },
+  { path: '/cases', component: CaseStudies, layout: 'none', priority: 'low', meta: { title: 'Casos de Éxito' } },
   { path: '/casos-de-exito', component: CasosDeExito, layout: 'none', priority: 'medium', meta: { title: 'Casos de Éxito' } },
   { path: '/casos-de-exito/:slug', component: CaseStudyDetail, layout: 'none', priority: 'medium', meta: { title: 'Caso de Éxito' } },
   { path: '/comparativas/sectores', component: ComparativasPage, layout: 'none', priority: 'medium', meta: { title: 'Comparar Sectores' } },
