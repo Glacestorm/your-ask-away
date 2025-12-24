@@ -134,8 +134,8 @@ class WorkerPool {
         }
         return new Worker(config.workerScript);
       }),
-      minWorkers: (config.minWorkers !== undefined ? config.minWorkers : 1),
-      maxWorkers: config.maxWorkers ?? navigator.hardwareConcurrency || 4,
+      minWorkers: config.minWorkers !== undefined ? config.minWorkers : 1,
+      maxWorkers: config.maxWorkers ?? (navigator.hardwareConcurrency || 4),
       idleTimeout: config.idleTimeout ?? 60000,
       taskTimeout: config.taskTimeout ?? 30000,
       enableAutoScale: config.enableAutoScale ?? true,

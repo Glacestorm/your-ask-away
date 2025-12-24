@@ -225,8 +225,6 @@ class StateBroadcaster<T> {
 // =============================================================================
 
 export function useKBStateSync<T extends object>(config: StateSyncConfig<T>) {
-  const stableNodeId = useMemo(() => config.nodeId || generateNodeId(), [config.nodeId]);
-  
   const {
     key,
     initialState,
@@ -238,7 +236,7 @@ export function useKBStateSync<T extends object>(config: StateSyncConfig<T>) {
     maxSnapshots = 10,
   } = config;
   
-  const stableNodeId = useMemo(() => config.nodeId || generateNodeId(), [config.nodeId]);
+  const nodeId = useMemo(() => config.nodeId || generateNodeId(), [config.nodeId]);
 
   const [state, setStateInternal] = useState<SyncedState<T>>(() => {
     // Load from persistence
@@ -255,9 +253,9 @@ export function useKBStateSync<T extends object>(config: StateSyncConfig<T>) {
 
     return {
       value: initialState,
-      version: { [nodeId]: 1 },
+      version: { [config.nodeId || 'default']: 1 },
       timestamp: Date.now(),
-      nodeId,
+      nodeId: config.nodeId || 'default',
       checksum: calculateChecksum(initialState),
     };
   });
@@ -272,7 +270,7 @@ export function useKBStateSync<T extends object>(config: StateSyncConfig<T>) {
   });
 
   const broadcasterRef = useRef<StateBroadcaster<T> | null>(null);
-  const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const syncTimesRef = useRef<number[]>([]);
   const changesRef = useRef<StateChange<T>[]>([]);
 
