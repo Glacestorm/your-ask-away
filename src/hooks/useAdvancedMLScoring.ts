@@ -1,13 +1,10 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from './core';
 
-// === ERROR TIPADO KB ===
-export interface AdvancedMLScoringError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+// Re-export for backwards compat
+export type AdvancedMLScoringError = KBError;
 
 export interface IndividualModelResult {
   model_name: string;
@@ -74,14 +71,32 @@ export interface AdvancedMLResult {
 }
 
 export function useAdvancedMLScoring() {
-  const [isLoading, setIsLoading] = useState(false);
+  // === KB 2.0 STATE MACHINE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
   const [result, setResult] = useState<AdvancedMLResult | null>(null);
-  // === ESTADO KB ===
-  const [error, setError] = useState<AdvancedMLScoringError | null>(null);
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  // Computed states
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+  const canRetry = isError && retryCount < 3;
+
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setResult(null);
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   const score = useCallback(async (
     scoringType: 'credit' | 'churn' | 'ltv' | 'propensity',
@@ -93,8 +108,9 @@ export function useAdvancedMLScoring() {
       abTestId?: string;
     }
   ) => {
-    setIsLoading(true);
+    setStatus('loading');
     setError(null);
+    const startTime = new Date();
 
     try {
       const { data, error: fnError } = await supabase.functions.invoke('advanced-ml-scoring', {
@@ -111,20 +127,37 @@ export function useAdvancedMLScoring() {
       if (fnError) throw fnError;
 
       setResult(data);
+      setStatus('success');
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry({
+        hookName: 'useAdvancedMLScoring',
+        operationName: 'score',
+        startTime,
+        endTime: new Date(),
+        durationMs: Date.now() - startTime.getTime(),
+        status: 'success',
+        retryCount: 0,
+      });
       toast.success('Scoring ML avançat completat');
       return data;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Error en scoring avançat';
-      setError({
-        code: 'ADVANCED_ML_ERROR',
-        message,
-        details: { originalError: String(err) }
+      const kbError: KBError = { ...parseError(err), code: 'ADVANCED_ML_ERROR' };
+      setError(kbError);
+      setStatus('error');
+      collectTelemetry({
+        hookName: 'useAdvancedMLScoring',
+        operationName: 'score',
+        startTime,
+        endTime: new Date(),
+        durationMs: Date.now() - startTime.getTime(),
+        status: 'error',
+        error: kbError,
+        retryCount,
       });
-      toast.error(message);
+      toast.error(kbError.message);
       return null;
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -151,15 +184,31 @@ export function useAdvancedMLScoring() {
   }, []);
 
   return {
-    score,
+    // Data
+    data: result,
     result,
+    // State Machine
+    status,
+    isIdle,
     isLoading,
-    // === KB ADDITIONS ===
+    isSuccess,
+    isError,
+    // Error
     error,
-    lastRefresh,
     clearError,
+    // Retry
+    retryCount,
+    canRetry,
+    // Control
+    execute: score,
+    score,
+    reset,
+    // Metadata
+    lastRefresh,
+    lastSuccess,
+    // Helpers
     getRiskColor,
-    getRiskBadgeVariant
+    getRiskBadgeVariant,
   };
 }
 

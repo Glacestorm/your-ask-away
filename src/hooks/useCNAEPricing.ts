@@ -1,13 +1,9 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { KBStatus, KBError, createKBError, parseError, collectTelemetry } from './core';
 
-// === ERROR TIPADO KB ===
-export interface CNAEPricingError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+export type CNAEPricingError = KBError;
 export interface CNAEPriceDetail {
   cnae_code: string;
   base_price: number;
@@ -74,23 +70,42 @@ export interface BundleSuggestionResult {
 }
 
 export function useCNAEPricing() {
-  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  // === KB 2.0 STATE MACHINE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
   const [pricingResult, setPricingResult] = useState<PricingResult | null>(null);
   const [bundleSuggestions, setBundleSuggestions] = useState<BundleSuggestionResult | null>(null);
-  const { toast } = useToast();
-  // === ESTADO KB ===
-  const [error, setError] = useState<CNAEPricingError | null>(null);
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  const isIdle = status === 'idle';
+  const isLoading = status === 'loading';
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+  const canRetry = isError && retryCount < 3;
+
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setPricingResult(null);
+    setBundleSuggestions(null);
+    setError(null);
+    setRetryCount(0);
+  }, []);
   const calculatePricing = useCallback(async (
     cnaeCodes: string[],
     companyTurnover?: number,
     companyId?: string
   ): Promise<PricingResult | null> => {
-    setIsLoading(true);
+    setStatus('loading');
     setError(null);
+    const startTime = new Date();
     try {
       const { data, error: fnError } = await supabase.functions.invoke('calculate-multi-cnae-pricing', {
         body: {
@@ -103,24 +118,19 @@ export function useCNAEPricing() {
       if (fnError) throw fnError;
 
       setPricingResult(data);
+      setStatus('success');
       setLastRefresh(new Date());
+      setLastSuccess(new Date());
+      setRetryCount(0);
+      collectTelemetry({ hookName: 'useCNAEPricing', operationName: 'calculatePricing', startTime, endTime: new Date(), durationMs: Date.now() - startTime.getTime(), status: 'success', retryCount: 0 });
       return data;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'No se pudo calcular el precio';
-      setError({
-        code: 'CALCULATE_PRICING_ERROR',
-        message,
-        details: { originalError: String(err) }
-      });
-      console.error('Error calculating pricing:', err);
-      toast({
-        title: 'Error',
-        description: message,
-        variant: 'destructive'
-      });
+      const kbError: KBError = { ...parseError(err), code: 'CALCULATE_PRICING_ERROR' };
+      setError(kbError);
+      setStatus('error');
+      collectTelemetry({ hookName: 'useCNAEPricing', operationName: 'calculatePricing', startTime, endTime: new Date(), durationMs: Date.now() - startTime.getTime(), status: 'error', error: kbError, retryCount });
+      toast({ title: 'Error', description: kbError.message, variant: 'destructive' });
       return null;
-    } finally {
-      setIsLoading(false);
     }
   }, [toast]);
 
@@ -129,7 +139,7 @@ export function useCNAEPricing() {
     companySector?: string,
     companyTurnover?: number
   ): Promise<BundleSuggestionResult | null> => {
-    setIsLoading(true);
+    setStatus('loading');
     try {
       const { data, error } = await supabase.functions.invoke('suggest-cnae-bundles', {
         body: {
@@ -142,17 +152,14 @@ export function useCNAEPricing() {
       if (error) throw error;
 
       setBundleSuggestions(data);
+      setStatus('success');
       return data;
-    } catch (error: any) {
-      console.error('Error suggesting bundles:', error);
-      toast({
-        title: 'Error',
-        description: 'No se pudieron obtener sugerencias',
-        variant: 'destructive'
-      });
+    } catch (err) {
+      const kbError: KBError = { ...parseError(err), code: 'SUGGEST_BUNDLES_ERROR' };
+      setError(kbError);
+      setStatus('error');
+      toast({ title: 'Error', description: 'No se pudieron obtener sugerencias', variant: 'destructive' });
       return null;
-    } finally {
-      setIsLoading(false);
     }
   }, [toast]);
 
@@ -257,9 +264,19 @@ export function useCNAEPricing() {
   };
 
   return {
-    isLoading,
+    data: pricingResult,
     pricingResult,
     bundleSuggestions,
+    status,
+    isIdle,
+    isLoading,
+    isSuccess,
+    isError,
+    error,
+    clearError,
+    retryCount,
+    canRetry,
+    execute: calculatePricing,
     calculatePricing,
     suggestBundles,
     fetchCNAEPricing,
@@ -267,11 +284,10 @@ export function useCNAEPricing() {
     fetchCompanyCnaes,
     addCompanyCnae,
     removeCompanyCnae,
+    reset,
+    lastRefresh,
+    lastSuccess,
     getComplexityTierColor,
     getTurnoverTierLabel,
-    // === KB ADDITIONS ===
-    error,
-    lastRefresh,
-    clearError
   };
 }

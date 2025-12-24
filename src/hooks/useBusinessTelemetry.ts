@@ -8,13 +8,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
+import { KBStatus, KBError, createKBError, parseError } from './core';
 
-// === ERROR TIPADO KB ===
-export interface BusinessTelemetryError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+export type BusinessTelemetryError = KBError;
 
 export type MetricType = 
   | 'revenue'
@@ -72,14 +68,32 @@ export interface TelemetryAggregation {
 
 export function useBusinessTelemetry() {
   const { user } = useAuth();
-  const [loading, setLoading] = useState(false);
+  // === KB 2.0 STATE MACHINE ===
+  const [status, setStatus] = useState<KBStatus>('idle');
   const [metrics, setMetrics] = useState<TelemetryMetric[]>([]);
-  // === ESTADO KB ===
-  const [error, setError] = useState<BusinessTelemetryError | null>(null);
+  const [error, setError] = useState<KBError | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [lastSuccess, setLastSuccess] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // === CLEAR ERROR KB ===
-  const clearError = useCallback(() => setError(null), []);
+  const isIdle = status === 'idle';
+  const loading = status === 'loading';
+  const isLoading = loading;
+  const isSuccess = status === 'success';
+  const isError = status === 'error';
+  const canRetry = isError && retryCount < 3;
+
+  const clearError = useCallback(() => {
+    setError(null);
+    if (status === 'error') setStatus('idle');
+  }, [status]);
+
+  const reset = useCallback(() => {
+    setStatus('idle');
+    setMetrics([]);
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
   /**
    * Registrar una nueva métrica de telemetría
@@ -90,7 +104,7 @@ export function useBusinessTelemetry() {
       return null;
     }
 
-    setLoading(true);
+    setStatus('loading');
     setError(null);
 
     try {
@@ -105,15 +119,14 @@ export function useBusinessTelemetry() {
 
       if (insertError) throw insertError;
 
-      console.log('[BusinessTelemetry] Metric recorded:', metric.metric_type, metric.value);
+      setStatus('success');
+      setLastSuccess(new Date());
       return data;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to record metric';
-      setError({ code: 'RECORD_METRIC_ERROR', message, details: { originalError: String(err) } });
-      console.error('[BusinessTelemetry] Error recording metric:', err);
+      const kbError: KBError = { ...parseError(err), code: 'RECORD_METRIC_ERROR' };
+      setError(kbError);
+      setStatus('error');
       return null;
-    } finally {
-      setLoading(false);
     }
   }, [user]);
 
@@ -126,7 +139,7 @@ export function useBusinessTelemetry() {
       return null;
     }
 
-    setLoading(true);
+    setStatus('loading');
     setError(null);
 
     try {
@@ -142,15 +155,13 @@ export function useBusinessTelemetry() {
 
       if (insertError) throw insertError;
 
-      console.log('[BusinessTelemetry] Batch recorded:', metricsWithUser.length, 'metrics');
+      setStatus('success');
       return data;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to record metrics batch';
-      setError({ code: 'RECORD_BATCH_ERROR', message, details: { originalError: String(err) } });
-      console.error('[BusinessTelemetry] Error recording batch:', err);
+      const kbError: KBError = { ...parseError(err), code: 'RECORD_BATCH_ERROR' };
+      setError(kbError);
+      setStatus('error');
       return null;
-    } finally {
-      setLoading(false);
     }
   }, [user]);
 
@@ -158,7 +169,7 @@ export function useBusinessTelemetry() {
    * Consultar métricas con filtros
    */
   const queryMetrics = useCallback(async (query: TelemetryQuery = {}) => {
-    setLoading(true);
+    setStatus('loading');
     setError(null);
 
     try {
@@ -191,14 +202,14 @@ export function useBusinessTelemetry() {
       if (queryError) throw queryError;
 
       setMetrics(data || []);
+      setStatus('success');
+      setLastRefresh(new Date());
       return data;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to query metrics';
-      setError({ code: 'QUERY_METRICS_ERROR', message, details: { originalError: String(err) } });
-      console.error('[BusinessTelemetry] Error querying metrics:', err);
+      const kbError: KBError = { ...parseError(err), code: 'QUERY_METRICS_ERROR' };
+      setError(kbError);
+      setStatus('error');
       return null;
-    } finally {
-      setLoading(false);
     }
   }, []);
 
@@ -210,7 +221,7 @@ export function useBusinessTelemetry() {
     periodStart?: string,
     periodEnd?: string
   ): Promise<TelemetryAggregation | null> => {
-    setLoading(true);
+    setStatus('loading');
     setError(null);
 
     try {
@@ -247,21 +258,13 @@ export function useBusinessTelemetry() {
       const min = Math.min(...values);
       const max = Math.max(...values);
 
-      return {
-        metric_type: metricType,
-        total,
-        average,
-        min,
-        max,
-        count: values.length,
-      };
+      setStatus('success');
+      return { metric_type: metricType, total, average, min, max, count: values.length };
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to get aggregations';
-      setError({ code: 'AGGREGATIONS_ERROR', message, details: { originalError: String(err) } });
-      console.error('[BusinessTelemetry] Error getting aggregations:', err);
+      const kbError: KBError = { ...parseError(err), code: 'AGGREGATIONS_ERROR' };
+      setError(kbError);
+      setStatus('error');
       return null;
-    } finally {
-      setLoading(false);
     }
   }, []);
 
@@ -269,7 +272,7 @@ export function useBusinessTelemetry() {
    * Eliminar métrica por ID
    */
   const deleteMetric = useCallback(async (id: string) => {
-    setLoading(true);
+    setStatus('loading');
     setError(null);
 
     try {
@@ -281,16 +284,15 @@ export function useBusinessTelemetry() {
       if (deleteError) throw deleteError;
 
       setMetrics(prev => prev.filter(m => m.id !== id));
+      setStatus('success');
       toast.success('Métrica eliminada');
       return true;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to delete metric';
-      setError({ code: 'DELETE_METRIC_ERROR', message, details: { originalError: String(err) } });
-      console.error('[BusinessTelemetry] Error deleting metric:', err);
+      const kbError: KBError = { ...parseError(err), code: 'DELETE_METRIC_ERROR' };
+      setError(kbError);
+      setStatus('error');
       toast.error('Error al eliminar métrica');
       return false;
-    } finally {
-      setLoading(false);
     }
   }, []);
 
@@ -325,15 +327,21 @@ export function useBusinessTelemetry() {
   }, []);
 
   return {
-    // State
-    loading,
-    error,
+    data: metrics,
     metrics,
-    // === KB ADDITIONS ===
-    lastRefresh,
+    status,
+    isIdle,
+    loading,
+    isLoading,
+    isSuccess,
+    isError,
+    error,
     clearError,
-    
-    // Actions
+    retryCount,
+    canRetry,
+    reset,
+    lastRefresh,
+    lastSuccess,
     recordMetric,
     recordMetricsBatch,
     queryMetrics,
