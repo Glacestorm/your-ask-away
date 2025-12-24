@@ -138,6 +138,17 @@ export {
   loggerMiddleware,
 } from './useKBReactive';
 
+// React 19 Hooks (KB 4.5)
+export {
+  useKBOptimistic,
+  useKBFormAction,
+  useKBUse,
+  clearKBUseCache,
+  preloadKBResource,
+  getKBOptimisticStats,
+  resetKBOptimisticCircuits,
+} from './useKBReact19';
+
 // Re-export defaults
 export { default as useKBBaseDefault } from './useKBBase';
 export { default as useKBQueryDefault } from './useKBQuery';
@@ -149,3 +160,4 @@ export { default as useKBQueryDedupDefault } from './useKBQueryDedup';
 export { default as useKBSignalDefault } from './useKBSignal';
 export { default as useKBEffectDefault } from './useKBEffect';
 export { default as useKBReactiveDefault } from './useKBReactive';
+export { default as useKBReact19Default } from './useKBReact19';
