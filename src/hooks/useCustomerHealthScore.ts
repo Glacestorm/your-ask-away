@@ -72,10 +72,22 @@ const DEFAULT_CONFIG: HealthScoreConfig = {
   }
 };
 
+// === ERROR TIPADO KB ===
+export interface CustomerHealthScoreError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export function useCustomerHealthScore() {
   const [isLoading, setIsLoading] = useState(false);
   const [healthScores, setHealthScores] = useState<CustomerHealthScore[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  // === ESTADO KB ===
+  const [error, setError] = useState<CustomerHealthScoreError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const calculateHealthScore = useCallback(async (companyId: string, config: HealthScoreConfig = DEFAULT_CONFIG): Promise<CustomerHealthScore | null> => {
     setIsLoading(true);
@@ -218,7 +230,11 @@ export function useCustomerHealthScore() {
       return healthScore;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error calculating health score';
-      setError(message);
+      setError({
+        code: 'CALCULATE_HEALTH_SCORE_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
       console.error('Health score calculation error:', err);
       return null;
     } finally {
@@ -236,6 +252,7 @@ export function useCustomerHealthScore() {
     }
 
     setHealthScores(scores);
+    setLastRefresh(new Date());
     setIsLoading(false);
     return scores;
   }, [calculateHealthScore]);
@@ -262,7 +279,10 @@ export function useCustomerHealthScore() {
     calculateBulkHealthScores,
     healthScores,
     isLoading,
+    // === KB ADDITIONS ===
     error,
+    lastRefresh,
+    clearError,
     getHealthScoreColor,
     getRiskLevelColor
   };

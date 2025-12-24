@@ -1,8 +1,15 @@
 import { useState, useCallback } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { SentimentAnalysis, SentimentType } from '@/types/satisfaction';
+
+// === ERROR TIPADO KB ===
+export interface SentimentAnalysisError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 interface AnalyzeSentimentParams {
   content: string;
@@ -27,6 +34,12 @@ interface SentimentResult {
 export function useSentimentAnalysis(companyId?: string) {
   const queryClient = useQueryClient();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  // === ESTADO KB ===
+  const [error, setError] = useState<SentimentAnalysisError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   // Fetch sentiment history for a company
   const { data: sentimentHistory, isLoading: loadingHistory, refetch } = useQuery({
@@ -56,7 +69,12 @@ export function useSentimentAnalysis(companyId?: string) {
         body: params
       });
 
-      if (error) throw error;
+      if (error) {
+        setError({ code: 'FETCH_SENTIMENT_HISTORY_ERROR', message: error.message, details: { originalError: String(error) } });
+        throw error;
+      }
+      
+      setLastRefresh(new Date());
       
       if (params.save_result && params.company_id) {
         queryClient.invalidateQueries({ queryKey: ['sentiment-analysis', params.company_id] });
@@ -118,7 +136,11 @@ export function useSentimentAnalysis(companyId?: string) {
     isAnalyzing,
     averageSentiment,
     sentimentTrend: sentimentTrend(),
-    refetch
+    refetch,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError
   };
 }
 

@@ -1,6 +1,14 @@
+import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+// === ERROR TIPADO KB ===
+export interface RevenueIntelligenceError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 export interface RevenueEvent {
   id: string;
@@ -83,6 +91,12 @@ export interface RevenueCohort {
 
 export const useRevenueIntelligence = () => {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<RevenueIntelligenceError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   // Fetch revenue events
   const { data: revenueEvents, isLoading: eventsLoading, refetch: refetchEvents } = useQuery({
@@ -112,7 +126,12 @@ export const useRevenueIntelligence = () => {
         .order('snapshot_date', { ascending: false })
         .limit(24);
       
-      if (error) throw error;
+      if (error) {
+        setError({ code: 'FETCH_REVENUE_EVENTS_ERROR', message: error.message, details: { originalError: String(error) } });
+        throw error;
+      }
+      
+      setLastRefresh(new Date());
       return data as MRRSnapshot[];
     }
   });
@@ -240,6 +259,10 @@ export const useRevenueIntelligence = () => {
     getEventsByType,
     getMRRTrendData,
     getRevenueBySegment,
-    isCreatingEvent: createEventMutation.isPending
+    isCreatingEvent: createEventMutation.isPending,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError
   };
 };
