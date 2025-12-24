@@ -1,7 +1,14 @@
-import { useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+// === ERROR TIPADO KB ===
+export interface RevenueAnomalyError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 
 export interface RevenueAnomalyAlert {
   id: string;
@@ -24,17 +31,37 @@ export interface RevenueAnomalyAlert {
 
 export const useRevenueAnomalyAlerts = () => {
   const queryClient = useQueryClient();
+  // === ESTADO KB ===
+  const [error, setError] = useState<RevenueAnomalyError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
 
   const { data: alerts, isLoading, refetch } = useQuery({
     queryKey: ['revenue-anomaly-alerts'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('revenue_anomaly_alerts')
-        .select('*')
-        .order('detected_at', { ascending: false })
-        .limit(100);
-      if (error) throw error;
-      return data as RevenueAnomalyAlert[];
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('revenue_anomaly_alerts')
+          .select('*')
+          .order('detected_at', { ascending: false })
+          .limit(100);
+        
+        if (fetchError) throw fetchError;
+        
+        setLastRefresh(new Date());
+        setError(null);
+        return data as RevenueAnomalyAlert[];
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Error desconocido';
+        setError({
+          code: 'FETCH_ALERTS_ERROR',
+          message,
+          details: { originalError: String(err) }
+        });
+        throw err;
+      }
     }
   });
 
@@ -69,24 +96,40 @@ export const useRevenueAnomalyAlerts = () => {
         updates.resolved_at = new Date().toISOString();
         if (notes) updates.resolution_notes = notes;
       }
-      const { error } = await supabase.from('revenue_anomaly_alerts').update(updates).eq('id', id);
-      if (error) throw error;
+      const { error: updateError } = await supabase.from('revenue_anomaly_alerts').update(updates).eq('id', id);
+      if (updateError) throw updateError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['revenue-anomaly-alerts'] });
       toast.success('Alerta actualizada');
+    },
+    onError: (err) => {
+      const message = err instanceof Error ? err.message : 'Error al actualizar alerta';
+      setError({
+        code: 'UPDATE_ALERT_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
     }
   });
 
   const runAnomalyDetection = useMutation({
     mutationFn: async (config?: Record<string, unknown>) => {
-      const { data, error } = await supabase.functions.invoke('revenue-anomaly-monitor', { body: { config } });
-      if (error) throw error;
+      const { data, error: invokeError } = await supabase.functions.invoke('revenue-anomaly-monitor', { body: { config } });
+      if (invokeError) throw invokeError;
       return data;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['revenue-anomaly-alerts'] });
       toast.success(`Análisis completado: ${data.anomaliesDetected} anomalías detectadas`);
+    },
+    onError: (err) => {
+      const message = err instanceof Error ? err.message : 'Error al ejecutar detección';
+      setError({
+        code: 'RUN_DETECTION_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
     }
   });
 
@@ -97,6 +140,11 @@ export const useRevenueAnomalyAlerts = () => {
     alerts,
     isLoading,
     refetch,
+    // === KB ADDITIONS ===
+    error,
+    lastRefresh,
+    clearError,
+    // === EXISTING ===
     updateAlertStatus: updateAlertStatus.mutateAsync,
     runAnomalyDetection: runAnomalyDetection.mutateAsync,
     isRunningDetection: runAnomalyDetection.isPending,
