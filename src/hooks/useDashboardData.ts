@@ -3,6 +3,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { format, subDays, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import { DateRange } from 'react-day-picker';
 
+// === ERROR TIPADO KB ===
+export interface DashboardDataError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
 interface GestorDetail {
   id: string;
   name: string;
@@ -40,7 +46,12 @@ const CACHE_DURATION = 60000; // 1 minute cache
 export function useDashboardData(dateRange: DateRange | undefined) {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  // === ESTADO KB ===
+  const [error, setError] = useState<DashboardDataError | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
   
   const cacheRef = useRef<{ data: DashboardData; timestamp: number; key: string } | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -257,10 +268,15 @@ export function useDashboardData(dateRange: DateRange | undefined) {
       };
 
       setData(dashboardData);
+      setLastRefresh(new Date());
       setError(null);
     } catch (err) {
       if (err instanceof Error && err.name !== 'AbortError') {
-        setError(err);
+        setError({
+          code: 'FETCH_DASHBOARD_ERROR',
+          message: err.message,
+          details: { originalError: String(err) }
+        });
         console.error('Error fetching dashboard data:', err);
       }
     } finally {
@@ -283,5 +299,13 @@ export function useDashboardData(dateRange: DateRange | undefined) {
     fetchData();
   }, [fetchData]);
 
-  return { data, loading, error, refetch };
+  return { 
+    data, 
+    loading, 
+    // === KB ADDITIONS ===
+    error, 
+    lastRefresh,
+    clearError,
+    refetch 
+  };
 }

@@ -20,6 +20,13 @@ import {
   PendingOperation,
 } from '@/lib/offlineStorage';
 
+// === ERROR TIPADO KB ===
+export interface OfflineSyncError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
 export interface UseOfflineSyncOptions {
   autoSync?: boolean;
   syncInterval?: number; // ms
@@ -53,6 +60,9 @@ export interface UseOfflineSyncReturn {
   
   // Clear cache
   clearOfflineCache: () => Promise<void>;
+  // KB additions
+  error: OfflineSyncError | null;
+  clearError: () => void;
 }
 
 export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineSyncReturn {
@@ -67,6 +77,11 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineS
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [pendingCount, setPendingCount] = useState(0);
   const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
+  // === ESTADO KB ===
+  const [error, setError] = useState<OfflineSyncError | null>(null);
+
+  // === CLEAR ERROR KB ===
+  const clearError = useCallback(() => setError(null), []);
   
   const syncIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const isInitialized = useRef(false);
@@ -245,8 +260,14 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineS
           description: `${syncedCount} operacions sincronitzades`,
         });
       }
-    } catch (error) {
-      console.error('[OfflineSync] Sync failed:', error);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error de sincronització';
+      setError({
+        code: 'SYNC_ERROR',
+        message,
+        details: { originalError: String(err) }
+      });
+      console.error('[OfflineSync] Sync failed:', err);
       toast.error('Error de sincronització', {
         description: 'Es reintentarà automàticament',
       });
@@ -426,5 +447,8 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}): UseOfflineS
     getOfflineVisits,
     getOfflineGoals,
     clearOfflineCache,
+    // === KB ADDITIONS ===
+    error,
+    clearError
   };
 }
