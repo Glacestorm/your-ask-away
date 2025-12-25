@@ -20844,6 +20844,57 @@ export type Database = {
           },
         ]
       }
+      training_leaderboard: {
+        Row: {
+          badges_count: number | null
+          certificates_earned: number | null
+          courses_completed: number | null
+          created_at: string | null
+          current_streak_days: number | null
+          id: string
+          last_activity_at: string | null
+          level: number | null
+          longest_streak_days: number | null
+          quizzes_passed: number | null
+          rank_position: number | null
+          total_xp: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          badges_count?: number | null
+          certificates_earned?: number | null
+          courses_completed?: number | null
+          created_at?: string | null
+          current_streak_days?: number | null
+          id?: string
+          last_activity_at?: string | null
+          level?: number | null
+          longest_streak_days?: number | null
+          quizzes_passed?: number | null
+          rank_position?: number | null
+          total_xp?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          badges_count?: number | null
+          certificates_earned?: number | null
+          courses_completed?: number | null
+          created_at?: string | null
+          current_streak_days?: number | null
+          id?: string
+          last_activity_at?: string | null
+          level?: number | null
+          longest_streak_days?: number | null
+          quizzes_passed?: number | null
+          rank_position?: number | null
+          total_xp?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       training_modules: {
         Row: {
           course_id: string
@@ -20966,6 +21017,154 @@ export type Database = {
           },
         ]
       }
+      training_quiz_attempts: {
+        Row: {
+          answers: Json | null
+          attempt_number: number | null
+          completed_at: string | null
+          created_at: string | null
+          enrollment_id: string | null
+          id: string
+          passed: boolean | null
+          quiz_id: string
+          score: number | null
+          started_at: string | null
+          time_spent_seconds: number | null
+          user_id: string
+        }
+        Insert: {
+          answers?: Json | null
+          attempt_number?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          enrollment_id?: string | null
+          id?: string
+          passed?: boolean | null
+          quiz_id: string
+          score?: number | null
+          started_at?: string | null
+          time_spent_seconds?: number | null
+          user_id: string
+        }
+        Update: {
+          answers?: Json | null
+          attempt_number?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          enrollment_id?: string | null
+          id?: string
+          passed?: boolean | null
+          quiz_id?: string
+          score?: number | null
+          started_at?: string | null
+          time_spent_seconds?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_quiz_attempts_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "training_enrollments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_quiz_attempts_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "training_quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_quizzes: {
+        Row: {
+          content_id: string | null
+          course_id: string | null
+          created_at: string | null
+          description: Json | null
+          id: string
+          is_active: boolean | null
+          is_required_for_certificate: boolean | null
+          max_attempts: number | null
+          module_id: string | null
+          passing_score: number | null
+          questions: Json
+          quiz_key: string
+          show_correct_answers: boolean | null
+          shuffle_options: boolean | null
+          shuffle_questions: boolean | null
+          sort_order: number | null
+          time_limit_minutes: number | null
+          title: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          content_id?: string | null
+          course_id?: string | null
+          created_at?: string | null
+          description?: Json | null
+          id?: string
+          is_active?: boolean | null
+          is_required_for_certificate?: boolean | null
+          max_attempts?: number | null
+          module_id?: string | null
+          passing_score?: number | null
+          questions?: Json
+          quiz_key: string
+          show_correct_answers?: boolean | null
+          shuffle_options?: boolean | null
+          shuffle_questions?: boolean | null
+          sort_order?: number | null
+          time_limit_minutes?: number | null
+          title?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          content_id?: string | null
+          course_id?: string | null
+          created_at?: string | null
+          description?: Json | null
+          id?: string
+          is_active?: boolean | null
+          is_required_for_certificate?: boolean | null
+          max_attempts?: number | null
+          module_id?: string | null
+          passing_score?: number | null
+          questions?: Json
+          quiz_key?: string
+          show_correct_answers?: boolean | null
+          shuffle_options?: boolean | null
+          shuffle_questions?: boolean | null
+          sort_order?: number | null
+          time_limit_minutes?: number | null
+          title?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_quizzes_content_id_fkey"
+            columns: ["content_id"]
+            isOneToOne: false
+            referencedRelation: "training_content"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_quizzes_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "training_courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_quizzes_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "training_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_reviews: {
         Row: {
           cons: string[] | null
@@ -21040,6 +21239,90 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      training_student_badges: {
+        Row: {
+          badge_color: string | null
+          badge_description: Json | null
+          badge_icon: string | null
+          badge_key: string
+          badge_name: Json | null
+          category: string | null
+          created_at: string | null
+          earned_at: string | null
+          id: string
+          metadata: Json | null
+          points_awarded: number | null
+          user_id: string
+        }
+        Insert: {
+          badge_color?: string | null
+          badge_description?: Json | null
+          badge_icon?: string | null
+          badge_key: string
+          badge_name?: Json | null
+          category?: string | null
+          created_at?: string | null
+          earned_at?: string | null
+          id?: string
+          metadata?: Json | null
+          points_awarded?: number | null
+          user_id: string
+        }
+        Update: {
+          badge_color?: string | null
+          badge_description?: Json | null
+          badge_icon?: string | null
+          badge_key?: string
+          badge_name?: Json | null
+          category?: string | null
+          created_at?: string | null
+          earned_at?: string | null
+          id?: string
+          metadata?: Json | null
+          points_awarded?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      training_student_xp: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          earned_at: string | null
+          id: string
+          metadata: Json | null
+          points: number
+          source_id: string | null
+          source_type: string | null
+          user_id: string
+          xp_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          earned_at?: string | null
+          id?: string
+          metadata?: Json | null
+          points: number
+          source_id?: string | null
+          source_type?: string | null
+          user_id: string
+          xp_type: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          earned_at?: string | null
+          id?: string
+          metadata?: Json | null
+          points?: number
+          source_id?: string | null
+          source_type?: string | null
+          user_id?: string
+          xp_type?: string
+        }
+        Relationships: []
       }
       trusted_devices: {
         Row: {
@@ -22741,6 +23024,7 @@ export type Database = {
           total: number
         }[]
       }
+      calculate_student_level: { Args: { xp_points: number }; Returns: number }
       can_send_survey: {
         Args: {
           p_company_id: string
@@ -22976,6 +23260,10 @@ export type Database = {
           p_user_id: string
         }
         Returns: string
+      }
+      update_leaderboard_counters: {
+        Args: { p_counter: string; p_increment?: number; p_user_id: string }
+        Returns: undefined
       }
       update_translation_progress_for_locale: {
         Args: { p_locale: string }
