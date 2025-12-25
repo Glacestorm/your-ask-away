@@ -34,6 +34,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import StoreNavbar from '@/components/store/StoreNavbar';
+import { AcademiaAIAssistant } from '@/components/academia/AcademiaAIAssistant';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from 'sonner';
@@ -991,6 +992,12 @@ const CourseDetail: React.FC = () => {
           </div>
         </div>
       </section>
+      {/* AI Assistant */}
+      <AcademiaAIAssistant 
+        courseContext={language === 'es' ? course.title : course.titleEn}
+        lessonTitle={language === 'es' ? course.title : course.titleEn}
+        lessonContent={language === 'es' ? course.description : course.descriptionEn}
+      />
     </div>
   );
 };
