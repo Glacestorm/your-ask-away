@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useMyPartnerCompany, usePartnerApplications, usePartnerRevenue, useApplyForPartnership } from '@/hooks/usePartnerPortal';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -199,6 +201,15 @@ function PartnerOnboarding() {
 function PartnerDashboard({ company, role }: { company: any; role: string }) {
   const { data: apps } = usePartnerApplications(company.id);
   const { data: revenue } = usePartnerRevenue(company.id);
+  const [settingsForm, setSettingsForm] = useState({
+    company_name: company.company_name || '',
+    legal_name: company.legal_name || '',
+    contact_email: company.contact_email || '',
+    contact_phone: company.contact_phone || '',
+    website: company.website || '',
+    description: company.description || '',
+  });
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [isAppEditorOpen, setIsAppEditorOpen] = useState(false);
   const [selectedApp, setSelectedApp] = useState<any>(null);
 
@@ -217,6 +228,31 @@ function PartnerDashboard({ company, role }: { company: any; role: string }) {
   const handleEditApp = (app: any) => {
     setSelectedApp(app);
     setIsAppEditorOpen(true);
+  };
+
+  const handleSaveSettings = async () => {
+    setIsSavingSettings(true);
+    try {
+      const { error } = await (supabase
+        .from('marketplace_partner_companies' as any)
+        .update({
+          company_name: settingsForm.company_name,
+          legal_name: settingsForm.legal_name,
+          contact_email: settingsForm.contact_email,
+          contact_phone: settingsForm.contact_phone,
+          website: settingsForm.website,
+          description: settingsForm.description,
+        })
+        .eq('id', company.id) as any);
+
+      if (error) throw error;
+      toast.success('Configuración guardada correctamente');
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      toast.error('Error al guardar la configuración');
+    } finally {
+      setIsSavingSettings(false);
+    }
   };
 
   return (
@@ -464,23 +500,84 @@ function PartnerDashboard({ company, role }: { company: any; role: string }) {
             <Card>
               <CardHeader>
                 <CardTitle>Configuración de la cuenta</CardTitle>
+                <CardDescription>
+                  Actualiza la información de tu empresa partner
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium">Nombre de la empresa</label>
-                  <Input value={company.company_name} disabled />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium">Nombre de la empresa *</label>
+                    <Input 
+                      value={settingsForm.company_name}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, company_name: e.target.value })}
+                      placeholder="Mi Empresa SL"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Razón social</label>
+                    <Input 
+                      value={settingsForm.legal_name}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, legal_name: e.target.value })}
+                      placeholder="Razón social completa"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="text-sm font-medium">Email de contacto</label>
-                  <Input value={company.contact_email} disabled />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium">Email de contacto *</label>
+                    <Input 
+                      type="email"
+                      value={settingsForm.contact_email}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, contact_email: e.target.value })}
+                      placeholder="partners@empresa.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Teléfono</label>
+                    <Input 
+                      value={settingsForm.contact_phone}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, contact_phone: e.target.value })}
+                      placeholder="+34 600 000 000"
+                    />
+                  </div>
                 </div>
+
                 <div>
-                  <label className="text-sm font-medium">Tier actual</label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge className="capitalize">{company.partner_tier}</Badge>
-                    <span className="text-sm text-muted-foreground">
-                      Revenue share: {company.revenue_share_percent}%
-                    </span>
+                  <label className="text-sm font-medium">Website</label>
+                  <Input 
+                    type="url"
+                    value={settingsForm.website}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, website: e.target.value })}
+                    placeholder="https://empresa.com"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Descripción</label>
+                  <Textarea 
+                    value={settingsForm.description}
+                    onChange={(e) => setSettingsForm({ ...settingsForm, description: e.target.value })}
+                    placeholder="Describe tu empresa y servicios..."
+                    rows={4}
+                  />
+                </div>
+
+                <div className="pt-4 border-t">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label className="text-sm font-medium">Tier actual</label>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge className="capitalize">{company.partner_tier}</Badge>
+                        <span className="text-sm text-muted-foreground">
+                          Revenue share: {company.revenue_share_percent}%
+                        </span>
+                      </div>
+                    </div>
+                    <Button onClick={handleSaveSettings} disabled={isSavingSettings}>
+                      {isSavingSettings ? 'Guardando...' : 'Guardar cambios'}
+                    </Button>
                   </div>
                 </div>
               </CardContent>
