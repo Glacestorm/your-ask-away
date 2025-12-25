@@ -13,3 +13,6 @@ export { GamificationMiniWidget } from './GamificationMiniWidget';
 
 // AI Components
 export { AIRecommendationsPanel } from './AIRecommendationsPanel';
+export { AcademiaAIAssistant } from './AcademiaAIAssistant';
+export { CourseCardWithAI } from './CourseCardWithAI';
+export { ProgressDashboard } from './ProgressDashboard';
