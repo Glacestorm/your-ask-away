@@ -165,7 +165,7 @@ export const publicRoutes: RouteConfig[] = [
   { path: '/academia/comunidad', component: AcademiaCommunity, layout: 'none', priority: 'high', meta: { title: 'Comunidad', requiresAuth: true } },
   
   // Sectors (con alias para ambas rutas)
-  { path: '/sectores', component: SectorLanding, layout: 'public', priority: 'high', meta: { title: 'Sectores' } },
+  { path: '/sectores', component: SectorLanding, layout: 'none', priority: 'high', meta: { title: 'Sectores' } },
   { path: '/sectores/:slug', component: SectorDetail, layout: 'none', priority: 'high', meta: { title: 'Sector' } },
   { path: '/sectors/:slug', component: SectorDetail, layout: 'none', priority: 'high', meta: { title: 'Sector' } },
   { path: '/sectores/banca', component: BancaLanding, layout: 'public', priority: 'high', meta: { title: 'Banca' } },
