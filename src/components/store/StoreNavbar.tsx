@@ -141,13 +141,23 @@ const StoreNavbar: React.FC = () => {
               { id: 'cursos', label: language === 'es' ? 'Todos los Cursos' : 'All Courses', href: '/academia/cursos', icon: BookOpen, description: language === 'es' ? 'Catálogo completo de formación' : 'Complete training catalog' },
               { id: 'certificaciones', label: language === 'es' ? 'Certificaciones' : 'Certifications', href: '/academia/cursos?type=certification', icon: Award, description: language === 'es' ? 'Programas certificados oficiales' : 'Official certified programs', badge: 'Pro' },
               { id: 'webinars', label: 'Webinars', href: '/academia/cursos?type=webinar', icon: Globe, description: language === 'es' ? 'Sesiones en vivo y grabadas' : 'Live and recorded sessions' },
+              { id: 'demo', label: language === 'es' ? 'Demo Academia' : 'Academy Demo', href: '/academia/demo', icon: Rocket, description: language === 'es' ? 'Prueba interactiva de la plataforma' : 'Interactive platform demo', badge: language === 'es' ? 'Nuevo' : 'New' },
             ],
           },
           {
             title: language === 'es' ? 'Mi Espacio' : 'My Space',
             items: [
-              { id: 'mi-perfil', label: language === 'es' ? 'Mi Perfil' : 'My Profile', href: '/academia/mi-perfil', icon: Users, description: language === 'es' ? 'Logros, certificados y progreso' : 'Achievements, certificates and progress', badge: language === 'es' ? 'Nuevo' : 'New' },
+              { id: 'mi-perfil', label: language === 'es' ? 'Mi Perfil' : 'My Profile', href: '/academia/mi-perfil', icon: Users, description: language === 'es' ? 'Logros, certificados y progreso' : 'Achievements, certificates and progress' },
+              { id: 'notificaciones', label: language === 'es' ? 'Notificaciones' : 'Notifications', href: '/academia/notificaciones', icon: MessageSquare, description: language === 'es' ? 'Alertas y actualizaciones' : 'Alerts and updates', badge: language === 'es' ? 'Nuevo' : 'New' },
+              { id: 'comunidad', label: language === 'es' ? 'Comunidad' : 'Community', href: '/academia/comunidad', icon: Users, description: language === 'es' ? 'Foros y discusiones' : 'Forums and discussions', badge: language === 'es' ? 'Nuevo' : 'New' },
               { id: 'verificar', label: language === 'es' ? 'Verificar Certificado' : 'Verify Certificate', href: '/academia/verificar', icon: ShieldCheck, description: language === 'es' ? 'Valida autenticidad de certificados' : 'Validate certificate authenticity' },
+            ],
+          },
+          {
+            title: language === 'es' ? 'Administración' : 'Administration',
+            items: [
+              { id: 'analytics', label: language === 'es' ? 'Analytics' : 'Analytics', href: '/academia/analytics', icon: BarChart3, description: language === 'es' ? 'Métricas y estadísticas de aprendizaje' : 'Learning metrics and statistics', badge: 'Pro' },
+              { id: 'gestion-cursos', label: language === 'es' ? 'Gestión de Cursos' : 'Course Management', href: '/academia/gestion-cursos', icon: Briefcase, description: language === 'es' ? 'Administrar contenido educativo' : 'Manage educational content', badge: 'Admin' },
             ],
           },
           {
