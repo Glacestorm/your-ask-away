@@ -7,10 +7,11 @@ import {
   BarChart3, Users, Shield, Code, Palette, 
   Store, Layers, BookOpen, Activity, Rocket,
   ChevronLeft, ChevronRight, Home, LayoutGrid, Newspaper, HelpCircle,
-  GraduationCap, Languages, Briefcase, Gauge
+  GraduationCap, Languages, Briefcase, Gauge, ClipboardList
 } from 'lucide-react';
 import { AdminBreadcrumbs } from '@/components/admin/AdminBreadcrumbs';
 import { AdminPanelSwitcher } from '@/components/admin/AdminPanelSwitcher';
+import { AdminGlobalSearch } from '@/components/admin/AdminGlobalSearch';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
@@ -76,6 +77,7 @@ const ObelixiaTeamAdmin: React.FC = () => {
       translations: 'Traducciones',
       verticals: 'Verticales',
       webvitals: 'Web Vitals',
+      reports: 'Reportes',
       news: 'Noticias',
       faq: 'FAQ',
       security: 'Seguridad',
@@ -111,7 +113,10 @@ const ObelixiaTeamAdmin: React.FC = () => {
             currentSection={activeTab !== 'quotes' ? getTabLabel(activeTab) : undefined}
             className="text-slate-400"
           />
-          <AdminPanelSwitcher />
+          <div className="flex items-center gap-2">
+            <AdminGlobalSearch />
+            <AdminPanelSwitcher />
+          </div>
         </motion.div>
 
         {/* Header */}
@@ -290,6 +295,13 @@ const ObelixiaTeamAdmin: React.FC = () => {
                 >
                   <Gauge className="w-4 h-4" />
                   <span className="hidden sm:inline">Web Vitals</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="reports"
+                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-rose-700 data-[state=active]:text-white"
+                >
+                  <ClipboardList className="w-4 h-4" />
+                  <span className="hidden sm:inline">Reportes</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="security"
@@ -582,6 +594,160 @@ const ObelixiaTeamAdmin: React.FC = () => {
 
               <TabsContent value="web-vitals" className="m-0">
                 <CoreWebVitalsDashboard />
+              </TabsContent>
+
+              {/* Nueva pestaña de Reportes consolidados */}
+              <TabsContent value="reports" className="m-0 space-y-6">
+                <div className="mb-4">
+                  <h3 className="text-xl font-semibold text-white mb-2">Centro de Reportes</h3>
+                  <p className="text-slate-400 text-sm">Acceso rápido a todos los generadores de documentación, análisis y reportes del sistema.</p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* Documentación Técnica */}
+                  <Card 
+                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-emerald-500/10 hover:border-emerald-400/50"
+                    onClick={() => handleTabChange('technical-docs')}
+                  >
+                    <CardContent className="p-4 flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                        <FileText className="h-6 w-6 text-emerald-500" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-emerald-400">Documentación Técnica</h4>
+                        <p className="text-sm text-muted-foreground">Generar documentación completa del sistema</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Análisis Competencia */}
+                  <Card 
+                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-purple-500/10 hover:border-purple-400/50"
+                    onClick={() => handleTabChange('competitor-gap')}
+                  >
+                    <CardContent className="p-4 flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                        <BarChart3 className="h-6 w-6 text-purple-500" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-purple-400">Análisis de Competencia</h4>
+                        <p className="text-sm text-muted-foreground">Gap analysis vs competidores</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Estado Aplicación */}
+                  <Card 
+                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-blue-500/10 hover:border-blue-400/50"
+                    onClick={() => handleTabChange('app-status')}
+                  >
+                    <CardContent className="p-4 flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                        <Activity className="h-6 w-6 text-blue-500" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-blue-400">Estado de la Aplicación</h4>
+                        <p className="text-sm text-muted-foreground">Estado detallado del sistema</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Índice Codebase */}
+                  <Card 
+                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-teal-500/30 bg-gradient-to-br from-teal-500/5 to-teal-500/10 hover:border-teal-400/50"
+                    onClick={() => handleTabChange('codebase-index')}
+                  >
+                    <CardContent className="p-4 flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-lg bg-teal-500/20 flex items-center justify-center">
+                        <Code className="h-6 w-6 text-teal-500" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-teal-400">Índice del Codebase</h4>
+                        <p className="text-sm text-muted-foreground">Índice de funcionalidades del código</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Analizador de Aplicación */}
+                  <Card 
+                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-amber-500/10 hover:border-amber-400/50"
+                    onClick={() => handleTabChange('analyzer')}
+                  >
+                    <CardContent className="p-4 flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                        <Rocket className="h-6 w-6 text-amber-500" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-amber-400">Analizador de Aplicación</h4>
+                        <p className="text-sm text-muted-foreground">Análisis completo del estado y cumplimiento</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Mejoras Auto-Diagnóstico */}
+                  <Card 
+                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-cyan-500/30 bg-gradient-to-br from-cyan-500/5 to-cyan-500/10 hover:border-cyan-400/50"
+                    onClick={() => handleTabChange('audit-improvements')}
+                  >
+                    <CardContent className="p-4 flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+                        <BarChart3 className="h-6 w-6 text-cyan-500" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-cyan-400">Mejoras Auto-Diagnóstico</h4>
+                        <p className="text-sm text-muted-foreground">Seguimiento de mejoras con % cumplimiento</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Core Web Vitals */}
+                  <Card 
+                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-rose-500/30 bg-gradient-to-br from-rose-500/5 to-rose-500/10 hover:border-rose-400/50"
+                    onClick={() => handleTabChange('web-vitals')}
+                  >
+                    <CardContent className="p-4 flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-lg bg-rose-500/20 flex items-center justify-center">
+                        <Gauge className="h-6 w-6 text-rose-500" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-rose-400">Core Web Vitals</h4>
+                        <p className="text-sm text-muted-foreground">Métricas de rendimiento web</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Multi-CNAE Dashboard */}
+                  <Card 
+                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-indigo-500/30 bg-gradient-to-br from-indigo-500/5 to-indigo-500/10 hover:border-indigo-400/50"
+                    onClick={() => handleTabChange('cnae-dashboard')}
+                  >
+                    <CardContent className="p-4 flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-lg bg-indigo-500/20 flex items-center justify-center">
+                        <Layers className="h-6 w-6 text-indigo-500" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-indigo-400">Multi-CNAE Dashboard</h4>
+                        <p className="text-sm text-muted-foreground">Gestión multi-sector y pricing dinámico</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  {/* API Docs */}
+                  <Card 
+                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-slate-500/30 bg-gradient-to-br from-slate-500/5 to-slate-500/10 hover:border-slate-400/50"
+                    onClick={() => handleTabChange('api')}
+                  >
+                    <CardContent className="p-4 flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-lg bg-slate-500/20 flex items-center justify-center">
+                        <Code className="h-6 w-6 text-slate-400" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-slate-300">Documentación API</h4>
+                        <p className="text-sm text-muted-foreground">Referencia completa de endpoints</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </TabsContent>
             </CardContent>
           </Tabs>
