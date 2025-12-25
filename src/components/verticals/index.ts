@@ -18,3 +18,21 @@ export * from './manufacturing';
 
 // Educación / ONGs
 export * from './education';
+
+// Agricultura
+export * from './agriculture';
+
+// Administración Pública / Gobierno
+export * from './government';
+
+// Inmobiliaria
+export * from './realestate';
+
+// Hostelería
+export * from './hospitality';
+
+// Energía
+export * from './energy';
+
+// Servicios Profesionales
+export * from './professional-services';
