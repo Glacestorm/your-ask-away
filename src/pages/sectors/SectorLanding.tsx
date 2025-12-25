@@ -21,6 +21,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMarketingAnalytics } from '@/hooks/useMarketingAnalytics';
+import StoreNavbar from '@/components/store/StoreNavbar';
+import UnifiedFooter from '@/components/layout/UnifiedFooter';
 
 interface SectorCardData {
   icon: React.ElementType;
@@ -272,13 +274,15 @@ const SectorLanding: React.FC = () => {
   }, [trackPageView]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 overflow-hidden">
-      {/* Background Effects */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl transform -translate-x-1/2 -translate-y-1/2" />
-      </div>
+    <>
+      <StoreNavbar />
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 overflow-hidden pt-20">
+        {/* Background Effects */}
+        <div className="fixed inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl transform -translate-x-1/2 -translate-y-1/2" />
+        </div>
 
       <div className="relative container mx-auto px-4 py-16">
         {/* Back Link */}
@@ -394,7 +398,9 @@ const SectorLanding: React.FC = () => {
           </div>
         </motion.div>
       </div>
+      <UnifiedFooter />
     </div>
+    </>
   );
 };
 
