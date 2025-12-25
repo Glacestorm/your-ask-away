@@ -383,3 +383,6 @@ verify_jwt = true
 
 [functions.revenue-ai-agents]
 verify_jwt = true
+
+[functions.training-course-chat]
+verify_jwt = true

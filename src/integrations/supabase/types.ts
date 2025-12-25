@@ -20454,6 +20454,42 @@ export type Database = {
           },
         ]
       }
+      training_chat_history: {
+        Row: {
+          content: string
+          course_id: string
+          created_at: string
+          id: string
+          lesson_id: string | null
+          metadata: Json | null
+          role: string
+          sources: Json | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          course_id: string
+          created_at?: string
+          id?: string
+          lesson_id?: string | null
+          metadata?: Json | null
+          role: string
+          sources?: Json | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          course_id?: string
+          created_at?: string
+          id?: string
+          lesson_id?: string | null
+          metadata?: Json | null
+          role?: string
+          sources?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       training_content: {
         Row: {
           captions: Json | null
