@@ -99,6 +99,9 @@ import {
   ServiceQuoteBuilder,
   ServiceQuotesList,
   SessionActionsTimeline,
+  AutonomousAgentsPanel,
+  PredictiveCopilotPanel,
+  VoiceInterfacePanel,
 } from '@/components/admin/AdminSectionLoader';
 
 const Admin = () => {
@@ -233,6 +236,7 @@ const Admin = () => {
       case 'web-vitals': return t('admin.sectionTitle.webVitals');
       case 'service-quotes': return 'Presupuestos de Servicio';
       case 'remote-support': return 'Soporte Remoto';
+      case 'ai-obelixia': return 'AI Obelixia';
       default: return '';
     }
   };
@@ -995,6 +999,35 @@ const Admin = () => {
               </p>
             </div>
             <SessionActionsTimeline showSummary />
+          </div>
+        );
+      case 'ai-obelixia':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return (
+          <div className="space-y-6">
+            <div className="rounded-lg border bg-card p-6">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+                  AI Obelixia
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Agentes autónomos, copiloto predictivo e interfaz de voz con IA
+                </p>
+              </div>
+              <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
+                <AutonomousAgentsPanel />
+                <PredictiveCopilotPanel />
+                <VoiceInterfacePanel />
+              </div>
+            </div>
           </div>
         );
       case 'administration':
