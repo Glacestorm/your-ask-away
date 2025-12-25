@@ -14,3 +14,4 @@ export { QuizPlayer } from './QuizPlayer';
 export { VoiceAITutor } from './VoiceAITutor';
 export { EmotionalIndicator } from './EmotionalIndicator';
 export { StreamingMessage } from './StreamingMessage';
+export { LearningPlayerHub } from './LearningPlayerHub';
