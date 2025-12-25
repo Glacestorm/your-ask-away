@@ -102,6 +102,22 @@ export const AIIntegrationConfig = lazy(() => import('@/components/admin/AIInteg
 export const AutonomousAgentsPanel = lazy(() => import('@/components/admin/ai-agents').then(m => ({ default: m.AutonomousAgentsPanel })));
 export const PredictiveCopilotPanel = lazy(() => import('@/components/admin/ai-agents').then(m => ({ default: m.PredictiveCopilotPanel })));
 export const VoiceInterfacePanel = lazy(() => import('@/components/admin/ai-agents').then(m => ({ default: m.VoiceInterfacePanel })));
+
+// AI Modules - Fases 2-5
+export const EmotionalAnalysisPanel = lazy(() => import('@/components/admin/ai-modules').then(m => ({ default: m.EmotionalAnalysisPanel })));
+export const NaturalLanguageQueryPanel = lazy(() => import('@/components/admin/ai-modules').then(m => ({ default: m.NaturalLanguageQueryPanel })));
+export const WorkflowAutomationPanel = lazy(() => import('@/components/admin/ai-modules').then(m => ({ default: m.WorkflowAutomationPanel })));
+export const SmartSchedulingPanel = lazy(() => import('@/components/admin/ai-modules').then(m => ({ default: m.SmartSchedulingPanel })));
+export const DocumentIntelligencePanel = lazy(() => import('@/components/admin/ai-modules').then(m => ({ default: m.DocumentIntelligencePanel })));
+export const AutoResponsePanel = lazy(() => import('@/components/admin/ai-modules').then(m => ({ default: m.AutoResponsePanel })));
+export const KnowledgeBaseRAGPanel = lazy(() => import('@/components/admin/ai-modules').then(m => ({ default: m.KnowledgeBaseRAGPanel })));
+export const MultiChannelIntegrationPanel = lazy(() => import('@/components/admin/ai-modules').then(m => ({ default: m.MultiChannelIntegrationPanel })));
+export const PerformanceCoachPanel = lazy(() => import('@/components/admin/ai-modules').then(m => ({ default: m.PerformanceCoachPanel })));
+export const Customer360IAPanel = lazy(() => import('@/components/admin/ai-modules').then(m => ({ default: m.Customer360IAPanel })));
+export const ComplianceIAPanel = lazy(() => import('@/components/admin/ai-modules').then(m => ({ default: m.ComplianceIAPanel })));
+export const RiskAssessmentIAPanel = lazy(() => import('@/components/admin/ai-modules').then(m => ({ default: m.RiskAssessmentIAPanel })));
+export const AdvancedReportingPanel = lazy(() => import('@/components/admin/ai-modules').then(m => ({ default: m.AdvancedReportingPanel })));
+export const RecommendationEnginePanel = lazy(() => import('@/components/admin/ai-modules').then(m => ({ default: m.RecommendationEnginePanel })));
 export const RFMDashboard = lazy(() => import('@/components/admin/RFMDashboard').then(m => ({ default: m.RFMDashboard })));
 export const CustomerSegmentationPanel = lazy(() => import('@/components/admin/CustomerSegmentationPanel').then(m => ({ default: m.CustomerSegmentationPanel })));
 export const CDPFullDashboard = lazy(() => import('@/components/admin/CDPFullDashboard').then(m => ({ default: m.CDPFullDashboard })));
