@@ -8,7 +8,7 @@ import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ChevronLeft, ChevronRight, Menu, X, FileText, Download, 
-  CheckCircle, Layers, MessageSquare
+  CheckCircle, Layers, MessageSquare, Trophy
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +26,7 @@ import {
   type Module,
   type Resource,
 } from '@/components/academia/learning-player';
+import { GamificationMiniWidget } from '@/components/academia';
 
 // Mock data para demostración
 const generateMockCourse = (language: string) => ({
@@ -517,18 +518,22 @@ const LearningPlayer: React.FC = () => {
               >
                 <div className="w-[400px] h-full flex flex-col">
                   <Tabs value={rightPanelTab} onValueChange={setRightPanelTab} className="flex-1 flex flex-col">
-                    <TabsList className="grid w-full grid-cols-3 m-2 mx-4">
+                    <TabsList className="grid w-full grid-cols-4 m-2 mx-4">
                       <TabsTrigger value="notes" className="text-xs gap-1">
                         <FileText className="w-3 h-3" />
-                        {language === 'es' ? 'Notas' : 'Notes'}
+                        <span className="hidden lg:inline">{language === 'es' ? 'Notas' : 'Notes'}</span>
                       </TabsTrigger>
                       <TabsTrigger value="resources" className="text-xs gap-1">
                         <Download className="w-3 h-3" />
-                        {language === 'es' ? 'Recursos' : 'Resources'}
+                        <span className="hidden lg:inline">{language === 'es' ? 'Recursos' : 'Resources'}</span>
                       </TabsTrigger>
                       <TabsTrigger value="ai" className="text-xs gap-1">
                         <MessageSquare className="w-3 h-3" />
-                        {language === 'es' ? 'Tutor IA' : 'AI Tutor'}
+                        <span className="hidden lg:inline">{language === 'es' ? 'Tutor' : 'Tutor'}</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="progress" className="text-xs gap-1">
+                        <Trophy className="w-3 h-3" />
+                        <span className="hidden lg:inline">{language === 'es' ? 'Logros' : 'Progress'}</span>
                       </TabsTrigger>
                     </TabsList>
 
@@ -559,6 +564,13 @@ const LearningPlayer: React.FC = () => {
                         courseTopic="CRM"
                       />
                     </TabsContent>
+
+                    <TabsContent value="progress" className="flex-1 m-0 overflow-auto p-4">
+                      <GamificationMiniWidget 
+                        courseProgress={courseProgress}
+                        showCertificateButton={courseProgress >= 100}
+                      />
+                    </TabsContent>
                   </Tabs>
                 </div>
               </motion.aside>
@@ -571,18 +583,18 @@ const LearningPlayer: React.FC = () => {
       <Sheet open={showRightPanel} onOpenChange={setShowRightPanel}>
         <SheetContent side="right" className="w-full sm:w-[400px] p-0 bg-slate-900 border-slate-800 md:hidden">
           <Tabs value={rightPanelTab} onValueChange={setRightPanelTab} className="h-full flex flex-col">
-            <TabsList className="grid w-full grid-cols-3 m-2 mx-4">
+            <TabsList className="grid w-full grid-cols-4 m-2 mx-4">
               <TabsTrigger value="notes" className="text-xs gap-1">
                 <FileText className="w-3 h-3" />
-                {language === 'es' ? 'Notas' : 'Notes'}
               </TabsTrigger>
               <TabsTrigger value="resources" className="text-xs gap-1">
                 <Download className="w-3 h-3" />
-                {language === 'es' ? 'Recursos' : 'Resources'}
               </TabsTrigger>
               <TabsTrigger value="ai" className="text-xs gap-1">
                 <MessageSquare className="w-3 h-3" />
-                {language === 'es' ? 'Tutor IA' : 'AI Tutor'}
+              </TabsTrigger>
+              <TabsTrigger value="progress" className="text-xs gap-1">
+                <Trophy className="w-3 h-3" />
               </TabsTrigger>
             </TabsList>
 
@@ -611,6 +623,13 @@ const LearningPlayer: React.FC = () => {
                 currentLessonTitle={currentLesson?.title || ''}
                 courseTitle={course.title}
                 courseTopic="CRM"
+              />
+            </TabsContent>
+
+            <TabsContent value="progress" className="flex-1 m-0 overflow-auto p-4">
+              <GamificationMiniWidget 
+                courseProgress={courseProgress}
+                showCertificateButton={courseProgress >= 100}
               />
             </TabsContent>
           </Tabs>
