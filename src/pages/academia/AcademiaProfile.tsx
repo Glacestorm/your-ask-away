@@ -26,6 +26,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { AchievementSystem } from '@/components/academia/AchievementSystem';
 import { CertificateGenerator } from '@/components/academia/CertificateGenerator';
+import { ProgressDashboard } from '@/components/academia/ProgressDashboard';
 import { useTrainingCertificates, Certificate } from '@/hooks/useTrainingCertificates';
 import { useTrainingEnrollments, Enrollment } from '@/hooks/useTrainingEnrollments';
 import { useTrainingGamification } from '@/hooks/useTrainingGamification';
@@ -177,7 +178,17 @@ const AcademiaProfile: React.FC = () => {
 
           {/* Achievements Tab */}
           <TabsContent value="achievements">
-            <AchievementSystem showLeaderboard={true} />
+            <div className="grid gap-6 lg:grid-cols-3">
+              <div className="lg:col-span-2">
+                <AchievementSystem showLeaderboard={true} />
+              </div>
+              {user?.id && (
+                <ProgressDashboard 
+                  userId={user.id}
+                  currentProgress={stats.avgProgress}
+                />
+              )}
+            </div>
           </TabsContent>
 
           {/* Certificates Tab */}
