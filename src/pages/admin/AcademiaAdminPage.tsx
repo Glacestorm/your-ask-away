@@ -121,15 +121,16 @@ const recentActivity = [
   { type: 'review', user: 'Ana Martín', action: 'left a 5-star review on', target: 'Python for Data', time: '2 hours ago' },
 ];
 
-const AcademiaAdminPage: React.FC = () => {
+interface AcademiaAdminPageProps {
+  embedded?: boolean;
+}
+
+const AcademiaAdminPage: React.FC<AcademiaAdminPageProps> = ({ embedded = false }) => {
   const { language } = useLanguage();
   const [activeTab, setActiveTab] = useState('overview');
 
-  return (
-    <div className="min-h-screen bg-background">
-      <GlobalNavHeader />
-      
-      <div className="container mx-auto px-4 py-8 pt-20">
+  const content = (
+    <div className={embedded ? '' : 'container mx-auto px-4 py-8 pt-20'}>
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -376,6 +377,16 @@ const AcademiaAdminPage: React.FC = () => {
           </TabsContent>
         </Tabs>
       </div>
+    );
+
+  if (embedded) {
+    return content;
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <GlobalNavHeader />
+      {content}
     </div>
   );
 };
