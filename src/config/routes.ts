@@ -191,7 +191,7 @@ export const publicRoutes: RouteConfig[] = [
   // Marketplace & Developer Portal
   { path: '/marketplace', component: Marketplace, layout: 'public', priority: 'high', meta: { title: 'Marketplace' } },
   { path: '/marketplace/:appKey', component: MarketplaceAppDetail, layout: 'public', priority: 'high' },
-  { path: '/developers', component: DeveloperPortal, layout: 'public', priority: 'medium', meta: { title: 'Portal de Desarrolladores' } },
+  { path: '/developers', component: DeveloperPortal, layout: 'none', priority: 'medium', meta: { title: 'Portal de Desarrolladores' } },
   { path: '/partner-portal', component: PartnerPortal, layout: 'public', priority: 'medium', meta: { title: 'Portal de Partners' } },
   
   // Features
