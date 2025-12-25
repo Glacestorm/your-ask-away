@@ -51,6 +51,14 @@ const AcademiaLanding: React.FC = () => {
     },
   ];
 
+  const navLinks = [
+    { to: '/academia/cursos', label: language === 'es' ? 'Cursos' : 'Courses' },
+    { to: '/academia/mi-perfil', label: language === 'es' ? 'Mi Perfil' : 'My Profile' },
+    { to: '/academia/analytics', label: language === 'es' ? 'Analytics' : 'Analytics' },
+    { to: '/academia/comunidad', label: language === 'es' ? 'Comunidad' : 'Community' },
+    { to: '/academia/notificaciones', label: language === 'es' ? 'Notificaciones' : 'Notifications' },
+  ];
+
   const stats = [
     { value: '50+', label: language === 'es' ? 'Cursos' : 'Courses' },
     { value: '10K+', label: language === 'es' ? 'Estudiantes' : 'Students' },
@@ -174,6 +182,34 @@ const AcademiaLanding: React.FC = () => {
                     <p className="text-slate-400 text-sm">{feature.description}</p>
                   </CardContent>
                 </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Quick Links Section */}
+      <section className="py-12 relative">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-wrap justify-center gap-4">
+            {navLinks.map((link, index) => (
+              <motion.div
+                key={link.to}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <Button
+                  asChild
+                  variant="outline"
+                  className="border-slate-600 text-white hover:bg-slate-800 hover:border-primary/50"
+                >
+                  <Link to={link.to}>
+                    {link.label}
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Link>
+                </Button>
               </motion.div>
             ))}
           </div>
