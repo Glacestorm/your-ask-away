@@ -316,4 +316,14 @@ export const redirects = [
   { from: '/', to: '/store' },
   { from: '/map', to: '/admin?section=map' },
   { from: '/resources/blog', to: '/blog' },
+  // Redirects de módulos movidos de /admin a /obelixia-admin
+  { from: '/admin/academia', to: '/obelixia-admin?tab=academia' },
+  { from: '/admin?section=translations', to: '/obelixia-admin?tab=translations' },
+  { from: '/admin?section=web-vitals', to: '/obelixia-admin?tab=web-vitals' },
+  { from: '/admin?section=vertical-packs', to: '/obelixia-admin?tab=verticals' },
+  { from: '/admin?section=sectors-manager', to: '/obelixia-admin?tab=verticals' },
+  { from: '/admin?section=analyzer', to: '/obelixia-admin?tab=docs' },
+  { from: '/admin?section=app-store', to: '/obelixia-admin?tab=appstore' },
+  { from: '/admin?section=whitelabel', to: '/obelixia-admin?tab=whitelabel' },
+  { from: '/admin?section=api-docs', to: '/obelixia-admin?tab=api' },
 ];

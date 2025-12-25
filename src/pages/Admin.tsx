@@ -1553,42 +1553,7 @@ const Admin = () => {
               </div>
             </div>
 
-            {/* SECCIÓ: Verticales CNAE - FASE 7 */}
-            <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-gradient bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 bg-clip-text text-transparent flex items-center gap-2">
-                <ShoppingCart className="h-5 w-5 text-emerald-500" /> {t('admin.section.verticals')}
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                <Card 
-                  className="cursor-pointer hover:shadow-md transition-all border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-emerald-500/10"
-                  onClick={() => handleSectionChange('vertical-packs')}
-                >
-                  <CardContent className="p-3 flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-                      <ShoppingCart className="h-4 w-4 text-emerald-500" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-sm text-emerald-700 dark:text-emerald-400">{t('admin.card.verticalPacks')}</h4>
-                      <p className="text-xs text-muted-foreground">{t('admin.card.verticalPacks.desc')}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card 
-                  className="cursor-pointer hover:shadow-md transition-all border-2 border-teal-500/30 bg-gradient-to-br from-teal-500/5 to-teal-500/10"
-                  onClick={() => handleSectionChange('sectors-manager')}
-                >
-                  <CardContent className="p-3 flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-lg bg-teal-500/20 flex items-center justify-center">
-                      <Briefcase className="h-4 w-4 text-teal-500" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-sm text-teal-700 dark:text-teal-400">{t('admin.card.sectorsManager')}</h4>
-                      <p className="text-xs text-muted-foreground">{t('admin.card.sectorsManager.desc')}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
+            {/* Nota: Verticales CNAE movido a /obelixia-admin */}
 
             {/* SECCIÓ 6: Eines i Historial */}
             <div className="space-y-3">
@@ -1637,38 +1602,7 @@ const Admin = () => {
                   </CardContent>
                 </Card>
                 )}
-                {(isSuperAdmin || isCommercialDirector || isCommercialManager) && (
-                <Card 
-                  className="cursor-pointer hover:shadow-md transition-all border-2 border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-blue-500/10"
-                  onClick={() => handleSectionChange('analyzer')}
-                >
-                  <CardContent className="p-3 flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                      <BarChart3 className="h-4 w-4 text-blue-500" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-sm text-blue-700 dark:text-blue-400">{t('admin.card.analyzer')}</h4>
-                      <p className="text-xs text-muted-foreground">{t('admin.card.analyzer.desc')}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                )}
-                {isSuperAdmin && (
-                <Card 
-                  className="cursor-pointer hover:shadow-md transition-all border-2 border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-purple-500/10"
-                  onClick={() => handleSectionChange('translations')}
-                >
-                  <CardContent className="p-3 flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                      <Layers className="h-4 w-4 text-purple-500" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-sm text-purple-700 dark:text-purple-400">{t('admin.card.translations')}</h4>
-                      <p className="text-xs text-muted-foreground">{t('admin.card.translations.desc')}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                )}
+                {/* Nota: Analyzer y Translations movidos a /obelixia-admin */}
               </div>
             </div>
           </div>
