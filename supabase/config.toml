@@ -395,3 +395,12 @@ verify_jwt = false
 
 [functions.academia-emotional-analytics]
 verify_jwt = true
+
+[functions.academia-adaptive-quiz]
+verify_jwt = true
+
+[functions.academia-learning-path]
+verify_jwt = true
+
+[functions.academia-gamification]
+verify_jwt = true
