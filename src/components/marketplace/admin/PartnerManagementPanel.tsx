@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { Textarea } from '@/components/ui/textarea';
 import { 
   Building2, 
   Users, 
@@ -26,7 +27,8 @@ import {
   Filter,
   Star,
   TrendingUp,
-  AlertTriangle
+  AlertTriangle,
+  Plus
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -58,7 +60,17 @@ export function PartnerManagementPanel() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedPartner, setSelectedPartner] = useState<PartnerRow | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('pending');
+  const [newPartner, setNewPartner] = useState({
+    company_name: '',
+    legal_name: '',
+    tax_id: '',
+    contact_email: '',
+    contact_phone: '',
+    website: '',
+    description: '',
+  });
 
   // Fetch partners
   const { data: partners, isLoading } = useQuery({
@@ -96,6 +108,46 @@ export function PartnerManagementPanel() {
     },
     onError: () => {
       toast.error('Error al actualizar partner');
+    },
+  });
+
+  // Create partner mutation
+  const createPartnerMutation = useMutation({
+    mutationFn: async (partnerData: typeof newPartner) => {
+      const { data, error } = await supabase
+        .from('partner_companies')
+        .insert({
+          company_name: partnerData.company_name,
+          legal_name: partnerData.legal_name || null,
+          tax_id: partnerData.tax_id || null,
+          contact_email: partnerData.contact_email || null,
+          contact_phone: partnerData.contact_phone || null,
+          website: partnerData.website || null,
+          description: partnerData.description || null,
+          status: 'active', // Create as active since admin is adding
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-partners'] });
+      queryClient.invalidateQueries({ queryKey: ['marketplace-admin-stats'] });
+      toast.success('Partner creado correctamente');
+      setIsCreateOpen(false);
+      setNewPartner({
+        company_name: '',
+        legal_name: '',
+        tax_id: '',
+        contact_email: '',
+        contact_phone: '',
+        website: '',
+        description: '',
+      });
+    },
+    onError: (error) => {
+      toast.error('Error al crear partner: ' + (error as Error).message);
     },
   });
 
@@ -244,7 +296,7 @@ export function PartnerManagementPanel() {
 
   return (
     <div className="space-y-6">
-      {/* Search and Filters */}
+      {/* Search, Filters, and Add Button */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -255,6 +307,10 @@ export function PartnerManagementPanel() {
             className="pl-10"
           />
         </div>
+        <Button onClick={() => setIsCreateOpen(true)} className="gap-2">
+          <Plus className="h-4 w-4" />
+          Nuevo Partner
+        </Button>
       </div>
 
       {/* Tabs for different statuses */}
@@ -471,6 +527,109 @@ export function PartnerManagementPanel() {
                 Reactivar
               </Button>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Partner Dialog */}
+      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="h-5 w-5" />
+              Nuevo Partner
+            </DialogTitle>
+            <DialogDescription>
+              Crear un nuevo partner manualmente. Se creará con estado activo.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="company_name">Nombre de la Empresa *</Label>
+              <Input
+                id="company_name"
+                value={newPartner.company_name}
+                onChange={(e) => setNewPartner(prev => ({ ...prev, company_name: e.target.value }))}
+                placeholder="Nombre comercial"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="legal_name">Nombre Legal</Label>
+                <Input
+                  id="legal_name"
+                  value={newPartner.legal_name}
+                  onChange={(e) => setNewPartner(prev => ({ ...prev, legal_name: e.target.value }))}
+                  placeholder="Razón social"
+                />
+              </div>
+              <div>
+                <Label htmlFor="tax_id">CIF/NIF</Label>
+                <Input
+                  id="tax_id"
+                  value={newPartner.tax_id}
+                  onChange={(e) => setNewPartner(prev => ({ ...prev, tax_id: e.target.value }))}
+                  placeholder="B12345678"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="contact_email">Email de Contacto</Label>
+                <Input
+                  id="contact_email"
+                  type="email"
+                  value={newPartner.contact_email}
+                  onChange={(e) => setNewPartner(prev => ({ ...prev, contact_email: e.target.value }))}
+                  placeholder="contacto@empresa.com"
+                />
+              </div>
+              <div>
+                <Label htmlFor="contact_phone">Teléfono</Label>
+                <Input
+                  id="contact_phone"
+                  value={newPartner.contact_phone}
+                  onChange={(e) => setNewPartner(prev => ({ ...prev, contact_phone: e.target.value }))}
+                  placeholder="+34 600 000 000"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="website">Website</Label>
+              <Input
+                id="website"
+                value={newPartner.website}
+                onChange={(e) => setNewPartner(prev => ({ ...prev, website: e.target.value }))}
+                placeholder="https://www.empresa.com"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="description">Descripción</Label>
+              <Textarea
+                id="description"
+                value={newPartner.description}
+                onChange={(e) => setNewPartner(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Breve descripción del partner..."
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => createPartnerMutation.mutate(newPartner)}
+              disabled={!newPartner.company_name || createPartnerMutation.isPending}
+            >
+              {createPartnerMutation.isPending ? 'Creando...' : 'Crear Partner'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
