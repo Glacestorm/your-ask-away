@@ -194,8 +194,10 @@ const ObelixiaTeamAdmin: React.FC = () => {
             />
           </div>
 
-          {/* Stats Bar */}
-          <ObelixiaStatsBar stats={stats} theme={theme} viewMode={viewMode} />
+          {/* Stats Bar - Solo visible en sección Comercial */}
+          {['quotes', 'invoices', 'pricing'].includes(activeTab) && (
+            <ObelixiaStatsBar stats={stats} theme={theme} viewMode={viewMode} />
+          )}
 
           {/* Content Area */}
           <ObelixiaContentArea activeTab={activeTab} theme={theme} viewMode={viewMode}>
