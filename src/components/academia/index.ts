@@ -16,3 +16,8 @@ export { AIRecommendationsPanel } from './AIRecommendationsPanel';
 export { AcademiaAIAssistant } from './AcademiaAIAssistant';
 export { CourseCardWithAI } from './CourseCardWithAI';
 export { ProgressDashboard } from './ProgressDashboard';
+
+// Content Management & Instructor
+export { ContentUploader } from './ContentUploader';
+export { InstructorDashboard } from './InstructorDashboard';
+export { WeeklyChallenges } from './WeeklyChallenges';
