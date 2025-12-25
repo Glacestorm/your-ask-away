@@ -78,6 +78,7 @@ const StoreNavbar: React.FC = () => {
     {
       id: 'productos',
       label: t('nav.products'),
+      href: '/store',
       megaMenu: {
         sections: [
           {
@@ -144,6 +145,7 @@ const StoreNavbar: React.FC = () => {
     {
       id: 'soluciones',
       label: t('nav.solutions'),
+      href: '/sectores',
       megaMenu: {
         sections: [
           {
@@ -187,6 +189,7 @@ const StoreNavbar: React.FC = () => {
     {
       id: 'desarrolladores',
       label: t('nav.developers'),
+      href: '/developers',
       megaMenu: {
         sections: [
           {
