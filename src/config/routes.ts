@@ -23,6 +23,10 @@ const CourseDetail = lazy(() => import('@/pages/academia/CourseDetail'));
 const LearningPlayer = lazy(() => import('@/pages/academia/LearningPlayer'));
 const AcademiaProfile = lazy(() => import('@/pages/academia/AcademiaProfile'));
 const CertificateVerification = lazy(() => import('@/pages/academia/CertificateVerification'));
+const AcademiaAnalytics = lazy(() => import('@/pages/academia/AcademiaAnalytics'));
+const CourseManagement = lazy(() => import('@/pages/academia/CourseManagement'));
+const AcademiaNotifications = lazy(() => import('@/pages/academia/AcademiaNotifications'));
+const AcademiaCommunity = lazy(() => import('@/pages/academia/AcademiaCommunity'));
 
 // Store
 const StoreLanding = lazy(() => import('@/pages/store/StoreLanding'));
@@ -151,6 +155,10 @@ export const publicRoutes: RouteConfig[] = [
   { path: '/academia/verificar/:code', component: CertificateVerification, layout: 'none', priority: 'medium', meta: { title: 'Verificar Certificado' } },
   { path: '/academia/verificar', component: CertificateVerification, layout: 'none', priority: 'medium', meta: { title: 'Verificar Certificado' } },
   { path: '/verify-certificate', component: CertificateVerification, layout: 'none', priority: 'medium', meta: { title: 'Verificar Certificado' } },
+  { path: '/academia/analytics', component: AcademiaAnalytics, layout: 'none', priority: 'high', meta: { title: 'Analytics Academia', requiresAuth: true } },
+  { path: '/academia/gestion-cursos', component: CourseManagement, layout: 'none', priority: 'high', meta: { title: 'Gestión de Cursos', requiresAuth: true } },
+  { path: '/academia/notificaciones', component: AcademiaNotifications, layout: 'none', priority: 'high', meta: { title: 'Notificaciones', requiresAuth: true } },
+  { path: '/academia/comunidad', component: AcademiaCommunity, layout: 'none', priority: 'high', meta: { title: 'Comunidad', requiresAuth: true } },
   
   // Sectors (con alias para ambas rutas)
   { path: '/sectores', component: SectorLanding, layout: 'public', priority: 'high', meta: { title: 'Sectores' } },
