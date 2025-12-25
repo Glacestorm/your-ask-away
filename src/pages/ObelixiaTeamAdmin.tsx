@@ -1,20 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
 import { 
-  FileText, Euro, Package, Receipt, Settings, 
-  BarChart3, Users, Shield, Code, Palette, 
+  FileText, Euro, Package, Receipt, 
+  BarChart3, Code, 
   Store, Layers, BookOpen, Activity, Rocket,
-  ChevronLeft, ChevronRight, Home, LayoutGrid, Newspaper, HelpCircle,
   GraduationCap, Languages, Briefcase, Gauge, ClipboardList
 } from 'lucide-react';
-import { AdminBreadcrumbs } from '@/components/admin/AdminBreadcrumbs';
-import { AdminPanelSwitcher } from '@/components/admin/AdminPanelSwitcher';
-import { AdminGlobalSearch } from '@/components/admin/AdminGlobalSearch';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
-import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { ContentManager } from '@/components/obelixia-admin/ContentManager';
 import { ModulePricingManager } from '@/components/obelixia-admin/ModulePricingManager';
 import { InvoiceManager } from '@/components/obelixia-admin/InvoiceManager';
@@ -33,23 +28,27 @@ import APIDocumentation from '@/components/admin/APIDocumentation';
 import { CMSDashboard } from '@/components/cms-admin';
 import SecurityOnboardingGuide from '@/components/obelixia-admin/SecurityOnboardingGuide';
 import { NewsAdminDashboard } from '@/components/obelixia-admin/news';
-import NewsNotificationSystem from '@/components/admin/NewsNotificationSystem';
 import { FAQAdminDashboard } from '@/components/obelixia-admin/faq';
-// Nuevos imports para módulos de producto movidos
 import { TranslationsDashboard } from '@/components/admin/translations/TranslationsDashboard';
 import { VerticalPacksManager } from '@/components/admin/verticals/VerticalPacksManager';
 import { SectorsManager } from '@/components/admin/SectorsManager';
 import { CoreWebVitalsDashboard } from '@/components/admin/CoreWebVitalsDashboard';
 import AcademiaAdminPage from '@/pages/admin/AcademiaAdminPage';
 
+// New premium components
+import { ObelixiaAdminSidebar } from '@/components/obelixia-admin/ObelixiaAdminSidebar';
+import { ObelixiaAdminHeader } from '@/components/obelixia-admin/ObelixiaAdminHeader';
+import { ObelixiaStatsBar } from '@/components/obelixia-admin/ObelixiaStatsBar';
+import { ObelixiaContentArea } from '@/components/obelixia-admin/ObelixiaContentArea';
+import { ObelixiaAdminCard3D } from '@/components/obelixia-admin/ObelixiaAdminCard3D';
+
 const ObelixiaTeamAdmin: React.FC = () => {
   const { isSuperAdmin, isAdmin } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialTab = searchParams.get('tab') || 'quotes';
   const [activeTab, setActiveTab] = useState(initialTab);
-  const navigate = useNavigate();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
-  // Sync with URL params
   useEffect(() => {
     const tabFromUrl = searchParams.get('tab');
     if (tabFromUrl && tabFromUrl !== activeTab) {
@@ -76,7 +75,7 @@ const ObelixiaTeamAdmin: React.FC = () => {
       academia: 'Academia',
       translations: 'Traducciones',
       verticals: 'Verticales',
-      webvitals: 'Web Vitals',
+      'web-vitals': 'Web Vitals',
       reports: 'Reportes',
       news: 'Noticias',
       faq: 'FAQ',
@@ -85,249 +84,81 @@ const ObelixiaTeamAdmin: React.FC = () => {
     return labels[tab] || tab;
   };
 
-  // Solo accesible para admins y superadmins
   if (!isSuperAdmin && !isAdmin) {
     return <Navigate to="/home" replace />;
   }
 
   const stats = [
-    { label: 'Presupuestos Activos', value: '12', icon: FileText, color: 'text-blue-400' },
-    { label: 'Facturas Pendientes', value: '5', icon: Receipt, color: 'text-amber-400' },
-    { label: 'Módulos Activos', value: '9', icon: Package, color: 'text-emerald-400' },
-    { label: 'Ingresos Mes', value: '€45,000', icon: Euro, color: 'text-purple-400' },
+    { id: 'quotes', label: 'Presupuestos Activos', value: 12, icon: FileText, color: 'blue' as const, trend: { value: 8, isPositive: true } },
+    { id: 'invoices', label: 'Facturas Pendientes', value: 5, icon: Receipt, color: 'amber' as const, trend: { value: 2, isPositive: false } },
+    { id: 'modules', label: 'Módulos Activos', value: 9, icon: Package, color: 'emerald' as const, trend: { value: 12, isPositive: true } },
+    { id: 'revenue', label: 'Ingresos Mes', value: 45000, icon: Euro, color: 'purple' as const, prefix: '€', trend: { value: 15, isPositive: true } },
+  ];
+
+  // Doc cards for quick access
+  const docCards = [
+    { id: 'technical-docs', title: 'Documentación Técnica', description: 'Generar documentación completa del sistema', icon: FileText, color: 'emerald' as const },
+    { id: 'competitor-gap', title: 'Análisis Competencia', description: 'Gap analysis vs competidores', icon: BarChart3, color: 'purple' as const },
+    { id: 'app-status', title: 'Estado Aplicación', description: 'Estado detallado del sistema', icon: Activity, color: 'blue' as const },
+    { id: 'codebase-index', title: 'Índice Codebase', description: 'Índice de funcionalidades del código', icon: Code, color: 'teal' as const },
+    { id: 'analyzer', title: 'Analizador App', description: 'Análisis completo del estado y cumplimiento', icon: Rocket, color: 'amber' as const },
+    { id: 'audit-improvements', title: 'Mejoras Diagnóstico', description: 'Seguimiento de mejoras con % cumplimiento', icon: BarChart3, color: 'cyan' as const },
+  ];
+
+  const appstoreCards = [
+    { id: 'appstore-manager', title: 'Gestión App Store', description: 'Administrar módulos disponibles', icon: Store, color: 'cyan' as const },
+    { id: 'cnae-dashboard', title: 'Multi-CNAE Dashboard', description: 'Gestión multi-sector y pricing dinámico', icon: Layers, color: 'emerald' as const },
+    { id: 'cnae-admin', title: 'Pricing CNAE', description: 'Configurar precios por sector y bundles', icon: Euro, color: 'amber' as const },
+  ];
+
+  const verticalCards = [
+    { id: 'vertical-packs-manager', title: 'Packs Verticales', description: 'Gestión de soluciones por sector', icon: Package, color: 'emerald' as const },
+    { id: 'sectors-manager', title: 'Gestión Sectores', description: 'Administrar sectores y CNAE', icon: Briefcase, color: 'teal' as const },
+  ];
+
+  const reportCards = [
+    { id: 'technical-docs', title: 'Documentación Técnica', description: 'Generar documentación completa', icon: FileText, color: 'emerald' as const },
+    { id: 'competitor-gap', title: 'Análisis Competencia', description: 'Gap analysis vs competidores', icon: BarChart3, color: 'purple' as const },
+    { id: 'app-status', title: 'Estado Aplicación', description: 'Estado detallado del sistema', icon: Activity, color: 'blue' as const },
+    { id: 'codebase-index', title: 'Índice Codebase', description: 'Índice de funcionalidades', icon: Code, color: 'teal' as const },
+    { id: 'analyzer', title: 'Analizador App', description: 'Análisis completo', icon: Rocket, color: 'amber' as const },
+    { id: 'audit-improvements', title: 'Mejoras Diagnóstico', description: 'Seguimiento de mejoras', icon: BarChart3, color: 'cyan' as const },
+    { id: 'web-vitals', title: 'Core Web Vitals', description: 'Métricas de rendimiento', icon: Gauge, color: 'rose' as const },
+    { id: 'api', title: 'Documentación API', description: 'Endpoints y ejemplos', icon: Code, color: 'slate' as const },
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] p-6">
-      {/* Background gradient overlay */}
-      <div className="fixed inset-0 bg-gradient-to-br from-blue-950/20 via-transparent to-emerald-950/20 pointer-events-none" />
-      
-      <div className="relative max-w-7xl mx-auto space-y-6">
-        {/* Breadcrumbs */}
-        <motion.div
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="flex items-center justify-between"
-        >
-          <AdminBreadcrumbs 
-            currentSection={activeTab !== 'quotes' ? getTabLabel(activeTab) : undefined}
-            className="text-slate-400"
+    <div className="min-h-screen bg-[#0a0a0f] flex">
+      {/* Background effects */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-950/20 via-transparent to-emerald-950/20" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl" />
+      </div>
+
+      {/* Sidebar */}
+      <ObelixiaAdminSidebar
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        isCollapsed={sidebarCollapsed}
+        onCollapsedChange={setSidebarCollapsed}
+      />
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col min-h-screen overflow-auto">
+        <div className="relative p-6 space-y-6">
+          {/* Header */}
+          <ObelixiaAdminHeader
+            activeTab={activeTab}
+            getTabLabel={getTabLabel}
           />
-          <div className="flex items-center gap-2">
-            <AdminGlobalSearch />
-            <AdminPanelSwitcher />
-          </div>
-        </motion.div>
 
-        {/* Header */}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between"
-        >
-          <div className="flex items-center gap-4">
-            {/* Navigation buttons */}
-            <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate(-1)}
-                className="h-9 w-9 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 text-slate-400 hover:text-white border border-slate-700/50"
-                title="Atrás"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate(1)}
-                className="h-9 w-9 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 text-slate-400 hover:text-white border border-slate-700/50"
-                title="Adelante"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate('/store')}
-                className="h-9 w-9 rounded-lg bg-slate-800/50 hover:bg-slate-700/50 text-slate-400 hover:text-white border border-slate-700/50"
-                title="Página Principal"
-              >
-                <Home className="h-5 w-5" />
-              </Button>
-              <NewsNotificationSystem />
-            </div>
-            
-            <div>
-              <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-emerald-500">
-                  <Shield className="w-6 h-6 text-white" />
-                </div>
-                <span className="bg-gradient-to-r from-blue-400 via-emerald-400 to-blue-400 bg-clip-text text-transparent">
-                  ObelixIA Team Admin
-                </span>
-              </h1>
-              <p className="text-slate-400 mt-1">
-                Gestión interna de presupuestos, facturas, precios, documentación y configuración
-              </p>
-            </div>
-          </div>
-        </motion.div>
+          {/* Stats Bar */}
+          <ObelixiaStatsBar stats={stats} />
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {stats.map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Card className="bg-slate-900/80 border-slate-700/50 hover:border-emerald-500/50 transition-all backdrop-blur-sm">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-slate-400">{stat.label}</p>
-                      <p className="text-2xl font-bold text-white mt-1">{stat.value}</p>
-                    </div>
-                    <stat.icon className={`w-10 h-10 ${stat.color} opacity-80`} />
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Main Tabs */}
-        <Card className="bg-slate-900/80 border-slate-700/50 backdrop-blur-sm">
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-            <CardHeader className="pb-0 border-b border-slate-700/50">
-              <TabsList className="grid grid-cols-4 lg:grid-cols-8 w-full gap-1 bg-slate-800/50 p-1 mb-2">
-                <TabsTrigger 
-                  value="quotes" 
-                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-slate-700 data-[state=active]:text-white"
-                >
-                  <FileText className="w-4 h-4" />
-                  <span className="hidden sm:inline">Presupuestos</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="invoices"
-                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-slate-700 data-[state=active]:text-white"
-                >
-                  <Receipt className="w-4 h-4" />
-                  <span className="hidden sm:inline">Facturas</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="pricing"
-                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-slate-700 data-[state=active]:text-white"
-                >
-                  <Euro className="w-4 h-4" />
-                  <span className="hidden sm:inline">Precios</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="content"
-                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-slate-700 data-[state=active]:text-white"
-                >
-                  <Settings className="w-4 h-4" />
-                  <span className="hidden sm:inline">Contenidos</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="cms"
-                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-slate-700 data-[state=active]:text-white"
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                  <span className="hidden sm:inline">CMS</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="docs"
-                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-slate-700 data-[state=active]:text-white"
-                >
-                  <BookOpen className="w-4 h-4" />
-                  <span className="hidden sm:inline">Documentación</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="appstore"
-                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-slate-700 data-[state=active]:text-white"
-                >
-                  <Store className="w-4 h-4" />
-                  <span className="hidden sm:inline">App Store</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="whitelabel"
-                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-slate-700 data-[state=active]:text-white"
-                >
-                  <Palette className="w-4 h-4" />
-                  <span className="hidden sm:inline">White Label</span>
-                </TabsTrigger>
-              </TabsList>
-              <TabsList className="grid grid-cols-4 lg:grid-cols-8 w-full gap-1 bg-slate-800/50 p-1">
-                <TabsTrigger 
-                  value="api"
-                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-slate-700 data-[state=active]:text-white"
-                >
-                  <Code className="w-4 h-4" />
-                  <span className="hidden sm:inline">API</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="academia"
-                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-emerald-700 data-[state=active]:text-white"
-                >
-                  <GraduationCap className="w-4 h-4" />
-                  <span className="hidden sm:inline">Academia</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="translations"
-                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-teal-700 data-[state=active]:text-white"
-                >
-                  <Languages className="w-4 h-4" />
-                  <span className="hidden sm:inline">Traducciones</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="verticals"
-                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-amber-700 data-[state=active]:text-white"
-                >
-                  <Briefcase className="w-4 h-4" />
-                  <span className="hidden sm:inline">Verticales</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="web-vitals"
-                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-cyan-700 data-[state=active]:text-white"
-                >
-                  <Gauge className="w-4 h-4" />
-                  <span className="hidden sm:inline">Web Vitals</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="reports"
-                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-rose-700 data-[state=active]:text-white"
-                >
-                  <ClipboardList className="w-4 h-4" />
-                  <span className="hidden sm:inline">Reportes</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="security"
-                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-slate-700 data-[state=active]:text-white"
-                >
-                  <Shield className="w-4 h-4" />
-                  <span className="hidden sm:inline">Seguridad</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="news"
-                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-slate-700 data-[state=active]:text-white"
-                >
-                  <Newspaper className="w-4 h-4" />
-                  <span className="hidden sm:inline">Noticias</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="faq"
-                  className="flex items-center gap-2 text-xs text-slate-300 data-[state=active]:bg-slate-700 data-[state=active]:text-white"
-                >
-                  <HelpCircle className="w-4 h-4" />
-                  <span className="hidden sm:inline">FAQ</span>
-                </TabsTrigger>
-              </TabsList>
-            </CardHeader>
-
-            <CardContent className="pt-6">
+          {/* Content Area */}
+          <ObelixiaContentArea activeTab={activeTab}>
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
               <TabsContent value="quotes" className="m-0">
                 <QuoteManager />
               </TabsContent>
@@ -349,91 +180,27 @@ const ObelixiaTeamAdmin: React.FC = () => {
               </TabsContent>
 
               <TabsContent value="docs" className="m-0 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-emerald-500/10"
-                    onClick={() => handleTabChange('technical-docs')}
-                  >
-                    <CardContent className="p-4 flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-                        <FileText className="h-6 w-6 text-emerald-500" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-emerald-400">Documentación Técnica</h4>
-                        <p className="text-sm text-muted-foreground">Generar documentación completa del sistema</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-purple-500/10"
-                    onClick={() => handleTabChange('competitor-gap')}
-                  >
-                    <CardContent className="p-4 flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                        <BarChart3 className="h-6 w-6 text-purple-500" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-purple-400">Análisis Competencia</h4>
-                        <p className="text-sm text-muted-foreground">Gap analysis vs competidores</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-blue-500/10"
-                    onClick={() => handleTabChange('app-status')}
-                  >
-                    <CardContent className="p-4 flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                        <Activity className="h-6 w-6 text-blue-500" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-blue-400">Estado Aplicación</h4>
-                        <p className="text-sm text-muted-foreground">Estado detallado del sistema</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-teal-500/30 bg-gradient-to-br from-teal-500/5 to-teal-500/10"
-                    onClick={() => handleTabChange('codebase-index')}
-                  >
-                    <CardContent className="p-4 flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-teal-500/20 flex items-center justify-center">
-                        <Code className="h-6 w-6 text-teal-500" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-teal-400">Índice Codebase</h4>
-                        <p className="text-sm text-muted-foreground">Índice de funcionalidades del código</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-amber-500/10"
-                    onClick={() => handleTabChange('analyzer')}
-                  >
-                    <CardContent className="p-4 flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                        <Rocket className="h-6 w-6 text-amber-500" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-amber-400">Analizador de Aplicación</h4>
-                        <p className="text-sm text-muted-foreground">Análisis completo del estado, mejoras y cumplimiento</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-cyan-500/30 bg-gradient-to-br from-cyan-500/5 to-cyan-500/10"
-                    onClick={() => handleTabChange('audit-improvements')}
-                  >
-                    <CardContent className="p-4 flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-cyan-500/20 flex items-center justify-center">
-                        <BarChart3 className="h-6 w-6 text-cyan-500" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-cyan-400">Mejoras Auto-Diagnóstico</h4>
-                        <p className="text-sm text-muted-foreground">Seguimiento de mejoras detectadas con % cumplimiento</p>
-                      </div>
-                    </CardContent>
-                  </Card>
+                <div className="mb-4">
+                  <h3 className="text-xl font-semibold text-white mb-2">Centro de Documentación</h3>
+                  <p className="text-slate-400 text-sm">Acceso rápido a generadores de documentación y análisis.</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {docCards.map((card, index) => (
+                    <motion.div
+                      key={card.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      <ObelixiaAdminCard3D
+                        title={card.title}
+                        description={card.description}
+                        icon={card.icon}
+                        color={card.color}
+                        onClick={() => handleTabChange(card.id)}
+                      />
+                    </motion.div>
+                  ))}
                 </div>
               </TabsContent>
 
@@ -462,49 +229,27 @@ const ObelixiaTeamAdmin: React.FC = () => {
               </TabsContent>
 
               <TabsContent value="appstore" className="m-0 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-cyan-500/30 bg-gradient-to-br from-cyan-500/5 to-cyan-500/10"
-                    onClick={() => handleTabChange('appstore-manager')}
-                  >
-                    <CardContent className="p-4 flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-cyan-500/20 flex items-center justify-center">
-                        <Store className="h-6 w-6 text-cyan-500" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-cyan-400">Gestión App Store</h4>
-                        <p className="text-sm text-muted-foreground">Administrar módulos disponibles</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-emerald-500/10"
-                    onClick={() => handleTabChange('cnae-dashboard')}
-                  >
-                    <CardContent className="p-4 flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-                        <Layers className="h-6 w-6 text-emerald-500" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-emerald-400">Multi-CNAE Dashboard</h4>
-                        <p className="text-sm text-muted-foreground">Gestión multi-sector y pricing dinámico</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-amber-500/10 md:col-span-2"
-                    onClick={() => handleTabChange('cnae-admin')}
-                  >
-                    <CardContent className="p-4 flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                        <Euro className="h-6 w-6 text-amber-500" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-amber-400">Administración Pricing CNAE</h4>
-                        <p className="text-sm text-muted-foreground">Configurar precios por sector y bundles</p>
-                      </div>
-                    </CardContent>
-                  </Card>
+                <div className="mb-4">
+                  <h3 className="text-xl font-semibold text-white mb-2">App Store & CNAE</h3>
+                  <p className="text-slate-400 text-sm">Gestión de módulos, sectores y pricing dinámico.</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {appstoreCards.map((card, index) => (
+                    <motion.div
+                      key={card.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      <ObelixiaAdminCard3D
+                        title={card.title}
+                        description={card.description}
+                        icon={card.icon}
+                        color={card.color}
+                        onClick={() => handleTabChange(card.id)}
+                      />
+                    </motion.div>
+                  ))}
                 </div>
               </TabsContent>
 
@@ -540,7 +285,6 @@ const ObelixiaTeamAdmin: React.FC = () => {
                 <FAQAdminDashboard />
               </TabsContent>
 
-              {/* Nuevas pestañas de producto */}
               <TabsContent value="academia" className="m-0">
                 <div className="bg-slate-800/30 rounded-lg p-4">
                   <AcademiaAdminPage embedded />
@@ -552,35 +296,27 @@ const ObelixiaTeamAdmin: React.FC = () => {
               </TabsContent>
 
               <TabsContent value="verticals" className="m-0 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-emerald-500/10"
-                    onClick={() => handleTabChange('vertical-packs-manager')}
-                  >
-                    <CardContent className="p-4 flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-                        <Package className="h-6 w-6 text-emerald-500" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-emerald-400">Packs Verticales</h4>
-                        <p className="text-sm text-muted-foreground">Gestión de soluciones por sector</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-teal-500/30 bg-gradient-to-br from-teal-500/5 to-teal-500/10"
-                    onClick={() => handleTabChange('sectors-manager')}
-                  >
-                    <CardContent className="p-4 flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-teal-500/20 flex items-center justify-center">
-                        <Briefcase className="h-6 w-6 text-teal-500" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-teal-400">Gestión de Sectores</h4>
-                        <p className="text-sm text-muted-foreground">Administrar sectores y CNAE</p>
-                      </div>
-                    </CardContent>
-                  </Card>
+                <div className="mb-4">
+                  <h3 className="text-xl font-semibold text-white mb-2">Verticales & Sectores</h3>
+                  <p className="text-slate-400 text-sm">Gestión de soluciones verticales por sector.</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {verticalCards.map((card, index) => (
+                    <motion.div
+                      key={card.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      <ObelixiaAdminCard3D
+                        title={card.title}
+                        description={card.description}
+                        icon={card.icon}
+                        color={card.color}
+                        onClick={() => handleTabChange(card.id)}
+                      />
+                    </motion.div>
+                  ))}
                 </div>
               </TabsContent>
 
@@ -596,162 +332,33 @@ const ObelixiaTeamAdmin: React.FC = () => {
                 <CoreWebVitalsDashboard />
               </TabsContent>
 
-              {/* Nueva pestaña de Reportes consolidados */}
               <TabsContent value="reports" className="m-0 space-y-6">
                 <div className="mb-4">
                   <h3 className="text-xl font-semibold text-white mb-2">Centro de Reportes</h3>
                   <p className="text-slate-400 text-sm">Acceso rápido a todos los generadores de documentación, análisis y reportes del sistema.</p>
                 </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {/* Documentación Técnica */}
-                  <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-emerald-500/10 hover:border-emerald-400/50"
-                    onClick={() => handleTabChange('technical-docs')}
-                  >
-                    <CardContent className="p-4 flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-                        <FileText className="h-6 w-6 text-emerald-500" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-emerald-400">Documentación Técnica</h4>
-                        <p className="text-sm text-muted-foreground">Generar documentación completa del sistema</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  {/* Análisis Competencia */}
-                  <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-purple-500/10 hover:border-purple-400/50"
-                    onClick={() => handleTabChange('competitor-gap')}
-                  >
-                    <CardContent className="p-4 flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                        <BarChart3 className="h-6 w-6 text-purple-500" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-purple-400">Análisis de Competencia</h4>
-                        <p className="text-sm text-muted-foreground">Gap analysis vs competidores</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  {/* Estado Aplicación */}
-                  <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-blue-500/10 hover:border-blue-400/50"
-                    onClick={() => handleTabChange('app-status')}
-                  >
-                    <CardContent className="p-4 flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                        <Activity className="h-6 w-6 text-blue-500" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-blue-400">Estado de la Aplicación</h4>
-                        <p className="text-sm text-muted-foreground">Estado detallado del sistema</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  {/* Índice Codebase */}
-                  <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-teal-500/30 bg-gradient-to-br from-teal-500/5 to-teal-500/10 hover:border-teal-400/50"
-                    onClick={() => handleTabChange('codebase-index')}
-                  >
-                    <CardContent className="p-4 flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-teal-500/20 flex items-center justify-center">
-                        <Code className="h-6 w-6 text-teal-500" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-teal-400">Índice del Codebase</h4>
-                        <p className="text-sm text-muted-foreground">Índice de funcionalidades del código</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  {/* Analizador de Aplicación */}
-                  <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-amber-500/10 hover:border-amber-400/50"
-                    onClick={() => handleTabChange('analyzer')}
-                  >
-                    <CardContent className="p-4 flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                        <Rocket className="h-6 w-6 text-amber-500" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-amber-400">Analizador de Aplicación</h4>
-                        <p className="text-sm text-muted-foreground">Análisis completo del estado y cumplimiento</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  {/* Mejoras Auto-Diagnóstico */}
-                  <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-cyan-500/30 bg-gradient-to-br from-cyan-500/5 to-cyan-500/10 hover:border-cyan-400/50"
-                    onClick={() => handleTabChange('audit-improvements')}
-                  >
-                    <CardContent className="p-4 flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-cyan-500/20 flex items-center justify-center">
-                        <BarChart3 className="h-6 w-6 text-cyan-500" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-cyan-400">Mejoras Auto-Diagnóstico</h4>
-                        <p className="text-sm text-muted-foreground">Seguimiento de mejoras con % cumplimiento</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  {/* Core Web Vitals */}
-                  <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-rose-500/30 bg-gradient-to-br from-rose-500/5 to-rose-500/10 hover:border-rose-400/50"
-                    onClick={() => handleTabChange('web-vitals')}
-                  >
-                    <CardContent className="p-4 flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-rose-500/20 flex items-center justify-center">
-                        <Gauge className="h-6 w-6 text-rose-500" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-rose-400">Core Web Vitals</h4>
-                        <p className="text-sm text-muted-foreground">Métricas de rendimiento web</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  {/* Multi-CNAE Dashboard */}
-                  <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-indigo-500/30 bg-gradient-to-br from-indigo-500/5 to-indigo-500/10 hover:border-indigo-400/50"
-                    onClick={() => handleTabChange('cnae-dashboard')}
-                  >
-                    <CardContent className="p-4 flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-indigo-500/20 flex items-center justify-center">
-                        <Layers className="h-6 w-6 text-indigo-500" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-indigo-400">Multi-CNAE Dashboard</h4>
-                        <p className="text-sm text-muted-foreground">Gestión multi-sector y pricing dinámico</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  {/* API Docs */}
-                  <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all border-2 border-slate-500/30 bg-gradient-to-br from-slate-500/5 to-slate-500/10 hover:border-slate-400/50"
-                    onClick={() => handleTabChange('api')}
-                  >
-                    <CardContent className="p-4 flex items-center gap-4">
-                      <div className="h-12 w-12 rounded-lg bg-slate-500/20 flex items-center justify-center">
-                        <Code className="h-6 w-6 text-slate-400" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-slate-300">Documentación API</h4>
-                        <p className="text-sm text-muted-foreground">Referencia completa de endpoints</p>
-                      </div>
-                    </CardContent>
-                  </Card>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {reportCards.map((card, index) => (
+                    <motion.div
+                      key={card.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                    >
+                      <ObelixiaAdminCard3D
+                        title={card.title}
+                        description={card.description}
+                        icon={card.icon}
+                        color={card.color}
+                        onClick={() => handleTabChange(card.id)}
+                      />
+                    </motion.div>
+                  ))}
                 </div>
               </TabsContent>
-            </CardContent>
-          </Tabs>
-        </Card>
+            </Tabs>
+          </ObelixiaContentArea>
+        </div>
       </div>
     </div>
   );
