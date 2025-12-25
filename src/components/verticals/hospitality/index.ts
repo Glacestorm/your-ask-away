@@ -1,0 +1,1 @@
+export { HospitalityDashboard } from './HospitalityDashboard';
