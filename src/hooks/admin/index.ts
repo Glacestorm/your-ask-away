@@ -1,2 +1,16 @@
 export { useRevenueAIAgents } from './useRevenueAIAgents';
 export { usePredictiveHealthScore } from './usePredictiveHealthScore';
+export { useEmotionalAnalysis } from './useEmotionalAnalysis';
+export { useNaturalLanguageQuery } from './useNaturalLanguageQuery';
+export { useWorkflowAutomation } from './useWorkflowAutomation';
+export { useSmartScheduling } from './useSmartScheduling';
+export { useDocumentIntelligence } from './useDocumentIntelligence';
+export { useAutoResponse } from './useAutoResponse';
+export { useKnowledgeBaseRAG } from './useKnowledgeBaseRAG';
+export { useMultiChannelIntegration } from './useMultiChannelIntegration';
+export { usePerformanceCoach } from './usePerformanceCoach';
+export { useCustomer360IA } from './useCustomer360IA';
+export { useComplianceIA } from './useComplianceIA';
+export { useRiskAssessmentIA } from './useRiskAssessmentIA';
+export { useAdvancedReporting } from './useAdvancedReporting';
+export { useRecommendationEngine } from './useRecommendationEngine';
