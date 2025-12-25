@@ -16,10 +16,11 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import StoreNavbar from '@/components/store/StoreNavbar';
 import { useLanguage } from '@/contexts/LanguageContext';
-
+import { useAuth } from '@/hooks/useAuth';
+import { AIRecommendationsPanel } from '@/components/academia/AIRecommendationsPanel';
 const AcademiaLanding: React.FC = () => {
   const { t, language } = useLanguage();
-
+  const { user } = useAuth();
   const features = [
     {
       icon: BookOpen,
@@ -187,6 +188,30 @@ const AcademiaLanding: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* AI Recommendations Section - For logged in users */}
+      {user && (
+        <section className="py-12 relative">
+          <div className="container mx-auto px-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="mb-6"
+            >
+              <h2 className="text-2xl font-bold text-white mb-2">
+                {language === 'es' ? 'Recomendado para ti' : 'Recommended for you'}
+              </h2>
+              <p className="text-slate-400">
+                {language === 'es' 
+                  ? 'Cursos seleccionados por IA basados en tu perfil'
+                  : 'AI-selected courses based on your profile'}
+              </p>
+            </motion.div>
+            <AIRecommendationsPanel className="bg-slate-800/30 border-slate-700" />
+          </div>
+        </section>
+      )}
 
       {/* Quick Links Section */}
       <section className="py-12 relative">
