@@ -95,6 +95,15 @@ export const ObelixiaAdminHeader: React.FC<ObelixiaAdminHeaderProps> = ({
             <Button
               variant="ghost"
               size="icon"
+              onClick={() => navigate('/store')}
+              className={navButtonClass}
+              title="Página Principal"
+            >
+              <Home className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => navigate(-1)}
               className={navButtonClass}
               title="Atrás"
@@ -109,15 +118,6 @@ export const ObelixiaAdminHeader: React.FC<ObelixiaAdminHeaderProps> = ({
               title="Adelante"
             >
               <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate('/store')}
-              className={navButtonClass}
-              title="Página Principal"
-            >
-              <Home className="h-4 w-4" />
             </Button>
           </div>
 
