@@ -1444,6 +1444,188 @@ export type Database = {
           },
         ]
       }
+      ai_agent_actions: {
+        Row: {
+          action_name: string
+          action_type: string
+          agent_id: string | null
+          approved_by: string | null
+          confidence_score: number | null
+          created_at: string
+          error_message: string | null
+          executed_at: string | null
+          execution_id: string | null
+          execution_time_ms: number | null
+          id: string
+          input_params: Json | null
+          output_result: Json | null
+          status: string
+          target_entity_id: string | null
+          target_entity_type: string | null
+          was_approved: boolean | null
+        }
+        Insert: {
+          action_name: string
+          action_type: string
+          agent_id?: string | null
+          approved_by?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          error_message?: string | null
+          executed_at?: string | null
+          execution_id?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          input_params?: Json | null
+          output_result?: Json | null
+          status?: string
+          target_entity_id?: string | null
+          target_entity_type?: string | null
+          was_approved?: boolean | null
+        }
+        Update: {
+          action_name?: string
+          action_type?: string
+          agent_id?: string | null
+          approved_by?: string | null
+          confidence_score?: number | null
+          created_at?: string
+          error_message?: string | null
+          executed_at?: string | null
+          execution_id?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          input_params?: Json | null
+          output_result?: Json | null
+          status?: string
+          target_entity_id?: string | null
+          target_entity_type?: string | null
+          was_approved?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_agent_actions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "ai_autonomous_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_agent_actions_execution_id_fkey"
+            columns: ["execution_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agent_executions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_agent_executions: {
+        Row: {
+          actions_taken: Json | null
+          agent_id: string | null
+          completed_at: string | null
+          context_data: Json | null
+          created_at: string
+          error_message: string | null
+          execution_time_ms: number | null
+          id: string
+          result_data: Json | null
+          started_at: string | null
+          status: string
+          tokens_used: number | null
+          trigger_source: string | null
+          trigger_type: string
+          user_id: string | null
+        }
+        Insert: {
+          actions_taken?: Json | null
+          agent_id?: string | null
+          completed_at?: string | null
+          context_data?: Json | null
+          created_at?: string
+          error_message?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          result_data?: Json | null
+          started_at?: string | null
+          status?: string
+          tokens_used?: number | null
+          trigger_source?: string | null
+          trigger_type: string
+          user_id?: string | null
+        }
+        Update: {
+          actions_taken?: Json | null
+          agent_id?: string | null
+          completed_at?: string | null
+          context_data?: Json | null
+          created_at?: string
+          error_message?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          result_data?: Json | null
+          started_at?: string | null
+          status?: string
+          tokens_used?: number | null
+          trigger_source?: string | null
+          trigger_type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_agent_executions_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "ai_autonomous_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_autonomous_agents: {
+        Row: {
+          agent_name: string
+          agent_type: string
+          capabilities: Json | null
+          confidence_threshold: number | null
+          created_at: string
+          description: string | null
+          execution_mode: string | null
+          id: string
+          is_active: boolean | null
+          max_actions_per_hour: number | null
+          system_prompt: string | null
+          updated_at: string
+        }
+        Insert: {
+          agent_name: string
+          agent_type: string
+          capabilities?: Json | null
+          confidence_threshold?: number | null
+          created_at?: string
+          description?: string | null
+          execution_mode?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_actions_per_hour?: number | null
+          system_prompt?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agent_name?: string
+          agent_type?: string
+          capabilities?: Json | null
+          confidence_threshold?: number | null
+          created_at?: string
+          description?: string | null
+          execution_mode?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_actions_per_hour?: number | null
+          system_prompt?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ai_interventions: {
         Row: {
           ai_analysis: string
@@ -7066,6 +7248,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      copilot_predictions: {
+        Row: {
+          confidence_score: number
+          context_data: Json | null
+          context_hash: string | null
+          created_at: string
+          execution_result: Json | null
+          expires_at: string | null
+          id: string
+          prediction: Json
+          prediction_type: string
+          responded_at: string | null
+          shown_at: string | null
+          user_feedback: string | null
+          user_id: string
+          was_accepted: boolean | null
+          was_executed: boolean | null
+          was_shown: boolean | null
+        }
+        Insert: {
+          confidence_score: number
+          context_data?: Json | null
+          context_hash?: string | null
+          created_at?: string
+          execution_result?: Json | null
+          expires_at?: string | null
+          id?: string
+          prediction: Json
+          prediction_type: string
+          responded_at?: string | null
+          shown_at?: string | null
+          user_feedback?: string | null
+          user_id: string
+          was_accepted?: boolean | null
+          was_executed?: boolean | null
+          was_shown?: boolean | null
+        }
+        Update: {
+          confidence_score?: number
+          context_data?: Json | null
+          context_hash?: string | null
+          created_at?: string
+          execution_result?: Json | null
+          expires_at?: string | null
+          id?: string
+          prediction?: Json
+          prediction_type?: string
+          responded_at?: string | null
+          shown_at?: string | null
+          user_feedback?: string | null
+          user_id?: string
+          was_accepted?: boolean | null
+          was_executed?: boolean | null
+          was_shown?: boolean | null
+        }
+        Relationships: []
       }
       copilot_role_configs: {
         Row: {
@@ -15527,6 +15766,51 @@ export type Database = {
           },
         ]
       }
+      predictive_copilot_config: {
+        Row: {
+          auto_execute_threshold: number | null
+          created_at: string
+          id: string
+          is_enabled: boolean | null
+          learning_mode: string | null
+          prediction_types: Json | null
+          preferred_voice: string | null
+          suggestion_frequency: string | null
+          updated_at: string
+          user_id: string
+          user_role: string | null
+          voice_enabled: boolean | null
+        }
+        Insert: {
+          auto_execute_threshold?: number | null
+          created_at?: string
+          id?: string
+          is_enabled?: boolean | null
+          learning_mode?: string | null
+          prediction_types?: Json | null
+          preferred_voice?: string | null
+          suggestion_frequency?: string | null
+          updated_at?: string
+          user_id: string
+          user_role?: string | null
+          voice_enabled?: boolean | null
+        }
+        Update: {
+          auto_execute_threshold?: number | null
+          created_at?: string
+          id?: string
+          is_enabled?: boolean | null
+          learning_mode?: string | null
+          prediction_types?: Json | null
+          preferred_voice?: string | null
+          suggestion_frequency?: string | null
+          updated_at?: string
+          user_id?: string
+          user_role?: string | null
+          voice_enabled?: boolean | null
+        }
+        Relationships: []
+      }
       premium_api_tiers: {
         Row: {
           created_at: string | null
@@ -23778,6 +24062,116 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      voice_commands: {
+        Row: {
+          action_params: Json | null
+          action_type: string | null
+          confidence: number | null
+          created_at: string
+          entities: Json | null
+          error_message: string | null
+          executed_at: string | null
+          execution_result: Json | null
+          id: string
+          intent: string | null
+          session_id: string | null
+          transcript: string
+          user_id: string
+          was_executed: boolean | null
+        }
+        Insert: {
+          action_params?: Json | null
+          action_type?: string | null
+          confidence?: number | null
+          created_at?: string
+          entities?: Json | null
+          error_message?: string | null
+          executed_at?: string | null
+          execution_result?: Json | null
+          id?: string
+          intent?: string | null
+          session_id?: string | null
+          transcript: string
+          user_id: string
+          was_executed?: boolean | null
+        }
+        Update: {
+          action_params?: Json | null
+          action_type?: string | null
+          confidence?: number | null
+          created_at?: string
+          entities?: Json | null
+          error_message?: string | null
+          executed_at?: string | null
+          execution_result?: Json | null
+          id?: string
+          intent?: string | null
+          session_id?: string | null
+          transcript?: string
+          user_id?: string
+          was_executed?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_commands_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "voice_interface_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      voice_interface_sessions: {
+        Row: {
+          audio_duration_seconds: number | null
+          commands_executed: Json | null
+          created_at: string
+          ended_at: string | null
+          id: string
+          language_code: string | null
+          metadata: Json | null
+          session_type: string
+          started_at: string
+          status: string
+          tasks_generated: Json | null
+          tokens_used: number | null
+          transcription_text: string | null
+          user_id: string
+        }
+        Insert: {
+          audio_duration_seconds?: number | null
+          commands_executed?: Json | null
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          language_code?: string | null
+          metadata?: Json | null
+          session_type: string
+          started_at?: string
+          status?: string
+          tasks_generated?: Json | null
+          tokens_used?: number | null
+          transcription_text?: string | null
+          user_id: string
+        }
+        Update: {
+          audio_duration_seconds?: number | null
+          commands_executed?: Json | null
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          language_code?: string | null
+          metadata?: Json | null
+          session_type?: string
+          started_at?: string
+          status?: string
+          tasks_generated?: Json | null
+          tokens_used?: number | null
+          transcription_text?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       vrp_mandates: {
         Row: {
