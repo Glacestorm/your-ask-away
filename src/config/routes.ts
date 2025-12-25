@@ -16,6 +16,12 @@ const NotFound = lazy(() => import('@/pages/NotFound'));
 const ObelixiaTeamAdmin = lazy(() => import('@/pages/ObelixiaTeamAdmin'));
 const Chat = lazy(() => import('@/pages/Chat'));
 
+// Academia
+const AcademiaLanding = lazy(() => import('@/pages/academia/AcademiaLanding'));
+const CourseCatalog = lazy(() => import('@/pages/academia/CourseCatalog'));
+const CourseDetail = lazy(() => import('@/pages/academia/CourseDetail'));
+const LearningPlayer = lazy(() => import('@/pages/academia/LearningPlayer'));
+
 // Store
 const StoreLanding = lazy(() => import('@/pages/store/StoreLanding'));
 const StoreModules = lazy(() => import('@/pages/store/StoreModules'));
