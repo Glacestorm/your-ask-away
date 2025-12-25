@@ -1,9 +1,9 @@
 /**
  * AcademiaLanding - Landing page de ObelixIA Academia
- * Fase 0: Placeholder para desarrollo posterior
+ * Optimizada para carga rápida con animaciones ligeras
  */
 
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -18,10 +18,45 @@ import StoreNavbar from '@/components/store/StoreNavbar';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
 import { AIRecommendationsPanel } from '@/components/academia/AIRecommendationsPanel';
+
+// Animaciones optimizadas - más rápidas y ligeras
+const fadeIn = {
+  initial: { opacity: 0, y: 10 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.3 }
+};
+
+const staggerChildren = {
+  animate: { transition: { staggerChildren: 0.05 } }
+};
+
+// Memoized Feature Card para evitar re-renders
+const FeatureCard = memo(({ feature, index }: { feature: { icon: React.ElementType; title: string; description: string }; index: number }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: index * 0.05, duration: 0.2 }}
+  >
+    <Card className="bg-slate-800/50 border-slate-700 hover:border-primary/50 transition-colors h-full">
+      <CardContent className="p-6">
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-4">
+          <feature.icon className="w-6 h-6 text-primary" />
+        </div>
+        <h3 className="text-lg font-semibold text-white mb-2">{feature.title}</h3>
+        <p className="text-slate-400 text-sm">{feature.description}</p>
+      </CardContent>
+    </Card>
+  </motion.div>
+));
+
+FeatureCard.displayName = 'FeatureCard';
+
 const AcademiaLanding: React.FC = () => {
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
   const { user } = useAuth();
-  const features = [
+
+  // Memoized data para evitar recreaciones
+  const features = useMemo(() => [
     {
       icon: BookOpen,
       title: language === 'es' ? 'Cursos Profesionales' : 'Professional Courses',
@@ -50,22 +85,22 @@ const AcademiaLanding: React.FC = () => {
         ? 'Monitoriza tu avance en tiempo real' 
         : 'Monitor your progress in real-time',
     },
-  ];
+  ], [language]);
 
-  const navLinks = [
+  const navLinks = useMemo(() => [
     { to: '/academia/cursos', label: language === 'es' ? 'Cursos' : 'Courses' },
     { to: '/academia/mi-perfil', label: language === 'es' ? 'Mi Perfil' : 'My Profile' },
     { to: '/academia/analytics', label: language === 'es' ? 'Analytics' : 'Analytics' },
     { to: '/academia/comunidad', label: language === 'es' ? 'Comunidad' : 'Community' },
     { to: '/academia/notificaciones', label: language === 'es' ? 'Notificaciones' : 'Notifications' },
-  ];
+  ], [language]);
 
-  const stats = [
+  const stats = useMemo(() => [
     { value: '50+', label: language === 'es' ? 'Cursos' : 'Courses' },
     { value: '10K+', label: language === 'es' ? 'Estudiantes' : 'Students' },
     { value: '95%', label: language === 'es' ? 'Satisfacción' : 'Satisfaction' },
     { value: '24/7', label: language === 'es' ? 'Soporte IA' : 'AI Support' },
-  ];
+  ], [language]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
@@ -73,17 +108,15 @@ const AcademiaLanding: React.FC = () => {
       
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 overflow-hidden">
-        {/* Background Effects */}
-        <div className="absolute inset-0 overflow-hidden">
+        {/* Background Effects - estáticos para mejor rendimiento */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
           <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
         </div>
 
         <div className="container mx-auto px-6 relative z-10">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            {...fadeIn}
             className="text-center max-w-4xl mx-auto"
           >
             <Badge className="mb-6 bg-primary/20 text-primary border-primary/30">
@@ -127,11 +160,11 @@ const AcademiaLanding: React.FC = () => {
             </div>
           </motion.div>
 
-          {/* Stats */}
+          {/* Stats - sin animaciones whileInView para carga más rápida */}
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.3 }}
             className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16 max-w-3xl mx-auto"
           >
             {stats.map((stat, index) => (
@@ -149,12 +182,7 @@ const AcademiaLanding: React.FC = () => {
       {/* Features Section */}
       <section className="py-20 relative">
         <div className="container mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
+          <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
               {language === 'es' ? '¿Por qué ObelixIA Academia?' : 'Why ObelixIA Academy?'}
             </h2>
@@ -163,29 +191,18 @@ const AcademiaLanding: React.FC = () => {
                 ? 'La única plataforma de formación con IA especializada para cada curso'
                 : 'The only learning platform with specialized AI for each course'}
             </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card className="bg-slate-800/50 border-slate-700 hover:border-primary/50 transition-all h-full">
-                  <CardContent className="p-6">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-4">
-                      <feature.icon className="w-6 h-6 text-primary" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-white mb-2">{feature.title}</h3>
-                    <p className="text-slate-400 text-sm">{feature.description}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
           </div>
+
+          <motion.div 
+            className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
+            variants={staggerChildren}
+            initial="initial"
+            animate="animate"
+          >
+            {features.map((feature, index) => (
+              <FeatureCard key={index} feature={feature} index={index} />
+            ))}
+          </motion.div>
         </div>
       </section>
 
@@ -193,12 +210,7 @@ const AcademiaLanding: React.FC = () => {
       {user && (
         <section className="py-12 relative">
           <div className="container mx-auto px-6">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="mb-6"
-            >
+            <div className="mb-6">
               <h2 className="text-2xl font-bold text-white mb-2">
                 {language === 'es' ? 'Recomendado para ti' : 'Recommended for you'}
               </h2>
@@ -207,7 +219,7 @@ const AcademiaLanding: React.FC = () => {
                   ? 'Cursos seleccionados por IA basados en tu perfil'
                   : 'AI-selected courses based on your profile'}
               </p>
-            </motion.div>
+            </div>
             <AIRecommendationsPanel className="bg-slate-800/30 border-slate-700" />
           </div>
         </section>
@@ -220,10 +232,9 @@ const AcademiaLanding: React.FC = () => {
             {navLinks.map((link, index) => (
               <motion.div
                 key={link.to}
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.05 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: index * 0.03 }}
               >
                 <Button
                   asChild
@@ -244,12 +255,7 @@ const AcademiaLanding: React.FC = () => {
       {/* Coming Soon CTA */}
       <section className="py-20 relative">
         <div className="container mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 rounded-3xl p-12 text-center border border-primary/30"
-          >
+          <div className="bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 rounded-3xl p-12 text-center border border-primary/30">
             <Badge className="mb-4 bg-primary/30 text-primary border-0">
               {language === 'es' ? 'Próximamente' : 'Coming Soon'}
             </Badge>
@@ -265,7 +271,7 @@ const AcademiaLanding: React.FC = () => {
               <CheckCircle className="w-5 h-5 mr-2" />
               {language === 'es' ? 'Notificarme del lanzamiento' : 'Notify me of launch'}
             </Button>
-          </motion.div>
+          </div>
         </div>
       </section>
 

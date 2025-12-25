@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -13,6 +13,7 @@ import { ObelixiaLogo } from '@/components/ui/ObelixiaLogo';
 import StoreAuthModal from './StoreAuthModal';
 import { useLanguage } from '@/contexts/LanguageContext';
 import MegaMenu, { type MegaMenuSection } from '@/components/navigation/MegaMenu';
+import { useRoutePreload } from '@/hooks/useRoutePreload';
 
 interface NavMenuItem {
   id: string;
@@ -40,6 +41,7 @@ const StoreNavbar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { t, language } = useLanguage();
+  const { preloadRoute } = useRoutePreload();
   
   // Define all pages that use dark theme navbar (internal pages with dark background)
   const darkThemeRoutes = [
@@ -294,6 +296,8 @@ const StoreNavbar: React.FC = () => {
                     cancelDesktopClose();
                     if (item.megaMenu) setActiveMenu(item.id);
                     else setActiveMenu(null);
+                    // Precargar la ruta al hacer hover para navegación más rápida
+                    if (item.href) preloadRoute(item.href);
                   }}
                 >
                   {item.megaMenu ? (
@@ -334,6 +338,7 @@ const StoreNavbar: React.FC = () => {
                   ) : (
                     <Link
                       to={item.href || '#'}
+                      onMouseEnter={() => item.href && preloadRoute(item.href)}
                       className={`px-5 py-2.5 rounded-xl text-base font-semibold transition-all duration-200 ${
                         useDarkTheme 
                           ? 'text-white/95 hover:text-white hover:bg-white/10 hover:shadow-[0_4px_12px_rgba(255,255,255,0.1)] hover:-translate-y-0.5'

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, type LucideIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useRoutePreload } from '@/hooks/useRoutePreload';
 
 export interface MegaMenuItem {
   id: string;
@@ -30,12 +31,14 @@ export interface MegaMenuProps {
 }
 
 const MegaMenu: React.FC<MegaMenuProps> = ({ sections, featured, onClose }) => {
+  const { preloadRoute } = useRoutePreload();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 0.2, ease: 'easeOut' }}
+      transition={{ duration: 0.15, ease: 'easeOut' }}
       className="pt-2"
     >
       <div className="container mx-auto px-6">
@@ -57,16 +60,17 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ sections, featured, onClose }) => {
                           <Link
                             to={item.href}
                             onClick={onClose}
-                            className="group flex items-start gap-4 p-3 -mx-3 rounded-xl hover:bg-slate-50 transition-colors duration-200"
+                            onMouseEnter={() => preloadRoute(item.href)}
+                            className="group flex items-start gap-4 p-3 -mx-3 rounded-xl hover:bg-slate-50 transition-colors duration-150"
                           >
                             {item.icon && (
-                              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-slate-100 group-hover:bg-primary/10 flex items-center justify-center transition-colors duration-200">
-                                <item.icon className="w-5 h-5 text-slate-600 group-hover:text-primary transition-colors duration-200" />
+                              <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-slate-100 group-hover:bg-primary/10 flex items-center justify-center transition-colors duration-150">
+                                <item.icon className="w-5 h-5 text-slate-600 group-hover:text-primary transition-colors duration-150" />
                               </div>
                             )}
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
-                                <span className="font-medium text-slate-900 group-hover:text-primary transition-colors duration-200">
+                                <span className="font-medium text-slate-900 group-hover:text-primary transition-colors duration-150">
                                   {item.label}
                                 </span>
                                 {item.badge && (
@@ -100,6 +104,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ sections, featured, onClose }) => {
                   <Link
                     to={featured.href}
                     onClick={onClose}
+                    onMouseEnter={() => preloadRoute(featured.href)}
                     className="group flex-1 flex flex-col"
                   >
                     {featured.image && (
@@ -107,7 +112,7 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ sections, featured, onClose }) => {
                         <img 
                           src={featured.image} 
                           alt={featured.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                         />
                       </div>
                     )}
