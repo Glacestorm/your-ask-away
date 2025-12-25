@@ -5,7 +5,7 @@ import {
   ShoppingCart, Menu, X, ChevronDown, ArrowRight,
   Package, Boxes, DollarSign, Landmark, ShieldCheck, ShoppingBag, Factory,
   Store, Code, BarChart3, MessageSquare, BookOpen, Rocket,
-  Heart, Users, GraduationCap, Globe, CreditCard, Briefcase
+  Heart, Users, GraduationCap, Globe, CreditCard, Briefcase, Award
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/contexts/CartContext';
@@ -39,7 +39,7 @@ const StoreNavbar: React.FC = () => {
   const { itemCount, setIsCartOpen } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   
   // Force solid background on internal store pages (not the main store landing)
   const isInternalStorePage = location.pathname !== '/store' && location.pathname.startsWith('/store');
@@ -101,6 +101,35 @@ const StoreNavbar: React.FC = () => {
           title: t('nav.featured.configurator'),
           description: t('nav.featured.configurator.desc'),
           href: '/demo',
+        },
+      },
+    },
+    {
+      id: 'academia',
+      label: language === 'es' ? 'Academia' : 'Academy',
+      megaMenu: {
+        sections: [
+          {
+            title: language === 'es' ? 'Formación' : 'Training',
+            items: [
+              { id: 'cursos', label: language === 'es' ? 'Todos los Cursos' : 'All Courses', href: '/academia/cursos', icon: BookOpen, description: language === 'es' ? 'Catálogo completo de formación' : 'Complete training catalog' },
+              { id: 'certificaciones', label: language === 'es' ? 'Certificaciones' : 'Certifications', href: '/academia/cursos?type=certification', icon: Award, description: language === 'es' ? 'Programas certificados oficiales' : 'Official certified programs', badge: 'Pro' },
+              { id: 'webinars', label: 'Webinars', href: '/academia/cursos?type=webinar', icon: Globe, description: language === 'es' ? 'Sesiones en vivo y grabadas' : 'Live and recorded sessions' },
+            ],
+          },
+          {
+            title: language === 'es' ? 'Por Nivel' : 'By Level',
+            items: [
+              { id: 'basico', label: language === 'es' ? 'Básico' : 'Basic', href: '/academia/cursos?level=beginner', icon: Rocket, description: language === 'es' ? 'Empieza desde cero' : 'Start from scratch' },
+              { id: 'intermedio', label: language === 'es' ? 'Intermedio' : 'Intermediate', href: '/academia/cursos?level=intermediate', icon: BarChart3, description: language === 'es' ? 'Profundiza tus conocimientos' : 'Deepen your knowledge' },
+              { id: 'avanzado', label: language === 'es' ? 'Avanzado' : 'Advanced', href: '/academia/cursos?level=advanced', icon: Code, description: language === 'es' ? 'Domina las técnicas expertas' : 'Master expert techniques' },
+            ],
+          },
+        ],
+        featured: {
+          title: language === 'es' ? 'Ruta de Aprendizaje' : 'Learning Path',
+          description: language === 'es' ? 'Descubre tu camino personalizado hacia la maestría en CRM con IA' : 'Discover your personalized path to CRM mastery with AI',
+          href: '/academia',
         },
       },
     },
