@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
-import { RefreshCw, AlertOctagon, Shield, Zap, Maximize2, Minimize2 } from 'lucide-react';
+import { RefreshCw, AlertOctagon, Shield, Maximize2, Minimize2 } from 'lucide-react';
 import { useRiskAssessmentIA } from '@/hooks/admin/useRiskAssessmentIA';
 import { cn } from '@/lib/utils';
 
@@ -15,14 +15,14 @@ interface RiskAssessmentIAPanelProps {
 
 export function RiskAssessmentIAPanel({ context, className }: RiskAssessmentIAPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { isLoading, assessment, risks, mitigations, assessEntity, fetchRisks, generateMitigations, getRiskLevelColor } = useRiskAssessmentIA();
+  const { isLoading, assessment, alerts, assessRisk, fetchAlerts, getRiskLevelColor, getRiskScoreColor } = useRiskAssessmentIA();
 
   useEffect(() => {
     if (context?.entityId) {
-      assessEntity(context.entityId, 'customer');
-      fetchRisks(context.entityId);
+      assessRisk(context.entityId, 'company');
+      fetchAlerts();
     }
-  }, [context?.entityId, assessEntity, fetchRisks]);
+  }, [context?.entityId, assessRisk, fetchAlerts]);
 
   if (!context) {
     return (
@@ -46,7 +46,7 @@ export function RiskAssessmentIAPanel({ context, className }: RiskAssessmentIAPa
             <CardTitle className="text-base">Risk Assessment IA</CardTitle>
           </div>
           <div className="flex gap-1">
-            <Button variant="ghost" size="icon" onClick={() => assessEntity(context.entityId, 'customer')} disabled={isLoading} className="h-8 w-8">
+            <Button variant="ghost" size="icon" onClick={() => assessRisk(context.entityId, 'company')} disabled={isLoading} className="h-8 w-8">
               <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
             </Button>
             <Button variant="ghost" size="icon" onClick={() => setIsExpanded(!isExpanded)} className="h-8 w-8">
@@ -60,31 +60,36 @@ export function RiskAssessmentIAPanel({ context, className }: RiskAssessmentIAPa
           <div className="space-y-3">
             {assessment && (
               <div className="p-4 rounded-lg border bg-card text-center">
-                <p className={cn("text-3xl font-bold", getRiskLevelColor(assessment.riskLevel))}>{assessment.overallScore}</p>
-                <Badge variant="outline" className="mt-2">{assessment.riskLevel}</Badge>
+                <p className={cn("text-3xl font-bold", getRiskScoreColor(assessment.overall_score))}>{assessment.overall_score}</p>
+                <Badge variant="outline" className={cn("mt-2", getRiskLevelColor(assessment.risk_level))}>{assessment.risk_level}</Badge>
               </div>
             )}
-            {risks.map((risk) => (
-              <div key={risk.id} className="p-3 rounded-lg border bg-card">
+            {assessment?.factors?.map((factor, idx) => (
+              <div key={idx} className="p-3 rounded-lg border bg-card">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium text-sm">{risk.name}</span>
-                  <Badge variant="outline" className={cn("text-xs", getRiskLevelColor(risk.impact))}>{risk.impact}</Badge>
+                  <span className="font-medium text-sm">{factor.name}</span>
+                  <Badge variant="outline" className="text-xs">{factor.trend}</Badge>
                 </div>
-                <Progress value={risk.probability * 100} className="h-2" />
+                <Progress value={factor.score} className="h-2" />
+                <p className="text-xs text-muted-foreground mt-1">{factor.description}</p>
               </div>
             ))}
-            {mitigations.length === 0 && risks.length > 0 && (
-              <Button variant="outline" className="w-full" onClick={() => generateMitigations(context.entityId)} disabled={isLoading}>
-                <Zap className="h-4 w-4 mr-2" />Generar Mitigaciones
-              </Button>
-            )}
-            {mitigations.map((m) => (
-              <div key={m.id} className="p-3 rounded-lg border bg-card">
+            {assessment?.mitigations?.map((m, idx) => (
+              <div key={idx} className="p-3 rounded-lg border bg-card">
                 <div className="flex items-center gap-2">
                   <Shield className="h-4 w-4 text-primary" />
                   <span className="text-sm">{m.action}</span>
                 </div>
-                <Badge variant="secondary" className="text-xs mt-2">Reduce {m.expectedReduction}%</Badge>
+                <Badge variant="secondary" className="text-xs mt-2">Impacto: {m.impact}%</Badge>
+              </div>
+            ))}
+            {alerts.map((alert) => (
+              <div key={alert.id} className="p-3 rounded-lg border border-destructive/30 bg-destructive/5">
+                <div className="flex items-center gap-2">
+                  <AlertOctagon className={cn("h-4 w-4", getRiskLevelColor(alert.risk_level))} />
+                  <span className="text-sm">{alert.entity_name}</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">{alert.trigger}</p>
               </div>
             ))}
           </div>

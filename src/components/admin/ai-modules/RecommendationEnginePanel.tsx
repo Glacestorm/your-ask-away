@@ -14,11 +14,11 @@ interface RecommendationEnginePanelProps {
 
 export function RecommendationEnginePanel({ context, className }: RecommendationEnginePanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { isLoading, recommendations, fetchRecommendations, submitFeedback } = useRecommendationEngine();
+  const { isLoading, recommendations, getRecommendations, submitFeedback } = useRecommendationEngine();
 
   useEffect(() => {
-    if (context?.entityId) fetchRecommendations(context.entityId, 'all');
-  }, [context?.entityId, fetchRecommendations]);
+    if (context?.entityId) getRecommendations(context.entityId, 'customer');
+  }, [context?.entityId, getRecommendations]);
 
   if (!context) {
     return (
@@ -42,7 +42,7 @@ export function RecommendationEnginePanel({ context, className }: Recommendation
             <CardTitle className="text-base">Recommendation Engine</CardTitle>
           </div>
           <div className="flex gap-1">
-            <Button variant="ghost" size="icon" onClick={() => fetchRecommendations(context.entityId, 'all')} disabled={isLoading} className="h-8 w-8">
+            <Button variant="ghost" size="icon" onClick={() => getRecommendations(context.entityId, 'customer')} disabled={isLoading} className="h-8 w-8">
               <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
             </Button>
             <Button variant="ghost" size="icon" onClick={() => setIsExpanded(!isExpanded)} className="h-8 w-8">
@@ -69,10 +69,10 @@ export function RecommendationEnginePanel({ context, className }: Recommendation
                     </div>
                   </div>
                   <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => submitFeedback(rec.id, 'accepted')}>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => submitFeedback({ recommendation_id: rec.id, accepted: true })}>
                       <ThumbsUp className="h-3.5 w-3.5 text-green-500" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => submitFeedback(rec.id, 'rejected')}>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => submitFeedback({ recommendation_id: rec.id, accepted: false })}>
                       <ThumbsDown className="h-3.5 w-3.5 text-red-500" />
                     </Button>
                   </div>
