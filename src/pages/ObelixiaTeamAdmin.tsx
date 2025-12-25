@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
@@ -35,26 +35,41 @@ import { SectorsManager } from '@/components/admin/SectorsManager';
 import { CoreWebVitalsDashboard } from '@/components/admin/CoreWebVitalsDashboard';
 import AcademiaAdminPage from '@/pages/admin/AcademiaAdminPage';
 
-// New premium components
+// Premium components
 import { ObelixiaAdminSidebar } from '@/components/obelixia-admin/ObelixiaAdminSidebar';
 import { ObelixiaAdminHeader } from '@/components/obelixia-admin/ObelixiaAdminHeader';
 import { ObelixiaStatsBar } from '@/components/obelixia-admin/ObelixiaStatsBar';
 import { ObelixiaContentArea } from '@/components/obelixia-admin/ObelixiaContentArea';
 import { ObelixiaAdminCard3D } from '@/components/obelixia-admin/ObelixiaAdminCard3D';
+import { ObelixiaViewToggle } from '@/components/obelixia-admin/ObelixiaViewToggle';
+import { useObelixiaAdminPreferences } from '@/hooks/useObelixiaAdminPreferences';
+import { cn } from '@/lib/utils';
 
 const ObelixiaTeamAdmin: React.FC = () => {
   const { isSuperAdmin, isAdmin } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialTab = searchParams.get('tab') || 'quotes';
-  const [activeTab, setActiveTab] = useState(initialTab);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  
+  // Use preferences hook for persistent settings
+  const {
+    theme,
+    viewMode,
+    sidebarCollapsed,
+    toggleTheme,
+    toggleViewMode,
+    setSidebarCollapsed
+  } = useObelixiaAdminPreferences();
+  
+  const [activeTab, setActiveTab] = React.useState(initialTab);
+  const isDark = theme === 'dark';
+  const isCompact = viewMode === 'compact';
 
   useEffect(() => {
     const tabFromUrl = searchParams.get('tab');
     if (tabFromUrl && tabFromUrl !== activeTab) {
       setActiveTab(tabFromUrl);
     }
-  }, [searchParams]);
+  }, [searchParams, activeTab]);
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -128,12 +143,25 @@ const ObelixiaTeamAdmin: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] flex">
+    <div className={cn(
+      'min-h-screen flex transition-colors duration-500',
+      isDark ? 'bg-[#0a0a0f]' : 'bg-gradient-to-br from-slate-50 via-white to-slate-100'
+    )}>
       {/* Background effects */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-950/20 via-transparent to-emerald-950/20" />
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl" />
+        {isDark ? (
+          <>
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-950/20 via-transparent to-emerald-950/20" />
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl" />
+          </>
+        ) : (
+          <>
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-transparent to-emerald-50/50" />
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-200/20 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-200/20 rounded-full blur-3xl" />
+          </>
+        )}
       </div>
 
       {/* Sidebar */}
@@ -142,22 +170,35 @@ const ObelixiaTeamAdmin: React.FC = () => {
         onTabChange={handleTabChange}
         isCollapsed={sidebarCollapsed}
         onCollapsedChange={setSidebarCollapsed}
+        theme={theme}
       />
 
       {/* Main content */}
       <div className="flex-1 flex flex-col min-h-screen overflow-auto">
-        <div className="relative p-6 space-y-6">
-          {/* Header */}
-          <ObelixiaAdminHeader
-            activeTab={activeTab}
-            getTabLabel={getTabLabel}
-          />
+        <div className={cn(
+          'relative space-y-6',
+          isCompact ? 'p-4' : 'p-6'
+        )}>
+          {/* Header with view toggle */}
+          <div className="flex items-start justify-between gap-4">
+            <ObelixiaAdminHeader
+              activeTab={activeTab}
+              getTabLabel={getTabLabel}
+              theme={theme}
+            />
+            <ObelixiaViewToggle
+              viewMode={viewMode}
+              theme={theme}
+              onViewModeChange={toggleViewMode}
+              onThemeChange={toggleTheme}
+            />
+          </div>
 
           {/* Stats Bar */}
-          <ObelixiaStatsBar stats={stats} />
+          <ObelixiaStatsBar stats={stats} theme={theme} viewMode={viewMode} />
 
           {/* Content Area */}
-          <ObelixiaContentArea activeTab={activeTab}>
+          <ObelixiaContentArea activeTab={activeTab} theme={theme} viewMode={viewMode}>
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
               <TabsContent value="quotes" className="m-0">
                 <QuoteManager />

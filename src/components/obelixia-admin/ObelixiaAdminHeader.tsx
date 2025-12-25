@@ -8,19 +8,23 @@ import { AdminPanelSwitcher } from '@/components/admin/AdminPanelSwitcher';
 import { AdminGlobalSearch } from '@/components/admin/AdminGlobalSearch';
 import NewsNotificationSystem from '@/components/admin/NewsNotificationSystem';
 import { cn } from '@/lib/utils';
+import type { ObelixiaTheme } from '@/hooks/useObelixiaAdminPreferences';
 
 interface ObelixiaAdminHeaderProps {
   activeTab: string;
   getTabLabel: (tab: string) => string;
+  theme?: ObelixiaTheme;
   className?: string;
 }
 
 export const ObelixiaAdminHeader: React.FC<ObelixiaAdminHeaderProps> = ({
   activeTab,
   getTabLabel,
+  theme = 'dark',
   className
 }) => {
   const navigate = useNavigate();
+  const isDark = theme === 'dark';
 
   return (
     <motion.div
