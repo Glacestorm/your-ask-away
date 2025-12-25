@@ -342,6 +342,69 @@ export type Database = {
           },
         ]
       }
+      academia_emotional_analytics: {
+        Row: {
+          attention_metrics: Json | null
+          confidence_score: number | null
+          course_id: string
+          created_at: string
+          detected_at: string
+          emotional_state: string
+          engagement_level: number | null
+          frustration_indicators: Json | null
+          id: string
+          interaction_patterns: Json | null
+          lesson_id: string | null
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          attention_metrics?: Json | null
+          confidence_score?: number | null
+          course_id: string
+          created_at?: string
+          detected_at?: string
+          emotional_state?: string
+          engagement_level?: number | null
+          frustration_indicators?: Json | null
+          id?: string
+          interaction_patterns?: Json | null
+          lesson_id?: string | null
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          attention_metrics?: Json | null
+          confidence_score?: number | null
+          course_id?: string
+          created_at?: string
+          detected_at?: string
+          emotional_state?: string
+          engagement_level?: number | null
+          frustration_indicators?: Json | null
+          id?: string
+          interaction_patterns?: Json | null
+          lesson_id?: string | null
+          session_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academia_emotional_analytics_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "academia_courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "academia_emotional_analytics_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "academia_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       academia_enrollments: {
         Row: {
           certificate_code: string | null
@@ -681,6 +744,72 @@ export type Database = {
             columns: ["achievement_id"]
             isOneToOne: false
             referencedRelation: "academia_achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      academia_voice_sessions: {
+        Row: {
+          course_id: string
+          created_at: string
+          emotional_summary: Json | null
+          ended_at: string | null
+          id: string
+          lesson_id: string | null
+          messages_count: number | null
+          metadata: Json | null
+          session_type: string
+          started_at: string
+          status: string
+          total_duration_seconds: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string
+          emotional_summary?: Json | null
+          ended_at?: string | null
+          id?: string
+          lesson_id?: string | null
+          messages_count?: number | null
+          metadata?: Json | null
+          session_type?: string
+          started_at?: string
+          status?: string
+          total_duration_seconds?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string
+          emotional_summary?: Json | null
+          ended_at?: string | null
+          id?: string
+          lesson_id?: string | null
+          messages_count?: number | null
+          metadata?: Json | null
+          session_type?: string
+          started_at?: string
+          status?: string
+          total_duration_seconds?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academia_voice_sessions_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "academia_courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "academia_voice_sessions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "academia_lessons"
             referencedColumns: ["id"]
           },
         ]

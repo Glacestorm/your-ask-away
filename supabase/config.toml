@@ -386,3 +386,12 @@ verify_jwt = true
 
 [functions.training-course-chat]
 verify_jwt = true
+
+[functions.academia-voice-token]
+verify_jwt = true
+
+[functions.academia-streaming-chat]
+verify_jwt = false
+
+[functions.academia-emotional-analytics]
+verify_jwt = true
