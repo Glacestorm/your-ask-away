@@ -376,15 +376,14 @@ const StoreNavbar: React.FC = () => {
             </AnimatePresence>
 
             {/* Right Section */}
-            <div className="hidden lg:flex items-center gap-4">
+            <div className="hidden lg:flex items-center gap-3">
               <button
                 onClick={openLogin}
-                className={`px-5 py-2.5 text-base font-semibold transition-all duration-200 rounded-xl ${
+                className={`px-5 py-2.5 text-base font-semibold rounded-xl transition-all duration-200 border ${
                   useDarkTheme 
-                    ? 'text-white/95 hover:text-white hover:bg-white/10 hover:-translate-y-0.5'
-                    : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 hover:-translate-y-0.5'
+                    ? 'text-white border-white/30 hover:bg-white/10 hover:border-white/50 hover:-translate-y-0.5'
+                    : 'text-slate-700 border-slate-300 hover:bg-slate-100 hover:border-slate-400 hover:-translate-y-0.5'
                 }`}
-                style={{ textShadow: useDarkTheme ? '0 1px 2px rgba(0,0,0,0.3)' : 'none' }}
               >
                 {t('nav.login')}
               </button>
