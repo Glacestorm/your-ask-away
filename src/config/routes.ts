@@ -27,6 +27,7 @@ const AcademiaAnalytics = lazy(() => import('@/pages/academia/AcademiaAnalytics'
 const CourseManagement = lazy(() => import('@/pages/academia/CourseManagement'));
 const AcademiaNotifications = lazy(() => import('@/pages/academia/AcademiaNotifications'));
 const AcademiaCommunity = lazy(() => import('@/pages/academia/AcademiaCommunity'));
+const AcademiaDemo = lazy(() => import('@/pages/AcademiaDemo'));
 
 // Store
 const StoreLanding = lazy(() => import('@/pages/store/StoreLanding'));
@@ -163,6 +164,7 @@ export const publicRoutes: RouteConfig[] = [
   { path: '/academia/gestion-cursos', component: CourseManagement, layout: 'none', priority: 'high', meta: { title: 'Gestión de Cursos', requiresAuth: true } },
   { path: '/academia/notificaciones', component: AcademiaNotifications, layout: 'none', priority: 'high', meta: { title: 'Notificaciones', requiresAuth: true } },
   { path: '/academia/comunidad', component: AcademiaCommunity, layout: 'none', priority: 'high', meta: { title: 'Comunidad', requiresAuth: true } },
+  { path: '/academia/demo', component: AcademiaDemo, layout: 'none', priority: 'high', meta: { title: 'Academia Demo' } },
   
   // Sectors (con alias para ambas rutas)
   { path: '/sectores', component: SectorLanding, layout: 'none', priority: 'high', meta: { title: 'Sectores' } },
