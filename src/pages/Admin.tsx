@@ -102,6 +102,21 @@ import {
   AutonomousAgentsPanel,
   PredictiveCopilotPanel,
   VoiceInterfacePanel,
+  // AI Modules - Fases 2-5
+  EmotionalAnalysisPanel,
+  NaturalLanguageQueryPanel,
+  WorkflowAutomationPanel,
+  SmartSchedulingPanel,
+  DocumentIntelligencePanel,
+  AutoResponsePanel,
+  KnowledgeBaseRAGPanel,
+  MultiChannelIntegrationPanel,
+  PerformanceCoachPanel,
+  Customer360IAPanel,
+  ComplianceIAPanel,
+  RiskAssessmentIAPanel,
+  AdvancedReportingPanel,
+  RecommendationEnginePanel,
 } from '@/components/admin/AdminSectionLoader';
 
 const Admin = () => {
@@ -1013,10 +1028,11 @@ const Admin = () => {
         }
         return (
           <div className="space-y-6">
+            {/* Fase 1 - Core AI Agents */}
             <div className="rounded-lg border bg-card p-6">
               <div className="mb-6">
                 <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
-                  AI Obelixia
+                  AI Obelixia - Fase 1
                 </h2>
                 <p className="text-sm text-muted-foreground">
                   Agentes autónomos, copiloto predictivo e interfaz de voz con IA
@@ -1026,6 +1042,60 @@ const Admin = () => {
                 <AutonomousAgentsPanel />
                 <PredictiveCopilotPanel />
                 <VoiceInterfacePanel />
+              </div>
+            </div>
+
+            {/* Fase 2 - Analytics IA */}
+            <div className="rounded-lg border bg-card p-6">
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-primary">Fase 2 - Analytics IA</h3>
+                <p className="text-sm text-muted-foreground">Análisis emocional y consultas en lenguaje natural</p>
+              </div>
+              <div className="grid gap-6 lg:grid-cols-2">
+                <EmotionalAnalysisPanel />
+                <NaturalLanguageQueryPanel />
+              </div>
+            </div>
+
+            {/* Fase 3 - Automatización */}
+            <div className="rounded-lg border bg-card p-6">
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-primary">Fase 3 - Automatización</h3>
+                <p className="text-sm text-muted-foreground">Workflows, scheduling, documentos y respuestas automáticas</p>
+              </div>
+              <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-4">
+                <WorkflowAutomationPanel />
+                <SmartSchedulingPanel />
+                <DocumentIntelligencePanel />
+                <AutoResponsePanel />
+              </div>
+            </div>
+
+            {/* Fase 4 - Knowledge & Communications */}
+            <div className="rounded-lg border bg-card p-6">
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-primary">Fase 4 - Knowledge & Communications</h3>
+                <p className="text-sm text-muted-foreground">Base de conocimiento RAG, multicanal, coaching y Customer 360</p>
+              </div>
+              <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-4">
+                <KnowledgeBaseRAGPanel />
+                <MultiChannelIntegrationPanel />
+                <PerformanceCoachPanel />
+                <Customer360IAPanel />
+              </div>
+            </div>
+
+            {/* Fase 5 - Enterprise */}
+            <div className="rounded-lg border bg-card p-6">
+              <div className="mb-6">
+                <h3 className="text-xl font-bold text-primary">Fase 5 - Enterprise</h3>
+                <p className="text-sm text-muted-foreground">Compliance, riesgo, reporting avanzado y motor de recomendaciones</p>
+              </div>
+              <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-4">
+                <ComplianceIAPanel />
+                <RiskAssessmentIAPanel />
+                <AdvancedReportingPanel />
+                <RecommendationEnginePanel />
               </div>
             </div>
           </div>
