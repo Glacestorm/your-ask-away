@@ -140,6 +140,12 @@ export const publicRoutes: RouteConfig[] = [
   { path: '/store/checkout', component: StoreCheckout, layout: 'public', priority: 'high' },
   { path: '/store/success', component: CheckoutSuccess, layout: 'public', priority: 'high' },
   
+  // Academia
+  { path: '/academia', component: AcademiaLanding, layout: 'none', priority: 'high', meta: { title: 'Academia ObelixIA' } },
+  { path: '/academia/cursos', component: CourseCatalog, layout: 'none', priority: 'high', meta: { title: 'Cursos' } },
+  { path: '/academia/curso/:courseId', component: CourseDetail, layout: 'none', priority: 'high', meta: { title: 'Curso' } },
+  { path: '/academia/aprender/:courseId', component: LearningPlayer, layout: 'none', priority: 'high', meta: { title: 'Aprender', requiresAuth: true } },
+  
   // Sectors (con alias para ambas rutas)
   { path: '/sectores', component: SectorLanding, layout: 'public', priority: 'high', meta: { title: 'Sectores' } },
   { path: '/sectores/:slug', component: SectorDetail, layout: 'none', priority: 'high', meta: { title: 'Sector' } },
