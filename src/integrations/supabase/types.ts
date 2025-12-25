@@ -458,6 +458,115 @@ export type Database = {
           },
         ]
       }
+      academia_leaderboards: {
+        Row: {
+          average_score: number | null
+          course_id: string | null
+          created_at: string | null
+          id: string
+          lessons_completed: number | null
+          period_end: string | null
+          period_start: string | null
+          period_type: string
+          quizzes_passed: number | null
+          rank: number | null
+          total_points: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          average_score?: number | null
+          course_id?: string | null
+          created_at?: string | null
+          id?: string
+          lessons_completed?: number | null
+          period_end?: string | null
+          period_start?: string | null
+          period_type: string
+          quizzes_passed?: number | null
+          rank?: number | null
+          total_points?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          average_score?: number | null
+          course_id?: string | null
+          created_at?: string | null
+          id?: string
+          lessons_completed?: number | null
+          period_end?: string | null
+          period_start?: string | null
+          period_type?: string
+          quizzes_passed?: number | null
+          rank?: number | null
+          total_points?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academia_leaderboards_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "academia_courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      academia_learning_paths: {
+        Row: {
+          adaptations_made: Json[] | null
+          ai_recommendations: Json | null
+          course_id: string
+          created_at: string | null
+          current_position: number | null
+          id: string
+          last_analyzed_at: string | null
+          path_type: string | null
+          performance_metrics: Json | null
+          recommended_sequence: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          adaptations_made?: Json[] | null
+          ai_recommendations?: Json | null
+          course_id: string
+          created_at?: string | null
+          current_position?: number | null
+          id?: string
+          last_analyzed_at?: string | null
+          path_type?: string | null
+          performance_metrics?: Json | null
+          recommended_sequence?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          adaptations_made?: Json[] | null
+          ai_recommendations?: Json | null
+          course_id?: string
+          created_at?: string | null
+          current_position?: number | null
+          id?: string
+          last_analyzed_at?: string | null
+          path_type?: string | null
+          performance_metrics?: Json | null
+          recommended_sequence?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academia_learning_paths_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "academia_courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       academia_lesson_progress: {
         Row: {
           completed_at: string | null
@@ -669,6 +778,226 @@ export type Database = {
           },
         ]
       }
+      academia_point_transactions: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          metadata: Json | null
+          points: number
+          source: string
+          source_id: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          points: number
+          source: string
+          source_id?: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          points?: number
+          source?: string
+          source_id?: string | null
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      academia_quiz_attempts: {
+        Row: {
+          adaptive_data: Json | null
+          answers: Json | null
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          passed: boolean | null
+          percentage: number | null
+          quiz_id: string
+          score: number | null
+          started_at: string | null
+          time_spent_seconds: number | null
+          total_points: number | null
+          user_id: string
+        }
+        Insert: {
+          adaptive_data?: Json | null
+          answers?: Json | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          passed?: boolean | null
+          percentage?: number | null
+          quiz_id: string
+          score?: number | null
+          started_at?: string | null
+          time_spent_seconds?: number | null
+          total_points?: number | null
+          user_id: string
+        }
+        Update: {
+          adaptive_data?: Json | null
+          answers?: Json | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          passed?: boolean | null
+          percentage?: number | null
+          quiz_id?: string
+          score?: number | null
+          started_at?: string | null
+          time_spent_seconds?: number | null
+          total_points?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academia_quiz_attempts_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "academia_quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      academia_quiz_questions: {
+        Row: {
+          correct_answer: string | null
+          created_at: string | null
+          difficulty_level: number | null
+          explanation: string | null
+          hint: string | null
+          id: string
+          options: Json | null
+          order_index: number | null
+          points: number | null
+          question_text: string
+          question_type: string
+          quiz_id: string
+          tags: string[] | null
+        }
+        Insert: {
+          correct_answer?: string | null
+          created_at?: string | null
+          difficulty_level?: number | null
+          explanation?: string | null
+          hint?: string | null
+          id?: string
+          options?: Json | null
+          order_index?: number | null
+          points?: number | null
+          question_text: string
+          question_type?: string
+          quiz_id: string
+          tags?: string[] | null
+        }
+        Update: {
+          correct_answer?: string | null
+          created_at?: string | null
+          difficulty_level?: number | null
+          explanation?: string | null
+          hint?: string | null
+          id?: string
+          options?: Json | null
+          order_index?: number | null
+          points?: number | null
+          question_text?: string
+          question_type?: string
+          quiz_id?: string
+          tags?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academia_quiz_questions_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "academia_quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      academia_quizzes: {
+        Row: {
+          course_id: string
+          created_at: string | null
+          description: string | null
+          difficulty_level: string | null
+          id: string
+          is_published: boolean | null
+          is_required: boolean | null
+          lesson_id: string
+          max_attempts: number | null
+          passing_score: number | null
+          quiz_type: string
+          show_correct_answers: boolean | null
+          shuffle_questions: boolean | null
+          time_limit_minutes: number | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          course_id: string
+          created_at?: string | null
+          description?: string | null
+          difficulty_level?: string | null
+          id?: string
+          is_published?: boolean | null
+          is_required?: boolean | null
+          lesson_id: string
+          max_attempts?: number | null
+          passing_score?: number | null
+          quiz_type?: string
+          show_correct_answers?: boolean | null
+          shuffle_questions?: boolean | null
+          time_limit_minutes?: number | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          course_id?: string
+          created_at?: string | null
+          description?: string | null
+          difficulty_level?: string | null
+          id?: string
+          is_published?: boolean | null
+          is_required?: boolean | null
+          lesson_id?: string
+          max_attempts?: number | null
+          passing_score?: number | null
+          quiz_type?: string
+          show_correct_answers?: boolean | null
+          shuffle_questions?: boolean | null
+          time_limit_minutes?: number | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "academia_quizzes_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "academia_courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "academia_quizzes_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "academia_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       academia_reviews: {
         Row: {
           content: string | null
@@ -747,6 +1076,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      academia_user_points: {
+        Row: {
+          created_at: string | null
+          current_level: number | null
+          experience_points: number | null
+          id: string
+          last_activity_date: string | null
+          longest_streak: number | null
+          monthly_points: number | null
+          streak_days: number | null
+          total_points: number | null
+          updated_at: string | null
+          user_id: string
+          weekly_points: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_level?: number | null
+          experience_points?: number | null
+          id?: string
+          last_activity_date?: string | null
+          longest_streak?: number | null
+          monthly_points?: number | null
+          streak_days?: number | null
+          total_points?: number | null
+          updated_at?: string | null
+          user_id: string
+          weekly_points?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          current_level?: number | null
+          experience_points?: number | null
+          id?: string
+          last_activity_date?: string | null
+          longest_streak?: number | null
+          monthly_points?: number | null
+          streak_days?: number | null
+          total_points?: number | null
+          updated_at?: string | null
+          user_id?: string
+          weekly_points?: number | null
+        }
+        Relationships: []
       }
       academia_voice_sessions: {
         Row: {
@@ -23825,6 +24199,7 @@ export type Database = {
         }[]
       }
       calculate_student_level: { Args: { xp_points: number }; Returns: number }
+      calculate_user_level: { Args: { xp: number }; Returns: number }
       can_send_survey: {
         Args: {
           p_company_id: string
