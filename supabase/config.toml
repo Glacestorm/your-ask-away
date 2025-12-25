@@ -506,3 +506,15 @@ verify_jwt = true
 
 [functions.predictive-anomalies]
 verify_jwt = true
+
+[functions.workflow-automation]
+verify_jwt = true
+
+[functions.task-orchestrator]
+verify_jwt = true
+
+[functions.event-processor]
+verify_jwt = true
+
+[functions.scheduler]
+verify_jwt = true
