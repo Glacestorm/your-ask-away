@@ -19,12 +19,13 @@ import {
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { AppReviewPanel } from '@/components/marketplace/admin';
+import { AppReviewPanel, PartnerManagementPanel, MarketplaceSettingsDialog } from '@/components/marketplace/admin';
 import { Navigate } from 'react-router-dom';
 
 export default function MarketplaceAdmin() {
   const { user, userRole, isAdmin, isSuperAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Only allow admins
   if (!isAdmin && !isSuperAdmin) {
@@ -73,11 +74,14 @@ export default function MarketplaceAdmin() {
               <p className="text-muted-foreground">Panel de control para gestionar apps y partners</p>
             </div>
           </div>
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => setIsSettingsOpen(true)}>
             <Settings className="h-4 w-4 mr-2" />
             Configuración
           </Button>
         </div>
+
+        {/* Settings Dialog */}
+        <MarketplaceSettingsDialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -257,17 +261,7 @@ export default function MarketplaceAdmin() {
           </TabsContent>
 
           <TabsContent value="partners" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Gestión de Partners</CardTitle>
-                <CardDescription>Administra las empresas partner del programa</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-center text-muted-foreground py-8">
-                  Panel de gestión de partners en desarrollo...
-                </p>
-              </CardContent>
-            </Card>
+            <PartnerManagementPanel />
           </TabsContent>
 
           <TabsContent value="revenue" className="mt-6">
