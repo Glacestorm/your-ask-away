@@ -11,3 +11,6 @@ export { ResourcesPanel } from './ResourcesPanel';
 export type { Resource } from './ResourcesPanel';
 export { AITutorPanel } from './AITutorPanel';
 export { QuizPlayer } from './QuizPlayer';
+export { VoiceAITutor } from './VoiceAITutor';
+export { EmotionalIndicator } from './EmotionalIndicator';
+export { StreamingMessage } from './StreamingMessage';
