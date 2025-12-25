@@ -118,6 +118,13 @@ const StoreNavbar: React.FC = () => {
             ],
           },
           {
+            title: language === 'es' ? 'Mi Espacio' : 'My Space',
+            items: [
+              { id: 'mi-perfil', label: language === 'es' ? 'Mi Perfil' : 'My Profile', href: '/academia/mi-perfil', icon: Users, description: language === 'es' ? 'Logros, certificados y progreso' : 'Achievements, certificates and progress', badge: language === 'es' ? 'Nuevo' : 'New' },
+              { id: 'verificar', label: language === 'es' ? 'Verificar Certificado' : 'Verify Certificate', href: '/academia/verificar', icon: ShieldCheck, description: language === 'es' ? 'Valida autenticidad de certificados' : 'Validate certificate authenticity' },
+            ],
+          },
+          {
             title: language === 'es' ? 'Por Nivel' : 'By Level',
             items: [
               { id: 'basico', label: language === 'es' ? 'Básico' : 'Basic', href: '/academia/cursos?level=beginner', icon: Rocket, description: language === 'es' ? 'Empieza desde cero' : 'Start from scratch' },
