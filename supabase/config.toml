@@ -539,3 +539,15 @@ verify_jwt = true
 
 [functions.access-control]
 verify_jwt = true
+
+[functions.advanced-analytics]
+verify_jwt = true
+
+[functions.data-visualization]
+verify_jwt = true
+
+[functions.kpi-tracking]
+verify_jwt = true
+
+[functions.realtime-metrics]
+verify_jwt = true
