@@ -20,12 +20,17 @@ import {
   ArrowRight,
   CheckCircle2,
   Clock,
-  ExternalLink
+  ExternalLink,
+  BarChart3,
+  Key,
+  Webhook,
+  Settings
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { PARTNER_TIERS } from '@/types/marketplace';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { AppEditor, PartnerAnalytics, ApiKeysManager, WebhooksManager } from '@/components/marketplace/partner';
 
 function PartnerOnboarding() {
   const applyMutation = useApplyForPartnership();
@@ -194,12 +199,24 @@ function PartnerOnboarding() {
 function PartnerDashboard({ company, role }: { company: any; role: string }) {
   const { data: apps } = usePartnerApplications(company.id);
   const { data: revenue } = usePartnerRevenue(company.id);
+  const [isAppEditorOpen, setIsAppEditorOpen] = useState(false);
+  const [selectedApp, setSelectedApp] = useState<any>(null);
 
   const stats = {
     totalApps: apps?.length || 0,
     publishedApps: apps?.filter(a => a.status === 'published').length || 0,
     totalInstalls: apps?.reduce((acc, app) => acc + app.install_count, 0) || 0,
     totalRevenue: revenue?.reduce((acc, t) => acc + (t.partner_amount || 0), 0) || 0,
+  };
+
+  const handleNewApp = () => {
+    setSelectedApp(null);
+    setIsAppEditorOpen(true);
+  };
+
+  const handleEditApp = (app: any) => {
+    setSelectedApp(app);
+    setIsAppEditorOpen(true);
   };
 
   return (
@@ -295,16 +312,37 @@ function PartnerDashboard({ company, role }: { company: any; role: string }) {
         </div>
 
         <Tabs defaultValue="apps">
-          <TabsList>
-            <TabsTrigger value="apps">Mis Apps</TabsTrigger>
-            <TabsTrigger value="revenue">Ingresos</TabsTrigger>
-            <TabsTrigger value="settings">Configuración</TabsTrigger>
+          <TabsList className="mb-6">
+            <TabsTrigger value="apps" className="gap-2">
+              <Package className="h-4 w-4" />
+              Mis Apps
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Analytics
+            </TabsTrigger>
+            <TabsTrigger value="revenue" className="gap-2">
+              <DollarSign className="h-4 w-4" />
+              Ingresos
+            </TabsTrigger>
+            <TabsTrigger value="api-keys" className="gap-2">
+              <Key className="h-4 w-4" />
+              API Keys
+            </TabsTrigger>
+            <TabsTrigger value="webhooks" className="gap-2">
+              <Webhook className="h-4 w-4" />
+              Webhooks
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="gap-2">
+              <Settings className="h-4 w-4" />
+              Configuración
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="apps" className="mt-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">Mis Aplicaciones</h2>
-              <Button>
+              <Button onClick={handleNewApp}>
                 <Plus className="h-4 w-4 mr-2" />
                 Nueva App
               </Button>
@@ -317,7 +355,11 @@ function PartnerDashboard({ company, role }: { company: any; role: string }) {
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
                         <div className="h-12 w-12 rounded-xl bg-muted flex items-center justify-center">
-                          <Package className="h-6 w-6 text-muted-foreground" />
+                          {app.icon_url ? (
+                            <img src={app.icon_url} alt="" className="h-10 w-10 rounded-lg object-cover" />
+                          ) : (
+                            <Package className="h-6 w-6 text-muted-foreground" />
+                          )}
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
@@ -327,7 +369,9 @@ function PartnerDashboard({ company, role }: { company: any; role: string }) {
                               app.status === 'in_review' ? 'secondary' :
                               'outline'
                             }>
-                              {app.status}
+                              {app.status === 'published' ? 'Publicada' : 
+                               app.status === 'in_review' ? 'En revisión' :
+                               app.status === 'draft' ? 'Borrador' : app.status}
                             </Badge>
                           </div>
                           <p className="text-sm text-muted-foreground mt-1">
@@ -340,7 +384,9 @@ function PartnerDashboard({ company, role }: { company: any; role: string }) {
                             </div>
                           )}
                         </div>
-                        <Button variant="ghost" size="sm">Editar</Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleEditApp(app)}>
+                          Editar
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -354,13 +400,17 @@ function PartnerDashboard({ company, role }: { company: any; role: string }) {
                   <p className="text-muted-foreground mb-4">
                     Crea tu primera app y publícala en el marketplace
                   </p>
-                  <Button>
+                  <Button onClick={handleNewApp}>
                     <Plus className="h-4 w-4 mr-2" />
                     Crear primera app
                   </Button>
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          <TabsContent value="analytics" className="mt-6">
+            <PartnerAnalytics apps={apps || []} revenue={revenue || []} />
           </TabsContent>
 
           <TabsContent value="revenue" className="mt-6">
@@ -402,6 +452,14 @@ function PartnerDashboard({ company, role }: { company: any; role: string }) {
             </Card>
           </TabsContent>
 
+          <TabsContent value="api-keys" className="mt-6">
+            <ApiKeysManager partnerCompanyId={company.id} />
+          </TabsContent>
+
+          <TabsContent value="webhooks" className="mt-6">
+            <WebhooksManager partnerCompanyId={company.id} />
+          </TabsContent>
+
           <TabsContent value="settings" className="mt-6">
             <Card>
               <CardHeader>
@@ -430,6 +488,14 @@ function PartnerDashboard({ company, role }: { company: any; role: string }) {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* App Editor Dialog */}
+      <AppEditor
+        open={isAppEditorOpen}
+        onOpenChange={setIsAppEditorOpen}
+        app={selectedApp}
+        partnerCompanyId={company.id}
+      />
     </div>
   );
 }
