@@ -482,3 +482,15 @@ verify_jwt = true
 
 [functions.useu-compliance]
 verify_jwt = true
+
+[functions.healthcare-pro]
+verify_jwt = true
+
+[functions.agriculture-pro]
+verify_jwt = true
+
+[functions.industrial-pro]
+verify_jwt = true
+
+[functions.services-pro]
+verify_jwt = true
