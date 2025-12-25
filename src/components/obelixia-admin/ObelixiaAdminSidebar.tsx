@@ -4,7 +4,7 @@ import {
   ChevronLeft, ChevronRight, ChevronDown,
   FileText, Receipt, Euro, Settings, LayoutGrid, BookOpen,
   Store, Palette, Code, GraduationCap, Languages, Briefcase,
-  Gauge, ClipboardList, Shield, Newspaper, HelpCircle, Sparkles
+  Activity, ClipboardList, Shield, Newspaper, HelpCircle, Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -66,7 +66,7 @@ const categories: NavCategory[] = [
     items: [
       { id: 'docs', label: 'Documentación', icon: BookOpen },
       { id: 'reports', label: 'Reportes', icon: ClipboardList },
-      { id: 'web-vitals', label: 'Web Vitals', icon: Gauge },
+      { id: 'web-vitals', label: 'Web Vitals', icon: Activity },
     ]
   },
   {
