@@ -27,6 +27,7 @@ import { Progress } from '@/components/ui/progress';
 import { AchievementSystem } from '@/components/academia/AchievementSystem';
 import { CertificateGenerator } from '@/components/academia/CertificateGenerator';
 import { ProgressDashboard } from '@/components/academia/ProgressDashboard';
+import { CertificatesPanel } from '@/components/academia/CertificatesPanel';
 import { useTrainingCertificates, Certificate } from '@/hooks/useTrainingCertificates';
 import { useTrainingEnrollments, Enrollment } from '@/hooks/useTrainingEnrollments';
 import { useTrainingGamification } from '@/hooks/useTrainingGamification';
@@ -193,6 +194,11 @@ const AcademiaProfile: React.FC = () => {
 
           {/* Certificates Tab */}
           <TabsContent value="certificates">
+            {/* AI Certificates Panel - Full width */}
+            <div className="mb-6">
+              <CertificatesPanel />
+            </div>
+            
             <div className="grid gap-6 lg:grid-cols-2">
               {/* Certificates List */}
               <Card className="bg-slate-900/50 border-slate-800">

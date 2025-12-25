@@ -31,12 +31,14 @@ import {
   Send,
   Pin,
   Star,
-  MoreVertical
+  MoreVertical,
+  Sparkles
 } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { CommunityPanel } from '@/components/academia/CommunityPanel';
 
 interface Discussion {
   id: string;
@@ -413,7 +415,8 @@ export default function AcademiaCommunity() {
 
   return (
     <div className="container mx-auto py-6 space-y-6">
-      {/* Header */}
+      {/* AI Community Panel - Prominent at top */}
+      <CommunityPanel className="mb-2" />
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link to="/academia">

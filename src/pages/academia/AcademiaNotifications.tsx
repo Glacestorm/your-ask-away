@@ -21,12 +21,14 @@ import {
   Settings,
   BellOff,
   ChevronLeft,
-  Check
+  Check,
+  Sparkles
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { NotificationsPanel } from '@/components/academia/NotificationsPanel';
 
 const notificationIcons: Record<AcademiaNotification['type'], React.ElementType> = {
   course_update: BookOpen,
@@ -260,127 +262,133 @@ export default function AcademiaNotifications() {
           </Tabs>
         </Card>
 
-        {/* Settings Panel */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="w-5 h-5" />
-              Preferencias
-            </CardTitle>
-            <CardDescription>
-              Personaliza qué notificaciones recibir
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-4">
-              <h4 className="font-medium text-sm">Tipos de notificaciones</h4>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={cn("p-2 rounded-full", notificationColors.course_update)}>
-                    <BookOpen className="w-4 h-4" />
+        {/* AI Notifications Panel & Settings */}
+        <div className="space-y-6">
+          {/* AI Smart Notifications */}
+          <NotificationsPanel className="h-auto" />
+          
+          {/* Settings Panel */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="w-5 h-5" />
+                Preferencias
+              </CardTitle>
+              <CardDescription>
+                Personaliza qué notificaciones recibir
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <h4 className="font-medium text-sm">Tipos de notificaciones</h4>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={cn("p-2 rounded-full", notificationColors.course_update)}>
+                      <BookOpen className="w-4 h-4" />
+                    </div>
+                    <Label htmlFor="course_updates">Actualizaciones de cursos</Label>
                   </div>
-                  <Label htmlFor="course_updates">Actualizaciones de cursos</Label>
+                  <Switch
+                    id="course_updates"
+                    checked={preferences.course_updates}
+                    onCheckedChange={(checked) => updatePreferences({ course_updates: checked })}
+                  />
                 </div>
-                <Switch
-                  id="course_updates"
-                  checked={preferences.course_updates}
-                  onCheckedChange={(checked) => updatePreferences({ course_updates: checked })}
-                />
-              </div>
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={cn("p-2 rounded-full", notificationColors.achievement)}>
-                    <Trophy className="w-4 h-4" />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={cn("p-2 rounded-full", notificationColors.achievement)}>
+                      <Trophy className="w-4 h-4" />
+                    </div>
+                    <Label htmlFor="achievements">Logros y recompensas</Label>
                   </div>
-                  <Label htmlFor="achievements">Logros y recompensas</Label>
+                  <Switch
+                    id="achievements"
+                    checked={preferences.achievements}
+                    onCheckedChange={(checked) => updatePreferences({ achievements: checked })}
+                  />
                 </div>
-                <Switch
-                  id="achievements"
-                  checked={preferences.achievements}
-                  onCheckedChange={(checked) => updatePreferences({ achievements: checked })}
-                />
-              </div>
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={cn("p-2 rounded-full", notificationColors.reminder)}>
-                    <Clock className="w-4 h-4" />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={cn("p-2 rounded-full", notificationColors.reminder)}>
+                      <Clock className="w-4 h-4" />
+                    </div>
+                    <Label htmlFor="reminders">Recordatorios</Label>
                   </div>
-                  <Label htmlFor="reminders">Recordatorios</Label>
+                  <Switch
+                    id="reminders"
+                    checked={preferences.reminders}
+                    onCheckedChange={(checked) => updatePreferences({ reminders: checked })}
+                  />
                 </div>
-                <Switch
-                  id="reminders"
-                  checked={preferences.reminders}
-                  onCheckedChange={(checked) => updatePreferences({ reminders: checked })}
-                />
-              </div>
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={cn("p-2 rounded-full", notificationColors.certificate)}>
-                    <Award className="w-4 h-4" />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={cn("p-2 rounded-full", notificationColors.certificate)}>
+                      <Award className="w-4 h-4" />
+                    </div>
+                    <Label htmlFor="certificates">Certificados</Label>
                   </div>
-                  <Label htmlFor="certificates">Certificados</Label>
+                  <Switch
+                    id="certificates"
+                    checked={preferences.certificates}
+                    onCheckedChange={(checked) => updatePreferences({ certificates: checked })}
+                  />
                 </div>
-                <Switch
-                  id="certificates"
-                  checked={preferences.certificates}
-                  onCheckedChange={(checked) => updatePreferences({ certificates: checked })}
-                />
-              </div>
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={cn("p-2 rounded-full", notificationColors.announcement)}>
-                    <Megaphone className="w-4 h-4" />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={cn("p-2 rounded-full", notificationColors.announcement)}>
+                      <Megaphone className="w-4 h-4" />
+                    </div>
+                    <Label htmlFor="announcements">Anuncios</Label>
                   </div>
-                  <Label htmlFor="announcements">Anuncios</Label>
+                  <Switch
+                    id="announcements"
+                    checked={preferences.announcements}
+                    onCheckedChange={(checked) => updatePreferences({ announcements: checked })}
+                  />
                 </div>
-                <Switch
-                  id="announcements"
-                  checked={preferences.announcements}
-                  onCheckedChange={(checked) => updatePreferences({ announcements: checked })}
-                />
-              </div>
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={cn("p-2 rounded-full", notificationColors.discussion)}>
-                    <MessageSquare className="w-4 h-4" />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={cn("p-2 rounded-full", notificationColors.discussion)}>
+                      <MessageSquare className="w-4 h-4" />
+                    </div>
+                    <Label htmlFor="discussions">Discusiones</Label>
                   </div>
-                  <Label htmlFor="discussions">Discusiones</Label>
+                  <Switch
+                    id="discussions"
+                    checked={preferences.discussions}
+                    onCheckedChange={(checked) => updatePreferences({ discussions: checked })}
+                  />
                 </div>
-                <Switch
-                  id="discussions"
-                  checked={preferences.discussions}
-                  onCheckedChange={(checked) => updatePreferences({ discussions: checked })}
-                />
               </div>
-            </div>
 
-            <Separator />
+              <Separator />
 
-            <div className="space-y-4">
-              <h4 className="font-medium text-sm">Canales de notificación</h4>
-              
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="email_notifications">Notificaciones por email</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Recibe un resumen diario
-                  </p>
+              <div className="space-y-4">
+                <h4 className="font-medium text-sm">Canales de notificación</h4>
+                
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="email_notifications">Notificaciones por email</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Recibe un resumen diario
+                    </p>
+                  </div>
+                  <Switch
+                    id="email_notifications"
+                    checked={preferences.email_notifications}
+                    onCheckedChange={(checked) => updatePreferences({ email_notifications: checked })}
+                  />
                 </div>
-                <Switch
-                  id="email_notifications"
-                  checked={preferences.email_notifications}
-                  onCheckedChange={(checked) => updatePreferences({ email_notifications: checked })}
-                />
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
