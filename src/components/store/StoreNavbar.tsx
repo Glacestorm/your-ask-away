@@ -107,6 +107,7 @@ const StoreNavbar: React.FC = () => {
     {
       id: 'academia',
       label: language === 'es' ? 'Academia' : 'Academy',
+      href: '/academia',
       megaMenu: {
         sections: [
           {
@@ -271,18 +272,33 @@ const StoreNavbar: React.FC = () => {
                   }}
                 >
                   {item.megaMenu ? (
-                    <button
-                      type="button"
-                      className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-base font-semibold transition-all duration-200 ${
-                        useDarkTheme 
-                          ? 'text-white/95 hover:text-white hover:bg-white/10 hover:shadow-[0_4px_12px_rgba(255,255,255,0.1)] hover:-translate-y-0.5'
-                          : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 hover:shadow-md hover:-translate-y-0.5'
-                      }`}
-                      style={{ textShadow: useDarkTheme ? '0 1px 2px rgba(0,0,0,0.3)' : 'none' }}
-                    >
-                      {item.label}
-                      <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${activeMenu === item.id ? 'rotate-180' : ''}`} />
-                    </button>
+                    item.href ? (
+                      <Link
+                        to={item.href}
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-base font-semibold transition-all duration-200 ${
+                          useDarkTheme 
+                            ? 'text-white/95 hover:text-white hover:bg-white/10 hover:shadow-[0_4px_12px_rgba(255,255,255,0.1)] hover:-translate-y-0.5'
+                            : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 hover:shadow-md hover:-translate-y-0.5'
+                        }`}
+                        style={{ textShadow: useDarkTheme ? '0 1px 2px rgba(0,0,0,0.3)' : 'none' }}
+                      >
+                        {item.label}
+                        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${activeMenu === item.id ? 'rotate-180' : ''}`} />
+                      </Link>
+                    ) : (
+                      <button
+                        type="button"
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-base font-semibold transition-all duration-200 ${
+                          useDarkTheme 
+                            ? 'text-white/95 hover:text-white hover:bg-white/10 hover:shadow-[0_4px_12px_rgba(255,255,255,0.1)] hover:-translate-y-0.5'
+                            : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 hover:shadow-md hover:-translate-y-0.5'
+                        }`}
+                        style={{ textShadow: useDarkTheme ? '0 1px 2px rgba(0,0,0,0.3)' : 'none' }}
+                      >
+                        {item.label}
+                        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${activeMenu === item.id ? 'rotate-180' : ''}`} />
+                      </button>
+                    )
                   ) : (
                     <Link
                       to={item.href || '#'}
