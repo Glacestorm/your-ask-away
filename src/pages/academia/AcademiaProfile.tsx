@@ -8,26 +8,30 @@ import { motion } from 'framer-motion';
 import {
   ChevronLeft,
   Award,
-  type LucideIcon,
   Trophy,
   BookOpen,
-  Download,
-  ExternalLink,
   Calendar,
   GraduationCap,
   Target,
+  Clock,
+  Play,
+  CheckCircle,
+  BarChart3,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { AchievementSystem } from '@/components/academia/AchievementSystem';
 import { CertificateGenerator } from '@/components/academia/CertificateGenerator';
 import { useTrainingCertificates, Certificate } from '@/hooks/useTrainingCertificates';
+import { useTrainingEnrollments, Enrollment } from '@/hooks/useTrainingEnrollments';
 import { useTrainingGamification } from '@/hooks/useTrainingGamification';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { cn } from '@/lib/utils';
 
 // Interface for CertificateGenerator component
 interface CertificateDisplayData {
@@ -43,14 +47,16 @@ interface CertificateDisplayData {
   skills?: string[];
   organizationName?: string;
 }
-import { cn } from '@/lib/utils';
 
 const AcademiaProfile: React.FC = () => {
   const { user } = useAuth();
   const { language } = useLanguage();
   const { myCertificates, fetchMyCertificates, loading: loadingCerts } = useTrainingCertificates();
+  const { enrollments, loading: loadingEnrollments, getStats } = useTrainingEnrollments();
   const { myStats, fetchLeaderboard } = useTrainingGamification();
   const [selectedCertificate, setSelectedCertificate] = useState<CertificateDisplayData | null>(null);
+
+  const stats = getStats();
 
   useEffect(() => {
     fetchMyCertificates();
@@ -58,10 +64,10 @@ const AcademiaProfile: React.FC = () => {
   }, [fetchMyCertificates, fetchLeaderboard]);
 
   // Get course title helper
-  const getCourseTitle = (cert: Certificate & { course?: { title?: { es?: string; en?: string } | string } }): string => {
-    if (!cert.course?.title) return 'Curso';
-    if (typeof cert.course.title === 'string') return cert.course.title;
-    return cert.course.title.es || cert.course.title.en || 'Curso';
+  const getCourseTitle = (item: { course?: { title?: { es?: string; en?: string } | string } }): string => {
+    if (!item.course?.title) return 'Curso';
+    if (typeof item.course.title === 'string') return item.course.title;
+    return item.course.title.es || item.course.title.en || 'Curso';
   };
 
   // Transform certificate for CertificateGenerator
@@ -80,6 +86,20 @@ const AcademiaProfile: React.FC = () => {
     skills: cert.skills_acquired || [],
     organizationName: 'Academia ObelixIA',
   });
+
+  // Get status badge
+  const getStatusBadge = (status: Enrollment['status']) => {
+    switch (status) {
+      case 'completed':
+        return <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Completado</Badge>;
+      case 'active':
+        return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">En progreso</Badge>;
+      case 'expired':
+        return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">Expirado</Badge>;
+      default:
+        return <Badge variant="outline">Cancelado</Badge>;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-950">
@@ -131,7 +151,7 @@ const AcademiaProfile: React.FC = () => {
                 </Badge>
                 <Badge variant="outline" className="border-green-500/50 text-green-400">
                   <BookOpen className="w-3 h-3 mr-1" />
-                  {myStats?.courses_completed || 0} {language === 'es' ? 'Cursos' : 'Courses'}
+                  {stats.completed} {language === 'es' ? 'Cursos' : 'Courses'}
                 </Badge>
               </div>
             </div>
@@ -265,25 +285,154 @@ const AcademiaProfile: React.FC = () => {
             </div>
           </TabsContent>
 
-          {/* Courses Tab - Placeholder */}
+          {/* Courses Tab */}
           <TabsContent value="courses">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <Card className="bg-slate-900/50 border-slate-800">
+                <CardContent className="p-4 text-center">
+                  <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center mx-auto mb-2">
+                    <BookOpen className="w-5 h-5 text-blue-400" />
+                  </div>
+                  <p className="text-2xl font-bold text-white">{stats.total}</p>
+                  <p className="text-xs text-slate-400">{language === 'es' ? 'Total cursos' : 'Total courses'}</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-slate-900/50 border-slate-800">
+                <CardContent className="p-4 text-center">
+                  <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-2">
+                    <CheckCircle className="w-5 h-5 text-green-400" />
+                  </div>
+                  <p className="text-2xl font-bold text-white">{stats.completed}</p>
+                  <p className="text-xs text-slate-400">{language === 'es' ? 'Completados' : 'Completed'}</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-slate-900/50 border-slate-800">
+                <CardContent className="p-4 text-center">
+                  <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-2">
+                    <Clock className="w-5 h-5 text-purple-400" />
+                  </div>
+                  <p className="text-2xl font-bold text-white">{stats.totalTimeHours}h</p>
+                  <p className="text-xs text-slate-400">{language === 'es' ? 'Tiempo total' : 'Total time'}</p>
+                </CardContent>
+              </Card>
+              <Card className="bg-slate-900/50 border-slate-800">
+                <CardContent className="p-4 text-center">
+                  <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center mx-auto mb-2">
+                    <BarChart3 className="w-5 h-5 text-yellow-400" />
+                  </div>
+                  <p className="text-2xl font-bold text-white">{stats.avgProgress}%</p>
+                  <p className="text-xs text-slate-400">{language === 'es' ? 'Progreso promedio' : 'Avg progress'}</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Enrollments List */}
             <Card className="bg-slate-900/50 border-slate-800">
-              <CardContent className="py-12 text-center">
-                <BookOpen className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-                <h3 className="text-lg font-medium text-white mb-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-primary" />
                   {language === 'es' ? 'Historial de Cursos' : 'Course History'}
-                </h3>
-                <p className="text-slate-400 mb-4">
-                  {language === 'es' 
-                    ? 'Ver todos los cursos en los que te has inscrito' 
-                    : 'View all courses you have enrolled in'}
-                </p>
-                <Link to="/academia/cursos">
-                  <Button>
-                    <BookOpen className="w-4 h-4 mr-2" />
-                    {language === 'es' ? 'Explorar cursos' : 'Explore courses'}
-                  </Button>
-                </Link>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loadingEnrollments ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+                  </div>
+                ) : enrollments.length === 0 ? (
+                  <div className="text-center py-12">
+                    <BookOpen className="w-12 h-12 text-slate-600 mx-auto mb-3" />
+                    <h3 className="text-lg font-medium text-white mb-2">
+                      {language === 'es' ? 'No tienes inscripciones aún' : 'No enrollments yet'}
+                    </h3>
+                    <p className="text-slate-400 mb-4">
+                      {language === 'es' 
+                        ? 'Explora nuestro catálogo de cursos' 
+                        : 'Explore our course catalog'}
+                    </p>
+                    <Link to="/academia/cursos">
+                      <Button>
+                        <BookOpen className="w-4 h-4 mr-2" />
+                        {language === 'es' ? 'Explorar cursos' : 'Explore courses'}
+                      </Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <ScrollArea className="h-[400px]">
+                    <div className="space-y-4">
+                      {enrollments.map((enrollment) => (
+                        <motion.div
+                          key={enrollment.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="p-4 rounded-lg bg-slate-800/50 border border-slate-700 hover:border-slate-600 transition-all"
+                        >
+                          <div className="flex items-start gap-4">
+                            {/* Thumbnail */}
+                            <div className="w-24 h-16 rounded-lg bg-slate-700 overflow-hidden shrink-0">
+                              {enrollment.course?.thumbnail_url ? (
+                                <img 
+                                  src={enrollment.course.thumbnail_url} 
+                                  alt={getCourseTitle(enrollment)}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <BookOpen className="w-6 h-6 text-slate-500" />
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* Content */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2">
+                                <h4 className="font-medium text-white truncate">
+                                  {getCourseTitle(enrollment)}
+                                </h4>
+                                {getStatusBadge(enrollment.status)}
+                              </div>
+                              
+                              {/* Progress bar */}
+                              <div className="mt-2">
+                                <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+                                  <span>{language === 'es' ? 'Progreso' : 'Progress'}</span>
+                                  <span>{enrollment.progress_percentage}%</span>
+                                </div>
+                                <Progress value={enrollment.progress_percentage} className="h-1.5" />
+                              </div>
+                              
+                              {/* Meta info */}
+                              <div className="flex items-center gap-4 mt-2 text-xs text-slate-500">
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="w-3 h-3" />
+                                  {new Date(enrollment.created_at).toLocaleDateString('es-ES')}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
+                                  {Math.round(enrollment.time_spent_minutes / 60)}h {enrollment.time_spent_minutes % 60}m
+                                </span>
+                                {enrollment.certificate_issued && (
+                                  <span className="flex items-center gap-1 text-yellow-400">
+                                    <Award className="w-3 h-3" />
+                                    {language === 'es' ? 'Certificado' : 'Certificate'}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            
+                            {/* Action */}
+                            <Link to={`/academia/aprender/${enrollment.course_id}`}>
+                              <Button variant="ghost" size="icon" className="shrink-0">
+                                <Play className="w-4 h-4" />
+                              </Button>
+                            </Link>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
