@@ -21,3 +21,8 @@ export { ProgressDashboard } from './ProgressDashboard';
 export { ContentUploader } from './ContentUploader';
 export { InstructorDashboard } from './InstructorDashboard';
 export { WeeklyChallenges } from './WeeklyChallenges';
+
+// Phase 2 Components
+export { AdaptiveQuizPanel } from './adaptive-quiz/AdaptiveQuizPanel';
+export { LearningPathPanel } from './learning-path/LearningPathPanel';
+export { GamificationDashboard } from './gamification/GamificationDashboard';
