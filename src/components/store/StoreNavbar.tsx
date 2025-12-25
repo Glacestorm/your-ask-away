@@ -41,14 +41,36 @@ const StoreNavbar: React.FC = () => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
   
-  // Force solid background on internal store pages (not the main store landing)
-  const isInternalStorePage = location.pathname !== '/store' && location.pathname.startsWith('/store');
+  // Define all pages that use dark theme navbar (internal pages with dark background)
+  const darkThemeRoutes = [
+    '/store/modules',
+    '/store/checkout',
+    '/sectores',
+    '/developers',
+    '/academia',
+    '/chat',
+    '/precios',
+    '/docs',
+    '/api',
+    '/blog',
+    '/marketplace',
+    '/cdp',
+    '/demo',
+    '/cases',
+    '/about',
+  ];
+  
+  // Check if current path is an internal page (not main store landing)
+  const isInternalPage = location.pathname !== '/store' && (
+    location.pathname.startsWith('/store/') ||
+    darkThemeRoutes.some(route => location.pathname.startsWith(route))
+  );
   
   // Determine if navbar should have solid background
-  const hasSolidBackground = isScrolled || isInternalStorePage;
+  const hasSolidBackground = isScrolled || isInternalPage;
   
-  // Use dark theme (white text) for internal store pages, light theme (dark text) when scrolled on main store
-  const useDarkTheme = isInternalStorePage || !isScrolled;
+  // Use dark theme (white text) for internal pages, light theme (dark text) when scrolled on main store
+  const useDarkTheme = isInternalPage || !isScrolled;
 
   const cancelDesktopClose = () => {
     if (closeTimeoutRef.current) {
@@ -246,7 +268,7 @@ const StoreNavbar: React.FC = () => {
       <nav 
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           hasSolidBackground
-            ? isInternalStorePage 
+            ? isInternalPage 
               ? 'bg-slate-900/95 backdrop-blur-lg shadow-sm border-b border-slate-800'
               : 'bg-white/95 backdrop-blur-lg shadow-sm border-b border-slate-100'
             : 'bg-transparent'
