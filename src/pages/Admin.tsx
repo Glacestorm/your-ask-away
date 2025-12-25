@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { GlobalNavHeader } from '@/components/GlobalNavHeader';
 import { AdminBreadcrumbs } from '@/components/admin/AdminBreadcrumbs';
 import { AdminPanelSwitcher } from '@/components/admin/AdminPanelSwitcher';
+import { AdminGlobalSearch } from '@/components/admin/AdminGlobalSearch';
 
 // Lazy loaded components for better performance
 import {
@@ -1766,7 +1767,10 @@ const Admin = () => {
             {/* Breadcrumbs and Panel Switcher */}
             <div className="flex items-center justify-between">
               <AdminBreadcrumbs currentSection={getSectionTitle()} />
-              <AdminPanelSwitcher />
+              <div className="flex items-center gap-2">
+                <AdminGlobalSearch />
+                <AdminPanelSwitcher />
+              </div>
             </div>
             
             {activeSection !== 'gestor-dashboard' && (
