@@ -8,6 +8,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Activity, History, Shield, Rocket, Bot, BarChart3, Users, Palette, FileCode2, Eye, MessageSquare, Bell, MessagesSquare, Database, Trophy, Store, ClipboardCheck, Building2, Layers, Zap, ShoppingCart, Briefcase, Loader2, Headphones, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { GlobalNavHeader } from '@/components/GlobalNavHeader';
+import { AdminBreadcrumbs } from '@/components/admin/AdminBreadcrumbs';
+import { AdminPanelSwitcher } from '@/components/admin/AdminPanelSwitcher';
 
 // Lazy loaded components for better performance
 import {
@@ -1761,6 +1763,12 @@ const Admin = () => {
           </div>
         ) : (
           <div className="p-6 space-y-6 w-full">
+            {/* Breadcrumbs and Panel Switcher */}
+            <div className="flex items-center justify-between">
+              <AdminBreadcrumbs currentSection={getSectionTitle()} />
+              <AdminPanelSwitcher />
+            </div>
+            
             {activeSection !== 'gestor-dashboard' && (
               <GlobalNavHeader 
                 title={getSectionTitle()}
