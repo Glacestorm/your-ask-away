@@ -190,13 +190,28 @@ export default function CourseManagement() {
     enabled: !!selectedModuleId
   });
 
+  // Generate slug from title
+  const generateSlug = (title: string): string => {
+    return title
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove accents
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special chars
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Remove multiple hyphens
+      .trim()
+      .substring(0, 50) + '-' + Date.now().toString(36); // Add unique suffix
+  };
+
   // Course mutations
   const createCourse = useMutation({
     mutationFn: async (data: typeof courseForm) => {
+      const slug = generateSlug(data.title);
       const { error } = await (supabase as any)
         .from('academia_courses')
         .insert([{
           ...data,
+          slug,
           instructor_id: user?.id
         }]);
       
