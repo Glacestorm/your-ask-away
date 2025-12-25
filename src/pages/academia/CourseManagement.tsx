@@ -31,8 +31,10 @@ import {
   ChevronLeft,
   Layers,
   PlayCircle,
-  Upload
+  Upload,
+  FolderUp
 } from 'lucide-react';
+import { ContentUploader } from '@/components/academia/ContentUploader';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -103,9 +105,11 @@ export default function CourseManagement() {
   const [isCreateCourseOpen, setIsCreateCourseOpen] = useState(false);
   const [isCreateModuleOpen, setIsCreateModuleOpen] = useState(false);
   const [isCreateLessonOpen, setIsCreateLessonOpen] = useState(false);
+  const [isUploadMediaOpen, setIsUploadMediaOpen] = useState(false);
   const [editingModule, setEditingModule] = useState<Module | null>(null);
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
+  const [activeTab, setActiveTab] = useState<'estructura' | 'contenido'>('estructura');
 
   // Course form state
   const [courseForm, setCourseForm] = useState({
@@ -474,13 +478,27 @@ export default function CourseManagement() {
           </div>
         </div>
 
-        {/* Course Editor */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Course Details */}
-          <Card className="lg:col-span-1">
-            <CardHeader>
-              <CardTitle>Detalles del Curso</CardTitle>
-            </CardHeader>
+        {/* Tabs para Estructura y Contenido Multimedia */}
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'estructura' | 'contenido')} className="w-full">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="estructura" className="flex items-center gap-2">
+              <Layers className="w-4 h-4" />
+              Estructura
+            </TabsTrigger>
+            <TabsTrigger value="contenido" className="flex items-center gap-2">
+              <FolderUp className="w-4 h-4" />
+              Subir Material
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="estructura" className="mt-6">
+            {/* Course Editor - Estructura */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Course Details */}
+              <Card className="lg:col-span-1">
+                <CardHeader>
+                  <CardTitle>Detalles del Curso</CardTitle>
+                </CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <Label>Título</Label>
@@ -726,10 +744,36 @@ export default function CourseManagement() {
                 )}
               </ScrollArea>
             </CardContent>
-          </Card>
-        </div>
+            </Card>
+          </div>
+          </TabsContent>
 
-        {/* Create Lesson Dialog */}
+          {/* TabsContent para Subir Material */}
+          <TabsContent value="contenido" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FolderUp className="w-5 h-5" />
+                  Subir Material Audiovisual
+                </CardTitle>
+                <CardDescription>
+                  Sube videos, PDFs, imágenes y audios para tus lecciones. Arrastra y suelta archivos o haz clic para seleccionar.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ContentUploader 
+                  courseId={selectedCourse.id}
+                  onUploadComplete={(files) => {
+                    toast.success(`${files.length} archivo(s) subidos correctamente`);
+                    // Aquí podrías asociar los archivos a lecciones específicas
+                  }}
+                  maxFileSizeMB={500}
+                  allowedTypes={['video', 'pdf', 'image', 'audio']}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
         <Dialog open={isCreateLessonOpen} onOpenChange={setIsCreateLessonOpen}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
