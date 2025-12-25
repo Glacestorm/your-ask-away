@@ -422,3 +422,63 @@ verify_jwt = true
 
 [functions.academia-notifications]
 verify_jwt = true
+
+[functions.autonomous-agents]
+verify_jwt = true
+
+[functions.predictive-copilot]
+verify_jwt = true
+
+[functions.voice-interface]
+verify_jwt = true
+
+[functions.emotional-analysis-ia]
+verify_jwt = true
+
+[functions.natural-language-query]
+verify_jwt = true
+
+[functions.workflow-automation-ia]
+verify_jwt = true
+
+[functions.smart-scheduling-ia]
+verify_jwt = true
+
+[functions.document-intelligence-ia]
+verify_jwt = true
+
+[functions.auto-response-ia]
+verify_jwt = true
+
+[functions.knowledge-base-rag]
+verify_jwt = true
+
+[functions.multi-channel-integration]
+verify_jwt = true
+
+[functions.performance-coach-ia]
+verify_jwt = true
+
+[functions.customer-360-ia]
+verify_jwt = true
+
+[functions.compliance-ia]
+verify_jwt = true
+
+[functions.risk-assessment-ia]
+verify_jwt = true
+
+[functions.advanced-reporting-ia]
+verify_jwt = true
+
+[functions.recommendation-engine-ia]
+verify_jwt = true
+
+[functions.latam-compliance]
+verify_jwt = true
+
+[functions.china-integration]
+verify_jwt = true
+
+[functions.useu-compliance]
+verify_jwt = true
