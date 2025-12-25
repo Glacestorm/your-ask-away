@@ -5,12 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { 
-  Code2, 
-  Book, 
-  Terminal, 
-  Webhook, 
-  Key, 
+import StoreNavbar from '@/components/store/StoreNavbar';
+import UnifiedFooter from '@/components/layout/UnifiedFooter';
+import {
+  Code2,
+  Book,
+  Terminal,
+  Webhook,
+  Key,
   Shield,
   ArrowRight,
   Copy,
@@ -79,9 +81,11 @@ function CodeBlock({ code, language = 'bash' }: { code: string; language?: strin
 
 export default function DeveloperPortal() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      {/* Hero */}
-      <div className="bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 text-white border-b">
+    <>
+      <StoreNavbar />
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 pt-20">
+        {/* Hero */}
+        <div className="bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 text-white border-b">
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-3xl">
             <Badge className="mb-4 bg-primary/20 text-primary border-primary/30">
@@ -431,6 +435,8 @@ export default function DeveloperPortal() {
           </CardContent>
         </Card>
       </div>
+      <UnifiedFooter />
     </div>
+    </>
   );
 }
