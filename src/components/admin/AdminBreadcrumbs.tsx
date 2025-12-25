@@ -8,6 +8,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Home, Shield, LayoutGrid } from 'lucide-react';
+import React from 'react';
 
 interface AdminBreadcrumbsProps {
   currentSection?: string;
@@ -49,33 +50,36 @@ export function AdminBreadcrumbs({ currentSection, className }: AdminBreadcrumbs
   return (
     <Breadcrumb className={className}>
       <BreadcrumbList>
-        
         {breadcrumbs.map((crumb, index) => (
-          <BreadcrumbItem key={crumb.path}>
+          <React.Fragment key={crumb.path}>
             <BreadcrumbSeparator />
-            {crumb.isLast && !currentSection ? (
-              <BreadcrumbPage className="flex items-center gap-1.5">
-                {crumb.path === '/admin' && <LayoutGrid className="h-3.5 w-3.5" />}
-                {crumb.path === '/obelixia-admin' && <Shield className="h-3.5 w-3.5" />}
-                {crumb.label}
-              </BreadcrumbPage>
-            ) : (
-              <BreadcrumbLink asChild>
-                <Link to={crumb.path} className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
+            <BreadcrumbItem>
+              {crumb.isLast && !currentSection ? (
+                <BreadcrumbPage className="flex items-center gap-1.5">
                   {crumb.path === '/admin' && <LayoutGrid className="h-3.5 w-3.5" />}
                   {crumb.path === '/obelixia-admin' && <Shield className="h-3.5 w-3.5" />}
                   {crumb.label}
-                </Link>
-              </BreadcrumbLink>
-            )}
-          </BreadcrumbItem>
+                </BreadcrumbPage>
+              ) : (
+                <BreadcrumbLink asChild>
+                  <Link to={crumb.path} className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
+                    {crumb.path === '/admin' && <LayoutGrid className="h-3.5 w-3.5" />}
+                    {crumb.path === '/obelixia-admin' && <Shield className="h-3.5 w-3.5" />}
+                    {crumb.label}
+                  </Link>
+                </BreadcrumbLink>
+              )}
+            </BreadcrumbItem>
+          </React.Fragment>
         ))}
         
         {currentSection && (
-          <BreadcrumbItem>
+          <React.Fragment>
             <BreadcrumbSeparator />
-            <BreadcrumbPage>{currentSection}</BreadcrumbPage>
-          </BreadcrumbItem>
+            <BreadcrumbItem>
+              <BreadcrumbPage>{currentSection}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </React.Fragment>
         )}
       </BreadcrumbList>
     </Breadcrumb>
