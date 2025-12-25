@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { AppReviewPanel, PartnerManagementPanel, MarketplaceSettingsDialog } from '@/components/marketplace/admin';
+import { AppReviewPanel, PartnerManagementPanel, MarketplaceSettingsDialog, MarketplaceRevenuePanel } from '@/components/marketplace/admin';
 import { Navigate } from 'react-router-dom';
 
 export default function MarketplaceAdmin() {
@@ -265,17 +265,7 @@ export default function MarketplaceAdmin() {
           </TabsContent>
 
           <TabsContent value="revenue" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Resumen de Ingresos</CardTitle>
-                <CardDescription>Revenue share y transacciones del marketplace</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-center text-muted-foreground py-8">
-                  Dashboard de ingresos en desarrollo...
-                </p>
-              </CardContent>
-            </Card>
+            <MarketplaceRevenuePanel />
           </TabsContent>
         </Tabs>
       </div>
