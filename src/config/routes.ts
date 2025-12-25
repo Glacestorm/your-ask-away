@@ -270,7 +270,7 @@ export const adminRoutes: RouteConfig[] = [
   { path: '/admin/enterprise-dashboard', component: EnterpriseDashboardPage, layout: 'none', priority: 'high', meta: { title: 'Enterprise Dashboard', requiresAuth: true, roles: ['admin', 'superadmin'] } },
   { path: '/admin/cs-metrics', component: CSMetricsPage, layout: 'none', priority: 'high', meta: { title: 'CS Metrics Hub', requiresAuth: true, roles: ['admin', 'superadmin'] } },
   { path: '/admin/academia', component: AcademiaAdminPage, layout: 'none', priority: 'high', meta: { title: 'Academia Admin', requiresAuth: true, roles: ['admin', 'superadmin'] } },
-  { path: '/obelixia-admin', component: ObelixiaTeamAdmin, layout: 'dashboard', priority: 'medium', delay: 50, meta: { title: 'Obelixia Admin', requiresAuth: true, roles: ['superadmin'] } },
+  { path: '/obelixia-admin', component: ObelixiaTeamAdmin, layout: 'none', priority: 'medium', delay: 50, meta: { title: 'Obelixia Admin', requiresAuth: true, roles: ['superadmin'] } },
 ];
 
 // ============================================

@@ -180,40 +180,18 @@ export const ObelixiaAdminSidebar: React.FC<ObelixiaAdminSidebarProps> = ({
           'border-r backdrop-blur-xl'
         )}
       >
-        {/* Header */}
+        {/* Header - Solo botón de colapso */}
         <div className={cn(
-          'flex items-center gap-3 px-4 py-4 border-b border-slate-700/50',
-          isCollapsed && 'justify-center px-2'
+          'flex items-center justify-end px-3 py-3 border-b border-slate-700/50'
         )}>
-          <motion.div 
-            className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-emerald-500 shadow-lg"
-            whileHover={{ scale: 1.05, rotate: 5 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Sparkles className="w-5 h-5 text-white" />
-          </motion.div>
-          
-          <AnimatePresence mode="wait">
-            {!isCollapsed && (
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                className="flex-1 min-w-0"
-              >
-                <h2 className="text-sm font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent truncate">
-                  ObelixIA Admin
-                </h2>
-                <p className="text-[10px] text-slate-500 truncate">Panel de Control</p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
           <Button
             variant="ghost"
             size="icon"
             onClick={() => onCollapsedChange?.(!isCollapsed)}
-            className="h-8 w-8 text-slate-400 hover:text-white hover:bg-slate-700/50 flex-shrink-0"
+            className={cn(
+              "h-8 w-8 text-slate-400 hover:text-white hover:bg-slate-700/50",
+              isDark ? "" : "hover:bg-slate-200"
+            )}
           >
             {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>
