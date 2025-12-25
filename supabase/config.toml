@@ -530,3 +530,12 @@ verify_jwt = true
 
 [functions.etl-pipelines]
 verify_jwt = true
+
+[functions.security-audit]
+verify_jwt = true
+
+[functions.threat-detection]
+verify_jwt = true
+
+[functions.access-control]
+verify_jwt = true
