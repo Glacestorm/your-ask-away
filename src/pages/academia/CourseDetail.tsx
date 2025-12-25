@@ -111,13 +111,12 @@ const CourseDetail: React.FC = () => {
 
   const handleAddToCart = () => {
     addItem({
-      id: course.id,
       moduleKey: `course-${course.id}`,
-      name: course.title,
+      moduleName: course.title,
       price: course.salePrice || course.price,
       quantity: 1,
       licenseType: 'perpetual',
-      image: course.thumbnail,
+      category: 'academia',
     });
   };
 
