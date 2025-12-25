@@ -26,3 +26,8 @@ export { WeeklyChallenges } from './WeeklyChallenges';
 export { AdaptiveQuizPanel } from './adaptive-quiz/AdaptiveQuizPanel';
 export { LearningPathPanel } from './learning-path/LearningPathPanel';
 export { GamificationDashboard } from './gamification/GamificationDashboard';
+
+// Phase 5 Components - Community, Notifications & Certificates AI
+export { CommunityPanel } from './CommunityPanel';
+export { NotificationsPanel } from './NotificationsPanel';
+export { CertificatesPanel } from './CertificatesPanel';
