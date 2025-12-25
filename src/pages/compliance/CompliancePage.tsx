@@ -6,7 +6,13 @@ import { SmartAuditAlerts } from '@/components/audit/SmartAuditAlerts';
 import { BlockchainAuditPanel } from '@/components/audit/BlockchainAuditPanel';
 import { DigitalSignaturePanel } from '@/components/audit/DigitalSignaturePanel';
 import { AuditorPortalManager } from '@/components/audit/AuditorPortalManager';
-import { Shield, AlertTriangle, Link2, FileSignature, Users } from 'lucide-react';
+import { 
+  LatamCompliancePanel, 
+  ChinaIntegrationPanel, 
+  USEUCompliancePanel 
+} from '@/components/admin/compliance';
+import { Shield, AlertTriangle, Link2, FileSignature, Users, Globe, MapPin } from 'lucide-react';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 const demoFrameworks: ComplianceFramework[] = [
   {
@@ -92,31 +98,46 @@ const demoAuditLogs: AuditLog[] = [
 
 const CompliancePage = () => {
   return (
-    <DashboardLayout title="Compliance">
+    <DashboardLayout title="Compliance Global">
       <div className="p-6 space-y-6">
         <Tabs defaultValue="dashboard" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-6">
-            <TabsTrigger value="dashboard" className="flex items-center gap-2">
-              <Shield className="h-4 w-4" />
-              Dashboard
-            </TabsTrigger>
-            <TabsTrigger value="alerts" className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4" />
-              Alertas
-            </TabsTrigger>
-            <TabsTrigger value="blockchain" className="flex items-center gap-2">
-              <Link2 className="h-4 w-4" />
-              Blockchain
-            </TabsTrigger>
-            <TabsTrigger value="signatures" className="flex items-center gap-2">
-              <FileSignature className="h-4 w-4" />
-              Firmas
-            </TabsTrigger>
-            <TabsTrigger value="auditors" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Auditores
-            </TabsTrigger>
-          </TabsList>
+          <ScrollArea className="w-full whitespace-nowrap">
+            <TabsList className="inline-flex w-auto mb-6">
+              <TabsTrigger value="dashboard" className="flex items-center gap-2">
+                <Shield className="h-4 w-4" />
+                Dashboard
+              </TabsTrigger>
+              <TabsTrigger value="alerts" className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4" />
+                Alertas
+              </TabsTrigger>
+              <TabsTrigger value="blockchain" className="flex items-center gap-2">
+                <Link2 className="h-4 w-4" />
+                Blockchain
+              </TabsTrigger>
+              <TabsTrigger value="signatures" className="flex items-center gap-2">
+                <FileSignature className="h-4 w-4" />
+                Firmas
+              </TabsTrigger>
+              <TabsTrigger value="auditors" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Auditores
+              </TabsTrigger>
+              <TabsTrigger value="latam" className="flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                LATAM
+              </TabsTrigger>
+              <TabsTrigger value="china" className="flex items-center gap-2">
+                <Globe className="h-4 w-4" />
+                China
+              </TabsTrigger>
+              <TabsTrigger value="useu" className="flex items-center gap-2">
+                <Shield className="h-4 w-4" />
+                US/EU
+              </TabsTrigger>
+            </TabsList>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
 
           <TabsContent value="dashboard">
             <ComplianceDashboard 
@@ -141,6 +162,18 @@ const CompliancePage = () => {
 
           <TabsContent value="auditors">
             <AuditorPortalManager />
+          </TabsContent>
+
+          <TabsContent value="latam">
+            <LatamCompliancePanel />
+          </TabsContent>
+
+          <TabsContent value="china">
+            <ChinaIntegrationPanel />
+          </TabsContent>
+
+          <TabsContent value="useu">
+            <USEUCompliancePanel />
           </TabsContent>
         </Tabs>
       </div>
