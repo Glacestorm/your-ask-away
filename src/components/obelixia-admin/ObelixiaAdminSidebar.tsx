@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import type { ObelixiaTheme } from '@/hooks/useObelixiaAdminPreferences';
 
 interface NavCategory {
   id: string;
@@ -30,6 +31,7 @@ interface ObelixiaAdminSidebarProps {
   onTabChange: (tab: string) => void;
   isCollapsed?: boolean;
   onCollapsedChange?: (collapsed: boolean) => void;
+  theme?: ObelixiaTheme;
 }
 
 const categories: NavCategory[] = [
@@ -143,11 +145,14 @@ export const ObelixiaAdminSidebar: React.FC<ObelixiaAdminSidebarProps> = ({
   activeTab,
   onTabChange,
   isCollapsed = false,
-  onCollapsedChange
+  onCollapsedChange,
+  theme = 'dark'
 }) => {
   const [expandedCategories, setExpandedCategories] = useState<string[]>(
     categories.map(c => c.id) // All expanded by default
   );
+
+  const isDark = theme === 'dark';
 
   const toggleCategory = (categoryId: string) => {
     setExpandedCategories(prev =>
@@ -168,9 +173,11 @@ export const ObelixiaAdminSidebar: React.FC<ObelixiaAdminSidebarProps> = ({
         animate={{ width: isCollapsed ? 64 : 256 }}
         transition={{ duration: 0.2, ease: 'easeInOut' }}
         className={cn(
-          'relative flex flex-col h-full',
-          'bg-gradient-to-b from-slate-900/95 via-slate-900/90 to-slate-800/95',
-          'border-r border-slate-700/50 backdrop-blur-xl'
+          'relative flex flex-col h-full transition-colors duration-300',
+          isDark 
+            ? 'bg-gradient-to-b from-slate-900/95 via-slate-900/90 to-slate-800/95 border-slate-700/50'
+            : 'bg-gradient-to-b from-white via-slate-50 to-white border-slate-200',
+          'border-r backdrop-blur-xl'
         )}
       >
         {/* Header */}
