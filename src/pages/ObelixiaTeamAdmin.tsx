@@ -9,6 +9,8 @@ import {
   ChevronLeft, ChevronRight, Home, LayoutGrid, Newspaper, HelpCircle,
   GraduationCap, Languages, Briefcase, Gauge
 } from 'lucide-react';
+import { AdminBreadcrumbs } from '@/components/admin/AdminBreadcrumbs';
+import { AdminPanelSwitcher } from '@/components/admin/AdminPanelSwitcher';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
@@ -59,6 +61,28 @@ const ObelixiaTeamAdmin: React.FC = () => {
     setSearchParams({ tab });
   };
 
+  const getTabLabel = (tab: string): string => {
+    const labels: Record<string, string> = {
+      quotes: 'Presupuestos',
+      invoices: 'Facturas',
+      pricing: 'Precios',
+      content: 'Contenidos',
+      cms: 'CMS',
+      docs: 'Documentación',
+      appstore: 'App Store',
+      whitelabel: 'White Label',
+      api: 'API',
+      academia: 'Academia',
+      translations: 'Traducciones',
+      verticals: 'Verticales',
+      webvitals: 'Web Vitals',
+      news: 'Noticias',
+      faq: 'FAQ',
+      security: 'Seguridad',
+    };
+    return labels[tab] || tab;
+  };
+
   // Solo accesible para admins y superadmins
   if (!isSuperAdmin && !isAdmin) {
     return <Navigate to="/home" replace />;
@@ -77,6 +101,19 @@ const ObelixiaTeamAdmin: React.FC = () => {
       <div className="fixed inset-0 bg-gradient-to-br from-blue-950/20 via-transparent to-emerald-950/20 pointer-events-none" />
       
       <div className="relative max-w-7xl mx-auto space-y-6">
+        {/* Breadcrumbs */}
+        <motion.div
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="flex items-center justify-between"
+        >
+          <AdminBreadcrumbs 
+            currentSection={activeTab !== 'quotes' ? getTabLabel(activeTab) : undefined}
+            className="text-slate-400"
+          />
+          <AdminPanelSwitcher />
+        </motion.div>
+
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
