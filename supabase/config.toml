@@ -518,3 +518,15 @@ verify_jwt = true
 
 [functions.scheduler]
 verify_jwt = true
+
+[functions.api-connectors]
+verify_jwt = true
+
+[functions.webhooks-manager]
+verify_jwt = true
+
+[functions.data-sync]
+verify_jwt = true
+
+[functions.etl-pipelines]
+verify_jwt = true
