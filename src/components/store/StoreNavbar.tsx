@@ -275,33 +275,40 @@ const StoreNavbar: React.FC = () => {
                   }}
                 >
                   {item.megaMenu ? (
-                    item.href ? (
+                    <div className={`flex items-center rounded-xl transition-all duration-200 ${
+                      useDarkTheme 
+                        ? 'hover:bg-white/10 hover:shadow-[0_4px_12px_rgba(255,255,255,0.1)]'
+                        : 'hover:bg-slate-100 hover:shadow-md'
+                    }`}>
+                      {/* Texto que navega */}
                       <Link
-                        to={item.href}
-                        className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-base font-semibold transition-all duration-200 ${
+                        to={item.href || '#'}
+                        className={`pl-5 pr-2 py-2.5 text-base font-semibold transition-all duration-200 ${
                           useDarkTheme 
-                            ? 'text-white/95 hover:text-white hover:bg-white/10 hover:shadow-[0_4px_12px_rgba(255,255,255,0.1)] hover:-translate-y-0.5'
-                            : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 hover:shadow-md hover:-translate-y-0.5'
+                            ? 'text-white/95 hover:text-white'
+                            : 'text-slate-700 hover:text-slate-900'
                         }`}
                         style={{ textShadow: useDarkTheme ? '0 1px 2px rgba(0,0,0,0.3)' : 'none' }}
                       >
                         {item.label}
-                        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${activeMenu === item.id ? 'rotate-180' : ''}`} />
                       </Link>
-                    ) : (
+                      {/* Chevron que abre/cierra el menú */}
                       <button
                         type="button"
-                        className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-base font-semibold transition-all duration-200 ${
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveMenu(activeMenu === item.id ? null : item.id);
+                        }}
+                        className={`pr-3 pl-1 py-2.5 transition-all duration-200 ${
                           useDarkTheme 
-                            ? 'text-white/95 hover:text-white hover:bg-white/10 hover:shadow-[0_4px_12px_rgba(255,255,255,0.1)] hover:-translate-y-0.5'
-                            : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 hover:shadow-md hover:-translate-y-0.5'
+                            ? 'text-white/70 hover:text-white'
+                            : 'text-slate-500 hover:text-slate-900'
                         }`}
-                        style={{ textShadow: useDarkTheme ? '0 1px 2px rgba(0,0,0,0.3)' : 'none' }}
+                        aria-label={`Abrir menú de ${item.label}`}
                       >
-                        {item.label}
                         <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${activeMenu === item.id ? 'rotate-180' : ''}`} />
                       </button>
-                    )
+                    </div>
                   ) : (
                     <Link
                       to={item.href || '#'}
