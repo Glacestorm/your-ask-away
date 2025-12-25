@@ -7249,19 +7249,59 @@ export type Database = {
           },
         ]
       }
+      copilot_configurations: {
+        Row: {
+          created_at: string
+          enabled_features: string[] | null
+          id: string
+          is_enabled: boolean | null
+          learning_enabled: boolean | null
+          notification_settings: Json | null
+          preferences: Json | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          enabled_features?: string[] | null
+          id?: string
+          is_enabled?: boolean | null
+          learning_enabled?: boolean | null
+          notification_settings?: Json | null
+          preferences?: Json | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          enabled_features?: string[] | null
+          id?: string
+          is_enabled?: boolean | null
+          learning_enabled?: boolean | null
+          notification_settings?: Json | null
+          preferences?: Json | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       copilot_predictions: {
         Row: {
+          acted_on_at: string | null
           confidence_score: number
           context_data: Json | null
           context_hash: string | null
+          context_snapshot: Json | null
           created_at: string
           execution_result: Json | null
           expires_at: string | null
           id: string
           prediction: Json
+          prediction_data: Json | null
           prediction_type: string
           responded_at: string | null
           shown_at: string | null
+          status: string | null
           user_feedback: string | null
           user_id: string
           was_accepted: boolean | null
@@ -7269,17 +7309,21 @@ export type Database = {
           was_shown: boolean | null
         }
         Insert: {
+          acted_on_at?: string | null
           confidence_score: number
           context_data?: Json | null
           context_hash?: string | null
+          context_snapshot?: Json | null
           created_at?: string
           execution_result?: Json | null
           expires_at?: string | null
           id?: string
           prediction: Json
+          prediction_data?: Json | null
           prediction_type: string
           responded_at?: string | null
           shown_at?: string | null
+          status?: string | null
           user_feedback?: string | null
           user_id: string
           was_accepted?: boolean | null
@@ -7287,17 +7331,21 @@ export type Database = {
           was_shown?: boolean | null
         }
         Update: {
+          acted_on_at?: string | null
           confidence_score?: number
           context_data?: Json | null
           context_hash?: string | null
+          context_snapshot?: Json | null
           created_at?: string
           execution_result?: Json | null
           expires_at?: string | null
           id?: string
           prediction?: Json
+          prediction_data?: Json | null
           prediction_type?: string
           responded_at?: string | null
           shown_at?: string | null
+          status?: string | null
           user_feedback?: string | null
           user_id?: string
           was_accepted?: boolean | null
@@ -24067,7 +24115,9 @@ export type Database = {
         Row: {
           action_params: Json | null
           action_type: string | null
+          command_text: string | null
           confidence: number | null
+          confidence_score: number | null
           created_at: string
           entities: Json | null
           error_message: string | null
@@ -24075,6 +24125,7 @@ export type Database = {
           execution_result: Json | null
           id: string
           intent: string | null
+          parsed_command: Json | null
           session_id: string | null
           transcript: string
           user_id: string
@@ -24083,7 +24134,9 @@ export type Database = {
         Insert: {
           action_params?: Json | null
           action_type?: string | null
+          command_text?: string | null
           confidence?: number | null
+          confidence_score?: number | null
           created_at?: string
           entities?: Json | null
           error_message?: string | null
@@ -24091,6 +24144,7 @@ export type Database = {
           execution_result?: Json | null
           id?: string
           intent?: string | null
+          parsed_command?: Json | null
           session_id?: string | null
           transcript: string
           user_id: string
@@ -24099,7 +24153,9 @@ export type Database = {
         Update: {
           action_params?: Json | null
           action_type?: string | null
+          command_text?: string | null
           confidence?: number | null
+          confidence_score?: number | null
           created_at?: string
           entities?: Json | null
           error_message?: string | null
@@ -24107,6 +24163,7 @@ export type Database = {
           execution_result?: Json | null
           id?: string
           intent?: string | null
+          parsed_command?: Json | null
           session_id?: string | null
           transcript?: string
           user_id?: string
@@ -24169,6 +24226,51 @@ export type Database = {
           tasks_generated?: Json | null
           tokens_used?: number | null
           transcription_text?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      voice_sessions: {
+        Row: {
+          commands_count: number | null
+          context_data: Json | null
+          created_at: string
+          ended_at: string | null
+          id: string
+          metadata: Json | null
+          session_type: string | null
+          started_at: string
+          status: string | null
+          total_duration_seconds: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          commands_count?: number | null
+          context_data?: Json | null
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          metadata?: Json | null
+          session_type?: string | null
+          started_at?: string
+          status?: string | null
+          total_duration_seconds?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          commands_count?: number | null
+          context_data?: Json | null
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          metadata?: Json | null
+          session_type?: string | null
+          started_at?: string
+          status?: string | null
+          total_duration_seconds?: number | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
