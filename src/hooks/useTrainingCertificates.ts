@@ -248,7 +248,7 @@ export function useTrainingCertificates() {
       organizationName,
       issueYear: String(issueYear),
       issueMonth: String(issueMonth),
-      certUrl: `${window.location.origin}/verify-certificate?code=${certificate.verification_code}`,
+      certUrl: `${window.location.origin}/academia/verificar/${certificate.verification_code}`,
       certId: certificate.certificate_number,
     });
 
@@ -257,7 +257,7 @@ export function useTrainingCertificates() {
 
   // Generate verification QR URL
   const generateVerificationUrl = useCallback((verificationCode: string) => {
-    return `${window.location.origin}/verify-certificate?code=${verificationCode}`;
+    return `${window.location.origin}/academia/verificar/${verificationCode}`;
   }, []);
 
   return {
