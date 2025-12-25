@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Settings, 
@@ -34,6 +35,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from 'next-themes';
 import { GlobalNavHeader } from '@/components/GlobalNavHeader';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SettingSection {
   id: string;
@@ -103,9 +105,45 @@ const SettingsPage: React.FC = () => {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
   const [marketingEmails, setMarketingEmails] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [profileForm, setProfileForm] = useState({
+    full_name: user?.user_metadata?.full_name || '',
+    company: user?.user_metadata?.company || '',
+    phone: user?.user_metadata?.phone || '',
+  });
 
-  const handleSaveProfile = () => {
-    toast.success(language === 'es' ? 'Perfil actualizado' : 'Profile updated');
+  const handleSaveProfile = async () => {
+    if (!user) return;
+    
+    setIsSaving(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: {
+          full_name: profileForm.full_name,
+          company: profileForm.company,
+          phone: profileForm.phone,
+        }
+      });
+
+      if (error) throw error;
+      
+      // También actualizar el perfil en la tabla profiles si existe
+      await (supabase
+        .from('profiles' as any)
+        .update({
+          full_name: profileForm.full_name,
+          company: profileForm.company,
+          phone: profileForm.phone,
+        })
+        .eq('id', user.id) as any);
+
+      toast.success(language === 'es' ? 'Perfil actualizado correctamente' : 'Profile updated successfully');
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      toast.error(language === 'es' ? 'Error al guardar el perfil' : 'Error saving profile');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleSignOut = async () => {
@@ -118,22 +156,67 @@ const SettingsPage: React.FC = () => {
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="name">{language === 'es' ? 'Nombre completo' : 'Full Name'}</Label>
-          <Input id="name" defaultValue={user?.user_metadata?.full_name || ''} />
+          <Input 
+            id="name" 
+            value={profileForm.full_name}
+            onChange={(e) => setProfileForm({ ...profileForm, full_name: e.target.value })}
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="email">{language === 'es' ? 'Correo electrónico' : 'Email'}</Label>
           <Input id="email" type="email" defaultValue={user?.email || ''} disabled />
+          <p className="text-xs text-muted-foreground">
+            {language === 'es' ? 'El email no se puede modificar' : 'Email cannot be changed'}
+          </p>
         </div>
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="company">{language === 'es' ? 'Empresa' : 'Company'}</Label>
-        <Input id="company" defaultValue={user?.user_metadata?.company || ''} />
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="company">{language === 'es' ? 'Empresa' : 'Company'}</Label>
+          <Input 
+            id="company" 
+            value={profileForm.company}
+            onChange={(e) => setProfileForm({ ...profileForm, company: e.target.value })}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="phone">{language === 'es' ? 'Teléfono' : 'Phone'}</Label>
+          <Input 
+            id="phone" 
+            value={profileForm.phone}
+            onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+            placeholder="+34 600 000 000"
+          />
+        </div>
       </div>
-      <Button onClick={handleSaveProfile}>
-        {language === 'es' ? 'Guardar cambios' : 'Save Changes'}
+      <Button onClick={handleSaveProfile} disabled={isSaving}>
+        {isSaving 
+          ? (language === 'es' ? 'Guardando...' : 'Saving...') 
+          : (language === 'es' ? 'Guardar cambios' : 'Save Changes')}
       </Button>
     </div>
   );
+
+  const handleSaveNotifications = async () => {
+    setIsSaving(true);
+    try {
+      if (user) {
+        await supabase.auth.updateUser({
+          data: {
+            email_notifications: emailNotifications,
+            push_notifications: pushNotifications,
+            marketing_emails: marketingEmails,
+          }
+        });
+      }
+      toast.success(language === 'es' ? 'Preferencias de notificación guardadas' : 'Notification preferences saved');
+    } catch (error) {
+      console.error('Error saving notifications:', error);
+      toast.error(language === 'es' ? 'Error al guardar las preferencias' : 'Error saving preferences');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const renderNotificationsSection = () => (
     <div className="space-y-6">
@@ -166,6 +249,12 @@ const SettingsPage: React.FC = () => {
         </div>
         <Switch checked={marketingEmails} onCheckedChange={setMarketingEmails} />
       </div>
+      <Separator />
+      <Button onClick={handleSaveNotifications} disabled={isSaving}>
+        {isSaving 
+          ? (language === 'es' ? 'Guardando...' : 'Saving...') 
+          : (language === 'es' ? 'Guardar preferencias' : 'Save Preferences')}
+      </Button>
     </div>
   );
 
@@ -223,22 +312,91 @@ const SettingsPage: React.FC = () => {
     </div>
   );
 
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ newPassword: '', confirmPassword: '' });
+
+  const handleChangePassword = async () => {
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error(language === 'es' ? 'Las contraseñas no coinciden' : 'Passwords do not match');
+      return;
+    }
+    if (passwordForm.newPassword.length < 6) {
+      toast.error(language === 'es' ? 'La contraseña debe tener al menos 6 caracteres' : 'Password must be at least 6 characters');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: passwordForm.newPassword
+      });
+
+      if (error) throw error;
+
+      toast.success(language === 'es' ? 'Contraseña actualizada correctamente' : 'Password updated successfully');
+      setPasswordForm({ newPassword: '', confirmPassword: '' });
+      setShowPasswordForm(false);
+    } catch (error) {
+      console.error('Error changing password:', error);
+      toast.error(language === 'es' ? 'Error al cambiar la contraseña' : 'Error changing password');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const renderSecuritySection = () => (
     <div className="space-y-6">
-      <div className="flex items-center justify-between p-4 border rounded-lg">
-        <div className="flex items-center gap-3">
-          <Key className="h-5 w-5 text-muted-foreground" />
-          <div>
-            <p className="font-medium">{language === 'es' ? 'Cambiar contraseña' : 'Change Password'}</p>
-            <p className="text-sm text-muted-foreground">
-              {language === 'es' ? 'Actualiza tu contraseña de acceso' : 'Update your access password'}
-            </p>
+      <div className="p-4 border rounded-lg space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Key className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <p className="font-medium">{language === 'es' ? 'Cambiar contraseña' : 'Change Password'}</p>
+              <p className="text-sm text-muted-foreground">
+                {language === 'es' ? 'Actualiza tu contraseña de acceso' : 'Update your access password'}
+              </p>
+            </div>
           </div>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setShowPasswordForm(!showPasswordForm)}
+          >
+            {showPasswordForm 
+              ? (language === 'es' ? 'Cancelar' : 'Cancel')
+              : <ChevronRight className="h-4 w-4" />}
+          </Button>
         </div>
-        <Button variant="outline" size="sm">
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+
+        {showPasswordForm && (
+          <div className="pt-4 border-t space-y-4">
+            <div className="space-y-2">
+              <Label>{language === 'es' ? 'Nueva contraseña' : 'New Password'}</Label>
+              <Input 
+                type="password"
+                value={passwordForm.newPassword}
+                onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                placeholder="••••••••"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>{language === 'es' ? 'Confirmar contraseña' : 'Confirm Password'}</Label>
+              <Input 
+                type="password"
+                value={passwordForm.confirmPassword}
+                onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                placeholder="••••••••"
+              />
+            </div>
+            <Button onClick={handleChangePassword} disabled={isSaving}>
+              {isSaving 
+                ? (language === 'es' ? 'Guardando...' : 'Saving...')
+                : (language === 'es' ? 'Actualizar contraseña' : 'Update Password')}
+            </Button>
+          </div>
+        )}
       </div>
+
       <div className="flex items-center justify-between p-4 border rounded-lg">
         <div className="flex items-center gap-3">
           <Shield className="h-5 w-5 text-muted-foreground" />
@@ -249,7 +407,7 @@ const SettingsPage: React.FC = () => {
             </p>
           </div>
         </div>
-        <Badge variant="outline">{language === 'es' ? 'Desactivado' : 'Disabled'}</Badge>
+        <Badge variant="outline">{language === 'es' ? 'Próximamente' : 'Coming Soon'}</Badge>
       </div>
       <Separator />
       <Button variant="destructive" onClick={handleSignOut} className="flex items-center gap-2">
@@ -268,15 +426,57 @@ const SettingsPage: React.FC = () => {
             {language === 'es' ? 'Gestiona tu suscripción' : 'Manage your subscription'}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="font-semibold text-lg">Pro</p>
               <p className="text-sm text-muted-foreground">€99/mes</p>
             </div>
-            <Button variant="outline">
-              {language === 'es' ? 'Cambiar plan' : 'Change Plan'}
-            </Button>
+            <Link to="/store/modules">
+              <Button variant="outline">
+                {language === 'es' ? 'Ver módulos' : 'View Modules'}
+              </Button>
+            </Link>
+          </div>
+          <Separator />
+          <div className="space-y-2">
+            <p className="text-sm font-medium">{language === 'es' ? 'Próxima facturación' : 'Next Billing'}</p>
+            <p className="text-sm text-muted-foreground">15 de Febrero, 2025 - €99.00</p>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-medium">{language === 'es' ? 'Método de pago' : 'Payment Method'}</p>
+            <div className="flex items-center gap-2">
+              <CreditCard className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">•••• •••• •••• 4242</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">{language === 'es' ? 'Historial de facturas' : 'Invoice History'}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <div>
+                <p className="text-sm font-medium">Enero 2025</p>
+                <p className="text-xs text-muted-foreground">Plan Pro - €99.00</p>
+              </div>
+              <Button variant="ghost" size="sm">
+                {language === 'es' ? 'Descargar' : 'Download'}
+              </Button>
+            </div>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <div>
+                <p className="text-sm font-medium">Diciembre 2024</p>
+                <p className="text-xs text-muted-foreground">Plan Pro - €99.00</p>
+              </div>
+              <Button variant="ghost" size="sm">
+                {language === 'es' ? 'Descargar' : 'Download'}
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
