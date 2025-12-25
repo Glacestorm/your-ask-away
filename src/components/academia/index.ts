@@ -10,3 +10,6 @@ export { CertificateGenerator } from './CertificateGenerator';
 export { AchievementSystem } from './AchievementSystem';
 export { QuizModule } from './QuizModule';
 export { GamificationMiniWidget } from './GamificationMiniWidget';
+
+// AI Components
+export { AIRecommendationsPanel } from './AIRecommendationsPanel';
