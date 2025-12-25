@@ -413,3 +413,12 @@ verify_jwt = true
 
 [functions.academia-content-summarizer]
 verify_jwt = true
+
+[functions.academia-certificates]
+verify_jwt = true
+
+[functions.academia-community]
+verify_jwt = true
+
+[functions.academia-notifications]
+verify_jwt = true
