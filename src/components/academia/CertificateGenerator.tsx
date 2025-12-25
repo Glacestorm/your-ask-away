@@ -59,7 +59,7 @@ export const CertificateGenerator: React.FC<CertificateGeneratorProps> = ({
   const [copied, setCopied] = useState(false);
   const { fireCelebration } = useCelebration();
 
-  const verificationUrl = `${window.location.origin}/verify-certificate?code=${certificate.verificationCode}`;
+  const verificationUrl = `${window.location.origin}/academia/verificar/${certificate.verificationCode}`;
 
   // Generate PDF Certificate
   const generatePDF = useCallback(async () => {

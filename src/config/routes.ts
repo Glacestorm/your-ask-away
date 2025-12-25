@@ -149,6 +149,7 @@ export const publicRoutes: RouteConfig[] = [
   { path: '/academia/aprender/:courseId', component: LearningPlayer, layout: 'none', priority: 'high', meta: { title: 'Aprender', requiresAuth: true } },
   { path: '/academia/mi-perfil', component: AcademiaProfile, layout: 'none', priority: 'high', meta: { title: 'Mi Perfil Académico', requiresAuth: true } },
   { path: '/academia/verificar/:code', component: CertificateVerification, layout: 'none', priority: 'medium', meta: { title: 'Verificar Certificado' } },
+  { path: '/academia/verificar', component: CertificateVerification, layout: 'none', priority: 'medium', meta: { title: 'Verificar Certificado' } },
   { path: '/verify-certificate', component: CertificateVerification, layout: 'none', priority: 'medium', meta: { title: 'Verificar Certificado' } },
   
   // Sectors (con alias para ambas rutas)
