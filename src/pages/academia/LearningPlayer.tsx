@@ -555,6 +555,7 @@ const LearningPlayer: React.FC = () => {
                         courseId={courseId || 'course-1'}
                         currentLessonId={currentLessonId}
                         currentLessonTitle={currentLesson?.title || ''}
+                        courseTitle={course.title}
                         courseTopic="CRM"
                       />
                     </TabsContent>
@@ -608,6 +609,7 @@ const LearningPlayer: React.FC = () => {
                 courseId={courseId || 'course-1'}
                 currentLessonId={currentLessonId}
                 currentLessonTitle={currentLesson?.title || ''}
+                courseTitle={course.title}
                 courseTopic="CRM"
               />
             </TabsContent>
