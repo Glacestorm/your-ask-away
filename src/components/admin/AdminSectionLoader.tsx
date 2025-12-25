@@ -97,6 +97,11 @@ export const Customer360Panel = lazy(() => import('@/components/admin/Customer36
 // AI & ML
 export const InternalAssistantChat = lazy(() => import('@/components/admin/InternalAssistantChat').then(m => ({ default: m.InternalAssistantChat })));
 export const AIIntegrationConfig = lazy(() => import('@/components/admin/AIIntegrationConfig').then(m => ({ default: m.AIIntegrationConfig })));
+
+// AI Agents - Fase 1
+export const AutonomousAgentsPanel = lazy(() => import('@/components/admin/ai-agents').then(m => ({ default: m.AutonomousAgentsPanel })));
+export const PredictiveCopilotPanel = lazy(() => import('@/components/admin/ai-agents').then(m => ({ default: m.PredictiveCopilotPanel })));
+export const VoiceInterfacePanel = lazy(() => import('@/components/admin/ai-agents').then(m => ({ default: m.VoiceInterfacePanel })));
 export const RFMDashboard = lazy(() => import('@/components/admin/RFMDashboard').then(m => ({ default: m.RFMDashboard })));
 export const CustomerSegmentationPanel = lazy(() => import('@/components/admin/CustomerSegmentationPanel').then(m => ({ default: m.CustomerSegmentationPanel })));
 export const CDPFullDashboard = lazy(() => import('@/components/admin/CDPFullDashboard').then(m => ({ default: m.CDPFullDashboard })));
