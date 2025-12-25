@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Progress } from '@/components/ui/progress';
 import { RefreshCw, User, Heart, TrendingUp, Maximize2, Minimize2 } from 'lucide-react';
 import { useCustomer360IA } from '@/hooks/admin/useCustomer360IA';
 import { cn } from '@/lib/utils';
@@ -15,7 +14,7 @@ interface Customer360IAPanelProps {
 
 export function Customer360IAPanel({ context, className }: Customer360IAPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { isLoading, customer, fetchCustomer360, getRiskColor } = useCustomer360IA();
+  const { isLoading, customer, fetchCustomer360, getHealthColor } = useCustomer360IA();
 
   useEffect(() => {
     if (context?.entityId) fetchCustomer360(context.entityId);
@@ -63,30 +62,30 @@ export function Customer360IAPanel({ context, className }: Customer360IAPanelPro
                   </div>
                   <div>
                     <p className="font-medium">{customer.name}</p>
-                    <p className="text-xs text-muted-foreground">{customer.segment}</p>
+                    <p className="text-xs text-muted-foreground">{customer.demographics?.industry || 'Cliente'}</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div className="p-2 rounded bg-muted/30">
                     <p className="text-xs text-muted-foreground">Lifetime Value</p>
-                    <p className="font-medium">${customer.lifetimeValue?.toLocaleString()}</p>
+                    <p className="font-medium">${customer.financial?.lifetime_value?.toLocaleString() || 0}</p>
                   </div>
                   <div className="p-2 rounded bg-muted/30">
                     <p className="text-xs text-muted-foreground">Health Score</p>
                     <div className="flex items-center gap-1">
-                      <Heart className={cn("h-4 w-4", getRiskColor(customer.healthScore))} />
-                      <span className="font-medium">{customer.healthScore}%</span>
+                      <Heart className={cn("h-4 w-4", getHealthColor(customer.engagement?.health_score || 0))} />
+                      <span className="font-medium">{customer.engagement?.health_score || 0}%</span>
                     </div>
                   </div>
                 </div>
               </div>
-              {customer.insights?.map((insight, idx) => (
+              {customer.alerts?.map((alert, idx) => (
                 <div key={idx} className="p-3 rounded-lg border bg-card">
                   <div className="flex items-center gap-2">
                     <TrendingUp className="h-4 w-4 text-primary" />
-                    <span className="text-sm">{insight.title}</span>
+                    <span className="text-sm">{alert.message}</span>
                   </div>
-                  <Badge variant="outline" className="text-xs mt-2">{insight.type}</Badge>
+                  <Badge variant="outline" className="text-xs mt-2">{alert.type}</Badge>
                 </div>
               ))}
             </div>

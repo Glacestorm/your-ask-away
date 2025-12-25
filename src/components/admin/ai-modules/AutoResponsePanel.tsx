@@ -15,7 +15,7 @@ interface AutoResponsePanelProps {
 
 export function AutoResponsePanel({ context, className }: AutoResponsePanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { isLoading, suggestions, templates, config, generateSuggestion, fetchTemplates, updateConfig } = useAutoResponse();
+  const { isLoading, suggestions, templates, config, generateResponse, fetchTemplates, updateConfig } = useAutoResponse();
 
   useEffect(() => { fetchTemplates(); }, [fetchTemplates]);
 
@@ -50,21 +50,21 @@ export function AutoResponsePanel({ context, className }: AutoResponsePanelProps
           <div className="space-y-3">
             {suggestions.map((s) => (
               <div key={s.id} className="p-3 rounded-lg border bg-card">
-                <p className="text-sm">{s.content}</p>
+                <p className="text-sm">{s.response_text}</p>
                 <Badge variant="outline" className="text-xs mt-2">{Math.round(s.confidence * 100)}%</Badge>
               </div>
             ))}
             {suggestions.length === 0 && (
               <div className="text-center py-8">
                 <Zap className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                <Button onClick={() => generateSuggestion(context.entityId, 'general')} disabled={isLoading}>
+                <Button onClick={() => generateResponse('Mensaje de ejemplo', { category: 'general' })} disabled={isLoading}>
                   <Zap className="h-4 w-4 mr-2" />Generar Borrador
                 </Button>
               </div>
             )}
             <div className="flex items-center justify-between p-3 rounded-lg border mt-4">
               <span className="text-sm">Auto-envío</span>
-              <Switch checked={config.enabled} onCheckedChange={(enabled) => updateConfig({ enabled })} />
+              <Switch checked={config?.enabled ?? false} onCheckedChange={(enabled) => updateConfig({ enabled })} />
             </div>
           </div>
         </ScrollArea>

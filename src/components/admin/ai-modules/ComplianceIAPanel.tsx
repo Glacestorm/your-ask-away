@@ -15,9 +15,9 @@ interface ComplianceIAPanelProps {
 
 export function ComplianceIAPanel({ className }: ComplianceIAPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { isLoading, checks, alerts, runCheck, fetchAlerts, getSeverityColor } = useComplianceIA();
+  const { isLoading, summary, alerts, runComplianceCheck, fetchAlerts, fetchSummary, getSeverityColor } = useComplianceIA();
 
-  useEffect(() => { fetchAlerts(); }, [fetchAlerts]);
+  useEffect(() => { fetchAlerts(); fetchSummary(); }, [fetchAlerts, fetchSummary]);
 
   return (
     <Card className={cn("transition-all duration-300 overflow-hidden", isExpanded ? "fixed inset-4 z-50 shadow-2xl" : "", className)}>
@@ -30,7 +30,7 @@ export function ComplianceIAPanel({ className }: ComplianceIAPanelProps) {
             <CardTitle className="text-base">Compliance IA</CardTitle>
           </div>
           <div className="flex gap-1">
-            <Button variant="ghost" size="icon" onClick={() => runCheck('general')} disabled={isLoading} className="h-8 w-8">
+            <Button variant="ghost" size="icon" onClick={() => runComplianceCheck('general')} disabled={isLoading} className="h-8 w-8">
               <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
             </Button>
             <Button variant="ghost" size="icon" onClick={() => setIsExpanded(!isExpanded)} className="h-8 w-8">
@@ -42,13 +42,13 @@ export function ComplianceIAPanel({ className }: ComplianceIAPanelProps) {
       <CardContent className="pt-3">
         <ScrollArea className={isExpanded ? "h-[calc(100vh-280px)]" : "h-[250px]"}>
           <div className="space-y-2">
-            {checks.map((check) => (
-              <div key={check.id} className="p-3 rounded-lg border bg-card">
+            {summary.map((item) => (
+              <div key={item.regulation} className="p-3 rounded-lg border bg-card">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-medium text-sm">{check.regulation}</span>
-                  {check.status === 'compliant' ? <CheckCircle className="h-4 w-4 text-green-500" /> : <AlertTriangle className="h-4 w-4 text-yellow-500" />}
+                  <span className="font-medium text-sm">{item.regulation}</span>
+                  {item.compliance_score >= 80 ? <CheckCircle className="h-4 w-4 text-green-500" /> : <AlertTriangle className="h-4 w-4 text-yellow-500" />}
                 </div>
-                <Progress value={check.score} className="h-2" />
+                <Progress value={item.compliance_score} className="h-2" />
               </div>
             ))}
             {alerts.map((alert) => (
@@ -60,7 +60,7 @@ export function ComplianceIAPanel({ className }: ComplianceIAPanelProps) {
                 <Badge variant="outline" className="text-xs mt-2">{alert.severity}</Badge>
               </div>
             ))}
-            {checks.length === 0 && alerts.length === 0 && (
+            {summary.length === 0 && alerts.length === 0 && (
               <div className="text-center py-8 text-muted-foreground">
                 <Shield className="h-8 w-8 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">Ejecuta una verificación de cumplimiento</p>
