@@ -46,14 +46,6 @@ export function AdminBreadcrumbs({ currentSection, className }: AdminBreadcrumbs
   return (
     <Breadcrumb className={className}>
       <BreadcrumbList>
-        <BreadcrumbItem>
-          <BreadcrumbLink asChild>
-            <Link to="/home" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
-              <Home className="h-3.5 w-3.5" />
-              <span>Inicio</span>
-            </Link>
-          </BreadcrumbLink>
-        </BreadcrumbItem>
         
         {breadcrumbs.map((crumb, index) => (
           <BreadcrumbItem key={crumb.path}>
