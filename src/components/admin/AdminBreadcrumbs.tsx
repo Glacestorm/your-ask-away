@@ -33,6 +33,9 @@ export function AdminBreadcrumbs({ currentSection, className }: AdminBreadcrumbs
       currentPath += `/${segment}`;
       const isLast = index === pathSegments.length - 1;
       
+      // Skip obelixia-admin from breadcrumbs (already shown in header)
+      if (currentPath === '/obelixia-admin') return;
+      
       let label = routeLabels[currentPath] || segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ');
       
       crumbs.push({ label, path: currentPath, isLast });
