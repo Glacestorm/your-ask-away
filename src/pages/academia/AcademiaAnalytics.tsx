@@ -280,7 +280,7 @@ const AcademiaAnalytics: React.FC = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => timeSeriesData && exportToCSV(timeSeriesData, 'tendencias')}
+                      onClick={() => timeSeriesData && exportToCSV(timeSeriesData as unknown as Record<string, unknown>[], 'tendencias')}
                     >
                       <Download className="w-4 h-4 mr-2" />
                       CSV
@@ -387,7 +387,7 @@ const AcademiaAnalytics: React.FC = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => courseMetrics && exportToCSV(courseMetrics, 'cursos')}
+                    onClick={() => courseMetrics && exportToCSV(courseMetrics as unknown as Record<string, unknown>[], 'cursos')}
                   >
                     <Download className="w-4 h-4 mr-2" />
                     Exportar CSV
