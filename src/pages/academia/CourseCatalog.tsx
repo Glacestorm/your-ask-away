@@ -37,6 +37,8 @@ import {
 } from '@/components/ui/collapsible';
 import StoreNavbar from '@/components/store/StoreNavbar';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/hooks/useAuth';
+import { AIRecommendationsPanel } from '@/components/academia/AIRecommendationsPanel';
 
 // Types
 interface Course {
@@ -224,6 +226,7 @@ const types = ['course', 'certification', 'webinar', 'workshop'] as const;
 
 const CourseCatalog: React.FC = () => {
   const { language } = useLanguage();
+  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   
   // State from URL params
@@ -773,6 +776,18 @@ const CourseCatalog: React.FC = () => {
                 <Button variant="outline" size="sm" className="border-slate-600 text-white hover:bg-slate-800">
                   {language === 'es' ? 'Suscribirme a novedades' : 'Subscribe to updates'}
                 </Button>
+              </motion.div>
+            )}
+
+            {/* AI Recommendations for logged users */}
+            {user && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="mt-8"
+              >
+                <AIRecommendationsPanel className="bg-slate-800/30 border-slate-700" />
               </motion.div>
             )}
           </div>
