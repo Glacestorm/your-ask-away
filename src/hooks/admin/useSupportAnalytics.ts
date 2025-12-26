@@ -117,7 +117,7 @@ export function useSupportAnalytics(daysRange: number = 30) {
           .gte('created_at', startDate.toISOString()),
         supabase
           .from('profiles')
-          .select('id, first_name, last_name, email')
+          .select('id, full_name, email')
       ]);
 
       if (sessionsResult.error) throw sessionsResult.error;
@@ -389,9 +389,7 @@ function calculateTechnicianStats(
     
     return {
       id: techId,
-      name: profile 
-        ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'Sin nombre'
-        : 'Desconocido',
+      name: profile?.full_name || 'Desconocido',
       email: profile?.email || '',
       totalSessions: data.sessions.length,
       avgDuration,
