@@ -5,7 +5,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useNavigationHistory } from '@/hooks/useNavigationHistory';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Activity, History, Shield, Rocket, Bot, BarChart3, Users, Palette, FileCode2, Eye, MessageSquare, Bell, MessagesSquare, Database, Trophy, Store, ClipboardCheck, Building2, Layers, Zap, ShoppingCart, Briefcase, Loader2, Headphones, FileText, Upload } from 'lucide-react';
+import { ArrowLeft, Activity, History, Shield, Rocket, Bot, BarChart3, Users, Palette, FileCode2, Eye, MessageSquare, Bell, MessagesSquare, Database, Trophy, Store, ClipboardCheck, Building2, Layers, Zap, ShoppingCart, Briefcase, Loader2, Headphones, FileText, Upload, Home, Globe } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import { GlobalNavHeader } from '@/components/GlobalNavHeader';
 import { AdminBreadcrumbs } from '@/components/admin/AdminBreadcrumbs';
@@ -2104,6 +2105,38 @@ const Admin = () => {
                 canGoForward={activeSection !== 'administration' && canGoForward}
                 onGoBack={activeSection !== 'administration' ? handleGoBack : undefined}
                 onGoForward={activeSection !== 'administration' ? handleGoForward : undefined}
+                titleActions={
+                  activeSection === 'administration' ? (
+                    <div className="flex items-center gap-1.5">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 rounded-xl border border-border/50 bg-background shadow-sm hover:bg-muted"
+                            onClick={() => navigate('/home')}
+                          >
+                            <Home className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Inicio</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 rounded-xl border border-border/50 bg-background shadow-sm hover:bg-muted"
+                            onClick={() => navigate('/store')}
+                          >
+                            <Globe className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Volver a la web</TooltipContent>
+                      </Tooltip>
+                    </div>
+                  ) : undefined
+                }
                 rightSlot={
                   activeSection === 'administration' ? (
                     <div className="flex items-center gap-2">

@@ -19,6 +19,7 @@ interface GlobalNavHeaderProps {
   onGoBack?: () => void;
   onGoForward?: () => void;
   rightSlot?: React.ReactNode;
+  titleActions?: React.ReactNode;
 }
 
 export function GlobalNavHeader({ 
@@ -29,6 +30,7 @@ export function GlobalNavHeader({
   onGoBack,
   onGoForward,
   rightSlot,
+  titleActions,
 }: GlobalNavHeaderProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -87,6 +89,9 @@ export function GlobalNavHeader({
             )}
           </div>
         )}
+        
+        {/* Title Actions (buttons next to title) */}
+        {titleActions}
       </div>
       
       {/* Right Section: Actions */}
