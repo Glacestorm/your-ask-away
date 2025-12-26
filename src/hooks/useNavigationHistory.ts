@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 // === ERROR TIPADO KB ===
 export interface NavigationHistoryError {
@@ -21,54 +21,80 @@ interface NavigationHistoryResult {
 }
 
 export function useNavigationHistory(initialSection?: string): NavigationHistoryResult {
-  const [history, setHistory] = useState<string[]>(initialSection ? [initialSection] : []);
-  const [currentIndex, setCurrentIndex] = useState(initialSection ? 0 : -1);
-  const isNavigating = useRef(false);
+  // Use refs to avoid stale closures
+  const historyRef = useRef<string[]>(initialSection ? [initialSection] : []);
+  const currentIndexRef = useRef(initialSection ? 0 : -1);
+  const isNavigatingRef = useRef(false);
+  
+  // State for triggering re-renders
+  const [, forceUpdate] = useState(0);
+  
   // === ESTADO KB ===
   const [error] = useState<NavigationHistoryError | null>(null);
   const [lastRefresh] = useState<Date | null>(null);
 
   // === CLEAR ERROR KB ===
   const clearError = useCallback(() => {}, []);
-  const canGoBack = currentIndex > 0;
-  const canGoForward = currentIndex < history.length - 1;
-  const current = currentIndex >= 0 ? history[currentIndex] : null;
+
+  const triggerUpdate = useCallback(() => {
+    forceUpdate(prev => prev + 1);
+  }, []);
 
   const push = useCallback((section: string) => {
     // Don't add to history if we're navigating via back/forward
-    if (isNavigating.current) {
-      isNavigating.current = false;
+    if (isNavigatingRef.current) {
+      isNavigatingRef.current = false;
       return;
     }
+
+    const currentHistory = historyRef.current;
+    const currentIdx = currentIndexRef.current;
 
     // Don't add if it's the same as current
-    if (history[currentIndex] === section) {
+    if (currentHistory[currentIdx] === section) {
       return;
     }
 
-    setHistory(prev => {
-      // Remove any forward history when pushing new section
-      const newHistory = prev.slice(0, currentIndex + 1);
-      return [...newHistory, section];
-    });
-    setCurrentIndex(prev => prev + 1);
-  }, [currentIndex, history]);
+    // Remove any forward history when pushing new section
+    const newHistory = currentHistory.slice(0, currentIdx + 1);
+    newHistory.push(section);
+    
+    historyRef.current = newHistory;
+    currentIndexRef.current = currentIdx + 1;
+    
+    triggerUpdate();
+  }, [triggerUpdate]);
 
   const goBack = useCallback(() => {
-    if (!canGoBack) return null;
-    isNavigating.current = true;
-    const newIndex = currentIndex - 1;
-    setCurrentIndex(newIndex);
-    return history[newIndex];
-  }, [canGoBack, currentIndex, history]);
+    const currentIdx = currentIndexRef.current;
+    if (currentIdx <= 0) return null;
+    
+    isNavigatingRef.current = true;
+    const newIndex = currentIdx - 1;
+    currentIndexRef.current = newIndex;
+    
+    triggerUpdate();
+    return historyRef.current[newIndex];
+  }, [triggerUpdate]);
 
   const goForward = useCallback(() => {
-    if (!canGoForward) return null;
-    isNavigating.current = true;
-    const newIndex = currentIndex + 1;
-    setCurrentIndex(newIndex);
-    return history[newIndex];
-  }, [canGoForward, currentIndex, history]);
+    const currentIdx = currentIndexRef.current;
+    const historyLength = historyRef.current.length;
+    
+    if (currentIdx >= historyLength - 1) return null;
+    
+    isNavigatingRef.current = true;
+    const newIndex = currentIdx + 1;
+    currentIndexRef.current = newIndex;
+    
+    triggerUpdate();
+    return historyRef.current[newIndex];
+  }, [triggerUpdate]);
+
+  // Computed values from refs
+  const canGoBack = currentIndexRef.current > 0;
+  const canGoForward = currentIndexRef.current < historyRef.current.length - 1;
+  const current = currentIndexRef.current >= 0 ? historyRef.current[currentIndexRef.current] : null;
 
   return {
     canGoBack,
