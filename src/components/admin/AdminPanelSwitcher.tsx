@@ -57,8 +57,8 @@ export function AdminPanelSwitcher({ className, variant = 'default' }: AdminPane
         variant="outline" 
         size="sm"
         className={cn(
-          "gap-2 h-9 border-slate-700 bg-slate-800/50 hover:bg-slate-700/50 text-slate-300 hover:text-white transition-all",
-          !isObelixiaAdmin && "hover:border-emerald-500/50"
+          "gap-2 h-9 border-border bg-card hover:bg-accent text-muted-foreground hover:text-foreground transition-all",
+          !isObelixiaAdmin && "hover:border-primary/50"
         )}
       >
         <TargetIcon className="h-4 w-4" />

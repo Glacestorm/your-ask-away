@@ -127,13 +127,13 @@ export function AdminGlobalSearch({ className }: AdminGlobalSearchProps) {
         size="sm"
         onClick={() => setOpen(true)}
         className={cn(
-          "gap-2 h-9 border-slate-700 bg-slate-800/50 hover:bg-slate-700/50 text-slate-400 hover:text-white transition-all min-w-[200px] justify-start",
+          "gap-2 h-9 border-border bg-card hover:bg-accent text-muted-foreground hover:text-foreground transition-all min-w-[200px] justify-start",
           className
         )}
       >
         <Search className="h-4 w-4" />
         <span className="text-sm">Buscar secciones...</span>
-        <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border border-slate-600 bg-slate-700 px-1.5 font-mono text-[10px] font-medium text-slate-400">
+        <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
           <span className="text-xs">⌘</span>K
         </kbd>
       </Button>
