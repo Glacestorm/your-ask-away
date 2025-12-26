@@ -572,3 +572,6 @@ verify_jwt = true
 
 [functions.sync-engine]
 verify_jwt = true
+
+[functions.predictive-health-score]
+verify_jwt = true
