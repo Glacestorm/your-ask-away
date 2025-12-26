@@ -29,7 +29,10 @@ import {
   ComplianceMonitorPanel,
   CommandCenterPanel,
   WorkflowEnginePanel,
-  BusinessIntelligencePanel
+  BusinessIntelligencePanel,
+  ExecutiveMetricsGrid,
+  RealTimeAlertsPanel,
+  EnterpriseActivityFeed
 } from '@/components/admin/enterprise';
 import { RevenueAIAgentsPanel } from '@/components/admin/revenue';
 import { PredictiveHealthScorePanel } from '@/components/admin/cs';
@@ -284,6 +287,9 @@ export default function EnterpriseDashboardPage() {
       <main className="container px-4 py-6">
         {activeView === 'grid' ? (
           <>
+            {/* Executive Metrics Grid */}
+            <ExecutiveMetricsGrid className="mb-6" />
+
             {/* Quick Navigation */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
               {panels.map((panel) => (
@@ -415,6 +421,12 @@ export default function EnterpriseDashboardPage() {
                   </div>
                 </div>
               </Card>
+            </div>
+
+            {/* Alerts & Activity Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+              <RealTimeAlertsPanel />
+              <EnterpriseActivityFeed />
             </div>
 
             {/* 3x2 Grid */}
