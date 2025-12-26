@@ -599,3 +599,6 @@ verify_jwt = true
 
 [functions.execute-support-action]
 verify_jwt = true
+
+[functions.support-knowledge-embeddings]
+verify_jwt = true
