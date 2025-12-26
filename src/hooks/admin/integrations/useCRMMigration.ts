@@ -621,6 +621,34 @@ export function useCRMMigration() {
     }
   }, []);
 
+  // === GENERATE AI MAPPINGS ===
+  const generateAIMappings = useCallback(async (
+    detectedFields: Array<{ name: string; type: string; sample_values: unknown[]; null_count: number }>,
+    sourceCrm?: string
+  ): Promise<Partial<CRMFieldMapping>[] | null> => {
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('crm-migration-engine', {
+        body: {
+          action: 'generate_ai_mappings',
+          detected_fields: detectedFields,
+          source_crm: sourceCrm
+        }
+      });
+
+      if (fnError) throw fnError;
+
+      if (data?.success && data?.mappings) {
+        return data.mappings;
+      }
+
+      return null;
+    } catch (err) {
+      console.error('[useCRMMigration] generateAIMappings error:', err);
+      toast.error('Error al generar mapeos con IA');
+      return null;
+    }
+  }, []);
+
   // === APPLY TEMPLATE ===
   const applyTemplate = useCallback(async (
     migrationId: string,
@@ -737,6 +765,7 @@ export function useCRMMigration() {
     fetchStats,
     saveTemplate,
     applyTemplate,
+    generateAIMappings,
     
     // Control
     setActiveMigration,
