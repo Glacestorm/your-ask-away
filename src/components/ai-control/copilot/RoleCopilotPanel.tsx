@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,10 +26,12 @@ import {
   BarChart3,
   AlertCircle
 } from 'lucide-react';
-import { useRoleCopilot, CopilotSuggestion, QuickAction } from '@/hooks/useRoleCopilot';
+import { useRoleCopilot, CopilotSuggestion } from '@/hooks/useRoleCopilot';
 import { CopilotSuggestionCard } from './CopilotSuggestionCard';
 import { CopilotMetricsBar } from './CopilotMetricsBar';
 import { cn } from '@/lib/utils';
+import { formatDistanceToNow } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 // Mapa de iconos para quick actions
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -67,6 +69,8 @@ export function RoleCopilotPanel() {
     error,
     isError,
     clearError,
+    lastRefresh,
+    refetchSession,
   } = useRoleCopilot();
 
   const [activeTab, setActiveTab] = useState('suggestions');
@@ -145,6 +149,19 @@ export function RoleCopilotPanel() {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Last Refresh Indicator */}
+      {lastRefresh && (
+        <div className="flex items-center justify-end gap-2 text-xs text-muted-foreground">
+          <Clock className="h-3 w-3" />
+          <span>
+            Actualitzat {formatDistanceToNow(lastRefresh, { locale: es, addSuffix: true })}
+          </span>
+          <Button variant="ghost" size="sm" onClick={() => refetchSession()} className="h-6 px-2">
+            <RefreshCw className="h-3 w-3" />
+          </Button>
+        </div>
       )}
 
       {/* Header with Copilot Info */}
