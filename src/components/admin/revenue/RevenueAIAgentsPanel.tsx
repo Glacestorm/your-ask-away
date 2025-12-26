@@ -143,22 +143,24 @@ export function RevenueAIAgentsPanel({ className }: RevenueAIAgentsPanelProps) {
           />
         </div>
 
-        <div className="grid grid-cols-3 gap-4 mt-4">
-          <div className="text-center">
-            <p className="text-2xl font-bold text-primary">{agent.accuracy.toFixed(1)}%</p>
-            <p className="text-xs text-muted-foreground">Precisión</p>
+        <div className="mt-4 space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="text-center p-3 rounded-lg bg-muted/30 border border-border/50">
+              <p className="text-xl font-bold text-primary">{agent.accuracy.toFixed(1)}%</p>
+              <p className="text-xs text-muted-foreground mt-1">Precisión</p>
+            </div>
+            <div className="text-center p-3 rounded-lg bg-muted/30 border border-border/50">
+              <p className="text-xl font-bold">{agent.insightsGenerated}</p>
+              <p className="text-xs text-muted-foreground mt-1">Insights</p>
+            </div>
           </div>
-          <div className="text-center">
-            <p className="text-2xl font-bold">{agent.insightsGenerated}</p>
-            <p className="text-xs text-muted-foreground">Insights</p>
-          </div>
-          <div className="text-center">
-            <p className="text-xs text-muted-foreground">Última ejecución</p>
-            <p className="text-xs font-medium">
-              {agent.lastRun 
+          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground py-1">
+            <Clock className="h-3 w-3 shrink-0" />
+            <span className="whitespace-nowrap">
+              Última ejecución: {agent.lastRun 
                 ? formatDistanceToNow(agent.lastRun, { addSuffix: true, locale: es })
                 : 'Nunca'}
-            </p>
+            </span>
           </div>
         </div>
 
