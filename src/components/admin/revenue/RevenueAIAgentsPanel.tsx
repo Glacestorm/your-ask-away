@@ -70,9 +70,10 @@ const formatPercent = (value: number) =>
 
 interface RevenueAIAgentsPanelProps {
   className?: string;
+  compact?: boolean;
 }
 
-export function RevenueAIAgentsPanel({ className }: RevenueAIAgentsPanelProps) {
+export function RevenueAIAgentsPanel({ className, compact = false }: RevenueAIAgentsPanelProps) {
   const [activeTab, setActiveTab] = useState('overview');
   const [expandedInsights, setExpandedInsights] = useState<Set<string>>(new Set());
 
@@ -441,6 +442,108 @@ export function RevenueAIAgentsPanel({ className }: RevenueAIAgentsPanelProps) {
     </Card>
   );
 
+  // Versión compacta para grid
+  if (compact) {
+    return (
+      <Card className={cn("overflow-hidden", className)}>
+        <CardHeader className="pb-2 bg-gradient-to-r from-cyan-500/10 to-teal-500/10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-teal-600 flex items-center justify-center">
+                <Bot className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-base">Revenue AI Agents</CardTitle>
+                <p className="text-xs text-muted-foreground">
+                  {lastRefresh 
+                    ? `Actualizado ${formatDistanceToNow(lastRefresh, { locale: es, addSuffix: true })}`
+                    : 'Sincronizando...'}
+                </p>
+              </div>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => runAllAgents()}
+              disabled={isLoading}
+              className="h-8 w-8"
+            >
+              <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-4">
+          {/* Quick Stats Grid - 2x2 */}
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/50 text-center">
+              <p className="text-lg font-bold text-primary">{activeAgentsCount}/{agents.length}</p>
+              <p className="text-xs text-muted-foreground">Agentes Activos</p>
+            </div>
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/50 text-center">
+              <p className="text-lg font-bold">{totalInsights}</p>
+              <p className="text-xs text-muted-foreground">Insights</p>
+            </div>
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/50 text-center">
+              <p className="text-lg font-bold text-destructive">{highRiskCount}</p>
+              <p className="text-xs text-muted-foreground">Alto Riesgo</p>
+            </div>
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/50 text-center">
+              <p className="text-lg font-bold text-orange-500">{formatCurrency(totalValueAtRisk)}</p>
+              <p className="text-xs text-muted-foreground">Valor Riesgo</p>
+            </div>
+          </div>
+
+          {/* Agent Status List */}
+          <ScrollArea className="h-[180px]">
+            <div className="space-y-2">
+              {agents.map((agent) => (
+                <div 
+                  key={agent.id}
+                  className="flex items-center justify-between p-2 rounded-lg bg-muted/20 border border-border/30"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className={cn(
+                      "w-8 h-8 rounded-md flex items-center justify-center bg-gradient-to-br text-white shrink-0",
+                      AGENT_COLORS[agent.type]
+                    )}>
+                      {AGENT_ICONS[agent.type]}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">{agent.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {agent.accuracy.toFixed(0)}% • {agent.insightsGenerated} insights
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Badge 
+                      variant={agent.isActive ? "default" : "secondary"}
+                      className="text-xs"
+                    >
+                      {agent.isActive ? 'ON' : 'OFF'}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+
+          <Button 
+            className="w-full mt-3" 
+            size="sm"
+            variant="outline"
+            onClick={() => runAllAgents()}
+            disabled={isLoading}
+          >
+            <Play className="h-4 w-4 mr-2" />
+            Ejecutar Todos
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Versión completa
   return (
     <div className={cn("space-y-6", className)}>
       {/* Header */}
@@ -470,7 +573,7 @@ export function RevenueAIAgentsPanel({ className }: RevenueAIAgentsPanelProps) {
           </div>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-4 gap-4 mt-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
             <div className="p-4 rounded-lg bg-background/50">
               <p className="text-sm text-muted-foreground">Agentes Activos</p>
               <p className="text-2xl font-bold">{activeAgentsCount}/{agents.length}</p>
