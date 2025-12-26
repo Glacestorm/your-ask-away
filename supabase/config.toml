@@ -635,3 +635,6 @@ verify_jwt = true
 
 [functions.ai-agents-v2]
 verify_jwt = true
+
+[functions.workspace-integrations]
+verify_jwt = true
