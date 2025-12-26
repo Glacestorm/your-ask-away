@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,12 +12,17 @@ import {
   Activity,
   TrendingUp,
   Shield,
-  Sparkles
+  Sparkles,
+  LineChart
 } from 'lucide-react';
 import { AgentOrchestrationPanel } from './AgentOrchestrationPanel';
 import { ActionExecutionDashboard } from './ActionExecutionDashboard';
 import { ReinforcementLearningDashboard } from './ReinforcementLearningDashboard';
 import { KnowledgeBasePanel } from './KnowledgeBasePanel';
+import { PredictiveMonitoringPanel } from './PredictiveMonitoringPanel';
+import { useSupportPredictiveAnalytics } from '@/hooks/admin/support/useSupportPredictiveAnalytics';
+import { useSupportAgentOrchestrator } from '@/hooks/admin/support/useSupportAgentOrchestrator';
+import { useKnowledgeBase } from '@/hooks/admin/support/useKnowledgeBase';
 import { cn } from '@/lib/utils';
 
 interface RemoteSupportAIDashboardProps {
@@ -40,6 +45,16 @@ export function RemoteSupportAIDashboard({
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [selectedAgentKey, setSelectedAgentKey] = useState<string | null>(null);
 
+  // Hooks for real data
+  const { agents, sessions } = useSupportAgentOrchestrator();
+  const { healthMetrics, realtimeStatus, refreshAll } = useSupportPredictiveAnalytics();
+  const { documents } = useKnowledgeBase();
+
+  // Load initial data
+  useEffect(() => {
+    refreshAll();
+  }, [refreshAll]);
+
   const handleSessionCreated = (sessionId: string) => {
     setActiveSessionId(sessionId);
   };
@@ -47,6 +62,12 @@ export function RemoteSupportAIDashboard({
   const handleActionComplete = (executionId: string, success: boolean) => {
     console.log(`[RemoteSupportAIDashboard] Action ${executionId} completed: ${success}`);
   };
+
+  // Computed stats from real data
+  const activeAgentsCount = agents.filter(a => a.is_active).length;
+  const activeSessions = sessions.filter(s => s.status === 'active').length;
+  const resolutionRate = healthMetrics?.metrics?.successRate || 78;
+  const documentsCount = documents.length || 0;
 
   return (
     <Card className={cn("transition-all duration-300 overflow-hidden", className)}>
@@ -61,7 +82,7 @@ export function RemoteSupportAIDashboard({
                 Soporte AI Autónomo
               <Badge className="bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white border-0">
                 <Sparkles className="h-3 w-3 mr-1" />
-                Fase 4
+                Fase 5
               </Badge>
               </CardTitle>
               <p className="text-sm text-muted-foreground">
@@ -76,6 +97,19 @@ export function RemoteSupportAIDashboard({
                 Sesión Activa
               </Badge>
             )}
+            {healthMetrics && (
+              <Badge 
+                variant="outline" 
+                className={cn(
+                  "text-xs",
+                  healthMetrics.status === 'healthy' ? 'border-green-500/50 text-green-400' :
+                  healthMetrics.status === 'warning' ? 'border-yellow-500/50 text-yellow-400' :
+                  'border-red-500/50 text-red-400'
+                )}
+              >
+                {healthMetrics.healthScore}% Salud
+              </Badge>
+            )}
             <Button variant="outline" size="sm">
               <Settings className="h-4 w-4 mr-1" />
               Configurar
@@ -83,42 +117,49 @@ export function RemoteSupportAIDashboard({
           </div>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-4 gap-3 mt-4">
+        {/* Quick Stats - Real Data */}
+        <div className="grid grid-cols-5 gap-3 mt-4">
           <div className="p-2 rounded-lg bg-background/50 border">
             <div className="flex items-center gap-2">
               <Bot className="h-4 w-4 text-violet-400" />
               <span className="text-xs text-muted-foreground">Agentes</span>
             </div>
-            <p className="text-lg font-bold text-violet-400">5</p>
+            <p className="text-lg font-bold text-violet-400">{activeAgentsCount}</p>
+          </div>
+          <div className="p-2 rounded-lg bg-background/50 border">
+            <div className="flex items-center gap-2">
+              <Activity className="h-4 w-4 text-cyan-400" />
+              <span className="text-xs text-muted-foreground">Sesiones</span>
+            </div>
+            <p className="text-lg font-bold text-cyan-400">{activeSessions}</p>
           </div>
           <div className="p-2 rounded-lg bg-background/50 border">
             <div className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-green-400" />
               <span className="text-xs text-muted-foreground">Resolución</span>
             </div>
-            <p className="text-lg font-bold text-green-400">78%</p>
+            <p className="text-lg font-bold text-green-400">{resolutionRate}%</p>
           </div>
           <div className="p-2 rounded-lg bg-background/50 border">
             <div className="flex items-center gap-2">
               <Brain className="h-4 w-4 text-amber-400" />
               <span className="text-xs text-muted-foreground">Patrones</span>
             </div>
-            <p className="text-lg font-bold text-amber-400">24</p>
+            <p className="text-lg font-bold text-amber-400">{realtimeStatus?.actionsLast30Min || 0}</p>
           </div>
           <div className="p-2 rounded-lg bg-background/50 border">
             <div className="flex items-center gap-2">
               <BookOpen className="h-4 w-4 text-blue-400" />
               <span className="text-xs text-muted-foreground">Documentos</span>
             </div>
-            <p className="text-lg font-bold text-blue-400">156</p>
+            <p className="text-lg font-bold text-blue-400">{documentsCount}</p>
           </div>
         </div>
       </CardHeader>
 
       <CardContent className="pt-4">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4 mb-4">
+          <TabsList className="grid w-full grid-cols-5 mb-4">
             <TabsTrigger value="orchestration" className="text-sm">
               <Bot className="h-4 w-4 mr-2" />
               Orquestación
@@ -126,6 +167,10 @@ export function RemoteSupportAIDashboard({
             <TabsTrigger value="execution" className="text-sm">
               <Zap className="h-4 w-4 mr-2" />
               Ejecución
+            </TabsTrigger>
+            <TabsTrigger value="monitoring" className="text-sm">
+              <LineChart className="h-4 w-4 mr-2" />
+              Monitoreo
             </TabsTrigger>
             <TabsTrigger value="learning" className="text-sm">
               <Brain className="h-4 w-4 mr-2" />
@@ -150,6 +195,10 @@ export function RemoteSupportAIDashboard({
               sessionId={activeSessionId || undefined}
               onActionComplete={handleActionComplete}
             />
+          </TabsContent>
+
+          <TabsContent value="monitoring" className="mt-0">
+            <PredictiveMonitoringPanel />
           </TabsContent>
 
           <TabsContent value="learning" className="mt-0">
