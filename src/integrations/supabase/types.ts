@@ -21613,6 +21613,181 @@ export type Database = {
         }
         Relationships: []
       }
+      support_knowledge_documents: {
+        Row: {
+          author_id: string | null
+          category: string
+          content: string
+          created_at: string | null
+          document_type: string
+          embedding_status: string | null
+          embedding_vector: number[] | null
+          helpful_count: number | null
+          id: string
+          is_archived: boolean | null
+          is_published: boolean | null
+          last_reviewed_at: string | null
+          metadata: Json | null
+          not_helpful_count: number | null
+          reviewed_by: string | null
+          source_url: string | null
+          subcategory: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+          view_count: number | null
+        }
+        Insert: {
+          author_id?: string | null
+          category: string
+          content: string
+          created_at?: string | null
+          document_type?: string
+          embedding_status?: string | null
+          embedding_vector?: number[] | null
+          helpful_count?: number | null
+          id?: string
+          is_archived?: boolean | null
+          is_published?: boolean | null
+          last_reviewed_at?: string | null
+          metadata?: Json | null
+          not_helpful_count?: number | null
+          reviewed_by?: string | null
+          source_url?: string | null
+          subcategory?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Update: {
+          author_id?: string | null
+          category?: string
+          content?: string
+          created_at?: string | null
+          document_type?: string
+          embedding_status?: string | null
+          embedding_vector?: number[] | null
+          helpful_count?: number | null
+          id?: string
+          is_archived?: boolean | null
+          is_published?: boolean | null
+          last_reviewed_at?: string | null
+          metadata?: Json | null
+          not_helpful_count?: number | null
+          reviewed_by?: string | null
+          source_url?: string | null
+          subcategory?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Relationships: []
+      }
+      support_knowledge_relations: {
+        Row: {
+          created_at: string | null
+          id: string
+          related_document_id: string
+          relation_type: string
+          similarity_score: number | null
+          source_document_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          related_document_id: string
+          relation_type?: string
+          similarity_score?: number | null
+          source_document_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          related_document_id?: string
+          relation_type?: string
+          similarity_score?: number | null
+          source_document_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_knowledge_relations_related_document_id_fkey"
+            columns: ["related_document_id"]
+            isOneToOne: false
+            referencedRelation: "support_knowledge_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_knowledge_relations_source_document_id_fkey"
+            columns: ["source_document_id"]
+            isOneToOne: false
+            referencedRelation: "support_knowledge_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_knowledge_usage: {
+        Row: {
+          agent_key: string
+          context_snippet: string | null
+          document_id: string
+          feedback_outcome: number | null
+          id: string
+          relevance_score: number | null
+          session_id: string | null
+          task_id: string | null
+          usage_type: string
+          used_at: string | null
+        }
+        Insert: {
+          agent_key: string
+          context_snippet?: string | null
+          document_id: string
+          feedback_outcome?: number | null
+          id?: string
+          relevance_score?: number | null
+          session_id?: string | null
+          task_id?: string | null
+          usage_type?: string
+          used_at?: string | null
+        }
+        Update: {
+          agent_key?: string
+          context_snippet?: string | null
+          document_id?: string
+          feedback_outcome?: number | null
+          id?: string
+          relevance_score?: number | null
+          session_id?: string | null
+          task_id?: string | null
+          usage_type?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_knowledge_usage_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "support_knowledge_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_knowledge_usage_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "support_orchestration_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_knowledge_usage_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "support_agent_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_learned_patterns: {
         Row: {
           agent_key: string
