@@ -151,7 +151,7 @@ export function CRMMigrationPanel({ className }: CRMMigrationPanelProps) {
       );
 
       if (migration) {
-        await runMigration(migration.id, localMappings);
+        await runMigration(migration.id);
         toast.success('Migración iniciada');
         setActiveTab('progress');
       }
