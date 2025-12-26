@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Headphones, Play, Clock, Activity, Shield, Pause, CheckCircle, XCircle, Eye, BarChart3, FileDown, Brain } from 'lucide-react';
+import { ArrowLeft, Headphones, Play, Clock, Activity, Shield, Pause, CheckCircle, XCircle, Eye, BarChart3, FileDown, Brain, RefreshCw } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { SessionActionsTimeline } from '@/components/admin/service-quotes/SessionActionsTimeline';
 import { SessionDetailView } from '@/components/admin/remote-support/SessionDetailView';
@@ -42,6 +42,7 @@ export default function RemoteSupportPage() {
     pauseSession,
     resumeSession,
     getTodayStats,
+    fetchSessions,
   } = useRemoteSupportSessions();
   
   const { 
@@ -443,14 +444,35 @@ export default function RemoteSupportPage() {
           <TabsContent value="history" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Historial de Sesiones</CardTitle>
-                <CardDescription>
-                  Revisa las sesiones de soporte anteriores y sus registros de auditoría
-                </CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Historial de Sesiones</CardTitle>
+                    <CardDescription>
+                      Revisa las sesiones de soporte anteriores y sus registros de auditoría
+                    </CardDescription>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {sessions.length > 0 && (
+                      <span className="text-xs text-muted-foreground">
+                        {sessions.length} sesiones
+                      </span>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fetchSessions()}
+                      disabled={loading}
+                    >
+                      <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                      Actualizar
+                    </Button>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 {loading ? (
                   <div className="text-center py-8 text-muted-foreground">
+                    <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2" />
                     Cargando sesiones...
                   </div>
                 ) : sessions.length === 0 ? (
