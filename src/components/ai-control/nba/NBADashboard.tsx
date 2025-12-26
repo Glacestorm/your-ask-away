@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Zap, 
   TrendingUp, 
@@ -16,13 +17,21 @@ import {
   XCircle,
   BarChart3,
   AlertCircle,
-  Sparkles
+  Sparkles,
+  Download,
+  Brain,
+  Activity,
+  Calculator,
+  Lightbulb
 } from 'lucide-react';
 import { useNextBestAction } from '@/hooks/useNextBestAction';
 import { NBAActionCard } from './NBAActionCard';
 import { NBAImpactTracker } from './NBAImpactTracker';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
+import jsPDF from 'jspdf';
+import { toast } from 'sonner';
 
 export function NBADashboard() {
   const {

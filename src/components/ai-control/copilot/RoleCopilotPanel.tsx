@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,7 +24,10 @@ import {
   ShieldAlert,
   FileSearch,
   BarChart3,
-  AlertCircle
+  AlertCircle,
+  Download,
+  Bell,
+  Activity
 } from 'lucide-react';
 import { useRoleCopilot, CopilotSuggestion } from '@/hooks/useRoleCopilot';
 import { CopilotSuggestionCard } from './CopilotSuggestionCard';
@@ -32,6 +35,9 @@ import { CopilotMetricsBar } from './CopilotMetricsBar';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
+import jsPDF from 'jspdf';
+import { toast } from 'sonner';
 
 // Mapa de iconos para quick actions
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -74,6 +80,57 @@ export function RoleCopilotPanel() {
   } = useRoleCopilot();
 
   const [activeTab, setActiveTab] = useState('suggestions');
+  const CHART_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'];
+
+  // Datos para gráfico de tipos de sugerencias
+  const suggestionTypeData = useMemo(() => {
+    const counts = { action: 0, insight: 0, alert: 0 };
+    currentSuggestions.forEach(s => {
+      if (counts[s.type as keyof typeof counts] !== undefined) {
+        counts[s.type as keyof typeof counts]++;
+      }
+    });
+    return [
+      { name: 'Acciones', value: counts.action, color: CHART_COLORS[0] },
+      { name: 'Insights', value: counts.insight, color: CHART_COLORS[1] },
+      { name: 'Alertas', value: counts.alert, color: CHART_COLORS[2] },
+    ].filter(d => d.value > 0);
+  }, [currentSuggestions]);
+
+  // Exportar PDF
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    const now = new Date();
+    
+    doc.setFontSize(18);
+    doc.text('Informe Copiloto IA', 20, 20);
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Generado: ${now.toLocaleDateString('es-ES')} ${now.toLocaleTimeString('es-ES')}`, 20, 28);
+    
+    doc.setTextColor(0);
+    doc.setFontSize(14);
+    doc.text('Resumen de Métricas', 20, 45);
+    
+    doc.setFontSize(10);
+    doc.text(`• Acciones completadas: ${metrics?.actionsCompleted || 0}`, 25, 55);
+    doc.text(`• Acciones descartadas: ${metrics?.actionsDismissed || 0}`, 25, 63);
+    doc.text(`• Valor generado: €${(metrics?.totalValueGenerated || 0).toLocaleString()}`, 25, 71);
+    doc.text(`• Impacto MRR: €${(metrics?.totalMrrImpact || 0).toLocaleString()}`, 25, 79);
+    
+    doc.setFontSize(14);
+    doc.text('Sugerencias Activas', 20, 90);
+    
+    let yPos = 100;
+    currentSuggestions.slice(0, 10).forEach((s, idx) => {
+      doc.setFontSize(9);
+      doc.text(`${idx + 1}. [${s.type.toUpperCase()}] ${s.title}`, 25, yPos);
+      yPos += 8;
+    });
+    
+    doc.save(`copilot-report-${now.getTime()}.pdf`);
+    toast.success('Informe PDF descargado');
+  };
 
   // Renderizar icono de quick action
   const renderQuickActionIcon = (iconName: string) => {
@@ -81,7 +138,6 @@ export function RoleCopilotPanel() {
     if (IconComponent) {
       return <IconComponent className="h-4 w-4" />;
     }
-    // Fallback: mostrar el emoji/string directamente
     return <span className="text-sm">{iconName}</span>;
   };
 
@@ -259,7 +315,15 @@ export function RoleCopilotPanel() {
                   <AlertTriangle className="h-4 w-4" />
                   Alertes ({getSuggestionsByType('alert').length})
                 </TabsTrigger>
+                <TabsTrigger value="analytics" className="gap-2">
+                  <BarChart3 className="h-4 w-4" />
+                  Analytics
+                </TabsTrigger>
               </TabsList>
+              <Button variant="outline" size="sm" onClick={handleExportPDF} className="gap-2">
+                <Download className="h-4 w-4" />
+                Exportar PDF
+              </Button>
             </div>
           </CardHeader>
           
@@ -335,6 +399,73 @@ export function RoleCopilotPanel() {
                     />
                   ))
                 )}
+              </TabsContent>
+
+              <TabsContent value="analytics" className="mt-0 space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  {/* Gráfico de tipos de sugerencias */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">Distribución por Tipo</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {suggestionTypeData.length > 0 ? (
+                        <ResponsiveContainer width="100%" height={200}>
+                          <PieChart>
+                            <Pie
+                              data={suggestionTypeData}
+                              cx="50%"
+                              cy="50%"
+                              innerRadius={40}
+                              outerRadius={70}
+                              paddingAngle={5}
+                              dataKey="value"
+                            >
+                              {suggestionTypeData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                              ))}
+                            </Pie>
+                            <Tooltip />
+                            <Legend />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      ) : (
+                        <div className="h-[200px] flex items-center justify-center text-muted-foreground text-sm">
+                          Sin datos disponibles
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Métricas de rendimiento */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">Rendimiento del Copiloto</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Tasa de aceptación</span>
+                        <Badge variant="secondary">
+                          {((metrics?.suggestionsAccepted || 0) / Math.max((metrics?.suggestionsAccepted || 0) + (metrics?.actionsDismissed || 0), 1) * 100).toFixed(1)}%
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Valor total generado</span>
+                        <Badge variant="default" className="bg-green-500">
+                          €{(metrics?.totalValueGenerated || 0).toLocaleString()}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Sugerencias activas</span>
+                        <Badge>{currentSuggestions.length}</Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">Acciones ejecutadas</span>
+                        <Badge variant="outline">{metrics?.actionsCompleted || 0}</Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </TabsContent>
             </ScrollArea>
           </CardContent>
