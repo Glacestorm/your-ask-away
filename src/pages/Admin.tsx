@@ -362,12 +362,6 @@ const Admin = () => {
       case 'shared-calendar':
         return (
           <div className="rounded-lg border bg-card p-6">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold">{t('admin.section.calendar.title')}</h2>
-              <p className="text-sm text-muted-foreground">
-                {t('admin.section.calendar.subtitle')}
-              </p>
-            </div>
             <SharedVisitsCalendar />
           </div>
         );
@@ -378,48 +372,24 @@ const Admin = () => {
       case 'visits':
         return (
           <div className="rounded-lg border bg-card p-6">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold">{t('section.visits.title')}</h2>
-              <p className="text-sm text-muted-foreground">
-                {t('section.visits.subtitle')}
-              </p>
-            </div>
             <VisitsMetrics />
           </div>
         );
       case 'products-metrics':
         return (
           <div className="rounded-lg border bg-card p-6">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold">{t('section.products.title')}</h2>
-              <p className="text-sm text-muted-foreground">
-                {t('section.products.subtitle')}
-              </p>
-            </div>
             <ProductsMetrics />
           </div>
         );
       case 'gestores':
         return (
           <div className="rounded-lg border bg-card p-6">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold">{t('section.managers.title')}</h2>
-              <p className="text-sm text-muted-foreground">
-                {t('section.managers.subtitle')}
-              </p>
-            </div>
             <GestoresMetrics />
           </div>
         );
       case 'vinculacion':
         return (
           <div className="rounded-lg border bg-card p-6">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold">{t('section.linkage.title')}</h2>
-              <p className="text-sm text-muted-foreground">
-                {t('section.linkage.subtitle')}
-              </p>
-            </div>
             <VinculacionMetrics />
           </div>
         );
@@ -428,12 +398,6 @@ const Admin = () => {
       case 'tpv-goals':
         return (
           <div className="rounded-lg border bg-card p-6">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold">{t('tpv.title')}</h2>
-              <p className="text-sm text-muted-foreground">
-                {t('tpv.subtitle')}
-              </p>
-            </div>
             <TPVGoalsManager />
           </div>
         );
@@ -454,12 +418,6 @@ const Admin = () => {
       case 'import-history':
         return (
           <div className="rounded-lg border bg-card p-6">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold">{t('admin.section.importHistory.title')}</h2>
-              <p className="text-sm text-muted-foreground">
-                {t('admin.section.importHistory.subtitle')}
-              </p>
-            </div>
             <ImportHistoryViewer />
           </div>
         );
@@ -475,12 +433,6 @@ const Admin = () => {
         }
         return (
           <div className="rounded-lg border bg-card p-6">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold">{t('admin.section.alerts.title')}</h2>
-              <p className="text-sm text-muted-foreground">
-                {t('admin.section.alerts.subtitle')}
-              </p>
-            </div>
             <AlertsManager />
           </div>
         );
@@ -498,12 +450,6 @@ const Admin = () => {
         }
         return (
           <div className="rounded-lg border bg-card p-6">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold">{t('admin.section.notificationPrefs.title')}</h2>
-              <p className="text-sm text-muted-foreground">
-                {t('admin.section.notificationPrefs.subtitle')}
-              </p>
-            </div>
             <NotificationPreferences />
           </div>
         );
@@ -519,12 +465,6 @@ const Admin = () => {
         }
         return (
           <div className="rounded-lg border bg-card p-6">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold">{t('admin.section.bulkGoals.title')}</h2>
-              <p className="text-sm text-muted-foreground">
-                {t('admin.section.bulkGoals.subtitle')}
-              </p>
-            </div>
             <BulkGoalsAssignment />
           </div>
         );
@@ -540,12 +480,6 @@ const Admin = () => {
         }
         return (
           <div className="rounded-lg border bg-card p-6">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold">{t('admin.section.goalsProgress.title')}</h2>
-              <p className="text-sm text-muted-foreground">
-                {t('admin.section.goalsProgress.subtitle')}
-              </p>
-            </div>
             <GoalsProgressTracker />
           </div>
         );
@@ -572,12 +506,6 @@ const Admin = () => {
         }
         return (
           <div className="rounded-lg border bg-card p-6">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold">{t('admin.section.goalsKPI.title')}</h2>
-              <p className="text-sm text-muted-foreground">
-                {t('admin.section.goalsKPI.subtitle')}
-              </p>
-            </div>
             <GoalsKPIDashboard />
           </div>
         );
