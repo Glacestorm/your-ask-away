@@ -623,3 +623,6 @@ verify_jwt = true
 
 [functions.crm-migration-engine]
 verify_jwt = true
+
+[functions.crm-ai-assistant]
+verify_jwt = true

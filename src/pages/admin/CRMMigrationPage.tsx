@@ -29,7 +29,8 @@ import {
   CRMAdvancedToolsPanel,
   CRMMonitoringPanel,
   CRMRollbackPanel,
-  CRMReportsPanel
+  CRMReportsPanel,
+  CRMAIAssistantPanel
 } from '@/components/admin/crm-migration';
 import { useCRMMigration } from '@/hooks/admin/integrations';
 import { cn } from '@/lib/utils';
@@ -180,6 +181,13 @@ export default function CRMMigrationPage() {
               >
                 <FileText className="h-4 w-4" />
                 Reportes
+              </TabsTrigger>
+              <TabsTrigger 
+                value="ai-assistant" 
+                className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-t-lg rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary gap-2"
+              >
+                <Sparkles className="h-4 w-4" />
+                IA
               </TabsTrigger>
               <TabsTrigger 
                 value="tools" 
@@ -389,6 +397,11 @@ export default function CRMMigrationPage() {
               {/* Reports Tab */}
               <TabsContent value="reports" className="mt-0">
                 <CRMReportsPanel />
+              </TabsContent>
+
+              {/* AI Assistant Tab */}
+              <TabsContent value="ai-assistant" className="mt-0">
+                <CRMAIAssistantPanel migration={activeMigration} />
               </TabsContent>
 
               {/* Advanced Tools Tab */}
