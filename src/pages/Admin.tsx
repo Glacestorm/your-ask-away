@@ -1154,12 +1154,6 @@ const Admin = () => {
         }
         return (
           <div className="rounded-lg border bg-card p-6 space-y-8">
-            <div>
-              <h2 className="text-2xl font-bold">{t('admin.title')}</h2>
-              <p className="text-sm text-muted-foreground">
-                {t('admin.subtitle')}
-              </p>
-            </div>
 
             {/* SECCIÓ 1: Visió i Comercial */}
             <div className="space-y-3">
@@ -2106,10 +2100,10 @@ const Admin = () => {
             {activeSection !== 'gestor-dashboard' && (
               <GlobalNavHeader 
                 title={getSectionTitle()}
-                canGoBack={canGoBack}
-                canGoForward={canGoForward}
-                onGoBack={handleGoBack}
-                onGoForward={handleGoForward}
+                canGoBack={activeSection !== 'administration' && canGoBack}
+                canGoForward={activeSection !== 'administration' && canGoForward}
+                onGoBack={activeSection !== 'administration' ? handleGoBack : undefined}
+                onGoForward={activeSection !== 'administration' ? handleGoForward : undefined}
               />
             )}
             
