@@ -22,3 +22,9 @@ export { useSupportExternalIntegrations, type Integration, type ExternalTicket, 
 
 // Phase 7B: Metrics Dashboard
 export { useSupportMetricsDashboard, type SupportMetrics, type AgentPerformance, type TrendData, type RealTimeEvent, type DashboardFilters } from './useSupportMetricsDashboard';
+
+// Phase 3: Advanced AI Capabilities
+export { useScreenUnderstanding, type ScreenAnalysis, type UIElement, type ScreenAnnotation, type VisualErrorPattern } from './useScreenUnderstanding';
+export { useGraphRAG, type KnowledgeNode, type KnowledgeEdge, type CustomerContext, type LearningPattern, type GraphQueryResult } from './useGraphRAG';
+export { useEmotionalAnalysis, type EmotionalState, type MultimodalSignals, type AbandonmentRisk, type AdaptiveResponse } from './useEmotionalAnalysis';
+export { usePredictiveMaintenance, type IoTDevice, type TelemetryData, type Anomaly as IoTAnomaly, type FailurePrediction, type ProactiveSession } from './usePredictiveMaintenance';
