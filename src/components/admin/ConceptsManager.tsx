@@ -124,14 +124,8 @@ export function ConceptsManager() {
 
   return (
     <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>Gestión de Conceptos</CardTitle>
-            <CardDescription>
-              Configurar parámetros del sistema (parroquias, oficinas, etc.)
-            </CardDescription>
-          </div>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-end">
           <Button onClick={() => { resetForm(); setDialogOpen(true); }}>
             <Plus className="mr-2 h-4 w-4" />
             Nuevo Concepto
