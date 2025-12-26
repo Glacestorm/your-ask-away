@@ -79,7 +79,6 @@ const ComparativasCRM = lazy(() => import('@/pages/comparativas/ComparativasCRM'
 const ComparativasPage = lazy(() => import('@/pages/comparativas/index'));
 const CaseStudyDetail = lazy(() => import('@/pages/casos-de-exito/[slug]'));
 const Seguridad = lazy(() => import('@/pages/Seguridad'));
-const Precios = lazy(() => import('@/pages/Precios'));
 const DemoInteractiva = lazy(() => import('@/pages/DemoInteractiva'));
 const LowCodePage = lazy(() => import('@/pages/LowCodePage'));
 const CDPDashboard = lazy(() => import('@/pages/CDPDashboard'));
@@ -184,12 +183,10 @@ export const publicRoutes: RouteConfig[] = [
   { path: '/sectores/empresas', component: EmpresasLanding, layout: 'none', priority: 'high', meta: { title: 'Empresas B2B' } },
   
   // Marketing
-  { path: '/pricing', component: PreciosPage, layout: 'none', priority: 'high', meta: { title: 'Planes y Precios' } },
   { path: '/comparativas', component: ComparativasCRM, layout: 'public', priority: 'high', meta: { title: 'Comparativas CRM' } },
   { path: '/seguridad', component: Seguridad, layout: 'public', priority: 'high', meta: { title: 'Seguridad' } },
-  { path: '/precios', component: Precios, layout: 'public', priority: 'high', meta: { title: 'Precios' } },
+  { path: '/precios', component: PreciosPage, layout: 'none', priority: 'high', meta: { title: 'Planes y Precios' } },
   { path: '/demo', component: DemoInteractiva, layout: 'public', priority: 'high', meta: { title: 'Demo' } },
-  { path: '/demo-request', component: DemoInteractiva, layout: 'public', priority: 'high' },
   
   // Marketplace & Developer Portal
   { path: '/marketplace', component: Marketplace, layout: 'public', priority: 'high', meta: { title: 'Marketplace' } },
@@ -320,6 +317,8 @@ export const redirects = [
   { from: '/', to: '/store' },
   { from: '/map', to: '/admin?section=map' },
   { from: '/resources/blog', to: '/blog' },
+  { from: '/pricing', to: '/precios' },
+  { from: '/demo-request', to: '/demo' },
   // Redirects de módulos movidos de /admin a /obelixia-admin
   { from: '/admin/academia', to: '/obelixia-admin?tab=academia' },
   { from: '/admin?section=translations', to: '/obelixia-admin?tab=translations' },

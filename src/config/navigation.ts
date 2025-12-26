@@ -98,7 +98,7 @@ export const headerNavigation: NavItem[] = [
         id: 'pricing',
         label: 'Precios',
         labelKey: 'nav.pricing',
-        href: '/pricing',
+        href: '/precios',
         icon: DollarSign,
         description: 'Planes y tarifas',
         descriptionKey: 'nav.pricing.desc',
@@ -236,7 +236,7 @@ export const headerNavigation: NavItem[] = [
     id: 'plataforma',
     label: 'Plataforma',
     labelKey: 'nav.platform',
-    href: '#',
+    href: '/marketplace',
     icon: Cpu,
     children: [
       { id: 'marketplace', label: 'Marketplace', labelKey: 'nav.marketplace', href: '/marketplace', icon: Store, badge: 'Nuevo' },
@@ -274,7 +274,7 @@ export const footerNavigation: NavGroup[] = [
     items: [
       { id: 'modules', label: 'Módulos', href: '/store/modules', icon: Package },
       { id: 'bundles', label: 'Packs', href: '/store#bundles', icon: Boxes },
-      { id: 'precios', label: 'Precios', href: '/pricing', icon: DollarSign },
+      { id: 'precios', label: 'Precios', href: '/precios', icon: DollarSign },
       { id: 'marketplace', label: 'Marketplace', href: '/marketplace', icon: Store },
       { id: 'chat', label: 'Chat IA', href: '/chat', icon: MessageSquare },
     ],
