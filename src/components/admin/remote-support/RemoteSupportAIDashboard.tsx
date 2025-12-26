@@ -61,7 +61,7 @@ export function RemoteSupportAIDashboard({
                 Soporte AI Autónomo
               <Badge className="bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white border-0">
                 <Sparkles className="h-3 w-3 mr-1" />
-                Fase 3
+                Fase 4
               </Badge>
               </CardTitle>
               <p className="text-sm text-muted-foreground">
