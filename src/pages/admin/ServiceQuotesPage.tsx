@@ -32,7 +32,7 @@ export default function ServiceQuotesPage() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => navigate('/admin')}
+              onClick={() => navigate('/admin?section=administration')}
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>

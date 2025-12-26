@@ -16,7 +16,7 @@ export function AdminPanelSwitcher({ className, variant = 'default' }: AdminPane
   if (variant === 'compact') {
     return (
       <div className={cn("flex items-center gap-2", className)}>
-        <Link to="/admin">
+        <Link to="/admin?section=administration">
           <Button 
             variant={isAdmin ? "default" : "outline"} 
             size="sm"
@@ -47,7 +47,7 @@ export function AdminPanelSwitcher({ className, variant = 'default' }: AdminPane
   }
 
   // Default: Show link to the OTHER panel
-  const targetPath = isObelixiaAdmin ? '/admin' : '/obelixia-admin';
+  const targetPath = isObelixiaAdmin ? '/admin?section=administration' : '/obelixia-admin';
   const targetLabel = isObelixiaAdmin ? 'Panel Operativo' : 'ObelixIA Admin';
   const TargetIcon = isObelixiaAdmin ? LayoutGrid : Shield;
 

@@ -138,7 +138,7 @@ const AcademiaAdminPage: React.FC<AcademiaAdminPageProps> = ({ embedded = false 
           className="mb-8"
         >
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-            <Link to="/admin" className="hover:text-foreground flex items-center gap-1">
+            <Link to="/admin?section=administration" className="hover:text-foreground flex items-center gap-1">
               <ArrowLeft className="h-4 w-4" />
               {language === 'es' ? 'Administración' : 'Admin'}
             </Link>
