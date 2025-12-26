@@ -23,3 +23,14 @@ export type { APIEndpoint, APIMetrics, APIKey } from './useAPIGateway';
 
 export { useSyncEngine } from './useSyncEngine';
 export type { SyncConfig, FieldMapping, SyncJob, SyncStats } from './useSyncEngine';
+
+// CRM Migration exports
+export { useCRMMigration } from './useCRMMigration';
+export type { 
+  CRMConnector, 
+  CRMMigration, 
+  CRMMigrationRecord, 
+  CRMFieldMapping,
+  CRMMappingTemplate,
+  MigrationAnalysis 
+} from './useCRMMigration';
