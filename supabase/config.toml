@@ -602,3 +602,9 @@ verify_jwt = true
 
 [functions.support-knowledge-embeddings]
 verify_jwt = true
+
+[functions.support-predictive-analytics]
+verify_jwt = true
+
+[functions.support-realtime-monitor]
+verify_jwt = true
