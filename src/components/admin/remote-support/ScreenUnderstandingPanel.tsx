@@ -20,7 +20,7 @@ import {
   Target,
   Zap
 } from 'lucide-react';
-import { useScreenUnderstanding } from '@/hooks/admin/support/useScreenUnderstanding';
+import { useScreenUnderstanding, ScreenContext } from '@/hooks/admin/support/useScreenUnderstanding';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -36,15 +36,13 @@ export function ScreenUnderstandingPanel({ sessionId, className }: ScreenUnderst
 
   const {
     isAnalyzing,
-    analysisResults,
-    detectedErrors,
-    annotations,
-    captureScreen,
+    currentAnalysis,
+    errorPatterns,
+    liveAnnotations,
     analyzeScreenshot,
-    detectErrors,
+    detectVisualErrors,
     addAnnotation,
     removeAnnotation,
-    lastAnalysis
   } = useScreenUnderstanding();
 
   const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,43 +53,42 @@ export function ScreenUnderstandingPanel({ sessionId, className }: ScreenUnderst
     reader.onload = async (event) => {
       const base64 = event.target?.result as string;
       setSelectedImage(base64);
-      await analyzeScreenshot(base64, sessionId || 'demo-session');
+      const context: ScreenContext = {
+        sessionId: sessionId || 'demo-session',
+        pageUrl: window.location.href
+      };
+      await analyzeScreenshot(base64, context);
     };
     reader.readAsDataURL(file);
   }, [analyzeScreenshot, sessionId]);
 
   const handleCaptureScreen = useCallback(async () => {
-    const screenshot = await captureScreen(sessionId || 'demo-session');
-    if (screenshot) {
-      setSelectedImage(screenshot);
+    const context: ScreenContext = {
+      sessionId: sessionId || 'demo-session',
+      pageUrl: window.location.href
+    };
+    if (selectedImage) {
+      await analyzeScreenshot(selectedImage, context);
     }
-  }, [captureScreen, sessionId]);
+  }, [analyzeScreenshot, sessionId, selectedImage]);
 
   const handleDetectErrors = useCallback(async () => {
     if (selectedImage) {
-      await detectErrors(selectedImage, sessionId || 'demo-session');
+      await detectVisualErrors(selectedImage);
     }
-  }, [detectErrors, selectedImage, sessionId]);
+  }, [detectVisualErrors, selectedImage]);
 
-  const handleAddAnnotation = useCallback(async () => {
-    if (selectedImage) {
-      await addAnnotation(sessionId || 'demo-session', {
-        type: 'highlight',
-        position: { x: 100, y: 100 },
-        content: 'Nueva anotación',
-        color: '#ff0000'
-      });
-    }
-  }, [addAnnotation, sessionId, selectedImage]);
+  const handleAddAnnotation = useCallback(() => {
+    const newAnnotation = addAnnotation({
+      type: 'highlight',
+      position: { x: 100, y: 100 },
+      author: 'user',
+      color: '#ff0000'
+    });
+    console.log('Annotation added:', newAnnotation);
+  }, [addAnnotation]);
 
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case 'critical': return 'text-red-400 bg-red-500/20 border-red-500/30';
-      case 'high': return 'text-orange-400 bg-orange-500/20 border-orange-500/30';
-      case 'medium': return 'text-yellow-400 bg-yellow-500/20 border-yellow-500/30';
-      default: return 'text-blue-400 bg-blue-500/20 border-blue-500/30';
-    }
-  };
+  const lastAnalysisTime = currentAnalysis?.timestamp ? new Date(currentAnalysis.timestamp) : null;
 
   return (
     <Card className={cn("overflow-hidden", className)}>
@@ -114,9 +111,9 @@ export function ScreenUnderstandingPanel({ sessionId, className }: ScreenUnderst
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {lastAnalysis && (
+            {lastAnalysisTime && (
               <span className="text-xs text-muted-foreground">
-                Último: {formatDistanceToNow(lastAnalysis, { locale: es, addSuffix: true })}
+                Último: {formatDistanceToNow(lastAnalysisTime, { locale: es, addSuffix: true })}
               </span>
             )}
           </div>
@@ -145,7 +142,6 @@ export function ScreenUnderstandingPanel({ sessionId, className }: ScreenUnderst
           </TabsList>
 
           <TabsContent value="capture" className="space-y-4">
-            {/* Upload/Capture Area */}
             <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
               {selectedImage ? (
                 <div className="relative">
@@ -162,8 +158,7 @@ export function ScreenUnderstandingPanel({ sessionId, className }: ScreenUnderst
                       <Maximize2 className="h-3 w-3" />
                     </Button>
                   </div>
-                  {/* Render annotations overlay */}
-                  {annotations.map((ann) => (
+                  {liveAnnotations.map((ann) => (
                     <div
                       key={ann.id}
                       className="absolute border-2 rounded px-2 py-1 text-xs"
@@ -174,7 +169,7 @@ export function ScreenUnderstandingPanel({ sessionId, className }: ScreenUnderst
                         backgroundColor: `${ann.color}20`
                       }}
                     >
-                      {ann.content}
+                      {ann.type}
                     </div>
                   ))}
                 </div>
@@ -208,7 +203,6 @@ export function ScreenUnderstandingPanel({ sessionId, className }: ScreenUnderst
               )}
             </div>
 
-            {/* Quick Actions */}
             {selectedImage && (
               <div className="flex gap-2">
                 <Button 
@@ -237,35 +231,32 @@ export function ScreenUnderstandingPanel({ sessionId, className }: ScreenUnderst
 
           <TabsContent value="errors" className="space-y-3">
             <ScrollArea className="h-[300px]">
-              {detectedErrors.length === 0 ? (
+              {errorPatterns.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <AlertTriangle className="h-8 w-8 mx-auto mb-2 opacity-50" />
                   <p className="text-sm">No se han detectado errores</p>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {detectedErrors.map((error, idx) => (
+                  {errorPatterns.map((error, idx) => (
                     <div 
                       key={idx}
-                      className={cn(
-                        "p-3 rounded-lg border",
-                        getSeverityColor(error.severity)
-                      )}
+                      className="p-3 rounded-lg border bg-card"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-2">
-                          <AlertTriangle className="h-4 w-4" />
-                          <span className="font-medium text-sm">{error.type}</span>
+                          <AlertTriangle className="h-4 w-4 text-amber-400" />
+                          <span className="font-medium text-sm">{error.errorType}</span>
                         </div>
                         <Badge variant="outline" className="text-xs">
-                          {error.severity}
+                          {error.occurrences}x
                         </Badge>
                       </div>
-                      <p className="text-xs mt-1 opacity-80">{error.description}</p>
-                      {error.suggestion && (
-                        <div className="mt-2 p-2 rounded bg-background/50 text-xs">
+                      <p className="text-xs mt-1 text-muted-foreground">{error.description}</p>
+                      {error.resolution && (
+                        <div className="mt-2 p-2 rounded bg-muted/50 text-xs">
                           <Zap className="h-3 w-3 inline mr-1" />
-                          {error.suggestion}
+                          {error.resolution}
                         </div>
                       )}
                     </div>
@@ -277,14 +268,14 @@ export function ScreenUnderstandingPanel({ sessionId, className }: ScreenUnderst
 
           <TabsContent value="annotations" className="space-y-3">
             <ScrollArea className="h-[300px]">
-              {annotations.length === 0 ? (
+              {liveAnnotations.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Pencil className="h-8 w-8 mx-auto mb-2 opacity-50" />
                   <p className="text-sm">No hay anotaciones</p>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {annotations.map((ann) => (
+                  {liveAnnotations.map((ann) => (
                     <div 
                       key={ann.id}
                       className="p-3 rounded-lg border bg-card flex items-center justify-between"
@@ -294,8 +285,8 @@ export function ScreenUnderstandingPanel({ sessionId, className }: ScreenUnderst
                           className="w-3 h-3 rounded-full" 
                           style={{ backgroundColor: ann.color }}
                         />
-                        <span className="text-sm">{ann.content}</span>
-                        <Badge variant="outline" className="text-xs">{ann.type}</Badge>
+                        <span className="text-sm">{ann.type}</span>
+                        <Badge variant="outline" className="text-xs">{ann.author}</Badge>
                       </div>
                       <Button 
                         variant="ghost" 
@@ -312,46 +303,43 @@ export function ScreenUnderstandingPanel({ sessionId, className }: ScreenUnderst
           </TabsContent>
 
           <TabsContent value="analysis" className="space-y-3">
-            {analysisResults ? (
+            {currentAnalysis ? (
               <div className="space-y-4">
-                {/* Confidence Score */}
                 <div className="p-3 rounded-lg border bg-card">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium">Confianza del Análisis</span>
+                    <span className="text-sm font-medium">Análisis de Pantalla</span>
                     <span className="text-lg font-bold text-primary">
-                      {Math.round(analysisResults.confidence * 100)}%
+                      {currentAnalysis.screenType}
                     </span>
                   </div>
-                  <Progress value={analysisResults.confidence * 100} className="h-2" />
+                  <p className="text-xs text-muted-foreground">{currentAnalysis.description}</p>
                 </div>
 
-                {/* Elements Detected */}
                 <div className="p-3 rounded-lg border bg-card">
                   <div className="flex items-center gap-2 mb-3">
                     <Layers className="h-4 w-4 text-primary" />
-                    <span className="text-sm font-medium">Elementos Detectados</span>
+                    <span className="text-sm font-medium">Elementos UI Detectados</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {analysisResults.elements?.map((el: any, idx: number) => (
+                    {currentAnalysis.uiElements?.map((el, idx) => (
                       <Badge key={idx} variant="secondary" className="text-xs">
-                        {el.type}: {el.label}
+                        {el.elementType}: {el.label || el.state}
                       </Badge>
                     ))}
                   </div>
                 </div>
 
-                {/* Suggestions */}
-                {analysisResults.suggestions && (
+                {currentAnalysis.issues && currentAnalysis.issues.length > 0 && (
                   <div className="p-3 rounded-lg border bg-card">
                     <div className="flex items-center gap-2 mb-3">
                       <CheckCircle className="h-4 w-4 text-green-400" />
-                      <span className="text-sm font-medium">Sugerencias</span>
+                      <span className="text-sm font-medium">Problemas Detectados</span>
                     </div>
                     <ul className="space-y-1 text-xs text-muted-foreground">
-                      {analysisResults.suggestions.map((s: string, idx: number) => (
+                      {currentAnalysis.issues.map((issue, idx) => (
                         <li key={idx} className="flex items-start gap-2">
-                          <span className="text-green-400">•</span>
-                          {s}
+                          <span className="text-amber-400">•</span>
+                          {issue}
                         </li>
                       ))}
                     </ul>

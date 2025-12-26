@@ -20,10 +20,8 @@ import {
   Sparkles,
   TrendingUp
 } from 'lucide-react';
-import { useGraphRAG } from '@/hooks/admin/support/useGraphRAG';
+import { useGraphRAG, GraphQuery } from '@/hooks/admin/support/useGraphRAG';
 import { cn } from '@/lib/utils';
-import { formatDistanceToNow } from 'date-fns';
-import { es } from 'date-fns/locale';
 
 interface GraphRAGPanelProps {
   customerId?: string;
@@ -34,6 +32,7 @@ interface GraphRAGPanelProps {
 export function GraphRAGPanel({ customerId, sessionId, className }: GraphRAGPanelProps) {
   const [activeTab, setActiveTab] = useState('graph');
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
 
   const {
     isLoading,
@@ -41,11 +40,11 @@ export function GraphRAGPanel({ customerId, sessionId, className }: GraphRAGPane
     edges: graphEdges,
     customerContext,
     learningPatterns: learnedPatterns,
-    searchResults,
-    buildKnowledgeGraph,
+    graphStats,
     searchGraph,
     getCustomerContext,
-    recordPattern
+    learnFromResolution,
+    fetchGraphStats
   } = useGraphRAG();
 
   useEffect(() => {
@@ -56,24 +55,41 @@ export function GraphRAGPanel({ customerId, sessionId, className }: GraphRAGPane
 
   const handleSearch = useCallback(async () => {
     if (searchQuery.trim()) {
-      await searchGraph(searchQuery);
+      const query: GraphQuery = {
+        query: searchQuery,
+        maxDepth: 3,
+        minConfidence: 0.5,
+        includeContext: true
+      };
+      const result = await searchGraph(query);
+      if (result) {
+        setSearchResults(result.nodes.map(node => ({
+          title: node.label,
+          content: JSON.stringify(node.properties),
+          relevance: node.relevanceScore,
+          relatedNodes: result.edges
+            .filter(e => e.sourceId === node.id || e.targetId === node.id)
+            .map(e => e.relationship)
+        })));
+      }
     }
   }, [searchGraph, searchQuery]);
 
-  const handleBuildGraph = useCallback(async () => {
-    await buildKnowledgeGraph(customerId || 'global');
-  }, [buildKnowledgeGraph, customerId]);
+  const handleRefreshGraph = useCallback(async () => {
+    await fetchGraphStats();
+  }, [fetchGraphStats]);
 
   const handleLearnPattern = useCallback(async () => {
     if (sessionId) {
-      await recordPattern({
-        problemType: 'Ejemplo de problema',
-        solution: 'Ejemplo de solución',
-        context: { customerId },
-        successRate: 0.8
-      });
+      await learnFromResolution(
+        'Ejemplo de problema',
+        'Ejemplo de solución',
+        ['Paso 1', 'Paso 2'],
+        0.8,
+        sessionId
+      );
     }
-  }, [recordPattern, sessionId, customerId]);
+  }, [learnFromResolution, sessionId]);
 
   return (
     <Card className={cn("overflow-hidden", className)}>
@@ -96,7 +112,7 @@ export function GraphRAGPanel({ customerId, sessionId, className }: GraphRAGPane
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleBuildGraph} disabled={isLoading}>
+            <Button variant="outline" size="sm" onClick={handleRefreshGraph} disabled={isLoading}>
               {isLoading ? (
                 <RefreshCw className="h-4 w-4 animate-spin" />
               ) : (
@@ -110,12 +126,12 @@ export function GraphRAGPanel({ customerId, sessionId, className }: GraphRAGPane
         <div className="grid grid-cols-4 gap-2 mt-3">
           <div className="p-2 rounded-lg bg-background/50 border text-center">
             <Database className="h-4 w-4 mx-auto text-purple-400" />
-            <p className="text-lg font-bold">{graphNodes.length}</p>
+            <p className="text-lg font-bold">{graphStats?.totalNodes || graphNodes.length}</p>
             <p className="text-xs text-muted-foreground">Nodos</p>
           </div>
           <div className="p-2 rounded-lg bg-background/50 border text-center">
             <Link2 className="h-4 w-4 mx-auto text-violet-400" />
-            <p className="text-lg font-bold">{graphEdges.length}</p>
+            <p className="text-lg font-bold">{graphStats?.totalEdges || graphEdges.length}</p>
             <p className="text-xs text-muted-foreground">Relaciones</p>
           </div>
           <div className="p-2 rounded-lg bg-background/50 border text-center">
@@ -125,7 +141,7 @@ export function GraphRAGPanel({ customerId, sessionId, className }: GraphRAGPane
           </div>
           <div className="p-2 rounded-lg bg-background/50 border text-center">
             <History className="h-4 w-4 mx-auto text-cyan-400" />
-            <p className="text-lg font-bold">{customerContext?.interactionCount || 0}</p>
+            <p className="text-lg font-bold">{customerContext?.totalInteractions || 0}</p>
             <p className="text-xs text-muted-foreground">Historial</p>
           </div>
         </div>
@@ -194,7 +210,7 @@ export function GraphRAGPanel({ customerId, sessionId, className }: GraphRAGPane
                     <p className="text-sm text-muted-foreground">
                       Construye el grafo de conocimiento
                     </p>
-                    <Button onClick={handleBuildGraph} className="mt-3" size="sm">
+                    <Button onClick={handleRefreshGraph} className="mt-3" size="sm">
                       <Plus className="h-4 w-4 mr-1" />
                       Construir Grafo
                     </Button>
@@ -254,7 +270,7 @@ export function GraphRAGPanel({ customerId, sessionId, className }: GraphRAGPane
                             <Sparkles className="h-4 w-4 text-primary" />
                             <span className="font-medium text-sm">{result.title}</span>
                           </div>
-                          <p className="text-xs text-muted-foreground mt-1">
+                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                             {result.content}
                           </p>
                         </div>
@@ -262,9 +278,9 @@ export function GraphRAGPanel({ customerId, sessionId, className }: GraphRAGPane
                           {Math.round(result.relevance * 100)}%
                         </Badge>
                       </div>
-                      {result.relatedNodes && (
+                      {result.relatedNodes && result.relatedNodes.length > 0 && (
                         <div className="flex gap-1 mt-2">
-                          {result.relatedNodes.map((node: string, nIdx: number) => (
+                          {result.relatedNodes.slice(0, 3).map((node: string, nIdx: number) => (
                             <Badge key={nIdx} variant="outline" className="text-xs">
                               {node}
                             </Badge>
@@ -289,23 +305,36 @@ export function GraphRAGPanel({ customerId, sessionId, className }: GraphRAGPane
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div>
                       <span className="text-muted-foreground">Historial:</span>
-                      <span className="ml-2 font-medium">{customerContext.historySize || 0}</span>
+                      <span className="ml-2 font-medium">{customerContext.sessionHistory?.length || 0} sesiones</span>
                     </div>
                     <div>
                       <span className="text-muted-foreground">Tendencia:</span>
-                      <span className="ml-2 font-medium">{customerContext.satisfactionTrend}</span>
+                      <span className="ml-2 font-medium">{customerContext.satisfactionTrend}%</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Total Interacciones:</span>
+                      <span className="ml-2 font-medium">{customerContext.totalInteractions}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Última:</span>
+                      <span className="ml-2 font-medium">{customerContext.lastInteraction || 'N/A'}</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="p-4 rounded-lg border bg-card">
-                  <h4 className="font-medium text-sm mb-3">Patrones Comunes</h4>
+                  <h4 className="font-medium text-sm mb-3">Patrones de Interacción</h4>
                   <div className="space-y-2">
-                    {customerContext.commonPatterns?.map((pattern: any, idx: number) => (
+                    {customerContext.interactionPatterns?.map((pattern, idx) => (
                       <div key={idx} className="flex items-center justify-between text-sm">
-                        <span>{pattern}</span>
+                        <span>{pattern.patternType}</span>
+                        <Badge variant="outline" className="text-xs">
+                          {pattern.frequency}x
+                        </Badge>
                       </div>
-                    ))}
+                    )) || (
+                      <p className="text-xs text-muted-foreground">Sin patrones registrados</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -339,25 +368,25 @@ export function GraphRAGPanel({ customerId, sessionId, className }: GraphRAGPane
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <TrendingUp className="h-4 w-4 text-green-400" />
-                          <span className="font-medium text-sm">{pattern.problem}</span>
+                          <span className="font-medium text-sm">{pattern.patternType}</span>
                         </div>
                         <Badge 
                           variant="outline" 
                           className={cn(
                             "text-xs",
-                            pattern.successRate >= 80 ? "border-green-500/50 text-green-400" :
-                            pattern.successRate >= 50 ? "border-yellow-500/50 text-yellow-400" :
+                            pattern.confidence >= 0.8 ? "border-green-500/50 text-green-400" :
+                            pattern.confidence >= 0.5 ? "border-yellow-500/50 text-yellow-400" :
                             "border-red-500/50 text-red-400"
                           )}
                         >
-                          {pattern.successRate}% éxito
+                          {Math.round(pattern.confidence * 100)}% confianza
                         </Badge>
                       </div>
-                      <p className="text-xs text-muted-foreground">{pattern.solution}</p>
+                      <p className="text-xs text-muted-foreground">{pattern.description}</p>
                       <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
-                        <span>Usado {pattern.usageCount}x</span>
+                        <span>Validaciones: {pattern.validationCount}</span>
                         <span>•</span>
-                        <span>Confianza: {Math.round(pattern.confidence * 100)}%</span>
+                        <span>{pattern.actionable ? 'Accionable' : 'Informativo'}</span>
                       </div>
                     </div>
                   ))}

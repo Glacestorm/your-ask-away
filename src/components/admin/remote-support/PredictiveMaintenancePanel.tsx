@@ -10,15 +10,11 @@ import {
   Activity, 
   AlertTriangle, 
   CheckCircle,
-  Thermometer,
-  HardDrive,
-  Wifi,
   Bell,
   RefreshCw,
   TrendingUp,
   Clock,
   Wrench,
-  Zap,
   Shield
 } from 'lucide-react';
 import { usePredictiveMaintenance } from '@/hooks/admin/support/usePredictiveMaintenance';
@@ -42,7 +38,7 @@ export function PredictiveMaintenancePanel({ deviceId, customerId, className }: 
     predictions,
     proactiveSessions,
     fetchDevices,
-    runDiagnostics,
+    predictFailures,
     createProactiveSession
   } = usePredictiveMaintenance();
 
@@ -52,21 +48,21 @@ export function PredictiveMaintenancePanel({ deviceId, customerId, className }: 
 
   const handleRefresh = useCallback(async () => {
     if (deviceId) {
-      await runDiagnostics(deviceId);
+      await predictFailures(deviceId);
     } else {
       await fetchDevices(customerId);
     }
-  }, [deviceId, customerId, runDiagnostics, fetchDevices]);
+  }, [deviceId, customerId, predictFailures, fetchDevices]);
 
   const handleCreateProactiveSession = useCallback(async (predictionId: string) => {
     const prediction = predictions.find(p => p.id === predictionId);
-    if (prediction) {
+    if (prediction && customerId) {
       await createProactiveSession(
         prediction.deviceId,
-        customerId || 'demo-customer',
-        prediction.predictedIssue,
-        prediction.estimatedTimeToFailure,
-        prediction.severity,
+        customerId,
+        'prediction',
+        prediction.id,
+        `Predicción: ${prediction.componentPredicted}`,
         prediction.recommendedActions
       );
     }
@@ -268,12 +264,12 @@ export function PredictiveMaintenancePanel({ deviceId, customerId, className }: 
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                             <Clock className="h-4 w-4 text-amber-400" />
-                            <span className="font-medium text-sm">{prediction.predictedIssue}</span>
+                            <span className="font-medium text-sm">{prediction.componentPredicted}</span>
                           </div>
                           <p className="text-xs text-muted-foreground">{prediction.deviceId}</p>
                         </div>
                         <Badge variant="outline" className="text-xs">
-                          {Math.round(prediction.confidence * 100)}% confianza
+                          {Math.round(prediction.failureProbability * 100)}% probabilidad
                         </Badge>
                       </div>
 
@@ -282,16 +278,16 @@ export function PredictiveMaintenancePanel({ deviceId, customerId, className }: 
                           <span>Probabilidad de fallo</span>
                           <span className={cn(
                             "font-bold",
-                            prediction.confidence >= 0.7 ? 'text-red-400' :
-                            prediction.confidence >= 0.4 ? 'text-yellow-400' :
+                            prediction.failureProbability >= 0.7 ? 'text-red-400' :
+                            prediction.failureProbability >= 0.4 ? 'text-yellow-400' :
                             'text-green-400'
                           )}>
-                            {Math.round(prediction.confidence * 100)}%
+                            {Math.round(prediction.failureProbability * 100)}%
                           </span>
                         </div>
-                        <Progress value={prediction.confidence * 100} className="h-2 mb-2" />
+                        <Progress value={prediction.failureProbability * 100} className="h-2 mb-2" />
                         <div className="text-xs text-muted-foreground">
-                          <span>Tiempo estimado: {prediction.estimatedTimeToFailure}</span>
+                          <span>Tiempo estimado: {prediction.estimatedTimeToFailure}h</span>
                         </div>
                       </div>
 
@@ -341,8 +337,8 @@ export function PredictiveMaintenancePanel({ deviceId, customerId, className }: 
                             )} />
                           </div>
                           <div>
-                            <span className="font-medium text-sm">{session.title}</span>
-                            <p className="text-xs text-muted-foreground">{session.customerName}</p>
+                            <span className="font-medium text-sm">{session.triggerType}</span>
+                            <p className="text-xs text-muted-foreground">{session.customerId}</p>
                           </div>
                         </div>
                         <Badge variant={
@@ -352,15 +348,19 @@ export function PredictiveMaintenancePanel({ deviceId, customerId, className }: 
                         }>
                           {session.status === 'scheduled' ? 'Programada' :
                            session.status === 'in_progress' ? 'En curso' :
-                           'Completada'}
+                           session.status === 'completed' ? 'Completada' :
+                           session.status}
                         </Badge>
                       </div>
 
-                      <p className="text-xs text-muted-foreground mb-3">{session.reason}</p>
+                      <p className="text-xs text-muted-foreground mb-3">{session.description}</p>
 
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-muted-foreground">
-                          {format(new Date(session.scheduledFor), "dd MMM yyyy 'a las' HH:mm", { locale: es })}
+                          {session.scheduledAt 
+                            ? format(new Date(session.scheduledAt), "dd MMM yyyy 'a las' HH:mm", { locale: es })
+                            : format(new Date(session.createdAt), "dd MMM yyyy 'a las' HH:mm", { locale: es })
+                          }
                         </span>
                         {session.status === 'scheduled' && (
                           <Button size="sm" variant="outline">
