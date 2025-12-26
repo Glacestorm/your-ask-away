@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { 
@@ -23,7 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { useMarketingAnalytics } from '@/hooks/useMarketingAnalytics';
 import StoreNavbar from '@/components/store/StoreNavbar';
 import UnifiedFooter from '@/components/layout/UnifiedFooter';
-
+import DemoRequestModal from '@/components/store/DemoRequestModal';
 interface SectorCardData {
   icon: React.ElementType;
   title: string;
@@ -173,7 +173,7 @@ const stats = [
   { icon: Globe, value: "15+", label: "Países Activos" }
 ];
 
-const SectorCard: React.FC<{ sector: SectorCardData; index: number }> = ({ sector, index }) => {
+const SectorCard: React.FC<{ sector: SectorCardData; index: number; onDemoClick: () => void }> = ({ sector, index, onDemoClick }) => {
   const Icon = sector.icon;
   
   return (
@@ -242,16 +242,15 @@ const SectorCard: React.FC<{ sector: SectorCardData; index: number }> = ({ secto
         </ul>
 
         {/* CTA */}
-        {sector.available && sector.link ? (
-          <Link to={sector.link} className="inline-block w-full">
-            <Button 
-              variant="outline" 
-              className="w-full border-white/20 text-white hover:bg-white/10 group/btn"
-            >
-              Ver Demo
-              <ArrowRight className="w-4 h-4 ml-2 transform group-hover/btn:translate-x-1 transition-transform" />
-            </Button>
-          </Link>
+        {sector.available ? (
+          <Button 
+            variant="outline" 
+            className="w-full border-white/20 text-white hover:bg-white/10 group/btn"
+            onClick={onDemoClick}
+          >
+            Ver Demo
+            <ArrowRight className="w-4 h-4 ml-2 transform group-hover/btn:translate-x-1 transition-transform" />
+          </Button>
         ) : (
           <Button 
             variant="outline" 
@@ -268,6 +267,7 @@ const SectorCard: React.FC<{ sector: SectorCardData; index: number }> = ({ secto
 
 const SectorLanding: React.FC = () => {
   const { trackPageView } = useMarketingAnalytics();
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
 
   useEffect(() => {
     trackPageView('sectors');
@@ -356,7 +356,7 @@ const SectorLanding: React.FC = () => {
         {/* Sectors Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-20">
           {sectors.map((sector, index) => (
-            <SectorCard key={sector.title} sector={sector} index={index} />
+            <SectorCard key={sector.title} sector={sector} index={index} onDemoClick={() => setIsDemoModalOpen(true)} />
           ))}
         </div>
 
@@ -399,6 +399,11 @@ const SectorLanding: React.FC = () => {
         </motion.div>
       </div>
       <UnifiedFooter />
+      
+      <DemoRequestModal 
+        isOpen={isDemoModalOpen} 
+        onClose={() => setIsDemoModalOpen(false)} 
+      />
     </div>
     </>
   );
