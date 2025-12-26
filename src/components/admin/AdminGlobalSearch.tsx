@@ -10,7 +10,7 @@ import {
   CommandList,
   CommandSeparator,
 } from '@/components/ui/command';
-import { Button } from '@/components/ui/button';
+
 import { 
   Search, Shield, LayoutGrid, FileText, BarChart3, Users, 
   Activity, Settings, Store, Code, Palette, GraduationCap,
@@ -122,21 +122,34 @@ export function AdminGlobalSearch({ className }: AdminGlobalSearchProps) {
 
   return (
     <>
-      <Button
-        variant="outline"
-        size="sm"
+      <button
         onClick={() => setOpen(true)}
         className={cn(
-          "gap-2 h-9 border-border bg-card hover:bg-accent text-muted-foreground hover:text-foreground transition-all min-w-[200px] justify-start",
+          // Base
+          "relative inline-flex items-center gap-2 h-10 px-4 min-w-[220px] justify-start",
+          "font-medium text-sm rounded-xl",
+          // 3D Effect
+          "bg-gradient-to-b from-card via-card to-muted/80",
+          "border border-border/60",
+          "shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.1)]",
+          // Hover 3D
+          "hover:shadow-[0_2px_4px_-1px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.15)]",
+          "hover:translate-y-[1px] hover:bg-accent/50",
+          // Active 3D
+          "active:translate-y-[2px] active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]",
+          // Colors
+          "text-foreground/80 hover:text-foreground",
+          // Transition
+          "transition-all duration-150 ease-out",
           className
         )}
       >
-        <Search className="h-4 w-4" />
-        <span className="text-sm">Buscar secciones...</span>
-        <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+        <Search className="h-4 w-4 text-primary" />
+        <span>Buscar secciones...</span>
+        <kbd className="ml-auto pointer-events-none inline-flex h-6 select-none items-center gap-1 rounded-lg border border-border/50 bg-muted/80 px-2 font-mono text-[10px] font-medium text-muted-foreground shadow-sm">
           <span className="text-xs">⌘</span>K
         </kbd>
-      </Button>
+      </button>
 
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput 
