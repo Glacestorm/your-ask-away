@@ -59,10 +59,10 @@ export function RemoteSupportAIDashboard({
             <div>
               <CardTitle className="text-lg flex items-center gap-2">
                 Soporte AI Autónomo
-                <Badge className="bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white border-0">
-                  <Sparkles className="h-3 w-3 mr-1" />
-                  Fase 2
-                </Badge>
+              <Badge className="bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white border-0">
+                <Sparkles className="h-3 w-3 mr-1" />
+                Fase 3
+              </Badge>
               </CardTitle>
               <p className="text-sm text-muted-foreground">
                 Sistema multi-agente con aprendizaje por refuerzo
