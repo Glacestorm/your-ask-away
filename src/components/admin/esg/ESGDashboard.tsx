@@ -1,15 +1,20 @@
 /**
  * ESG Dashboard
  * Dashboard principal de ESG & Sustainability
+ * Con alertas inteligentes, gráficos interactivos y exportación avanzada
  */
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useEffect, useMemo } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { 
   Leaf, 
   Users, 
@@ -25,13 +30,21 @@ import {
   Zap,
   RefreshCw,
   Download,
-  Settings
+  Settings,
+  Bell,
+  BellRing,
+  Mail,
+  FileSpreadsheet,
+  PieChart as PieChartIcon
 } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, LineChart, Line, CartesianGrid } from 'recharts';
 import { useESGCompliance } from '@/hooks/admin/esg';
 import { CarbonFootprintPanel } from './CarbonFootprintPanel';
 import { ESGScoringPanel } from './ESGScoringPanel';
 import { SustainabilityReportsPanel } from './SustainabilityReportsPanel';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+import jsPDF from 'jspdf';
 
 interface ESGDashboardProps {
   organizationId?: string;
@@ -39,9 +52,28 @@ interface ESGDashboardProps {
   className?: string;
 }
 
+// Alertas ESG configurables
+interface ESGAlert {
+  id: string;
+  name: string;
+  metric: 'esg_score' | 'carbon_emissions' | 'target_progress' | 'risk_level';
+  condition: 'below' | 'above';
+  threshold: number;
+  enabled: boolean;
+  notifyEmail: boolean;
+}
+
+const CHART_COLORS = ['#22c55e', '#3b82f6', '#a855f7', '#f59e0b', '#ef4444'];
+
 export function ESGDashboard({ organizationId, industry = 'technology', className }: ESGDashboardProps) {
   const [activeTab, setActiveTab] = useState('overview');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showAlertDialog, setShowAlertDialog] = useState(false);
+  const [alerts, setAlerts] = useState<ESGAlert[]>([
+    { id: '1', name: 'ESG Score bajo', metric: 'esg_score', condition: 'below', threshold: 60, enabled: true, notifyEmail: false },
+    { id: '2', name: 'Emisiones altas', metric: 'carbon_emissions', condition: 'above', threshold: 100, enabled: true, notifyEmail: true },
+    { id: '3', name: 'Objetivo en riesgo', metric: 'target_progress', condition: 'below', threshold: 50, enabled: false, notifyEmail: false }
+  ]);
 
   const {
     isLoading,
@@ -112,6 +144,114 @@ export function ESGDashboard({ organizationId, industry = 'technology', classNam
     return 'bg-red-500/20 text-red-400 border-red-500/30';
   };
 
+  // Datos para gráficos
+  const scopeChartData = useMemo(() => {
+    if (!carbonFootprint) return [];
+    return [
+      { name: 'Scope 1', value: carbonFootprint.scope1?.total || 0, color: '#ef4444' },
+      { name: 'Scope 2', value: carbonFootprint.scope2?.total || 0, color: '#f59e0b' },
+      { name: 'Scope 3', value: carbonFootprint.scope3?.total || 0, color: '#f97316' }
+    ];
+  }, [carbonFootprint]);
+
+  const esgBarData = useMemo(() => {
+    if (!esgScore) return [];
+    return [
+      { name: 'Environmental', score: esgScore.environmental?.score || 0, benchmark: 65 },
+      { name: 'Social', score: esgScore.social?.score || 0, benchmark: 60 },
+      { name: 'Governance', score: esgScore.governance?.score || 0, benchmark: 70 }
+    ];
+  }, [esgScore]);
+
+  const trendData = useMemo(() => {
+    // Datos simulados de tendencia (en producción vendrían del backend)
+    return [
+      { month: 'Ene', emissions: 95, score: 68 },
+      { month: 'Feb', emissions: 92, score: 70 },
+      { month: 'Mar', emissions: 88, score: 71 },
+      { month: 'Abr', emissions: 85, score: 73 },
+      { month: 'May', emissions: 82, score: 74 },
+      { month: 'Jun', emissions: 78, score: 76 }
+    ];
+  }, []);
+
+  // Check alerts
+  const triggeredAlerts = useMemo(() => {
+    const triggered: { alert: ESGAlert; currentValue: number }[] = [];
+    alerts.forEach(alert => {
+      if (!alert.enabled) return;
+      let currentValue = 0;
+      switch (alert.metric) {
+        case 'esg_score':
+          currentValue = esgScore?.overall_score || 0;
+          break;
+        case 'carbon_emissions':
+          currentValue = carbonFootprint?.total_emissions_tons || 0;
+          break;
+        case 'target_progress':
+          currentValue = targets.length > 0 ? targets.reduce((sum, t) => sum + t.progress, 0) / targets.length : 0;
+          break;
+      }
+      const isTriggered = alert.condition === 'below' ? currentValue < alert.threshold : currentValue > alert.threshold;
+      if (isTriggered) {
+        triggered.push({ alert, currentValue });
+      }
+    });
+    return triggered;
+  }, [alerts, esgScore, carbonFootprint, targets]);
+
+  // Exportar PDF
+  const handleExportPDF = () => {
+    const doc = new jsPDF();
+    
+    doc.setFontSize(20);
+    doc.text('Informe ESG & Sostenibilidad', 20, 20);
+    
+    doc.setFontSize(12);
+    doc.text(`Fecha: ${new Date().toLocaleDateString('es')}`, 20, 30);
+    doc.text(`Industria: ${industry}`, 20, 38);
+    
+    doc.setFontSize(16);
+    doc.text('Resumen Ejecutivo', 20, 55);
+    
+    doc.setFontSize(12);
+    doc.text(`ESG Score: ${esgScore?.overall_score || 0}/100 (${esgScore?.rating || 'N/A'})`, 20, 65);
+    doc.text(`Huella de Carbono: ${carbonFootprint?.total_emissions_tons?.toFixed(1) || 0} tCO2e`, 20, 73);
+    doc.text(`Objetivos en Track: ${targets.filter(t => t.on_track).length}/${targets.length}`, 20, 81);
+    
+    doc.setFontSize(14);
+    doc.text('Desglose ESG', 20, 100);
+    doc.setFontSize(12);
+    doc.text(`Environmental: ${esgScore?.environmental?.score || 0}`, 25, 110);
+    doc.text(`Social: ${esgScore?.social?.score || 0}`, 25, 118);
+    doc.text(`Governance: ${esgScore?.governance?.score || 0}`, 25, 126);
+    
+    doc.setFontSize(14);
+    doc.text('Emisiones por Scope', 20, 145);
+    doc.setFontSize(12);
+    doc.text(`Scope 1: ${(carbonFootprint?.scope1?.total || 0 / 1000).toFixed(2)} t`, 25, 155);
+    doc.text(`Scope 2: ${(carbonFootprint?.scope2?.total || 0 / 1000).toFixed(2)} t`, 25, 163);
+    doc.text(`Scope 3: ${(carbonFootprint?.scope3?.total || 0 / 1000).toFixed(2)} t`, 25, 171);
+    
+    if (esgScore?.action_plan && esgScore.action_plan.length > 0) {
+      doc.setFontSize(14);
+      doc.text('Plan de Acción', 20, 190);
+      doc.setFontSize(10);
+      esgScore.action_plan.slice(0, 5).forEach((action, idx) => {
+        doc.text(`• ${action}`, 25, 200 + idx * 8);
+      });
+    }
+    
+    doc.save('informe-esg.pdf');
+    toast.success('Informe ESG exportado');
+  };
+
+  const toggleAlert = (alertId: string) => {
+    setAlerts(prev => prev.map(a => 
+      a.id === alertId ? { ...a, enabled: !a.enabled } : a
+    ));
+  };
+
   return (
     <div className={cn("space-y-6", className)}>
       {/* Header */}
@@ -128,20 +268,78 @@ export function ESGDashboard({ organizationId, industry = 'technology', classNam
           </p>
         </div>
         <div className="flex gap-2">
+          {triggeredAlerts.length > 0 && (
+            <Badge variant="destructive" className="flex items-center gap-1 animate-pulse">
+              <BellRing className="h-3 w-3" />
+              {triggeredAlerts.length} alerta(s)
+            </Badge>
+          )}
           <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isRefreshing}>
             <RefreshCw className={cn("h-4 w-4 mr-2", isRefreshing && "animate-spin")} />
             Actualizar
           </Button>
-          <Button variant="outline" size="sm">
+          <Dialog open={showAlertDialog} onOpenChange={setShowAlertDialog}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Bell className="h-4 w-4 mr-2" />
+                Alertas
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Bell className="h-5 w-5" />
+                  Configurar Alertas ESG
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3">
+                {alerts.map(alert => (
+                  <div key={alert.id} className="flex items-center justify-between p-3 rounded-lg border bg-card">
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">{alert.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {alert.condition === 'below' ? 'Menor a' : 'Mayor a'} {alert.threshold}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {alert.notifyEmail && <Mail className="h-4 w-4 text-muted-foreground" />}
+                      <Switch checked={alert.enabled} onCheckedChange={() => toggleAlert(alert.id)} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Button variant="outline" size="sm" onClick={handleExportPDF}>
             <Download className="h-4 w-4 mr-2" />
-            Exportar
+            PDF
           </Button>
           <Button variant="outline" size="sm">
-            <Settings className="h-4 w-4 mr-2" />
-            Configurar
+            <FileSpreadsheet className="h-4 w-4 mr-2" />
+            Excel
           </Button>
         </div>
       </div>
+
+      {/* Alertas activas */}
+      {triggeredAlerts.length > 0 && (
+        <div className="space-y-2">
+          {triggeredAlerts.map(({ alert, currentValue }) => (
+            <div key={alert.id} className="flex items-center gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/30">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-destructive">{alert.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  Valor actual: {currentValue.toFixed(1)} (umbral: {alert.threshold})
+                </p>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => toggleAlert(alert.id)}>
+                Silenciar
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* KPIs Principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -390,36 +588,129 @@ export function ESGDashboard({ organizationId, industry = 'technology', classNam
             </Card>
           </div>
 
-          {/* ODS Alineados y Plan de Acción */}
+          {/* Gráficos Interactivos */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+            {/* Gráfico de pastel - Emisiones por Scope */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">ODS Alineados</CardTitle>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <PieChartIcon className="h-5 w-5 text-emerald-500" />
+                  Distribución de Emisiones
+                </CardTitle>
+                <CardDescription>Emisiones por Scope en kg CO₂e</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {(esgScore?.sdg_alignment || ['SDG 7', 'SDG 12', 'SDG 13']).map((sdg, idx) => (
-                    <Badge key={idx} variant="outline" className="text-sm">
-                      {sdg}
-                    </Badge>
-                  ))}
+                <div className="h-[250px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={scopeChartData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={90}
+                        paddingAngle={5}
+                        dataKey="value"
+                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {scopeChartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value: number) => `${(value / 1000).toFixed(2)} t`} />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
                 </div>
               </CardContent>
             </Card>
 
+            {/* Gráfico de barras - ESG vs Benchmark */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Plan de Acción</CardTitle>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Target className="h-5 w-5 text-blue-500" />
+                  ESG vs Benchmark
+                </CardTitle>
+                <CardDescription>Comparativa con industria</CardDescription>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-2">
-                  {(esgScore?.action_plan || ['Establecer objetivos SBTi', 'Crear comité ESG', 'Publicar informe CSRD']).slice(0, 4).map((action, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-sm">
-                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
-                      {action}
-                    </li>
-                  ))}
-                </ul>
+                <div className="h-[250px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={esgBarData} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                      <XAxis type="number" domain={[0, 100]} />
+                      <YAxis type="category" dataKey="name" width={80} />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="score" name="Tu Score" fill="#22c55e" radius={[0, 4, 4, 0]} />
+                      <Bar dataKey="benchmark" name="Benchmark" fill="#94a3b8" radius={[0, 4, 4, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Tendencia y Plan de Acción */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+            {/* Gráfico de línea - Tendencia */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <TrendingDown className="h-5 w-5 text-green-500" />
+                  Tendencia Semestral
+                </CardTitle>
+                <CardDescription>Evolución de emisiones y score ESG</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[200px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={trendData}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                      <XAxis dataKey="month" />
+                      <YAxis yAxisId="left" orientation="left" domain={[0, 120]} />
+                      <YAxis yAxisId="right" orientation="right" domain={[0, 100]} />
+                      <Tooltip />
+                      <Legend />
+                      <Line yAxisId="left" type="monotone" dataKey="emissions" name="Emisiones (t)" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} />
+                      <Line yAxisId="right" type="monotone" dataKey="score" name="ESG Score" stroke="#22c55e" strokeWidth={2} dot={{ r: 4 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* ODS y Plan de Acción */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Globe className="h-5 w-5 text-blue-500" />
+                  ODS & Plan de Acción
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2">ODS Alineados:</p>
+                  <div className="flex flex-wrap gap-1">
+                    {(esgScore?.sdg_alignment || ['SDG 7', 'SDG 12', 'SDG 13']).map((sdg, idx) => (
+                      <Badge key={idx} variant="outline" className="text-xs">
+                        {sdg}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2">Plan de Acción:</p>
+                  <ul className="space-y-1">
+                    {(esgScore?.action_plan || ['Establecer objetivos SBTi', 'Crear comité ESG', 'Publicar informe CSRD']).slice(0, 4).map((action, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-xs">
+                        <CheckCircle className="h-3 w-3 text-green-500 mt-0.5 shrink-0" />
+                        {action}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </CardContent>
             </Card>
           </div>
