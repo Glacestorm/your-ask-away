@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { 
   Bot,
   Zap,
@@ -15,7 +16,11 @@ import {
   Sparkles,
   LineChart,
   FileText,
-  Plug
+  Plug,
+  Monitor,
+  Network,
+  Heart,
+  Cpu
 } from 'lucide-react';
 import { AgentOrchestrationPanel } from './AgentOrchestrationPanel';
 import { ActionExecutionDashboard } from './ActionExecutionDashboard';
@@ -25,6 +30,10 @@ import { PredictiveMonitoringPanel } from './PredictiveMonitoringPanel';
 import { AuditSecurityPanel } from './AuditSecurityPanel';
 import { ReportsExportPanel } from './ReportsExportPanel';
 import { ExternalIntegrationsPanel } from './ExternalIntegrationsPanel';
+import { ScreenUnderstandingPanel } from './ScreenUnderstandingPanel';
+import { GraphRAGPanel } from './GraphRAGPanel';
+import { EmotionalAnalysisPanel } from './EmotionalAnalysisPanel';
+import { PredictiveMaintenancePanel } from './PredictiveMaintenancePanel';
 import { useSupportPredictiveAnalytics } from '@/hooks/admin/support/useSupportPredictiveAnalytics';
 import { useSupportAgentOrchestrator } from '@/hooks/admin/support/useSupportAgentOrchestrator';
 import { useKnowledgeBase } from '@/hooks/admin/support/useKnowledgeBase';
@@ -164,40 +173,59 @@ export function RemoteSupportAIDashboard({
 
       <CardContent className="pt-4">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-8 mb-4">
-            <TabsTrigger value="orchestration" className="text-xs">
-              <Bot className="h-3 w-3 mr-1" />
-              Agentes
-            </TabsTrigger>
-            <TabsTrigger value="execution" className="text-xs">
-              <Zap className="h-3 w-3 mr-1" />
-              Ejecución
-            </TabsTrigger>
-            <TabsTrigger value="monitoring" className="text-xs">
-              <LineChart className="h-3 w-3 mr-1" />
-              Monitoreo
-            </TabsTrigger>
-            <TabsTrigger value="learning" className="text-xs">
-              <Brain className="h-3 w-3 mr-1" />
-              RL
-            </TabsTrigger>
-            <TabsTrigger value="knowledge" className="text-xs">
-              <BookOpen className="h-3 w-3 mr-1" />
-              KB
-            </TabsTrigger>
-            <TabsTrigger value="audit" className="text-xs">
-              <Shield className="h-3 w-3 mr-1" />
-              Auditoría
-            </TabsTrigger>
-            <TabsTrigger value="reports" className="text-xs">
-              <FileText className="h-3 w-3 mr-1" />
-              Reportes
-            </TabsTrigger>
-            <TabsTrigger value="integrations" className="text-xs">
-              <Plug className="h-3 w-3 mr-1" />
-              APIs
-            </TabsTrigger>
-          </TabsList>
+          <ScrollArea className="w-full mb-4">
+            <TabsList className="inline-flex w-max gap-1 p-1">
+              <TabsTrigger value="orchestration" className="text-xs">
+                <Bot className="h-3 w-3 mr-1" />
+                Agentes
+              </TabsTrigger>
+              <TabsTrigger value="execution" className="text-xs">
+                <Zap className="h-3 w-3 mr-1" />
+                Ejecución
+              </TabsTrigger>
+              <TabsTrigger value="screen" className="text-xs">
+                <Monitor className="h-3 w-3 mr-1" />
+                Pantalla
+              </TabsTrigger>
+              <TabsTrigger value="graphrag" className="text-xs">
+                <Network className="h-3 w-3 mr-1" />
+                GraphRAG
+              </TabsTrigger>
+              <TabsTrigger value="emotional" className="text-xs">
+                <Heart className="h-3 w-3 mr-1" />
+                Emocional
+              </TabsTrigger>
+              <TabsTrigger value="maintenance" className="text-xs">
+                <Cpu className="h-3 w-3 mr-1" />
+                IoT
+              </TabsTrigger>
+              <TabsTrigger value="monitoring" className="text-xs">
+                <LineChart className="h-3 w-3 mr-1" />
+                Monitoreo
+              </TabsTrigger>
+              <TabsTrigger value="learning" className="text-xs">
+                <Brain className="h-3 w-3 mr-1" />
+                RL
+              </TabsTrigger>
+              <TabsTrigger value="knowledge" className="text-xs">
+                <BookOpen className="h-3 w-3 mr-1" />
+                KB
+              </TabsTrigger>
+              <TabsTrigger value="audit" className="text-xs">
+                <Shield className="h-3 w-3 mr-1" />
+                Auditoría
+              </TabsTrigger>
+              <TabsTrigger value="reports" className="text-xs">
+                <FileText className="h-3 w-3 mr-1" />
+                Reportes
+              </TabsTrigger>
+              <TabsTrigger value="integrations" className="text-xs">
+                <Plug className="h-3 w-3 mr-1" />
+                APIs
+              </TabsTrigger>
+            </TabsList>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
 
           <TabsContent value="orchestration" className="mt-0">
             <AgentOrchestrationPanel 
