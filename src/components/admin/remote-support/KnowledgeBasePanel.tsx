@@ -19,9 +19,10 @@ import {
   Eye,
   ThumbsUp,
   ThumbsDown,
-  ExternalLink,
   Tag,
-  FolderOpen
+  FolderOpen,
+  Cpu,
+  Zap
 } from 'lucide-react';
 import { useKnowledgeBase, type KnowledgeDocument } from '@/hooks/admin/support/useKnowledgeBase';
 import { cn } from '@/lib/utils';
@@ -40,6 +41,7 @@ export function KnowledgeBasePanel({
   const [activeTab, setActiveTab] = useState('browse');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [isGeneratingEmbeddings, setIsGeneratingEmbeddings] = useState(false);
 
   const {
     isLoading,
@@ -51,6 +53,7 @@ export function KnowledgeBasePanel({
     searchDocuments,
     recordDocumentFeedback,
     incrementViewCount,
+    generateEmbeddingsBulk,
     getDocumentStats
   } = useKnowledgeBase();
 
@@ -70,6 +73,15 @@ export function KnowledgeBasePanel({
     incrementViewCount(doc.id);
     onDocumentSelect?.(doc);
   }, [incrementViewCount, onDocumentSelect]);
+
+  const handleGenerateEmbeddings = useCallback(async () => {
+    setIsGeneratingEmbeddings(true);
+    try {
+      await generateEmbeddingsBulk();
+    } finally {
+      setIsGeneratingEmbeddings(false);
+    }
+  }, [generateEmbeddingsBulk]);
 
   const getDocTypeIcon = (type: string) => {
     switch (type) {
@@ -373,11 +385,27 @@ export function KnowledgeBasePanel({
               </div>
 
               <div className="p-3 rounded-lg border bg-gradient-to-br from-purple-500/10 to-violet-500/10">
-                <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2 mb-1">
                   <AlertCircle className="h-4 w-4 text-purple-400" />
                   <span className="text-xs text-muted-foreground">Embeddings Pend.</span>
                 </div>
                 <p className="text-2xl font-bold text-purple-400">{stats.pendingEmbeddings}</p>
+                {stats.pendingEmbeddings > 0 && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="mt-2 w-full text-xs"
+                    onClick={handleGenerateEmbeddings}
+                    disabled={isGeneratingEmbeddings}
+                  >
+                    {isGeneratingEmbeddings ? (
+                      <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                    ) : (
+                      <Zap className="h-3 w-3 mr-1" />
+                    )}
+                    Generar
+                  </Button>
+                )}
               </div>
             </div>
 
