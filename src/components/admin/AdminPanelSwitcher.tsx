@@ -53,18 +53,30 @@ export function AdminPanelSwitcher({ className, variant = 'default' }: AdminPane
 
   return (
     <Link to={targetPath} className={className}>
-      <Button 
-        variant="outline" 
-        size="sm"
+      <button 
         className={cn(
-          "gap-2 h-9 border-border bg-card hover:bg-accent text-muted-foreground hover:text-foreground transition-all",
-          !isObelixiaAdmin && "hover:border-primary/50"
+          // Base
+          "relative inline-flex items-center gap-2 h-10 px-4",
+          "font-medium text-sm rounded-xl",
+          // 3D Effect with gradient
+          "bg-gradient-to-b from-primary via-primary to-primary/85",
+          "border border-primary/50",
+          "shadow-[0_4px_8px_-2px_hsl(var(--primary)/0.35),0_2px_4px_-2px_hsl(var(--primary)/0.25),inset_0_1px_0_rgba(255,255,255,0.2)]",
+          // Hover 3D
+          "hover:shadow-[0_2px_4px_-1px_hsl(var(--primary)/0.25),inset_0_1px_0_rgba(255,255,255,0.25)]",
+          "hover:translate-y-[1px] hover:brightness-110",
+          // Active 3D
+          "active:translate-y-[2px] active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.15)]",
+          // Colors
+          "text-primary-foreground",
+          // Transition
+          "transition-all duration-150 ease-out"
         )}
       >
         <TargetIcon className="h-4 w-4" />
         <span>Ir a {targetLabel}</span>
         <ArrowRight className="h-3.5 w-3.5" />
-      </Button>
+      </button>
     </Link>
   );
 }
