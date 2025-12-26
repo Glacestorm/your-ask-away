@@ -1748,6 +1748,99 @@ const Admin = () => {
               </div>
             </div>
 
+            {/* SECCIÓN: Enterprise & Estrategia - 6 Módulos Avanzados */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold bg-gradient-to-r from-rose-500 via-amber-500 to-emerald-500 bg-clip-text text-transparent flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-amber-500" /> Enterprise & Estrategia
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-emerald-500/10"
+                  onClick={() => navigate('/admin/esg')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                      <Layers className="h-4 w-4 text-emerald-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-emerald-700 dark:text-emerald-400">ESG & Sostenibilidad</h4>
+                      <p className="text-xs text-muted-foreground">Métricas ESG, carbono y reportes</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-blue-500/10"
+                  onClick={() => navigate('/admin/market-intelligence')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                      <BarChart3 className="h-4 w-4 text-blue-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-blue-700 dark:text-blue-400">Market Intelligence</h4>
+                      <p className="text-xs text-muted-foreground">Análisis mercado y competencia</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-purple-500/10"
+                  onClick={() => navigate('/admin/ai-agents')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                      <Bot className="h-4 w-4 text-purple-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-purple-700 dark:text-purple-400">Agentes IA Específicos</h4>
+                      <p className="text-xs text-muted-foreground">Agentes autónomos y copilot</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-amber-500/10"
+                  onClick={() => navigate('/admin/enterprise-dashboard')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                      <Building2 className="h-4 w-4 text-amber-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-amber-700 dark:text-amber-400">Enterprise Dashboard</h4>
+                      <p className="text-xs text-muted-foreground">Visión ejecutiva completa</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-rose-500/30 bg-gradient-to-br from-rose-500/5 to-rose-500/10"
+                  onClick={() => navigate('/admin/cs-metrics')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-rose-500/20 flex items-center justify-center">
+                      <Activity className="h-4 w-4 text-rose-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-rose-700 dark:text-rose-400">CS Metrics Hub</h4>
+                      <p className="text-xs text-muted-foreground">Centro métricas Customer Success</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-cyan-500/30 bg-gradient-to-br from-cyan-500/5 to-cyan-500/10"
+                  onClick={() => navigate('/admin/remote-support')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+                      <Headphones className="h-4 w-4 text-cyan-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-cyan-700 dark:text-cyan-400">Soporte Remoto</h4>
+                      <p className="text-xs text-muted-foreground">Sistema soporte IA asistido</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
             {/* Nota: Verticales CNAE movido a /obelixia-admin */}
 
             {/* SECCIÓ 6: Eines i Historial */}

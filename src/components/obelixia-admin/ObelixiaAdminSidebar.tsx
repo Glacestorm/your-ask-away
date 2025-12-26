@@ -4,7 +4,8 @@ import {
   ChevronLeft, ChevronRight, ChevronDown,
   FileText, Receipt, Euro, Settings, LayoutGrid, BookOpen,
   Store, Palette, Code, GraduationCap, Languages, Briefcase,
-  Activity, ClipboardList, Shield, Newspaper, HelpCircle, Sparkles
+  Activity, ClipboardList, Shield, Newspaper, HelpCircle, Sparkles,
+  Leaf, Globe, Bot, Building2, HeartPulse, Headphones, Brain
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -99,6 +100,20 @@ const categories: NavCategory[] = [
       { id: 'api', label: 'API', icon: Code },
       { id: 'security', label: 'Seguridad', icon: Shield },
     ]
+  },
+  {
+    id: 'estrategia',
+    label: 'Estrategia & Datos',
+    icon: Brain,
+    color: 'rose',
+    items: [
+      { id: 'esg', label: 'ESG & Sostenibilidad', icon: Leaf },
+      { id: 'market-intelligence', label: 'Market Intelligence', icon: Globe },
+      { id: 'ai-agents-specific', label: 'Agentes IA', icon: Bot },
+      { id: 'enterprise-dashboard', label: 'Enterprise', icon: Building2 },
+      { id: 'cs-metrics', label: 'CS Metrics', icon: HeartPulse },
+      { id: 'remote-support', label: 'Soporte Remoto', icon: Headphones },
+    ]
   }
 ];
 
@@ -138,6 +153,12 @@ const colorMap: Record<string, { bg: string; text: string; border: string; hover
     text: 'text-slate-400', 
     border: 'border-slate-500/30',
     hover: 'hover:bg-slate-500/20'
+  },
+  rose: { 
+    bg: 'bg-rose-500/10', 
+    text: 'text-rose-400', 
+    border: 'border-rose-500/30',
+    hover: 'hover:bg-rose-500/20'
   }
 };
 

@@ -5,7 +5,8 @@ import {
   FileText, Euro, Package, Receipt, 
   BarChart3, Code, 
   Store, Layers, BookOpen, Activity, Rocket,
-  GraduationCap, Languages, Briefcase, Gauge, ClipboardList
+  GraduationCap, Languages, Briefcase, Gauge, ClipboardList,
+  Leaf, Globe, Bot, Building2, HeartPulse, Headphones
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
@@ -95,6 +96,13 @@ const ObelixiaTeamAdmin: React.FC = () => {
       news: 'Noticias',
       faq: 'FAQ',
       security: 'Seguridad',
+      // Nuevos módulos Estrategia & Datos
+      'esg': 'ESG & Sostenibilidad',
+      'market-intelligence': 'Market Intelligence',
+      'ai-agents-specific': 'Agentes IA',
+      'enterprise-dashboard': 'Enterprise Dashboard',
+      'cs-metrics': 'CS Metrics Hub',
+      'remote-support': 'Soporte Remoto',
     };
     return labels[tab] || tab;
   };
@@ -397,6 +405,73 @@ const ObelixiaTeamAdmin: React.FC = () => {
                       />
                     </motion.div>
                   ))}
+                </div>
+              </TabsContent>
+
+              {/* Estrategia & Datos - Nuevos módulos con redirección */}
+              <TabsContent value="esg" className="m-0">
+                <div className="text-center py-12">
+                  <Leaf className="h-16 w-16 mx-auto mb-4 text-emerald-400" />
+                  <h3 className="text-xl font-semibold text-white mb-2">ESG & Sostenibilidad</h3>
+                  <p className="text-slate-400 mb-6">Gestión de métricas ESG, huella de carbono y reportes de sostenibilidad.</p>
+                  <a href="/admin/esg" className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 rounded-lg transition-colors">
+                    Ir al módulo completo →
+                  </a>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="market-intelligence" className="m-0">
+                <div className="text-center py-12">
+                  <Globe className="h-16 w-16 mx-auto mb-4 text-blue-400" />
+                  <h3 className="text-xl font-semibold text-white mb-2">Market Intelligence</h3>
+                  <p className="text-slate-400 mb-6">Análisis de mercado, competencia, tendencias y oportunidades.</p>
+                  <a href="/admin/market-intelligence" className="inline-flex items-center gap-2 px-6 py-3 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-colors">
+                    Ir al módulo completo →
+                  </a>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="ai-agents-specific" className="m-0">
+                <div className="text-center py-12">
+                  <Bot className="h-16 w-16 mx-auto mb-4 text-purple-400" />
+                  <h3 className="text-xl font-semibold text-white mb-2">Agentes IA Específicos</h3>
+                  <p className="text-slate-400 mb-6">Agentes autónomos, copilot predictivo e interfaz de voz.</p>
+                  <a href="/admin/ai-agents" className="inline-flex items-center gap-2 px-6 py-3 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-lg transition-colors">
+                    Ir al módulo completo →
+                  </a>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="enterprise-dashboard" className="m-0">
+                <div className="text-center py-12">
+                  <Building2 className="h-16 w-16 mx-auto mb-4 text-amber-400" />
+                  <h3 className="text-xl font-semibold text-white mb-2">Enterprise Dashboard</h3>
+                  <p className="text-slate-400 mb-6">Visión ejecutiva con todos los paneles enterprise.</p>
+                  <a href="/admin/enterprise-dashboard" className="inline-flex items-center gap-2 px-6 py-3 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 rounded-lg transition-colors">
+                    Ir al módulo completo →
+                  </a>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="cs-metrics" className="m-0">
+                <div className="text-center py-12">
+                  <HeartPulse className="h-16 w-16 mx-auto mb-4 text-rose-400" />
+                  <h3 className="text-xl font-semibold text-white mb-2">CS Metrics Hub</h3>
+                  <p className="text-slate-400 mb-6">Centro de métricas de Customer Success.</p>
+                  <a href="/admin/cs-metrics" className="inline-flex items-center gap-2 px-6 py-3 bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 rounded-lg transition-colors">
+                    Ir al módulo completo →
+                  </a>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="remote-support" className="m-0">
+                <div className="text-center py-12">
+                  <Headphones className="h-16 w-16 mx-auto mb-4 text-cyan-400" />
+                  <h3 className="text-xl font-semibold text-white mb-2">Soporte Remoto</h3>
+                  <p className="text-slate-400 mb-6">Sistema de soporte remoto asistido por IA.</p>
+                  <a href="/admin/remote-support" className="inline-flex items-center gap-2 px-6 py-3 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded-lg transition-colors">
+                    Ir al módulo completo →
+                  </a>
                 </div>
               </TabsContent>
             </Tabs>

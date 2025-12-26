@@ -17,7 +17,8 @@ import {
   Languages, Briefcase, Gauge, Receipt, Euro, BookOpen,
   Newspaper, HelpCircle, Package, Layers, Rocket, Eye,
   Bell, Database, Trophy, ClipboardCheck, Building2, Zap,
-  ShoppingCart, Headphones, MessageSquare, Bot, Map
+  ShoppingCart, Headphones, MessageSquare, Bot, Map,
+  Leaf, Globe, HeartPulse
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -50,6 +51,13 @@ const searchItems: SearchItem[] = [
   { id: 'news', label: 'Noticias', description: 'Gestión de noticias', panel: 'obelixia', path: '/obelixia-admin?tab=news', icon: Newspaper, keywords: ['noticia', 'news', 'anuncio'] },
   { id: 'faq', label: 'FAQ', description: 'Preguntas frecuentes', panel: 'obelixia', path: '/obelixia-admin?tab=faq', icon: HelpCircle, keywords: ['faq', 'pregunta', 'ayuda', 'soporte'] },
   { id: 'security', label: 'Seguridad', description: 'Configuración de seguridad', panel: 'obelixia', path: '/obelixia-admin?tab=security', icon: Shield, keywords: ['seguridad', 'security', 'acceso', 'permisos'] },
+  // Estrategia & Datos - Nuevos módulos
+  { id: 'esg', label: 'ESG & Sostenibilidad', description: 'Métricas ESG y sostenibilidad', panel: 'obelixia', path: '/obelixia-admin?tab=esg', icon: Leaf, keywords: ['esg', 'sostenibilidad', 'carbono', 'ambiental', 'social', 'governance'] },
+  { id: 'market-intel', label: 'Market Intelligence', description: 'Análisis de mercado y competencia', panel: 'obelixia', path: '/obelixia-admin?tab=market-intelligence', icon: Globe, keywords: ['market', 'mercado', 'competencia', 'tendencias', 'intelligence'] },
+  { id: 'ai-agents-specific', label: 'Agentes IA Específicos', description: 'Agentes autónomos y copilot', panel: 'obelixia', path: '/obelixia-admin?tab=ai-agents-specific', icon: Bot, keywords: ['agentes', 'ia', 'ai', 'autonomo', 'copilot', 'voz'] },
+  { id: 'enterprise-dash', label: 'Enterprise Dashboard', description: 'Visión ejecutiva enterprise', panel: 'obelixia', path: '/obelixia-admin?tab=enterprise-dashboard', icon: Building2, keywords: ['enterprise', 'ejecutivo', 'dashboard', 'vision'] },
+  { id: 'cs-metrics-hub', label: 'CS Metrics Hub', description: 'Centro de métricas Customer Success', panel: 'obelixia', path: '/obelixia-admin?tab=cs-metrics', icon: HeartPulse, keywords: ['cs', 'customer', 'success', 'metricas', 'hub'] },
+  { id: 'remote-support-obelixia', label: 'Soporte Remoto', description: 'Sistema de soporte remoto IA', panel: 'obelixia', path: '/obelixia-admin?tab=remote-support', icon: Headphones, keywords: ['soporte', 'remoto', 'ayuda', 'asistencia', 'ia'] },
   
   // Admin Panel Items
   { id: 'director', label: 'Director Comercial', description: 'Dashboard director comercial', panel: 'admin', path: '/admin?section=director', icon: Trophy, keywords: ['director', 'comercial', 'dashboard', 'vision'] },
