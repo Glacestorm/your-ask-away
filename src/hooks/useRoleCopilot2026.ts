@@ -44,7 +44,10 @@ export type CopilotRole2026 =
   | 'admin'
   | 'auditor'
   | 'risk_manager'
-  | 'compliance_officer';
+  | 'compliance_officer'
+  | 'customer_success'
+  | 'customer_success_manager'
+  | 'onboarding_specialist';
 
 // === CNAE SECTORS ===
 export const CNAE_SECTORS = {

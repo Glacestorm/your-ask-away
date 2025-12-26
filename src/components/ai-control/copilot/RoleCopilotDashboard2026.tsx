@@ -50,22 +50,29 @@ import { es } from 'date-fns/locale';
 import { useAuth } from '@/hooks/useAuth';
 
 // Definición de todos los roles disponibles para el selector
-const ALL_ROLES: { value: CopilotRole2026; label: string; icon: React.ReactNode; sector?: string }[] = [
-  { value: 'gestor', label: 'Gestor General', icon: <Briefcase className="h-4 w-4" /> },
-  { value: 'gestor_banca', label: 'Gestor Banca', icon: <Building2 className="h-4 w-4" />, sector: 'K' },
-  { value: 'gestor_seguros', label: 'Gestor Seguros', icon: <Shield className="h-4 w-4" />, sector: 'K65' },
-  { value: 'gestor_retail', label: 'Gestor Retail', icon: <ShoppingCart className="h-4 w-4" />, sector: 'G' },
-  { value: 'gestor_healthcare', label: 'Gestor Healthcare', icon: <HeartPulse className="h-4 w-4" />, sector: 'Q' },
-  { value: 'gestor_industrial', label: 'Gestor Industrial', icon: <Factory className="h-4 w-4" />, sector: 'C' },
-  { value: 'gestor_services', label: 'Gestor Servicios', icon: <Briefcase className="h-4 w-4" />, sector: 'S' },
-  { value: 'gestor_tech', label: 'Gestor Tech', icon: <Cpu className="h-4 w-4" />, sector: 'J' },
-  { value: 'director_oficina', label: 'Director de Oficina', icon: <Building2 className="h-4 w-4" /> },
-  { value: 'director_comercial', label: 'Director Comercial', icon: <TrendingUp className="h-4 w-4" /> },
-  { value: 'director_regional', label: 'Director Regional', icon: <Globe className="h-4 w-4" /> },
-  { value: 'admin', label: 'Administrador', icon: <UserCog className="h-4 w-4" /> },
-  { value: 'auditor', label: 'Auditor', icon: <Shield className="h-4 w-4" /> },
-  { value: 'risk_manager', label: 'Risk Manager', icon: <Target className="h-4 w-4" /> },
-  { value: 'compliance_officer', label: 'Compliance Officer', icon: <Shield className="h-4 w-4" /> },
+const ALL_ROLES: { value: CopilotRole2026; label: string; icon: React.ReactNode; sector?: string; category?: string }[] = [
+  // Gestores por Sector
+  { value: 'gestor', label: 'Gestor General', icon: <Briefcase className="h-4 w-4" />, category: 'Gestores' },
+  { value: 'gestor_banca', label: 'Gestor Banca', icon: <Building2 className="h-4 w-4" />, sector: 'K', category: 'Gestores' },
+  { value: 'gestor_seguros', label: 'Gestor Seguros', icon: <Shield className="h-4 w-4" />, sector: 'K65', category: 'Gestores' },
+  { value: 'gestor_retail', label: 'Gestor Retail', icon: <ShoppingCart className="h-4 w-4" />, sector: 'G', category: 'Gestores' },
+  { value: 'gestor_healthcare', label: 'Gestor Healthcare', icon: <HeartPulse className="h-4 w-4" />, sector: 'Q', category: 'Gestores' },
+  { value: 'gestor_industrial', label: 'Gestor Industrial', icon: <Factory className="h-4 w-4" />, sector: 'C', category: 'Gestores' },
+  { value: 'gestor_services', label: 'Gestor Servicios', icon: <Briefcase className="h-4 w-4" />, sector: 'S', category: 'Gestores' },
+  { value: 'gestor_tech', label: 'Gestor Tech', icon: <Cpu className="h-4 w-4" />, sector: 'J', category: 'Gestores' },
+  // Directores
+  { value: 'director_oficina', label: 'Director de Oficina', icon: <Building2 className="h-4 w-4" />, category: 'Directores' },
+  { value: 'director_comercial', label: 'Director Comercial', icon: <TrendingUp className="h-4 w-4" />, category: 'Directores' },
+  { value: 'director_regional', label: 'Director Regional', icon: <Globe className="h-4 w-4" />, category: 'Directores' },
+  // Customer Success
+  { value: 'customer_success', label: 'Customer Success', icon: <Users className="h-4 w-4" />, category: 'Customer Success' },
+  { value: 'customer_success_manager', label: 'CS Manager', icon: <Users className="h-4 w-4" />, category: 'Customer Success' },
+  { value: 'onboarding_specialist', label: 'Onboarding Specialist', icon: <Sparkles className="h-4 w-4" />, category: 'Customer Success' },
+  // Administración y Compliance
+  { value: 'admin', label: 'Administrador', icon: <UserCog className="h-4 w-4" />, category: 'Admin' },
+  { value: 'auditor', label: 'Auditor', icon: <Shield className="h-4 w-4" />, category: 'Admin' },
+  { value: 'risk_manager', label: 'Risk Manager', icon: <Target className="h-4 w-4" />, category: 'Admin' },
+  { value: 'compliance_officer', label: 'Compliance Officer', icon: <Shield className="h-4 w-4" />, category: 'Admin' },
 ];
 
 interface RoleCopilotDashboard2026Props {
