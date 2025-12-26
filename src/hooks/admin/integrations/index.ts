@@ -39,3 +39,13 @@ export type {
   ValidationRule,
   Transformation
 } from './useCRMMigration';
+
+// Workspace Integrations exports
+export { useWorkspaceIntegrations } from './useWorkspaceIntegrations';
+export type { 
+  IntegrationStatus, 
+  ServiceStatus, 
+  SyncResult, 
+  SyncHistoryItem,
+  SyncSettings 
+} from './useWorkspaceIntegrations';
