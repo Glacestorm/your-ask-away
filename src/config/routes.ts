@@ -117,6 +117,7 @@ const RemoteSupportPage = lazy(() => import('@/pages/admin/RemoteSupportPage'));
 const EnterpriseDashboardPage = lazy(() => import('@/pages/admin/EnterpriseDashboardPage'));
 const CSMetricsPage = lazy(() => import('@/pages/admin/CSMetricsPage'));
 const AcademiaAdminPage = lazy(() => import('@/pages/admin/AcademiaAdminPage'));
+const ESGSustainabilityPage = lazy(() => import('@/pages/admin/ESGSustainabilityPage'));
 
 // Settings
 const SettingsPage = lazy(() => import('@/pages/settings/SettingsPage'));
@@ -271,6 +272,7 @@ export const adminRoutes: RouteConfig[] = [
   { path: '/admin/cs-metrics', component: CSMetricsPage, layout: 'none', priority: 'high', meta: { title: 'CS Metrics Hub', requiresAuth: true, roles: ['admin', 'superadmin'] } },
   { path: '/admin/academia', component: AcademiaAdminPage, layout: 'none', priority: 'high', meta: { title: 'Academia Admin', requiresAuth: true, roles: ['admin', 'superadmin'] } },
   { path: '/admin/marketplace', component: MarketplaceAdmin, layout: 'none', priority: 'high', meta: { title: 'Marketplace Admin', requiresAuth: true, roles: ['admin', 'superadmin'] } },
+  { path: '/admin/esg', component: ESGSustainabilityPage, layout: 'none', priority: 'high', meta: { title: 'ESG & Sostenibilidad', requiresAuth: true, roles: ['admin', 'superadmin'] } },
   { path: '/obelixia-admin', component: ObelixiaTeamAdmin, layout: 'none', priority: 'medium', delay: 50, meta: { title: 'Obelixia Admin', requiresAuth: true, roles: ['superadmin'] } },
 ];
 
