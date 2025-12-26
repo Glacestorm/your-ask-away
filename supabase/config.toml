@@ -617,3 +617,9 @@ verify_jwt = true
 
 [functions.support-external-integrations]
 verify_jwt = true
+
+[functions.support-metrics-dashboard]
+verify_jwt = true
+
+[functions.crm-migration-engine]
+verify_jwt = true
