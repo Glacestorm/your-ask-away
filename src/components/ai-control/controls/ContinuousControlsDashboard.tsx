@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -9,9 +9,12 @@ import {
   XCircle,
   AlertTriangle,
   Clock,
-  FileCheck
+  FileCheck,
+  Activity
 } from 'lucide-react';
 import { useContinuousControls } from '@/hooks/useContinuousControls';
+import { formatDistanceToNow } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 export function ContinuousControlsDashboard() {
   const {
@@ -23,7 +26,15 @@ export function ContinuousControlsDashboard() {
     runControls,
     acknowledgeAlert,
     resolveAlert,
+    lastRefresh,
+    refetchControls,
+    refetchAlerts,
   } = useContinuousControls();
+
+  const handleRefresh = () => {
+    refetchControls();
+    refetchAlerts();
+  };
 
   if (isLoading) {
     return (
@@ -37,6 +48,29 @@ export function ContinuousControlsDashboard() {
 
   return (
     <div className="space-y-4">
+      {/* Status Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Activity className="h-5 w-5 text-primary" />
+          <span className="text-sm text-muted-foreground">
+            {lastRefresh 
+              ? `Actualizado ${formatDistanceToNow(lastRefresh, { locale: es, addSuffix: true })}`
+              : 'Sincronizando...'
+            }
+          </span>
+        </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleRefresh}
+          disabled={isLoading}
+          className="gap-2"
+        >
+          <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          Actualizar
+        </Button>
+      </div>
+
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="bg-gradient-to-br from-green-500/10 to-transparent">
