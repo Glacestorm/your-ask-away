@@ -2104,6 +2104,14 @@ const Admin = () => {
                 canGoForward={activeSection !== 'administration' && canGoForward}
                 onGoBack={activeSection !== 'administration' ? handleGoBack : undefined}
                 onGoForward={activeSection !== 'administration' ? handleGoForward : undefined}
+                rightSlot={
+                  activeSection === 'administration' ? (
+                    <div className="flex items-center gap-2">
+                      <AdminGlobalSearch />
+                      <AdminPanelSwitcher />
+                    </div>
+                  ) : undefined
+                }
               />
             )}
             
@@ -2115,14 +2123,6 @@ const Admin = () => {
                   <AdminGlobalSearch />
                   <AdminPanelSwitcher />
                 </div>
-              </div>
-            )}
-            
-            {/* Para administration solo mostramos las actions sin breadcrumb duplicado */}
-            {activeSection === 'administration' && (
-              <div className="flex items-center justify-end gap-2">
-                <AdminGlobalSearch />
-                <AdminPanelSwitcher />
               </div>
             )}
 
