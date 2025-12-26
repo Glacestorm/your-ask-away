@@ -17,13 +17,15 @@ import {
   GitMerge,
   Play,
   HelpCircle,
-  BookOpen
+  BookOpen,
+  Activity
 } from 'lucide-react';
 import { 
   CRMMigrationPanel, 
   CRMMigrationDashboard, 
   CRMValidationPanel, 
-  CRMAdvancedToolsPanel 
+  CRMAdvancedToolsPanel,
+  CRMMonitoringPanel
 } from '@/components/admin/crm-migration';
 import { useCRMMigration } from '@/hooks/admin/integrations';
 import { cn } from '@/lib/utils';
@@ -153,6 +155,13 @@ export default function CRMMigrationPage() {
               >
                 <Shield className="h-4 w-4" />
                 Validación
+              </TabsTrigger>
+              <TabsTrigger 
+                value="monitoring" 
+                className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-t-lg rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary gap-2"
+              >
+                <Activity className="h-4 w-4" />
+                Monitoreo
               </TabsTrigger>
               <TabsTrigger 
                 value="tools" 
@@ -347,6 +356,11 @@ export default function CRMMigrationPage() {
                     </CardContent>
                   </Card>
                 )}
+              </TabsContent>
+
+              {/* Monitoring Tab */}
+              <TabsContent value="monitoring" className="mt-0">
+                <CRMMonitoringPanel migration={activeMigration} />
               </TabsContent>
 
               {/* Advanced Tools Tab */}
