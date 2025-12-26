@@ -82,18 +82,11 @@ import {
   RealtimeChatPanel,
   CoreBankingManager,
   SPMDashboard,
-  AppStoreManager,
   AuditReportingDashboard,
-  CNAEPricingCalculator,
   HoldingDashboard,
-  CNAEPricingAdmin,
-  CNAEDashboard,
   BPMNDesigner,
   ProcessMiningDashboard,
-  VerticalPacksManager,
-  SectorsManager,
-  CoreWebVitalsDashboard,
-  TranslationsDashboard,
+  // Nota: AppStoreManager, CNAEPricingCalculator, CNAEPricingAdmin, CNAEDashboard, VerticalPacksManager, SectorsManager, CoreWebVitalsDashboard, TranslationsDashboard movidos a ObelixiaAdmin
   WhiteLabelConfig,
   APIDocumentation,
   VisitSheets,
@@ -246,22 +239,15 @@ const Admin = () => {
       case 'realtime-chat': return t('admin.sectionTitle.realtimeChat');
       case 'predictive-analytics': return t('admin.sectionTitle.predictiveAnalytics');
       case 'spm-dashboard': return t('admin.sectionTitle.spmDashboard');
-      case 'app-store': return t('admin.sectionTitle.appStore');
-      case 'cnae-pricing': return t('admin.sectionTitle.cnaePricing');
-      case 'cnae-manager': return t('admin.sectionTitle.cnaeManager');
+      // Casos movidos a /obelixia-admin: app-store, cnae-pricing, cnae-manager, cnae-bundles, cnae-admin, translations
       case 'holding-dashboard': return t('admin.sectionTitle.holdingDashboard');
-      case 'cnae-bundles': return t('admin.sectionTitle.cnaeBundles');
-      case 'cnae-admin': return t('admin.sectionTitle.cnaeAdmin');
       case 'analyzer': return t('admin.sectionTitle.analyzer');
-      case 'translations': return t('admin.sectionTitle.translations');
       case 'bpmn-designer': return t('admin.sectionTitle.bpmnDesigner');
       case 'process-mining': return t('admin.sectionTitle.processMining');
       case 'ai-copilot': return t('admin.sectionTitle.aiCopilot');
       case 'ai-nba': return t('admin.sectionTitle.aiNba');
       case 'ai-controls': return t('admin.sectionTitle.aiControls');
-      case 'vertical-packs': return t('admin.sectionTitle.verticalPacks');
-      case 'sectors-manager': return t('admin.sectionTitle.sectorsManager');
-      case 'web-vitals': return t('admin.sectionTitle.webVitals');
+      // Casos movidos a /obelixia-admin: vertical-packs, sectors-manager, web-vitals
       case 'service-quotes': return 'Presupuestos de Servicio';
       
       case 'ai-obelixia': return 'AI Obelixia';
@@ -597,17 +583,7 @@ const Admin = () => {
           );
         }
         return <ApplicationStateAnalyzer />;
-      case 'translations':
-        if (!isSuperAdmin) {
-          return (
-            <Card>
-              <CardContent className="p-6">
-                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
-              </CardContent>
-            </Card>
-          );
-        }
-        return <TranslationsDashboard />;
+      // case 'translations' movido a /obelixia-admin
       case 'codebase-index':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
           return (
@@ -724,21 +700,7 @@ const Admin = () => {
           );
         }
         return <SPMDashboard />;
-      case 'app-store':
-        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
-          return (
-            <Card>
-              <CardContent className="p-6">
-                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
-              </CardContent>
-            </Card>
-          );
-        }
-        return <AppStoreManager />;
-      case 'cnae-pricing':
-      case 'cnae-manager':
-      case 'cnae-bundles':
-        return <CNAEDashboard />;
+      // case 'app-store', 'cnae-pricing', 'cnae-manager', 'cnae-bundles', 'cnae-admin' movidos a /obelixia-admin
       case 'holding-dashboard':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
           return (
@@ -750,17 +712,6 @@ const Admin = () => {
           );
         }
         return <HoldingDashboard />;
-      case 'cnae-admin':
-        if (!isSuperAdmin && !isCommercialDirector) {
-          return (
-            <Card>
-              <CardContent className="p-6">
-                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
-              </CardContent>
-            </Card>
-          );
-        }
-        return <CNAEPricingAdmin />;
       case 'cascade-goals':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager && !isOfficeDirector) {
           return (
@@ -860,39 +811,7 @@ const Admin = () => {
           );
         }
         return <ProcessMiningDashboard entityType="opportunity" />;
-      case 'vertical-packs':
-        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
-          return (
-            <Card>
-              <CardContent className="p-6">
-                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
-              </CardContent>
-            </Card>
-          );
-        }
-        return <VerticalPacksManager />;
-      case 'sectors-manager':
-        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
-          return (
-            <Card>
-              <CardContent className="p-6">
-                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
-              </CardContent>
-            </Card>
-          );
-        }
-        return <SectorsManager />;
-      case 'web-vitals':
-        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
-          return (
-            <Card>
-              <CardContent className="p-6">
-                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
-              </CardContent>
-            </Card>
-          );
-        }
-        return <CoreWebVitalsDashboard />;
+      // case 'vertical-packs', 'sectors-manager', 'web-vitals' movidos a /obelixia-admin
       case 'service-quotes':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
           return (
@@ -1261,20 +1180,7 @@ const Admin = () => {
                     </div>
                   </CardContent>
                 </Card>
-                <Card 
-                  className="cursor-pointer hover:shadow-md transition-all border-2 border-teal-500/30 bg-gradient-to-br from-teal-500/5 to-teal-500/10"
-                  onClick={() => handleSectionChange('translations')}
-                >
-                  <CardContent className="p-3 flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-lg bg-teal-500/20 flex items-center justify-center">
-                      <Layers className="h-4 w-4 text-teal-500" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-sm text-teal-700 dark:text-teal-400">{t('admin.card.translations')}</h4>
-                      <p className="text-xs text-muted-foreground">{t('admin.card.translations.desc')}</p>
-                    </div>
-                  </CardContent>
-                </Card>
+                {/* Traducciones movido a /obelixia-admin */}
               </div>
             </div>
 
