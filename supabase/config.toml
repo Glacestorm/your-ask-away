@@ -575,3 +575,15 @@ verify_jwt = true
 
 [functions.predictive-health-score]
 verify_jwt = true
+
+[functions.advanced-copilot]
+verify_jwt = true
+
+[functions.ai-orchestrator]
+verify_jwt = true
+
+[functions.smart-analytics]
+verify_jwt = true
+
+[functions.realtime-insights]
+verify_jwt = true
