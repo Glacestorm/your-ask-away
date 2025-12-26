@@ -257,7 +257,7 @@ const Admin = () => {
       case 'service-quotes': return 'Presupuestos de Servicio';
       case 'remote-support': return 'Soporte Remoto';
       case 'ai-obelixia': return 'AI Obelixia';
-      case 'advanced-ai': return 'Advanced AI & Automation (Fase 12)';
+      case 'advanced-ai': return 'Advanced AI & Automation';
       case 'ai-copilot-advanced': return 'Copilot Multimodal Avanzado';
       case 'ai-orchestrator': return 'Orquestador de Agentes IA';
       case 'smart-analytics-ai': return 'Smart Analytics IA';
@@ -1695,7 +1695,7 @@ const Admin = () => {
             {/* SECCIÓ: Advanced AI & Automation - FASE 12 */}
             <div className="space-y-3">
               <h3 className="text-lg font-semibold bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 bg-clip-text text-transparent flex items-center gap-2">
-                <Rocket className="h-5 w-5 text-blue-500" /> Advanced AI & Automation (Fase 12)
+                <Rocket className="h-5 w-5 text-blue-500" /> Advanced AI & Automation
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 <Card 
@@ -2073,7 +2073,7 @@ const Admin = () => {
             <div className="rounded-lg border bg-card p-6">
               <div className="mb-6">
                 <h2 className="text-2xl font-bold bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 bg-clip-text text-transparent">
-                  Advanced AI & Automation - Fase 12
+                  Advanced AI & Automation
                 </h2>
                 <p className="text-sm text-muted-foreground">
                   Copilot multimodal, orquestador de agentes, analytics inteligente y real-time insights
