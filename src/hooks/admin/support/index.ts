@@ -19,3 +19,6 @@ export {
 export { useSupportAuditLogger, type AuditEntry, type SecurityAnalysis, type ComplianceReport } from './useSupportAuditLogger';
 export { useSupportReportGenerator, type MetricsReport, type SessionReport, type PerformanceReport, type ReportTemplate } from './useSupportReportGenerator';
 export { useSupportExternalIntegrations, type Integration, type ExternalTicket, type WebhookResult, type NotificationResult } from './useSupportExternalIntegrations';
+
+// Phase 7B: Metrics Dashboard
+export { useSupportMetricsDashboard, type SupportMetrics, type AgentPerformance, type TrendData, type RealTimeEvent, type DashboardFilters } from './useSupportMetricsDashboard';
