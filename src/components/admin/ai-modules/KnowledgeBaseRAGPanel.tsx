@@ -127,7 +127,7 @@ export function KnowledgeBaseRAGPanel({ className }: KnowledgeBaseRAGPanelProps)
       content: articleForm.content,
       category: articleForm.category,
       tags: articleForm.tags.split(',').map(t => t.trim()).filter(Boolean),
-      last_updated: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
       view_count: 0,
       helpful_count: 0
     };
@@ -166,7 +166,7 @@ export function KnowledgeBaseRAGPanel({ className }: KnowledgeBaseRAGPanelProps)
     totalHelpful: articles.reduce((sum, a) => sum + (a.helpful_count || 0), 0),
     categories: [...new Set(articles.map(a => a.category))].length,
     recentUpdates: articles.filter(a => {
-      const updated = new Date(a.last_updated);
+      const updated = new Date(a.updated_at);
       const weekAgo = new Date();
       weekAgo.setDate(weekAgo.getDate() - 7);
       return updated > weekAgo;
@@ -525,7 +525,7 @@ export function KnowledgeBaseRAGPanel({ className }: KnowledgeBaseRAGPanelProps)
                             </span>
                             <span className="text-xs text-muted-foreground flex items-center gap-1">
                               <Clock className="h-3 w-3" />
-                              {formatDistanceToNow(new Date(article.last_updated), { locale: es, addSuffix: true })}
+                              {formatDistanceToNow(new Date(article.updated_at), { locale: es, addSuffix: true })}
                             </span>
                           </div>
                           {article.tags.length > 0 && (
