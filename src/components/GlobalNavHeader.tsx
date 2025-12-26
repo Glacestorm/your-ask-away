@@ -33,43 +33,41 @@ export function GlobalNavHeader({
   const hasTitle = title || subtitle;
 
   return (
-    <header className="flex items-center justify-between gap-4 rounded-2xl bg-gradient-to-br from-card via-card to-accent/10 px-4 py-3 shadow-lg border border-border/40 backdrop-blur-sm">
+    <header className="flex items-center justify-between gap-4 rounded-2xl bg-card px-4 py-3 shadow-lg border border-border backdrop-blur-sm">
       {/* Left Section: Logo + Navigation + Title */}
       <div className="flex items-center gap-3 min-w-0">
         {/* Logo */}
         <ObelixiaLogo size="sm" variant="icon" animated={false} />
         
         {/* Navigation Arrows */}
-        {(canGoBack || canGoForward) && (
-          <div className="flex items-center gap-1">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <NavButton3D
-                  variant="ghost"
-                  size="sm"
-                  onClick={onGoBack}
-                  disabled={!canGoBack}
-                  icon={<ChevronLeft className="h-4 w-4" />}
-                  aria-label="Atrás"
-                />
-              </TooltipTrigger>
-              <TooltipContent side="bottom">Atrás</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <NavButton3D
-                  variant="ghost"
-                  size="sm"
-                  onClick={onGoForward}
-                  disabled={!canGoForward}
-                  icon={<ChevronRight className="h-4 w-4" />}
-                  aria-label="Adelante"
-                />
-              </TooltipTrigger>
-              <TooltipContent side="bottom">Adelante</TooltipContent>
-            </Tooltip>
-          </div>
-        )}
+        <div className="flex items-center gap-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <NavButton3D
+                variant={canGoBack ? 'default' : 'ghost'}
+                size="sm"
+                onClick={onGoBack}
+                disabled={!canGoBack}
+                icon={<ChevronLeft className="h-4 w-4" />}
+                aria-label="Atrás"
+              />
+            </TooltipTrigger>
+            <TooltipContent side="bottom">Atrás</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <NavButton3D
+                variant={canGoForward ? 'default' : 'ghost'}
+                size="sm"
+                onClick={onGoForward}
+                disabled={!canGoForward}
+                icon={<ChevronRight className="h-4 w-4" />}
+                aria-label="Adelante"
+              />
+            </TooltipTrigger>
+            <TooltipContent side="bottom">Adelante</TooltipContent>
+          </Tooltip>
+        </div>
         
         {/* Title */}
         {hasTitle && (
@@ -89,7 +87,7 @@ export function GlobalNavHeader({
       {/* Right Section: Actions */}
       <nav className="flex items-center gap-2" aria-label="Acciones principales">
         {/* Status Indicators */}
-        <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-muted/50 border border-border/30">
+        <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-muted/50 border border-border/50">
           <OfflineSyncIndicator />
           <OnlineUsersIndicator />
         </div>

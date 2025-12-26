@@ -2072,15 +2072,7 @@ const Admin = () => {
           </div>
         ) : (
           <div className="p-6 space-y-6 w-full">
-            {/* Breadcrumbs and Panel Switcher */}
-            <div className="flex items-center justify-between">
-              <AdminBreadcrumbs currentSection={getSectionTitle()} />
-              <div className="flex items-center gap-2">
-                <AdminGlobalSearch />
-                <AdminPanelSwitcher />
-              </div>
-            </div>
-            
+            {/* Unified Admin Header */}
             {activeSection !== 'gestor-dashboard' && (
               <GlobalNavHeader 
                 title={getSectionTitle()}
@@ -2090,6 +2082,26 @@ const Admin = () => {
                 onGoForward={handleGoForward}
               />
             )}
+            
+            {/* Breadcrumbs and Panel Switcher - solo si NO es section administration para evitar duplicación */}
+            {activeSection !== 'administration' && (
+              <div className="flex items-center justify-between">
+                <AdminBreadcrumbs currentSection={getSectionTitle()} />
+                <div className="flex items-center gap-2">
+                  <AdminGlobalSearch />
+                  <AdminPanelSwitcher />
+                </div>
+              </div>
+            )}
+            
+            {/* Para administration solo mostramos las actions sin breadcrumb duplicado */}
+            {activeSection === 'administration' && (
+              <div className="flex items-center justify-end gap-2">
+                <AdminGlobalSearch />
+                <AdminPanelSwitcher />
+              </div>
+            )}
+
             <Suspense fallback={<AdminSectionSkeleton />}>
               {renderContent()}
             </Suspense>

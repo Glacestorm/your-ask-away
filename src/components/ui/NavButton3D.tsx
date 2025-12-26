@@ -12,61 +12,63 @@ interface NavButton3DProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles = {
   default: `
-    bg-gradient-to-b from-background via-background to-muted/80
-    border-border/60
+    bg-gradient-to-b from-card via-card to-muted/80
+    border-border
     text-foreground
-    shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.1)]
-    hover:shadow-[0_2px_4px_-1px_rgba(0,0,0,0.1),0_1px_2px_-1px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.1)]
+    shadow-[0_4px_6px_-1px_rgba(0,0,0,0.08),0_2px_4px_-2px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.1)]
+    hover:shadow-[0_2px_4px_-1px_rgba(0,0,0,0.08),0_1px_2px_-1px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.1)]
+    hover:translate-y-[1px]
+    hover:bg-accent/50
+    active:translate-y-[2px]
+    active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]
+  `,
+  primary: `
+    bg-gradient-to-b from-primary via-primary to-primary/90
+    border-primary/60
+    text-primary-foreground
+    shadow-[0_4px_8px_-2px_hsl(var(--primary)/0.35),0_2px_4px_-2px_hsl(var(--primary)/0.25),inset_0_1px_0_rgba(255,255,255,0.2)]
+    hover:shadow-[0_2px_4px_-1px_hsl(var(--primary)/0.25),inset_0_1px_0_rgba(255,255,255,0.2)]
     hover:translate-y-[1px]
     active:translate-y-[2px]
     active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.15)]
-  `,
-  primary: `
-    bg-gradient-to-b from-primary via-primary to-primary/80
-    border-primary/50
-    text-primary-foreground
-    shadow-[0_4px_8px_-2px_hsl(var(--primary)/0.4),0_2px_4px_-2px_hsl(var(--primary)/0.3),inset_0_1px_0_rgba(255,255,255,0.2)]
-    hover:shadow-[0_2px_4px_-1px_hsl(var(--primary)/0.3),inset_0_1px_0_rgba(255,255,255,0.2)]
-    hover:translate-y-[1px]
-    active:translate-y-[2px]
-    active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]
   `,
   success: `
     bg-gradient-to-b from-emerald-500 via-emerald-500 to-emerald-600
     border-emerald-400/50
     text-white
-    shadow-[0_4px_8px_-2px_rgba(16,185,129,0.4),0_2px_4px_-2px_rgba(16,185,129,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]
-    hover:shadow-[0_2px_4px_-1px_rgba(16,185,129,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]
+    shadow-[0_4px_8px_-2px_rgba(16,185,129,0.35),0_2px_4px_-2px_rgba(16,185,129,0.25),inset_0_1px_0_rgba(255,255,255,0.2)]
+    hover:shadow-[0_2px_4px_-1px_rgba(16,185,129,0.25),inset_0_1px_0_rgba(255,255,255,0.2)]
     hover:translate-y-[1px]
     active:translate-y-[2px]
-    active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]
+    active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.15)]
   `,
   warning: `
     bg-gradient-to-b from-amber-500 via-amber-500 to-amber-600
     border-amber-400/50
     text-white
-    shadow-[0_4px_8px_-2px_rgba(245,158,11,0.4),0_2px_4px_-2px_rgba(245,158,11,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]
-    hover:shadow-[0_2px_4px_-1px_rgba(245,158,11,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]
+    shadow-[0_4px_8px_-2px_rgba(245,158,11,0.35),0_2px_4px_-2px_rgba(245,158,11,0.25),inset_0_1px_0_rgba(255,255,255,0.2)]
+    hover:shadow-[0_2px_4px_-1px_rgba(245,158,11,0.25),inset_0_1px_0_rgba(255,255,255,0.2)]
     hover:translate-y-[1px]
     active:translate-y-[2px]
-    active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]
+    active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.15)]
   `,
   danger: `
     bg-gradient-to-b from-rose-500 via-rose-500 to-rose-600
     border-rose-400/50
     text-white
-    shadow-[0_4px_8px_-2px_rgba(244,63,94,0.4),0_2px_4px_-2px_rgba(244,63,94,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]
-    hover:shadow-[0_2px_4px_-1px_rgba(244,63,94,0.3),inset_0_1px_0_rgba(255,255,255,0.2)]
+    shadow-[0_4px_8px_-2px_rgba(244,63,94,0.35),0_2px_4px_-2px_rgba(244,63,94,0.25),inset_0_1px_0_rgba(255,255,255,0.2)]
+    hover:shadow-[0_2px_4px_-1px_rgba(244,63,94,0.25),inset_0_1px_0_rgba(255,255,255,0.2)]
     hover:translate-y-[1px]
     active:translate-y-[2px]
-    active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]
+    active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.15)]
   `,
   ghost: `
     bg-transparent
     border-transparent
-    text-foreground
-    hover:bg-accent/50
-    active:bg-accent/70
+    text-muted-foreground
+    hover:bg-accent
+    hover:text-foreground
+    active:bg-accent/80
   `,
 };
 
