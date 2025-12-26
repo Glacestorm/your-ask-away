@@ -10939,6 +10939,207 @@ export type Database = {
           },
         ]
       }
+      knowledge_article_versions: {
+        Row: {
+          article_id: string
+          category: string
+          change_reason: string | null
+          changed_by: string | null
+          content: string
+          created_at: string
+          id: string
+          summary: string | null
+          tags: string[] | null
+          title: string
+          version: number
+        }
+        Insert: {
+          article_id: string
+          category: string
+          change_reason?: string | null
+          changed_by?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          summary?: string | null
+          tags?: string[] | null
+          title: string
+          version: number
+        }
+        Update: {
+          article_id?: string
+          category?: string
+          change_reason?: string | null
+          changed_by?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          summary?: string | null
+          tags?: string[] | null
+          title?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_article_versions_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_articles: {
+        Row: {
+          author_id: string | null
+          category: string
+          content: string
+          created_at: string
+          embedding: string | null
+          helpful_count: number
+          id: string
+          language: string | null
+          metadata: Json | null
+          not_helpful_count: number
+          published_at: string | null
+          source_type: string | null
+          source_url: string | null
+          status: string
+          summary: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          version: number
+          view_count: number
+        }
+        Insert: {
+          author_id?: string | null
+          category?: string
+          content: string
+          created_at?: string
+          embedding?: string | null
+          helpful_count?: number
+          id?: string
+          language?: string | null
+          metadata?: Json | null
+          not_helpful_count?: number
+          published_at?: string | null
+          source_type?: string | null
+          source_url?: string | null
+          status?: string
+          summary?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          version?: number
+          view_count?: number
+        }
+        Update: {
+          author_id?: string | null
+          category?: string
+          content?: string
+          created_at?: string
+          embedding?: string | null
+          helpful_count?: number
+          id?: string
+          language?: string | null
+          metadata?: Json | null
+          not_helpful_count?: number
+          published_at?: string | null
+          source_type?: string | null
+          source_url?: string | null
+          status?: string
+          summary?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          version?: number
+          view_count?: number
+        }
+        Relationships: []
+      }
+      knowledge_search_logs: {
+        Row: {
+          created_at: string
+          id: string
+          query: string
+          query_type: string
+          response_time_ms: number | null
+          results_count: number
+          session_id: string | null
+          top_result_id: string | null
+          user_id: string | null
+          was_helpful: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          query: string
+          query_type?: string
+          response_time_ms?: number | null
+          results_count?: number
+          session_id?: string | null
+          top_result_id?: string | null
+          user_id?: string | null
+          was_helpful?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          query?: string
+          query_type?: string
+          response_time_ms?: number | null
+          results_count?: number
+          session_id?: string | null
+          top_result_id?: string | null
+          user_id?: string | null
+          was_helpful?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_search_logs_top_result_id_fkey"
+            columns: ["top_result_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_user_feedback: {
+        Row: {
+          article_id: string
+          comment: string | null
+          created_at: string
+          id: string
+          is_helpful: boolean
+          user_id: string | null
+        }
+        Insert: {
+          article_id: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          is_helpful: boolean
+          user_id?: string | null
+        }
+        Update: {
+          article_id?: string
+          comment?: string | null
+          created_at?: string
+          id?: string
+          is_helpful?: boolean
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_user_feedback_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_articles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kpi_report_history: {
         Row: {
           created_at: string
@@ -24828,6 +25029,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_knowledge_article_view: {
+        Args: { article_id: string }
+        Returns: undefined
+      }
       increment_read_count: { Args: { article_id: string }; Returns: undefined }
       is_admin_or_superadmin: { Args: { _user_id: string }; Returns: boolean }
       is_mfa_required_for_role: {
@@ -24922,6 +25127,26 @@ export type Database = {
           metadata: Json
           similarity: number
           statement_id: string
+        }[]
+      }
+      search_knowledge_articles: {
+        Args: {
+          filter_category?: string
+          filter_status?: string
+          match_count?: number
+          match_threshold?: number
+          query_embedding: string
+        }
+        Returns: {
+          category: string
+          content: string
+          helpful_count: number
+          id: string
+          similarity: number
+          summary: string
+          tags: string[]
+          title: string
+          view_count: number
         }[]
       }
       subscribe_to_channel: {
