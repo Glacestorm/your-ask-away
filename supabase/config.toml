@@ -498,6 +498,9 @@ verify_jwt = true
 [functions.predictive-churn]
 verify_jwt = true
 
+[functions.esg-sustainability]
+verify_jwt = true
+
 [functions.predictive-revenue]
 verify_jwt = true
 
