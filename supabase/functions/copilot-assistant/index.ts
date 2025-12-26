@@ -9,10 +9,27 @@ import {
 } from '../_shared/owasp-security.ts';
 import { getClientIP, generateRequestId } from '../_shared/edge-function-template.ts';
 
+// === TIPOS DE SUGERENCIAS 2026 ===
+type SuggestionType2026 = 
+  | 'action' 
+  | 'insight' 
+  | 'alert' 
+  | 'recommendation'
+  | 'coaching'
+  | 'automation'
+  | 'collaboration'
+  | 'learning'
+  | 'compliance'
+  | 'opportunity'
+  | 'risk_mitigation'
+  | 'workflow';
+
 interface CopilotRequest {
-  action: 'generate_suggestions' | 'execute_action' | 'quick_action';
+  action: 'generate_suggestions' | 'generate_suggestions_2026' | 'execute_action' | 'quick_action' | 'generate_my_day';
   userId: string;
   role?: string;
+  sector?: string;
+  cnaeCode?: string;
   context?: Record<string, unknown>;
   suggestion?: unknown;
   actionId?: string;
