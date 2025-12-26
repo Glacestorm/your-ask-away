@@ -17,12 +17,22 @@ import {
   Target,
   Users,
   DollarSign,
-  Activity
+  Activity,
+  Map,
+  Calculator,
+  Shield,
+  FileText,
+  Zap
 } from 'lucide-react';
 import { CSMetricsDashboard } from '@/components/cs-metrics/CSMetricsDashboard';
 import { CSMetricsAssistant } from '@/components/cs-metrics/CSMetricsAssistant';
 import { PredictiveAnalytics } from '@/components/cs-metrics/PredictiveAnalytics';
 import { MetricsCorrelationMatrix } from '@/components/cs-metrics/MetricsCorrelationMatrix';
+import { CustomerJourneyHeatmap } from '@/components/cs-metrics/CustomerJourneyHeatmap';
+import { WhatIfSimulator } from '@/components/cs-metrics/WhatIfSimulator';
+import { RiskRadar } from '@/components/cs-metrics/RiskRadar';
+import { ExecutiveSummaryGenerator } from '@/components/cs-metrics/ExecutiveSummaryGenerator';
+import { AIRecommendationsFeed } from '@/components/cs-metrics/AIRecommendationsFeed';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LineChart, Line, AreaChart, Area } from 'recharts';
@@ -182,7 +192,7 @@ export default function CSMetricsPage() {
         <div className="flex items-center gap-2">
           <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0">
             <Sparkles className="h-3 w-3 mr-1" />
-            Incluye métricas 2025
+            29 métricas 2026+
           </Badge>
           <Button variant="outline" size="sm" onClick={exportPDF}>
             <Download className="h-4 w-4 mr-2" />
@@ -193,7 +203,7 @@ export default function CSMetricsPage() {
 
       {/* Main tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="flex-wrap h-auto p-1">
+        <TabsList className="flex-wrap h-auto p-1 gap-1">
           <TabsTrigger value="dashboard" className="gap-2">
             <LayoutGrid className="h-4 w-4" />
             <span className="hidden sm:inline">Dashboard</span>
@@ -202,9 +212,29 @@ export default function CSMetricsPage() {
             <BarChart3 className="h-4 w-4" />
             <span className="hidden sm:inline">Analytics</span>
           </TabsTrigger>
+          <TabsTrigger value="journey" className="gap-2">
+            <Map className="h-4 w-4" />
+            <span className="hidden sm:inline">Journey</span>
+          </TabsTrigger>
+          <TabsTrigger value="risk" className="gap-2">
+            <Shield className="h-4 w-4" />
+            <span className="hidden sm:inline">Risk Radar</span>
+          </TabsTrigger>
+          <TabsTrigger value="simulator" className="gap-2">
+            <Calculator className="h-4 w-4" />
+            <span className="hidden sm:inline">Simulator</span>
+          </TabsTrigger>
+          <TabsTrigger value="ai-insights" className="gap-2">
+            <Zap className="h-4 w-4" />
+            <span className="hidden sm:inline">AI Insights</span>
+          </TabsTrigger>
+          <TabsTrigger value="executive" className="gap-2">
+            <FileText className="h-4 w-4" />
+            <span className="hidden sm:inline">Executive</span>
+          </TabsTrigger>
           <TabsTrigger value="assistant" className="gap-2">
             <MessageCircle className="h-4 w-4" />
-            <span className="hidden sm:inline">Asistente IA</span>
+            <span className="hidden sm:inline">Asistente</span>
           </TabsTrigger>
           <TabsTrigger value="predictive" className="gap-2">
             <Brain className="h-4 w-4" />
