@@ -80,7 +80,6 @@ export const ObelixiaAdminHeader: React.FC<ObelixiaAdminHeaderProps> = ({
         {/* Center: Breadcrumbs */}
         <div className="hidden lg:flex flex-1 justify-center">
           <AdminBreadcrumbs 
-            currentSection={activeTab !== 'quotes' ? getTabLabel(activeTab) : undefined}
             className={isDark ? "text-slate-400" : "text-slate-500"}
           />
         </div>
@@ -139,7 +138,6 @@ export const ObelixiaAdminHeader: React.FC<ObelixiaAdminHeaderProps> = ({
       {/* Mobile breadcrumbs */}
       <div className="lg:hidden">
         <AdminBreadcrumbs 
-          currentSection={activeTab !== 'quotes' ? getTabLabel(activeTab) : undefined}
           className={isDark ? "text-slate-400" : "text-slate-500"}
         />
       </div>

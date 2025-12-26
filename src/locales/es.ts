@@ -274,8 +274,12 @@ export default {
   'admin.roleSelector.gestor.desc': 'Dashboard personal',
   'admin.roleSelector.auditor': 'Auditor',
   'admin.roleSelector.auditor.desc': 'Auditoría y registros',
-  'admin.roleSelector.dora': 'Compliance DORA',
-  'admin.roleSelector.dora.desc': 'Resiliencia y NIS2',
+  'admin.roleSelector.commercialAudit': 'Auditoría Comercial',
+  'admin.roleSelector.commercialAudit.desc': 'Revisión de actividad',
+  'admin.roleSelector.visitSheets': 'Fichas de Visita',
+  'admin.roleSelector.visitSheets.desc': 'Gestión de visitas',
+  'admin.roleSelector.map': 'Mapa de Empresas',
+  'admin.roleSelector.map.desc': 'Visualización geográfica',
 
   // Admin Section Titles (for header)
   'admin.sectionTitle.director': 'Director de Negocio',

@@ -131,21 +131,28 @@ const Admin = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialSection = searchParams.get('section') || 'director';
   const [activeSection, setActiveSection] = useState(initialSection);
+  const [isNavigatingHistory, setIsNavigatingHistory] = useState(false);
   
   // Navigation history
   const { canGoBack, canGoForward, goBack, goForward, push } = useNavigationHistory(initialSection);
 
   // Sync URL with active section - always prioritize URL
+  // Solo hacer push cuando NO estamos navegando con back/forward
   useEffect(() => {
     const sectionFromUrl = searchParams.get('section');
     if (sectionFromUrl && sectionFromUrl !== activeSection) {
       setActiveSection(sectionFromUrl);
-      push(sectionFromUrl);
+      // Solo push si no estamos navegando en el historial
+      if (!isNavigatingHistory) {
+        push(sectionFromUrl);
+      }
+      setIsNavigatingHistory(false);
     }
   }, [searchParams]);
 
   // Update URL when section changes
   const handleSectionChange = useCallback((section: string) => {
+    setIsNavigatingHistory(false);
     setActiveSection(section);
     setSearchParams({ section });
     push(section);
@@ -155,6 +162,7 @@ const Admin = () => {
   const handleGoBack = useCallback(() => {
     const previousSection = goBack();
     if (previousSection) {
+      setIsNavigatingHistory(true);
       setActiveSection(previousSection);
       setSearchParams({ section: previousSection });
     }
@@ -163,6 +171,7 @@ const Admin = () => {
   const handleGoForward = useCallback(() => {
     const nextSection = goForward();
     if (nextSection) {
+      setIsNavigatingHistory(true);
       setActiveSection(nextSection);
       setSearchParams({ section: nextSection });
     }
@@ -1895,7 +1904,8 @@ const Admin = () => {
                 {t('admin.roleSelector.subtitle')}
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {/* Director de Negocio */}
               <Card 
                 className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50"
                 onClick={() => handleSectionChange('director')}
@@ -1910,13 +1920,14 @@ const Admin = () => {
                   </div>
                 </CardContent>
               </Card>
+              {/* Director de Oficina */}
               <Card 
                 className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50"
                 onClick={() => handleSectionChange('office-director')}
               >
                 <CardContent className="p-6 flex flex-col items-center text-center gap-3">
                   <div className="h-14 w-14 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
-                    <Activity className="h-7 w-7 text-white" />
+                    <Building2 className="h-7 w-7 text-white" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg">{t('admin.roleSelector.officeDirector')}</h3>
@@ -1924,13 +1935,14 @@ const Admin = () => {
                   </div>
                 </CardContent>
               </Card>
+              {/* Responsable Comercial */}
               <Card 
                 className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50"
                 onClick={() => handleSectionChange('commercial-manager')}
               >
                 <CardContent className="p-6 flex flex-col items-center text-center gap-3">
                   <div className="h-14 w-14 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg">
-                    <Activity className="h-7 w-7 text-white" />
+                    <Briefcase className="h-7 w-7 text-white" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg">{t('admin.roleSelector.commercialManager')}</h3>
@@ -1938,13 +1950,14 @@ const Admin = () => {
                   </div>
                 </CardContent>
               </Card>
+              {/* Gestor */}
               <Card 
                 className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50"
                 onClick={() => handleSectionChange('gestor-dashboard')}
               >
                 <CardContent className="p-6 flex flex-col items-center text-center gap-3">
                   <div className="h-14 w-14 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-lg">
-                    <Activity className="h-7 w-7 text-white" />
+                    <Users className="h-7 w-7 text-white" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg">{t('admin.roleSelector.gestor')}</h3>
@@ -1952,13 +1965,14 @@ const Admin = () => {
                   </div>
                 </CardContent>
               </Card>
+              {/* Auditor */}
               <Card 
                 className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50"
                 onClick={() => handleSectionChange('audit')}
               >
                 <CardContent className="p-6 flex flex-col items-center text-center gap-3">
                   <div className="h-14 w-14 rounded-full bg-gradient-to-br from-slate-500 to-slate-600 flex items-center justify-center shadow-lg">
-                    <Activity className="h-7 w-7 text-white" />
+                    <ClipboardCheck className="h-7 w-7 text-white" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-lg">{t('admin.roleSelector.auditor')}</h3>
@@ -1966,32 +1980,48 @@ const Admin = () => {
                   </div>
                 </CardContent>
               </Card>
+              {/* Auditoría Comercial */}
               <Card 
-                className="cursor-pointer hover:shadow-md transition-all hover:border-red-500/50 border-2 border-red-500/30 bg-gradient-to-br from-red-500/5 to-red-500/10"
-                onClick={() => handleSectionChange('dora-compliance')}
+                className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50"
+                onClick={() => handleSectionChange('commercial-manager-audit')}
               >
                 <CardContent className="p-6 flex flex-col items-center text-center gap-3">
-                  <div className="h-14 w-14 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg">
-                    <Shield className="h-7 w-7 text-white" />
+                  <div className="h-14 w-14 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                    <History className="h-7 w-7 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg text-red-700 dark:text-red-400">{t('admin.roleSelector.dora')}</h3>
-                    <p className="text-sm text-muted-foreground">{t('admin.roleSelector.dora.desc')}</p>
+                    <h3 className="font-semibold text-lg">{t('admin.roleSelector.commercialAudit')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('admin.roleSelector.commercialAudit.desc')}</p>
                   </div>
                 </CardContent>
               </Card>
-              {/* AMA - Autenticación Multifactor Adaptativa */}
+              {/* Fichas de Visita */}
               <Card 
-                className="cursor-pointer hover:shadow-md transition-all hover:border-cyan-500/50 border-2 border-cyan-500/30 bg-gradient-to-br from-cyan-500/5 to-cyan-500/10"
-                onClick={() => handleSectionChange('adaptive-auth')}
+                className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50"
+                onClick={() => handleSectionChange('visit-sheets')}
               >
                 <CardContent className="p-6 flex flex-col items-center text-center gap-3">
-                  <div className="h-14 w-14 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center shadow-lg">
-                    <Shield className="h-7 w-7 text-white" />
+                  <div className="h-14 w-14 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center shadow-lg">
+                    <FileText className="h-7 w-7 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg text-cyan-700 dark:text-cyan-400">{t('admin.card.ama')}</h3>
-                    <p className="text-sm text-muted-foreground">{t('admin.card.ama.desc')}</p>
+                    <h3 className="font-semibold text-lg">{t('admin.roleSelector.visitSheets')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('admin.roleSelector.visitSheets.desc')}</p>
+                  </div>
+                </CardContent>
+              </Card>
+              {/* Mapa */}
+              <Card 
+                className="cursor-pointer hover:shadow-md transition-all hover:border-primary/50"
+                onClick={() => handleSectionChange('map')}
+              >
+                <CardContent className="p-6 flex flex-col items-center text-center gap-3">
+                  <div className="h-14 w-14 rounded-full bg-gradient-to-br from-rose-500 to-rose-600 flex items-center justify-center shadow-lg">
+                    <Eye className="h-7 w-7 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">{t('admin.roleSelector.map')}</h3>
+                    <p className="text-sm text-muted-foreground">{t('admin.roleSelector.map.desc')}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -2083,10 +2113,10 @@ const Admin = () => {
               />
             )}
             
-            {/* Breadcrumbs and Panel Switcher - solo si NO es section administration para evitar duplicación */}
+            {/* Actions Row - sin duplicar el título que ya está en GlobalNavHeader */}
             {activeSection !== 'administration' && (
               <div className="flex items-center justify-between">
-                <AdminBreadcrumbs currentSection={getSectionTitle()} />
+                <AdminBreadcrumbs />
                 <div className="flex items-center gap-2">
                   <AdminGlobalSearch />
                   <AdminPanelSwitcher />
