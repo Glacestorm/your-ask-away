@@ -7,80 +7,41 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { Home, Shield, LayoutGrid } from 'lucide-react';
+import { Shield, LayoutGrid, ChevronRight } from 'lucide-react';
 import React from 'react';
 
 interface AdminBreadcrumbsProps {
-  currentSection?: string;
   className?: string;
 }
 
-const routeLabels: Record<string, string> = {
-  '/admin': 'Administración',
-  '/obelixia-admin': 'ObelixIA Admin',
-  '/dashboard': 'Dashboard',
-  '/settings': 'Configuración',
-};
-
-export function AdminBreadcrumbs({ currentSection, className }: AdminBreadcrumbsProps) {
+export function AdminBreadcrumbs({ className }: AdminBreadcrumbsProps) {
   const location = useLocation();
-  const pathSegments = location.pathname.split('/').filter(Boolean);
   
-  const buildBreadcrumbs = () => {
-    const crumbs: { label: string; path: string; isLast: boolean }[] = [];
-    let currentPath = '';
-    
-    pathSegments.forEach((segment, index) => {
-      currentPath += `/${segment}`;
-      const isLast = index === pathSegments.length - 1;
-      
-      // Skip obelixia-admin y admin del breadcrumb (se muestran en el header principal)
-      if (currentPath === '/obelixia-admin' || currentPath === '/admin') return;
-      
-      let label = routeLabels[currentPath] || segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ');
-      
-      crumbs.push({ label, path: currentPath, isLast });
-    });
-    
-    return crumbs;
+  // Determinar el label e icono base según la ruta
+  const getBaseConfig = () => {
+    if (location.pathname === '/admin') {
+      return { label: 'Administración', icon: <LayoutGrid className="h-3.5 w-3.5" />, path: '/admin' };
+    }
+    if (location.pathname === '/obelixia-admin') {
+      return { label: 'ObelixIA Admin', icon: <Shield className="h-3.5 w-3.5" />, path: '/obelixia-admin' };
+    }
+    return { label: 'Dashboard', icon: <LayoutGrid className="h-3.5 w-3.5" />, path: '/dashboard' };
   };
 
-  const breadcrumbs = buildBreadcrumbs();
+  const baseConfig = getBaseConfig();
 
   return (
     <Breadcrumb className={className}>
       <BreadcrumbList>
-        {breadcrumbs.map((crumb, index) => (
-          <React.Fragment key={crumb.path}>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              {crumb.isLast && !currentSection ? (
-                <BreadcrumbPage className="flex items-center gap-1.5">
-                  {crumb.path === '/admin' && <LayoutGrid className="h-3.5 w-3.5" />}
-                  {crumb.path === '/obelixia-admin' && <Shield className="h-3.5 w-3.5" />}
-                  {crumb.label}
-                </BreadcrumbPage>
-              ) : (
-                <BreadcrumbLink asChild>
-                  <Link to={crumb.path} className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
-                    {crumb.path === '/admin' && <LayoutGrid className="h-3.5 w-3.5" />}
-                    {crumb.path === '/obelixia-admin' && <Shield className="h-3.5 w-3.5" />}
-                    {crumb.label}
-                  </Link>
-                </BreadcrumbLink>
-              )}
-            </BreadcrumbItem>
-          </React.Fragment>
-        ))}
-        
-        {currentSection && (
-          <React.Fragment>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>{currentSection}</BreadcrumbPage>
-            </BreadcrumbItem>
-          </React.Fragment>
-        )}
+        {/* Solo mostrar el breadcrumb base - el título de sección ya está en el Header */}
+        <BreadcrumbItem>
+          <BreadcrumbLink asChild>
+            <Link to={baseConfig.path} className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
+              {baseConfig.icon}
+              <span>{baseConfig.label}</span>
+            </Link>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
       </BreadcrumbList>
     </Breadcrumb>
   );
