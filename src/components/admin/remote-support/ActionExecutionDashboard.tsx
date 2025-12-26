@@ -263,7 +263,7 @@ export function ActionExecutionDashboard({
                         <span className="text-sm font-medium text-emerald-400">En Progreso</span>
                       </div>
                       <Badge variant="outline" className="text-xs">
-                        {format(new Date(currentExecution.started_at), 'HH:mm:ss')}
+                        {currentExecution.started_at ? format(new Date(currentExecution.started_at), 'HH:mm:ss') : '--:--:--'}
                       </Badge>
                     </div>
                     
@@ -298,7 +298,7 @@ export function ActionExecutionDashboard({
                         <div>
                           <p className="text-sm font-medium">Ejecución #{exec.id.slice(0, 8)}</p>
                           <p className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(exec.started_at), { locale: es, addSuffix: true })}
+                            {exec.started_at ? formatDistanceToNow(new Date(exec.started_at), { locale: es, addSuffix: true }) : 'Pendiente'}
                           </p>
                         </div>
                       </div>
