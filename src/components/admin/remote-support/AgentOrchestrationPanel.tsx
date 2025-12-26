@@ -56,7 +56,7 @@ export function AgentOrchestrationPanel({
     startOrchestration
   } = useSupportAgentOrchestrator();
 
-  const activeSessions = sessions.filter(s => s.status === 'in_progress');
+  const activeSessions = sessions.filter(s => s.status === 'active');
   const currentSession = activeSessions[0] || null;
   const sessionTasks = activeTasks;
 
@@ -69,14 +69,14 @@ export function AgentOrchestrationPanel({
     if (!ticketId || !ticketContext) return;
 
     const session = await startOrchestration({
-      ticketId,
-      issueType: ticketContext.category,
-      priorityLevel: ticketContext.priority === 'high' ? 3 : ticketContext.priority === 'medium' ? 2 : 1,
-      initialContext: ticketContext as Record<string, unknown>
+      problemDescription: ticketContext.description || ticketContext.title,
+      category: ticketContext.category,
+      severity: ticketContext.priority === 'high' ? 'high' : ticketContext.priority === 'medium' ? 'medium' : 'low',
+      customerData: ticketContext as Record<string, unknown>
     });
 
     if (session) {
-      onSessionCreated?.(session.id);
+      onSessionCreated?.(session.sessionId);
     }
   }, [ticketId, ticketContext, startOrchestration, onSessionCreated]);
 
@@ -128,7 +128,7 @@ export function AgentOrchestrationPanel({
             <Button 
               variant="ghost" 
               size="icon" 
-              onClick={() => { fetchAgents(); fetchActiveSessions(); }}
+              onClick={() => { fetchAgents(); fetchSessions(); }}
               disabled={isLoading}
               className="h-8 w-8"
             >
@@ -248,10 +248,10 @@ export function AgentOrchestrationPanel({
                     
                     <div className="space-y-1">
                       <div className="flex justify-between text-xs">
-                        <span>Progreso</span>
-                        <span>{currentSession.overall_confidence}%</span>
+                        <span>Acciones</span>
+                        <span>{currentSession.total_actions_taken}</span>
                       </div>
-                      <Progress value={currentSession.overall_confidence || 0} className="h-1.5" />
+                      <Progress value={currentSession.auto_resolved ? 100 : 50} className="h-1.5" />
                     </div>
 
                     {sessionTasks.length > 0 && (
