@@ -14,3 +14,8 @@ export {
   type HealthMetrics,
   type RealtimeStatus
 } from './useSupportPredictiveAnalytics';
+
+// Phase 6: Security, Reports, Integrations
+export { useSupportAuditLogger, type AuditEntry, type SecurityAnalysis, type ComplianceReport } from './useSupportAuditLogger';
+export { useSupportReportGenerator, type MetricsReport, type SessionReport, type PerformanceReport, type ReportTemplate } from './useSupportReportGenerator';
+export { useSupportExternalIntegrations, type Integration, type ExternalTicket, type WebhookResult, type NotificationResult } from './useSupportExternalIntegrations';
