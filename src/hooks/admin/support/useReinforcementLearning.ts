@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
+import type { Json } from '@/integrations/supabase/types';
 
 // === INTERFACES ===
 export interface AgentFeedback {
@@ -103,7 +104,7 @@ export function useReinforcementLearning() {
           orchestration_session_id: input.sessionId || null,
           agent_task_id: input.taskId || null,
           action_execution_id: input.executionId || null,
-          context_snapshot: input.contextSnapshot as Record<string, unknown> | null,
+          context_snapshot: (input.contextSnapshot || null) as Json,
           given_by: user?.id || null
         }]);
 
@@ -133,7 +134,7 @@ export function useReinforcementLearning() {
           feedback_type: 'implicit_signal',
           outcome_score: outcomeScore,
           feedback_source: 'automated',
-          context_snapshot: context as Record<string, unknown>
+          context_snapshot: context as Json
         }]);
 
       if (insertError) throw insertError;
@@ -161,7 +162,7 @@ export function useReinforcementLearning() {
           feedback_source: 'system',
           orchestration_session_id: sessionId,
           actual_outcome: resolved ? 'resolved' : 'unresolved',
-          context_snapshot: details as Record<string, unknown>
+          context_snapshot: details as Json
         }]);
 
       if (insertError) throw insertError;
@@ -269,8 +270,8 @@ export function useReinforcementLearning() {
           agent_key: agentKey,
           pattern_type: patternType,
           pattern_name: patternName,
-          trigger_conditions: triggerConditions as Record<string, unknown>,
-          recommended_actions: recommendedActions as Record<string, unknown>,
+          trigger_conditions: triggerConditions as Json,
+          recommended_actions: recommendedActions as Json,
           derived_from_feedbacks: feedbackIds
         }]);
 

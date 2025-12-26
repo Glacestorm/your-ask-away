@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
+import type { Json } from '@/integrations/supabase/types';
 
 // === INTERFACES ===
 export interface SpecializedAgent {
@@ -314,7 +315,7 @@ export function useSupportAgentOrchestrator() {
         .from('support_orchestration_sessions')
         .update({
           status: 'completed',
-          resolution_summary: resolution as unknown,
+          resolution_summary: resolution as Json,
           auto_resolved: true,
           completed_at: new Date().toISOString()
         })
