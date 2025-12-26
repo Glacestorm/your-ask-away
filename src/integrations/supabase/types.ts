@@ -21148,6 +21148,333 @@ export type Database = {
           },
         ]
       }
+      support_action_executions: {
+        Row: {
+          action_key: string
+          agent_task_id: string | null
+          approved_by: string | null
+          can_rollback: boolean | null
+          completed_at: string | null
+          confidence_score: number | null
+          created_at: string | null
+          error_details: Json | null
+          executed_by_agent: string | null
+          execution_time_ms: number | null
+          id: string
+          input_params: Json | null
+          orchestration_session_id: string | null
+          output_result: Json | null
+          post_execution_snapshot: Json | null
+          pre_execution_snapshot: Json | null
+          rollback_result: Json | null
+          rolled_back_at: string | null
+          started_at: string | null
+          status: string
+        }
+        Insert: {
+          action_key: string
+          agent_task_id?: string | null
+          approved_by?: string | null
+          can_rollback?: boolean | null
+          completed_at?: string | null
+          confidence_score?: number | null
+          created_at?: string | null
+          error_details?: Json | null
+          executed_by_agent?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          input_params?: Json | null
+          orchestration_session_id?: string | null
+          output_result?: Json | null
+          post_execution_snapshot?: Json | null
+          pre_execution_snapshot?: Json | null
+          rollback_result?: Json | null
+          rolled_back_at?: string | null
+          started_at?: string | null
+          status?: string
+        }
+        Update: {
+          action_key?: string
+          agent_task_id?: string | null
+          approved_by?: string | null
+          can_rollback?: boolean | null
+          completed_at?: string | null
+          confidence_score?: number | null
+          created_at?: string | null
+          error_details?: Json | null
+          executed_by_agent?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          input_params?: Json | null
+          orchestration_session_id?: string | null
+          output_result?: Json | null
+          post_execution_snapshot?: Json | null
+          pre_execution_snapshot?: Json | null
+          rollback_result?: Json | null
+          rolled_back_at?: string | null
+          started_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_action_executions_action_key_fkey"
+            columns: ["action_key"]
+            isOneToOne: false
+            referencedRelation: "support_executable_actions"
+            referencedColumns: ["action_key"]
+          },
+          {
+            foreignKeyName: "support_action_executions_agent_task_id_fkey"
+            columns: ["agent_task_id"]
+            isOneToOne: false
+            referencedRelation: "support_agent_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_action_executions_orchestration_session_id_fkey"
+            columns: ["orchestration_session_id"]
+            isOneToOne: false
+            referencedRelation: "support_orchestration_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_agent_feedback: {
+        Row: {
+          action_execution_id: string | null
+          action_taken: string | null
+          actual_outcome: string | null
+          agent_key: string
+          agent_task_id: string | null
+          applied_at: string | null
+          applied_to_training: boolean | null
+          context_snapshot: Json | null
+          created_at: string | null
+          expected_outcome: string | null
+          feedback_source: string | null
+          feedback_text: string | null
+          feedback_type: string
+          given_by: string | null
+          id: string
+          improvement_suggestion: string | null
+          learned_pattern: Json | null
+          orchestration_session_id: string | null
+          outcome_score: number
+          user_rating: number | null
+        }
+        Insert: {
+          action_execution_id?: string | null
+          action_taken?: string | null
+          actual_outcome?: string | null
+          agent_key: string
+          agent_task_id?: string | null
+          applied_at?: string | null
+          applied_to_training?: boolean | null
+          context_snapshot?: Json | null
+          created_at?: string | null
+          expected_outcome?: string | null
+          feedback_source?: string | null
+          feedback_text?: string | null
+          feedback_type: string
+          given_by?: string | null
+          id?: string
+          improvement_suggestion?: string | null
+          learned_pattern?: Json | null
+          orchestration_session_id?: string | null
+          outcome_score: number
+          user_rating?: number | null
+        }
+        Update: {
+          action_execution_id?: string | null
+          action_taken?: string | null
+          actual_outcome?: string | null
+          agent_key?: string
+          agent_task_id?: string | null
+          applied_at?: string | null
+          applied_to_training?: boolean | null
+          context_snapshot?: Json | null
+          created_at?: string | null
+          expected_outcome?: string | null
+          feedback_source?: string | null
+          feedback_text?: string | null
+          feedback_type?: string
+          given_by?: string | null
+          id?: string
+          improvement_suggestion?: string | null
+          learned_pattern?: Json | null
+          orchestration_session_id?: string | null
+          outcome_score?: number
+          user_rating?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_agent_feedback_action_execution_id_fkey"
+            columns: ["action_execution_id"]
+            isOneToOne: false
+            referencedRelation: "support_action_executions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_agent_feedback_agent_task_id_fkey"
+            columns: ["agent_task_id"]
+            isOneToOne: false
+            referencedRelation: "support_agent_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_agent_feedback_orchestration_session_id_fkey"
+            columns: ["orchestration_session_id"]
+            isOneToOne: false
+            referencedRelation: "support_orchestration_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_agent_metrics: {
+        Row: {
+          agent_key: string
+          auto_resolved_count: number | null
+          avg_confidence_score: number | null
+          avg_execution_time_ms: number | null
+          created_at: string | null
+          escalated_tasks: number | null
+          failed_tasks: number | null
+          feedback_count: number | null
+          id: string
+          metric_date: string
+          patterns_applied: number | null
+          successful_tasks: number | null
+          total_tasks: number | null
+          total_tokens_used: number | null
+          updated_at: string | null
+          user_satisfaction_avg: number | null
+        }
+        Insert: {
+          agent_key: string
+          auto_resolved_count?: number | null
+          avg_confidence_score?: number | null
+          avg_execution_time_ms?: number | null
+          created_at?: string | null
+          escalated_tasks?: number | null
+          failed_tasks?: number | null
+          feedback_count?: number | null
+          id?: string
+          metric_date?: string
+          patterns_applied?: number | null
+          successful_tasks?: number | null
+          total_tasks?: number | null
+          total_tokens_used?: number | null
+          updated_at?: string | null
+          user_satisfaction_avg?: number | null
+        }
+        Update: {
+          agent_key?: string
+          auto_resolved_count?: number | null
+          avg_confidence_score?: number | null
+          avg_execution_time_ms?: number | null
+          created_at?: string | null
+          escalated_tasks?: number | null
+          failed_tasks?: number | null
+          feedback_count?: number | null
+          id?: string
+          metric_date?: string
+          patterns_applied?: number | null
+          successful_tasks?: number | null
+          total_tasks?: number | null
+          total_tokens_used?: number | null
+          updated_at?: string | null
+          user_satisfaction_avg?: number | null
+        }
+        Relationships: []
+      }
+      support_agent_tasks: {
+        Row: {
+          agent_key: string
+          completed_at: string | null
+          confidence_score: number | null
+          created_at: string | null
+          depends_on_tasks: string[] | null
+          error_message: string | null
+          execution_time_ms: number | null
+          id: string
+          input_context: Json | null
+          max_retries: number | null
+          orchestration_session_id: string
+          output_result: Json | null
+          parent_task_id: string | null
+          retry_count: number | null
+          started_at: string | null
+          status: string
+          task_description: string | null
+          task_type: string
+          tokens_used: number | null
+        }
+        Insert: {
+          agent_key: string
+          completed_at?: string | null
+          confidence_score?: number | null
+          created_at?: string | null
+          depends_on_tasks?: string[] | null
+          error_message?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          input_context?: Json | null
+          max_retries?: number | null
+          orchestration_session_id: string
+          output_result?: Json | null
+          parent_task_id?: string | null
+          retry_count?: number | null
+          started_at?: string | null
+          status?: string
+          task_description?: string | null
+          task_type: string
+          tokens_used?: number | null
+        }
+        Update: {
+          agent_key?: string
+          completed_at?: string | null
+          confidence_score?: number | null
+          created_at?: string | null
+          depends_on_tasks?: string[] | null
+          error_message?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          input_context?: Json | null
+          max_retries?: number | null
+          orchestration_session_id?: string
+          output_result?: Json | null
+          parent_task_id?: string | null
+          retry_count?: number | null
+          started_at?: string | null
+          status?: string
+          task_description?: string | null
+          task_type?: string
+          tokens_used?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_agent_tasks_agent_key_fkey"
+            columns: ["agent_key"]
+            isOneToOne: false
+            referencedRelation: "support_specialized_agents"
+            referencedColumns: ["agent_key"]
+          },
+          {
+            foreignKeyName: "support_agent_tasks_orchestration_session_id_fkey"
+            columns: ["orchestration_session_id"]
+            isOneToOne: false
+            referencedRelation: "support_orchestration_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "support_agent_tasks_parent_task_id_fkey"
+            columns: ["parent_task_id"]
+            isOneToOne: false
+            referencedRelation: "support_agent_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_approval_requests: {
         Row: {
           action_id: string | null
@@ -21213,6 +21540,251 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      support_executable_actions: {
+        Row: {
+          action_category: string
+          action_key: string
+          action_name: string
+          approval_roles: string[] | null
+          avg_execution_time_ms: number | null
+          created_at: string | null
+          description: string | null
+          execution_count: number | null
+          id: string
+          input_schema: Json | null
+          is_active: boolean | null
+          max_execution_time_seconds: number | null
+          output_schema: Json | null
+          required_permissions: string[] | null
+          requires_approval: boolean | null
+          risk_level: string | null
+          rollback_action_key: string | null
+          script_template: string | null
+          script_type: string | null
+          success_rate: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          action_category: string
+          action_key: string
+          action_name: string
+          approval_roles?: string[] | null
+          avg_execution_time_ms?: number | null
+          created_at?: string | null
+          description?: string | null
+          execution_count?: number | null
+          id?: string
+          input_schema?: Json | null
+          is_active?: boolean | null
+          max_execution_time_seconds?: number | null
+          output_schema?: Json | null
+          required_permissions?: string[] | null
+          requires_approval?: boolean | null
+          risk_level?: string | null
+          rollback_action_key?: string | null
+          script_template?: string | null
+          script_type?: string | null
+          success_rate?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          action_category?: string
+          action_key?: string
+          action_name?: string
+          approval_roles?: string[] | null
+          avg_execution_time_ms?: number | null
+          created_at?: string | null
+          description?: string | null
+          execution_count?: number | null
+          id?: string
+          input_schema?: Json | null
+          is_active?: boolean | null
+          max_execution_time_seconds?: number | null
+          output_schema?: Json | null
+          required_permissions?: string[] | null
+          requires_approval?: boolean | null
+          risk_level?: string | null
+          rollback_action_key?: string | null
+          script_template?: string | null
+          script_type?: string | null
+          success_rate?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      support_learned_patterns: {
+        Row: {
+          agent_key: string
+          confidence_boost: number | null
+          created_at: string | null
+          derived_from_feedbacks: string[] | null
+          failure_count: number | null
+          id: string
+          is_active: boolean | null
+          last_applied_at: string | null
+          pattern_description: string | null
+          pattern_name: string
+          pattern_type: string
+          recommended_actions: Json | null
+          success_count: number | null
+          trigger_conditions: Json
+          updated_at: string | null
+        }
+        Insert: {
+          agent_key: string
+          confidence_boost?: number | null
+          created_at?: string | null
+          derived_from_feedbacks?: string[] | null
+          failure_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_applied_at?: string | null
+          pattern_description?: string | null
+          pattern_name: string
+          pattern_type: string
+          recommended_actions?: Json | null
+          success_count?: number | null
+          trigger_conditions: Json
+          updated_at?: string | null
+        }
+        Update: {
+          agent_key?: string
+          confidence_boost?: number | null
+          created_at?: string | null
+          derived_from_feedbacks?: string[] | null
+          failure_count?: number | null
+          id?: string
+          is_active?: boolean | null
+          last_applied_at?: string | null
+          pattern_description?: string | null
+          pattern_name?: string
+          pattern_type?: string
+          recommended_actions?: Json | null
+          success_count?: number | null
+          trigger_conditions?: Json
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      support_orchestration_sessions: {
+        Row: {
+          active_agents: string[] | null
+          auto_resolved: boolean | null
+          completed_at: string | null
+          context_data: Json | null
+          created_at: string | null
+          escalated_to: string | null
+          escalation_reason: string | null
+          id: string
+          initiated_by: string | null
+          orchestration_mode: string | null
+          resolution_summary: Json | null
+          resolution_time_ms: number | null
+          started_at: string | null
+          status: string
+          support_session_id: string | null
+          total_actions_taken: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          active_agents?: string[] | null
+          auto_resolved?: boolean | null
+          completed_at?: string | null
+          context_data?: Json | null
+          created_at?: string | null
+          escalated_to?: string | null
+          escalation_reason?: string | null
+          id?: string
+          initiated_by?: string | null
+          orchestration_mode?: string | null
+          resolution_summary?: Json | null
+          resolution_time_ms?: number | null
+          started_at?: string | null
+          status?: string
+          support_session_id?: string | null
+          total_actions_taken?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          active_agents?: string[] | null
+          auto_resolved?: boolean | null
+          completed_at?: string | null
+          context_data?: Json | null
+          created_at?: string | null
+          escalated_to?: string | null
+          escalation_reason?: string | null
+          id?: string
+          initiated_by?: string | null
+          orchestration_mode?: string | null
+          resolution_summary?: Json | null
+          resolution_time_ms?: number | null
+          started_at?: string | null
+          status?: string
+          support_session_id?: string | null
+          total_actions_taken?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_orchestration_sessions_support_session_id_fkey"
+            columns: ["support_session_id"]
+            isOneToOne: false
+            referencedRelation: "remote_support_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_specialized_agents: {
+        Row: {
+          agent_key: string
+          agent_name: string
+          agent_type: string
+          capabilities: Json | null
+          confidence_threshold: number | null
+          created_at: string | null
+          description: string | null
+          execution_priority: number | null
+          id: string
+          is_active: boolean | null
+          max_autonomous_actions: number | null
+          requires_approval_above: number | null
+          system_prompt: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          agent_key: string
+          agent_name: string
+          agent_type: string
+          capabilities?: Json | null
+          confidence_threshold?: number | null
+          created_at?: string | null
+          description?: string | null
+          execution_priority?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_autonomous_actions?: number | null
+          requires_approval_above?: number | null
+          system_prompt?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          agent_key?: string
+          agent_name?: string
+          agent_type?: string
+          capabilities?: Json | null
+          confidence_threshold?: number | null
+          created_at?: string | null
+          description?: string | null
+          execution_priority?: number | null
+          id?: string
+          is_active?: boolean | null
+          max_autonomous_actions?: number | null
+          requires_approval_above?: number | null
+          system_prompt?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       support_tickets: {
         Row: {
