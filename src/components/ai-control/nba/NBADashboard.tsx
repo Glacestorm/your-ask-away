@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { 
   Zap, 
@@ -16,11 +15,14 @@ import {
   CheckCircle2,
   XCircle,
   BarChart3,
-  Filter
+  AlertCircle,
+  Sparkles
 } from 'lucide-react';
-import { useNextBestAction, NBAQueueItem } from '@/hooks/useNextBestAction';
+import { useNextBestAction } from '@/hooks/useNextBestAction';
 import { NBAActionCard } from './NBAActionCard';
 import { NBAImpactTracker } from './NBAImpactTracker';
+import { formatDistanceToNow } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 export function NBADashboard() {
   const {
@@ -33,9 +35,15 @@ export function NBADashboard() {
     dismissNBA,
     generateNBAs,
     refetchQueue,
+    // KB 2.0
+    isError,
+    error,
+    lastRefresh,
+    clearError,
   } = useNextBestAction();
 
   const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [activeEffort, setActiveEffort] = useState<string>('all');
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleGenerate = async () => {
@@ -48,9 +56,12 @@ export function NBADashboard() {
     }
   };
 
-  const filteredQueue = activeCategory === 'all' 
-    ? nbaQueue 
-    : nbaQueue?.filter(item => item.action_type?.action_category === activeCategory);
+  // Filtrar por categoría y esfuerzo
+  const filteredQueue = nbaQueue?.filter(item => {
+    const categoryMatch = activeCategory === 'all' || item.action_type?.action_category === activeCategory;
+    const effortMatch = activeEffort === 'all' || item.action_type?.effort_level === activeEffort;
+    return categoryMatch && effortMatch;
+  });
 
   const categories = [
     { id: 'all', label: 'Tots', icon: BarChart3, color: 'text-foreground' },
@@ -58,6 +69,13 @@ export function NBADashboard() {
     { id: 'retention', label: 'Retenció', icon: Target, color: 'text-blue-500' },
     { id: 'compliance', label: 'Compliance', icon: Shield, color: 'text-amber-500' },
     { id: 'efficiency', label: 'Eficiència', icon: Zap, color: 'text-purple-500' },
+  ];
+
+  const effortLevels = [
+    { id: 'all', label: 'Tots', color: 'text-foreground' },
+    { id: 'low', label: 'Fàcil', color: 'text-green-500' },
+    { id: 'medium', label: 'Mitjà', color: 'text-amber-500' },
+    { id: 'high', label: 'Complex', color: 'text-red-500' },
   ];
 
   if (isLoading) {
@@ -72,6 +90,36 @@ export function NBADashboard() {
 
   return (
     <div className="space-y-4">
+      {/* Error State */}
+      {isError && error && (
+        <Card className="border-destructive/50 bg-destructive/10">
+          <CardContent className="py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-destructive">
+                <AlertCircle className="h-4 w-4" />
+                <span className="text-sm font-medium">{error.message}</span>
+              </div>
+              <Button variant="ghost" size="sm" onClick={clearError}>
+                <XCircle className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Last Refresh Indicator */}
+      {lastRefresh && (
+        <div className="flex items-center justify-end gap-2 text-xs text-muted-foreground">
+          <Clock className="h-3 w-3" />
+          <span>
+            Actualitzat {formatDistanceToNow(lastRefresh, { locale: es, addSuffix: true })}
+          </span>
+          <Button variant="ghost" size="sm" onClick={() => refetchQueue()} className="h-6 px-2">
+            <RefreshCw className="h-3 w-3" />
+          </Button>
+        </div>
+      )}
+
       {/* Header Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card className="bg-gradient-to-br from-primary/10 to-transparent">
@@ -177,6 +225,20 @@ export function NBADashboard() {
                         {stats.byCategory[cat.id]}
                       </Badge>
                     )}
+                  </Button>
+                ))}
+              </div>
+              {/* Effort Filter */}
+              <div className="flex bg-muted/50 rounded-lg p-1">
+                {effortLevels.map((effort) => (
+                  <Button
+                    key={effort.id}
+                    variant={activeEffort === effort.id ? 'secondary' : 'ghost'}
+                    size="sm"
+                    onClick={() => setActiveEffort(effort.id)}
+                    className="text-xs"
+                  >
+                    <span className={effort.color}>{effort.label}</span>
                   </Button>
                 ))}
               </div>
