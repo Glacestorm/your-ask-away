@@ -161,13 +161,22 @@ const Admin = () => {
 
   // Navigation history handlers
   const handleGoBack = useCallback(() => {
+    // Si no hay historial previo pero estamos en una sección que no es administration,
+    // volver a administration
+    if (!canGoBack && activeSection !== 'administration') {
+      setIsNavigatingHistory(true);
+      setActiveSection('administration');
+      setSearchParams({ section: 'administration' });
+      return;
+    }
+    
     const previousSection = goBack();
     if (previousSection) {
       setIsNavigatingHistory(true);
       setActiveSection(previousSection);
       setSearchParams({ section: previousSection });
     }
-  }, [goBack, setSearchParams]);
+  }, [goBack, setSearchParams, canGoBack, activeSection]);
 
   const handleGoForward = useCallback(() => {
     const nextSection = goForward();
@@ -2043,7 +2052,7 @@ const Admin = () => {
             {activeSection !== 'gestor-dashboard' && (
               <GlobalNavHeader 
                 title={getSectionTitle()}
-                canGoBack={activeSection !== 'administration' && canGoBack}
+                canGoBack={activeSection !== 'administration'}
                 canGoForward={activeSection !== 'administration' && canGoForward}
                 onGoBack={activeSection !== 'administration' ? handleGoBack : undefined}
                 onGoForward={activeSection !== 'administration' ? handleGoForward : undefined}
