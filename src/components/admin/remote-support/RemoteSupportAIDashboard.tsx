@@ -13,13 +13,18 @@ import {
   TrendingUp,
   Shield,
   Sparkles,
-  LineChart
+  LineChart,
+  FileText,
+  Plug
 } from 'lucide-react';
 import { AgentOrchestrationPanel } from './AgentOrchestrationPanel';
 import { ActionExecutionDashboard } from './ActionExecutionDashboard';
 import { ReinforcementLearningDashboard } from './ReinforcementLearningDashboard';
 import { KnowledgeBasePanel } from './KnowledgeBasePanel';
 import { PredictiveMonitoringPanel } from './PredictiveMonitoringPanel';
+import { AuditSecurityPanel } from './AuditSecurityPanel';
+import { ReportsExportPanel } from './ReportsExportPanel';
+import { ExternalIntegrationsPanel } from './ExternalIntegrationsPanel';
 import { useSupportPredictiveAnalytics } from '@/hooks/admin/support/useSupportPredictiveAnalytics';
 import { useSupportAgentOrchestrator } from '@/hooks/admin/support/useSupportAgentOrchestrator';
 import { useKnowledgeBase } from '@/hooks/admin/support/useKnowledgeBase';
@@ -82,7 +87,7 @@ export function RemoteSupportAIDashboard({
                 Soporte AI Autónomo
               <Badge className="bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white border-0">
                 <Sparkles className="h-3 w-3 mr-1" />
-                Fase 5
+                Fase 6
               </Badge>
               </CardTitle>
               <p className="text-sm text-muted-foreground">
@@ -159,26 +164,38 @@ export function RemoteSupportAIDashboard({
 
       <CardContent className="pt-4">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5 mb-4">
-            <TabsTrigger value="orchestration" className="text-sm">
-              <Bot className="h-4 w-4 mr-2" />
-              Orquestación
+          <TabsList className="grid w-full grid-cols-8 mb-4">
+            <TabsTrigger value="orchestration" className="text-xs">
+              <Bot className="h-3 w-3 mr-1" />
+              Agentes
             </TabsTrigger>
-            <TabsTrigger value="execution" className="text-sm">
-              <Zap className="h-4 w-4 mr-2" />
+            <TabsTrigger value="execution" className="text-xs">
+              <Zap className="h-3 w-3 mr-1" />
               Ejecución
             </TabsTrigger>
-            <TabsTrigger value="monitoring" className="text-sm">
-              <LineChart className="h-4 w-4 mr-2" />
+            <TabsTrigger value="monitoring" className="text-xs">
+              <LineChart className="h-3 w-3 mr-1" />
               Monitoreo
             </TabsTrigger>
-            <TabsTrigger value="learning" className="text-sm">
-              <Brain className="h-4 w-4 mr-2" />
-              Aprendizaje
+            <TabsTrigger value="learning" className="text-xs">
+              <Brain className="h-3 w-3 mr-1" />
+              RL
             </TabsTrigger>
-            <TabsTrigger value="knowledge" className="text-sm">
-              <BookOpen className="h-4 w-4 mr-2" />
-              Conocimiento
+            <TabsTrigger value="knowledge" className="text-xs">
+              <BookOpen className="h-3 w-3 mr-1" />
+              KB
+            </TabsTrigger>
+            <TabsTrigger value="audit" className="text-xs">
+              <Shield className="h-3 w-3 mr-1" />
+              Auditoría
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="text-xs">
+              <FileText className="h-3 w-3 mr-1" />
+              Reportes
+            </TabsTrigger>
+            <TabsTrigger value="integrations" className="text-xs">
+              <Plug className="h-3 w-3 mr-1" />
+              APIs
             </TabsTrigger>
           </TabsList>
 
@@ -213,6 +230,18 @@ export function RemoteSupportAIDashboard({
                 console.log('[RemoteSupportAIDashboard] Document selected:', doc.title);
               }}
             />
+          </TabsContent>
+
+          <TabsContent value="audit" className="mt-0">
+            <AuditSecurityPanel sessionId={activeSessionId || undefined} />
+          </TabsContent>
+
+          <TabsContent value="reports" className="mt-0">
+            <ReportsExportPanel />
+          </TabsContent>
+
+          <TabsContent value="integrations" className="mt-0">
+            <ExternalIntegrationsPanel sessionId={activeSessionId || undefined} />
           </TabsContent>
         </Tabs>
 
