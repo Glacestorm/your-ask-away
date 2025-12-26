@@ -144,7 +144,7 @@ export default {
   'admin.section.omnichannel': 'Comunicación Omnicanal',
   'admin.section.tools': 'Herramientas e Historial',
   'admin.section.processMining': 'Process Mining & BPMN',
-  'admin.section.aiSells': 'IA que Vende (Fase 6)',
+  'admin.section.aiSells': 'IA que Vende',
   'admin.section.verticals': 'Verticales CNAE (Fase 7)',
   
   // Admin Cards - Process Mining
