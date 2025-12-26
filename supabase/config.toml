@@ -593,3 +593,9 @@ verify_jwt = true
 
 [functions.realtime-insights]
 verify_jwt = true
+
+[functions.support-agent-orchestrator]
+verify_jwt = true
+
+[functions.execute-support-action]
+verify_jwt = true
