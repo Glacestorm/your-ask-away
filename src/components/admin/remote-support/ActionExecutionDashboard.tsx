@@ -63,13 +63,17 @@ export function ActionExecutionDashboard({
     }
   }, [fetchActions, fetchExecutions, sessionId]);
 
-  const handleExecuteAction = useCallback(async (actionId: string) => {
+  const handleExecuteAction = useCallback(async (actionKey: string) => {
     if (!sessionId) {
       toast.error('No hay sesión activa');
       return;
     }
 
-    const result = await executeAction(actionId, sessionId);
+    const result = await executeAction({
+      actionKey,
+      params: {},
+      sessionId
+    });
     if (result) {
       onActionComplete?.(result.executionId, result.success);
     }
@@ -146,7 +150,7 @@ export function ActionExecutionDashboard({
           <Button 
             variant="ghost" 
             size="icon" 
-            onClick={() => { fetchAvailableActions(); if (sessionId) fetchExecutions(sessionId); }}
+            onClick={() => { fetchActions(); if (sessionId) fetchExecutions(sessionId); }}
             disabled={isLoading}
             className="h-8 w-8"
           >
@@ -208,7 +212,7 @@ export function ActionExecutionDashboard({
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
-                          ~{action.estimated_duration_seconds}s
+                          ~{action.max_execution_time_seconds}s máx
                         </span>
                         {action.requires_approval && (
                           <span className="flex items-center gap-1 text-yellow-400">
@@ -216,7 +220,7 @@ export function ActionExecutionDashboard({
                             Requiere aprobación
                           </span>
                         )}
-                        {action.is_reversible && (
+                        {action.rollback_action_key && (
                           <span className="flex items-center gap-1 text-green-400">
                             <RotateCcw className="h-3 w-3" />
                             Reversible
@@ -227,7 +231,7 @@ export function ActionExecutionDashboard({
                       {selectedAction === action.id && sessionId && (
                         <Button 
                           size="sm"
-                          onClick={(e) => { e.stopPropagation(); handleExecuteAction(action.id); }}
+                          onClick={(e) => { e.stopPropagation(); handleExecuteAction(action.action_key); }}
                           className="bg-gradient-to-r from-emerald-500 to-green-600 text-white"
                         >
                           <Play className="h-3 w-3 mr-1" />
