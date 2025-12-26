@@ -124,7 +124,7 @@ export const CDPFullDashboard = lazy(() => import('@/components/admin/CDPFullDas
 export const MLExplainabilityPanel = lazy(() => import('@/components/admin/MLExplainabilityPanel').then(m => ({ default: m.MLExplainabilityPanel })));
 export const AdvancedMLDashboard = lazy(() => import('@/components/admin/AdvancedMLDashboard').then(m => ({ default: m.AdvancedMLDashboard })));
 export const PredictiveAnalyticsDashboard = lazy(() => import('@/components/admin/PredictiveAnalyticsDashboard').then(m => ({ default: m.PredictiveAnalyticsDashboard })));
-export const RoleCopilotPanel = lazy(() => import('@/components/ai-control').then(m => ({ default: m.RoleCopilotPanel })));
+export const RoleCopilotPanel = lazy(() => import('@/components/ai-control').then(m => ({ default: m.RoleCopilotDashboard2026 })));
 export const NBADashboard = lazy(() => import('@/components/ai-control').then(m => ({ default: m.NBADashboard })));
 export const ContinuousControlsDashboard = lazy(() => import('@/components/ai-control').then(m => ({ default: m.ContinuousControlsDashboard })));
 
