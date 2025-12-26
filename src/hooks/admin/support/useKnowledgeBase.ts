@@ -189,8 +189,8 @@ export function useKnowledgeBase() {
       await fetchDocuments();
       
       // Trigger embedding generation via edge function
-      supabase.functions.invoke('generate-knowledge-embedding', {
-        body: { documentId: (data as Record<string, unknown>).id }
+      supabase.functions.invoke('support-knowledge-embeddings', {
+        body: { action: 'generate', documentId: (data as Record<string, unknown>).id }
       }).catch(console.error);
 
       return castToDocument(data);
@@ -233,8 +233,8 @@ export function useKnowledgeBase() {
       await fetchDocuments();
 
       if (updates.content) {
-        supabase.functions.invoke('generate-knowledge-embedding', {
-          body: { documentId }
+        supabase.functions.invoke('support-knowledge-embeddings', {
+          body: { action: 'generate', documentId }
         }).catch(console.error);
       }
 
@@ -270,19 +270,54 @@ export function useKnowledgeBase() {
     setIsSearching(true);
     try {
       if (options.useSemantic) {
-        const { data, error: fnError } = await supabase.functions.invoke('search-knowledge-base', {
+        const { data, error: fnError } = await supabase.functions.invoke('support-knowledge-embeddings', {
           body: {
+            action: 'search',
             query: options.query,
             category: options.category,
-            documentType: options.documentType,
-            tags: options.tags,
             limit: options.limit || 10
           }
         });
 
         if (fnError) throw fnError;
 
-        const results = (data?.results || []) as DocumentSearchResult[];
+        const results: DocumentSearchResult[] = (data?.results || []).map((r: { 
+          id: string; 
+          title: string; 
+          content: string; 
+          document_type: string;
+          category: string;
+          tags: string[];
+          similarity_score: number;
+        }) => ({
+          document: {
+            id: r.id,
+            title: r.title,
+            content: r.content,
+            document_type: r.document_type as KnowledgeDocument['document_type'],
+            category: r.category,
+            subcategory: null,
+            tags: r.tags || [],
+            embedding_status: 'completed' as const,
+            embedding_vector: null,
+            source_url: null,
+            author_id: null,
+            is_published: true,
+            is_archived: false,
+            view_count: 0,
+            helpful_count: 0,
+            not_helpful_count: 0,
+            last_reviewed_at: null,
+            reviewed_by: null,
+            metadata: null,
+            created_at: '',
+            updated_at: ''
+          },
+          relevanceScore: r.similarity_score,
+          matchedTerms: [options.query],
+          snippet: r.content.substring(0, 200) + '...'
+        }));
+        
         setSearchResults(results);
         return results;
       } else {
@@ -406,6 +441,42 @@ export function useKnowledgeBase() {
     };
   }, [documents]);
 
+  // === GENERATE EMBEDDINGS IN BULK ===
+  const generateEmbeddingsBulk = useCallback(async (documentIds?: string[]): Promise<{
+    processed: number;
+    success: number;
+    failed: number;
+  }> => {
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('support-knowledge-embeddings', {
+        body: {
+          action: 'bulk_generate',
+          documentIds
+        }
+      });
+
+      if (fnError) throw fnError;
+
+      const results = data?.results || [];
+      const success = results.filter((r: { success: boolean }) => r.success).length;
+      const failed = results.filter((r: { success: boolean }) => !r.success).length;
+
+      toast.success(`Embeddings generados: ${success} exitosos, ${failed} fallidos`);
+      
+      await fetchDocuments();
+
+      return {
+        processed: results.length,
+        success,
+        failed
+      };
+    } catch (err) {
+      console.error('[useKnowledgeBase] generateEmbeddingsBulk error:', err);
+      toast.error('Error generando embeddings');
+      return { processed: 0, success: 0, failed: 0 };
+    }
+  }, [fetchDocuments]);
+
   // === INITIAL FETCH ===
   useEffect(() => {
     fetchDocuments();
@@ -429,6 +500,7 @@ export function useKnowledgeBase() {
     searchDocuments,
     recordDocumentFeedback,
     incrementViewCount,
+    generateEmbeddingsBulk,
     // Helpers
     getDocumentStats
   };
