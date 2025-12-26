@@ -28,6 +28,7 @@ export type SuggestionType2026 =
 
 // === ROLES POR SECTOR CNAE ===
 export type CopilotRole2026 = 
+  // Gestores por Sector
   | 'gestor'
   | 'gestor_banca'
   | 'gestor_seguros'
@@ -38,16 +39,37 @@ export type CopilotRole2026 =
   | 'gestor_tech'
   | 'gestor_latam'
   | 'gestor_china'
+  // Directores Generales
   | 'director_oficina'
   | 'director_comercial'
   | 'director_regional'
+  // Departamento de Créditos (Sector Bancario)
+  | 'director_creditos'
+  | 'subdirector_creditos'
+  | 'analista_creditos_senior'
+  | 'analista_creditos'
+  | 'gestor_creditos'
+  // Departamento de Morosidad/Recobro (Sector Bancario)
+  | 'director_morosidad'
+  | 'subdirector_morosidad'
+  | 'analista_morosidad_senior'
+  | 'analista_morosidad'
+  | 'gestor_recobro'
+  | 'negociador_deuda'
+  // Departamento de Riesgos (Multi-sector)
+  | 'director_riesgos'
+  | 'subdirector_riesgos'
+  | 'analista_riesgos_senior'
+  | 'analista_riesgos'
+  // Customer Success
+  | 'customer_success'
+  | 'customer_success_manager'
+  | 'onboarding_specialist'
+  // Admin y Compliance
   | 'admin'
   | 'auditor'
   | 'risk_manager'
-  | 'compliance_officer'
-  | 'customer_success'
-  | 'customer_success_manager'
-  | 'onboarding_specialist';
+  | 'compliance_officer';
 
 // === CNAE SECTORS ===
 export const CNAE_SECTORS = {
