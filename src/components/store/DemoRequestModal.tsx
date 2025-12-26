@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, User, Mail, Phone, Building2, Calendar, Clock, Send, Linkedin, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
