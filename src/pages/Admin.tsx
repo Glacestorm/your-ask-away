@@ -2006,24 +2006,18 @@ const Admin = () => {
                   ) : undefined
                 }
                 rightSlot={
-                  activeSection === 'administration' ? (
-                    <div className="flex items-center gap-2">
-                      <AdminGlobalSearch />
-                      <AdminPanelSwitcher />
-                    </div>
-                  ) : undefined
+                  <div className="flex items-center gap-2">
+                    <AdminGlobalSearch />
+                    <AdminPanelSwitcher />
+                  </div>
                 }
               />
             )}
             
-            {/* Actions Row - sin duplicar el título que ya está en GlobalNavHeader */}
+            {/* Breadcrumbs para secciones internas */}
             {activeSection !== 'administration' && (
-              <div className="flex items-center justify-between">
+              <div className="flex items-center">
                 <AdminBreadcrumbs />
-                <div className="flex items-center gap-2">
-                  <AdminGlobalSearch />
-                  <AdminPanelSwitcher />
-                </div>
               </div>
             )}
 
