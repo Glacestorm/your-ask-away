@@ -32,5 +32,10 @@ export type {
   CRMMigrationRecord, 
   CRMFieldMapping,
   CRMMappingTemplate,
-  MigrationAnalysis 
+  MigrationAnalysis,
+  MigrationStats,
+  ValidationResult,
+  DuplicateInfo,
+  ValidationRule,
+  Transformation
 } from './useCRMMigration';
