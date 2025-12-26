@@ -161,22 +161,11 @@ const Admin = () => {
 
   // Navigation history handlers
   const handleGoBack = useCallback(() => {
-    // Si no hay historial previo pero estamos en una sección que no es administration,
-    // volver a administration
-    if (!canGoBack && activeSection !== 'administration') {
-      setIsNavigatingHistory(true);
-      setActiveSection('administration');
-      setSearchParams({ section: 'administration' });
-      return;
-    }
-    
-    const previousSection = goBack();
-    if (previousSection) {
-      setIsNavigatingHistory(true);
-      setActiveSection(previousSection);
-      setSearchParams({ section: previousSection });
-    }
-  }, [goBack, setSearchParams, canGoBack, activeSection]);
+    // Siempre volver al menú principal de administración
+    setIsNavigatingHistory(true);
+    setActiveSection('administration');
+    setSearchParams({ section: 'administration' });
+  }, [setSearchParams]);
 
   const handleGoForward = useCallback(() => {
     const nextSection = goForward();
