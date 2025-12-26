@@ -371,11 +371,7 @@ const QuoteManager: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Gestión de Cotizaciones</h2>
-          <p className="text-muted-foreground">Crear y gestionar cotizaciones personalizadas para clientes</p>
-        </div>
+      <div className="flex items-center justify-end">
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button className="bg-emerald-600 hover:bg-emerald-700">

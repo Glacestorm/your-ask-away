@@ -127,12 +127,8 @@ export function ProductsManager() {
 
   return (
     <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>{t('productForm.title')}</CardTitle>
-            <CardDescription>{t('admin.products')}</CardDescription>
-          </div>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-end">
           <Button onClick={() => { resetForm(); setDialogOpen(true); }}>
             <Plus className="mr-2 h-4 w-4" />
             {t('productForm.addProduct')}

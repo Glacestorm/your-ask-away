@@ -289,16 +289,8 @@ export function UsersManager() {
   return (
     <>
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Gestión de Usuarios</CardTitle>
-              <CardDescription>
-                {isSuperAdmin
-                  ? 'Gestionar usuarios, roles y permisos del sistema'
-                  : 'Visualización de usuarios (requiere permisos de superadministrador para editar)'}
-              </CardDescription>
-            </div>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-end">
             {isSuperAdmin && (
               <Button onClick={handleOpenCreateDialog}>
                 <UserPlus className="mr-2 h-4 w-4" />

@@ -39,12 +39,26 @@ export function GlobalNavHeader({
 
   return (
     <header className="flex items-center justify-between gap-4 rounded-2xl bg-card px-4 py-3 shadow-lg border border-border backdrop-blur-sm">
-      {/* Left Section: Logo + Navigation + Title */}
+      {/* Left Section: Logo + Title + Navigation */}
       <div className="flex items-center gap-3 min-w-0">
         {/* Logo */}
         <ObelixiaLogo size="sm" variant="icon" animated={false} />
         
-        {/* Navigation Arrows */}
+        {/* Title */}
+        {hasTitle && (
+          <div className="min-w-0">
+            {title && (
+              <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground truncate">
+                {title}
+              </h1>
+            )}
+            {subtitle && (
+              <p className="text-xs text-muted-foreground font-medium truncate">{subtitle}</p>
+            )}
+          </div>
+        )}
+        
+        {/* Navigation Arrows - after title */}
         {(onGoBack || onGoForward) && (
           <div className="flex items-center gap-1">
             <Tooltip>
@@ -73,20 +87,6 @@ export function GlobalNavHeader({
               </TooltipTrigger>
               <TooltipContent side="bottom">Adelante</TooltipContent>
             </Tooltip>
-          </div>
-        )}
-        
-        {/* Title */}
-        {hasTitle && (
-          <div className="min-w-0">
-            {title && (
-              <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground truncate">
-                {title}
-              </h1>
-            )}
-            {subtitle && (
-              <p className="text-xs text-muted-foreground font-medium truncate">{subtitle}</p>
-            )}
           </div>
         )}
         

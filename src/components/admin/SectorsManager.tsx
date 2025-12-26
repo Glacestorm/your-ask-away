@@ -275,22 +275,16 @@ export function SectorsManager() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Gestió de Sectors</h2>
-          <p className="text-muted-foreground">Administra els sectors de la plataforma</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={refetch}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Actualitzar
-          </Button>
-          <Button onClick={handleCreate}>
-            <Plus className="h-4 w-4 mr-2" />
-            Nou Sector
-          </Button>
-        </div>
+      {/* Header - acciones solamente */}
+      <div className="flex items-center justify-end gap-2">
+        <Button variant="outline" onClick={refetch}>
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Actualitzar
+        </Button>
+        <Button onClick={handleCreate}>
+          <Plus className="h-4 w-4 mr-2" />
+          Nou Sector
+        </Button>
       </div>
 
       {/* Sectors List */}

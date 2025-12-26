@@ -143,16 +143,11 @@ export function DemoAdminPanel() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Gestión de Demos</h2>
-          <p className="text-muted-foreground">Administra y limpia las sesiones de demostración</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={fetchSessions}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Actualizar
-          </Button>
+      <div className="flex items-center justify-end gap-2">
+        <Button variant="outline" onClick={fetchSessions}>
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Actualizar
+        </Button>
           {stats.active > 0 && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -192,9 +187,7 @@ export function DemoAdminPanel() {
               </AlertDialogContent>
             </AlertDialog>
           )}
-        </div>
       </div>
-
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card>
