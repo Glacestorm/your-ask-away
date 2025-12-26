@@ -64,9 +64,10 @@ const formatPercent = (value: number) => `${(value * 100).toFixed(1)}%`;
 
 interface PredictiveHealthScorePanelProps {
   className?: string;
+  compact?: boolean;
 }
 
-export function PredictiveHealthScorePanel({ className }: PredictiveHealthScorePanelProps) {
+export function PredictiveHealthScorePanel({ className, compact = false }: PredictiveHealthScorePanelProps) {
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedAccount, setSelectedAccount] = useState<CustomerHealthScore | null>(null);
   const [expandedFactors, setExpandedFactors] = useState<Set<string>>(new Set());
@@ -584,6 +585,94 @@ export function PredictiveHealthScorePanel({ className }: PredictiveHealthScoreP
     );
   };
 
+  // Vista compacta (para grid del Enterprise Dashboard)
+  if (compact) {
+    const topCritical = criticalAccounts.slice(0, 3);
+    const topHigh = highRiskAccounts.slice(0, 3);
+
+    return (
+      <Card className={cn("overflow-hidden", className)}>
+        <CardHeader className="pb-2 bg-gradient-to-r from-primary/10 via-accent/10 to-secondary/10">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <CardTitle className="text-base truncate">Health Score (ML)</CardTitle>
+              <p className="text-xs text-muted-foreground">
+                {lastRefresh
+                  ? `Actualizado ${formatDistanceToNow(lastRefresh, { locale: es, addSuffix: true })}`
+                  : 'Sincronizando...'}
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => fetchHealthScores()}
+              disabled={isLoading}
+              className="h-8 w-8"
+            >
+              <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+            </Button>
+          </div>
+        </CardHeader>
+
+        <CardContent className="pt-4 space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
+              <p className="text-xs text-muted-foreground">Score promedio</p>
+              <p className={cn("text-lg font-bold", getScoreColor(averageScore))}>{averageScore.toFixed(0)}</p>
+            </div>
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
+              <p className="text-xs text-muted-foreground">Prob. churn prom.</p>
+              <p className="text-lg font-bold">{formatPercent(averageChurnProbability)}</p>
+            </div>
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
+              <p className="text-xs text-muted-foreground">Críticos / Alto</p>
+              <p className="text-lg font-bold">
+                <span className="text-destructive">{criticalAccounts.length}</span>
+                <span className="text-muted-foreground"> / </span>
+                <span className="text-primary">{highRiskAccounts.length}</span>
+              </p>
+            </div>
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
+              <p className="text-xs text-muted-foreground">Valor en riesgo</p>
+              <p className="text-lg font-bold">€{Math.round(totalValueAtRisk).toLocaleString('es-ES')}</p>
+            </div>
+          </div>
+
+          {(topCritical.length > 0 || topHigh.length > 0) && (
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground">Cuentas prioritarias</p>
+              <div className="space-y-2">
+                {[...topCritical, ...topHigh].slice(0, 5).map((acc) => (
+                  <div
+                    key={acc.id}
+                    className="flex items-center justify-between gap-3 p-2 rounded-lg bg-muted/20 border border-border/30"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">{acc.companyName}</p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        Churn 90d: {formatPercent(acc.churnProbability90Days)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Badge variant={getRiskBadgeVariant(acc.riskLevel)} className="text-xs">
+                        {acc.riskLevel.replace('_', ' ').toUpperCase()}
+                      </Badge>
+                      <span className={cn("text-sm font-bold", getScoreColor(acc.overallScore))}>{acc.overallScore}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="text-xs text-muted-foreground">
+            Para ver explicabilidad y acciones, abre la vista completa.
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className={cn("space-y-6", className)}>
       {/* Header */}
@@ -672,9 +761,7 @@ export function PredictiveHealthScorePanel({ className }: PredictiveHealthScoreP
                     <AlertTriangle className="h-3 w-3 shrink-0" /> 
                     <span>CRÍTICO ({criticalAccounts.length})</span>
                   </p>
-                  <div className="space-y-2">
-                    {criticalAccounts.map(renderAccountCard)}
-                  </div>
+                  <div className="space-y-2">{criticalAccounts.map(renderAccountCard)}</div>
                 </div>
               )}
               
@@ -685,9 +772,7 @@ export function PredictiveHealthScorePanel({ className }: PredictiveHealthScoreP
                     <AlertTriangle className="h-3 w-3 shrink-0" /> 
                     <span>ALTO RIESGO ({highRiskAccounts.length})</span>
                   </p>
-                  <div className="space-y-2">
-                    {highRiskAccounts.map(renderAccountCard)}
-                  </div>
+                  <div className="space-y-2">{highRiskAccounts.map(renderAccountCard)}</div>
                 </div>
               )}
 
@@ -697,9 +782,7 @@ export function PredictiveHealthScorePanel({ className }: PredictiveHealthScoreP
                   <p className="text-xs font-semibold text-yellow-600 mb-2">
                     EN RIESGO ({atRiskAccounts.length})
                   </p>
-                  <div className="space-y-2">
-                    {atRiskAccounts.map(renderAccountCard)}
-                  </div>
+                  <div className="space-y-2">{atRiskAccounts.map(renderAccountCard)}</div>
                 </div>
               )}
 
@@ -709,9 +792,7 @@ export function PredictiveHealthScorePanel({ className }: PredictiveHealthScoreP
                   <p className="text-xs font-semibold text-green-600 mb-2">
                     SALUDABLE ({healthyAccounts.length})
                   </p>
-                  <div className="space-y-2">
-                    {healthyAccounts.map(renderAccountCard)}
-                  </div>
+                  <div className="space-y-2">{healthyAccounts.map(renderAccountCard)}</div>
                 </div>
               )}
             </CardContent>
