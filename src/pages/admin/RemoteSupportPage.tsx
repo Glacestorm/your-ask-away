@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Headphones, Play, Clock, Activity, Shield, Pause, CheckCircle, XCircle, Eye, BarChart3, FileDown, Brain, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Headphones, Play, Clock, Activity, Shield, Pause, CheckCircle, XCircle, Eye, BarChart3, FileDown, Brain, RefreshCw, Link2, FileText, Sparkles } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { SessionActionsTimeline } from '@/components/admin/service-quotes/SessionActionsTimeline';
 import { SessionDetailView } from '@/components/admin/remote-support/SessionDetailView';
@@ -15,6 +15,11 @@ import { ActionQuickLog } from '@/components/admin/remote-support/ActionQuickLog
 import { CopilotFloatingPanel } from '@/components/admin/remote-support/CopilotFloatingPanel';
 import { VoiceAgentPanel } from '@/components/admin/remote-support/VoiceAgentPanel';
 import { SupportAnalyticsDashboard } from '@/components/admin/remote-support/SupportAnalyticsDashboard';
+import { SupportMetricsDashboard } from '@/components/admin/remote-support/SupportMetricsDashboard';
+import { AuditSecurityPanel } from '@/components/admin/remote-support/AuditSecurityPanel';
+import { ReportsExportPanel } from '@/components/admin/remote-support/ReportsExportPanel';
+import { ExternalIntegrationsPanel } from '@/components/admin/remote-support/ExternalIntegrationsPanel';
+import { UnifiedSupportControlPanel } from '@/components/admin/remote-support/UnifiedSupportControlPanel';
 import { DualApprovalWorkflow } from '@/components/admin/remote-support/DualApprovalWorkflow';
 import { SessionExportButton } from '@/components/admin/remote-support/SessionExportButton';
 import { useSessionActionLogger } from '@/hooks/admin/useSessionActionLogger';
@@ -228,22 +233,42 @@ export default function RemoteSupportPage() {
 
       <div className="container mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-2xl grid-cols-4">
-            <TabsTrigger value="new-session" disabled={activeSession?.status === 'active'}>
+          <TabsList className="flex w-full overflow-x-auto gap-1 bg-muted/50 p-1 rounded-lg">
+            <TabsTrigger value="new-session" disabled={activeSession?.status === 'active'} className="whitespace-nowrap">
               <Play className="h-4 w-4 mr-2" />
               Nueva Sesión
             </TabsTrigger>
-            <TabsTrigger value="active-session" disabled={!activeSession || activeSession.status !== 'active'}>
+            <TabsTrigger value="active-session" disabled={!activeSession || activeSession.status !== 'active'} className="whitespace-nowrap">
               <Activity className="h-4 w-4 mr-2" />
               Sesión Activa
             </TabsTrigger>
-            <TabsTrigger value="history">
+            <TabsTrigger value="history" className="whitespace-nowrap">
               <Clock className="h-4 w-4 mr-2" />
               Historial
             </TabsTrigger>
-            <TabsTrigger value="analytics">
+            <TabsTrigger value="analytics" className="whitespace-nowrap">
               <BarChart3 className="h-4 w-4 mr-2" />
               Analytics
+            </TabsTrigger>
+            <TabsTrigger value="ai-metrics" className="whitespace-nowrap">
+              <Sparkles className="h-4 w-4 mr-2" />
+              Métricas IA
+            </TabsTrigger>
+            <TabsTrigger value="security" className="whitespace-nowrap">
+              <Shield className="h-4 w-4 mr-2" />
+              Seguridad
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="whitespace-nowrap">
+              <FileText className="h-4 w-4 mr-2" />
+              Reportes
+            </TabsTrigger>
+            <TabsTrigger value="integrations" className="whitespace-nowrap">
+              <Link2 className="h-4 w-4 mr-2" />
+              Integraciones
+            </TabsTrigger>
+            <TabsTrigger value="control-panel" className="whitespace-nowrap">
+              <Brain className="h-4 w-4 mr-2" />
+              Panel IA
             </TabsTrigger>
           </TabsList>
 
@@ -545,6 +570,26 @@ export default function RemoteSupportPage() {
 
           <TabsContent value="analytics" className="space-y-6">
             <SupportAnalyticsDashboard />
+          </TabsContent>
+
+          <TabsContent value="ai-metrics" className="space-y-6">
+            <SupportMetricsDashboard />
+          </TabsContent>
+
+          <TabsContent value="security" className="space-y-6">
+            <AuditSecurityPanel />
+          </TabsContent>
+
+          <TabsContent value="reports" className="space-y-6">
+            <ReportsExportPanel />
+          </TabsContent>
+
+          <TabsContent value="integrations" className="space-y-6">
+            <ExternalIntegrationsPanel />
+          </TabsContent>
+
+          <TabsContent value="control-panel" className="space-y-6">
+            <UnifiedSupportControlPanel />
           </TabsContent>
         </Tabs>
       </div>
