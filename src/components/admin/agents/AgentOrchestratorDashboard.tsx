@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Bot, 
   Brain, 
@@ -27,12 +28,14 @@ import {
   BarChart3,
   Sparkles,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  Loader2
 } from 'lucide-react';
 import { useAIAgentsV2, type AIAgent, type DealCoachingResult, type ChurnPreventionResult, type RevenueOptimizationResult } from '@/hooks/admin/agents/useAIAgentsV2';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { toast } from 'sonner';
 
 const agentIcons: Record<string, React.ElementType> = {
   deal_coaching: Target,
@@ -46,11 +49,34 @@ const agentColors: Record<string, string> = {
   revenue_optimization: 'from-green-500 to-emerald-600',
 };
 
-const statusColors: Record<string, string> = {
-  active: 'bg-green-500',
-  idle: 'bg-gray-400',
-  analyzing: 'bg-blue-500 animate-pulse',
-  error: 'bg-red-500',
+// Animación de estados con transiciones suaves
+const statusConfig: Record<string, { color: string; icon: React.ElementType; animate: boolean }> = {
+  active: { color: 'bg-green-500', icon: CheckCircle, animate: false },
+  idle: { color: 'bg-muted-foreground/50', icon: Clock, animate: false },
+  analyzing: { color: 'bg-blue-500', icon: Loader2, animate: true },
+  error: { color: 'bg-destructive', icon: AlertTriangle, animate: false },
+};
+
+// Variantes de animación para tarjetas de agentes
+const cardVariants = {
+  hidden: { opacity: 0, y: 20, scale: 0.95 },
+  visible: { opacity: 1, y: 0, scale: 1 },
+  hover: { scale: 1.02, transition: { duration: 0.2 } },
+  tap: { scale: 0.98 },
+};
+
+// Variantes para indicador de estado
+const statusIndicatorVariants = {
+  idle: { scale: 1 },
+  analyzing: { 
+    scale: [1, 1.2, 1],
+    transition: { duration: 1, repeat: Infinity, ease: "easeInOut" }
+  },
+  active: { scale: 1 },
+  error: { 
+    x: [-2, 2, -2, 2, 0],
+    transition: { duration: 0.4 }
+  },
 };
 
 export function AgentOrchestratorDashboard() {
@@ -82,21 +108,70 @@ export function AgentOrchestratorDashboard() {
     return () => stopAutoRefresh();
   }, [startAutoRefresh, stopAutoRefresh]);
 
+  // Track previous agent statuses for animations
+  const prevStatusRef = useRef<Record<string, string>>({});
+
+  // Detectar cambios de estado y mostrar notificaciones
+  useEffect(() => {
+    agents.forEach(agent => {
+      const prevStatus = prevStatusRef.current[agent.id];
+      if (prevStatus && prevStatus !== agent.status) {
+        // Notificación cuando un agente completa análisis
+        if (prevStatus === 'analyzing' && agent.status === 'active') {
+          const metrics = Object.entries(agent.metrics).slice(0, 2);
+          toast.success(`${agent.name} completó análisis`, {
+            description: metrics.map(([k, v]) => `${k}: ${v}`).join(' | '),
+            duration: 5000,
+          });
+        } else if (agent.status === 'error') {
+          toast.error(`${agent.name} encontró un error`, {
+            description: 'Revisa la configuración del agente',
+            duration: 5000,
+          });
+        } else if (agent.status === 'analyzing') {
+          toast.info(`${agent.name} iniciando análisis...`, {
+            duration: 3000,
+          });
+        }
+      }
+      prevStatusRef.current[agent.id] = agent.status;
+    });
+  }, [agents]);
+
   const handleRunDealCoaching = async () => {
     const context = dealContext ? JSON.parse(dealContext) : { deal: { name: 'Demo Deal', value: 50000 } };
     const result = await runDealCoaching(context);
-    if (result) setDealResult(result);
+    if (result) {
+      setDealResult(result);
+      toast.success('Deal Coaching completado', {
+        description: `Probabilidad de cierre: ${result.dealAnalysis.winProbability}% | ${result.nextActions.length} acciones recomendadas`,
+        duration: 5000,
+      });
+    }
   };
 
   const handleRunChurnPrevention = async () => {
     const context = customerContext ? JSON.parse(customerContext) : { customer: { name: 'Demo Customer', mrr: 2000 } };
     const result = await runChurnPrevention(context);
-    if (result) setChurnResult(result);
+    if (result) {
+      setChurnResult(result);
+      toast.success('Análisis de Churn completado', {
+        description: `Riesgo: ${result.churnAnalysis.riskLevel.toUpperCase()} (${result.churnAnalysis.churnRisk}%) | Valor en riesgo: €${result.churnAnalysis.valueAtRisk.toLocaleString()}`,
+        duration: 5000,
+      });
+    }
   };
 
   const handleRunRevenueOptimization = async () => {
     const result = await runRevenueOptimization({ customers: [], products: [] });
-    if (result) setRevenueResult(result);
+    if (result) {
+      setRevenueResult(result);
+      const totalOpportunity = result.revenueOpportunities.reduce((sum, o) => sum + (o.potentialMRR - o.currentMRR), 0);
+      toast.success('Revenue Optimization completado', {
+        description: `${result.revenueOpportunities.length} oportunidades | Potencial: +€${totalOpportunity.toLocaleString()}/mes`,
+        duration: 5000,
+      });
+    }
   };
 
   const getAgentIcon = (type: string) => {
@@ -214,64 +289,125 @@ export function AgentOrchestratorDashboard() {
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {agents.map((agent) => {
-              const Icon = getAgentIcon(agent.type);
-              return (
-                <Card 
-                  key={agent.id} 
-                  className={cn(
-                    "cursor-pointer transition-all duration-300 hover:shadow-lg",
-                    selectedAgent?.id === agent.id && "ring-2 ring-primary"
-                  )}
-                  onClick={() => setSelectedAgent(agent)}
-                >
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <div className={cn("p-3 rounded-xl bg-gradient-to-br text-white", agentColors[agent.type])}>
-                        <Icon className="h-6 w-6" />
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className={cn("w-2 h-2 rounded-full", statusColors[agent.status])} />
-                        <Badge variant="outline" className="text-xs capitalize">
-                          {agent.status}
-                        </Badge>
-                      </div>
-                    </div>
-                    <CardTitle className="text-lg mt-2">{agent.name}</CardTitle>
-                    <CardDescription className="text-xs">
-                      Última actividad: {formatDistanceToNow(new Date(agent.lastActivity), { locale: es, addSuffix: true })}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      {Object.entries(agent.metrics).slice(0, 4).map(([key, value]) => (
-                        <div key={key} className="flex justify-between">
-                          <span className="text-muted-foreground capitalize">
-                            {key.replace(/([A-Z])/g, ' $1').trim()}:
-                          </span>
-                          <span className="font-medium">
-                            {typeof value === 'number' && key.toLowerCase().includes('rate') 
-                              ? `${value}%` 
-                              : typeof value === 'number' && key.toLowerCase().includes('revenue')
-                                ? `€${value.toLocaleString()}`
-                                : value
-                            }
-                          </span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
+            <AnimatePresence mode="popLayout">
+              {agents.map((agent, index) => {
+                const Icon = getAgentIcon(agent.type);
+                const statusConf = statusConfig[agent.status] || statusConfig.idle;
+                const StatusIcon = statusConf.icon;
+                
+                return (
+                  <motion.div
+                    key={agent.id}
+                    variants={cardVariants}
+                    initial="hidden"
+                    animate="visible"
+                    whileHover="hover"
+                    whileTap="tap"
+                    transition={{ delay: index * 0.1, duration: 0.3 }}
+                    layout
+                  >
+                    <Card 
+                      className={cn(
+                        "cursor-pointer h-full transition-shadow duration-300",
+                        selectedAgent?.id === agent.id && "ring-2 ring-primary shadow-lg"
+                      )}
+                      onClick={() => setSelectedAgent(agent)}
+                    >
+                      <CardHeader className="pb-2 space-y-3">
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <motion.div 
+                            className={cn("p-2.5 sm:p-3 rounded-xl bg-gradient-to-br text-white shadow-md", agentColors[agent.type])}
+                            whileHover={{ rotate: [0, -5, 5, 0], transition: { duration: 0.3 } }}
+                          >
+                            <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
+                          </motion.div>
+                          
+                          {/* Status indicator con animación */}
+                          <motion.div 
+                            className="flex items-center gap-2"
+                            variants={statusIndicatorVariants}
+                            animate={agent.status}
+                          >
+                            <motion.span 
+                              className={cn("w-2.5 h-2.5 rounded-full", statusConf.color)}
+                              animate={statusConf.animate ? { opacity: [1, 0.5, 1] } : {}}
+                              transition={statusConf.animate ? { duration: 1, repeat: Infinity } : {}}
+                            />
+                            <Badge 
+                              variant="outline" 
+                              className={cn(
+                                "text-xs capitalize flex items-center gap-1",
+                                agent.status === 'analyzing' && "border-blue-500 text-blue-600",
+                                agent.status === 'error' && "border-destructive text-destructive"
+                              )}
+                            >
+                              <StatusIcon className={cn("h-3 w-3", statusConf.animate && "animate-spin")} />
+                              <span className="hidden xs:inline">{agent.status}</span>
+                            </Badge>
+                          </motion.div>
                         </div>
-                      ))}
-                    </div>
-                    <div className="flex flex-wrap gap-1 mt-3">
-                      {agent.capabilities.slice(0, 3).map((cap) => (
-                        <Badge key={cap} variant="secondary" className="text-xs">
-                          {cap.replace(/_/g, ' ')}
-                        </Badge>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                        
+                        <div>
+                          <CardTitle className="text-base sm:text-lg line-clamp-1">{agent.name}</CardTitle>
+                          <CardDescription className="text-xs mt-1">
+                            Última actividad: {formatDistanceToNow(new Date(agent.lastActivity), { locale: es, addSuffix: true })}
+                          </CardDescription>
+                        </div>
+                      </CardHeader>
+                      
+                      <CardContent className="space-y-3">
+                        {/* Métricas responsivas */}
+                        <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs sm:text-sm">
+                          {Object.entries(agent.metrics).slice(0, 4).map(([key, value]) => (
+                            <motion.div 
+                              key={key} 
+                              className="flex justify-between items-center min-w-0"
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.2 }}
+                            >
+                              <span className="text-muted-foreground capitalize truncate mr-1 text-xs">
+                                {key.replace(/([A-Z])/g, ' $1').trim().slice(0, 12)}:
+                              </span>
+                              <span className="font-medium text-xs sm:text-sm whitespace-nowrap">
+                                {typeof value === 'number' && key.toLowerCase().includes('rate') 
+                                  ? `${value}%` 
+                                  : typeof value === 'number' && key.toLowerCase().includes('revenue')
+                                    ? `€${value >= 1000 ? `${(value/1000).toFixed(1)}k` : value}`
+                                    : value
+                                }
+                              </span>
+                            </motion.div>
+                          ))}
+                        </div>
+                        
+                        {/* Capabilities con responsive wrap */}
+                        <div className="flex flex-wrap gap-1">
+                          {agent.capabilities.slice(0, 3).map((cap, capIndex) => (
+                            <motion.div
+                              key={cap}
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: 0.3 + capIndex * 0.05 }}
+                            >
+                              <Badge variant="secondary" className="text-[10px] sm:text-xs px-1.5 py-0.5">
+                                {cap.replace(/_/g, ' ')}
+                              </Badge>
+                            </motion.div>
+                          ))}
+                          {agent.capabilities.length > 3 && (
+                            <Badge variant="outline" className="text-[10px] sm:text-xs px-1.5 py-0.5">
+                              +{agent.capabilities.length - 3}
+                            </Badge>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
           </div>
         </TabsContent>
 
