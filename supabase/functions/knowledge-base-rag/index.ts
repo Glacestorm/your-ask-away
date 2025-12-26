@@ -5,10 +5,28 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+interface KnowledgeArticle {
+  id: string;
+  title: string;
+  content: string;
+  category: string;
+  tags: string[];
+  relevance_score?: number;
+  last_updated: string;
+  view_count: number;
+  helpful_count: number;
+}
+
 interface RAGRequest {
-  action: 'search' | 'answer' | 'suggest_related' | 'summarize_topic';
+  action: 'search' | 'ask' | 'answer' | 'suggest_related' | 'summarize_topic' | 'add_article' | 'update_article' | 'list_articles' | 'reindex';
   query?: string;
+  question?: string;
   topic?: string;
+  limit?: number;
+  article?: Partial<KnowledgeArticle>;
+  id?: string;
+  updates?: Partial<KnowledgeArticle>;
+  category?: string;
   context?: {
     department?: string;
     userRole?: string;
@@ -21,6 +39,70 @@ interface RAGRequest {
   };
 }
 
+// Simulated knowledge base (in production, this would be in a database)
+const MOCK_ARTICLES: KnowledgeArticle[] = [
+  {
+    id: '1',
+    title: 'Guía de Onboarding para Nuevos Gestores',
+    content: 'Esta guía cubre los pasos esenciales para el onboarding de nuevos gestores comerciales. Incluye configuración de cuenta, formación inicial, asignación de cartera y primeros objetivos. El proceso de onboarding debe completarse en 2 semanas.',
+    category: 'guias',
+    tags: ['onboarding', 'gestores', 'formación'],
+    last_updated: new Date().toISOString(),
+    view_count: 156,
+    helpful_count: 42
+  },
+  {
+    id: '2',
+    title: 'Política de Gestión de Riesgos',
+    content: 'Normativa interna sobre la evaluación y gestión de riesgos en operaciones comerciales. Define los niveles de aprobación, límites de exposición y procedimientos de escalado para diferentes tipos de productos financieros.',
+    category: 'normativa',
+    tags: ['riesgos', 'compliance', 'políticas'],
+    last_updated: new Date(Date.now() - 86400000).toISOString(),
+    view_count: 89,
+    helpful_count: 28
+  },
+  {
+    id: '3',
+    title: 'Productos de Financiación Empresarial',
+    content: 'Catálogo completo de productos de financiación para empresas. Incluye líneas de crédito, préstamos a plazo, leasing, factoring y confirming. Cada producto tiene sus condiciones, requisitos y comisiones específicas.',
+    category: 'productos',
+    tags: ['financiación', 'empresas', 'productos'],
+    last_updated: new Date(Date.now() - 172800000).toISOString(),
+    view_count: 234,
+    helpful_count: 67
+  },
+  {
+    id: '4',
+    title: 'FAQ: Preguntas Frecuentes de Clientes',
+    content: 'Recopilación de las preguntas más frecuentes de clientes y sus respuestas. Incluye temas como apertura de cuentas, tipos de interés, plazos de tramitación, documentación requerida y canales de contacto.',
+    category: 'faqs',
+    tags: ['faq', 'clientes', 'soporte'],
+    last_updated: new Date(Date.now() - 259200000).toISOString(),
+    view_count: 412,
+    helpful_count: 156
+  },
+  {
+    id: '5',
+    title: 'Proceso de Análisis de Solvencia',
+    content: 'Procedimiento estándar para el análisis de solvencia de clientes empresariales. Incluye verificación de estados financieros, análisis de ratios, evaluación de garantías y scoring interno.',
+    category: 'procesos',
+    tags: ['solvencia', 'análisis', 'procedimientos'],
+    last_updated: new Date(Date.now() - 345600000).toISOString(),
+    view_count: 178,
+    helpful_count: 45
+  },
+  {
+    id: '6',
+    title: 'Solución de Errores Comunes en CRM',
+    content: 'Guía de resolución de problemas técnicos comunes en el sistema CRM. Incluye errores de sincronización, problemas de acceso, fallos en informes y cómo escalar incidencias al equipo técnico.',
+    category: 'troubleshooting',
+    tags: ['errores', 'técnico', 'soporte'],
+    last_updated: new Date(Date.now() - 432000000).toISOString(),
+    view_count: 567,
+    helpful_count: 234
+  }
+];
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -32,45 +114,155 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    const { action, query, topic, context, filters } = await req.json() as RAGRequest;
+    const requestBody = await req.json() as RAGRequest;
+    const { action, query, question, topic, limit = 5, article, id, updates, category, context, filters } = requestBody;
+    
     console.log(`[knowledge-base-rag] Processing action: ${action}`);
 
+    // Handle non-AI actions first
+    if (action === 'list_articles') {
+      let articles = [...MOCK_ARTICLES];
+      if (category && category !== 'all') {
+        articles = articles.filter(a => a.category === category);
+      }
+      return new Response(JSON.stringify({
+        success: true,
+        articles,
+        timestamp: new Date().toISOString()
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (action === 'add_article') {
+      const newArticle: KnowledgeArticle = {
+        id: crypto.randomUUID(),
+        title: article?.title || 'Nuevo Artículo',
+        content: article?.content || '',
+        category: article?.category || 'general',
+        tags: article?.tags || [],
+        last_updated: new Date().toISOString(),
+        view_count: 0,
+        helpful_count: 0
+      };
+      
+      return new Response(JSON.stringify({
+        success: true,
+        article: newArticle,
+        message: 'Artículo añadido correctamente',
+        timestamp: new Date().toISOString()
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (action === 'update_article') {
+      const existingArticle = MOCK_ARTICLES.find(a => a.id === id);
+      if (!existingArticle) {
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'Artículo no encontrado'
+        }), {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      const updatedArticle = { ...existingArticle, ...updates, last_updated: new Date().toISOString() };
+      
+      return new Response(JSON.stringify({
+        success: true,
+        article: updatedArticle,
+        message: 'Artículo actualizado correctamente',
+        timestamp: new Date().toISOString()
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (action === 'reindex') {
+      // Simulate reindexing
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      return new Response(JSON.stringify({
+        success: true,
+        message: 'Base de conocimiento reindexada correctamente',
+        indexedCount: MOCK_ARTICLES.length,
+        timestamp: new Date().toISOString()
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // AI-powered actions
     let systemPrompt = '';
     let userPrompt = '';
 
     switch (action) {
       case 'search':
-        systemPrompt = `Eres un sistema de búsqueda semántica de base de conocimiento empresarial.
+        systemPrompt = `Eres un sistema de búsqueda semántica de base de conocimiento empresarial bancario.
 
-SIMULA una búsqueda en la base de conocimiento y devuelve resultados relevantes.
+ARTÍCULOS DISPONIBLES:
+${MOCK_ARTICLES.map(a => `- ID: ${a.id}, Título: "${a.title}", Categoría: ${a.category}, Tags: ${a.tags.join(', ')}`).join('\n')}
+
+Analiza la consulta del usuario y devuelve los artículos más relevantes ordenados por similitud.
 
 RESPONDE EN JSON ESTRICTO:
 {
   "results": [
     {
-      "id": string,
-      "title": string,
-      "snippet": string,
-      "relevanceScore": number,
-      "category": string,
-      "source": string,
-      "lastUpdated": string,
-      "author": string
+      "article": {
+        "id": string,
+        "title": string,
+        "content": string,
+        "category": string,
+        "tags": string[],
+        "last_updated": string,
+        "view_count": number,
+        "helpful_count": number
+      },
+      "similarity": number (0-1),
+      "matched_chunks": string[],
+      "answer_snippet": string
     }
   ],
-  "totalResults": number,
-  "suggestedFilters": string[],
-  "relatedQueries": string[]
+  "totalResults": number
 }`;
-        userPrompt = `Busca: "${query}"
-Departamento: ${context?.department || 'todos'}
-Filtros: ${JSON.stringify(filters || {})}`;
+        userPrompt = `Busca artículos relevantes para: "${query}"
+Límite: ${limit} resultados
+${filters ? `Filtros: ${JSON.stringify(filters)}` : ''}`;
+        break;
+
+      case 'ask':
+        systemPrompt = `Eres un asistente experto en banca comercial que responde preguntas basándose en la base de conocimiento interna.
+
+BASE DE CONOCIMIENTO DISPONIBLE:
+${MOCK_ARTICLES.map(a => `
+### ${a.title} (${a.category})
+${a.content}
+Tags: ${a.tags.join(', ')}
+`).join('\n---\n')}
+
+Proporciona respuestas precisas, profesionales y útiles. Cita las fuentes cuando sea apropiado.
+
+RESPONDE EN JSON ESTRICTO:
+{
+  "answer": string (respuesta completa y profesional),
+  "sources": [
+    { "title": string, "id": string, "relevance": number }
+  ],
+  "confidence": number (0-1),
+  "follow_up_questions": string[]
+}`;
+        userPrompt = `Pregunta del usuario: "${question}"
+${context ? `Contexto: ${JSON.stringify(context)}` : ''}`;
         break;
 
       case 'answer':
-        systemPrompt = `Eres un asistente de conocimiento empresarial que responde preguntas basándose en documentación interna.
+        systemPrompt = `Eres un asistente de conocimiento empresarial bancario que responde preguntas basándose en documentación interna.
 
-PROPORCIONA una respuesta completa y precisa, citando fuentes.
+BASE DE CONOCIMIENTO:
+${MOCK_ARTICLES.map(a => `- ${a.title}: ${a.content.substring(0, 200)}...`).join('\n')}
 
 RESPONDE EN JSON ESTRICTO:
 {
@@ -88,9 +280,10 @@ Contexto del usuario: ${JSON.stringify(context || {})}`;
         break;
 
       case 'suggest_related':
-        systemPrompt = `Eres un sistema de recomendación de contenido de base de conocimiento.
+        systemPrompt = `Eres un sistema de recomendación de contenido de base de conocimiento bancario.
 
-SUGIERE contenido relacionado basado en el tema actual.
+ARTÍCULOS DISPONIBLES:
+${MOCK_ARTICLES.map(a => `- ${a.title} (${a.category}): ${a.content.substring(0, 100)}...`).join('\n')}
 
 RESPONDE EN JSON ESTRICTO:
 {
@@ -107,9 +300,10 @@ RESPONDE EN JSON ESTRICTO:
         break;
 
       case 'summarize_topic':
-        systemPrompt = `Eres un sintetizador de conocimiento corporativo.
+        systemPrompt = `Eres un sintetizador de conocimiento corporativo bancario.
 
-GENERA un resumen completo del tema basado en la base de conocimiento.
+BASE DE CONOCIMIENTO:
+${MOCK_ARTICLES.map(a => `- ${a.title}: ${a.content}`).join('\n')}
 
 RESPONDE EN JSON ESTRICTO:
 {
@@ -145,6 +339,26 @@ RESPONDE EN JSON ESTRICTO:
     });
 
     if (!response.ok) {
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ 
+          success: false,
+          error: 'Rate limit exceeded', 
+          message: 'Demasiadas solicitudes. Intenta más tarde.' 
+        }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ 
+          success: false,
+          error: 'Payment required', 
+          message: 'Créditos de IA insuficientes.' 
+        }), {
+          status: 402,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
       throw new Error(`AI API error: ${response.status}`);
     }
 
@@ -163,12 +377,28 @@ RESPONDE EN JSON ESTRICTO:
 
     console.log(`[knowledge-base-rag] Success: ${action}`);
 
-    return new Response(JSON.stringify({
+    // Format response based on action
+    let formattedResponse: any = {
       success: true,
       action,
-      data: result,
       timestamp: new Date().toISOString()
-    }), {
+    };
+
+    if (action === 'search') {
+      formattedResponse.results = result.results || [];
+      formattedResponse.totalResults = result.totalResults || 0;
+    } else if (action === 'ask') {
+      formattedResponse.response = {
+        answer: result.answer || '',
+        sources: result.sources || [],
+        confidence: result.confidence || 0.5,
+        follow_up_questions: result.follow_up_questions || []
+      };
+    } else {
+      formattedResponse.data = result;
+    }
+
+    return new Response(JSON.stringify(formattedResponse), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
