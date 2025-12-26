@@ -33,8 +33,23 @@ import { cn } from '@/lib/utils';
 
 // Mapa de iconos para quick actions
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  Calendar, Flame, FileText, Users, AlertTriangle, GraduationCap,
-  Shield, ShieldAlert, FileSearch, BarChart3, TrendingUp, CheckCircle: CheckCircle2
+  Calendar,
+  Flame,
+  FileText,
+  Users,
+  AlertTriangle,
+  GraduationCap,
+  Shield,
+  ShieldAlert,
+  FileSearch,
+  BarChart3,
+  TrendingUp,
+  CheckCircle: CheckCircle2,
+  Zap,
+  Bot,
+  Sparkles,
+  Clock,
+  MessageSquare,
 };
 
 export function RoleCopilotPanel() {
