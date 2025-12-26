@@ -18,14 +18,16 @@ import {
   Play,
   HelpCircle,
   BookOpen,
-  Activity
+  Activity,
+  RotateCcw
 } from 'lucide-react';
 import { 
   CRMMigrationPanel, 
   CRMMigrationDashboard, 
   CRMValidationPanel, 
   CRMAdvancedToolsPanel,
-  CRMMonitoringPanel
+  CRMMonitoringPanel,
+  CRMRollbackPanel
 } from '@/components/admin/crm-migration';
 import { useCRMMigration } from '@/hooks/admin/integrations';
 import { cn } from '@/lib/utils';
@@ -162,6 +164,13 @@ export default function CRMMigrationPage() {
               >
                 <Activity className="h-4 w-4" />
                 Monitoreo
+              </TabsTrigger>
+              <TabsTrigger 
+                value="rollback" 
+                className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary rounded-t-lg rounded-b-none border-b-2 border-transparent data-[state=active]:border-primary gap-2"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Rollback
               </TabsTrigger>
               <TabsTrigger 
                 value="tools" 
@@ -361,6 +370,11 @@ export default function CRMMigrationPage() {
               {/* Monitoring Tab */}
               <TabsContent value="monitoring" className="mt-0">
                 <CRMMonitoringPanel migration={activeMigration} />
+              </TabsContent>
+
+              {/* Rollback Tab */}
+              <TabsContent value="rollback" className="mt-0">
+                <CRMRollbackPanel migration={activeMigration} />
               </TabsContent>
 
               {/* Advanced Tools Tab */}
