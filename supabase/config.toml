@@ -608,3 +608,12 @@ verify_jwt = true
 
 [functions.support-realtime-monitor]
 verify_jwt = true
+
+[functions.support-audit-logger]
+verify_jwt = true
+
+[functions.support-report-generator]
+verify_jwt = true
+
+[functions.support-external-integrations]
+verify_jwt = true
