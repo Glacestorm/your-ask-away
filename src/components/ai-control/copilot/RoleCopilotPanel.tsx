@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,11 +14,28 @@ import {
   XCircle,
   Clock,
   RefreshCw,
-  MessageSquare
+  MessageSquare,
+  Calendar,
+  Flame,
+  FileText,
+  Users,
+  GraduationCap,
+  Shield,
+  ShieldAlert,
+  FileSearch,
+  BarChart3,
+  AlertCircle
 } from 'lucide-react';
-import { useRoleCopilot, CopilotSuggestion } from '@/hooks/useRoleCopilot';
+import { useRoleCopilot, CopilotSuggestion, QuickAction } from '@/hooks/useRoleCopilot';
 import { CopilotSuggestionCard } from './CopilotSuggestionCard';
 import { CopilotMetricsBar } from './CopilotMetricsBar';
+import { cn } from '@/lib/utils';
+
+// Mapa de iconos para quick actions
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  Calendar, Flame, FileText, Users, AlertTriangle, GraduationCap,
+  Shield, ShieldAlert, FileSearch, BarChart3, TrendingUp, CheckCircle: CheckCircle2
+};
 
 export function RoleCopilotPanel() {
   const {
@@ -32,9 +49,22 @@ export function RoleCopilotPanel() {
     executeAction,
     dismissSuggestion,
     executeQuickAction,
+    error,
+    isError,
+    clearError,
   } = useRoleCopilot();
 
   const [activeTab, setActiveTab] = useState('suggestions');
+
+  // Renderizar icono de quick action
+  const renderQuickActionIcon = (iconName: string) => {
+    const IconComponent = iconMap[iconName];
+    if (IconComponent) {
+      return <IconComponent className="h-4 w-4" />;
+    }
+    // Fallback: mostrar el emoji/string directamente
+    return <span className="text-sm">{iconName}</span>;
+  };
 
   if (configLoading) {
     return (
@@ -70,8 +100,38 @@ export function RoleCopilotPanel() {
     await dismissSuggestion.mutateAsync({ suggestion, reason });
   };
 
+  // Componente para renderizar estado vacío en tabs
+  const EmptyTabState = ({ type, icon: Icon }: { type: string; icon: React.ComponentType<{ className?: string }> }) => (
+    <div className="flex flex-col items-center justify-center py-8 text-center">
+      <Icon className="h-8 w-8 text-muted-foreground/40 mb-3" />
+      <p className="text-sm text-muted-foreground">
+        No hi ha {type} actius
+      </p>
+      <p className="text-xs text-muted-foreground/70 mt-1">
+        Genera suggeriments per veure recomanacions
+      </p>
+    </div>
+  );
+
   return (
     <div className="space-y-4">
+      {/* Error State */}
+      {isError && error && (
+        <Card className="border-destructive/50 bg-destructive/10">
+          <CardContent className="py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-destructive">
+                <AlertCircle className="h-4 w-4" />
+                <span className="text-sm font-medium">{error.message}</span>
+              </div>
+              <Button variant="ghost" size="sm" onClick={clearError}>
+                <XCircle className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Header with Copilot Info */}
       <Card className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border-primary/20">
         <CardHeader className="pb-2">
@@ -112,7 +172,7 @@ export function RoleCopilotPanel() {
           </div>
         </CardHeader>
         <CardContent>
-          <CopilotMetricsBar metrics={metrics} />
+          <CopilotMetricsBar metrics={metrics} isLoading={isProcessing && !metrics} />
         </CardContent>
       </Card>
 
@@ -136,7 +196,7 @@ export function RoleCopilotPanel() {
                   disabled={isProcessing}
                   className="gap-2"
                 >
-                  {action.icon && <span>{action.icon}</span>}
+                  {action.icon && renderQuickActionIcon(action.icon)}
                   {action.label}
                 </Button>
               ))}
@@ -198,39 +258,51 @@ export function RoleCopilotPanel() {
               </TabsContent>
 
               <TabsContent value="actions" className="mt-0 space-y-3">
-                {getSuggestionsByType('action').map((suggestion) => (
-                  <CopilotSuggestionCard
-                    key={suggestion.id}
-                    suggestion={suggestion}
-                    onExecute={handleExecute}
-                    onDismiss={handleDismiss}
-                    isExecuting={executeAction.isPending}
-                  />
-                ))}
+                {getSuggestionsByType('action').length === 0 ? (
+                  <EmptyTabState type="accions" icon={Zap} />
+                ) : (
+                  getSuggestionsByType('action').map((suggestion) => (
+                    <CopilotSuggestionCard
+                      key={suggestion.id}
+                      suggestion={suggestion}
+                      onExecute={handleExecute}
+                      onDismiss={handleDismiss}
+                      isExecuting={executeAction.isPending}
+                    />
+                  ))
+                )}
               </TabsContent>
 
               <TabsContent value="insights" className="mt-0 space-y-3">
-                {getSuggestionsByType('insight').map((suggestion) => (
-                  <CopilotSuggestionCard
-                    key={suggestion.id}
-                    suggestion={suggestion}
-                    onExecute={handleExecute}
-                    onDismiss={handleDismiss}
-                    isExecuting={executeAction.isPending}
-                  />
-                ))}
+                {getSuggestionsByType('insight').length === 0 ? (
+                  <EmptyTabState type="insights" icon={TrendingUp} />
+                ) : (
+                  getSuggestionsByType('insight').map((suggestion) => (
+                    <CopilotSuggestionCard
+                      key={suggestion.id}
+                      suggestion={suggestion}
+                      onExecute={handleExecute}
+                      onDismiss={handleDismiss}
+                      isExecuting={executeAction.isPending}
+                    />
+                  ))
+                )}
               </TabsContent>
 
               <TabsContent value="alerts" className="mt-0 space-y-3">
-                {getSuggestionsByType('alert').map((suggestion) => (
-                  <CopilotSuggestionCard
-                    key={suggestion.id}
-                    suggestion={suggestion}
-                    onExecute={handleExecute}
-                    onDismiss={handleDismiss}
-                    isExecuting={executeAction.isPending}
-                  />
-                ))}
+                {getSuggestionsByType('alert').length === 0 ? (
+                  <EmptyTabState type="alertes" icon={AlertTriangle} />
+                ) : (
+                  getSuggestionsByType('alert').map((suggestion) => (
+                    <CopilotSuggestionCard
+                      key={suggestion.id}
+                      suggestion={suggestion}
+                      onExecute={handleExecute}
+                      onDismiss={handleDismiss}
+                      isExecuting={executeAction.isPending}
+                    />
+                  ))
+                )}
               </TabsContent>
             </ScrollArea>
           </CardContent>
