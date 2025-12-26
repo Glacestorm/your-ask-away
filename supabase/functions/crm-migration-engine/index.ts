@@ -433,7 +433,9 @@ Sugiere los mejores mapeos para estos campos.`
           .eq('id', migration_id);
 
         // Resume processing
-        processRecordsAsync(supabase, migration_id, mappings || []);
+        if (migration_id) {
+          processRecordsAsync(supabase, migration_id, mappings || []);
+        }
 
         return new Response(JSON.stringify({
           success: true
