@@ -18,6 +18,26 @@ interface MigrationRequest {
   status?: string;
   limit?: number;
   is_public?: boolean;
+  // Phase 5: Scheduling & Templates
+  schedule_config?: {
+    enabled: boolean;
+    cron_expression?: string;
+    next_run?: string;
+    timezone?: string;
+    max_retries?: number;
+    retry_delay_minutes?: number;
+  };
+  template_config?: {
+    name: string;
+    description?: string;
+    is_public?: boolean;
+    tags?: string[];
+  };
+  rollback_options?: {
+    dry_run?: boolean;
+    preserve_logs?: boolean;
+  };
+  export_format?: 'json' | 'csv';
 }
 
 serve(async (req) => {
@@ -1125,6 +1145,509 @@ Genera los mapeos óptimos para estos campos.`;
         return new Response(JSON.stringify({
           success: true,
           skipped: updateResult?.length || 0
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // === FASE 5: ROLLBACK MIGRATION ===
+      case 'rollback_migration': {
+        const { migration_id, rollback_options } = body;
+
+        if (!migration_id) {
+          throw new Error('migration_id is required');
+        }
+
+        const dryRun = rollback_options?.dry_run ?? false;
+        const preserveLogs = rollback_options?.preserve_logs ?? true;
+
+        // Get migration and its successfully migrated records
+        const { data: migration, error: migError } = await supabase
+          .from('crm_migrations')
+          .select('*')
+          .eq('id', migration_id)
+          .single();
+
+        if (migError) throw migError;
+
+        if (!migration.can_rollback) {
+          throw new Error('Esta migración no permite rollback');
+        }
+
+        // Get records that were successfully migrated
+        const { data: successRecords, error: recError } = await supabase
+          .from('crm_migration_records')
+          .select('*')
+          .eq('migration_id', migration_id)
+          .eq('status', 'success');
+
+        if (recError) throw recError;
+
+        const rollbackSummary = {
+          total: successRecords?.length || 0,
+          rolledBack: 0,
+          failed: 0,
+          errors: [] as Array<{ recordId: string; error: string }>
+        };
+
+        if (dryRun) {
+          return new Response(JSON.stringify({
+            success: true,
+            dryRun: true,
+            summary: {
+              ...rollbackSummary,
+              message: `Se encontraron ${rollbackSummary.total} registros para rollback`
+            }
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        // Execute rollback for each record
+        for (const record of (successRecords || [])) {
+          try {
+            const targetTable = record.target_table || 'companies';
+            const targetRecordId = record.target_record_id;
+
+            if (targetRecordId) {
+              // Delete the migrated record from target table
+              const { error: delError } = await supabase
+                .from(targetTable)
+                .delete()
+                .eq('id', targetRecordId);
+
+              if (delError) {
+                rollbackSummary.failed++;
+                rollbackSummary.errors.push({
+                  recordId: record.id,
+                  error: delError.message
+                });
+              } else {
+                // Update migration record status
+                await supabase
+                  .from('crm_migration_records')
+                  .update({ status: 'rolled_back' })
+                  .eq('id', record.id);
+                
+                rollbackSummary.rolledBack++;
+              }
+            }
+          } catch (err) {
+            rollbackSummary.failed++;
+            rollbackSummary.errors.push({
+              recordId: record.id,
+              error: err instanceof Error ? err.message : 'Unknown error'
+            });
+          }
+        }
+
+        // Update migration status
+        await supabase
+          .from('crm_migrations')
+          .update({
+            status: 'rollback',
+            rollback_data: {
+              executed_at: new Date().toISOString(),
+              summary: rollbackSummary,
+              performed_by: userId
+            },
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', migration_id);
+
+        return new Response(JSON.stringify({
+          success: true,
+          summary: rollbackSummary
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // === FASE 5: SCHEDULE MIGRATION ===
+      case 'schedule_migration': {
+        const { migration_id, schedule_config } = body;
+
+        if (!migration_id) {
+          throw new Error('migration_id is required');
+        }
+
+        if (!schedule_config) {
+          throw new Error('schedule_config is required');
+        }
+
+        // Calculate next run time based on cron or explicit time
+        let nextRun = schedule_config.next_run;
+        if (!nextRun && schedule_config.cron_expression) {
+          // Simple next run calculation (add 24 hours by default)
+          const now = new Date();
+          now.setHours(now.getHours() + 24);
+          nextRun = now.toISOString();
+        }
+
+        // Update migration with schedule config
+        const { data: updated, error } = await supabase
+          .from('crm_migrations')
+          .update({
+            config: {
+              ...((migration_id as any)?.config || {}),
+              schedule: {
+                enabled: schedule_config.enabled,
+                cron_expression: schedule_config.cron_expression,
+                next_run: nextRun,
+                timezone: schedule_config.timezone || 'Europe/Madrid',
+                max_retries: schedule_config.max_retries || 3,
+                retry_delay_minutes: schedule_config.retry_delay_minutes || 15,
+                created_at: new Date().toISOString()
+              }
+            },
+            status: schedule_config.enabled ? 'pending' : 'cancelled',
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', migration_id)
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        return new Response(JSON.stringify({
+          success: true,
+          migration: updated,
+          nextRun
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // === FASE 5: CREATE TEMPLATE FROM MIGRATION ===
+      case 'create_template_from_migration': {
+        const { migration_id, template_config } = body;
+
+        if (!migration_id) {
+          throw new Error('migration_id is required');
+        }
+
+        if (!template_config?.name) {
+          throw new Error('template_config.name is required');
+        }
+
+        // Get migration and its mappings
+        const { data: migration, error: migError } = await supabase
+          .from('crm_migrations')
+          .select('*')
+          .eq('id', migration_id)
+          .single();
+
+        if (migError) throw migError;
+
+        const { data: mappings, error: mapError } = await supabase
+          .from('crm_field_mappings')
+          .select('*')
+          .eq('migration_id', migration_id);
+
+        if (mapError) throw mapError;
+
+        // Create template
+        const { data: template, error: tmplError } = await supabase
+          .from('crm_mapping_templates')
+          .insert({
+            template_name: template_config.name,
+            source_crm: migration.source_crm,
+            description: template_config.description || `Template generado desde migración "${migration.migration_name}"`,
+            field_mappings: mappings || [],
+            transform_rules: (mappings || [])
+              .filter((m: any) => m.transform_function)
+              .map((m: any) => ({
+                source_field: m.source_field,
+                target_field: m.target_field,
+                transform: m.transform_function,
+                params: m.transform_params
+              })),
+            validation_rules: (mappings || [])
+              .flatMap((m: any) => m.validation_rules || []),
+            is_default: false,
+            is_public: template_config.is_public ?? false,
+            usage_count: 0,
+            success_rate: migration.status === 'completed' 
+              ? Math.round((migration.migrated_records / migration.total_records) * 100) 
+              : null,
+            created_by: userId
+          })
+          .select()
+          .single();
+
+        if (tmplError) throw tmplError;
+
+        return new Response(JSON.stringify({
+          success: true,
+          template
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // === FASE 5: EXPORT MIGRATION DATA ===
+      case 'export_migration': {
+        const { migration_id, export_format = 'json' } = body;
+
+        if (!migration_id) {
+          throw new Error('migration_id is required');
+        }
+
+        // Get migration details
+        const { data: migration, error: migError } = await supabase
+          .from('crm_migrations')
+          .select('*')
+          .eq('id', migration_id)
+          .single();
+
+        if (migError) throw migError;
+
+        // Get all records
+        const { data: records, error: recError } = await supabase
+          .from('crm_migration_records')
+          .select('*')
+          .eq('migration_id', migration_id);
+
+        if (recError) throw recError;
+
+        // Get mappings
+        const { data: mappings, error: mapError } = await supabase
+          .from('crm_field_mappings')
+          .select('*')
+          .eq('migration_id', migration_id);
+
+        if (mapError) throw mapError;
+
+        const exportData = {
+          migration: {
+            id: migration.id,
+            name: migration.migration_name,
+            source_crm: migration.source_crm,
+            status: migration.status,
+            statistics: migration.statistics,
+            created_at: migration.created_at,
+            completed_at: migration.completed_at
+          },
+          summary: {
+            total_records: migration.total_records,
+            migrated: migration.migrated_records,
+            failed: migration.failed_records,
+            skipped: migration.skipped_records
+          },
+          mappings: mappings?.map((m: any) => ({
+            source_field: m.source_field,
+            target_field: m.target_field,
+            target_table: m.target_table,
+            transform: m.transform_function,
+            is_required: m.is_required
+          })),
+          records: records?.map((r: any) => ({
+            index: r.record_index,
+            status: r.status,
+            source_data: r.source_data,
+            target_data: r.target_data,
+            error: r.error_message
+          })),
+          exported_at: new Date().toISOString()
+        };
+
+        if (export_format === 'csv') {
+          // Convert to CSV format for records
+          const csvHeaders = ['index', 'status', 'error'];
+          const sourceFields = Object.keys(records?.[0]?.source_data || {});
+          const allHeaders = [...csvHeaders, ...sourceFields.map(f => `source_${f}`)];
+          
+          const csvRows = [
+            allHeaders.join(','),
+            ...(records || []).map((r: any) => {
+              const row = [
+                r.record_index,
+                r.status,
+                r.error_message || ''
+              ];
+              sourceFields.forEach(f => {
+                row.push(String(r.source_data?.[f] || '').replace(/,/g, ';'));
+              });
+              return row.join(',');
+            })
+          ];
+
+          return new Response(JSON.stringify({
+            success: true,
+            format: 'csv',
+            data: csvRows.join('\n'),
+            filename: `migration_${migration_id}_export.csv`
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        return new Response(JSON.stringify({
+          success: true,
+          format: 'json',
+          data: exportData,
+          filename: `migration_${migration_id}_export.json`
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // === FASE 5: GET MIGRATION HISTORY ===
+      case 'get_migration_history': {
+        const { migration_id } = body;
+
+        if (!migration_id) {
+          throw new Error('migration_id is required');
+        }
+
+        // Get migration with all related data
+        const { data: migration, error: migError } = await supabase
+          .from('crm_migrations')
+          .select('*')
+          .eq('id', migration_id)
+          .single();
+
+        if (migError) throw migError;
+
+        // Build history timeline
+        const history: Array<{ event: string; timestamp: string; details: Record<string, unknown> }> = [
+          {
+            event: 'created',
+            timestamp: migration.created_at,
+            details: { name: migration.migration_name, source: migration.source_crm }
+          }
+        ];
+
+        if (migration.started_at) {
+          history.push({
+            event: 'started',
+            timestamp: migration.started_at,
+            details: { total_records: migration.total_records }
+          });
+        }
+
+        if (migration.completed_at) {
+          history.push({
+            event: migration.status === 'completed' ? 'completed' : 'finished',
+            timestamp: migration.completed_at,
+            details: {
+              migrated: migration.migrated_records,
+              failed: migration.failed_records,
+              skipped: migration.skipped_records
+            }
+          });
+        }
+
+        if (migration.rollback_data?.executed_at) {
+          history.push({
+            event: 'rollback',
+            timestamp: migration.rollback_data.executed_at,
+            details: migration.rollback_data.summary
+          });
+        }
+
+        // Add error log entries
+        (migration.error_log || []).forEach((err: any) => {
+          history.push({
+            event: 'error',
+            timestamp: err.timestamp,
+            details: { message: err.message, record_index: err.record_index }
+          });
+        });
+
+        // Sort by timestamp
+        history.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+        return new Response(JSON.stringify({
+          success: true,
+          migration_id,
+          history,
+          current_status: migration.status,
+          can_rollback: migration.can_rollback
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // === FASE 5: CLONE MIGRATION ===
+      case 'clone_migration': {
+        const { migration_id, name } = body;
+
+        if (!migration_id) {
+          throw new Error('migration_id is required');
+        }
+
+        // Get original migration
+        const { data: original, error: origError } = await supabase
+          .from('crm_migrations')
+          .select('*')
+          .eq('id', migration_id)
+          .single();
+
+        if (origError) throw origError;
+
+        // Get original mappings
+        const { data: origMappings, error: mapError } = await supabase
+          .from('crm_field_mappings')
+          .select('*')
+          .eq('migration_id', migration_id);
+
+        if (mapError) throw mapError;
+
+        // Create new migration
+        const { data: newMigration, error: newError } = await supabase
+          .from('crm_migrations')
+          .insert({
+            migration_name: name || `${original.migration_name} (copia)`,
+            source_crm: original.source_crm,
+            source_version: original.source_version,
+            status: 'pending',
+            total_records: 0,
+            migrated_records: 0,
+            failed_records: 0,
+            skipped_records: 0,
+            config: original.config,
+            source_file_url: original.source_file_url,
+            source_file_type: original.source_file_type,
+            error_log: [],
+            warnings: [],
+            statistics: {},
+            can_rollback: true,
+            performed_by: userId
+          })
+          .select()
+          .single();
+
+        if (newError) throw newError;
+
+        // Clone mappings
+        if (origMappings && origMappings.length > 0) {
+          const newMappings = origMappings.map((m: any) => ({
+            migration_id: newMigration.id,
+            source_field: m.source_field,
+            source_field_type: m.source_field_type,
+            target_table: m.target_table,
+            target_field: m.target_field,
+            target_field_type: m.target_field_type,
+            transform_function: m.transform_function,
+            transform_params: m.transform_params,
+            default_value: m.default_value,
+            is_required: m.is_required,
+            is_primary_key: m.is_primary_key,
+            is_auto_mapped: false,
+            validation_rules: m.validation_rules,
+            sample_values: []
+          }));
+
+          await supabase
+            .from('crm_field_mappings')
+            .insert(newMappings);
+        }
+
+        return new Response(JSON.stringify({
+          success: true,
+          migration: newMigration,
+          mappings_cloned: origMappings?.length || 0
         }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
