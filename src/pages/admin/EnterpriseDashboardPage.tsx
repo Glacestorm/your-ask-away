@@ -36,6 +36,7 @@ import {
 } from '@/components/admin/enterprise';
 import { RevenueAIAgentsPanel } from '@/components/admin/revenue';
 import { PredictiveHealthScorePanel } from '@/components/admin/cs';
+import { useSEOMeta } from '@/hooks/useSEOMeta';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
@@ -68,6 +69,13 @@ const barData = [
 ];
 
 export default function EnterpriseDashboardPage() {
+  useSEOMeta({
+    title: 'Enterprise Dashboard - Panel ejecutivo',
+    description: 'Dashboard ejecutivo enterprise con compliance, command center, workflows, BI, revenue AI y health score predictivo.',
+    canonical: typeof window !== 'undefined' ? `${window.location.origin}/admin/enterprise-dashboard` : undefined,
+    noIndex: true,
+  });
+
   const [activeView, setActiveView] = useState<PanelView>('grid');
 
   const panels = [
@@ -232,7 +240,7 @@ export default function EnterpriseDashboardPage() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 items-center justify-between px-4">
+        <div className="mx-auto flex h-14 w-full max-w-[1600px] items-center justify-between px-4">
           <div className="flex items-center gap-4">
             <Link to="/admin">
               <Button variant="ghost" size="sm">
@@ -284,25 +292,27 @@ export default function EnterpriseDashboardPage() {
       </header>
 
       {/* Content */}
-      <main className="container px-4 py-6">
+      <main className="mx-auto w-full max-w-[1600px] px-4 py-6">
         {activeView === 'grid' ? (
           <>
             {/* Executive Metrics Grid */}
             <ExecutiveMetricsGrid className="mb-6" />
 
             {/* Quick Navigation */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+            <nav className="grid grid-cols-2 gap-3 mb-6 md:grid-cols-4" aria-label="Navegación de módulos enterprise">
               {panels.map((panel) => (
                 <button
                   key={panel.id}
                   onClick={() => setActiveView(panel.id as PanelView)}
                   className="p-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors text-left group"
                 >
-                  <div className={cn(
-                    "inline-flex p-2 rounded-lg bg-gradient-to-br mb-2",
-                    panel.color
-                  )}>
-                    <panel.icon className="h-5 w-5 text-white" />
+                  <div
+                    className={cn(
+                      'inline-flex p-2 rounded-lg bg-gradient-to-br mb-2',
+                      panel.color
+                    )}
+                  >
+                    <panel.icon className="h-5 w-5 text-primary-foreground" />
                   </div>
                   <p className="text-sm font-medium">{panel.label}</p>
                   <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground group-hover:text-primary transition-colors">
@@ -311,10 +321,10 @@ export default function EnterpriseDashboardPage() {
                   </div>
                 </button>
               ))}
-            </div>
+            </nav>
 
             {/* Summary Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+            <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6" aria-label="Resumen ejecutivo">
               {/* Pie Chart - Estado General */}
               <Card>
                 <CardHeader className="pb-2">
@@ -373,14 +383,14 @@ export default function EnterpriseDashboardPage() {
                   </div>
                 </CardContent>
               </Card>
-            </div>
+            </section>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+            <section className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6" aria-label="KPIs clave">
               <Card className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-green-500/10">
-                    <CheckCircle className="h-5 w-5 text-green-500" />
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <CheckCircle className="h-5 w-5 text-primary" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold">{summaryData.compliance.score}%</p>
@@ -390,8 +400,8 @@ export default function EnterpriseDashboardPage() {
               </Card>
               <Card className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-blue-500/10">
-                    <Activity className="h-5 w-5 text-blue-500" />
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Activity className="h-5 w-5 text-primary" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold">{summaryData.command.uptime}%</p>
@@ -401,8 +411,8 @@ export default function EnterpriseDashboardPage() {
               </Card>
               <Card className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-amber-500/10">
-                    <AlertTriangle className="h-5 w-5 text-amber-500" />
+                  <div className="p-2 rounded-lg bg-destructive/10">
+                    <AlertTriangle className="h-5 w-5 text-destructive" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold">{summaryData.health.atRisk}</p>
@@ -412,8 +422,8 @@ export default function EnterpriseDashboardPage() {
               </Card>
               <Card className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-purple-500/10">
-                    <Brain className="h-5 w-5 text-purple-500" />
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Brain className="h-5 w-5 text-primary" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold">{summaryData.bi.insights}</p>
@@ -421,28 +431,42 @@ export default function EnterpriseDashboardPage() {
                   </div>
                 </div>
               </Card>
-            </div>
+            </section>
 
-            {/* Alerts & Activity Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+            {/* Alerts & Activity */}
+            <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6" aria-label="Alertas y actividad">
               <RealTimeAlertsPanel />
               <EnterpriseActivityFeed />
-            </div>
+            </section>
 
-            {/* 3x2 Grid with compact panels */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-              <ComplianceMonitorPanel />
-              <CommandCenterPanel />
-              <WorkflowEnginePanel />
-              <BusinessIntelligencePanel />
-              <RevenueAIAgentsPanel compact />
-              <PredictiveHealthScorePanel />
-            </div>
+            {/* Paneles (Grid 1) */}
+            <section className="space-y-3" aria-label="Paneles enterprise - vista 1">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-foreground">Paneles de gobierno y operaciones</h2>
+                <p className="text-xs text-muted-foreground">Vista optimizada sin scrolls laterales</p>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <ComplianceMonitorPanel />
+                <CommandCenterPanel />
+                <WorkflowEnginePanel />
+                <BusinessIntelligencePanel />
+              </div>
+            </section>
+
+            {/* Paneles (Grid 2) */}
+            <section className="space-y-3 mt-6" aria-label="Paneles enterprise - vista 2">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-foreground">Revenue & Customer Health</h2>
+                <p className="text-xs text-muted-foreground">Más ancho y con mejor lectura</p>
+              </div>
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <RevenueAIAgentsPanel compact />
+                <PredictiveHealthScorePanel compact />
+              </div>
+            </section>
           </>
         ) : (
-          <div className="h-[calc(100vh-8rem)]">
-            {renderFullPanel()}
-          </div>
+          <div className="h-[calc(100vh-8rem)]">{renderFullPanel()}</div>
         )}
       </main>
     </div>
