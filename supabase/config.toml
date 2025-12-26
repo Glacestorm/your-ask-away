@@ -626,3 +626,12 @@ verify_jwt = true
 
 [functions.crm-ai-assistant]
 verify_jwt = true
+
+[functions.whatsapp-business-api]
+verify_jwt = false
+
+[functions.revenue-engine]
+verify_jwt = true
+
+[functions.ai-agents-v2]
+verify_jwt = true
