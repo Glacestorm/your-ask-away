@@ -433,9 +433,7 @@ export function useRoleCopilot2026() {
         return {
           ...data,
           available_tools: (data.available_tools || []) as unknown as string[],
-          quick_actions: QUICK_ACTIONS_2026.filter(qa => 
-            !qa.sectorSpecific || qa.sectorSpecific.includes(profile?.sector || '')
-          ),
+        quick_actions: QUICK_ACTIONS_2026.filter(qa => !qa.sectorSpecific),
         } as CopilotConfig2026;
       }
       return null;
