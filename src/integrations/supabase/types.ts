@@ -7483,6 +7483,343 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_connectors: {
+        Row: {
+          connector_key: string
+          connector_name: string
+          created_at: string | null
+          description: string | null
+          documentation: Json | null
+          export_guide_url: string | null
+          field_definitions: Json | null
+          id: string
+          is_active: boolean | null
+          logo_url: string | null
+          popularity_rank: number | null
+          supported_entities: string[] | null
+          supported_formats: string[] | null
+          tier: string | null
+          updated_at: string | null
+          vendor: string
+        }
+        Insert: {
+          connector_key: string
+          connector_name: string
+          created_at?: string | null
+          description?: string | null
+          documentation?: Json | null
+          export_guide_url?: string | null
+          field_definitions?: Json | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          popularity_rank?: number | null
+          supported_entities?: string[] | null
+          supported_formats?: string[] | null
+          tier?: string | null
+          updated_at?: string | null
+          vendor: string
+        }
+        Update: {
+          connector_key?: string
+          connector_name?: string
+          created_at?: string | null
+          description?: string | null
+          documentation?: Json | null
+          export_guide_url?: string | null
+          field_definitions?: Json | null
+          id?: string
+          is_active?: boolean | null
+          logo_url?: string | null
+          popularity_rank?: number | null
+          supported_entities?: string[] | null
+          supported_formats?: string[] | null
+          tier?: string | null
+          updated_at?: string | null
+          vendor?: string
+        }
+        Relationships: []
+      }
+      crm_field_mappings: {
+        Row: {
+          ai_confidence: number | null
+          created_at: string | null
+          default_value: string | null
+          error_count: number | null
+          id: string
+          is_auto_mapped: boolean | null
+          is_primary_key: boolean | null
+          is_required: boolean | null
+          mapped_count: number | null
+          migration_id: string | null
+          sample_values: Json | null
+          source_field: string
+          source_field_type: string | null
+          target_field: string
+          target_field_type: string | null
+          target_table: string
+          transform_function: string | null
+          transform_params: Json | null
+          updated_at: string | null
+          validation_rules: Json | null
+        }
+        Insert: {
+          ai_confidence?: number | null
+          created_at?: string | null
+          default_value?: string | null
+          error_count?: number | null
+          id?: string
+          is_auto_mapped?: boolean | null
+          is_primary_key?: boolean | null
+          is_required?: boolean | null
+          mapped_count?: number | null
+          migration_id?: string | null
+          sample_values?: Json | null
+          source_field: string
+          source_field_type?: string | null
+          target_field: string
+          target_field_type?: string | null
+          target_table: string
+          transform_function?: string | null
+          transform_params?: Json | null
+          updated_at?: string | null
+          validation_rules?: Json | null
+        }
+        Update: {
+          ai_confidence?: number | null
+          created_at?: string | null
+          default_value?: string | null
+          error_count?: number | null
+          id?: string
+          is_auto_mapped?: boolean | null
+          is_primary_key?: boolean | null
+          is_required?: boolean | null
+          mapped_count?: number | null
+          migration_id?: string | null
+          sample_values?: Json | null
+          source_field?: string
+          source_field_type?: string | null
+          target_field?: string
+          target_field_type?: string | null
+          target_table?: string
+          transform_function?: string | null
+          transform_params?: Json | null
+          updated_at?: string | null
+          validation_rules?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_field_mappings_migration_id_fkey"
+            columns: ["migration_id"]
+            isOneToOne: false
+            referencedRelation: "crm_migrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_mapping_templates: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          field_mappings: Json
+          id: string
+          is_default: boolean | null
+          is_public: boolean | null
+          source_crm: string
+          success_rate: number | null
+          template_name: string
+          transform_rules: Json | null
+          updated_at: string | null
+          usage_count: number | null
+          validation_rules: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          field_mappings?: Json
+          id?: string
+          is_default?: boolean | null
+          is_public?: boolean | null
+          source_crm: string
+          success_rate?: number | null
+          template_name: string
+          transform_rules?: Json | null
+          updated_at?: string | null
+          usage_count?: number | null
+          validation_rules?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          field_mappings?: Json
+          id?: string
+          is_default?: boolean | null
+          is_public?: boolean | null
+          source_crm?: string
+          success_rate?: number | null
+          template_name?: string
+          transform_rules?: Json | null
+          updated_at?: string | null
+          usage_count?: number | null
+          validation_rules?: Json | null
+        }
+        Relationships: []
+      }
+      crm_migration_records: {
+        Row: {
+          created_at: string | null
+          duplicate_of: string | null
+          error_details: Json | null
+          error_message: string | null
+          id: string
+          is_duplicate: boolean | null
+          migration_id: string | null
+          processing_time_ms: number | null
+          record_index: number
+          source_data: Json
+          status: string
+          target_data: Json | null
+          target_record_id: string | null
+          target_table: string | null
+          validation_errors: Json | null
+          warnings: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          duplicate_of?: string | null
+          error_details?: Json | null
+          error_message?: string | null
+          id?: string
+          is_duplicate?: boolean | null
+          migration_id?: string | null
+          processing_time_ms?: number | null
+          record_index: number
+          source_data: Json
+          status?: string
+          target_data?: Json | null
+          target_record_id?: string | null
+          target_table?: string | null
+          validation_errors?: Json | null
+          warnings?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          duplicate_of?: string | null
+          error_details?: Json | null
+          error_message?: string | null
+          id?: string
+          is_duplicate?: boolean | null
+          migration_id?: string | null
+          processing_time_ms?: number | null
+          record_index?: number
+          source_data?: Json
+          status?: string
+          target_data?: Json | null
+          target_record_id?: string | null
+          target_table?: string | null
+          validation_errors?: Json | null
+          warnings?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_migration_records_migration_id_fkey"
+            columns: ["migration_id"]
+            isOneToOne: false
+            referencedRelation: "crm_migrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_migrations: {
+        Row: {
+          ai_analysis: Json | null
+          approved_by: string | null
+          can_rollback: boolean | null
+          completed_at: string | null
+          config: Json | null
+          created_at: string | null
+          error_log: Json | null
+          estimated_completion: string | null
+          failed_records: number | null
+          id: string
+          migrated_records: number | null
+          migration_name: string
+          performed_by: string | null
+          rollback_data: Json | null
+          skipped_records: number | null
+          source_crm: string
+          source_file_size: number | null
+          source_file_type: string | null
+          source_file_url: string | null
+          source_version: string | null
+          started_at: string | null
+          statistics: Json | null
+          status: string
+          total_records: number | null
+          updated_at: string | null
+          warnings: Json | null
+        }
+        Insert: {
+          ai_analysis?: Json | null
+          approved_by?: string | null
+          can_rollback?: boolean | null
+          completed_at?: string | null
+          config?: Json | null
+          created_at?: string | null
+          error_log?: Json | null
+          estimated_completion?: string | null
+          failed_records?: number | null
+          id?: string
+          migrated_records?: number | null
+          migration_name: string
+          performed_by?: string | null
+          rollback_data?: Json | null
+          skipped_records?: number | null
+          source_crm: string
+          source_file_size?: number | null
+          source_file_type?: string | null
+          source_file_url?: string | null
+          source_version?: string | null
+          started_at?: string | null
+          statistics?: Json | null
+          status?: string
+          total_records?: number | null
+          updated_at?: string | null
+          warnings?: Json | null
+        }
+        Update: {
+          ai_analysis?: Json | null
+          approved_by?: string | null
+          can_rollback?: boolean | null
+          completed_at?: string | null
+          config?: Json | null
+          created_at?: string | null
+          error_log?: Json | null
+          estimated_completion?: string | null
+          failed_records?: number | null
+          id?: string
+          migrated_records?: number | null
+          migration_name?: string
+          performed_by?: string | null
+          rollback_data?: Json | null
+          skipped_records?: number | null
+          source_crm?: string
+          source_file_size?: number | null
+          source_file_type?: string | null
+          source_file_url?: string | null
+          source_version?: string | null
+          started_at?: string | null
+          statistics?: Json | null
+          status?: string
+          total_records?: number | null
+          updated_at?: string | null
+          warnings?: Json | null
+        }
+        Relationships: []
+      }
       customer_360_profiles: {
         Row: {
           active_products: number | null
