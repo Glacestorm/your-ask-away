@@ -591,6 +591,31 @@ export default function CSMetricsPage() {
             </div>
           </div>
         </TabsContent>
+
+        {/* Journey Tab - NEW 2026 */}
+        <TabsContent value="journey" className="mt-4">
+          <CustomerJourneyHeatmap />
+        </TabsContent>
+
+        {/* Risk Radar Tab - NEW 2026 */}
+        <TabsContent value="risk" className="mt-4">
+          <RiskRadar />
+        </TabsContent>
+
+        {/* Simulator Tab - NEW 2026 */}
+        <TabsContent value="simulator" className="mt-4">
+          <WhatIfSimulator />
+        </TabsContent>
+
+        {/* AI Insights Tab - NEW 2026 */}
+        <TabsContent value="ai-insights" className="mt-4">
+          <AIRecommendationsFeed />
+        </TabsContent>
+
+        {/* Executive Tab - NEW 2026 */}
+        <TabsContent value="executive" className="mt-4">
+          <ExecutiveSummaryGenerator />
+        </TabsContent>
       </Tabs>
     </div>
   );
