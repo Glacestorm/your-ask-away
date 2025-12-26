@@ -877,6 +877,185 @@ export function useCRMMigration() {
       return 0;
     }
   }, []);
+
+  // === FASE 5: SCHEDULE MIGRATION ===
+  const scheduleMigration = useCallback(async (
+    migrationId: string,
+    scheduleConfig: {
+      enabled: boolean;
+      cron_expression?: string;
+      next_run?: string;
+      timezone?: string;
+      max_retries?: number;
+      retry_delay_minutes?: number;
+    }
+  ): Promise<CRMMigration | null> => {
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('crm-migration-engine', {
+        body: {
+          action: 'schedule_migration',
+          migration_id: migrationId,
+          schedule_config: scheduleConfig
+        }
+      });
+
+      if (fnError) throw fnError;
+
+      if (data?.success) {
+        toast.success(scheduleConfig.enabled 
+          ? `Migración programada para ${new Date(data.nextRun).toLocaleString('es-ES')}`
+          : 'Programación cancelada'
+        );
+        return data.migration;
+      }
+
+      return null;
+    } catch (err) {
+      console.error('[useCRMMigration] scheduleMigration error:', err);
+      toast.error('Error al programar migración');
+      return null;
+    }
+  }, []);
+
+  // === FASE 5: CREATE TEMPLATE FROM MIGRATION ===
+  const createTemplateFromMigration = useCallback(async (
+    migrationId: string,
+    templateConfig: {
+      name: string;
+      description?: string;
+      is_public?: boolean;
+      tags?: string[];
+    }
+  ): Promise<CRMMappingTemplate | null> => {
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('crm-migration-engine', {
+        body: {
+          action: 'create_template_from_migration',
+          migration_id: migrationId,
+          template_config: templateConfig
+        }
+      });
+
+      if (fnError) throw fnError;
+
+      if (data?.success) {
+        toast.success('Template creado exitosamente');
+        return data.template;
+      }
+
+      return null;
+    } catch (err) {
+      console.error('[useCRMMigration] createTemplateFromMigration error:', err);
+      toast.error('Error al crear template');
+      return null;
+    }
+  }, []);
+
+  // === FASE 5: EXPORT MIGRATION ===
+  const exportMigration = useCallback(async (
+    migrationId: string,
+    format: 'json' | 'csv' = 'json'
+  ): Promise<{ data: unknown; filename: string } | null> => {
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('crm-migration-engine', {
+        body: {
+          action: 'export_migration',
+          migration_id: migrationId,
+          export_format: format
+        }
+      });
+
+      if (fnError) throw fnError;
+
+      if (data?.success) {
+        toast.success('Datos exportados correctamente');
+        return { data: data.data, filename: data.filename };
+      }
+
+      return null;
+    } catch (err) {
+      console.error('[useCRMMigration] exportMigration error:', err);
+      toast.error('Error al exportar migración');
+      return null;
+    }
+  }, []);
+
+  // === FASE 5: GET MIGRATION HISTORY ===
+  const getMigrationHistory = useCallback(async (
+    migrationId: string
+  ): Promise<{ history: Array<{ event: string; timestamp: string; details: Record<string, unknown> }>; current_status: string; can_rollback: boolean } | null> => {
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('crm-migration-engine', {
+        body: {
+          action: 'get_migration_history',
+          migration_id: migrationId
+        }
+      });
+
+      if (fnError) throw fnError;
+
+      return data?.success ? { history: data.history, current_status: data.current_status, can_rollback: data.can_rollback } : null;
+    } catch (err) {
+      console.error('[useCRMMigration] getMigrationHistory error:', err);
+      return null;
+    }
+  }, []);
+
+  // === FASE 5: CLONE MIGRATION ===
+  const cloneMigration = useCallback(async (
+    migrationId: string,
+    newName?: string
+  ): Promise<CRMMigration | null> => {
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('crm-migration-engine', {
+        body: {
+          action: 'clone_migration',
+          migration_id: migrationId,
+          name: newName
+        }
+      });
+
+      if (fnError) throw fnError;
+
+      if (data?.success) {
+        toast.success(`Migración clonada: ${data.mappings_cloned} mapeos copiados`);
+        return data.migration;
+      }
+
+      return null;
+    } catch (err) {
+      console.error('[useCRMMigration] cloneMigration error:', err);
+      toast.error('Error al clonar migración');
+      return null;
+    }
+  }, []);
+
+  // === FASE 5: DRY RUN ROLLBACK ===
+  const dryRunRollback = useCallback(async (
+    migrationId: string
+  ): Promise<{ total: number; message: string } | null> => {
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('crm-migration-engine', {
+        body: {
+          action: 'rollback_migration',
+          migration_id: migrationId,
+          rollback_options: { dry_run: true }
+        }
+      });
+
+      if (fnError) throw fnError;
+
+      if (data?.success && data?.dryRun) {
+        return { total: data.summary.total, message: data.summary.message };
+      }
+
+      return null;
+    } catch (err) {
+      console.error('[useCRMMigration] dryRunRollback error:', err);
+      return null;
+    }
+  }, []);
+
   const startProgressPolling = useCallback((migrationId: string) => {
     stopProgressPolling();
     pollingInterval.current = setInterval(() => {
@@ -969,6 +1148,14 @@ export function useCRMMigration() {
     applyTransformations,
     previewTransformation,
     skipDuplicates,
+    
+    // Fase 5: Rollback, Scheduling & Templates
+    scheduleMigration,
+    createTemplateFromMigration,
+    exportMigration,
+    getMigrationHistory,
+    cloneMigration,
+    dryRunRollback,
     
     // Control
     setActiveMigration,
