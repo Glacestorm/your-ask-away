@@ -338,6 +338,7 @@ export function useRoleCopilot2026() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentSuggestions, setCurrentSuggestions] = useState<CopilotSuggestion2026[]>([]);
   const [myDayView, setMyDayView] = useState<MyDayView | null>(null);
+  const [simulatedRole, setSimulatedRole] = useState<CopilotRole2026 | null>(null);
   
   // === KB 2.0 STATE ===
   const [status, setStatus] = useState<KBStatus>('idle');
@@ -766,6 +767,9 @@ export function useRoleCopilot2026() {
     }
   }, [session]);
 
+  // Effective role (simulated or actual)
+  const effectiveRole = simulatedRole || (userRole ? mapUserRoleToCopilotRole2026(userRole) : null);
+
   return {
     // Config & Session
     copilotConfig,
@@ -799,6 +803,10 @@ export function useRoleCopilot2026() {
     clearError,
     reset,
     refetchSession,
+    // Role simulation (for superadmin)
+    simulatedRole,
+    setSimulatedRole,
+    effectiveRole,
     // Constants
     QUICK_ACTIONS_2026,
     CNAE_SECTORS,
