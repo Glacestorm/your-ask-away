@@ -160,6 +160,12 @@ export const SectorsManager = lazy(() => import('@/components/admin/SectorsManag
 export const CoreWebVitalsDashboard = lazy(() => import('@/components/admin/CoreWebVitalsDashboard').then(m => ({ default: m.CoreWebVitalsDashboard })));
 export const TranslationsDashboard = lazy(() => import('@/components/admin/translations').then(m => ({ default: m.TranslationsDashboard })));
 
+// Advanced AI - FASE 12
+export const AdvancedCopilotPanel = lazy(() => import('@/components/admin/advanced-ai').then(m => ({ default: m.AdvancedCopilotPanel })));
+export const AIOrchestorPanel = lazy(() => import('@/components/admin/advanced-ai').then(m => ({ default: m.AIOrchestorPanel })));
+export const SmartAnalyticsPanel = lazy(() => import('@/components/admin/advanced-ai').then(m => ({ default: m.SmartAnalyticsPanel })));
+export const RealTimeInsightsPanel = lazy(() => import('@/components/admin/advanced-ai').then(m => ({ default: m.RealTimeInsightsPanel })));
+
 // Config & Docs
 export const WhiteLabelConfig = lazy(() => import('@/components/admin/WhiteLabelConfig'));
 export const APIDocumentation = lazy(() => import('@/components/admin/APIDocumentation'));

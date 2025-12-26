@@ -117,6 +117,11 @@ import {
   RiskAssessmentIAPanel,
   AdvancedReportingPanel,
   RecommendationEnginePanel,
+  // Advanced AI - Fase 12
+  AdvancedCopilotPanel,
+  AIOrchestorPanel,
+  SmartAnalyticsPanel,
+  RealTimeInsightsPanel,
 } from '@/components/admin/AdminSectionLoader';
 
 const Admin = () => {
@@ -252,6 +257,11 @@ const Admin = () => {
       case 'service-quotes': return 'Presupuestos de Servicio';
       case 'remote-support': return 'Soporte Remoto';
       case 'ai-obelixia': return 'AI Obelixia';
+      case 'advanced-ai': return 'Advanced AI & Automation (Fase 12)';
+      case 'ai-copilot-advanced': return 'Copilot Multimodal Avanzado';
+      case 'ai-orchestrator': return 'Orquestador de Agentes IA';
+      case 'smart-analytics-ai': return 'Smart Analytics IA';
+      case 'realtime-insights': return 'Real-Time Insights';
       default: return '';
     }
   };
@@ -1659,6 +1669,85 @@ const Admin = () => {
               </div>
             </div>
 
+            {/* SECCIÓ: Advanced AI & Automation - FASE 12 */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 bg-clip-text text-transparent flex items-center gap-2">
+                <Rocket className="h-5 w-5 text-blue-500" /> Advanced AI & Automation (Fase 12)
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-cyan-500/30 bg-gradient-to-br from-cyan-500/5 to-cyan-500/10"
+                  onClick={() => handleSectionChange('advanced-ai')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center">
+                      <Rocket className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-cyan-700 dark:text-cyan-400">Panel Completo</h4>
+                      <p className="text-xs text-muted-foreground">Ver todos los módulos de Fase 12</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-purple-500/10"
+                  onClick={() => handleSectionChange('ai-copilot-advanced')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                      <Bot className="h-4 w-4 text-purple-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-purple-700 dark:text-purple-400">Copilot Multimodal</h4>
+                      <p className="text-xs text-muted-foreground">Chat, voz, imagen y documentos</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-blue-500/10"
+                  onClick={() => handleSectionChange('ai-orchestrator')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                      <Layers className="h-4 w-4 text-blue-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-blue-700 dark:text-blue-400">Orquestador IA</h4>
+                      <p className="text-xs text-muted-foreground">Coordina múltiples agentes</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-emerald-500/10"
+                  onClick={() => handleSectionChange('smart-analytics-ai')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                      <BarChart3 className="h-4 w-4 text-emerald-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-emerald-700 dark:text-emerald-400">Smart Analytics</h4>
+                      <p className="text-xs text-muted-foreground">Consultas en lenguaje natural</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-rose-500/30 bg-gradient-to-br from-rose-500/5 to-rose-500/10"
+                  onClick={() => handleSectionChange('realtime-insights')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-rose-500/20 flex items-center justify-center">
+                      <Activity className="h-4 w-4 text-rose-500" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-rose-700 dark:text-rose-400">Real-Time Insights</h4>
+                      <p className="text-xs text-muted-foreground">Alertas y acciones en tiempo real</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
             {/* Nota: Verticales CNAE movido a /obelixia-admin */}
 
             {/* SECCIÓ 6: Eines i Historial */}
@@ -1851,6 +1940,47 @@ const Admin = () => {
           );
         }
         return <GeocodingRecalculator />;
+      
+      // FASE 12 - Advanced AI & Automation
+      case 'advanced-ai':
+        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
+          return (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
+              </CardContent>
+            </Card>
+          );
+        }
+        return (
+          <div className="space-y-6">
+            <div className="rounded-lg border bg-card p-6">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 bg-clip-text text-transparent">
+                  Advanced AI & Automation - Fase 12
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Copilot multimodal, orquestador de agentes, analytics inteligente y real-time insights
+                </p>
+              </div>
+              <div className="grid gap-6 lg:grid-cols-2">
+                <AdvancedCopilotPanel />
+                <AIOrchestorPanel />
+                <SmartAnalyticsPanel />
+                <RealTimeInsightsPanel />
+              </div>
+            </div>
+          </div>
+        );
+      case 'ai-copilot-advanced':
+        return <AdvancedCopilotPanel />;
+      case 'ai-orchestrator':
+        return <AIOrchestorPanel />;
+      case 'smart-analytics-ai':
+        return <SmartAnalyticsPanel />;
+      case 'realtime-insights':
+        return <RealTimeInsightsPanel />;
+      
       default:
         return null;
     }
