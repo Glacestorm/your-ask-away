@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -42,6 +42,8 @@ import {
   Sparkles,
   Loader2,
   Trash2,
+  History,
+  Eye,
 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
@@ -103,7 +105,7 @@ const DB_FIELDS = [
 ];
 
 export const ExcelImporter = ({ open, onOpenChange, onImportComplete, parroquias }: ExcelImporterProps) => {
-  const [step, setStep] = useState<'upload' | 'map' | 'validate' | 'import'>('upload');
+  const [step, setStep] = useState<'upload' | 'map' | 'validate' | 'import' | 'history'>('upload');
   const [excelData, setExcelData] = useState<ExcelRow[]>([]);
   const [excelColumns, setExcelColumns] = useState<string[]>([]);
   const [columnMapping, setColumnMapping] = useState<MappedColumn[]>([]);
@@ -117,6 +119,34 @@ export const ExcelImporter = ({ open, onOpenChange, onImportComplete, parroquias
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showDeleteLastDialog, setShowDeleteLastDialog] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [importHistory, setImportHistory] = useState<any[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  // Load import history
+  const loadImportHistory = async () => {
+    setLoadingHistory(true);
+    try {
+      const { data, error } = await supabase
+        .from('import_batches')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(20);
+      
+      if (error) throw error;
+      setImportHistory(data || []);
+    } catch (error) {
+      console.error('Error loading import history:', error);
+      toast.error('Error al cargar el historial');
+    } finally {
+      setLoadingHistory(false);
+    }
+  };
+
+  useEffect(() => {
+    if (open) {
+      loadImportHistory();
+    }
+  }, [open]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

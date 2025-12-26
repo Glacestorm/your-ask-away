@@ -8,7 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Bot, Send, Loader2, AlertTriangle, Shield, MessageSquare,
   Building, FileText, Package, BookOpen, History, Trash2, RotateCcw,
-  Volume2, VolumeX, ClipboardList, Users, Settings
+  Volume2, VolumeX, ClipboardList, Users, Settings, Download, Sparkles,
+  Lightbulb
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -47,6 +48,46 @@ interface Conversation {
   requiresReview: boolean;
 }
 
+// Contextual suggestions based on context type
+const CONTEXTUAL_SUGGESTIONS: Record<string, string[]> = {
+  clients: [
+    '¿Cuál es el proceso de onboarding para nuevos clientes?',
+    '¿Qué documentación se requiere para clientes empresa?',
+    '¿Cómo puedo ver el historial de un cliente?',
+    '¿Cuáles son los requisitos KYC actualizados?',
+  ],
+  regulations: [
+    '¿Cuáles son las novedades en normativa AML 2024?',
+    '¿Qué plazos tenemos para el reporting FATCA?',
+    '¿Cómo afecta la directiva MiCA a nuestros productos?',
+    '¿Cuáles son los requisitos de GDPR para datos bancarios?',
+  ],
+  products: [
+    '¿Cuáles son las condiciones del préstamo hipotecario?',
+    '¿Qué productos de inversión ofrecemos a minoristas?',
+    '¿Cuál es la rentabilidad actual de los depósitos?',
+    '¿Qué seguros podemos ofrecer vinculados a préstamos?',
+  ],
+  procedures: [
+    '¿Cuál es el procedimiento para apertura de cuenta empresa?',
+    '¿Cómo se gestiona una reclamación de cliente?',
+    '¿Cuál es el proceso de escalado de incidencias?',
+    '¿Cómo solicito una excepción de riesgo?',
+  ],
+  internal_forms: [
+    '¿Dónde encuentro el formulario de vacaciones?',
+    '¿Cuál es el proceso para solicitar material de oficina?',
+    '¿Cómo se tramita una baja por enfermedad?',
+    '¿Dónde está el formulario de gastos de viaje?',
+  ],
+  client_forms: [
+    '¿Qué formularios necesita un nuevo cliente?',
+    '¿Cuál es el formulario de actualización de datos?',
+    '¿Dónde está el formulario de reclamaciones?',
+    '¿Qué documentos firma el cliente para un préstamo?',
+  ],
+};
+
 const CONTEXT_TYPES = [
   { value: 'clients', label: 'Clientes', icon: Building },
   { value: 'regulations', label: 'Normativas', icon: FileText },
@@ -68,6 +109,7 @@ export function InternalAssistantChat() {
   const [showKnowledgeManager, setShowKnowledgeManager] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Text-to-speech state
@@ -652,8 +694,34 @@ export function InternalAssistantChat() {
               </Badge>
             </CardTitle>
             
-            {/* Voice Controls */}
+            {/* Voice Controls & Export */}
             <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (messages.length === 0) {
+                    toast.error('No hay mensajes para exportar');
+                    return;
+                  }
+                  const conversationText = messages.map(m => 
+                    `[${m.role === 'user' ? 'Tú' : 'Asistente'}] ${m.createdAt.toLocaleString('es-ES')}\n${m.content}\n`
+                  ).join('\n---\n\n');
+                  
+                  const blob = new Blob([conversationText], { type: 'text/plain' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `conversacion_${new Date().toISOString().split('T')[0]}.txt`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                  toast.success('Conversación exportada');
+                }}
+                title="Exportar conversación"
+                disabled={messages.length === 0}
+              >
+                <Download className="h-4 w-4" />
+              </Button>
               <Button
                 variant={autoSpeak ? "default" : "outline"}
                 size="sm"
@@ -667,7 +735,7 @@ export function InternalAssistantChat() {
           
           {/* Context Type Selector */}
           <div className="mt-2">
-            <Tabs value={contextType} onValueChange={setContextType}>
+            <Tabs value={contextType} onValueChange={(v) => { setContextType(v); setShowSuggestions(true); }}>
               <TabsList className="h-8 flex-wrap">
                 {CONTEXT_TYPES.map((type) => (
                   <TabsTrigger 
@@ -696,6 +764,38 @@ export function InternalAssistantChat() {
         </CardHeader>
 
         <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
+          {/* Contextual Suggestions */}
+          {showSuggestions && messages.length === 0 && CONTEXTUAL_SUGGESTIONS[contextType] && (
+            <div className="p-3 border-b bg-accent/30">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <Lightbulb className="h-4 w-4 text-yellow-500" />
+                  <span>Sugerencias para {CONTEXT_TYPES.find(t => t.value === contextType)?.label}</span>
+                </div>
+                <Button variant="ghost" size="sm" onClick={() => setShowSuggestions(false)}>
+                  ×
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {CONTEXTUAL_SUGGESTIONS[contextType].map((suggestion, idx) => (
+                  <Button
+                    key={idx}
+                    variant="outline"
+                    size="sm"
+                    className="text-xs h-auto py-1 px-2 whitespace-normal text-left"
+                    onClick={() => {
+                      setInput(suggestion);
+                      setShowSuggestions(false);
+                    }}
+                  >
+                    <Sparkles className="h-3 w-3 mr-1 flex-shrink-0" />
+                    {suggestion}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Messages Area */}
           <ScrollArea className="flex-1 p-4" ref={scrollRef}>
             {messages.length === 0 ? (
