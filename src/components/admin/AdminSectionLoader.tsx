@@ -178,6 +178,15 @@ export const ServiceQuoteBuilder = lazy(() => import('@/components/admin/service
 export const ServiceQuotesList = lazy(() => import('@/components/admin/service-quotes').then(m => ({ default: m.ServiceQuotesList })));
 export const SessionActionsTimeline = lazy(() => import('@/components/admin/service-quotes').then(m => ({ default: m.SessionActionsTimeline })));
 
+// Remote Support AI - Fase 3
+export const RemoteSupportAIDashboard = lazy(() => import('@/components/admin/remote-support/RemoteSupportAIDashboard').then(m => ({ default: m.RemoteSupportAIDashboard })));
+
+// ESG & Sustainability
+export const ESGSustainabilityDashboard = lazy(() => import('@/components/admin/esg').then(m => ({ default: m.ESGDashboard })));
+
+// Knowledge Base 4.5
+export const KnowledgeBase45Dashboard = lazy(() => import('@/components/admin/ai-modules').then(m => ({ default: m.KnowledgeBaseRAGPanel })));
+
 // Wrapper component for lazy loaded sections
 interface LazyAdminSectionProps {
   children: React.ReactNode;

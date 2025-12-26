@@ -116,6 +116,12 @@ import {
   AIOrchestorPanel,
   SmartAnalyticsPanel,
   RealTimeInsightsPanel,
+  // Fase 3 - Remote Support AI
+  RemoteSupportAIDashboard,
+  // ESG & Sustainability
+  ESGSustainabilityDashboard,
+  // Knowledge Base 4.5
+  KnowledgeBase45Dashboard,
 } from '@/components/admin/AdminSectionLoader';
 
 const Admin = () => {
@@ -256,6 +262,9 @@ const Admin = () => {
       case 'ai-orchestrator': return 'Orquestador de Agentes IA';
       case 'smart-analytics-ai': return 'Smart Analytics IA';
       case 'realtime-insights': return 'Real-Time Insights';
+      case 'esg-sustainability': return 'ESG & Sostenibilitat';
+      case 'remote-support-ai': return 'Suport Remot IA';
+      case 'knowledge-base': return 'Knowledge Base 4.5';
       default: return '';
     }
   };
@@ -1854,6 +1863,18 @@ const Admin = () => {
         return <SmartAnalyticsPanel />;
       case 'realtime-insights':
         return <RealTimeInsightsPanel />;
+
+      // Fase 3 - ESG & Sustainability
+      case 'esg-sustainability':
+        return <ESGSustainabilityDashboard />;
+
+      // Fase 3 - Remote Support AI
+      case 'remote-support-ai':
+        return <RemoteSupportAIDashboard />;
+
+      // Fase 1 - Knowledge Base 4.5
+      case 'knowledge-base':
+        return <KnowledgeBase45Dashboard />;
       
       default:
         return null;

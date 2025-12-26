@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { TrendingUp, Activity, BarChart3, Package, Users, Target, CreditCard, Building2, Settings, Database, Mail, Palette, BookOpen, Map, ChevronRight, FileText, Briefcase, History, Bell, UserCog, CalendarDays, Home, User, AlertTriangle, LayoutDashboard, ClipboardCheck, ShoppingCart, Calculator, FileCode2, Shield, Fingerprint, Rocket, Bot, PieChart, Eye, Brain, Trophy } from 'lucide-react';
+import { TrendingUp, Activity, BarChart3, Package, Users, Target, CreditCard, Building2, Settings, Database, Mail, Palette, BookOpen, Map, ChevronRight, FileText, Briefcase, History, Bell, UserCog, CalendarDays, Home, User, AlertTriangle, LayoutDashboard, ClipboardCheck, ShoppingCart, Calculator, FileCode2, Shield, Fingerprint, Rocket, Bot, PieChart, Eye, Brain, Trophy, Leaf, Headphones, LibraryBig } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -323,6 +323,63 @@ export function AdminSidebar({
                   </div>
                   <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
                     CDP 360°
+                  </span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              {/* ESG & Sustainability */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => onSectionChange('esg-sustainability')}
+                  isActive={isActive('esg-sustainability')}
+                  className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
+                  tooltip={!open ? {
+                    children: 'ESG & Sostenibilitat',
+                    className: "bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20"
+                  } : undefined}
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-green-500/50 group-hover:rotate-3">
+                    <Leaf className="h-5 w-5 text-white transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3" />
+                  </div>
+                  <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
+                    ESG & Sostenibilitat
+                  </span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              {/* Remote Support AI */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => onSectionChange('remote-support-ai')}
+                  isActive={isActive('remote-support-ai')}
+                  className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
+                  tooltip={!open ? {
+                    children: 'Suport Remot IA',
+                    className: "bg-gradient-to-br from-cyan-500/10 to-cyan-500/5 border-cyan-500/20"
+                  } : undefined}
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-cyan-500/50 group-hover:rotate-3">
+                    <Headphones className="h-5 w-5 text-white transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3" />
+                  </div>
+                  <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
+                    Suport Remot IA
+                  </span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              {/* Knowledge Base 4.5 */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={() => onSectionChange('knowledge-base')}
+                  isActive={isActive('knowledge-base')}
+                  className="font-semibold py-3 rounded-xl transition-all hover:shadow-md group"
+                  tooltip={!open ? {
+                    children: 'Knowledge Base',
+                    className: "bg-gradient-to-br from-amber-500/10 to-amber-500/5 border-amber-500/20"
+                  } : undefined}
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-amber-500/50 group-hover:rotate-3">
+                    <LibraryBig className="h-5 w-5 text-white transition-all duration-300 group-hover:scale-110 group-hover:-rotate-3" />
+                  </div>
+                  <span className={`text-sm leading-tight transition-all duration-300 ${open ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}>
+                    Knowledge Base
                   </span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
