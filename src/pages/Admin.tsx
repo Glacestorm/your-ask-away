@@ -1805,6 +1805,20 @@ const Admin = () => {
                     </div>
                   </CardContent>
                 </Card>
+                <Card 
+                  className="cursor-pointer hover:shadow-md transition-all border-2 border-teal-500/30 bg-gradient-to-br from-teal-500/5 to-teal-500/10"
+                  onClick={() => navigate('/admin/crm-migration')}
+                >
+                  <CardContent className="p-3 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center">
+                      <Upload className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-teal-700 dark:text-teal-400">Migración de CRM</h4>
+                      <p className="text-xs text-muted-foreground">Importar datos desde otros CRMs</p>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
 
@@ -1857,20 +1871,7 @@ const Admin = () => {
                   </CardContent>
                 </Card>
                 )}
-                <Card 
-                  className="cursor-pointer hover:shadow-md transition-all border-2 border-teal-500/30 bg-gradient-to-br from-teal-500/5 to-teal-500/10"
-                  onClick={() => navigate('/admin/crm-migration')}
-                >
-                  <CardContent className="p-3 flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-lg bg-teal-500/20 flex items-center justify-center">
-                      <Upload className="h-4 w-4 text-teal-500" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-sm text-teal-700 dark:text-teal-400">Migración de CRM</h4>
-                      <p className="text-xs text-muted-foreground">Importar datos desde otros CRMs</p>
-                    </div>
-                  </CardContent>
-                </Card>
+                {/* Nota: CRM Migration movido a Enterprise & Estrategia */}
                 {/* Nota: Analyzer y Translations movidos a /obelixia-admin */}
               </div>
             </div>
