@@ -242,7 +242,7 @@ export default function EnterpriseDashboardPage() {
       <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="mx-auto flex h-14 w-full max-w-[1600px] items-center justify-between px-4">
           <div className="flex items-center gap-4">
-            <Link to="/admin">
+            <Link to="/admin?section=administration">
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Admin
