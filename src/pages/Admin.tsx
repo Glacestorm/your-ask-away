@@ -1017,13 +1017,36 @@ const Admin = () => {
         }
         return (
           <div className="rounded-lg border bg-card p-6">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold">Soporte Remoto</h2>
-              <p className="text-sm text-muted-foreground">
-                Historial de acciones de sesiones de soporte remoto
-              </p>
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold">Soporte Remoto</h2>
+                <p className="text-sm text-muted-foreground">
+                  Historial de acciones de sesiones de soporte remoto
+                </p>
+              </div>
+              <Button 
+                onClick={() => navigate('/admin/remote-support')}
+                className="flex items-center gap-2"
+              >
+                <Headphones className="h-4 w-4" />
+                Ir al módulo completo
+              </Button>
             </div>
             <SessionActionsTimeline showSummary />
+            
+            {/* Vista resumida de sesiones pausadas */}
+            <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+              <p className="text-sm text-muted-foreground mb-3">
+                Para iniciar nuevas sesiones, gestionar sesiones activas o ver analytics detallados:
+              </p>
+              <Button 
+                variant="outline"
+                onClick={() => navigate('/admin/remote-support')}
+                className="w-full"
+              >
+                Abrir Soporte Remoto Completo →
+              </Button>
+            </div>
           </div>
         );
       case 'ai-obelixia':
