@@ -1,9 +1,10 @@
 /**
  * AI Orchestrator Panel - FASE 12
  * Multi-agent AI orchestration and workflow management
+ * Enhanced with metrics, monitoring and automation
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,10 +22,20 @@ import {
   Activity,
   CheckCircle,
   XCircle,
-  Clock
+  Clock,
+  Download,
+  Zap,
+  Brain,
+  Target,
+  TrendingUp,
+  AlertTriangle,
+  Timer
 } from 'lucide-react';
 import { useAIOrchestrator, AIAgent, AgentWorkflow, AgentTask } from '@/hooks/admin/advanced/useAIOrchestrator';
 import { cn } from '@/lib/utils';
+import { PieChart, Pie, Cell, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
+import jsPDF from 'jspdf';
+import { toast } from 'sonner';
 
 interface AIOrchestorPanelProps {
   className?: string;
