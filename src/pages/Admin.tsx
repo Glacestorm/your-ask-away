@@ -265,7 +265,7 @@ const Admin = () => {
       case 'sectors-manager': return t('admin.sectionTitle.sectorsManager');
       case 'web-vitals': return t('admin.sectionTitle.webVitals');
       case 'service-quotes': return 'Presupuestos de Servicio';
-      case 'remote-support': return 'Soporte Remoto';
+      
       case 'ai-obelixia': return 'AI Obelixia';
       case 'advanced-ai': return 'Advanced AI & Automation';
       case 'ai-copilot-advanced': return 'Copilot Multimodal Avanzado';
@@ -1015,50 +1015,6 @@ const Admin = () => {
             />
           </div>
         );
-      case 'remote-support':
-        if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
-          return (
-            <Card>
-              <CardContent className="p-6">
-                <p className="text-muted-foreground">{t('admin.noPermissions')}</p>
-              </CardContent>
-            </Card>
-          );
-        }
-        return (
-          <div className="rounded-lg border bg-card p-6">
-            <div className="mb-6 flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold">Soporte Remoto</h2>
-                <p className="text-sm text-muted-foreground">
-                  Historial de acciones de sesiones de soporte remoto
-                </p>
-              </div>
-              <Button 
-                onClick={() => navigate('/admin/remote-support')}
-                className="flex items-center gap-2"
-              >
-                <Headphones className="h-4 w-4" />
-                Ir al módulo completo
-              </Button>
-            </div>
-            <SessionActionsTimeline showSummary />
-            
-            {/* Vista resumida de sesiones pausadas */}
-            <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-              <p className="text-sm text-muted-foreground mb-3">
-                Para iniciar nuevas sesiones, gestionar sesiones activas o ver analytics detallados:
-              </p>
-              <Button 
-                variant="outline"
-                onClick={() => navigate('/admin/remote-support')}
-                className="w-full"
-              >
-                Abrir Soporte Remoto Completo →
-              </Button>
-            </div>
-          </div>
-        );
       case 'ai-obelixia':
         if (!isSuperAdmin && !isCommercialDirector && !isCommercialManager) {
           return (
@@ -1265,20 +1221,6 @@ const Admin = () => {
                     <div>
                       <h4 className="font-medium text-sm">Presupuestos</h4>
                       <p className="text-xs text-muted-foreground">Gestiona presupuestos de servicio</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card 
-                  className="cursor-pointer hover:shadow-md transition-all border-2 border-teal-500/20 bg-gradient-to-br from-teal-500/5 to-teal-500/10"
-                  onClick={() => handleSectionChange('remote-support')}
-                >
-                  <CardContent className="p-3 flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-lg bg-teal-500/20 flex items-center justify-center">
-                      <Headphones className="h-4 w-4 text-teal-500" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-sm">Soporte Remoto</h4>
-                      <p className="text-xs text-muted-foreground">Historial de sesiones de soporte</p>
                     </div>
                   </CardContent>
                 </Card>
