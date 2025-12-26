@@ -130,7 +130,7 @@ const Admin = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialSection = searchParams.get('section') || 'director';
+  const initialSection = searchParams.get('section') || 'administration';
   const [activeSection, setActiveSection] = useState(initialSection);
   const [isNavigatingHistory, setIsNavigatingHistory] = useState(false);
   
