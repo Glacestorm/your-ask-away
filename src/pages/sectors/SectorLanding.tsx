@@ -193,7 +193,7 @@ const SectorCard: React.FC<{ sector: SectorCardData; index: number; onDemoClick:
         ${!sector.available ? 'opacity-75' : ''}
       `}>
         {/* Glow effect */}
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         
         {/* Badge */}
         {!sector.available && (
