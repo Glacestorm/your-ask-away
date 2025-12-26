@@ -142,9 +142,43 @@ Retorna JSON amb:
 
     const aiResponse = await response.json();
     let content = aiResponse.choices?.[0]?.message?.content || "";
+    
+    // Clean up AI response for JSON parsing
     content = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     
-    const result = JSON.parse(content);
+    // Try to extract JSON object from response
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      console.error("No JSON found in AI response:", content.substring(0, 500));
+      throw new Error("Invalid AI response format");
+    }
+    
+    let jsonContent = jsonMatch[0];
+    
+    // Fix common JSON issues from AI responses
+    // Remove trailing commas before closing brackets
+    jsonContent = jsonContent.replace(/,\s*([}\]])/g, '$1');
+    // Fix unescaped quotes in strings (basic attempt)
+    jsonContent = jsonContent.replace(/:\s*"([^"]*?)(?<!\\)"([^"]*?)"/g, ': "$1\\"$2"');
+    
+    let result;
+    try {
+      result = JSON.parse(jsonContent);
+    } catch (parseError) {
+      console.error("JSON parse error:", parseError);
+      console.error("Attempted to parse:", jsonContent.substring(0, 1000));
+      
+      // Return a safe fallback response
+      result = {
+        predictions: [],
+        summary: {
+          total_analyzed: 0,
+          high_risk_count: 0,
+          total_value_at_risk: 0,
+          error: "Failed to parse AI response"
+        }
+      };
+    }
 
     // Log high-risk predictions
     const highRisk = result.predictions?.filter((p: any) => 
