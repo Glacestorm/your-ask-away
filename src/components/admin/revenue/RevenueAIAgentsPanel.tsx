@@ -493,40 +493,36 @@ export function RevenueAIAgentsPanel({ className, compact = false }: RevenueAIAg
             </div>
           </div>
 
-          {/* Agent Status List */}
-          <ScrollArea className="h-[180px]">
-            <div className="space-y-2">
-              {agents.map((agent) => (
-                <div 
-                  key={agent.id}
-                  className="flex items-center justify-between p-2 rounded-lg bg-muted/20 border border-border/30"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className={cn(
-                      "w-8 h-8 rounded-md flex items-center justify-center bg-gradient-to-br text-white shrink-0",
-                      AGENT_COLORS[agent.type]
-                    )}>
-                      {AGENT_ICONS[agent.type]}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium truncate">{agent.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {agent.accuracy.toFixed(0)}% • {agent.insightsGenerated} insights
-                      </p>
-                    </div>
+          {/* Agent Status List - Sin scroll, expandido */}
+          <div className="space-y-2">
+            {agents.map((agent) => (
+              <div 
+                key={agent.id}
+                className="flex items-center justify-between p-2 rounded-lg bg-muted/20 border border-border/30"
+              >
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <div className={cn(
+                    "w-8 h-8 rounded-md flex items-center justify-center bg-gradient-to-br text-white shrink-0",
+                    AGENT_COLORS[agent.type]
+                  )}>
+                    {AGENT_ICONS[agent.type]}
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Badge 
-                      variant={agent.isActive ? "default" : "secondary"}
-                      className="text-xs"
-                    >
-                      {agent.isActive ? 'ON' : 'OFF'}
-                    </Badge>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium truncate">{agent.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {agent.accuracy.toFixed(0)}% • {agent.insightsGenerated} insights
+                    </p>
                   </div>
                 </div>
-              ))}
-            </div>
-          </ScrollArea>
+                <Badge 
+                  variant={agent.isActive ? "default" : "secondary"}
+                  className="text-xs shrink-0 ml-2"
+                >
+                  {agent.isActive ? 'ON' : 'OFF'}
+                </Badge>
+              </div>
+            ))}
+          </div>
 
           <Button 
             className="w-full mt-3" 

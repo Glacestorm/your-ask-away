@@ -153,64 +153,53 @@ export function PredictiveHealthScorePanel({ className }: PredictiveHealthScoreP
       )}
       onClick={() => setSelectedAccount(account)}
     >
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+      <CardContent className="p-3">
+        <div className="flex items-start gap-3">
+          <div className="shrink-0">
             {renderScoreGauge(account.overallScore)}
-            <div>
-              <h4 className="font-semibold">{account.companyName}</h4>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge variant={getRiskBadgeVariant(account.riskLevel)}>
-                  {account.riskLevel.replace('_', ' ').toUpperCase()}
-                </Badge>
-                {account.trend === 'improving' && (
-                  <TrendingUp className="h-4 w-4 text-green-500" />
-                )}
-                {account.trend === 'declining' && (
-                  <TrendingDown className="h-4 w-4 text-red-500" />
-                )}
-                {account.trend === 'stable' && (
-                  <Minus className="h-4 w-4 text-yellow-500" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h4 className="font-semibold text-sm truncate">{account.companyName}</h4>
+            <div className="flex flex-wrap items-center gap-1.5 mt-1">
+              <Badge variant={getRiskBadgeVariant(account.riskLevel)} className="text-xs">
+                {account.riskLevel.replace('_', ' ').toUpperCase()}
+              </Badge>
+              {account.trend === 'improving' && (
+                <TrendingUp className="h-3 w-3 text-green-500 shrink-0" />
+              )}
+              {account.trend === 'declining' && (
+                <TrendingDown className="h-3 w-3 text-destructive shrink-0" />
+              )}
+              {account.trend === 'stable' && (
+                <Minus className="h-3 w-3 text-yellow-500 shrink-0" />
+              )}
+            </div>
+            {/* Early Warning Signals - Compacto */}
+            {account.earlyWarningSignals.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1">
+                {account.earlyWarningSignals.slice(0, 2).map(signal => (
+                  <Badge 
+                    key={signal.id} 
+                    variant="outline" 
+                    className={cn(
+                      "text-xs px-1.5 py-0",
+                      signal.severity === 'critical' && "border-destructive text-destructive",
+                      signal.severity === 'high' && "border-orange-500 text-orange-500"
+                    )}
+                  >
+                    <AlertTriangle className="h-2.5 w-2.5 mr-0.5 shrink-0" />
+                    <span className="truncate max-w-[80px]">{signal.signal}</span>
+                  </Badge>
+                ))}
+                {account.earlyWarningSignals.length > 2 && (
+                  <Badge variant="outline" className="text-xs px-1.5 py-0">
+                    +{account.earlyWarningSignals.length - 2}
+                  </Badge>
                 )}
               </div>
-            </div>
-          </div>
-          <div className="text-right">
-            <p className="text-sm text-muted-foreground">Prob. Churn 90d</p>
-            <p className={cn(
-              "text-2xl font-bold",
-              account.churnProbability90Days > 0.5 ? "text-red-500" : 
-              account.churnProbability90Days > 0.25 ? "text-orange-500" : "text-green-500"
-            )}>
-              {formatPercent(account.churnProbability90Days)}
-            </p>
-          </div>
-        </div>
-
-        {/* Early Warning Signals */}
-        {account.earlyWarningSignals.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-1">
-            {account.earlyWarningSignals.slice(0, 2).map(signal => (
-              <Badge 
-                key={signal.id} 
-                variant="outline" 
-                className={cn(
-                  "text-xs",
-                  signal.severity === 'critical' && "border-red-500 text-red-500",
-                  signal.severity === 'high' && "border-orange-500 text-orange-500"
-                )}
-              >
-                <AlertTriangle className="h-3 w-3 mr-1" />
-                {signal.signal}
-              </Badge>
-            ))}
-            {account.earlyWarningSignals.length > 2 && (
-              <Badge variant="outline" className="text-xs">
-                +{account.earlyWarningSignals.length - 2} más
-              </Badge>
             )}
           </div>
-        )}
+        </div>
       </CardContent>
     </Card>
   );
@@ -672,53 +661,59 @@ export function PredictiveHealthScorePanel({ className }: PredictiveHealthScoreP
         {/* Account List */}
         <div className="lg:col-span-1">
           <Card className="h-fit">
-            <CardHeader>
-              <CardTitle className="text-lg">Cuentas por Riesgo</CardTitle>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Cuentas por Riesgo</CardTitle>
             </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[600px]">
-                <div className="space-y-3 pr-4">
-                  {/* Critical */}
-                  {criticalAccounts.length > 0 && (
-                    <div>
-                      <p className="text-xs font-medium text-red-500 mb-2 flex items-center gap-1">
-                        <AlertTriangle className="h-3 w-3" /> CRÍTICO ({criticalAccounts.length})
-                      </p>
-                      {criticalAccounts.map(renderAccountCard)}
-                    </div>
-                  )}
-                  
-                  {/* High Risk */}
-                  {highRiskAccounts.length > 0 && (
-                    <div>
-                      <p className="text-xs font-medium text-orange-500 mb-2 flex items-center gap-1">
-                        <AlertTriangle className="h-3 w-3" /> ALTO RIESGO ({highRiskAccounts.length})
-                      </p>
-                      {highRiskAccounts.map(renderAccountCard)}
-                    </div>
-                  )}
-
-                  {/* At Risk */}
-                  {atRiskAccounts.length > 0 && (
-                    <div>
-                      <p className="text-xs font-medium text-yellow-500 mb-2">
-                        EN RIESGO ({atRiskAccounts.length})
-                      </p>
-                      {atRiskAccounts.map(renderAccountCard)}
-                    </div>
-                  )}
-
-                  {/* Healthy */}
-                  {healthyAccounts.length > 0 && (
-                    <div>
-                      <p className="text-xs font-medium text-green-500 mb-2">
-                        SALUDABLE ({healthyAccounts.length})
-                      </p>
-                      {healthyAccounts.map(renderAccountCard)}
-                    </div>
-                  )}
+            <CardContent className="space-y-4">
+              {/* Critical */}
+              {criticalAccounts.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-destructive mb-2 flex items-center gap-1.5">
+                    <AlertTriangle className="h-3 w-3 shrink-0" /> 
+                    <span>CRÍTICO ({criticalAccounts.length})</span>
+                  </p>
+                  <div className="space-y-2">
+                    {criticalAccounts.map(renderAccountCard)}
+                  </div>
                 </div>
-              </ScrollArea>
+              )}
+              
+              {/* High Risk */}
+              {highRiskAccounts.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-orange-500 mb-2 flex items-center gap-1.5">
+                    <AlertTriangle className="h-3 w-3 shrink-0" /> 
+                    <span>ALTO RIESGO ({highRiskAccounts.length})</span>
+                  </p>
+                  <div className="space-y-2">
+                    {highRiskAccounts.map(renderAccountCard)}
+                  </div>
+                </div>
+              )}
+
+              {/* At Risk */}
+              {atRiskAccounts.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-yellow-600 mb-2">
+                    EN RIESGO ({atRiskAccounts.length})
+                  </p>
+                  <div className="space-y-2">
+                    {atRiskAccounts.map(renderAccountCard)}
+                  </div>
+                </div>
+              )}
+
+              {/* Healthy */}
+              {healthyAccounts.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-green-600 mb-2">
+                    SALUDABLE ({healthyAccounts.length})
+                  </p>
+                  <div className="space-y-2">
+                    {healthyAccounts.map(renderAccountCard)}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
