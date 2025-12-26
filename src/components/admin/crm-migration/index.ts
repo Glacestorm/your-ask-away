@@ -5,4 +5,5 @@ export { CRMAdvancedToolsPanel } from './CRMAdvancedToolsPanel';
 export { CRMMonitoringPanel } from './CRMMonitoringPanel';
 export { CRMRollbackPanel } from './CRMRollbackPanel';
 export { CRMReportsPanel } from './CRMReportsPanel';
+export { CRMAIAssistantPanel } from './CRMAIAssistantPanel';
 export { default } from './CRMMigrationPanel';
