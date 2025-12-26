@@ -4,4 +4,5 @@ export { CRMValidationPanel } from './CRMValidationPanel';
 export { CRMAdvancedToolsPanel } from './CRMAdvancedToolsPanel';
 export { CRMMonitoringPanel } from './CRMMonitoringPanel';
 export { CRMRollbackPanel } from './CRMRollbackPanel';
+export { CRMReportsPanel } from './CRMReportsPanel';
 export { default } from './CRMMigrationPanel';
