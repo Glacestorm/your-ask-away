@@ -684,6 +684,179 @@ Sugiere los mejores mapeos para estos campos.`
         });
       }
 
+      // === GENERATE AI MAPPINGS ===
+      case 'generate_ai_mappings': {
+        const detectedFields = (body as any).detected_fields as Array<{
+          name: string;
+          type: string;
+          sample_values: unknown[];
+          null_count: number;
+        }>;
+        const sourceCrm = body.source_crm;
+
+        if (!LOVABLE_API_KEY) {
+          // Fallback: generate basic mappings without AI
+          const targetFields = ['name', 'email', 'phone', 'address', 'city', 'country', 'cif', 'sector', 'notes'];
+          const mappings = detectedFields.map(field => {
+            const fieldLower = field.name.toLowerCase();
+            let targetField = 'notes';
+            let confidence = 0.3;
+
+            // Basic matching
+            if (fieldLower.includes('name') || fieldLower.includes('nombre')) {
+              targetField = 'name';
+              confidence = 0.85;
+            } else if (fieldLower.includes('email') || fieldLower.includes('correo')) {
+              targetField = 'email';
+              confidence = 0.9;
+            } else if (fieldLower.includes('phone') || fieldLower.includes('telefono') || fieldLower.includes('tel')) {
+              targetField = 'phone';
+              confidence = 0.85;
+            } else if (fieldLower.includes('address') || fieldLower.includes('direccion')) {
+              targetField = 'address';
+              confidence = 0.8;
+            } else if (fieldLower.includes('city') || fieldLower.includes('ciudad')) {
+              targetField = 'city';
+              confidence = 0.85;
+            } else if (fieldLower.includes('country') || fieldLower.includes('pais')) {
+              targetField = 'country';
+              confidence = 0.85;
+            } else if (fieldLower.includes('cif') || fieldLower.includes('nif') || fieldLower.includes('tax')) {
+              targetField = 'cif';
+              confidence = 0.8;
+            } else if (fieldLower.includes('sector') || fieldLower.includes('industry')) {
+              targetField = 'sector';
+              confidence = 0.75;
+            }
+
+            return {
+              source_field: field.name,
+              target_table: 'companies',
+              target_field: targetField,
+              ai_confidence: confidence,
+              is_auto_mapped: true
+            };
+          });
+
+          return new Response(JSON.stringify({
+            success: true,
+            mappings
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        // Use AI for intelligent mapping
+        const systemPrompt = `Eres un experto en migración de datos CRM. Tu tarea es mapear campos de origen a campos destino.
+
+CAMPOS DESTINO DISPONIBLES:
+- name: Nombre de la empresa/contacto
+- email: Correo electrónico
+- phone: Teléfono
+- address: Dirección completa
+- city: Ciudad
+- country: País
+- cif: CIF/NIF/Tax ID
+- sector: Sector/Industria
+- notes: Notas adicionales
+- website: Sitio web
+- contact_name: Nombre del contacto principal
+- contact_position: Cargo del contacto
+
+INSTRUCCIONES:
+1. Analiza cada campo de origen por nombre, tipo y valores de ejemplo
+2. Asigna el campo destino más apropiado
+3. Asigna un nivel de confianza (0-1) basado en la claridad del mapeo
+4. Considera el CRM de origen si se proporciona
+
+RESPONDE EN JSON:
+{
+  "mappings": [
+    {
+      "source_field": "nombre_original",
+      "target_table": "companies",
+      "target_field": "campo_destino",
+      "ai_confidence": 0.95,
+      "transform_function": null,
+      "reasoning": "breve explicación"
+    }
+  ]
+}`;
+
+        const userPrompt = `CRM de origen: ${sourceCrm || 'Desconocido'}
+
+Campos detectados:
+${JSON.stringify(detectedFields, null, 2)}
+
+Genera los mapeos óptimos para estos campos.`;
+
+        try {
+          const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'google/gemini-2.5-flash',
+              messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userPrompt }
+              ],
+              temperature: 0.3,
+              max_tokens: 2000,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`AI API error: ${response.status}`);
+          }
+
+          const aiData = await response.json();
+          const content = aiData.choices?.[0]?.message?.content;
+
+          if (!content) throw new Error('No AI response');
+
+          // Parse JSON from response
+          const jsonMatch = content.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]);
+            return new Response(JSON.stringify({
+              success: true,
+              mappings: parsed.mappings.map((m: any) => ({
+                source_field: m.source_field,
+                target_table: m.target_table || 'companies',
+                target_field: m.target_field,
+                ai_confidence: m.ai_confidence || 0.7,
+                transform_function: m.transform_function,
+                is_auto_mapped: true
+              }))
+            }), {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
+
+          throw new Error('Could not parse AI response');
+        } catch (aiError) {
+          console.error('[crm-migration-engine] AI mapping error:', aiError);
+          // Fallback to basic mapping on AI error
+          const mappings = detectedFields.map(field => ({
+            source_field: field.name,
+            target_table: 'companies',
+            target_field: 'notes',
+            ai_confidence: 0.3,
+            is_auto_mapped: true
+          }));
+
+          return new Response(JSON.stringify({
+            success: true,
+            mappings
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+      }
+
       default:
         throw new Error(`Unknown action: ${action}`);
     }
