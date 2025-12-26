@@ -560,3 +560,15 @@ verify_jwt = true
 
 [functions.scheduled-tasks]
 verify_jwt = true
+
+[functions.external-integrations]
+verify_jwt = true
+
+[functions.webhook-manager]
+verify_jwt = true
+
+[functions.api-gateway]
+verify_jwt = true
+
+[functions.sync-engine]
+verify_jwt = true
