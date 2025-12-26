@@ -420,6 +420,16 @@ Sugiere los mejores mapeos para estos campos.`
       // === RESUME MIGRATION ===
       case 'resume_migration': {
         const { migration_id } = body;
+        
+        if (!migration_id) {
+          return new Response(JSON.stringify({
+            success: false,
+            error: 'migration_id is required'
+          }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
 
         // Get mappings
         const { data: mappings } = await supabase
@@ -433,9 +443,7 @@ Sugiere los mejores mapeos para estos campos.`
           .eq('id', migration_id);
 
         // Resume processing
-        if (migration_id) {
-          processRecordsAsync(supabase, migration_id, mappings || []);
-        }
+        processRecordsAsync(supabase, migration_id, mappings || []);
 
         return new Response(JSON.stringify({
           success: true
