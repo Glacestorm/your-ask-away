@@ -47,16 +47,28 @@ export function EmotionalAnalysisPanel({ sessionId, customerId, className }: Emo
     getEmotionalTrends
   } = useEmotionalAnalysis();
 
-  const currentEmotion = currentState ? {
-    primary: currentState.dominantEmotion,
-    intensity: Math.round(currentState.overallSentiment * 100),
-    confidence: Math.round(currentState.confidence * 100),
+  // Map from hook's MultimodalSignals to UI format
+  const currentEmotion = currentState?.combined ? {
+    primary: currentState.combined.primary,
+    intensity: Math.round(currentState.combined.intensity * 100),
+    confidence: Math.round(currentState.combined.confidence * 100),
     trend: 0,
-    secondary: []
+    secondary: currentState.text?.emotions || []
   } : null;
 
-  const emotionHistory = timeline?.emotions || [];
-  const agentRecommendations = adaptiveResponse?.recommendations || [];
+  // Map timeline states
+  const emotionHistory = timeline?.states?.map(s => ({
+    emotion: s.state.primary,
+    intensity: Math.round(s.state.intensity * 100),
+    timestamp: s.timestamp
+  })) || [];
+
+  // Map adaptive response suggestions
+  const agentRecommendations = adaptiveResponse?.suggestedPhrases?.map((phrase, idx) => ({
+    action: phrase,
+    reason: adaptiveResponse.emphasis?.[idx] || '',
+    priority: adaptiveResponse.escalationRecommended ? 'high' : 'medium'
+  })) || [];
 
   useEffect(() => {
     if (customerId) {
@@ -88,6 +100,10 @@ export function EmotionalAnalysisPanel({ sessionId, customerId, className }: Emo
     if (risk >= 40) return 'text-yellow-400 bg-yellow-500/20 border-yellow-500/30';
     return 'text-green-400 bg-green-500/20 border-green-500/30';
   };
+
+  const riskScore = abandonmentRisk?.score || 0;
+  const riskLevel = abandonmentRisk?.level || 'low';
+  const riskFactors = abandonmentRisk?.factors || [];
 
   return (
     <Card className={cn("overflow-hidden", className)}>
@@ -136,10 +152,10 @@ export function EmotionalAnalysisPanel({ sessionId, customerId, className }: Emo
           </div>
           <div className={cn(
             "p-2 rounded-lg border text-center",
-            getRiskColor(abandonmentRisk?.score || 0)
+            getRiskColor(riskScore)
           )}>
             <AlertTriangle className="h-5 w-5 mx-auto mb-1" />
-            <p className="text-sm font-bold">{abandonmentRisk?.score || 0}%</p>
+            <p className="text-sm font-bold">{riskScore}%</p>
             <p className="text-xs opacity-80">Riesgo Abandono</p>
           </div>
           <div className="p-2 rounded-lg bg-background/50 border text-center">
@@ -203,17 +219,17 @@ export function EmotionalAnalysisPanel({ sessionId, customerId, className }: Emo
                   </div>
 
                   {/* Secondary Emotions */}
-                  {currentEmotion.secondary?.map((emotion: any, idx: number) => (
+                  {currentEmotion.secondary?.map((emotion: { emotion: string; score: number }, idx: number) => (
                     <div key={idx} className="flex items-center gap-3 opacity-70">
                       <div className="w-5 h-5 flex items-center justify-center">
                         <div className="w-2 h-2 rounded-full bg-primary/50" />
                       </div>
                       <div className="flex-1">
                         <div className="flex justify-between text-xs mb-1">
-                          <span className="capitalize">{emotion.name}</span>
-                          <span>{emotion.score}%</span>
+                          <span className="capitalize">{emotion.emotion}</span>
+                          <span>{Math.round(emotion.score * 100)}%</span>
                         </div>
-                        <Progress value={emotion.score} className="h-1" />
+                        <Progress value={emotion.score * 100} className="h-1" />
                       </div>
                     </div>
                   ))}
@@ -378,20 +394,20 @@ export function EmotionalAnalysisPanel({ sessionId, customerId, className }: Emo
             </div>
 
             {/* Abandonment Prevention */}
-            {abandonmentRisk && abandonmentRisk.riskScore >= 40 && (
+            {abandonmentRisk && riskScore >= 40 && (
               <div className={cn(
                 "p-4 rounded-lg border",
-                getRiskColor(abandonmentRisk.riskScore)
+                getRiskColor(riskScore)
               )}>
                 <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4" />
                   Alerta de Abandono
                 </h4>
-                <p className="text-xs opacity-80 mb-3">Riesgo detectado: {abandonmentRisk.riskLevel}</p>
+                <p className="text-xs opacity-80 mb-3">Riesgo detectado: {riskLevel}</p>
                 <div className="flex gap-2">
-                  {abandonmentRisk.triggers?.slice(0, 2).map((trigger: string, idx: number) => (
+                  {riskFactors.slice(0, 2).map((factor: string, idx: number) => (
                     <Button key={idx} size="sm" variant="secondary">
-                      Atender: {trigger}
+                      Atender: {factor}
                     </Button>
                   ))}
                 </div>
