@@ -1,6 +1,7 @@
 /**
  * RoleCopilotDashboard2026 - Dashboard Renovado del Copiloto de Rol
  * Con tabs: Mi Día, Coaching, Sector Intel, Automatizaciones, Learning Hub, Collaboration
+ * + Selector de rol para Superadmin
  */
 
 import React, { useState, useEffect } from 'react';
@@ -10,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Sparkles, 
   Calendar, 
@@ -24,9 +26,17 @@ import {
   Brain,
   Target,
   TrendingUp,
-  Activity
+  Activity,
+  UserCog,
+  Building2,
+  Shield,
+  ShoppingCart,
+  HeartPulse,
+  Factory,
+  Briefcase,
+  Cpu
 } from 'lucide-react';
-import { useRoleCopilot2026 } from '@/hooks/useRoleCopilot2026';
+import { useRoleCopilot2026, CopilotRole2026, CNAE_SECTORS } from '@/hooks/useRoleCopilot2026';
 import { CopilotMyDayView } from './CopilotMyDayView';
 import { CopilotCoachingPanel } from './CopilotCoachingPanel';
 import { CopilotSectorIntel } from './CopilotSectorIntel';
@@ -37,6 +47,26 @@ import { CopilotSuggestionCard } from './CopilotSuggestionCard';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useAuth } from '@/hooks/useAuth';
+
+// Definición de todos los roles disponibles para el selector
+const ALL_ROLES: { value: CopilotRole2026; label: string; icon: React.ReactNode; sector?: string }[] = [
+  { value: 'gestor', label: 'Gestor General', icon: <Briefcase className="h-4 w-4" /> },
+  { value: 'gestor_banca', label: 'Gestor Banca', icon: <Building2 className="h-4 w-4" />, sector: 'K' },
+  { value: 'gestor_seguros', label: 'Gestor Seguros', icon: <Shield className="h-4 w-4" />, sector: 'K65' },
+  { value: 'gestor_retail', label: 'Gestor Retail', icon: <ShoppingCart className="h-4 w-4" />, sector: 'G' },
+  { value: 'gestor_healthcare', label: 'Gestor Healthcare', icon: <HeartPulse className="h-4 w-4" />, sector: 'Q' },
+  { value: 'gestor_industrial', label: 'Gestor Industrial', icon: <Factory className="h-4 w-4" />, sector: 'C' },
+  { value: 'gestor_services', label: 'Gestor Servicios', icon: <Briefcase className="h-4 w-4" />, sector: 'S' },
+  { value: 'gestor_tech', label: 'Gestor Tech', icon: <Cpu className="h-4 w-4" />, sector: 'J' },
+  { value: 'director_oficina', label: 'Director de Oficina', icon: <Building2 className="h-4 w-4" /> },
+  { value: 'director_comercial', label: 'Director Comercial', icon: <TrendingUp className="h-4 w-4" /> },
+  { value: 'director_regional', label: 'Director Regional', icon: <Globe className="h-4 w-4" /> },
+  { value: 'admin', label: 'Administrador', icon: <UserCog className="h-4 w-4" /> },
+  { value: 'auditor', label: 'Auditor', icon: <Shield className="h-4 w-4" /> },
+  { value: 'risk_manager', label: 'Risk Manager', icon: <Target className="h-4 w-4" /> },
+  { value: 'compliance_officer', label: 'Compliance Officer', icon: <Shield className="h-4 w-4" /> },
+];
 
 interface RoleCopilotDashboard2026Props {
   className?: string;
@@ -46,6 +76,8 @@ export function RoleCopilotDashboard2026({ className }: RoleCopilotDashboard2026
   const [activeTab, setActiveTab] = useState('my-day');
   const [isExpanded, setIsExpanded] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  const { userRole, isSuperAdmin } = useAuth();
 
   const {
     currentSuggestions,
@@ -57,7 +89,14 @@ export function RoleCopilotDashboard2026({ className }: RoleCopilotDashboard2026
     generateSuggestions,
     executeAction,
     dismissSuggestion,
+    simulatedRole,
+    setSimulatedRole,
+    effectiveRole,
   } = useRoleCopilot2026();
+
+  const handleRoleChange = (role: string) => {
+    setSimulatedRole(role as CopilotRole2026);
+  };
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -103,6 +142,46 @@ export function RoleCopilotDashboard2026({ className }: RoleCopilotDashboard2026
           </div>
           
           <div className="flex items-center gap-2">
+            {/* Role Selector for SuperAdmin */}
+            {isSuperAdmin && (
+              <div className="hidden lg:flex items-center gap-2 mr-2">
+                <UserCog className="h-4 w-4 text-muted-foreground" />
+                <Select 
+                  value={effectiveRole || undefined}
+                  onValueChange={handleRoleChange}
+                >
+                  <SelectTrigger className="w-[180px] h-8 text-xs">
+                    <SelectValue placeholder="Seleccionar rol" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ALL_ROLES.map((role) => (
+                      <SelectItem key={role.value} value={role.value} className="text-xs">
+                        <div className="flex items-center gap-2">
+                          {role.icon}
+                          <span>{role.label}</span>
+                          {role.sector && (
+                            <Badge variant="outline" className="text-[10px] ml-1">
+                              {role.sector}
+                            </Badge>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {simulatedRole && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setSimulatedRole(null)}
+                    className="h-8 text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    Reset
+                  </Button>
+                )}
+              </div>
+            )}
+            
             {/* Quick Stats */}
             <div className="hidden md:flex items-center gap-3 mr-4">
               <div className="text-center px-3 py-1 rounded-lg bg-background/50">
