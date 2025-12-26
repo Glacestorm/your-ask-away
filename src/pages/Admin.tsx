@@ -2013,13 +2013,6 @@ const Admin = () => {
                 }
               />
             )}
-            
-            {/* Breadcrumbs para secciones internas */}
-            {activeSection !== 'administration' && (
-              <div className="flex items-center">
-                <AdminBreadcrumbs />
-              </div>
-            )}
 
             <Suspense fallback={<AdminSectionSkeleton />}>
               {renderContent()}
