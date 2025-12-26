@@ -857,6 +857,279 @@ Genera los mapeos óptimos para estos campos.`;
         }
       }
 
+      // === VALIDATE MIGRATION (FASE 4) ===
+      case 'validate_migration': {
+        const { migration_id } = body;
+
+        if (!migration_id) {
+          throw new Error('migration_id is required');
+        }
+
+        // Get migration and records
+        const { data: migration } = await supabase
+          .from('crm_migrations')
+          .select('*')
+          .eq('id', migration_id)
+          .single();
+
+        if (!migration) {
+          throw new Error('Migration not found');
+        }
+
+        const { data: records } = await supabase
+          .from('crm_migration_records')
+          .select('*')
+          .eq('migration_id', migration_id)
+          .eq('status', 'pending')
+          .limit(500);
+
+        const { data: mappings } = await supabase
+          .from('crm_field_mappings')
+          .select('*')
+          .eq('migration_id', migration_id);
+
+        // Update status to validating
+        await supabase
+          .from('crm_migrations')
+          .update({ status: 'validating', updated_at: new Date().toISOString() })
+          .eq('id', migration_id);
+
+        // Run validations
+        const validationResults = await runValidations(
+          records || [],
+          mappings || [],
+          supabase
+        );
+
+        // Update records with validation results
+        for (const result of validationResults.recordResults) {
+          await supabase
+            .from('crm_migration_records')
+            .update({
+              validation_errors: result.errors,
+              warnings: result.warnings,
+              is_duplicate: result.isDuplicate,
+              duplicate_of: result.duplicateOf
+            })
+            .eq('id', result.recordId);
+        }
+
+        // Update migration with validation summary
+        await supabase
+          .from('crm_migrations')
+          .update({
+            status: validationResults.hasBlockingErrors ? 'failed' : 'mapping',
+            warnings: validationResults.warnings,
+            statistics: {
+              ...(migration.statistics || {}),
+              validation_completed_at: new Date().toISOString(),
+              total_validated: validationResults.totalValidated,
+              passed_validation: validationResults.passedCount,
+              failed_validation: validationResults.failedCount,
+              duplicates_found: validationResults.duplicatesFound,
+              warnings_count: validationResults.warningsCount
+            },
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', migration_id);
+
+        return new Response(JSON.stringify({
+          success: true,
+          validation: {
+            totalValidated: validationResults.totalValidated,
+            passed: validationResults.passedCount,
+            failed: validationResults.failedCount,
+            duplicates: validationResults.duplicatesFound,
+            warnings: validationResults.warnings,
+            hasBlockingErrors: validationResults.hasBlockingErrors,
+            canProceed: !validationResults.hasBlockingErrors
+          }
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // === CHECK DUPLICATES ===
+      case 'check_duplicates': {
+        const { migration_id, duplicate_fields, threshold = 0.85 } = body as any;
+
+        if (!migration_id) {
+          throw new Error('migration_id is required');
+        }
+
+        const { data: records } = await supabase
+          .from('crm_migration_records')
+          .select('id, source_data')
+          .eq('migration_id', migration_id)
+          .eq('status', 'pending');
+
+        if (!records || records.length === 0) {
+          return new Response(JSON.stringify({
+            success: true,
+            duplicates: [],
+            summary: { internal: 0, external: 0 }
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        const fieldsToCheck = duplicate_fields || ['email', 'name', 'phone', 'cif'];
+        
+        // Check internal duplicates (within import)
+        const internalDuplicates = findInternalDuplicates(records, fieldsToCheck, threshold);
+
+        // Check external duplicates (against existing data)
+        const externalDuplicates = await findExternalDuplicates(
+          supabase,
+          records,
+          fieldsToCheck,
+          threshold
+        );
+
+        // Update records with duplicate info
+        for (const dup of [...internalDuplicates, ...externalDuplicates]) {
+          await supabase
+            .from('crm_migration_records')
+            .update({
+              is_duplicate: true,
+              duplicate_of: dup.duplicateOf,
+              warnings: [{ field: dup.field, message: `Posible duplicado: ${dup.reason}` }]
+            })
+            .eq('id', dup.recordId);
+        }
+
+        return new Response(JSON.stringify({
+          success: true,
+          duplicates: {
+            internal: internalDuplicates,
+            external: externalDuplicates
+          },
+          summary: {
+            internal: internalDuplicates.length,
+            external: externalDuplicates.length,
+            total: internalDuplicates.length + externalDuplicates.length
+          }
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // === GET VALIDATION RULES ===
+      case 'get_validation_rules': {
+        const rules = getDefaultValidationRules();
+        
+        return new Response(JSON.stringify({
+          success: true,
+          rules
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // === APPLY TRANSFORMATIONS ===
+      case 'apply_transformations': {
+        const { migration_id, transformations } = body as any;
+
+        if (!migration_id || !transformations) {
+          throw new Error('migration_id and transformations are required');
+        }
+
+        const { data: records } = await supabase
+          .from('crm_migration_records')
+          .select('*')
+          .eq('migration_id', migration_id)
+          .eq('status', 'pending')
+          .limit(500);
+
+        if (!records) {
+          return new Response(JSON.stringify({
+            success: true,
+            transformed: 0
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        let transformedCount = 0;
+
+        for (const record of records) {
+          const transformedData = applyAdvancedTransformations(
+            record.source_data as Record<string, unknown>,
+            transformations
+          );
+
+          await supabase
+            .from('crm_migration_records')
+            .update({ source_data: transformedData })
+            .eq('id', record.id);
+          
+          transformedCount++;
+        }
+
+        return new Response(JSON.stringify({
+          success: true,
+          transformed: transformedCount
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // === PREVIEW TRANSFORMATION ===
+      case 'preview_transformation': {
+        const { source_data, transformation } = body as any;
+
+        if (!source_data || !transformation) {
+          throw new Error('source_data and transformation are required');
+        }
+
+        const result = applyAdvancedTransformations(source_data, [transformation]);
+
+        return new Response(JSON.stringify({
+          success: true,
+          original: source_data,
+          transformed: result,
+          field: transformation.field,
+          newValue: result[transformation.target_field || transformation.field]
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // === SKIP DUPLICATES ===
+      case 'skip_duplicates': {
+        const { migration_id } = body;
+
+        if (!migration_id) {
+          throw new Error('migration_id is required');
+        }
+
+        const { data: updateResult, error } = await supabase
+          .from('crm_migration_records')
+          .update({ status: 'skipped' })
+          .eq('migration_id', migration_id)
+          .eq('is_duplicate', true)
+          .eq('status', 'pending')
+          .select();
+
+        if (error) throw error;
+
+        // Update migration skipped count
+        await supabase
+          .from('crm_migrations')
+          .update({
+            skipped_records: (updateResult?.length || 0),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', migration_id);
+
+        return new Response(JSON.stringify({
+          success: true,
+          skipped: updateResult?.length || 0
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
       default:
         throw new Error(`Unknown action: ${action}`);
     }
@@ -1160,6 +1433,521 @@ function applyMappings(
       result[targetField] = value;
     }
   });
+
+  return result;
+}
+
+// === FASE 4: VALIDATION FUNCTIONS ===
+
+interface ValidationResult {
+  totalValidated: number;
+  passedCount: number;
+  failedCount: number;
+  duplicatesFound: number;
+  warningsCount: number;
+  hasBlockingErrors: boolean;
+  warnings: Array<{ message: string; field?: string }>;
+  recordResults: Array<{
+    recordId: string;
+    errors: Array<{ field: string; message: string }>;
+    warnings: Array<{ field: string; message: string }>;
+    isDuplicate: boolean;
+    duplicateOf?: string;
+  }>;
+}
+
+async function runValidations(
+  records: Array<Record<string, unknown>>,
+  mappings: Array<Record<string, unknown>>,
+  supabase: any
+): Promise<ValidationResult> {
+  const result: ValidationResult = {
+    totalValidated: records.length,
+    passedCount: 0,
+    failedCount: 0,
+    duplicatesFound: 0,
+    warningsCount: 0,
+    hasBlockingErrors: false,
+    warnings: [],
+    recordResults: []
+  };
+
+  const rules = getDefaultValidationRules();
+
+  for (const record of records) {
+    const recordResult = {
+      recordId: record.id as string,
+      errors: [] as Array<{ field: string; message: string }>,
+      warnings: [] as Array<{ field: string; message: string }>,
+      isDuplicate: false,
+      duplicateOf: undefined as string | undefined
+    };
+
+    const sourceData = record.source_data as Record<string, unknown>;
+
+    // Validate each mapped field
+    for (const mapping of mappings) {
+      const sourceField = mapping.source_field as string;
+      const targetField = mapping.target_field as string;
+      const isRequired = mapping.is_required as boolean;
+      const value = sourceData[sourceField];
+
+      // Required field check
+      if (isRequired && (value === null || value === undefined || value === '')) {
+        recordResult.errors.push({
+          field: sourceField,
+          message: `Campo requerido "${sourceField}" está vacío`
+        });
+      }
+
+      // Apply field-specific validation rules
+      const fieldRules = rules.filter(r => 
+        r.targetField === targetField || r.applies_to_all
+      );
+
+      for (const rule of fieldRules) {
+        const validationError = validateField(value, rule);
+        if (validationError) {
+          if (rule.severity === 'error') {
+            recordResult.errors.push({ field: sourceField, message: validationError });
+          } else {
+            recordResult.warnings.push({ field: sourceField, message: validationError });
+          }
+        }
+      }
+    }
+
+    // Update counts
+    if (recordResult.errors.length > 0) {
+      result.failedCount++;
+      result.hasBlockingErrors = true;
+    } else {
+      result.passedCount++;
+    }
+
+    result.warningsCount += recordResult.warnings.length;
+    result.recordResults.push(recordResult);
+  }
+
+  return result;
+}
+
+function getDefaultValidationRules(): Array<{
+  name: string;
+  targetField: string;
+  type: string;
+  pattern?: string;
+  min?: number;
+  max?: number;
+  severity: 'error' | 'warning';
+  message: string;
+  applies_to_all?: boolean;
+}> {
+  return [
+    {
+      name: 'email_format',
+      targetField: 'email',
+      type: 'regex',
+      pattern: '^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$',
+      severity: 'error',
+      message: 'Formato de email inválido'
+    },
+    {
+      name: 'phone_format',
+      targetField: 'phone',
+      type: 'regex',
+      pattern: '^[+]?[0-9\\s\\-().]{6,20}$',
+      severity: 'warning',
+      message: 'Formato de teléfono posiblemente inválido'
+    },
+    {
+      name: 'cif_format',
+      targetField: 'cif',
+      type: 'regex',
+      pattern: '^[A-Za-z][0-9]{7,8}[A-Za-z0-9]?$',
+      severity: 'warning',
+      message: 'Formato de CIF/NIF posiblemente inválido'
+    },
+    {
+      name: 'name_length',
+      targetField: 'name',
+      type: 'length',
+      min: 2,
+      max: 200,
+      severity: 'error',
+      message: 'Nombre debe tener entre 2 y 200 caracteres'
+    },
+    {
+      name: 'postal_code',
+      targetField: 'codigo_postal',
+      type: 'regex',
+      pattern: '^[0-9]{4,10}$',
+      severity: 'warning',
+      message: 'Código postal posiblemente inválido'
+    },
+    {
+      name: 'website_format',
+      targetField: 'website',
+      type: 'regex',
+      pattern: '^(https?:\\/\\/)?([\\da-z.-]+)\\.([a-z.]{2,6})([\\/\\w .-]*)*\\/?$',
+      severity: 'warning',
+      message: 'URL de sitio web posiblemente inválida'
+    }
+  ];
+}
+
+function validateField(
+  value: unknown,
+  rule: { type: string; pattern?: string; min?: number; max?: number; message: string }
+): string | null {
+  if (value === null || value === undefined || value === '') {
+    return null; // Empty values handled by required check
+  }
+
+  const strValue = String(value);
+
+  switch (rule.type) {
+    case 'regex':
+      if (rule.pattern) {
+        const regex = new RegExp(rule.pattern, 'i');
+        if (!regex.test(strValue)) {
+          return rule.message;
+        }
+      }
+      break;
+
+    case 'length':
+      if (rule.min !== undefined && strValue.length < rule.min) {
+        return rule.message;
+      }
+      if (rule.max !== undefined && strValue.length > rule.max) {
+        return rule.message;
+      }
+      break;
+
+    case 'range':
+      const numValue = Number(value);
+      if (isNaN(numValue)) {
+        return 'Valor numérico inválido';
+      }
+      if (rule.min !== undefined && numValue < rule.min) {
+        return rule.message;
+      }
+      if (rule.max !== undefined && numValue > rule.max) {
+        return rule.message;
+      }
+      break;
+  }
+
+  return null;
+}
+
+interface DuplicateInfo {
+  recordId: string;
+  duplicateOf: string;
+  field: string;
+  reason: string;
+  similarity: number;
+}
+
+function findInternalDuplicates(
+  records: Array<{ id: string; source_data: Record<string, unknown> }>,
+  fieldsToCheck: string[],
+  threshold: number
+): DuplicateInfo[] {
+  const duplicates: DuplicateInfo[] = [];
+  const seen = new Map<string, string>();
+
+  for (const record of records) {
+    const data = record.source_data as Record<string, unknown>;
+
+    for (const field of fieldsToCheck) {
+      const value = data[field];
+      if (!value) continue;
+
+      const normalizedValue = normalizeValue(String(value));
+      const key = `${field}:${normalizedValue}`;
+
+      if (seen.has(key)) {
+        duplicates.push({
+          recordId: record.id,
+          duplicateOf: seen.get(key)!,
+          field,
+          reason: `Valor duplicado en "${field}": ${value}`,
+          similarity: 1.0
+        });
+      } else {
+        seen.set(key, record.id);
+      }
+    }
+  }
+
+  return duplicates;
+}
+
+async function findExternalDuplicates(
+  supabase: any,
+  records: Array<{ id: string; source_data: Record<string, unknown> }>,
+  fieldsToCheck: string[],
+  threshold: number
+): Promise<DuplicateInfo[]> {
+  const duplicates: DuplicateInfo[] = [];
+
+  // Get existing companies for comparison
+  const { data: existingCompanies } = await supabase
+    .from('companies')
+    .select('id, nombre, email, telefono, cif')
+    .limit(1000);
+
+  if (!existingCompanies || existingCompanies.length === 0) {
+    return duplicates;
+  }
+
+  const fieldMap: Record<string, string> = {
+    'name': 'nombre',
+    'nombre': 'nombre',
+    'email': 'email',
+    'phone': 'telefono',
+    'telefono': 'telefono',
+    'cif': 'cif',
+    'nif': 'cif'
+  };
+
+  for (const record of records) {
+    const data = record.source_data as Record<string, unknown>;
+
+    for (const sourceField of fieldsToCheck) {
+      const value = data[sourceField];
+      if (!value) continue;
+
+      const targetField = fieldMap[sourceField.toLowerCase()];
+      if (!targetField) continue;
+
+      const normalizedValue = normalizeValue(String(value));
+
+      for (const existing of existingCompanies) {
+        const existingValue = existing[targetField];
+        if (!existingValue) continue;
+
+        const normalizedExisting = normalizeValue(String(existingValue));
+
+        // Check exact match or similarity
+        if (normalizedValue === normalizedExisting) {
+          duplicates.push({
+            recordId: record.id,
+            duplicateOf: existing.id,
+            field: sourceField,
+            reason: `Ya existe en BD: ${sourceField}="${value}"`,
+            similarity: 1.0
+          });
+          break; // Only report first match per record
+        }
+
+        // Fuzzy match for names
+        if (targetField === 'nombre' && threshold < 1.0) {
+          const similarity = calculateSimilarity(normalizedValue, normalizedExisting);
+          if (similarity >= threshold) {
+            duplicates.push({
+              recordId: record.id,
+              duplicateOf: existing.id,
+              field: sourceField,
+              reason: `Similar en BD (${Math.round(similarity * 100)}%): "${existingValue}"`,
+              similarity
+            });
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  return duplicates;
+}
+
+function normalizeValue(value: string): string {
+  return value
+    .toLowerCase()
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '');
+}
+
+function calculateSimilarity(str1: string, str2: string): number {
+  if (str1 === str2) return 1.0;
+  if (str1.length === 0 || str2.length === 0) return 0.0;
+
+  const longer = str1.length > str2.length ? str1 : str2;
+  const shorter = str1.length > str2.length ? str2 : str1;
+
+  const longerLength = longer.length;
+  if (longerLength === 0) return 1.0;
+
+  const distance = levenshteinDistance(longer, shorter);
+  return (longerLength - distance) / longerLength;
+}
+
+function levenshteinDistance(str1: string, str2: string): number {
+  const m = str1.length;
+  const n = str2.length;
+
+  if (m === 0) return n;
+  if (n === 0) return m;
+
+  const matrix: number[][] = [];
+
+  for (let i = 0; i <= m; i++) {
+    matrix[i] = [i];
+  }
+
+  for (let j = 0; j <= n; j++) {
+    matrix[0][j] = j;
+  }
+
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1,
+        matrix[i][j - 1] + 1,
+        matrix[i - 1][j - 1] + cost
+      );
+    }
+  }
+
+  return matrix[m][n];
+}
+
+interface Transformation {
+  field: string;
+  target_field?: string;
+  type: string;
+  params?: Record<string, unknown>;
+}
+
+function applyAdvancedTransformations(
+  data: Record<string, unknown>,
+  transformations: Transformation[]
+): Record<string, unknown> {
+  const result = { ...data };
+
+  for (const transform of transformations) {
+    const sourceValue = result[transform.field];
+    const targetField = transform.target_field || transform.field;
+
+    switch (transform.type) {
+      case 'trim':
+        if (typeof sourceValue === 'string') {
+          result[targetField] = sourceValue.trim();
+        }
+        break;
+
+      case 'lowercase':
+        if (typeof sourceValue === 'string') {
+          result[targetField] = sourceValue.toLowerCase();
+        }
+        break;
+
+      case 'uppercase':
+        if (typeof sourceValue === 'string') {
+          result[targetField] = sourceValue.toUpperCase();
+        }
+        break;
+
+      case 'capitalize':
+        if (typeof sourceValue === 'string') {
+          result[targetField] = sourceValue
+            .toLowerCase()
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+        }
+        break;
+
+      case 'replace':
+        if (typeof sourceValue === 'string' && transform.params) {
+          const { search, replace } = transform.params as { search: string; replace: string };
+          result[targetField] = sourceValue.replace(new RegExp(search, 'g'), replace);
+        }
+        break;
+
+      case 'extract':
+        if (typeof sourceValue === 'string' && transform.params?.pattern) {
+          const match = sourceValue.match(new RegExp(transform.params.pattern as string));
+          result[targetField] = match ? match[1] || match[0] : sourceValue;
+        }
+        break;
+
+      case 'concat':
+        if (transform.params?.fields) {
+          const fields = transform.params.fields as string[];
+          const separator = (transform.params.separator as string) || ' ';
+          result[targetField] = fields
+            .map(f => result[f])
+            .filter(v => v !== null && v !== undefined)
+            .join(separator);
+        }
+        break;
+
+      case 'split':
+        if (typeof sourceValue === 'string' && transform.params) {
+          const separator = (transform.params.separator as string) || ',';
+          const index = (transform.params.index as number) || 0;
+          const parts = sourceValue.split(separator);
+          result[targetField] = parts[index]?.trim() || sourceValue;
+        }
+        break;
+
+      case 'date_format':
+        if (sourceValue && transform.params?.format) {
+          try {
+            const date = new Date(String(sourceValue));
+            result[targetField] = date.toISOString();
+          } catch {
+            result[targetField] = sourceValue;
+          }
+        }
+        break;
+
+      case 'number':
+        if (sourceValue !== null && sourceValue !== undefined) {
+          const num = Number(String(sourceValue).replace(/[^0-9.-]/g, ''));
+          result[targetField] = isNaN(num) ? 0 : num;
+        }
+        break;
+
+      case 'default':
+        if (sourceValue === null || sourceValue === undefined || sourceValue === '') {
+          result[targetField] = transform.params?.value;
+        }
+        break;
+
+      case 'map':
+        if (transform.params?.mapping) {
+          const mapping = transform.params.mapping as Record<string, unknown>;
+          const key = String(sourceValue).toLowerCase();
+          result[targetField] = mapping[key] ?? sourceValue;
+        }
+        break;
+
+      case 'normalize_phone':
+        if (typeof sourceValue === 'string') {
+          const cleaned = sourceValue.replace(/[^0-9+]/g, '');
+          if (cleaned.length >= 9 && !cleaned.startsWith('+')) {
+            result[targetField] = '+34' + cleaned;
+          } else {
+            result[targetField] = cleaned;
+          }
+        }
+        break;
+
+      case 'normalize_cif':
+        if (typeof sourceValue === 'string') {
+          result[targetField] = sourceValue.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        }
+        break;
+    }
+  }
 
   return result;
 }

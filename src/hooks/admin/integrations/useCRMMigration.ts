@@ -141,6 +141,42 @@ export interface MigrationStats {
   migrations_by_crm: Record<string, number>;
 }
 
+export interface ValidationResult {
+  totalValidated: number;
+  passed: number;
+  failed: number;
+  duplicates: number;
+  warnings: Array<{ message: string; field?: string }>;
+  hasBlockingErrors: boolean;
+  canProceed: boolean;
+}
+
+export interface DuplicateInfo {
+  recordId: string;
+  duplicateOf: string;
+  field: string;
+  reason: string;
+  similarity: number;
+}
+
+export interface ValidationRule {
+  name: string;
+  targetField: string;
+  type: string;
+  pattern?: string;
+  min?: number;
+  max?: number;
+  severity: 'error' | 'warning';
+  message: string;
+}
+
+export interface Transformation {
+  field: string;
+  target_field?: string;
+  type: string;
+  params?: Record<string, unknown>;
+}
+
 // === HOOK ===
 export function useCRMMigration() {
   // Estado
@@ -681,7 +717,166 @@ export function useCRMMigration() {
     }
   }, []);
 
-  // === PROGRESS POLLING ===
+  // === VALIDATE MIGRATION (FASE 4) ===
+  const validateMigration = useCallback(async (migrationId: string): Promise<ValidationResult | null> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('crm-migration-engine', {
+        body: {
+          action: 'validate_migration',
+          migration_id: migrationId
+        }
+      });
+
+      if (fnError) throw fnError;
+
+      if (data?.success && data?.validation) {
+        toast.success(`Validación completada: ${data.validation.passed} pasaron, ${data.validation.failed} fallaron`);
+        return data.validation;
+      }
+
+      return null;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Error en validación';
+      setError(message);
+      console.error('[useCRMMigration] validateMigration error:', err);
+      toast.error('Error al validar migración');
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // === CHECK DUPLICATES ===
+  const checkDuplicates = useCallback(async (
+    migrationId: string,
+    duplicateFields?: string[],
+    threshold?: number
+  ): Promise<{ internal: DuplicateInfo[]; external: DuplicateInfo[]; summary: { internal: number; external: number; total: number } } | null> => {
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('crm-migration-engine', {
+        body: {
+          action: 'check_duplicates',
+          migration_id: migrationId,
+          duplicate_fields: duplicateFields,
+          threshold: threshold || 0.85
+        }
+      });
+
+      if (fnError) throw fnError;
+
+      if (data?.success) {
+        const total = data.summary?.total || 0;
+        if (total > 0) {
+          toast.warning(`Se encontraron ${total} posibles duplicados`);
+        } else {
+          toast.success('No se encontraron duplicados');
+        }
+        return data.duplicates ? { ...data, duplicates: data.duplicates } : { internal: [], external: [], summary: data.summary };
+      }
+
+      return null;
+    } catch (err) {
+      console.error('[useCRMMigration] checkDuplicates error:', err);
+      toast.error('Error al verificar duplicados');
+      return null;
+    }
+  }, []);
+
+  // === GET VALIDATION RULES ===
+  const getValidationRules = useCallback(async (): Promise<ValidationRule[]> => {
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('crm-migration-engine', {
+        body: { action: 'get_validation_rules' }
+      });
+
+      if (fnError) throw fnError;
+
+      return data?.rules || [];
+    } catch (err) {
+      console.error('[useCRMMigration] getValidationRules error:', err);
+      return [];
+    }
+  }, []);
+
+  // === APPLY TRANSFORMATIONS ===
+  const applyTransformations = useCallback(async (
+    migrationId: string,
+    transformations: Transformation[]
+  ): Promise<number> => {
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('crm-migration-engine', {
+        body: {
+          action: 'apply_transformations',
+          migration_id: migrationId,
+          transformations
+        }
+      });
+
+      if (fnError) throw fnError;
+
+      if (data?.success) {
+        toast.success(`${data.transformed} registros transformados`);
+        return data.transformed;
+      }
+
+      return 0;
+    } catch (err) {
+      console.error('[useCRMMigration] applyTransformations error:', err);
+      toast.error('Error al aplicar transformaciones');
+      return 0;
+    }
+  }, []);
+
+  // === PREVIEW TRANSFORMATION ===
+  const previewTransformation = useCallback(async (
+    sourceData: Record<string, unknown>,
+    transformation: Transformation
+  ): Promise<{ original: Record<string, unknown>; transformed: Record<string, unknown>; field: string; newValue: unknown } | null> => {
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('crm-migration-engine', {
+        body: {
+          action: 'preview_transformation',
+          source_data: sourceData,
+          transformation
+        }
+      });
+
+      if (fnError) throw fnError;
+
+      return data?.success ? data : null;
+    } catch (err) {
+      console.error('[useCRMMigration] previewTransformation error:', err);
+      return null;
+    }
+  }, []);
+
+  // === SKIP DUPLICATES ===
+  const skipDuplicates = useCallback(async (migrationId: string): Promise<number> => {
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('crm-migration-engine', {
+        body: {
+          action: 'skip_duplicates',
+          migration_id: migrationId
+        }
+      });
+
+      if (fnError) throw fnError;
+
+      if (data?.success) {
+        toast.success(`${data.skipped} duplicados marcados como omitidos`);
+        return data.skipped;
+      }
+
+      return 0;
+    } catch (err) {
+      console.error('[useCRMMigration] skipDuplicates error:', err);
+      toast.error('Error al omitir duplicados');
+      return 0;
+    }
+  }, []);
   const startProgressPolling = useCallback((migrationId: string) => {
     stopProgressPolling();
     pollingInterval.current = setInterval(() => {
@@ -766,6 +961,14 @@ export function useCRMMigration() {
     saveTemplate,
     applyTemplate,
     generateAIMappings,
+    
+    // Fase 4: Validación
+    validateMigration,
+    checkDuplicates,
+    getValidationRules,
+    applyTransformations,
+    previewTransformation,
+    skipDuplicates,
     
     // Control
     setActiveMigration,
