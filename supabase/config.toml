@@ -551,3 +551,12 @@ verify_jwt = true
 
 [functions.realtime-metrics]
 verify_jwt = true
+
+[functions.business-rules]
+verify_jwt = true
+
+[functions.notification-system]
+verify_jwt = true
+
+[functions.scheduled-tasks]
+verify_jwt = true
