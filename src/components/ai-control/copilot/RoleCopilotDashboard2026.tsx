@@ -60,10 +60,28 @@ const ALL_ROLES: { value: CopilotRole2026; label: string; icon: React.ReactNode;
   { value: 'gestor_industrial', label: 'Gestor Industrial', icon: <Factory className="h-4 w-4" />, sector: 'C', category: 'Gestores' },
   { value: 'gestor_services', label: 'Gestor Servicios', icon: <Briefcase className="h-4 w-4" />, sector: 'S', category: 'Gestores' },
   { value: 'gestor_tech', label: 'Gestor Tech', icon: <Cpu className="h-4 w-4" />, sector: 'J', category: 'Gestores' },
-  // Directores
+  // Directores Generales
   { value: 'director_oficina', label: 'Director de Oficina', icon: <Building2 className="h-4 w-4" />, category: 'Directores' },
   { value: 'director_comercial', label: 'Director Comercial', icon: <TrendingUp className="h-4 w-4" />, category: 'Directores' },
   { value: 'director_regional', label: 'Director Regional', icon: <Globe className="h-4 w-4" />, category: 'Directores' },
+  // Departamento de Créditos (Sector Bancario K)
+  { value: 'director_creditos', label: 'Director de Créditos', icon: <Building2 className="h-4 w-4" />, sector: 'K', category: 'Dpto. Créditos' },
+  { value: 'subdirector_creditos', label: 'Subdirector de Créditos', icon: <Building2 className="h-4 w-4" />, sector: 'K', category: 'Dpto. Créditos' },
+  { value: 'analista_creditos_senior', label: 'Analista Créditos Sr.', icon: <Target className="h-4 w-4" />, sector: 'K', category: 'Dpto. Créditos' },
+  { value: 'analista_creditos', label: 'Analista de Créditos', icon: <Target className="h-4 w-4" />, sector: 'K', category: 'Dpto. Créditos' },
+  { value: 'gestor_creditos', label: 'Gestor de Créditos', icon: <Briefcase className="h-4 w-4" />, sector: 'K', category: 'Dpto. Créditos' },
+  // Departamento de Morosidad/Recobro (Sector Bancario K)
+  { value: 'director_morosidad', label: 'Director de Morosidad', icon: <Shield className="h-4 w-4" />, sector: 'K', category: 'Dpto. Morosidad' },
+  { value: 'subdirector_morosidad', label: 'Subdirector Morosidad', icon: <Shield className="h-4 w-4" />, sector: 'K', category: 'Dpto. Morosidad' },
+  { value: 'analista_morosidad_senior', label: 'Analista Morosidad Sr.', icon: <Target className="h-4 w-4" />, sector: 'K', category: 'Dpto. Morosidad' },
+  { value: 'analista_morosidad', label: 'Analista de Morosidad', icon: <Target className="h-4 w-4" />, sector: 'K', category: 'Dpto. Morosidad' },
+  { value: 'gestor_recobro', label: 'Gestor de Recobro', icon: <Briefcase className="h-4 w-4" />, sector: 'K', category: 'Dpto. Morosidad' },
+  { value: 'negociador_deuda', label: 'Negociador de Deuda', icon: <Users className="h-4 w-4" />, sector: 'K', category: 'Dpto. Morosidad' },
+  // Departamento de Riesgos (Multi-sector)
+  { value: 'director_riesgos', label: 'Director de Riesgos', icon: <Target className="h-4 w-4" />, category: 'Dpto. Riesgos' },
+  { value: 'subdirector_riesgos', label: 'Subdirector Riesgos', icon: <Target className="h-4 w-4" />, category: 'Dpto. Riesgos' },
+  { value: 'analista_riesgos_senior', label: 'Analista Riesgos Sr.', icon: <Activity className="h-4 w-4" />, category: 'Dpto. Riesgos' },
+  { value: 'analista_riesgos', label: 'Analista de Riesgos', icon: <Activity className="h-4 w-4" />, category: 'Dpto. Riesgos' },
   // Customer Success
   { value: 'customer_success', label: 'Customer Success', icon: <Users className="h-4 w-4" />, category: 'Customer Success' },
   { value: 'customer_success_manager', label: 'CS Manager', icon: <Users className="h-4 w-4" />, category: 'Customer Success' },
