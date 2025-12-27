@@ -281,11 +281,6 @@ export default function WorkflowEnginePanel({ className, expanded = false }: Wor
                             <span className="text-xs text-muted-foreground">
                               {wf.steps?.length || 0} pasos
                             </span>
-                            {wf.execution_count > 0 && (
-                              <span className="text-xs text-muted-foreground">
-                                {wf.execution_count} ejecuciones
-                              </span>
-                            )}
                           </div>
                         </div>
                         <div className="flex items-center gap-1">
