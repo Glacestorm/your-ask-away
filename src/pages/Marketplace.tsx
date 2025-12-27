@@ -41,7 +41,7 @@ export default function Marketplace() {
   const showFiltered = selectedCategory || searchTerm;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
+    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-white">
       {/* Hero Section */}
       <MarketplaceHero 
         searchTerm={searchTerm} 
@@ -71,16 +71,16 @@ export default function Marketplace() {
             transition={{ delay: 0.2 }}
           >
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-6">
-                <TabsTrigger value="all" className="gap-1.5">
+              <TabsList className="grid w-full max-w-md mx-auto grid-cols-3 mb-6 bg-white/5 border border-white/10">
+                <TabsTrigger value="all" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-white">
                   <Sparkles className="h-4 w-4" />
                   Destacados
                 </TabsTrigger>
-                <TabsTrigger value="modules" className="gap-1.5">
+                <TabsTrigger value="modules" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-white">
                   <Layers className="h-4 w-4" />
                   Módulos
                 </TabsTrigger>
-                <TabsTrigger value="apps" className="gap-1.5">
+                <TabsTrigger value="apps" className="gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-white">
                   <Store className="h-4 w-4" />
                   Apps
                 </TabsTrigger>
@@ -103,13 +103,13 @@ export default function Marketplace() {
 
               <TabsContent value="apps" className="space-y-4 mt-0">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold flex items-center gap-2">
-                    <div className="p-1.5 rounded-lg bg-secondary/10">
+                  <h3 className="text-lg font-semibold flex items-center gap-2 text-white">
+                    <div className="p-1.5 rounded-lg bg-secondary/20">
                       <Package className="h-5 w-5 text-secondary" />
                     </div>
                     Apps de Partners
                     {filteredApps && (
-                      <Badge variant="secondary" className="ml-2">{filteredApps.length}</Badge>
+                      <Badge variant="secondary" className="ml-2 bg-white/10 text-white border-white/20">{filteredApps.length}</Badge>
                     )}
                   </h3>
                 </div>
@@ -134,11 +134,11 @@ export default function Marketplace() {
                     ))}
                   </div>
                 ) : (
-                  <Card>
+                  <Card className="bg-white/5 border-white/10">
                     <CardContent className="p-8 text-center">
-                      <Store className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                      <h4 className="font-semibold mb-2">No hay apps de partners aún</h4>
-                      <p className="text-muted-foreground">
+                      <Store className="h-12 w-12 mx-auto text-gray-500 mb-4" />
+                      <h4 className="font-semibold mb-2 text-white">No hay apps de partners aún</h4>
+                      <p className="text-gray-400">
                         Pronto añadiremos más apps de nuestros partners certificados
                       </p>
                     </CardContent>
@@ -158,12 +158,12 @@ export default function Marketplace() {
             animate={{ opacity: 1 }}
           >
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold">
+              <h3 className="text-lg font-semibold text-white">
                 {selectedCategory ? `Apps de ${selectedCategory.toUpperCase()}` : 'Resultados de búsqueda'}
               </h3>
               <div className="flex items-center gap-2">
                 {filteredApps && (
-                  <Badge variant="secondary">{filteredApps.length} resultados</Badge>
+                  <Badge variant="secondary" className="bg-white/10 text-white border-white/20">{filteredApps.length} resultados</Badge>
                 )}
                 <Button
                   variant="ghost"
@@ -172,6 +172,7 @@ export default function Marketplace() {
                     setSearchTerm('');
                     setSelectedCategory(null);
                   }}
+                  className="text-gray-300 hover:text-white hover:bg-white/10"
                 >
                   Limpiar filtros
                 </Button>
@@ -198,11 +199,11 @@ export default function Marketplace() {
                 ))}
               </div>
             ) : (
-              <Card className="border-dashed">
+              <Card className="border-dashed bg-white/5 border-white/20">
                 <CardContent className="p-8 text-center">
-                  <Store className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h4 className="font-semibold mb-2">No se encontraron apps</h4>
-                  <p className="text-muted-foreground mb-4">
+                  <Store className="h-12 w-12 mx-auto text-gray-500 mb-4" />
+                  <h4 className="font-semibold mb-2 text-white">No se encontraron apps</h4>
+                  <p className="text-gray-400 mb-4">
                     {searchTerm
                       ? 'Prueba con otros términos de búsqueda'
                       : 'No hay apps disponibles en esta categoría'}
@@ -213,6 +214,7 @@ export default function Marketplace() {
                       setSearchTerm('');
                       setSelectedCategory(null);
                     }}
+                    className="border-white/20 text-white hover:bg-white/10"
                   >
                     Ver todas las apps
                   </Button>
@@ -228,12 +230,12 @@ export default function Marketplace() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
         >
-          <Card className="relative overflow-hidden bg-gradient-to-r from-primary/10 via-primary/5 to-secondary/10 border-primary/20">
+          <Card className="relative overflow-hidden bg-gradient-to-r from-primary/20 via-primary/10 to-secondary/20 border-white/10">
             <div className="absolute inset-0 bg-grid-pattern opacity-5" />
             <CardContent className="p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative">
               <div>
-                <h3 className="text-xl font-semibold mb-2">¿Eres desarrollador?</h3>
-                <p className="text-muted-foreground">
+                <h3 className="text-xl font-semibold mb-2 text-white">¿Eres desarrollador?</h3>
+                <p className="text-gray-400">
                   Únete a nuestro programa de partners y publica tus apps en el marketplace
                 </p>
               </div>
@@ -245,7 +247,7 @@ export default function Marketplace() {
                   </Button>
                 </Link>
                 <Link to="/developers">
-                  <Button variant="outline">
+                  <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
                     Documentación
                   </Button>
                 </Link>
