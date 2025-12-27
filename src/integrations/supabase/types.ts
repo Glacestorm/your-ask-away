@@ -12888,6 +12888,102 @@ export type Database = {
           },
         ]
       }
+      module_change_history: {
+        Row: {
+          affected_modules: string[] | null
+          change_type: string
+          changed_by: string | null
+          changelog: string | null
+          created_at: string | null
+          id: string
+          impact_analysis: Json | null
+          module_key: string
+          new_state: Json | null
+          previous_state: Json | null
+          risk_level: string | null
+          rollback_available: boolean | null
+          version_after: string | null
+          version_before: string | null
+        }
+        Insert: {
+          affected_modules?: string[] | null
+          change_type: string
+          changed_by?: string | null
+          changelog?: string | null
+          created_at?: string | null
+          id?: string
+          impact_analysis?: Json | null
+          module_key: string
+          new_state?: Json | null
+          previous_state?: Json | null
+          risk_level?: string | null
+          rollback_available?: boolean | null
+          version_after?: string | null
+          version_before?: string | null
+        }
+        Update: {
+          affected_modules?: string[] | null
+          change_type?: string
+          changed_by?: string | null
+          changelog?: string | null
+          created_at?: string | null
+          id?: string
+          impact_analysis?: Json | null
+          module_key?: string
+          new_state?: Json | null
+          previous_state?: Json | null
+          risk_level?: string | null
+          rollback_available?: boolean | null
+          version_after?: string | null
+          version_before?: string | null
+        }
+        Relationships: []
+      }
+      module_compatibility: {
+        Row: {
+          compatibility_score: number | null
+          compatibility_status: string
+          created_at: string | null
+          id: string
+          known_issues: Json | null
+          module_a: string
+          module_b: string
+          notes: string | null
+          tested_at: string | null
+          tested_by: string | null
+          updated_at: string | null
+          workarounds: Json | null
+        }
+        Insert: {
+          compatibility_score?: number | null
+          compatibility_status?: string
+          created_at?: string | null
+          id?: string
+          known_issues?: Json | null
+          module_a: string
+          module_b: string
+          notes?: string | null
+          tested_at?: string | null
+          tested_by?: string | null
+          updated_at?: string | null
+          workarounds?: Json | null
+        }
+        Update: {
+          compatibility_score?: number | null
+          compatibility_status?: string
+          created_at?: string | null
+          id?: string
+          known_issues?: Json | null
+          module_a?: string
+          module_b?: string
+          notes?: string | null
+          tested_at?: string | null
+          tested_by?: string | null
+          updated_at?: string | null
+          workarounds?: Json | null
+        }
+        Relationships: []
+      }
       module_components: {
         Row: {
           admin_section_key: string | null
@@ -12939,6 +13035,90 @@ export type Database = {
           props_config?: Json | null
           route_path?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      module_dependencies: {
+        Row: {
+          created_at: string | null
+          dependency_type: string
+          depends_on: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          max_version: string | null
+          min_version: string | null
+          module_key: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          dependency_type?: string
+          depends_on: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_version?: string | null
+          min_version?: string | null
+          module_key: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          dependency_type?: string
+          depends_on?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_version?: string | null
+          min_version?: string | null
+          module_key?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      module_sandbox: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          modified_state: Json
+          module_key: string
+          original_state: Json
+          sandbox_name: string
+          status: string | null
+          test_results: Json | null
+          updated_at: string | null
+          validation_errors: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          modified_state: Json
+          module_key: string
+          original_state: Json
+          sandbox_name: string
+          status?: string | null
+          test_results?: Json | null
+          updated_at?: string | null
+          validation_errors?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          modified_state?: Json
+          module_key?: string
+          original_state?: Json
+          sandbox_name?: string
+          status?: string | null
+          test_results?: Json | null
+          updated_at?: string | null
+          validation_errors?: Json | null
         }
         Relationships: []
       }
@@ -13048,6 +13228,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      module_versions: {
+        Row: {
+          breaking_changes: string[] | null
+          bug_fixes: string[] | null
+          created_at: string | null
+          id: string
+          is_latest: boolean | null
+          is_stable: boolean | null
+          module_key: string
+          new_features: string[] | null
+          published_at: string | null
+          published_by: string | null
+          release_notes: string | null
+          state_snapshot: Json | null
+          version: string
+          version_major: number
+          version_minor: number
+          version_patch: number
+        }
+        Insert: {
+          breaking_changes?: string[] | null
+          bug_fixes?: string[] | null
+          created_at?: string | null
+          id?: string
+          is_latest?: boolean | null
+          is_stable?: boolean | null
+          module_key: string
+          new_features?: string[] | null
+          published_at?: string | null
+          published_by?: string | null
+          release_notes?: string | null
+          state_snapshot?: Json | null
+          version: string
+          version_major: number
+          version_minor: number
+          version_patch: number
+        }
+        Update: {
+          breaking_changes?: string[] | null
+          bug_fixes?: string[] | null
+          created_at?: string | null
+          id?: string
+          is_latest?: boolean | null
+          is_stable?: boolean | null
+          module_key?: string
+          new_features?: string[] | null
+          published_at?: string | null
+          published_by?: string | null
+          release_notes?: string | null
+          state_snapshot?: Json | null
+          version?: string
+          version_major?: number
+          version_minor?: number
+          version_patch?: number
+        }
+        Relationships: []
       }
       monte_carlo_simulations: {
         Row: {
