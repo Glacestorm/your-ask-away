@@ -9,3 +9,4 @@ export { ModuleImpactAnalysis } from './ModuleImpactAnalysis';
 export { ModuleCopilotPanel } from './ModuleCopilotPanel';
 export { ModulePreviewPanel } from './ModulePreviewPanel';
 export { ModuleFormRenderer } from './ModuleFormRenderer';
+export { ModuleAutonomousAgentPanel } from './ModuleAutonomousAgentPanel';

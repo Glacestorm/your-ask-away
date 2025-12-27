@@ -39,7 +39,8 @@ import {
   ModuleSandboxPanel,
   ModuleImpactAnalysis,
   ModuleCopilotPanel,
-  ModulePreviewPanel
+  ModulePreviewPanel,
+  ModuleAutonomousAgentPanel
 } from '@/components/admin/module-studio';
 import type { ModuleContext } from '@/hooks/admin/useModuleCopilot';
 import { toast } from 'sonner';
@@ -52,7 +53,8 @@ export default function ModuleStudioPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [showImpactAnalysis, setShowImpactAnalysis] = useState(false);
   const [showCopilot, setShowCopilot] = useState(true);
-  const [showPreview, setShowPreview] = useState(true);
+  const [showPreview, setShowPreview] = useState(false);
+  const [showAgent, setShowAgent] = useState(true);
   const { graph, dependencies, isLoading: graphLoading, refetch: refetchGraph } = useModuleDependencyGraph();
   const { history, versions, refetch: refetchHistory } = useModuleChangeHistory(selectedModule || undefined);
 
@@ -194,6 +196,14 @@ export default function ModuleStudioPage() {
             >
               <Bot className="h-4 w-4 mr-2" />
               Copilot
+            </Button>
+            <Button 
+              variant={showAgent ? 'default' : 'outline'} 
+              size="sm" 
+              onClick={() => setShowAgent(!showAgent)}
+            >
+              <Sparkles className="h-4 w-4 mr-2" />
+              Agent
             </Button>
           </div>
         </div>
@@ -472,9 +482,19 @@ export default function ModuleStudioPage() {
 
           {/* Live Preview Panel */}
           {showPreview && (
-            <div className={showCopilot ? "col-span-2" : "col-span-3"}>
+            <div className="col-span-2">
               <ModulePreviewPanel
                 moduleData={moduleDataForComponents}
+                className="h-[calc(100vh-240px)] sticky top-4"
+              />
+            </div>
+          )}
+
+          {/* Autonomous Agent Panel */}
+          {showAgent && (
+            <div className="col-span-2">
+              <ModuleAutonomousAgentPanel
+                context={copilotContext}
                 className="h-[calc(100vh-240px)] sticky top-4"
               />
             </div>
