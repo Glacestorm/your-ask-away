@@ -67,8 +67,8 @@ export function MarketplaceHero({ searchTerm, onSearchChange }: MarketplaceHeroP
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.1, duration: 0.3 }}
           >
-            <Badge className="mb-4 bg-gradient-to-r from-primary/20 to-secondary/20 text-primary border-primary/20 hover:bg-primary/30 px-4 py-1">
-              <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+            <Badge className="mb-4 bg-primary/20 text-white border-primary/30 hover:bg-primary/30 px-4 py-1">
+              <Sparkles className="h-3.5 w-3.5 mr-1.5 text-primary" />
               Marketplace
             </Badge>
           </motion.div>
