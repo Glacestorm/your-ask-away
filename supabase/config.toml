@@ -731,3 +731,6 @@ verify_jwt = true
 
 [functions.security-intelligence]
 verify_jwt = true
+
+[functions.knowledge-graph]
+verify_jwt = true
