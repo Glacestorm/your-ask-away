@@ -6,8 +6,6 @@ import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import StoreNavbar from '@/components/store/StoreNavbar';
-import UnifiedFooter from '@/components/layout/UnifiedFooter';
 
 interface Message {
   id: string;
@@ -101,9 +99,7 @@ const Chat = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <StoreNavbar />
-      
+    <div className="min-h-screen flex flex-col">
       <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-foreground">Chat con ObelixIA</h1>
@@ -210,8 +206,6 @@ const Chat = () => {
           </div>
         </Card>
       </main>
-
-      <UnifiedFooter />
     </div>
   );
 };

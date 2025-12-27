@@ -21,8 +21,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMarketingAnalytics } from '@/hooks/useMarketingAnalytics';
-import StoreNavbar from '@/components/store/StoreNavbar';
-import UnifiedFooter from '@/components/layout/UnifiedFooter';
 import DemoRequestModal from '@/components/store/DemoRequestModal';
 interface SectorCardData {
   icon: React.ElementType;
@@ -275,8 +273,7 @@ const SectorLanding: React.FC = () => {
 
   return (
     <>
-      <StoreNavbar />
-      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 overflow-hidden pt-20">
+      <div className="min-h-screen overflow-hidden">
         {/* Background Effects */}
         <div className="fixed inset-0 pointer-events-none">
           <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
@@ -398,7 +395,6 @@ const SectorLanding: React.FC = () => {
           </div>
         </motion.div>
       </div>
-      <UnifiedFooter />
       
       <DemoRequestModal 
         isOpen={isDemoModalOpen} 

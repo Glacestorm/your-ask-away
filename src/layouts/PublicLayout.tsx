@@ -1,12 +1,13 @@
 /**
  * PublicLayout - Layout para páginas públicas
- * Incluye: Navbar principal, Footer, y componentes globales
- * Usado en: Store, Sectores, Marketing, Company, Legal, Resources
+ * Incluye: Navbar principal unificado, Footer, y componentes globales
+ * Usado en: Store, Sectores, Marketing, Company, Legal, Resources, Academia
  */
 
 import React, { ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import { MainNavbar, UnifiedFooter } from '@/components/navigation';
+import StoreNavbar from '@/components/store/StoreNavbar';
+import UnifiedFooter from '@/components/layout/UnifiedFooter';
 import CartSidebar from '@/components/store/CartSidebar';
 
 interface PublicLayoutProps {
@@ -37,8 +38,8 @@ export function PublicLayout({
 
   return (
     <div className={`${baseClassName} ${className}`}>
-      {/* Navbar */}
-      {!hideNavbar && <MainNavbar />}
+      {/* Navbar Unificado */}
+      {!hideNavbar && <StoreNavbar />}
 
       {/* Main Content - Optimized transition for faster navigation */}
       <motion.main

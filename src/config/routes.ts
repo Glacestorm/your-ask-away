@@ -148,33 +148,33 @@ export interface RouteConfig {
 // RUTAS PÚBLICAS (Store, Landing, Marketing)
 // ============================================
 export const publicRoutes: RouteConfig[] = [
-  // Store - StoreLanding tiene su propio navbar integrado, usa 'none'
-  { path: '/store', component: StoreLanding, layout: 'none', priority: 'high', meta: { title: 'Store' } },
-  { path: '/store/modules', component: StoreModules, layout: 'none', priority: 'high', meta: { title: 'Módulos' } },
+  // Store - Usando layout 'public' unificado con StoreNavbar
+  { path: '/store', component: StoreLanding, layout: 'public', priority: 'high', meta: { title: 'Store' } },
+  { path: '/store/modules', component: StoreModules, layout: 'public', priority: 'high', meta: { title: 'Módulos' } },
   { path: '/store/modules/:moduleKey', component: StoreModuleDetail, layout: 'public', priority: 'high' },
   { path: '/store/deployment', component: StoreDeployment, layout: 'public', priority: 'high' },
   { path: '/store/checkout', component: StoreCheckout, layout: 'public', priority: 'high' },
   { path: '/store/success', component: CheckoutSuccess, layout: 'public', priority: 'high' },
   
-  // Academia
-  { path: '/academia', component: AcademiaLanding, layout: 'none', priority: 'high', meta: { title: 'Academia ObelixIA' } },
-  { path: '/academia/cursos', component: CourseCatalog, layout: 'none', priority: 'high', meta: { title: 'Cursos' } },
-  { path: '/academia/curso/:courseId', component: CourseDetail, layout: 'none', priority: 'high', meta: { title: 'Curso' } },
-  { path: '/academia/aprender/:courseId', component: LearningPlayer, layout: 'none', priority: 'high', meta: { title: 'Aprender', requiresAuth: true } },
-  { path: '/academia/mi-perfil', component: AcademiaProfile, layout: 'none', priority: 'high', meta: { title: 'Mi Perfil Académico', requiresAuth: true } },
-  { path: '/academia/verificar/:code', component: CertificateVerification, layout: 'none', priority: 'medium', meta: { title: 'Verificar Certificado' } },
-  { path: '/academia/verificar', component: CertificateVerification, layout: 'none', priority: 'medium', meta: { title: 'Verificar Certificado' } },
-  { path: '/verify-certificate', component: CertificateVerification, layout: 'none', priority: 'medium', meta: { title: 'Verificar Certificado' } },
-  { path: '/academia/analytics', component: AcademiaAnalytics, layout: 'none', priority: 'high', meta: { title: 'Analytics Academia', requiresAuth: true } },
-  { path: '/academia/gestion-cursos', component: CourseManagement, layout: 'none', priority: 'high', meta: { title: 'Gestión de Cursos', requiresAuth: true } },
-  { path: '/academia/notificaciones', component: AcademiaNotifications, layout: 'none', priority: 'high', meta: { title: 'Notificaciones', requiresAuth: true } },
-  { path: '/academia/comunidad', component: AcademiaCommunity, layout: 'none', priority: 'high', meta: { title: 'Comunidad', requiresAuth: true } },
-  { path: '/academia/demo', component: AcademiaDemo, layout: 'none', priority: 'high', meta: { title: 'Academia Demo' } },
+  // Academia - Layout público unificado
+  { path: '/academia', component: AcademiaLanding, layout: 'public', priority: 'high', meta: { title: 'Academia ObelixIA' } },
+  { path: '/academia/cursos', component: CourseCatalog, layout: 'public', priority: 'high', meta: { title: 'Cursos' } },
+  { path: '/academia/curso/:courseId', component: CourseDetail, layout: 'public', priority: 'high', meta: { title: 'Curso' } },
+  { path: '/academia/aprender/:courseId', component: LearningPlayer, layout: 'public', priority: 'high', meta: { title: 'Aprender', requiresAuth: true } },
+  { path: '/academia/mi-perfil', component: AcademiaProfile, layout: 'public', priority: 'high', meta: { title: 'Mi Perfil Académico', requiresAuth: true } },
+  { path: '/academia/verificar/:code', component: CertificateVerification, layout: 'public', priority: 'medium', meta: { title: 'Verificar Certificado' } },
+  { path: '/academia/verificar', component: CertificateVerification, layout: 'public', priority: 'medium', meta: { title: 'Verificar Certificado' } },
+  { path: '/verify-certificate', component: CertificateVerification, layout: 'public', priority: 'medium', meta: { title: 'Verificar Certificado' } },
+  { path: '/academia/analytics', component: AcademiaAnalytics, layout: 'public', priority: 'high', meta: { title: 'Analytics Academia', requiresAuth: true } },
+  { path: '/academia/gestion-cursos', component: CourseManagement, layout: 'public', priority: 'high', meta: { title: 'Gestión de Cursos', requiresAuth: true } },
+  { path: '/academia/notificaciones', component: AcademiaNotifications, layout: 'public', priority: 'high', meta: { title: 'Notificaciones', requiresAuth: true } },
+  { path: '/academia/comunidad', component: AcademiaCommunity, layout: 'public', priority: 'high', meta: { title: 'Comunidad', requiresAuth: true } },
+  { path: '/academia/demo', component: AcademiaDemo, layout: 'public', priority: 'high', meta: { title: 'Academia Demo' } },
   
-  // Sectors (con alias para ambas rutas)
-  { path: '/sectores', component: SectorLanding, layout: 'none', priority: 'high', meta: { title: 'Sectores' } },
-  { path: '/sectores/:slug', component: SectorDetail, layout: 'none', priority: 'high', meta: { title: 'Sector' } },
-  { path: '/sectors/:slug', component: SectorDetail, layout: 'none', priority: 'high', meta: { title: 'Sector' } },
+  // Sectors - Layout público unificado
+  { path: '/sectores', component: SectorLanding, layout: 'public', priority: 'high', meta: { title: 'Sectores' } },
+  { path: '/sectores/:slug', component: SectorDetail, layout: 'public', priority: 'high', meta: { title: 'Sector' } },
+  { path: '/sectors/:slug', component: SectorDetail, layout: 'public', priority: 'high', meta: { title: 'Sector' } },
   { path: '/sectores/banca', component: BancaLanding, layout: 'public', priority: 'high', meta: { title: 'Banca' } },
   { path: '/sectores/seguros', component: SegurosLanding, layout: 'public', priority: 'high', meta: { title: 'Seguros' } },
   { path: '/sectores/retail', component: RetailLanding, layout: 'public', priority: 'high', meta: { title: 'Retail' } },
@@ -185,60 +185,60 @@ export const publicRoutes: RouteConfig[] = [
   { path: '/sectores/suscripciones', component: SuscripcionesLanding, layout: 'public', priority: 'high', meta: { title: 'Suscripciones' } },
   { path: '/sectores/educacion', component: EducacionLanding, layout: 'public', priority: 'high', meta: { title: 'Educación' } },
   { path: '/sectores/salud', component: SaludLanding, layout: 'public', priority: 'high', meta: { title: 'Salud' } },
-  { path: '/sectores/empresas', component: EmpresasLanding, layout: 'none', priority: 'high', meta: { title: 'Empresas B2B' } },
+  { path: '/sectores/empresas', component: EmpresasLanding, layout: 'public', priority: 'high', meta: { title: 'Empresas B2B' } },
   
-  // Marketing
+  // Marketing - Layout público unificado
   { path: '/comparativas', component: ComparativasCRM, layout: 'public', priority: 'high', meta: { title: 'Comparativas CRM' } },
   { path: '/seguridad', component: Seguridad, layout: 'public', priority: 'high', meta: { title: 'Seguridad' } },
-  { path: '/precios', component: PreciosPage, layout: 'none', priority: 'high', meta: { title: 'Planes y Precios' } },
+  { path: '/precios', component: PreciosPage, layout: 'public', priority: 'high', meta: { title: 'Planes y Precios' } },
   { path: '/paquetes', component: PackagesComparisonPage, layout: 'public', priority: 'high', meta: { title: 'Comparativa de Paquetes CRM/ERP' } },
   { path: '/demo', component: DemoInteractiva, layout: 'public', priority: 'high', meta: { title: 'Demo' } },
   
-  // Marketplace & Developer Portal
+  // Marketplace & Developer Portal - Layout público unificado
   { path: '/marketplace', component: Marketplace, layout: 'public', priority: 'high', meta: { title: 'Marketplace' } },
   { path: '/marketplace/:appKey', component: MarketplaceAppDetail, layout: 'public', priority: 'high' },
-  { path: '/developers', component: DeveloperPortal, layout: 'none', priority: 'medium', meta: { title: 'Portal de Desarrolladores' } },
+  { path: '/developers', component: DeveloperPortal, layout: 'public', priority: 'medium', meta: { title: 'Portal de Desarrolladores' } },
   { path: '/partner-portal', component: PartnerPortal, layout: 'public', priority: 'medium', meta: { title: 'Portal de Partners' } },
   
-  // Features
+  // Features - Layout público unificado
   { path: '/lowcode', component: LowCodePage, layout: 'public', priority: 'medium', meta: { title: 'Low Code' } },
   { path: '/cdp', component: CDPDashboard, layout: 'public', priority: 'medium', meta: { title: 'CDP Dashboard' } },
-  { path: '/chat', component: Chat, layout: 'none', priority: 'high', meta: { title: 'Chat IA' } },
+  { path: '/chat', component: Chat, layout: 'public', priority: 'high', meta: { title: 'Chat IA' } },
 ];
 
 // ============================================
 // RUTAS COMPANY (Sobre nosotros, Contacto...)
 // ============================================
 export const companyRoutes: RouteConfig[] = [
-  { path: '/about', component: About, layout: 'none', priority: 'low', meta: { title: 'Sobre Nosotros' } },
-  { path: '/contact', component: Contact, layout: 'none', priority: 'low', meta: { title: 'Contacto' } },
-  { path: '/partners', component: Partners, layout: 'none', priority: 'low', meta: { title: 'Partners' } },
-  { path: '/careers', component: Careers, layout: 'none', priority: 'low', meta: { title: 'Carreras' } },
+  { path: '/about', component: About, layout: 'public', priority: 'low', meta: { title: 'Sobre Nosotros' } },
+  { path: '/contact', component: Contact, layout: 'public', priority: 'low', meta: { title: 'Contacto' } },
+  { path: '/partners', component: Partners, layout: 'public', priority: 'low', meta: { title: 'Partners' } },
+  { path: '/careers', component: Careers, layout: 'public', priority: 'low', meta: { title: 'Carreras' } },
 ];
 
 // ============================================
 // RUTAS RECURSOS (Docs, API, Blog)
 // ============================================
 export const resourceRoutes: RouteConfig[] = [
-  { path: '/docs', component: Documentation, layout: 'none', priority: 'low', meta: { title: 'Documentación' } },
-  { path: '/api', component: APIReference, layout: 'none', priority: 'low', meta: { title: 'API Reference' } },
-  { path: '/blog', component: Blog, layout: 'none', priority: 'low', meta: { title: 'Blog' } },
-  { path: '/news/:id', component: NewsDetail, layout: 'none', priority: 'high', meta: { title: 'News' } },
-  { path: '/cases', component: CaseStudies, layout: 'none', priority: 'low', meta: { title: 'Casos de Éxito' } },
-  { path: '/casos-de-exito', component: CasosDeExito, layout: 'none', priority: 'medium', meta: { title: 'Casos de Éxito' } },
-  { path: '/casos-de-exito/:slug', component: CaseStudyDetail, layout: 'none', priority: 'medium', meta: { title: 'Caso de Éxito' } },
-  { path: '/comparativas/sectores', component: ComparativasPage, layout: 'none', priority: 'medium', meta: { title: 'Comparar Sectores' } },
-  { path: '/trends', component: TrendsDashboard, layout: 'none', priority: 'medium', meta: { title: 'Tendencias del Sector' } },
+  { path: '/docs', component: Documentation, layout: 'public', priority: 'low', meta: { title: 'Documentación' } },
+  { path: '/api', component: APIReference, layout: 'public', priority: 'low', meta: { title: 'API Reference' } },
+  { path: '/blog', component: Blog, layout: 'public', priority: 'low', meta: { title: 'Blog' } },
+  { path: '/news/:id', component: NewsDetail, layout: 'public', priority: 'high', meta: { title: 'News' } },
+  { path: '/cases', component: CaseStudies, layout: 'public', priority: 'low', meta: { title: 'Casos de Éxito' } },
+  { path: '/casos-de-exito', component: CasosDeExito, layout: 'public', priority: 'medium', meta: { title: 'Casos de Éxito' } },
+  { path: '/casos-de-exito/:slug', component: CaseStudyDetail, layout: 'public', priority: 'medium', meta: { title: 'Caso de Éxito' } },
+  { path: '/comparativas/sectores', component: ComparativasPage, layout: 'public', priority: 'medium', meta: { title: 'Comparar Sectores' } },
+  { path: '/trends', component: TrendsDashboard, layout: 'public', priority: 'medium', meta: { title: 'Tendencias del Sector' } },
 ];
 
 // ============================================
 // RUTAS LEGALES
 // ============================================
 export const legalRoutes: RouteConfig[] = [
-  { path: '/terms', component: TermsOfService, layout: 'none', priority: 'low', meta: { title: 'Términos de Servicio' } },
-  { path: '/privacy', component: PrivacyPolicy, layout: 'none', priority: 'low', meta: { title: 'Política de Privacidad' } },
-  { path: '/cookies', component: CookiesPolicy, layout: 'none', priority: 'low', meta: { title: 'Política de Cookies' } },
-  { path: '/gdpr', component: GDPR, layout: 'none', priority: 'low', meta: { title: 'GDPR' } },
+  { path: '/terms', component: TermsOfService, layout: 'public', priority: 'low', meta: { title: 'Términos de Servicio' } },
+  { path: '/privacy', component: PrivacyPolicy, layout: 'public', priority: 'low', meta: { title: 'Política de Privacidad' } },
+  { path: '/cookies', component: CookiesPolicy, layout: 'public', priority: 'low', meta: { title: 'Política de Cookies' } },
+  { path: '/gdpr', component: GDPR, layout: 'public', priority: 'low', meta: { title: 'GDPR' } },
 ];
 
 // ============================================
