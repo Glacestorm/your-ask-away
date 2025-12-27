@@ -722,3 +722,6 @@ verify_jwt = true
 
 [functions.conversational-ai-hub]
 verify_jwt = true
+
+[functions.predictive-intelligence]
+verify_jwt = true
