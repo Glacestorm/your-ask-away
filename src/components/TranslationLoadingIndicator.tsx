@@ -2,21 +2,51 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, Languages } from 'lucide-react';
 import { useGlobalTranslationState } from '@/hooks/useDynamicTranslation';
+import { subscribeToCMSTranslating, getGlobalTranslatingState } from '@/hooks/cms/useCMSTranslation';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const LANGUAGE_NAMES: Record<string, string> = {
   es: 'Español',
   en: 'English',
   ca: 'Català',
+  eu: 'Euskara',
+  gl: 'Galego',
+  oc: 'Occitan',
+  ast: 'Asturianu',
+  an: 'Aragonés',
   fr: 'Français',
   de: 'Deutsch',
   pt: 'Português',
   it: 'Italiano',
   'zh-CN': '中文',
+  'zh-TW': '繁體中文',
   ja: '日本語',
   ko: '한국어',
   ar: 'العربية',
   ru: 'Русский',
+  nl: 'Nederlands',
+  pl: 'Polski',
+  az: 'Azərbaycan',
+  tr: 'Türkçe',
+  uk: 'Українська',
+  cs: 'Čeština',
+  ro: 'Română',
+  hu: 'Magyar',
+  sv: 'Svenska',
+  da: 'Dansk',
+  no: 'Norsk',
+  fi: 'Suomi',
+  el: 'Ελληνικά',
+  he: 'עברית',
+  th: 'ไทย',
+  vi: 'Tiếng Việt',
+  id: 'Bahasa Indonesia',
+  ms: 'Bahasa Melayu',
+  hi: 'हिन्दी',
+  bn: 'বাংলা',
+  'pt-BR': 'Português (BR)',
+  'es-MX': 'Español (MX)',
+  'en-US': 'English (US)',
 };
 
 /**
@@ -28,9 +58,16 @@ export function TranslationLoadingIndicator() {
   const { language, loadingDynamic } = useLanguage();
   const [showIndicator, setShowIndicator] = useState(false);
   const [displayLang, setDisplayLang] = useState(language);
+  const [isCMSTranslating, setIsCMSTranslating] = useState(getGlobalTranslatingState());
+
+  // Subscribe to CMS translation state
+  useEffect(() => {
+    const unsubscribe = subscribeToCMSTranslating(setIsCMSTranslating);
+    return () => { unsubscribe(); };
+  }, []);
 
   // Show indicator when translating or loading dynamic translations
-  const isLoading = isTranslating || loadingDynamic;
+  const isLoading = isTranslating || loadingDynamic || isCMSTranslating;
 
   // Debounce to avoid flickering
   useEffect(() => {
