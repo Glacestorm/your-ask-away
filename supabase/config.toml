@@ -710,3 +710,6 @@ verify_jwt = true
 
 [functions.module-self-healing]
 verify_jwt = true
+
+[functions.notification-intelligence]
+verify_jwt = true
