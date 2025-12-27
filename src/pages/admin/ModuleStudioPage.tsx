@@ -26,8 +26,9 @@ import {
   Sparkles,
   Eye,
   Bot,
-  PanelRightClose,
-  PanelRight
+  Shield,
+  FileText,
+  Users
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -40,7 +41,11 @@ import {
   ModuleImpactAnalysis,
   ModuleCopilotPanel,
   ModulePreviewPanel,
-  ModuleAutonomousAgentPanel
+  ModuleAutonomousAgentPanel,
+  ModuleTestingPanel,
+  ModuleSecurityPanel,
+  ModuleDocumentationPanel,
+  ModuleCollaborationPanel
 } from '@/components/admin/module-studio';
 import type { ModuleContext } from '@/hooks/admin/useModuleCopilot';
 import { toast } from 'sonner';
@@ -310,22 +315,38 @@ export default function ModuleStudioPage() {
             {selectedModule && selectedModuleData ? (
               <Tabs defaultValue="overview" className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <TabsList>
+                  <TabsList className="flex-wrap h-auto gap-1">
                     <TabsTrigger value="overview">
-                      <Package className="h-4 w-4 mr-2" />
-                      Información
+                      <Package className="h-4 w-4 mr-1" />
+                      Info
                     </TabsTrigger>
                     <TabsTrigger value="dependencies">
-                      <GitBranch className="h-4 w-4 mr-2" />
-                      Dependencias
+                      <GitBranch className="h-4 w-4 mr-1" />
+                      Deps
                     </TabsTrigger>
                     <TabsTrigger value="history">
-                      <History className="h-4 w-4 mr-2" />
+                      <History className="h-4 w-4 mr-1" />
                       Historial
                     </TabsTrigger>
                     <TabsTrigger value="sandbox">
-                      <TestTube2 className="h-4 w-4 mr-2" />
+                      <TestTube2 className="h-4 w-4 mr-1" />
                       Sandbox
+                    </TabsTrigger>
+                    <TabsTrigger value="testing">
+                      <TestTube2 className="h-4 w-4 mr-1" />
+                      Tests
+                    </TabsTrigger>
+                    <TabsTrigger value="security">
+                      <Shield className="h-4 w-4 mr-1" />
+                      Seguridad
+                    </TabsTrigger>
+                    <TabsTrigger value="docs">
+                      <FileText className="h-4 w-4 mr-1" />
+                      Docs
+                    </TabsTrigger>
+                    <TabsTrigger value="collaboration">
+                      <Users className="h-4 w-4 mr-1" />
+                      Equipo
                     </TabsTrigger>
                   </TabsList>
                   
@@ -479,6 +500,30 @@ export default function ModuleStudioPage() {
                   <ModuleSandboxPanel
                     moduleKey={selectedModule}
                     moduleData={moduleDataForComponents}
+                  />
+                </TabsContent>
+
+                <TabsContent value="testing" className="mt-0">
+                  <ModuleTestingPanel 
+                    context={selectedModuleData ? { moduleKey: selectedModule, moduleName: selectedModuleData.module_name } : null}
+                  />
+                </TabsContent>
+
+                <TabsContent value="security" className="mt-0">
+                  <ModuleSecurityPanel 
+                    context={selectedModuleData ? { moduleKey: selectedModule, moduleName: selectedModuleData.module_name } : null}
+                  />
+                </TabsContent>
+
+                <TabsContent value="docs" className="mt-0">
+                  <ModuleDocumentationPanel 
+                    context={selectedModuleData ? { moduleKey: selectedModule, moduleName: selectedModuleData.module_name } : null}
+                  />
+                </TabsContent>
+
+                <TabsContent value="collaboration" className="mt-0">
+                  <ModuleCollaborationPanel 
+                    context={selectedModuleData ? { moduleKey: selectedModule, moduleName: selectedModuleData.module_name } : null}
                   />
                 </TabsContent>
               </Tabs>
