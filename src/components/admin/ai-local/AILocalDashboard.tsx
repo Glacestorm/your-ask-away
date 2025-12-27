@@ -38,6 +38,10 @@ import {
   MessageCircle,
   Target,
   Users,
+  LineChart,
+  AlertTriangle,
+  DollarSign,
+  Package,
 } from 'lucide-react';
 import { AIConfigurationPanel } from './AIConfigurationPanel';
 import { AIAssistantLocal } from './AIAssistantLocal';
