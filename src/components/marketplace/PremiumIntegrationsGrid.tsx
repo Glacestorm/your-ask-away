@@ -27,18 +27,21 @@ function PremiumIntegrationCard({ integration }: PremiumIntegrationCardProps) {
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           {/* Logo */}
-          <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center flex-shrink-0">
+          <div className="h-16 w-16 rounded-xl bg-white dark:bg-slate-800 border border-border/50 flex items-center justify-center flex-shrink-0 p-2">
             {integration.logo_url ? (
               <img 
                 src={integration.logo_url} 
                 alt={integration.integration_name} 
-                className="h-10 w-10 object-contain"
+                className="h-12 w-12 object-contain"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                }}
               />
-            ) : (
-              <span className="text-2xl font-bold text-primary">
-                {integration.integration_name.charAt(0)}
-              </span>
-            )}
+            ) : null}
+            <span className={`text-2xl font-bold text-primary ${integration.logo_url ? 'hidden' : ''}`}>
+              {integration.integration_name.charAt(0)}
+            </span>
           </div>
 
           {/* Content */}
