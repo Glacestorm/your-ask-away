@@ -15,6 +15,18 @@ verify_jwt = true
 [functions.module-deployment-pipeline]
 verify_jwt = true
 
+[functions.module-testing-framework]
+verify_jwt = true
+
+[functions.module-security-scanner]
+verify_jwt = true
+
+[functions.module-documentation-generator]
+verify_jwt = true
+
+[functions.module-collaboration]
+verify_jwt = true
+
 [functions.module-autonomous-agent]
 verify_jwt = true
 
