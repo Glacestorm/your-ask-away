@@ -299,7 +299,7 @@ export function SectorModulesSection({ sectorSlug, accentColor }: SectorModulesS
             ¿Necesitas una solución personalizada?
           </p>
           <Link to="/contact">
-            <Button variant="outline" className="border-slate-600 hover:bg-slate-800">
+            <Button variant="outline" className="border-slate-500 text-white bg-slate-800/50 hover:bg-slate-700">
               Hablar con un especialista
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
