@@ -6,7 +6,8 @@ import {
   BarChart3, Code, 
   Store, Layers, BookOpen, Activity, Rocket,
   GraduationCap, Languages, Briefcase, Gauge, ClipboardList,
-  Leaf, Globe, Bot, Building2, HeartPulse, Headphones
+  Leaf, Globe, Bot, Building2, HeartPulse, Headphones,
+  Bell, MonitorCheck, Zap
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
@@ -36,6 +37,12 @@ import { SectorsManager } from '@/components/admin/SectorsManager';
 import { CoreWebVitalsDashboard } from '@/components/admin/CoreWebVitalsDashboard';
 import AcademiaAdminPage from '@/pages/admin/AcademiaAdminPage';
 import DemoRequestsPage from '@/pages/admin/DemoRequestsPage';
+import { 
+  ModuleDashboardPanel, 
+  ModuleNotificationsPanel, 
+  ModuleMonitoringPanel, 
+  ModulePerformancePanel 
+} from '@/components/admin/module-studio';
 
 // Premium components
 import { ObelixiaAdminSidebar } from '@/components/obelixia-admin/ObelixiaAdminSidebar';
@@ -117,6 +124,11 @@ const ObelixiaTeamAdmin: React.FC = () => {
       'enterprise-dashboard': 'Enterprise Dashboard',
       'cs-metrics': 'CS Metrics Hub',
       'remote-support': 'Soporte Remoto',
+      // Nuevos módulos Operaciones
+      'module-dashboard': 'Dashboard Módulos',
+      'module-notifications': 'Notificaciones',
+      'module-monitoring': 'Monitoreo',
+      'module-performance': 'Performance',
     };
     return labels[tab] || tab;
   };
@@ -491,6 +503,23 @@ const ObelixiaTeamAdmin: React.FC = () => {
                     Ir al módulo completo →
                   </a>
                 </div>
+              </TabsContent>
+
+              {/* Operaciones - Nuevos módulos */}
+              <TabsContent value="module-dashboard" className="m-0">
+                <ModuleDashboardPanel />
+              </TabsContent>
+
+              <TabsContent value="module-notifications" className="m-0">
+                <ModuleNotificationsPanel />
+              </TabsContent>
+
+              <TabsContent value="module-monitoring" className="m-0">
+                <ModuleMonitoringPanel />
+              </TabsContent>
+
+              <TabsContent value="module-performance" className="m-0">
+                <ModulePerformancePanel />
               </TabsContent>
             </Tabs>
           </ObelixiaContentArea>

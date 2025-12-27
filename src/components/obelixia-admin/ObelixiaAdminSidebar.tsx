@@ -5,7 +5,8 @@ import {
   FileText, Receipt, Euro, Settings, LayoutGrid, BookOpen,
   Store, Palette, Code, GraduationCap, Languages, Briefcase,
   Activity, ClipboardList, Shield, Newspaper, HelpCircle, Sparkles,
-  Leaf, Globe, Bot, Building2, HeartPulse, Headphones, Brain, Boxes, Cpu
+  Leaf, Globe, Bot, Building2, HeartPulse, Headphones, Brain, Boxes, Cpu,
+  Gauge, Bell, MonitorCheck, Zap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -105,6 +106,18 @@ const categories: NavCategory[] = [
     ]
   },
   {
+    id: 'operaciones',
+    label: 'Operaciones',
+    icon: Gauge,
+    color: 'cyan',
+    items: [
+      { id: 'module-dashboard', label: 'Dashboard Módulos', icon: Gauge },
+      { id: 'module-notifications', label: 'Notificaciones', icon: Bell },
+      { id: 'module-monitoring', label: 'Monitoreo', icon: MonitorCheck },
+      { id: 'module-performance', label: 'Performance', icon: Zap },
+    ]
+  },
+  {
     id: 'estrategia',
     label: 'Estrategia & Datos',
     icon: Brain,
@@ -162,6 +175,12 @@ const colorMap: Record<string, { bg: string; text: string; border: string; hover
     text: 'text-rose-400', 
     border: 'border-rose-500/30',
     hover: 'hover:bg-rose-500/20'
+  },
+  cyan: { 
+    bg: 'bg-cyan-500/10', 
+    text: 'text-cyan-400', 
+    border: 'border-cyan-500/30',
+    hover: 'hover:bg-cyan-500/20'
   }
 };
 
