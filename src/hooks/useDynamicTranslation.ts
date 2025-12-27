@@ -108,8 +108,8 @@ const debouncedSave = () => {
   saveTimeout = setTimeout(saveCacheToStorage, 2000);
 };
 
-// Debounce delay for batch translations
-const BATCH_DELAY_MS = 100;
+// Minimal batch delay for faster translations
+const BATCH_DELAY_MS = 30;
 
 interface TranslationItem {
   key: string;

@@ -14,37 +14,68 @@ const cache: TranslationCache = {};
 const translateCache: Record<string, string> = {};
 const translateInflight: Record<string, Promise<string>> = {};
 
-// Stricter concurrency limit to avoid rate limiting
-const MAX_CONCURRENT_TRANSLATIONS = 1;
+// Higher concurrency for faster translations
+const MAX_CONCURRENT_TRANSLATIONS = 8;
 let activeTranslations = 0;
 const translationQueue: Array<{ resolve: () => void; priority: number }> = [];
 
-// Delay between translations to avoid rate limiting (ms)
-const TRANSLATION_DELAY_MS = 500;
+// Minimal delay between translations (ms)
+const TRANSLATION_DELAY_MS = 50;
 let lastTranslationTime = 0;
 
-// === GLOBAL TRANSLATION STATE ===
+// === GLOBAL TRANSLATION STATE WITH PROGRESS ===
 let globalCMSTranslatingCount = 0;
-const cmsTranslatingListeners: Set<(isTranslating: boolean) => void> = new Set();
+let totalItemsToTranslate = 0;
+let completedItems = 0;
+
+interface TranslationProgress {
+  isTranslating: boolean;
+  total: number;
+  completed: number;
+  percentage: number;
+}
+
+const cmsTranslatingListeners: Set<(progress: TranslationProgress) => void> = new Set();
+
+const getProgress = (): TranslationProgress => ({
+  isTranslating: globalCMSTranslatingCount > 0,
+  total: totalItemsToTranslate,
+  completed: completedItems,
+  percentage: totalItemsToTranslate > 0 ? Math.round((completedItems / totalItemsToTranslate) * 100) : 0,
+});
 
 const notifyCMSTranslatingChange = () => {
-  const isTranslating = globalCMSTranslatingCount > 0;
-  cmsTranslatingListeners.forEach(listener => listener(isTranslating));
+  const progress = getProgress();
+  cmsTranslatingListeners.forEach(listener => listener(progress));
 };
 
-export const incrementGlobalTranslating = () => {
+export const incrementGlobalTranslating = (itemCount: number = 1) => {
   globalCMSTranslatingCount++;
+  totalItemsToTranslate += itemCount;
   notifyCMSTranslatingChange();
 };
 
-export const decrementGlobalTranslating = () => {
+export const decrementGlobalTranslating = (itemCount: number = 1) => {
   globalCMSTranslatingCount = Math.max(0, globalCMSTranslatingCount - 1);
+  completedItems += itemCount;
   notifyCMSTranslatingChange();
+  
+  // Reset counters when all done
+  if (globalCMSTranslatingCount === 0) {
+    setTimeout(() => {
+      if (globalCMSTranslatingCount === 0) {
+        totalItemsToTranslate = 0;
+        completedItems = 0;
+        notifyCMSTranslatingChange();
+      }
+    }, 500);
+  }
 };
 
 export const getGlobalTranslatingState = () => globalCMSTranslatingCount > 0;
+export const getTranslationProgress = () => getProgress();
 
-export const subscribeToCMSTranslating = (listener: (isTranslating: boolean) => void) => {
+export const subscribeToCMSTranslating = (listener: (progress: TranslationProgress) => void) => {
   cmsTranslatingListeners.add(listener);
   return () => cmsTranslatingListeners.delete(listener);
 };
@@ -143,7 +174,7 @@ export function useCMSTranslation(namespace: string = 'common') {
 
       translateInflight[cacheKey] = (async () => {
         await acquireTranslationSlot();
-        incrementGlobalTranslating();
+        incrementGlobalTranslating(1);
         try {
           const { data, error } = await supabase.functions.invoke('cms-translate-content', {
             body: {
@@ -163,7 +194,7 @@ export function useCMSTranslation(namespace: string = 'common') {
           return text;
         } finally {
           releaseTranslationSlot();
-          decrementGlobalTranslating();
+          decrementGlobalTranslating(1);
           delete translateInflight[cacheKey];
         }
       })();
@@ -203,7 +234,8 @@ export function useCMSTranslation(namespace: string = 'common') {
       }
       
       await acquireTranslationSlot();
-      incrementGlobalTranslating();
+      const batchSize = uncachedTexts.length;
+      incrementGlobalTranslating(batchSize);
       try {
         // Convert texts array to items array expected by the edge function
         const items = uncachedTexts.map((text, idx) => ({
@@ -244,7 +276,7 @@ export function useCMSTranslation(namespace: string = 'common') {
         return results;
       } finally {
         releaseTranslationSlot();
-        decrementGlobalTranslating();
+        decrementGlobalTranslating(batchSize);
       }
     },
     [language]
