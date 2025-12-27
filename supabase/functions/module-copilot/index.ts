@@ -29,9 +29,20 @@ interface ModuleCopilotRequest {
     | 'predict_conflicts'
     | 'natural_language_edit'
     | 'explain_module'
-    | 'optimize_dependencies';
+    | 'optimize_dependencies'
+    | 'create_from_template'
+    | 'get_dependencies'
+    | 'resolve_conflict'
+    | 'update_dependency';
   params?: Record<string, unknown>;
   conversationHistory?: Array<{ role: string; content: string }>;
+  templateId?: string;
+  templateConfig?: Record<string, unknown>;
+  customization?: Record<string, unknown>;
+  moduleKey?: string;
+  conflictId?: string;
+  dependencyKey?: string;
+  targetVersion?: string;
 }
 
 serve(async (req) => {
@@ -309,6 +320,146 @@ FORMATO DE RESPUESTA (JSON estricto):
 Dependencias actuales: ${JSON.stringify(moduleContext?.dependencies || [])}
 ${params?.removeUnused ? 'Identifica y sugiere eliminar dependencias no utilizadas.' : ''}
 ${params?.suggestAlternatives ? 'Sugiere alternativas más eficientes si existen.' : ''}`;
+        break;
+
+      case 'create_from_template':
+        systemPrompt = `${baseSystemPrompt}
+
+TAREA: Crear un nuevo módulo desde un template
+El usuario quiere crear un módulo basado en una plantilla predefinida.
+
+FORMATO DE RESPUESTA (JSON estricto):
+{
+  "content": "Descripción del módulo creado",
+  "module": {
+    "key": "string",
+    "name": "string",
+    "description": "string",
+    "category": "string",
+    "version": "1.0.0",
+    "config": {},
+    "dependencies": [],
+    "createdAt": "ISO date"
+  },
+  "appliedCustomizations": ["customización 1", "customización 2"]
+}`;
+        const templateId = (req as any).templateId || params?.templateId;
+        const customization = (req as any).customization || params?.customization;
+        userPrompt = `Crea un nuevo módulo basado en el template "${templateId}".
+Personalización solicitada: ${JSON.stringify(customization || {})}
+Genera la configuración completa del nuevo módulo.`;
+        break;
+
+      case 'get_dependencies':
+        systemPrompt = `${baseSystemPrompt}
+
+TAREA: Obtener árbol de dependencias del módulo
+Analiza todas las dependencias directas e indirectas.
+
+FORMATO DE RESPUESTA (JSON estricto):
+{
+  "dependencies": [
+    {
+      "id": "string",
+      "moduleKey": "string",
+      "moduleName": "string",
+      "version": "string",
+      "requiredVersion": "string",
+      "status": "satisfied|outdated|missing|conflict",
+      "isRequired": true,
+      "isDev": false,
+      "size": 245,
+      "lastUpdated": "ISO date"
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "string",
+      "type": "version|circular|missing|incompatible",
+      "severity": "error|warning|info",
+      "moduleA": "string",
+      "moduleB": "string",
+      "description": "string",
+      "resolution": "string",
+      "autoResolvable": true
+    }
+  ],
+  "updates": [
+    {
+      "moduleKey": "string",
+      "currentVersion": "string",
+      "latestVersion": "string",
+      "updateType": "patch|minor|major",
+      "breakingChanges": false,
+      "changelog": ["cambio 1"],
+      "releaseDate": "ISO date"
+    }
+  ],
+  "tree": {
+    "root": "string",
+    "nodes": [],
+    "depth": 2,
+    "totalDependencies": 4
+  }
+}`;
+        const depModuleKey = (req as any).moduleKey || params?.moduleKey;
+        userPrompt = `Obtén el árbol completo de dependencias para el módulo "${depModuleKey || moduleContext?.moduleKey}".
+Incluye conflictos, actualizaciones disponibles y estructura del árbol.`;
+        break;
+
+      case 'resolve_conflict':
+        systemPrompt = `${baseSystemPrompt}
+
+TAREA: Resolver un conflicto de dependencias
+Analiza el conflicto y propón/aplica una solución.
+
+FORMATO DE RESPUESTA (JSON estricto):
+{
+  "content": "Descripción de la resolución",
+  "resolved": true,
+  "conflictId": "string",
+  "resolution": {
+    "type": "upgrade|downgrade|replace|ignore",
+    "affectedModules": ["module1", "module2"],
+    "changes": [
+      {
+        "module": "string",
+        "from": "version",
+        "to": "version"
+      }
+    ]
+  },
+  "warnings": ["advertencia si aplica"]
+}`;
+        const conflictId = (req as any).conflictId || params?.conflictId;
+        userPrompt = `Resuelve el conflicto "${conflictId}" para el módulo "${moduleContext?.moduleKey}".
+Proporciona una solución segura y reversible.`;
+        break;
+
+      case 'update_dependency':
+        systemPrompt = `${baseSystemPrompt}
+
+TAREA: Actualizar una dependencia específica
+Verifica compatibilidad y actualiza la dependencia.
+
+FORMATO DE RESPUESTA (JSON estricto):
+{
+  "content": "Descripción de la actualización",
+  "updated": true,
+  "dependency": {
+    "moduleKey": "string",
+    "previousVersion": "string",
+    "newVersion": "string",
+    "breakingChanges": [],
+    "migrationSteps": []
+  },
+  "affectedModules": ["module1"],
+  "rollbackAvailable": true
+}`;
+        const updDepKey = (req as any).dependencyKey || params?.dependencyKey;
+        const targetVersion = (req as any).targetVersion || params?.targetVersion;
+        userPrompt = `Actualiza la dependencia "${updDepKey}" a la versión "${targetVersion}" para el módulo "${moduleContext?.moduleKey}".
+Verifica compatibilidad y proporciona pasos de migración si es necesario.`;
         break;
 
       default:

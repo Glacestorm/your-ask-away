@@ -39,6 +39,9 @@ verify_jwt = true
 [functions.module-sandbox]
 verify_jwt = true
 
+[functions.module-export-import]
+verify_jwt = true
+
 [functions.web-market-research]
 verify_jwt = true
 
