@@ -14,6 +14,7 @@ import { useLanguage, Language } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Globe, Check, Sparkles, Search, ChevronDown, ChevronRight } from 'lucide-react';
+import { useDynamicTranslation } from '@/hooks/useDynamicTranslation';
 
 const STORAGE_KEY = 'obelixia_welcome_language_shown';
 const REMEMBER_KEY = 'obelixia_language_remembered';
@@ -148,7 +149,8 @@ export function WelcomeLanguageModal({
   const [expandedRegions, setExpandedRegions] = useState<Set<RegionKey>>(
     new Set(['spain', 'europe'])
   );
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, refreshTranslations } = useLanguage();
+  const { clearCache: clearDynamicCache } = useDynamicTranslation();
 
   // Control de estado: externo para selector, interno para welcome
   const isOpen = mode === 'selector' ? (externalIsOpen ?? false) : internalIsOpen;
@@ -232,7 +234,13 @@ export function WelcomeLanguageModal({
 
   const handleConfirm = () => {
     if (selectedLanguage) {
+      // Clear dynamic translation cache to force re-translation
+      clearDynamicCache();
       setLanguage(selectedLanguage);
+      // Refresh translations after a short delay to ensure state is updated
+      setTimeout(() => {
+        refreshTranslations();
+      }, 100);
       if (mode === 'welcome' && rememberChoice) {
         localStorage.setItem(REMEMBER_KEY, 'true');
       }
@@ -299,7 +307,7 @@ export function WelcomeLanguageModal({
         </div>
 
         <div className="relative px-6 py-2">
-          <ScrollArea className="h-[280px] pr-4">
+          <ScrollArea className="h-[400px] pr-4">
             {isSearching ? (
               // Flat list when searching
               <div className="space-y-1">
