@@ -3,9 +3,6 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import StoreNavbar from '@/components/store/StoreNavbar';
-import UnifiedFooter from '@/components/layout/UnifiedFooter';
-import CartSidebar from '@/components/store/CartSidebar';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 // New explosive landing components
@@ -40,10 +37,8 @@ const StoreLanding: React.FC = () => {
   const { t } = useLanguage();
 
   return (
-    <div className="min-h-screen bg-[#0a0f1a]">
-      <StoreNavbar />
-      
-      {/* New Explosive Hero */}
+    <div className="min-h-screen">
+      {/* Hero Section */}
       <HeroExplosive />
 
       {/* Stats Section */}
@@ -204,8 +199,7 @@ const StoreLanding: React.FC = () => {
         <NewsSection />
       </Suspense>
 
-      <UnifiedFooter />
-      <CartSidebar />
+      {/* Footer y CartSidebar son proporcionados por PublicLayout */}
       
       <Suspense fallback={null}>
         <FAQChatWidget />

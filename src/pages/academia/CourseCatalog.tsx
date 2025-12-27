@@ -35,7 +35,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import StoreNavbar from '@/components/store/StoreNavbar';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
 import { AIRecommendationsPanel } from '@/components/academia/AIRecommendationsPanel';
@@ -563,10 +562,8 @@ const CourseCatalog: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
-      <StoreNavbar />
-
-      <div className="container mx-auto px-6 pt-28 pb-16">
+    <div className="min-h-screen">
+      <div className="container mx-auto px-6 pb-16">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
