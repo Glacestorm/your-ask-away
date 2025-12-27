@@ -35,6 +35,7 @@ import { VerticalPacksManager } from '@/components/admin/verticals/VerticalPacks
 import { SectorsManager } from '@/components/admin/SectorsManager';
 import { CoreWebVitalsDashboard } from '@/components/admin/CoreWebVitalsDashboard';
 import AcademiaAdminPage from '@/pages/admin/AcademiaAdminPage';
+import DemoRequestsPage from '@/pages/admin/DemoRequestsPage';
 
 // Premium components
 import { ObelixiaAdminSidebar } from '@/components/obelixia-admin/ObelixiaAdminSidebar';
@@ -82,6 +83,7 @@ const ObelixiaTeamAdmin: React.FC = () => {
       quotes: 'Presupuestos',
       invoices: 'Facturas',
       pricing: 'Precios',
+      'demo-requests': 'Solicitudes Demo',
       content: 'Contenidos',
       cms: 'CMS',
       docs: 'Documentación',
@@ -203,7 +205,7 @@ const ObelixiaTeamAdmin: React.FC = () => {
           </div>
 
           {/* Stats Bar - Solo visible en sección Comercial */}
-          {['quotes', 'invoices', 'pricing'].includes(activeTab) && (
+          {['quotes', 'invoices', 'pricing', 'demo-requests'].includes(activeTab) && (
             <ObelixiaStatsBar stats={stats} theme={theme} viewMode={viewMode} />
           )}
 
@@ -220,6 +222,10 @@ const ObelixiaTeamAdmin: React.FC = () => {
 
               <TabsContent value="pricing" className="m-0">
                 <ModulePricingManager />
+              </TabsContent>
+
+              <TabsContent value="demo-requests" className="m-0">
+                <DemoRequestsPage />
               </TabsContent>
 
               <TabsContent value="content" className="m-0">
