@@ -6,6 +6,7 @@
  * - Chat con asistente
  * - Documentación de instalación
  * - Monitoreo de estado
+ * - Analytics IA (Fase 2)
  */
 
 import { useState } from 'react';
@@ -28,10 +29,14 @@ import {
   TrendingUp,
   Clock,
   BarChart3,
+  Brain,
+  Search,
 } from 'lucide-react';
 import { AIConfigurationPanel } from './AIConfigurationPanel';
 import { AIAssistantLocal } from './AIAssistantLocal';
 import { AIInstallationGuide } from './AIInstallationGuide';
+import { EmotionalAnalysisPanel } from '../ai-modules/EmotionalAnalysisPanel';
+import { NaturalLanguageQueryPanel } from '../ai-modules/NaturalLanguageQueryPanel';
 import { useLocalAI } from '@/hooks/admin/useLocalAI';
 import { cn } from '@/lib/utils';
 
@@ -121,14 +126,18 @@ export function AILocalDashboard({ className }: AILocalDashboardProps) {
 
       {/* Main Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="assistant" className="gap-2">
             <MessageSquare className="h-4 w-4" />
             <span className="hidden sm:inline">Asistente</span>
           </TabsTrigger>
+          <TabsTrigger value="analytics" className="gap-2">
+            <Brain className="h-4 w-4" />
+            <span className="hidden sm:inline">Analytics IA</span>
+          </TabsTrigger>
           <TabsTrigger value="config" className="gap-2">
             <Settings className="h-4 w-4" />
-            <span className="hidden sm:inline">Configuración</span>
+            <span className="hidden sm:inline">Config</span>
           </TabsTrigger>
           <TabsTrigger value="install" className="gap-2">
             <BookOpen className="h-4 w-4" />
@@ -136,7 +145,7 @@ export function AILocalDashboard({ className }: AILocalDashboardProps) {
           </TabsTrigger>
           <TabsTrigger value="monitor" className="gap-2">
             <Activity className="h-4 w-4" />
-            <span className="hidden sm:inline">Monitoreo</span>
+            <span className="hidden sm:inline">Monitor</span>
           </TabsTrigger>
         </TabsList>
 
@@ -185,6 +194,70 @@ export function AILocalDashboard({ className }: AILocalDashboardProps) {
                 </CardContent>
               </Card>
             </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="analytics" className="mt-4">
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-gradient-to-br from-primary to-accent">
+                <Brain className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">Analytics IA - Fase 2</h3>
+                <p className="text-sm text-muted-foreground">
+                  Análisis emocional y consultas en lenguaje natural potenciados por IA
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <EmotionalAnalysisPanel 
+                context={{ 
+                  entityId: 'ai-local-dashboard', 
+                  entityType: 'feedback' 
+                }} 
+                className="h-fit"
+              />
+              <NaturalLanguageQueryPanel className="h-fit" />
+            </div>
+
+            <Card className="bg-gradient-to-r from-primary/5 via-accent/5 to-secondary/5 border-primary/20">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  Capacidades de Analytics IA
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="space-y-2">
+                    <h4 className="font-medium flex items-center gap-2">
+                      <Brain className="h-4 w-4 text-primary" />
+                      Análisis Emocional
+                    </h4>
+                    <ul className="text-muted-foreground space-y-1 ml-6">
+                      <li>• Detección de sentimientos en tiempo real</li>
+                      <li>• Análisis de tono en comunicaciones</li>
+                      <li>• Predicción de satisfacción del cliente</li>
+                      <li>• Alertas de frustración temprana</li>
+                    </ul>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-medium flex items-center gap-2">
+                      <Search className="h-4 w-4 text-accent" />
+                      Consultas en Lenguaje Natural
+                    </h4>
+                    <ul className="text-muted-foreground space-y-1 ml-6">
+                      <li>• Búsqueda semántica en el CRM</li>
+                      <li>• Generación de reportes con texto</li>
+                      <li>• Análisis de datos conversacional</li>
+                      <li>• Traducción de consultas a SQL</li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
 
