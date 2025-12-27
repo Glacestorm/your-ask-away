@@ -1,9 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode, useRef } from 'react';
 import caTranslations from '@/locales/ca';
 import esTranslations from '@/locales/es';
 import frTranslations from '@/locales/fr';
 import enTranslations from '@/locales/en';
 import { supabase } from '@/integrations/supabase/client';
+import { incrementGlobalTranslating, decrementGlobalTranslating } from '@/hooks/cms/useCMSTranslation';
 
 // Expanded to support 65+ languages including Spanish regional languages
 export type Language = 
@@ -47,7 +48,19 @@ const RTL_LANGUAGES: Language[] = ['ar', 'he', 'fa', 'ur'];
 // Cache for dynamic translations from DB
 const dynamicTranslationsCache: Record<string, Record<string, string>> = {};
 const cacheTimestamps: Record<string, number> = {};
-const CACHE_TTL = 1 * 60 * 1000; // 1 minute for faster updates
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+// Cache for AI-translated i18n keys
+const aiTranslatedKeysCache: Record<string, Record<string, string>> = {};
+
+// Tracking keys being translated
+const keysBeingTranslated: Set<string> = new Set();
+
+// Queue for batch translations
+let translationBatchQueue: Array<{ key: string; text: string; resolve: (text: string) => void }> = [];
+let batchTimeout: ReturnType<typeof setTimeout> | null = null;
+const BATCH_DELAY = 50; // ms to wait before processing batch
+const MAX_BATCH_SIZE = 50; // Maximum items per batch
 
 const getStaticTranslations = (lang: Language): Record<string, string> => {
   // For base languages, use static files
@@ -101,6 +114,99 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [language, setLanguageState] = useState<Language>(getInitialLanguage());
   const [dynamicTranslations, setDynamicTranslations] = useState<Record<string, string>>({});
   const [loadingDynamic, setLoadingDynamic] = useState(false);
+  const [aiTranslatedKeys, setAiTranslatedKeys] = useState<Record<string, string>>({});
+  const translatingRef = useRef(false);
+  const pendingKeysRef = useRef<Set<string>>(new Set());
+
+  // Initialize AI cache for current language
+  useEffect(() => {
+    if (!aiTranslatedKeysCache[language]) {
+      aiTranslatedKeysCache[language] = {};
+    }
+    setAiTranslatedKeys(aiTranslatedKeysCache[language]);
+  }, [language]);
+
+  // Process batch of translations
+  const processBatch = useCallback(async (targetLocale: string) => {
+    if (translationBatchQueue.length === 0) return;
+
+    const batch = translationBatchQueue.splice(0, MAX_BATCH_SIZE);
+    const items = batch.map(item => ({
+      key: item.key,
+      text: item.text,
+    }));
+
+    incrementGlobalTranslating(items.length);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('cms-batch-translate', {
+        body: {
+          items,
+          sourceLocale: 'es',
+          targetLocale,
+        },
+      });
+
+      if (error) throw error;
+
+      const results = (data?.results as Array<{ key: string; translation: string }>) ?? [];
+      const translationMap: Record<string, string> = {};
+
+      results.forEach((result, index) => {
+        const originalItem = batch[index];
+        if (originalItem) {
+          translationMap[originalItem.key] = result.translation;
+          originalItem.resolve(result.translation);
+          keysBeingTranslated.delete(`${targetLocale}:${originalItem.key}`);
+        }
+      });
+
+      // Update cache
+      if (!aiTranslatedKeysCache[targetLocale]) {
+        aiTranslatedKeysCache[targetLocale] = {};
+      }
+      Object.assign(aiTranslatedKeysCache[targetLocale], translationMap);
+
+      // Trigger re-render
+      setAiTranslatedKeys(prev => ({ ...prev, ...translationMap }));
+
+    } catch (err) {
+      console.error('Batch translation error:', err);
+      // Resolve with original text on error
+      batch.forEach(item => {
+        item.resolve(item.text);
+        keysBeingTranslated.delete(`${targetLocale}:${item.key}`);
+      });
+    } finally {
+      decrementGlobalTranslating(items.length);
+
+      // If more items queued, process next batch
+      if (translationBatchQueue.length > 0) {
+        setTimeout(() => processBatch(targetLocale), 10);
+      }
+    }
+  }, []);
+
+  // Queue a key for translation
+  const queueTranslation = useCallback((key: string, text: string, targetLocale: string): Promise<string> => {
+    return new Promise((resolve) => {
+      translationBatchQueue.push({ key, text, resolve });
+
+      // Clear existing timeout and set new one
+      if (batchTimeout) {
+        clearTimeout(batchTimeout);
+      }
+
+      // Process batch after delay or when batch is full
+      if (translationBatchQueue.length >= MAX_BATCH_SIZE) {
+        processBatch(targetLocale);
+      } else {
+        batchTimeout = setTimeout(() => {
+          processBatch(targetLocale);
+        }, BATCH_DELAY);
+      }
+    });
+  }, [processBatch]);
 
   // Load dynamic translations from DB for non-base languages
   useEffect(() => {
@@ -138,7 +244,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
             if (dynamicTranslationsCache[language]) {
               setDynamicTranslations(dynamicTranslationsCache[language]);
             }
-            return;
+            break;
           }
 
           for (const item of data || []) {
@@ -151,15 +257,19 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
           offset += PAGE_SIZE;
         }
 
-        console.log(`[i18n] Loaded ${Object.keys(translationMap).length} translations for ${language}`);
+        console.log(`[i18n] Loaded ${Object.keys(translationMap).length} DB translations for ${language}`);
 
         // Update cache with timestamp
         dynamicTranslationsCache[language] = translationMap;
         cacheTimestamps[language] = Date.now();
         setDynamicTranslations(translationMap);
+
+        // If non-base language with no/few DB translations, auto-translate all keys
+        if (!staticTranslations[language] && Object.keys(translationMap).length < 50) {
+          translateAllStaticKeys(language);
+        }
       } catch (err) {
         console.error('Failed to load dynamic translations:', err);
-        // Fall back to cached version if available
         if (dynamicTranslationsCache[language]) {
           setDynamicTranslations(dynamicTranslationsCache[language]);
         }
@@ -170,6 +280,49 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
     loadDynamicTranslations();
   }, [language]);
+
+  // Auto-translate all static keys for non-base languages
+  const translateAllStaticKeys = useCallback(async (targetLocale: string) => {
+    if (translatingRef.current) return;
+    translatingRef.current = true;
+
+    try {
+      // Get Spanish translations as source
+      const sourceTranslations = staticTranslations.es!;
+      const keys = Object.keys(sourceTranslations);
+      const existingAI = aiTranslatedKeysCache[targetLocale] || {};
+      
+      // Filter out already translated keys
+      const keysToTranslate = keys.filter(key => {
+        const trackingKey = `${targetLocale}:${key}`;
+        return !existingAI[key] && !keysBeingTranslated.has(trackingKey);
+      });
+
+      if (keysToTranslate.length === 0) {
+        translatingRef.current = false;
+        return;
+      }
+
+      console.log(`[i18n] Auto-translating ${keysToTranslate.length} keys to ${targetLocale}`);
+
+      // Mark all as being translated
+      keysToTranslate.forEach(key => {
+        keysBeingTranslated.add(`${targetLocale}:${key}`);
+      });
+
+      // Queue all translations
+      const promises = keysToTranslate.map(key => 
+        queueTranslation(key, sourceTranslations[key], targetLocale)
+      );
+
+      await Promise.all(promises);
+
+    } catch (err) {
+      console.error('Error auto-translating keys:', err);
+    } finally {
+      translatingRef.current = false;
+    }
+  }, [queueTranslation]);
 
   const setLanguage = useCallback((lang: Language) => {
     setLanguageState(lang);
@@ -185,56 +338,28 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     // Invalidate cache for current language
     delete cacheTimestamps[language];
     delete dynamicTranslationsCache[language];
-    // Reset dynamic translations to trigger reload
+    delete aiTranslatedKeysCache[language];
+    
+    // Reset states
     setDynamicTranslations({});
-    // Force re-trigger useEffect by incrementing a counter or resetting state
-    setLanguageState((prev) => {
-      // Just set to same value - React state update will trigger useEffect on language dep
-      return prev;
-    });
-    // Manually trigger reload after a tick
-    setTimeout(async () => {
-      if (!staticTranslations[language]) {
-        setLoadingDynamic(true);
-        try {
-          const translationMap: Record<string, string> = {};
-          const PAGE_SIZE = 1000;
-          let offset = 0;
-          let hasMore = true;
-
-          while (hasMore) {
-            const { data, error } = await (supabase as any)
-              .from('cms_translations')
-              .select('translation_key, value')
-              .eq('locale', language)
-              .range(offset, offset + PAGE_SIZE - 1);
-
-            if (error) break;
-
-            for (const item of data || []) {
-              if (item.value) {
-                translationMap[item.translation_key] = item.value;
-              }
-            }
-
-            hasMore = (data?.length || 0) === PAGE_SIZE;
-            offset += PAGE_SIZE;
-          }
-
-          console.log(`[i18n] Refreshed ${Object.keys(translationMap).length} translations for ${language}`);
-          dynamicTranslationsCache[language] = translationMap;
-          cacheTimestamps[language] = Date.now();
-          setDynamicTranslations(translationMap);
-        } finally {
-          setLoadingDynamic(false);
-        }
-      }
-    }, 100);
-  }, [language]);
+    setAiTranslatedKeys({});
+    
+    // Force re-trigger
+    setLanguageState((prev) => prev);
+    
+    // Trigger auto-translation for non-base languages
+    if (!staticTranslations[language]) {
+      setTimeout(() => translateAllStaticKeys(language), 100);
+    }
+  }, [language, translateAllStaticKeys]);
 
   const t = useCallback((key: string, params?: Record<string, string | number>): string => {
-    // Priority: dynamic translations > static translations > fallback to key
-    let value = dynamicTranslations[key];
+    // Priority: AI translations > dynamic translations > static translations > fallback
+    let value = aiTranslatedKeys[key];
+    
+    if (!value) {
+      value = dynamicTranslations[key];
+    }
     
     if (!value) {
       const staticTrans = getStaticTranslations(language);
@@ -242,11 +367,24 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     }
 
     if (value === undefined) {
-      // Only warn in development and for base languages
-      if (staticTranslations[language]) {
-        console.warn(`[i18n] Missing translation for key: "${key}" in language: "${language}"`);
+      // For non-base languages, queue translation if not already in progress
+      if (!staticTranslations[language]) {
+        const trackingKey = `${language}:${key}`;
+        if (!keysBeingTranslated.has(trackingKey)) {
+          const sourceText = staticTranslations.es?.[key];
+          if (sourceText) {
+            keysBeingTranslated.add(trackingKey);
+            queueTranslation(key, sourceText, language).then(translated => {
+              // Update will happen via state
+            });
+          }
+        }
+        // Return source text while translating (Spanish fallback)
+        const fallback = staticTranslations.es?.[key] || key;
+        value = fallback;
+      } else {
+        value = key;
       }
-      value = key;
     }
 
     // Replace parameters like {{name}}
@@ -257,7 +395,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     }
 
     return value;
-  }, [language, dynamicTranslations]);
+  }, [language, dynamicTranslations, aiTranslatedKeys, queueTranslation]);
 
   const isRTL = RTL_LANGUAGES.includes(language);
 
