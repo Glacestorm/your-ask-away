@@ -76,9 +76,13 @@ const ObelixiaTeamAdmin: React.FC = () => {
   const navigate = useNavigate();
 
   const handleTabChange = (tab: string) => {
-    // Module Studio tiene su propia página dedicada
+    // Module Studio y AI Local tienen sus propias páginas dedicadas
     if (tab === 'module-studio') {
       navigate('/obelixia-admin/module-studio');
+      return;
+    }
+    if (tab === 'ai-local') {
+      navigate('/obelixia-admin/ai-local');
       return;
     }
     setActiveTab(tab);

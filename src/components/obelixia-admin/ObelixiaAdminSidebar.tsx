@@ -5,7 +5,7 @@ import {
   FileText, Receipt, Euro, Settings, LayoutGrid, BookOpen,
   Store, Palette, Code, GraduationCap, Languages, Briefcase,
   Activity, ClipboardList, Shield, Newspaper, HelpCircle, Sparkles,
-  Leaf, Globe, Bot, Building2, HeartPulse, Headphones, Brain, Boxes
+  Leaf, Globe, Bot, Building2, HeartPulse, Headphones, Brain, Boxes, Cpu
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -101,6 +101,7 @@ const categories: NavCategory[] = [
     items: [
       { id: 'api', label: 'API', icon: Code },
       { id: 'security', label: 'Seguridad', icon: Shield },
+      { id: 'ai-local', label: 'IA Local', icon: Cpu },
     ]
   },
   {
