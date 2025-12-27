@@ -94,8 +94,24 @@ export function useMarketingAnalytics() {
     return trackEvent('tab_view', { tab: tabName });
   }, [trackEvent]);
 
-  const trackDemoRequest = useCallback((formData: Record<string, string>) => {
-    return trackEvent('demo_request', formData);
+  const trackDemoRequest = useCallback(async (formData: Record<string, string>) => {
+    // Guardar en marketing_events para analytics
+    await trackEvent('demo_request', formData);
+    
+    // Guardar también en demo_requests para seguimiento comercial
+    try {
+      await supabase.from('demo_requests').insert([{
+        full_name: formData.name || formData.full_name || '',
+        email: formData.email || '',
+        company: formData.company || '',
+        message: formData.message || null,
+        source_page: window.location.pathname,
+        status: 'pending',
+      }]);
+      console.log('[Marketing] Demo request saved to demo_requests table');
+    } catch (err) {
+      console.error('[Marketing] Error saving to demo_requests:', err);
+    }
   }, [trackEvent]);
 
   const trackLeadCapture = useCallback((source: string, email: string) => {
