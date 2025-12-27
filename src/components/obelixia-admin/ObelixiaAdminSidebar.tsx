@@ -5,7 +5,7 @@ import {
   FileText, Receipt, Euro, Settings, LayoutGrid, BookOpen,
   Store, Palette, Code, GraduationCap, Languages, Briefcase,
   Activity, ClipboardList, Shield, Newspaper, HelpCircle, Sparkles,
-  Leaf, Globe, Bot, Building2, HeartPulse, Headphones, Brain
+  Leaf, Globe, Bot, Building2, HeartPulse, Headphones, Brain, Boxes
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -78,6 +78,7 @@ const categories: NavCategory[] = [
     color: 'amber',
     items: [
       { id: 'appstore', label: 'App Store', icon: Store },
+      { id: 'module-studio', label: 'Module Studio', icon: Boxes },
       { id: 'whitelabel', label: 'White Label', icon: Palette },
       { id: 'verticals', label: 'Verticales', icon: Briefcase },
     ]
