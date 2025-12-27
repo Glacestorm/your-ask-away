@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useCallback } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, type LucideIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -32,6 +32,45 @@ export interface MegaMenuProps {
 
 const MegaMenu: React.FC<MegaMenuProps> = ({ sections, featured, onClose }) => {
   const { preloadRoute } = useRoutePreload();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const scrollToHash = useCallback((hash: string) => {
+    const id = hash.replace(/^#/, '');
+
+    const tryScroll = (attempt = 0) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+      if (attempt < 12) {
+        window.setTimeout(() => tryScroll(attempt + 1), 100);
+      }
+    };
+
+    tryScroll();
+  }, []);
+
+  const handleNavigate = useCallback((href: string) => {
+    if (!href) return;
+
+    if (href.includes('#')) {
+      const [path, hash] = href.split('#');
+      const targetPath = path || location.pathname;
+
+      if (targetPath && location.pathname !== targetPath) {
+        navigate(targetPath);
+        window.setTimeout(() => scrollToHash(`#${hash}`), 120);
+      } else {
+        scrollToHash(`#${hash}`);
+      }
+    } else {
+      navigate(href);
+    }
+
+    onClose();
+  }, [location.pathname, navigate, onClose, scrollToHash]);
 
   return (
     <motion.div
@@ -59,7 +98,10 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ sections, featured, onClose }) => {
                         <li key={item.id}>
                           <Link
                             to={item.href}
-                            onClick={onClose}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleNavigate(item.href);
+                            }}
                             onMouseEnter={() => preloadRoute(item.href)}
                             className="group flex items-start gap-4 p-3 -mx-3 rounded-xl hover:bg-slate-50 transition-colors duration-150"
                           >
@@ -103,7 +145,10 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ sections, featured, onClose }) => {
                   </h4>
                   <Link
                     to={featured.href}
-                    onClick={onClose}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleNavigate(featured.href);
+                    }}
                     onMouseEnter={() => preloadRoute(featured.href)}
                     className="group flex-1 flex flex-col"
                   >
@@ -145,3 +190,4 @@ const MegaMenu: React.FC<MegaMenuProps> = ({ sections, featured, onClose }) => {
 };
 
 export default MegaMenu;
+
