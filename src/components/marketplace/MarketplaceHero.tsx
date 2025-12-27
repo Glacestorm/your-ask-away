@@ -47,7 +47,7 @@ export function MarketplaceHero({ searchTerm, onSearchChange }: MarketplaceHeroP
   ];
 
   return (
-    <div className="relative overflow-hidden border-b border-border/30 bg-gradient-to-br from-[hsl(222,47%,11%)] via-[hsl(222,47%,9%)] to-[hsl(217,33%,12%)]">
+    <div className="relative overflow-hidden bg-gradient-to-b from-[hsl(222,47%,11%)] via-[hsl(222,47%,9%)] to-slate-950">
       {/* Decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/20 rounded-full blur-3xl" />
