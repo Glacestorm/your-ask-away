@@ -13,7 +13,7 @@ import { useSupportedLanguages } from '@/hooks/useSupportedLanguages';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 // Base languages with static translations (always 100%)
-const BASE_LANGUAGE_CODES = ['en', 'es', 'fr', 'ca'];
+const BASE_LANGUAGE_CODES = ['en', 'es', 'fr', 'ca', 'eu', 'gl'];
 
 // Default gradient for languages not explicitly defined
 const getLanguageGradient = (locale: string): string => {
