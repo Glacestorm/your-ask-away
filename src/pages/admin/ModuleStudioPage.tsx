@@ -554,7 +554,12 @@ export default function ModuleStudioPage() {
                 </TabsContent>
 
                 <TabsContent value="marketplace" className="mt-0">
-                  <ModuleMarketplacePanel />
+                  <ModuleMarketplacePanel 
+                    onInstall={(key) => {
+                      refetchModules();
+                      toast.success(`Módulo ${key} instalado correctamente`);
+                    }}
+                  />
                 </TabsContent>
               </Tabs>
             ) : (
