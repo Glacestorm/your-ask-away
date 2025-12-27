@@ -72,7 +72,7 @@ export const HeroExplosive: React.FC = () => {
           </div>
         </div>
 
-        <div className="container mx-auto px-6 relative z-10 pt-8 pb-8">
+        <div className="container mx-auto px-6 relative z-10 pt-16 pb-8">
           <div className="max-w-5xl mx-auto text-center">
             {/* Badge */}
             <motion.div
