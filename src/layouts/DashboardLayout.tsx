@@ -22,6 +22,10 @@ interface DashboardLayoutProps {
   className?: string;
   /** Padding del contenido */
   contentPadding?: 'none' | 'sm' | 'md' | 'lg';
+  /** Acciones junto al título */
+  titleActions?: ReactNode;
+  /** Slot derecho del header */
+  rightSlot?: ReactNode;
 }
 
 export function DashboardLayout({
@@ -31,6 +35,8 @@ export function DashboardLayout({
   showHistoryNav = true,
   className = '',
   contentPadding = 'md',
+  titleActions,
+  rightSlot,
 }: DashboardLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -88,6 +94,8 @@ export function DashboardLayout({
           canGoForward={showHistoryNav && canGoForward}
           onGoBack={handleGoBack}
           onGoForward={handleGoForward}
+          titleActions={titleActions}
+          rightSlot={rightSlot}
         />
       </div>
 
