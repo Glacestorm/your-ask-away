@@ -160,6 +160,23 @@ export default function ModuleStudioPage() {
     dependents: copilotContext.dependents,
   } : null;
 
+  // Layout: ensure columns always add up to 12 so panels don't wrap off-screen
+  const copilotCols = showCopilot ? (showPreview ? 2 : 3) : 0;
+  const previewCols = showPreview ? 2 : 0;
+  const agentCols = showAgent ? 2 : 0;
+  const mainCols = 12 - 2 - copilotCols - previewCols - agentCols;
+
+  const mainColSpanClass = (
+    {
+      10: 'col-span-10',
+      8: 'col-span-8',
+      7: 'col-span-7',
+      6: 'col-span-6',
+      5: 'col-span-5',
+      4: 'col-span-4',
+    } as const
+  )[mainCols as 4 | 5 | 6 | 7 | 8 | 10] ?? 'col-span-6';
+
   return (
     <DashboardLayout
       title="Module Studio"
@@ -289,7 +306,7 @@ export default function ModuleStudioPage() {
           </div>
 
           {/* Main Content */}
-          <div className={`${showCopilot && showPreview ? 'col-span-6' : showCopilot || showPreview ? 'col-span-8' : 'col-span-10'}`}>
+          <div className={mainColSpanClass}>
             {selectedModule && selectedModuleData ? (
               <Tabs defaultValue="overview" className="space-y-4">
                 <div className="flex items-center justify-between">
