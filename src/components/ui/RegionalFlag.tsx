@@ -138,9 +138,9 @@ const EMOJI_FLAGS: Record<string, string> = {
 };
 
 const SIZE_CLASSES = {
-  sm: 'w-8 h-5',
-  md: 'w-10 h-7',
-  lg: 'w-14 h-10',
+  sm: 'w-10 h-7',
+  md: 'w-14 h-10',
+  lg: 'w-20 h-14',
 };
 
 export function RegionalFlag({ code, className, size = 'md' }: RegionalFlagProps) {
@@ -167,7 +167,7 @@ export function RegionalFlag({ code, className, size = 'md' }: RegionalFlagProps
   if (emoji) {
     return (
       <span 
-        className={cn('text-3xl', size === 'sm' && 'text-xl', size === 'md' && 'text-2xl', size === 'lg' && 'text-4xl', className)}
+        className={cn('text-4xl', size === 'sm' && 'text-3xl', size === 'md' && 'text-4xl', size === 'lg' && 'text-6xl', className)}
         role="img"
         aria-label={`Bandera de ${code}`}
       >
