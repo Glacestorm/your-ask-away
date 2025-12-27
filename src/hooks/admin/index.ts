@@ -14,3 +14,14 @@ export { useComplianceIA } from './useComplianceIA';
 export { useRiskAssessmentIA } from './useRiskAssessmentIA';
 export { useAdvancedReporting } from './useAdvancedReporting';
 export { useRecommendationEngine } from './useRecommendationEngine';
+
+// Fases Enterprise 2025-2026
+export { useAgentOrchestrator } from './useAgentOrchestrator';
+export { useAnalyticsIntelligence } from './useAnalyticsIntelligence';
+export { useConversationalAI } from './useConversationalAI';
+export { usePredictiveIntelligence } from './usePredictiveIntelligence';
+export { useAutomationOrchestrator } from './useAutomationOrchestrator';
+export { useNotificationIntelligence } from './useNotificationIntelligence';
+export { useSecurityIntelligence } from './useSecurityIntelligence';
+export { useKnowledgeGraph } from './useKnowledgeGraph';
+export { usePredictiveAnalytics } from './usePredictiveAnalytics';
