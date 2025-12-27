@@ -12,12 +12,60 @@ import {
   Building2,
   BarChart3,
   Shield,
-  Zap
+  Zap,
+  Search,
+  Bot,
+  MessageSquare,
+  Users,
+  FileText,
+  Settings,
+  Database,
+  Globe,
+  Mail,
+  Calendar,
+  CreditCard,
+  Truck,
+  ShoppingCart,
+  PieChart,
+  TrendingUp,
+  Lock,
+  Key,
+  Briefcase,
+  type LucideIcon
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
-const CATEGORY_CONFIG: Record<string, { label: string; icon: React.ElementType; color: string }> = {
+// Mapeig de noms d'icones a components Lucide
+const ICON_MAP: Record<string, LucideIcon> = {
+  BarChart3,
+  Search,
+  Bot,
+  MessageSquare,
+  Users,
+  Shield,
+  Package,
+  Layers,
+  Building2,
+  Zap,
+  FileText,
+  Settings,
+  Database,
+  Globe,
+  Mail,
+  Calendar,
+  CreditCard,
+  Truck,
+  ShoppingCart,
+  PieChart,
+  TrendingUp,
+  Lock,
+  Key,
+  Briefcase,
+  Sparkles,
+};
+
+const CATEGORY_CONFIG: Record<string, { label: string; icon: LucideIcon; color: string }> = {
   core: { label: 'Core', icon: Package, color: 'bg-blue-500/10 text-blue-600 border-blue-500/20' },
   vertical: { label: 'Verticales', icon: Building2, color: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' },
   addon: { label: 'Add-ons', icon: Zap, color: 'bg-purple-500/10 text-purple-600 border-purple-500/20' },
@@ -106,11 +154,11 @@ export function SystemModulesSection({ limit = 6, showViewAll = true }: SystemMo
                   <CardContent className="p-4 relative">
                     <div className="flex items-start gap-3">
                       <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/10 border border-primary/10 group-hover:scale-110 transition-transform">
-                        {module.module_icon ? (
-                          <span className="text-xl">{module.module_icon}</span>
-                        ) : (
-                          <Package className="h-5 w-5 text-primary" />
-                        )}
+                        {(() => {
+                          const iconName = module.module_icon;
+                          const IconComponent = iconName && ICON_MAP[iconName] ? ICON_MAP[iconName] : Package;
+                          return <IconComponent className="h-5 w-5 text-primary" />;
+                        })()}
                       </div>
                       
                       <div className="flex-1 min-w-0">
