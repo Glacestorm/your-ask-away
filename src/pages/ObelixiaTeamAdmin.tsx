@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
-import { Navigate, useSearchParams } from 'react-router-dom';
+import { Navigate, useSearchParams, useNavigate } from 'react-router-dom';
 import { ContentManager } from '@/components/obelixia-admin/ContentManager';
 import { ModulePricingManager } from '@/components/obelixia-admin/ModulePricingManager';
 import { InvoiceManager } from '@/components/obelixia-admin/InvoiceManager';
@@ -73,7 +73,14 @@ const ObelixiaTeamAdmin: React.FC = () => {
     }
   }, [searchParams, activeTab]);
 
+  const navigate = useNavigate();
+
   const handleTabChange = (tab: string) => {
+    // Module Studio tiene su propia página dedicada
+    if (tab === 'module-studio') {
+      navigate('/obelixia-admin/module-studio');
+      return;
+    }
     setActiveTab(tab);
     setSearchParams({ tab });
   };
@@ -88,6 +95,7 @@ const ObelixiaTeamAdmin: React.FC = () => {
       cms: 'CMS',
       docs: 'Documentación',
       appstore: 'App Store',
+      'module-studio': 'Module Studio',
       whitelabel: 'White Label',
       api: 'API',
       academia: 'Academia',
