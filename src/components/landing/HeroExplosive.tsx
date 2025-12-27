@@ -13,7 +13,7 @@ export const HeroExplosive: React.FC = () => {
   const { t } = useLanguage();
   return (
     <>
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[85vh] flex items-start justify-center overflow-hidden">
         {/* Premium Dark Background with Blue/Violet Gradient */}
         <div className="absolute inset-0 bg-[#0a0f1a]">
           {/* Main gradient overlay */}
@@ -72,7 +72,7 @@ export const HeroExplosive: React.FC = () => {
           </div>
         </div>
 
-        <div className="container mx-auto px-6 relative z-10 pt-32 pb-24">
+        <div className="container mx-auto px-6 relative z-10 pt-4 pb-8">
           <div className="max-w-5xl mx-auto text-center">
             {/* Badge */}
             <motion.div
@@ -314,7 +314,7 @@ export const HeroExplosive: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
+              className="flex flex-col sm:flex-row gap-4 justify-center mb-6"
             >
               <Link to="/precios">
                 <Button 
@@ -353,7 +353,7 @@ export const HeroExplosive: React.FC = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.5 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+          className="absolute bottom-4 left-1/2 -translate-x-1/2"
         >
           <motion.div
             animate={{ y: [0, 8, 0] }}
