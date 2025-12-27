@@ -168,6 +168,27 @@ serve(async (req) => {
         });
       }
 
+      case 'analyze_trends': {
+        const result = await generateMetrics(`Genera análisis de tendencias para módulo ${moduleKey}:
+{
+  "trends": [{ "date": "YYYY-MM-DD", "value": number, "metric": "string" }],
+  "aiAnalysis": "análisis detallado del módulo",
+  "recommendations": ["string"],
+  "riskLevel": "low" | "medium" | "high",
+  "performanceScore": number (0-100),
+  "securityScore": number (0-100),
+  "reliabilityScore": number (0-100)
+}`);
+
+        return new Response(JSON.stringify({
+          success: true,
+          ...result,
+          moduleKey
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
       default:
         return new Response(JSON.stringify({
           success: false,
