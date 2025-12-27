@@ -21,14 +21,14 @@ export const INTERNAL_MODULE_PRICING: ModulePricing[] = [
   // CORE MODULES
   {
     moduleKey: 'core',
-    moduleName: 'Core CRM',
+    moduleName: 'Core Sistema',
     basePrice: 39000,
     perpetualMultiplier: 5,
     monthlyDivisor: 10,
     minDiscount: 0,
     maxDiscount: 15,
     category: 'core',
-    notes: 'Módulo base requerido'
+    notes: 'Núcleo fundamental del sistema. Requerido para CRM y ERP.'
   },
   
   // HORIZONTAL MODULES
